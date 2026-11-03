@@ -49,6 +49,63 @@
       ]
     },
     {
+      "id": "alpine-expedition",
+      "title": "Alpine expedition",
+      "description": "Original low-poly mountaineering, climbing, snow safety, expedition shelter, navigation, and backcountry support props with editable size and color controls.",
+      "assets": [
+        "alpine-dry-bag",
+        "alpine-helmet",
+        "alpine-pack-cover",
+        "alpine-rescue-stretcher",
+        "avalanche-probe",
+        "avalanche-shovel",
+        "avalanche-transceiver",
+        "basecamp-dome-tent",
+        "bear-canister",
+        "belay-device",
+        "camp-cot",
+        "climbing-cam",
+        "climbing-chalk-bag",
+        "climbing-harness",
+        "climbing-quickdraw",
+        "climbing-rope-coil",
+        "crampons",
+        "expedition-duffel",
+        "expedition-headlamp",
+        "expedition-power-bank",
+        "expedition-radio",
+        "expedition-solar-panel",
+        "expedition-tarp",
+        "expedition-water-filter",
+        "four-season-tent",
+        "glacier-goggles",
+        "glacier-picket",
+        "handheld-gps",
+        "hydration-reservoir",
+        "ice-axe",
+        "ice-screw",
+        "insulated-flask",
+        "insulated-sleeping-pad",
+        "locking-carabiner",
+        "mountain-weather-meter",
+        "mountaineering-bivy",
+        "nut-tool",
+        "rescue-bivy",
+        "rescue-pulley",
+        "rope-haul-bag",
+        "satellite-messenger",
+        "ski-touring-skins",
+        "snow-anchor",
+        "snow-saw",
+        "snow-wall-shovel",
+        "snowshoes",
+        "summit-marker-post",
+        "tent-footprint",
+        "tent-pole-bundle",
+        "trail-gaiters"
+      ]
+    },
+    {
       "id": "characters",
       "title": "Characters",
       "description": "Mechanical low-poly characters built from rigid parts and rigged through mates: every joint is a GLB pivot node, ready to pose or animate in three.js, Godot or Unity.",
@@ -4865,6 +4922,3644 @@
             "right-ring-support",
             "front-ring-support",
             "back-ring-support"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "alpine-dry-bag",
+      "kit": "alpine-expedition",
+      "title": "Alpine dry bag",
+      "description": "Waterproof roll-top dry bag with a tapered fabric body, folded closure and buckle tabs. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "alpine dry bag",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/alpine-dry-bag.kcad.ts",
+      "preview": "/assets/alpine-expedition-alpine-dry-bag.png",
+      "sourceSha256": "3c3a87bf50d9e8cdad2dca38aa0ce8e8e5850bac1d59dfbe8757f2aae625f4fa",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#36818a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.54,
+          0.858,
+          0.54
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#36818a",
+          "parts": [
+            "bag-body",
+            "rolled-top",
+            "fold-over-closure",
+            "buckle-tab-0",
+            "buckle-tab-1",
+            "carry-handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "alpine-helmet",
+      "kit": "alpine-expedition",
+      "title": "Alpine climbing helmet",
+      "description": "Lightweight climbing helmet with a faceted shell, short brim, crown ribs and chin strap. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "alpine climbing helmet",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/alpine-helmet.kcad.ts",
+      "preview": "/assets/alpine-expedition-alpine-helmet.png",
+      "sourceSha256": "8947d4b3558868f3ce099db87762ee8846602beec243458ad87834d8c21271a3",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#e2b735",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 160,
+        "sizeM": [
+          0.35,
+          0.263,
+          0.365
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#e2b735",
+          "parts": [
+            "helmet-shell",
+            "front-brim",
+            "crown-rib-0",
+            "crown-rib-1",
+            "crown-rib-2",
+            "chin-strap-0",
+            "chin-strap-1",
+            "chin-buckle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "alpine-pack-cover",
+      "kit": "alpine-expedition",
+      "title": "Alpine pack cover",
+      "description": "Draped rain cover for a tall expedition pack with a rolled hem and side tension straps. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "alpine pack cover",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/alpine-pack-cover.kcad.ts",
+      "preview": "/assets/alpine-expedition-alpine-pack-cover.png",
+      "sourceSha256": "8647608075e593b83108217807e22c22de0b71e5a2306beae40b77fb0a255998",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#cf6337",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          0.69,
+          0.78,
+          0.548
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#cf6337",
+          "parts": [
+            "cover-dome",
+            "front-apron",
+            "side-strap-0",
+            "side-strap-1",
+            "hem-band",
+            "cord-lock"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "alpine-rescue-stretcher",
+      "kit": "alpine-expedition",
+      "title": "Alpine rescue stretcher",
+      "description": "Basket stretcher with a deep bed, perimeter rails, cross straps and carry handles. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "alpine rescue stretcher",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/alpine-rescue-stretcher.kcad.ts",
+      "preview": "/assets/alpine-expedition-alpine-rescue-stretcher.png",
+      "sourceSha256": "34d2f0ca8fdba8c97a3b0d7b9fe9e09400f34019e05e70b59ea98723c45d7c6a",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d0a641",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 388,
+        "sizeM": [
+          2.24,
+          0.263,
+          2.08
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d0a641",
+          "parts": [
+            "stretcher-bed",
+            "perimeter-rail-0",
+            "perimeter-rail-1",
+            "cross-strap-0",
+            "cross-strap-1",
+            "cross-strap-2",
+            "cross-strap-3",
+            "carry-handle-0",
+            "carry-handle-1",
+            "end-wall-0",
+            "end-wall-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "avalanche-probe",
+      "kit": "alpine-expedition",
+      "title": "Avalanche probe",
+      "description": "Collapsible avalanche probe with joined tube segments, a grip cap and tapered tip. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "avalanche probe",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/avalanche-probe.kcad.ts",
+      "preview": "/assets/alpine-expedition-avalanche-probe.png",
+      "sourceSha256": "4e2bf7ebf8b798e418f36a95b4278759b810a527ca013d0ddc484bd85fc6cc93",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d45736",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 216,
+        "sizeM": [
+          0.068,
+          1.82,
+          0.068
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d45736",
+          "parts": [
+            "probe-shaft",
+            "handle-cap",
+            "probe-tip",
+            "segment-collar-0",
+            "segment-collar-1",
+            "segment-collar-2",
+            "segment-collar-3",
+            "segment-collar-4",
+            "segment-collar-5",
+            "depth-mark-band"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "avalanche-shovel",
+      "kit": "alpine-expedition",
+      "title": "Avalanche shovel",
+      "description": "Collapsible avalanche shovel with a deep blade, reinforced socket and T-grip handle. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "avalanche shovel",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/avalanche-shovel.kcad.ts",
+      "preview": "/assets/alpine-expedition-avalanche-shovel.png",
+      "sourceSha256": "ccfe4a3b7333cb4519ee749b3565d08ff2044ed066f0a81ca91c07967a41f40c",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d66336",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          0.412,
+          1.041815,
+          0.274662
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d66336",
+          "parts": [
+            "shovel-blade",
+            "blade-side-left",
+            "blade-side-right",
+            "shaft",
+            "socket",
+            "t-grip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "avalanche-transceiver",
+      "kit": "alpine-expedition",
+      "title": "Avalanche transceiver",
+      "description": "Handheld avalanche beacon with a sloped display face, toggle control and carry clip. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "avalanche transceiver",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/avalanche-transceiver.kcad.ts",
+      "preview": "/assets/alpine-expedition-avalanche-transceiver.png",
+      "sourceSha256": "0a9fefe3c7ac3b75319d311d42976b5f16ed10aa4db9f43743db818f830e1fed",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#e0ad34",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 212,
+        "sizeM": [
+          0.17,
+          0.125,
+          0.37
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#e0ad34",
+          "parts": [
+            "beacon-body",
+            "display-panel",
+            "control-0",
+            "control-1",
+            "control-2",
+            "belt-clip",
+            "speaker-grille"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "basecamp-dome-tent",
+      "kit": "alpine-expedition",
+      "title": "Basecamp dome tent",
+      "description": "Large expedition shelter with a raised floor, paired sloping fly panels, vestibule and crossed poles. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "basecamp dome tent",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/basecamp-dome-tent.kcad.ts",
+      "preview": "/assets/alpine-expedition-basecamp-dome-tent.png",
+      "sourceSha256": "7787b638480809fa46fbda783bfb5755437cff46366753e90d6eeade85982c1d",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a64f37",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          1.9,
+          1.18,
+          2.735
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a64f37",
+          "parts": [
+            "groundsheet",
+            "inner-tent",
+            "left-fly-panel",
+            "right-fly-panel",
+            "vestibule",
+            "crossed-pole-left"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "bear-canister",
+      "kit": "alpine-expedition",
+      "title": "Bear-resistant food canister",
+      "description": "Wide screw-top food canister with a ribbed body, locking lid and side hand grips. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "bear-resistant food canister",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/bear-canister.kcad.ts",
+      "preview": "/assets/alpine-expedition-bear-canister.png",
+      "sourceSha256": "63c8a40983cf6121d8146c2f699d7ab20eb5720b6a78a670d5e3df2eb2778973",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#cfbf58",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 172,
+        "sizeM": [
+          0.415,
+          0.45,
+          0.411
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#cfbf58",
+          "parts": [
+            "canister-body",
+            "locking-lid",
+            "rib-0",
+            "rib-1",
+            "rib-2",
+            "rib-3",
+            "hand-grip-0",
+            "hand-grip-1",
+            "lid-tab"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "belay-device",
+      "kit": "alpine-expedition",
+      "title": "Belay device",
+      "description": "Tube-style belay device with twin rope slots, guide ears and a central attachment eye. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "belay device",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/belay-device.kcad.ts",
+      "preview": "/assets/alpine-expedition-belay-device.png",
+      "sourceSha256": "b5dda067ef17c59f1524436945707e5f24db7ad5d5e6a09b4bf6abb4b2ee9f01",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#858c8c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 324,
+        "sizeM": [
+          0.296,
+          0.24,
+          0.19
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#858c8c",
+          "parts": [
+            "device-body",
+            "rope-slot-rim-0",
+            "rope-slot-rim-1",
+            "attachment-eye",
+            "guide-ear-left",
+            "guide-ear-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "camp-cot",
+      "kit": "alpine-expedition",
+      "title": "Backcountry camp cot",
+      "description": "Portable sleeping cot with a fabric deck, folding end frames, feet and side rails. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "backcountry camp cot",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/camp-cot.kcad.ts",
+      "preview": "/assets/alpine-expedition-camp-cot.png",
+      "sourceSha256": "23a4fcfe8c12b5b04d6cf9fac93e518d5860a0b760a1f4a6c0296c8aa1322cee",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#68764e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          2.06,
+          0.357629,
+          1.98
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#68764e",
+          "parts": [
+            "cot-deck",
+            "left-side-rail",
+            "right-side-rail",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3",
+            "end-crossbar-0",
+            "end-crossbar-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "climbing-cam",
+      "kit": "alpine-expedition",
+      "title": "Spring-loaded climbing cam",
+      "description": "Four-lobe protection device with a center axle, trigger bar, stem and attachment sling. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "spring-loaded climbing cam",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/climbing-cam.kcad.ts",
+      "preview": "/assets/alpine-expedition-climbing-cam.png",
+      "sourceSha256": "0036a3ba8997b0c273cc6a1d5a2916188d15fb945ad2672665c9e9ec5e11b996",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b35c39",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 372,
+        "sizeM": [
+          0.392,
+          0.452,
+          0.186
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b35c39",
+          "parts": [
+            "cam-lobe-0",
+            "cam-lobe-1",
+            "cam-lobe-2",
+            "cam-lobe-3",
+            "axle",
+            "stem",
+            "trigger-bar",
+            "attachment-loop"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "climbing-chalk-bag",
+      "kit": "alpine-expedition",
+      "title": "Climbing chalk bag",
+      "description": "Waist-mounted chalk pouch with a wide rim, drawcord collar and belt loop. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "climbing chalk bag",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/climbing-chalk-bag.kcad.ts",
+      "preview": "/assets/alpine-expedition-climbing-chalk-bag.png",
+      "sourceSha256": "b913a2842d5ee0b3f5000415d6d85c1dee68addb136512f8a8740894caac82e8",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#63704d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.34,
+          0.335,
+          0.34
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#63704d",
+          "parts": [
+            "pouch-body",
+            "rolled-rim",
+            "drawcord-tab",
+            "belt-loop",
+            "front-pocket"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "climbing-harness",
+      "kit": "alpine-expedition",
+      "title": "Climbing harness",
+      "description": "Sit harness with a padded waist belt, two leg loops, tie-in points and gear loops. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "climbing harness",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/climbing-harness.kcad.ts",
+      "preview": "/assets/alpine-expedition-climbing-harness.png",
+      "sourceSha256": "c8a9dfb0359011a311a6a24a3c64d27f5ea8e37f98d4a6191664eb36f0fb06f9",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#c15439",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 328,
+        "sizeM": [
+          0.696,
+          0.084,
+          0.336
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#c15439",
+          "parts": [
+            "waist-belt",
+            "leg-loop-0",
+            "leg-loop-1",
+            "tie-in-bridge",
+            "gear-loop-0",
+            "gear-loop-1",
+            "adjuster-0",
+            "adjuster-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "climbing-quickdraw",
+      "kit": "alpine-expedition",
+      "title": "Climbing quickdraw",
+      "description": "Quickdraw sling with two opposed carabiners and a stitched center webbing strap. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "climbing quickdraw",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/climbing-quickdraw.kcad.ts",
+      "preview": "/assets/alpine-expedition-climbing-quickdraw.png",
+      "sourceSha256": "2159d4d7b1b8fe9d2b8e4b2dc8b4c92eb3e575dc6d7308f1202064fc2395b269",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d3ac45",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 228,
+        "sizeM": [
+          0.224,
+          0.499,
+          0.205
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d3ac45",
+          "parts": [
+            "upper-carabiner",
+            "lower-carabiner",
+            "webbing-sling",
+            "upper-gate",
+            "lower-gate"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "climbing-rope-coil",
+      "kit": "alpine-expedition",
+      "title": "Climbing rope coil",
+      "description": "Compact stack of dynamic climbing rope loops with two loose ends and a keeper strap. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "climbing rope coil",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/climbing-rope-coil.kcad.ts",
+      "preview": "/assets/alpine-expedition-climbing-rope-coil.png",
+      "sourceSha256": "d85d61213d4feba4bb1f0e8f6693db1ff1e1827a6cdabfcf05358257211500a5",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d2b34c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 580,
+        "sizeM": [
+          0.62,
+          0.175,
+          0.656
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d2b34c",
+          "parts": [
+            "rope-loop-0",
+            "rope-loop-1",
+            "rope-loop-2",
+            "rope-loop-3",
+            "rope-loop-4",
+            "keeper-strap",
+            "rope-end-one",
+            "rope-end-two"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "crampons",
+      "kit": "alpine-expedition",
+      "title": "Mountaineering crampons",
+      "description": "Pair of boot crampons with broad foot plates, binding bars and forward-facing points. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "mountaineering crampons",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/crampons.kcad.ts",
+      "preview": "/assets/alpine-expedition-crampons.png",
+      "sourceSha256": "874b97ebe030e0eeffc0b2a6076772798e8888d95940bea60f3cc224866b6de7",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#828987",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 232,
+        "sizeM": [
+          0.604608,
+          0.057011,
+          0.555
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#828987",
+          "parts": [
+            "foot-plate-0",
+            "foot-plate-1",
+            "front-point-0",
+            "front-point-1",
+            "front-point-2",
+            "front-point-3",
+            "front-point-4",
+            "front-point-5",
+            "rear-point-0",
+            "rear-point-1",
+            "rear-point-2",
+            "rear-point-3",
+            "binding-bar-0",
+            "binding-bar-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "expedition-duffel",
+      "kit": "alpine-expedition",
+      "title": "Expedition duffel bag",
+      "description": "Rugged haul duffel with end caps, top grab handles and paired carry straps. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "expedition duffel bag",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/expedition-duffel.kcad.ts",
+      "preview": "/assets/alpine-expedition-expedition-duffel.png",
+      "sourceSha256": "5afa9289cafecbf723733a8fc158f1578edad3ae11afb6f8d410512ba5ee65c1",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#596b54",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 148,
+        "sizeM": [
+          1.7,
+          0.71,
+          0.57
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#596b54",
+          "parts": [
+            "bag-body",
+            "left-end-cap",
+            "right-end-cap",
+            "carry-handle-0",
+            "carry-handle-1",
+            "compression-strap-0",
+            "compression-strap-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "expedition-headlamp",
+      "kit": "alpine-expedition",
+      "title": "Expedition headlamp",
+      "description": "Wide-beam headlamp with an adjustable elastic band, central lamp housing and side buckles. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "expedition headlamp",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/expedition-headlamp.kcad.ts",
+      "preview": "/assets/alpine-expedition-expedition-headlamp.png",
+      "sourceSha256": "0a5b7a1965b3c906003a1331de1b381a9204716c1a66146e8dbc960204e5ba98",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d4ad3e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 116,
+        "sizeM": [
+          1.28,
+          0.115,
+          0.224
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d4ad3e",
+          "parts": [
+            "lamp-housing",
+            "lamp-lens",
+            "headband-0",
+            "headband-1",
+            "band-buckle-0",
+            "band-buckle-1",
+            "top-adjuster"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "expedition-power-bank",
+      "kit": "alpine-expedition",
+      "title": "Expedition power bank",
+      "description": "Weather-resistant battery bank with a raised port panel, corner guards and tether eye. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "expedition power bank",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/expedition-power-bank.kcad.ts",
+      "preview": "/assets/alpine-expedition-expedition-power-bank.png",
+      "sourceSha256": "0fb16f2a34ecedb44a20bc9d010135a1c1fbe21a1914eace978b90da1a5e0a3b",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#4f6470",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 300,
+        "sizeM": [
+          0.36,
+          0.13,
+          0.308
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#4f6470",
+          "parts": [
+            "battery-case",
+            "port-panel",
+            "port-0",
+            "port-1",
+            "port-2",
+            "corner-guard-0",
+            "corner-guard-1",
+            "corner-guard-2",
+            "corner-guard-3",
+            "tether-eye"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "expedition-radio",
+      "kit": "alpine-expedition",
+      "title": "Expedition field radio",
+      "description": "Rugged handheld VHF-style field radio with antenna, channel knob, speaker and push-to-talk key. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "expedition field radio",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/expedition-radio.kcad.ts",
+      "preview": "/assets/alpine-expedition-expedition-radio.png",
+      "sourceSha256": "bf9e482f083be56f2e218ce1db42b10601b683fff49ee2a5ad8080347988dbae",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#657353",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          0.194,
+          0.65,
+          0.1595
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#657353",
+          "parts": [
+            "radio-body",
+            "front-face",
+            "antenna",
+            "channel-knob",
+            "speaker-grid",
+            "push-to-talk"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "expedition-solar-panel",
+      "kit": "alpine-expedition",
+      "title": "Folding expedition solar panel",
+      "description": "Portable two-leaf solar charger with a hinge spine, raised kickstand and panel grid. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "folding expedition solar panel",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/expedition-solar-panel.kcad.ts",
+      "preview": "/assets/alpine-expedition-expedition-solar-panel.png",
+      "sourceSha256": "1149407e45279c1b9f51751400fa7849ffd6f1e57f6f3431168f8ba5352e2443",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#536d78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          1.06,
+          0.589354,
+          0.72
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#536d78",
+          "parts": [
+            "panel-leaf-0",
+            "panel-leaf-1",
+            "hinge-spine",
+            "cell-row-0",
+            "cell-row-1",
+            "cell-row-2",
+            "cell-row-3",
+            "cell-column-0",
+            "cell-column-1",
+            "cell-column-2",
+            "cell-column-3",
+            "kickstand"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "expedition-tarp",
+      "kit": "alpine-expedition",
+      "title": "Expedition tarp shelter",
+      "description": "Ridgeline tarp with two adjustable support masts, broad roof panels and ground anchors. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "expedition tarp shelter",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/expedition-tarp.kcad.ts",
+      "preview": "/assets/alpine-expedition-expedition-tarp.png",
+      "sourceSha256": "769b0a9eb32348be744131c1effbca1fe934bb3e7d7114cd061367c148ef8e87",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#78804f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 332,
+        "sizeM": [
+          1.84,
+          1.323325,
+          2.4
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#78804f",
+          "parts": [
+            "left-roof-panel",
+            "right-roof-panel",
+            "support-mast-left",
+            "support-mast-right",
+            "ridgeline",
+            "ground-anchor-0",
+            "ground-anchor-1",
+            "ground-anchor-2",
+            "ground-anchor-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "expedition-water-filter",
+      "kit": "alpine-expedition",
+      "title": "Expedition squeeze water filter",
+      "description": "Inline squeeze filter with a bottle-thread cap, protective end collars and short hose connector. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "expedition squeeze water filter",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/expedition-water-filter.kcad.ts",
+      "preview": "/assets/alpine-expedition-expedition-water-filter.png",
+      "sourceSha256": "0fd1ed4a3f2d51c2324db3861df29ce8d01a68e49dc7a8e71b132ce747e4c2d9",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#566f62",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 188,
+        "sizeM": [
+          0.168,
+          0.345,
+          0.244
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#566f62",
+          "parts": [
+            "filter-body",
+            "top-cap",
+            "bottom-cap",
+            "hose-connector",
+            "flow-arrow-panel"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "four-season-tent",
+      "kit": "alpine-expedition",
+      "title": "Four-season mountain tent",
+      "description": "Compact storm shelter with a low profile, reinforced fly, front entrance and corner stakes. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "four-season mountain tent",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/four-season-tent.kcad.ts",
+      "preview": "/assets/alpine-expedition-four-season-tent.png",
+      "sourceSha256": "81e15887ffcda5f4764e31e3e82b9dd4106e0ce21452697b33bb8be7b9df296b",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#c05836",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          1.672,
+          0.700173,
+          1.892
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#c05836",
+          "parts": [
+            "tent-floor",
+            "inner-body",
+            "left-fly",
+            "right-fly",
+            "door-flap",
+            "corner-stake-0",
+            "corner-stake-1",
+            "corner-stake-2",
+            "corner-stake-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "glacier-goggles",
+      "kit": "alpine-expedition",
+      "title": "Glacier goggles",
+      "description": "Wraparound glacier eyewear with a wide shield frame, nose bridge and adjustable head strap. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "glacier goggles",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/glacier-goggles.kcad.ts",
+      "preview": "/assets/alpine-expedition-glacier-goggles.png",
+      "sourceSha256": "d42b5b1f8a57feb9ab70581364fef1f0ce4c7c2e325e57ac873f2ce559ee2b8e",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#4c6572",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 272,
+        "sizeM": [
+          0.69,
+          0.252,
+          0.173
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#4c6572",
+          "parts": [
+            "left-lens-frame",
+            "right-lens-frame",
+            "nose-bridge",
+            "head-strap",
+            "side-temple-0",
+            "side-temple-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "glacier-picket",
+      "kit": "alpine-expedition",
+      "title": "Glacier snow picket",
+      "description": "Long snow picket with a tapered tip, attachment holes and a top sling eye. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "glacier snow picket",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/glacier-picket.kcad.ts",
+      "preview": "/assets/alpine-expedition-glacier-picket.png",
+      "sourceSha256": "88feaf77edf6fa9e99db84e431c14ea76a25278b69a10553f9f050b6bb2124ac",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7c8785",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 516,
+        "sizeM": [
+          0.145,
+          0.877913,
+          0.05
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7c8785",
+          "parts": [
+            "picket-web",
+            "reinforced-head",
+            "attachment-hole-rim-0",
+            "attachment-hole-rim-1",
+            "attachment-hole-rim-2",
+            "attachment-hole-rim-3",
+            "top-eye",
+            "lower-tip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "handheld-gps",
+      "kit": "alpine-expedition",
+      "title": "Handheld GPS receiver",
+      "description": "Outdoor GPS receiver with a raised screen, directional keypad, side keys and top antenna. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "handheld gps receiver",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/handheld-gps.kcad.ts",
+      "preview": "/assets/alpine-expedition-handheld-gps.png",
+      "sourceSha256": "5b8fa16d609cf1ddae099ca1562537cf93f8ebd800e9fd49b535a3b9864ffe39",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#c35b36",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          0.235,
+          0.535,
+          0.1555
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#c35b36",
+          "parts": [
+            "receiver-body",
+            "screen-bezel",
+            "screen",
+            "key-0",
+            "key-1",
+            "key-2",
+            "top-antenna",
+            "side-key-0",
+            "side-key-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "hydration-reservoir",
+      "kit": "alpine-expedition",
+      "title": "Hydration reservoir",
+      "description": "Flat hydration bladder with a wide fill cap, hose port, drinking tube and bite valve. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "hydration reservoir",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/hydration-reservoir.kcad.ts",
+      "preview": "/assets/alpine-expedition-hydration-reservoir.png",
+      "sourceSha256": "41ac990580e5125f201437257a999d17c4e35f11b901a023c7a51a4613a71db2",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#4f7e87",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.669,
+          0.125,
+          0.781
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#4f7e87",
+          "parts": [
+            "bladder-body",
+            "top-seam",
+            "fill-cap",
+            "drink-tube",
+            "bite-valve",
+            "hose-clip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ice-axe",
+      "kit": "alpine-expedition",
+      "title": "Mountaineering ice axe",
+      "description": "Classic alpine axe with a long shaft, curved pick, adze and pointed lower spike. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "mountaineering ice axe",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/ice-axe.kcad.ts",
+      "preview": "/assets/alpine-expedition-ice-axe.png",
+      "sourceSha256": "b0c23e4008edcb2e1eaa1fad54698c99ea80c82a44c8b0539a17c6861a129056",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#727b7b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.541158,
+          0.860773,
+          0.17
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#727b7b",
+          "parts": [
+            "shaft",
+            "pick",
+            "pick-tip",
+            "adze",
+            "lower-spike",
+            "leash-strap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ice-screw",
+      "kit": "alpine-expedition",
+      "title": "Ice screw",
+      "description": "Tubular ice screw with a threaded body, hanger eye and folding crank handle. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "ice screw",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/ice-screw.kcad.ts",
+      "preview": "/assets/alpine-expedition-ice-screw.png",
+      "sourceSha256": "6679df58bbd2057143c56dbc9aff212774b1ffa60b34489e8c6675953e986362",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#89918e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 300,
+        "sizeM": [
+          0.21,
+          0.367,
+          0.084
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#89918e",
+          "parts": [
+            "screw-tube",
+            "cutting-tip",
+            "hanger-eye",
+            "folding-crank",
+            "thread-rib-0",
+            "thread-rib-1",
+            "thread-rib-2",
+            "thread-rib-3",
+            "thread-rib-4",
+            "thread-rib-5"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "insulated-flask",
+      "kit": "alpine-expedition",
+      "title": "Insulated mountain flask",
+      "description": "Double-wall flask with a shoulder, screw cap, protective base and carry loop. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "insulated mountain flask",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/insulated-flask.kcad.ts",
+      "preview": "/assets/alpine-expedition-insulated-flask.png",
+      "sourceSha256": "ff70014d0349d3ae1eea29c303a6dc43e8227b6c02da05eef9e1cc07d40eabdf",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7a8582",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 272,
+        "sizeM": [
+          0.241,
+          0.504,
+          0.196
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7a8582",
+          "parts": [
+            "flask-body",
+            "neck",
+            "screw-cap",
+            "base-guard",
+            "carry-loop"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "insulated-sleeping-pad",
+      "kit": "alpine-expedition",
+      "title": "Insulated sleeping pad",
+      "description": "Low-profile inflatable pad with raised side rails and repeated transverse baffles. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "insulated sleeping pad",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/insulated-sleeping-pad.kcad.ts",
+      "preview": "/assets/alpine-expedition-insulated-sleeping-pad.png",
+      "sourceSha256": "ba7eb316f3d4c93fe0faa80a1aa84e6574309667245376eac1585e2e7ed00e29",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a64b36",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 164,
+        "sizeM": [
+          0.82,
+          0.132,
+          1.98
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a64b36",
+          "parts": [
+            "pad-body",
+            "baffle-0",
+            "baffle-1",
+            "baffle-2",
+            "baffle-3",
+            "baffle-4",
+            "baffle-5",
+            "baffle-6",
+            "baffle-7",
+            "head-pillow-zone",
+            "inflation-valve"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "locking-carabiner",
+      "kit": "alpine-expedition",
+      "title": "Locking carabiner",
+      "description": "Oval locking carabiner with a thick spine, gate bar and threaded sleeve. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "locking carabiner",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/locking-carabiner.kcad.ts",
+      "preview": "/assets/alpine-expedition-locking-carabiner.png",
+      "sourceSha256": "b1a1f922102b539a1e0a5c0f1e445568b67c6c0cdb5e91102c94a40b535c0ba6",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7c8588",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 164,
+        "sizeM": [
+          0.3,
+          0.335,
+          0.18
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7c8588",
+          "parts": [
+            "carabiner-frame",
+            "gate-bar",
+            "locking-sleeve",
+            "spine-reinforcement"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "mountain-weather-meter",
+      "kit": "alpine-expedition",
+      "title": "Mountain weather meter",
+      "description": "Portable wind and weather meter with a compact base, mast, wind cups and direction vane. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "mountain weather meter",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/mountain-weather-meter.kcad.ts",
+      "preview": "/assets/alpine-expedition-mountain-weather-meter.png",
+      "sourceSha256": "45dad10515b669fe3d31ad9613e397571cae203b9f5c5ac44a07cd3c3a504200",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#75827a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 420,
+        "sizeM": [
+          0.369,
+          0.95,
+          0.38
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#75827a",
+          "parts": [
+            "base-foot",
+            "mast",
+            "sensor-hub",
+            "wind-arm-0",
+            "wind-arm-1",
+            "wind-arm-2",
+            "wind-cup-0",
+            "wind-cup-1",
+            "wind-cup-2",
+            "direction-vane",
+            "vane-fin"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "mountaineering-bivy",
+      "kit": "alpine-expedition",
+      "title": "Mountaineering bivy sack",
+      "description": "Single-person storm bivy with a raised head hood, tapered foot end and short support arch. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "mountaineering bivy sack",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/mountaineering-bivy.kcad.ts",
+      "preview": "/assets/alpine-expedition-mountaineering-bivy.png",
+      "sourceSha256": "71c70a4155800177411e658c50588f18820fef7c5e8dcef9bf1be003290bcfe0",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#65764c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 92,
+        "sizeM": [
+          0.82,
+          0.644973,
+          2.155848
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#65764c",
+          "parts": [
+            "sleeping-bag-body",
+            "head-hood",
+            "foot-panel",
+            "hood-ridge",
+            "zipper-flap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "nut-tool",
+      "kit": "alpine-expedition",
+      "title": "Climbing nut tool",
+      "description": "Long tapered nut-removal pick with a finger opening, grip scales and a narrow hook tip. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "climbing nut tool",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/nut-tool.kcad.ts",
+      "preview": "/assets/alpine-expedition-nut-tool.png",
+      "sourceSha256": "5cf77677c0ed005d04bac41818399be1218271c2875bd098d1e456cfbe554b62",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#858b85",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.211237,
+          0.638156,
+          0.087
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#858b85",
+          "parts": [
+            "tool-shaft",
+            "hook-tip",
+            "finger-loop",
+            "grip-scale-0",
+            "grip-scale-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "rescue-bivy",
+      "kit": "alpine-expedition",
+      "title": "Emergency rescue bivy",
+      "description": "Bright emergency bivy sack with a sealed foot, raised head hood and reflective-look side bands. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "emergency rescue bivy",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/rescue-bivy.kcad.ts",
+      "preview": "/assets/alpine-expedition-rescue-bivy.png",
+      "sourceSha256": "fb423ef9f4cb8b8dd4889998250505ff2fe56a847e0d0d1738a2a7d7cb507713",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d34d36",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.9,
+          0.615583,
+          2.140476
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d34d36",
+          "parts": [
+            "bivy-shell",
+            "hood",
+            "foot-seal",
+            "side-band-0",
+            "side-band-1",
+            "entry-flap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "rescue-pulley",
+      "kit": "alpine-expedition",
+      "title": "Alpine rescue pulley",
+      "description": "Compact rescue pulley with a side plate, large sheave, axle pin and rope attachment eye. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "alpine rescue pulley",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/rescue-pulley.kcad.ts",
+      "preview": "/assets/alpine-expedition-rescue-pulley.png",
+      "sourceSha256": "536b992d88d2968730eaaa56e3933fce6fb199a8d92245f24083f4b94922d6e5",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#c45938",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 356,
+        "sizeM": [
+          0.295,
+          0.357,
+          0.194
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#c45938",
+          "parts": [
+            "sheave",
+            "side-plate-front",
+            "side-plate-rear",
+            "axle-pin",
+            "attachment-eye-top",
+            "attachment-eye-bottom"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "rope-haul-bag",
+      "kit": "alpine-expedition",
+      "title": "Rope haul bag",
+      "description": "Tall haul bag with a reinforced base, closure collar, shoulder straps and attachment loops. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "rope haul bag",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/rope-haul-bag.kcad.ts",
+      "preview": "/assets/alpine-expedition-rope-haul-bag.png",
+      "sourceSha256": "4e78b00d4fcfd451b7ad43cf92ef32f3590cd6eae7b22f258849b6b183e0582f",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5d6b58",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 316,
+        "sizeM": [
+          0.51,
+          1.009,
+          0.51
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5d6b58",
+          "parts": [
+            "bag-body",
+            "closure-collar",
+            "top-flap",
+            "shoulder-strap-0",
+            "shoulder-strap-1",
+            "haul-loop-0",
+            "haul-loop-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "satellite-messenger",
+      "kit": "alpine-expedition",
+      "title": "Satellite messenger",
+      "description": "Compact satellite messenger with a textured face, status screen, call button and lanyard loop. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "satellite messenger",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/satellite-messenger.kcad.ts",
+      "preview": "/assets/alpine-expedition-satellite-messenger.png",
+      "sourceSha256": "6b81b98500150fa9c601780ff2325fb59a82bb8768bd490ba6a7d9976cae4ffa",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#e0b23a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 220,
+        "sizeM": [
+          0.15,
+          0.161,
+          0.295
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#e0b23a",
+          "parts": [
+            "messenger-body",
+            "status-window",
+            "check-in-button",
+            "sos-button",
+            "lanyard-eye",
+            "antenna-panel"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ski-touring-skins",
+      "kit": "alpine-expedition",
+      "title": "Ski touring skins",
+      "description": "Pair of climbing skins with tapered tails, tip loops and adjustable tail clips. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "ski touring skins",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/ski-touring-skins.kcad.ts",
+      "preview": "/assets/alpine-expedition-ski-touring-skins.png",
+      "sourceSha256": "2da650439b5a5476c57d447a1ae55cc406a3d2ea4bcef5013a4803620ea3b640",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#596d58",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 264,
+        "sizeM": [
+          0.36,
+          0.112,
+          1.732
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#596d58",
+          "parts": [
+            "skin-strip-0",
+            "skin-strip-1",
+            "tip-loop-0",
+            "tip-loop-1",
+            "tail-clip-0",
+            "tail-clip-1",
+            "backing-tab-0",
+            "backing-tab-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "snow-anchor",
+      "kit": "alpine-expedition",
+      "title": "Snow deadman anchor",
+      "description": "Buried deadman anchor plate with a central cable eye and raised orientation rib. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "snow deadman anchor",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/snow-anchor.kcad.ts",
+      "preview": "/assets/alpine-expedition-snow-anchor.png",
+      "sourceSha256": "8c2fcdaacb15156e58fdfae0c39d51b88627f8b732ce801922939e0014ee6acf",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#82908b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 188,
+        "sizeM": [
+          0.380755,
+          0.152287,
+          0.288
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#82908b",
+          "parts": [
+            "anchor-plate",
+            "center-rib",
+            "cable-eye",
+            "anchor-cable",
+            "edge-lip-0",
+            "edge-lip-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "snow-saw",
+      "kit": "alpine-expedition",
+      "title": "Snow pit saw",
+      "description": "Long snow saw blade with a tooth row, stiffening spine and molded grip handle. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "snow pit saw",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/snow-saw.kcad.ts",
+      "preview": "/assets/alpine-expedition-snow-saw.png",
+      "sourceSha256": "4b6b2bee4d7e11f5c8228ab8d6242358cdeed5e9b60dbb9a73b308318aaf9117",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#767e7c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 372,
+        "sizeM": [
+          1.126,
+          0.112133,
+          0.078
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#767e7c",
+          "parts": [
+            "saw-blade",
+            "saw-tooth-0",
+            "saw-tooth-1",
+            "saw-tooth-2",
+            "saw-tooth-3",
+            "saw-tooth-4",
+            "saw-tooth-5",
+            "saw-tooth-6",
+            "saw-tooth-7",
+            "saw-tooth-8",
+            "saw-tooth-9",
+            "saw-tooth-10",
+            "saw-tooth-11",
+            "saw-tooth-12",
+            "saw-tooth-13",
+            "saw-tooth-14",
+            "saw-tooth-15",
+            "saw-tooth-16",
+            "saw-tooth-17",
+            "saw-tooth-18",
+            "saw-tooth-19",
+            "blade-spine",
+            "handle",
+            "handle-loop"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "snow-wall-shovel",
+      "kit": "alpine-expedition",
+      "title": "Snow wall shovel",
+      "description": "Compact snow shovel with a broad blade, angled shaft and transverse hand grip. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "snow wall shovel",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/snow-wall-shovel.kcad.ts",
+      "preview": "/assets/alpine-expedition-snow-wall-shovel.png",
+      "sourceSha256": "eb9acee216093e027f1864856cf2c44584120c438c385666b5d9f73383d8834f",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b35a32",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.39,
+          1.244567,
+          0.344264
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b35a32",
+          "parts": [
+            "shovel-blade",
+            "shaft",
+            "blade-rib",
+            "grip",
+            "grip-center"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "snowshoes",
+      "kit": "alpine-expedition",
+      "title": "Alpine snowshoes",
+      "description": "Pair of framed snowshoes with bindings, crossbars and raised toe loops. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "alpine snowshoes",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/snowshoes.kcad.ts",
+      "preview": "/assets/alpine-expedition-snowshoes.png",
+      "sourceSha256": "4f446cef8d795752c02051564e05fd9770d5ef0f8a9d63007fdf377159b33361",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7f8a84",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 496,
+        "sizeM": [
+          0.87,
+          0.184,
+          0.41
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7f8a84",
+          "parts": [
+            "shoe-frame-0",
+            "shoe-frame-1",
+            "deck-binding-0",
+            "deck-binding-1",
+            "crossbar-0",
+            "crossbar-1",
+            "toe-loop-0",
+            "toe-loop-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "summit-marker-post",
+      "kit": "alpine-expedition",
+      "title": "Summit marker post",
+      "description": "Trail summit marker with a broad base, upright post, direction plaque and small cap. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "summit marker post",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/summit-marker-post.kcad.ts",
+      "preview": "/assets/alpine-expedition-summit-marker-post.png",
+      "sourceSha256": "7c5d2cf82eadcfca1dfa5c3db187b2e74031648281491acb42a60081855081f3",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b95237",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.53,
+          1.352,
+          0.36
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b95237",
+          "parts": [
+            "base-plate",
+            "marker-post",
+            "direction-plaque",
+            "arrow-board",
+            "post-cap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "tent-footprint",
+      "kit": "alpine-expedition",
+      "title": "Tent footprint sheet",
+      "description": "Rectangular groundsheet with reinforced corners and low edge loops for a mountain tent. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "tent footprint sheet",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/tent-footprint.kcad.ts",
+      "preview": "/assets/alpine-expedition-tent-footprint.png",
+      "sourceSha256": "3343e4d4bafde982596110f2abecc11a039cc90498c66aaf3b52cc7b74c01c78",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#666f68",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 408,
+        "sizeM": [
+          1.7,
+          0.027,
+          2.2
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#666f68",
+          "parts": [
+            "sheet",
+            "corner-loop-0",
+            "corner-loop-1",
+            "corner-loop-2",
+            "corner-loop-3",
+            "center-seam"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "tent-pole-bundle",
+      "kit": "alpine-expedition",
+      "title": "Tent pole bundle",
+      "description": "Grouped segmented tent poles with end ferrules and a compact elastic keeper strap. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "tent pole bundle",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/tent-pole-bundle.kcad.ts",
+      "preview": "/assets/alpine-expedition-tent-pole-bundle.png",
+      "sourceSha256": "7575ba6bac09c8c9447439adfb7214f4527f0dbe8b3e71555e3cbec72a1943f2",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a7a7a0",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 376,
+        "sizeM": [
+          1.484,
+          0.095,
+          0.91
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a7a7a0",
+          "parts": [
+            "pole-0",
+            "pole-1",
+            "pole-2",
+            "pole-3",
+            "keeper-strap-front",
+            "keeper-strap-rear",
+            "end-ferrule-0",
+            "end-ferrule-1",
+            "end-ferrule-2",
+            "end-ferrule-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "trail-gaiters",
+      "kit": "alpine-expedition",
+      "title": "Trail gaiters",
+      "description": "Pair of ankle gaiters with front hooks, instep straps and upper closure tabs. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "alpine expedition",
+        "mountaineering",
+        "trail gaiters",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "alpine",
+        "mountaineering",
+        "outdoor",
+        "expedition",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/alpine-expedition/trail-gaiters.kcad.ts",
+      "preview": "/assets/alpine-expedition-trail-gaiters.png",
+      "sourceSha256": "26e6da2fc2fd76da0f9a7497b1ddfed6c4347a2559c43badbcd7e2d9ea3873e6",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.75,
+          "max": 1.25,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#62714c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 160,
+        "sizeM": [
+          0.63,
+          0.395,
+          0.346
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#62714c",
+          "parts": [
+            "gaiter-shell-0",
+            "gaiter-shell-1",
+            "instep-strap-0",
+            "instep-strap-1",
+            "front-hook-0",
+            "front-hook-1",
+            "closure-tab-0",
+            "closure-tab-1"
           ],
           "param": "color"
         }

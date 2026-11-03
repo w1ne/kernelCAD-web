@@ -1,0 +1,15 @@
+{
+  "tarball": "/tmp/kernelcad-alpine-expedition-npm-pack/kernelcad-0.17.4.tgz",
+  "sha256": "fc692f911b89e72155ca0d0a72b9c5ae25d215c457f726b767f79de970f80ee4",
+  "packedFileCount": 3577,
+  "alpineSources": 50,
+  "alpinePreviews": 50,
+  "exports": {
+    "./package.json": "./package.json"
+  },
+  "exportKeys": [
+    "./package.json"
+  ],
+  "forbiddenProductPaths": [],
+  "passed": true
+}

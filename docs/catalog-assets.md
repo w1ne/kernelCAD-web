@@ -28,3 +28,13 @@ npx tsx scripts/buildAssetCatalog.ts --check
 The local static page builder is a separate check from deployed website
 behavior. Do not infer deployment or physical acceptance from local catalog
 builds.
+
+## Alpine expedition assets
+
+The [alpine expedition kit](../catalog/kits/alpine-expedition/README.md) adds
+50 original low-poly scene props for shelters, climbing, snow travel, rescue,
+and field equipment. Each source exposes overall scale and asset color, and
+the catalog index carries the generated preview path. The [wave demo and
+verification bundle](../artifacts/catalog-demos/alpine-expedition-wave-20261103/README.md)
+shows the source-to-preview workflow and its local evidence; it does not claim
+that this branch has been deployed.

@@ -1,0 +1,9 @@
+{
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-alpine-expedition-pages",
+  "kitPages": 50,
+  "assetsInIndex": 1591,
+  "pageAndPreviewPairs": 50,
+  "hubListsKit": true,
+  "missing": [],
+  "passed": true
+}
