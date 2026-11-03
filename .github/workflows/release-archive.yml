@@ -181,5 +181,9 @@ jobs:
       - name: Build package payload
         run: npm run build
 
+      # npm Trusted Publishing (OIDC): package "kernelcad" on npmjs.com must list
+      # this repo + this workflow as a trusted publisher. Without it, `npm publish`
+      # fails with E404 on PUT (seen on v0.17.4 run) while archives still succeed,
+      # leaving registry stuck on an older version (e.g. 0.15.0) so npx lacks .finish.
       - name: Publish package through npm Trusted Publishing
         run: npm publish
