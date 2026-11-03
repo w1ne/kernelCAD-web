@@ -1228,6 +1228,65 @@
       ]
     },
     {
+      "id": "space-exploration",
+      "title": "Space exploration",
+      "description": "Original low-poly lunar surface, spacecraft support and field science props with editable scale and color controls.",
+      "assets": [
+        "airlock-hatch",
+        "cargo-airlock-pod",
+        "core-sampler",
+        "drill-core-tube-rack",
+        "dust-protection-screen",
+        "emergency-shelter-pod",
+        "equipment-locker",
+        "equipment-stanchion",
+        "field-lamp",
+        "field-tool-chest",
+        "geological-hammer",
+        "habitat-corridor-section",
+        "habitat-spares-crate",
+        "inflatable-habitat-frame",
+        "landing-gear-pod",
+        "landing-pad-marker",
+        "lunar-habitat-module",
+        "lunar-rover-chassis",
+        "orbital-communication-dish",
+        "oxygen-cylinder-rack",
+        "payload-container",
+        "portable-science-console",
+        "power-distribution-unit",
+        "pressurized-tunnel-collar",
+        "regolith-sieve",
+        "relay-beacon",
+        "robotic-arm-pedestal",
+        "rover-charging-dock",
+        "rover-dust-shield",
+        "rover-seat",
+        "rover-tool-rack",
+        "rover-wheel-assembly",
+        "sample-canister",
+        "sample-cassette",
+        "sample-drill-head",
+        "sample-trailer-cart",
+        "satellite-bus",
+        "satellite-solar-wing",
+        "science-instrument-tripod",
+        "science-worktable",
+        "seismic-sensor",
+        "specimen-tray",
+        "spectrometer-case",
+        "surface-antenna-mast",
+        "surface-battery-bank",
+        "surface-cable-bridge",
+        "surface-sensor-post",
+        "surface-storage-shed",
+        "surface-utility-cart",
+        "survey-flag",
+        "tracking-antenna-dish",
+        "transport-sled"
+      ]
+    },
+    {
       "id": "sports",
       "title": "Sports",
       "description": "Original low-poly court, field, racket, skating, fitness and award props with editable size and color controls.",
@@ -109981,6 +110040,3586 @@
             "station-end-vent-0",
             "station-end-vent-1",
             "station-cable-plinth"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "airlock-hatch",
+      "kit": "space-exploration",
+      "title": "Airlock hatch",
+      "description": "Circular pressure-door prop with an outer rim, central disk, handle and locking lugs. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/airlock-hatch.kcad.ts",
+      "sourceSha256": "f0aa265f617448af601882741238a69f6581bad141798a74c7b20d1b542d1d14",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#737c7d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 452,
+        "sizeM": [
+          0.748,
+          0.137,
+          0.748
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#737c7d",
+          "parts": [
+            "rim",
+            "door",
+            "handle",
+            "lug-0",
+            "lug-1",
+            "lug-2",
+            "lug-3",
+            "lug-4",
+            "lug-5",
+            "lug-6",
+            "lug-7"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "cargo-airlock-pod",
+      "kit": "space-exploration",
+      "title": "Cargo airlock pod",
+      "description": "Small cargo transfer pod with rounded-looking shell, wide hatch and side grab rails. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/cargo-airlock-pod.kcad.ts",
+      "sourceSha256": "70ada8fcfff3096243887f35ec5e19b39d12898bb9fd841f80c5af6c6564a887",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b5aa8e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.58,
+          0.715,
+          0.6525
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b5aa8e",
+          "parts": [
+            "pod",
+            "cap",
+            "hatch",
+            "rail-left",
+            "rail-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "core-sampler",
+      "kit": "space-exploration",
+      "title": "Core sampler tool",
+      "description": "Long core sampler with a pointed-looking barrel, top grip and lower cutting collar. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/core-sampler.kcad.ts",
+      "sourceSha256": "cc89c35f13441cdd30af301aefd37ed7cf9bb5df15d31bf80e024d68743fc880",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8d8b7d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.3,
+          0.87,
+          0.19
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8d8b7d",
+          "parts": [
+            "barrel",
+            "collar",
+            "tip",
+            "grip-left",
+            "grip-right",
+            "cross-handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "drill-core-tube-rack",
+      "kit": "space-exploration",
+      "title": "Core tube rack",
+      "description": "Portable core-tube rack with four parallel channels and broad end plates. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/drill-core-tube-rack.kcad.ts",
+      "sourceSha256": "fb2b976df68c04c23b2ea3759338d7997ee78e7bf5d3b5613a0904ed44a08c58",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8f8a7a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 212,
+        "sizeM": [
+          0.82,
+          0.65,
+          0.65
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8f8a7a",
+          "parts": [
+            "base",
+            "tube-0",
+            "tube-1",
+            "tube-2",
+            "tube-3",
+            "end-left",
+            "end-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "dust-protection-screen",
+      "kit": "space-exploration",
+      "title": "Dust protection screen",
+      "description": "Portable low dust screen with three panels, side rails and broad floor skids. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/dust-protection-screen.kcad.ts",
+      "sourceSha256": "886855f89716e818ad60eb5cfab41f7514b51a62ea5199b3bdc0ae26e0cffd6a",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#89877e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          1.08,
+          1.17,
+          0.5
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#89877e",
+          "parts": [
+            "panel-0",
+            "panel-1",
+            "panel-2",
+            "top-rail",
+            "bottom-rail",
+            "skid-left",
+            "skid-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "emergency-shelter-pod",
+      "kit": "space-exploration",
+      "title": "Emergency shelter pod",
+      "description": "Low emergency shelter capsule with raised end caps, foot pads and a top handle rail. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/emergency-shelter-pod.kcad.ts",
+      "sourceSha256": "2b218052587386a48fb64660a24afd53023cf7fa195c6524a9dcac3d45a41af6",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#c98c52",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 148,
+        "sizeM": [
+          1.43,
+          0.98,
+          0.65
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#c98c52",
+          "parts": [
+            "shell",
+            "top",
+            "end-a",
+            "end-b",
+            "handle",
+            "foot--350",
+            "foot-350"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "equipment-locker",
+      "kit": "space-exploration",
+      "title": "Field equipment locker",
+      "description": "Tall equipment locker with double doors, top lip and four compact feet. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/equipment-locker.kcad.ts",
+      "sourceSha256": "ca31ebbcccb91e13bc8de6677f8f8ea0e0db88f224621dc3fe60ab2b3c92a622",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8c887a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.86,
+          1.62,
+          0.56
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8c887a",
+          "parts": [
+            "body",
+            "top",
+            "door-left",
+            "door-right",
+            "foot--300",
+            "foot-300"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "equipment-stanchion",
+      "kit": "space-exploration",
+      "title": "Equipment stanchion",
+      "description": "Short equipment stanchion with a weighted foot, post and rectangular mounting head. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/equipment-stanchion.kcad.ts",
+      "sourceSha256": "3d8a547238c15ba85f1ab9c56b3073881de6c5a5e498c45913f7f4e99f41cb82",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#727875",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 80,
+        "sizeM": [
+          0.3,
+          0.92,
+          0.3
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#727875",
+          "parts": [
+            "foot",
+            "post",
+            "head",
+            "cap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "field-lamp",
+      "kit": "space-exploration",
+      "title": "Portable field lamp",
+      "description": "Compact field lamp with a square base, upright stem and broad rectangular lamp head. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/field-lamp.kcad.ts",
+      "sourceSha256": "73cfbcc4404f30b9433109de7ce7501ada3e7e9d29453302ccabd2ecb5474267",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#c0a56c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 92,
+        "sizeM": [
+          0.32,
+          0.865,
+          0.26
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#c0a56c",
+          "parts": [
+            "base",
+            "stem",
+            "neck",
+            "head",
+            "lens"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "field-tool-chest",
+      "kit": "space-exploration",
+      "title": "Field tool chest",
+      "description": "Low tool chest with a hinged-looking lid, front drawer line and side grab handles. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/field-tool-chest.kcad.ts",
+      "sourceSha256": "2d9fdcf7c7a2e9fad024ead168a8a9b1378d52c9815259a57420a3a7ccb66ae8",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#716c5e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.945,
+          0.35,
+          0.565
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#716c5e",
+          "parts": [
+            "base",
+            "lid",
+            "drawer",
+            "handle-left",
+            "handle-right",
+            "latch"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "geological-hammer",
+      "kit": "space-exploration",
+      "title": "Geological sampling hammer",
+      "description": "Compact geology hammer with a broad head, tapered handle and pommel block. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/geological-hammer.kcad.ts",
+      "sourceSha256": "82e53074dfaf2ed62c92336a5f5cbbd0988055b4a249946501b9c29a6333f88c",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#777a77",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.49,
+          0.78,
+          0.14
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#777a77",
+          "parts": [
+            "head",
+            "pick",
+            "handle",
+            "grip",
+            "pommel"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "habitat-corridor-section",
+      "kit": "space-exploration",
+      "title": "Habitat corridor section",
+      "description": "Short cylindrical pressure corridor with two raised seam rings and floor skids. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/habitat-corridor-section.kcad.ts",
+      "sourceSha256": "4abc4e29a5fe714cf27f7e0208ec1dc6810c69ceacd3efcd1ce24a97e1de7e55",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9d9a8d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.66,
+          0.66,
+          0.66
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9d9a8d",
+          "parts": [
+            "tube",
+            "ring-a",
+            "ring-b",
+            "skid-left",
+            "skid-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "habitat-spares-crate",
+      "kit": "space-exploration",
+      "title": "Habitat spares crate",
+      "description": "Stackable spares crate with reinforced corner rails, lid seam and side hand slots. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/habitat-spares-crate.kcad.ts",
+      "sourceSha256": "d519a091d0e8b12413ed1ed8a5a9fbae1b73dc198f6004a262e8670f3070ec2d",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9a8a68",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.84,
+          0.61,
+          0.69
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9a8a68",
+          "parts": [
+            "body",
+            "lid",
+            "corner--340--265",
+            "corner--340-265",
+            "corner-340--265",
+            "corner-340-265",
+            "slot-left",
+            "slot-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "inflatable-habitat-frame",
+      "kit": "space-exploration",
+      "title": "Inflatable habitat frame",
+      "description": "Inflatable habitat shell represented by a broad drum, end collars and an external rib frame. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/inflatable-habitat-frame.kcad.ts",
+      "sourceSha256": "8a204a93a5d52d1f35bff1dbff3366318e070ea7d84d0b03d56e6a1fa1ad658e",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a7a59a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          0.9,
+          0.96,
+          0.9
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a7a59a",
+          "parts": [
+            "shell",
+            "collar-a",
+            "collar-b",
+            "rib-0",
+            "rib-1",
+            "rib-2",
+            "rib-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "landing-gear-pod",
+      "kit": "space-exploration",
+      "title": "Landing gear pod",
+      "description": "Landing leg pod with a tapered-looking strut, broad footplate and two brace arms. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/landing-gear-pod.kcad.ts",
+      "sourceSha256": "285efa93adaa867cd07e95bca9a13a84079274934924c657ed978e029dd36232",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#777b78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.44,
+          0.795,
+          0.44
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#777b78",
+          "parts": [
+            "strut",
+            "foot",
+            "brace-left",
+            "brace-right",
+            "collar"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "landing-pad-marker",
+      "kit": "space-exploration",
+      "title": "Landing zone marker",
+      "description": "Low landing-zone marker with a broad base plate and raised guide posts at each corner. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/landing-pad-marker.kcad.ts",
+      "sourceSha256": "a19ff5ce831d2877c22068ae21d0d1993ddf3bea6fc3cfa7dc0d4d0402b8054c",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#bd9750",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          1.2,
+          0.395,
+          1.2
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#bd9750",
+          "parts": [
+            "plate",
+            "post--460--460",
+            "post--460-460",
+            "post-460--460",
+            "post-460-460",
+            "center"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "lunar-habitat-module",
+      "kit": "space-exploration",
+      "title": "Lunar habitat module",
+      "description": "Compact surface habitat with domed cap, four corner supports and a framed entry hatch. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/lunar-habitat-module.kcad.ts",
+      "sourceSha256": "362f07707825d0920daeaea6a9dd238a84482db93e5ccd25bb374008fc2d99f2",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b7b1a2",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 148,
+        "sizeM": [
+          0.78,
+          1,
+          0.78
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b7b1a2",
+          "parts": [
+            "body",
+            "roof",
+            "hatch",
+            "leg--250--250",
+            "leg--250-250",
+            "leg-250--250",
+            "leg-250-250"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "lunar-rover-chassis",
+      "kit": "space-exploration",
+      "title": "Lunar rover chassis",
+      "description": "Open rover frame with four wheel mounts, central deck, front bumper and rear cargo rail. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/lunar-rover-chassis.kcad.ts",
+      "sourceSha256": "026092df079f26d0a255f492cb75d58eb1cd2db836ec5c9103c06b17a1b0b6e6",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9c8e6d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          1.25,
+          0.43,
+          0.87
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9c8e6d",
+          "parts": [
+            "deck",
+            "front-bumper",
+            "rear-rail",
+            "wheel-mount--460--360",
+            "wheel-mount--460-360",
+            "wheel-mount-460--360",
+            "wheel-mount-460-360"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "orbital-communication-dish",
+      "kit": "space-exploration",
+      "title": "Orbital communication dish",
+      "description": "Compact orbital dish on a box bus with a feed arm and two solar-panel wings. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/orbital-communication-dish.kcad.ts",
+      "sourceSha256": "1a40758d1d7a643b7c4f9d0f4533d5abf043a4931268e9a519a6483bb56a0869",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#c1c6c1",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          1.6,
+          0.44,
+          0.87
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#c1c6c1",
+          "parts": [
+            "bus",
+            "dish",
+            "arm",
+            "feed",
+            "panel-left",
+            "panel-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "oxygen-cylinder-rack",
+      "kit": "space-exploration",
+      "title": "Oxygen cylinder rack",
+      "description": "Two-cylinder service rack with retaining hoops, bottom tray and lifting bar. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/oxygen-cylinder-rack.kcad.ts",
+      "sourceSha256": "0ccd27be58976a0c13dc26dba6b94607aea62142468a2304e4bcabccd265986a",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8c9b99",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 148,
+        "sizeM": [
+          0.65,
+          1.26,
+          0.3
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8c9b99",
+          "parts": [
+            "tray",
+            "cylinder-0",
+            "cylinder-1",
+            "top-bar",
+            "back",
+            "foot--270",
+            "foot-270"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "payload-container",
+      "kit": "space-exploration",
+      "title": "Instrument payload container",
+      "description": "Square instrument payload canister with lid rim, corner rails and a recessed front panel. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/payload-container.kcad.ts",
+      "sourceSha256": "7978516a9ba6df5ef3a8556f7c8c89103238790b838cb501b7601b20662e3c53",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8b8067",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.82,
+          1,
+          0.82
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8b8067",
+          "parts": [
+            "body",
+            "lid",
+            "corner--330--330",
+            "corner--330-330",
+            "corner-330--330",
+            "corner-330-330",
+            "panel"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "portable-science-console",
+      "kit": "space-exploration",
+      "title": "Portable science console",
+      "description": "Field console with tilted-looking display housing, top rail and four low mounting feet. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/portable-science-console.kcad.ts",
+      "sourceSha256": "74f9782d6f4b63bc99b7286cc99ae55e60214ca98f71fdcd3c829b0f8837a431",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#66716e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.65,
+          0.7,
+          0.5
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#66716e",
+          "parts": [
+            "base",
+            "body",
+            "screen",
+            "hood",
+            "foot--250--180",
+            "foot--250-180",
+            "foot-250--180",
+            "foot-250-180"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "power-distribution-unit",
+      "kit": "space-exploration",
+      "title": "Surface power distribution unit",
+      "description": "Field power distribution box with two outlet panels, cable entries and raised roof. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/power-distribution-unit.kcad.ts",
+      "sourceSha256": "bcf6150c24a3156e136e99dbde74bdce37662818e0759685a0c0599c0fa5e6f7",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7a8179",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          0.7,
+          0.45,
+          0.52
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7a8179",
+          "parts": [
+            "body",
+            "roof",
+            "panel-left",
+            "panel-right",
+            "gland-0",
+            "gland-1",
+            "gland-2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "pressurized-tunnel-collar",
+      "kit": "space-exploration",
+      "title": "Pressurized tunnel collar",
+      "description": "Circular tunnel connection ring with broad flange, inner lip and four bolt bosses. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/pressurized-tunnel-collar.kcad.ts",
+      "sourceSha256": "197b19bf8c156d98714a1ebab29d5939dfb6b2d94e3223ea7102e29a869a7d64",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7c8585",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 264,
+        "sizeM": [
+          0.82,
+          0.13,
+          0.82
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7c8585",
+          "parts": [
+            "flange",
+            "inner-lip",
+            "bolt-0",
+            "bolt-1",
+            "bolt-2",
+            "bolt-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "regolith-sieve",
+      "kit": "space-exploration",
+      "title": "Regolith sieve tray",
+      "description": "Shallow field sieve tray with raised rim, crossed support legs and a central mesh panel. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/regolith-sieve.kcad.ts",
+      "sourceSha256": "cd2ffd2a12bab10a99d3d799705b6e71e3d8bc99b4aaa3ca43e8866b15268cf7",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a69878",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          0.64,
+          0.5,
+          0.5
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a69878",
+          "parts": [
+            "mesh",
+            "rim-0",
+            "rim-1",
+            "rim-2",
+            "rim-3",
+            "rim-side-a",
+            "rim-side-b",
+            "leg--220",
+            "leg-220"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "relay-beacon",
+      "kit": "space-exploration",
+      "title": "Relay beacon",
+      "description": "Standalone relay beacon with a capped post, indicator box and four low anchor tabs. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/relay-beacon.kcad.ts",
+      "sourceSha256": "f5e12c07195caba8cc5829a8b55e452f6ce8de37d8dd438fca490ceab537d454",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#dfb84d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          0.32,
+          1.03,
+          0.32
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#dfb84d",
+          "parts": [
+            "base",
+            "post",
+            "beacon",
+            "cap",
+            "anchor-0",
+            "anchor-1",
+            "anchor-2",
+            "anchor-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "robotic-arm-pedestal",
+      "kit": "space-exploration",
+      "title": "Instrument arm pedestal",
+      "description": "Static instrument-arm pedestal with a broad base, two block links and a tool-end mount. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/robotic-arm-pedestal.kcad.ts",
+      "sourceSha256": "bf0b1e2c3e17af437d66a914d761d5e44630f888e5f4937291b7c01f1c6b98d5",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#797e79",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          0.86,
+          0.845,
+          0.52
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#797e79",
+          "parts": [
+            "base",
+            "turntable",
+            "lower-link",
+            "upper-link",
+            "joint",
+            "tool-mount"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "rover-charging-dock",
+      "kit": "space-exploration",
+      "title": "Rover charging dock",
+      "description": "Low charging dock with guide rails, raised connector post and two anchor pads. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/rover-charging-dock.kcad.ts",
+      "sourceSha256": "987704b720ce85c88ccc12796029fd2d52d3addf253db9468f0a61e671f06fc9",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#58676b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 116,
+        "sizeM": [
+          1.15,
+          0.77,
+          0.7
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#58676b",
+          "parts": [
+            "base",
+            "guide-left",
+            "guide-right",
+            "post",
+            "connector",
+            "anchor--460",
+            "anchor-460"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "rover-dust-shield",
+      "kit": "space-exploration",
+      "title": "Rover dust shield",
+      "description": "Pair of broad rover wheel shields with short mounting struts and protective edge lips. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/rover-dust-shield.kcad.ts",
+      "sourceSha256": "6d539fdfd0a786de695ab3e1c40be2971c1979f04e2b53efeca3572f757ff32d",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a69c83",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          1.2,
+          0.94,
+          0.215
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a69c83",
+          "parts": [
+            "shield-left",
+            "shield-right",
+            "strut--380--80",
+            "strut--380-80",
+            "strut-380--80",
+            "strut-380-80",
+            "lip-left",
+            "lip-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "rover-seat",
+      "kit": "space-exploration",
+      "title": "Rover operator seat",
+      "description": "Simple rover seat with bucket base, raised back, arm rests and central pedestal. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/rover-seat.kcad.ts",
+      "sourceSha256": "4db822d479676e74b518a173fc4b23135d9df0c1392e2fca7ba8938ba35cbbc2",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6c716e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          0.56,
+          1.29,
+          0.455
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6c716e",
+          "parts": [
+            "cushion",
+            "back",
+            "arm-left",
+            "arm-right",
+            "pedestal",
+            "foot"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "rover-tool-rack",
+      "kit": "space-exploration",
+      "title": "Rover tool rack",
+      "description": "Open rack with three long tool channels, end stops and four mounting feet. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/rover-tool-rack.kcad.ts",
+      "sourceSha256": "6656a6e465b99bee8310ac89f716789fae5d997c35ca3fb2156b86af27fd3b16",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6c7475",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.88,
+          0.47,
+          0.46
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6c7475",
+          "parts": [
+            "base",
+            "channel-0",
+            "channel-1",
+            "channel-2",
+            "end-left",
+            "end-right",
+            "foot--340",
+            "foot-340"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "rover-wheel-assembly",
+      "kit": "space-exploration",
+      "title": "Rover wheel assembly",
+      "description": "Oversized low-pressure rover wheel with thick tire, hub and six raised tread bars. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/rover-wheel-assembly.kcad.ts",
+      "sourceSha256": "fcdd936ebda2c5515dca822d3a24db3b33b8e5fbefd11573a8fde44e9fcd2167",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#55595b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 160,
+        "sizeM": [
+          0.6,
+          0.24,
+          0.6
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#55595b",
+          "parts": [
+            "tire",
+            "hub",
+            "tread-0",
+            "tread-1",
+            "tread-2",
+            "tread-3",
+            "tread-4",
+            "tread-5"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "sample-canister",
+      "kit": "space-exploration",
+      "title": "Regolith sample canister",
+      "description": "Sealed cylindrical sample canister with lid band, side grip and a flat foot ring. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/sample-canister.kcad.ts",
+      "sourceSha256": "308400388f3a8b26fa51cfc7cc398afc9bdcfba42707de5c97f96cea0e34e272",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b39b70",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.39,
+          0.495,
+          0.4175
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b39b70",
+          "parts": [
+            "body",
+            "lid",
+            "rim",
+            "handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "sample-cassette",
+      "kit": "space-exploration",
+      "title": "Sample cassette carrier",
+      "description": "Stackable sample cassette with four open cell blocks and a raised handle ridge. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/sample-cassette.kcad.ts",
+      "sourceSha256": "d41301002db54c42c3a8cde77646ccc1b6f9798a7c83552d50346d55e6feb1cb",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9b9078",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.74,
+          0.19,
+          0.52
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9b9078",
+          "parts": [
+            "base",
+            "cell-0",
+            "cell-1",
+            "cell-2",
+            "cell-3",
+            "handle",
+            "end-left",
+            "end-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "sample-drill-head",
+      "kit": "space-exploration",
+      "title": "Rock sample drill head",
+      "description": "Compact drill head with a stepped barrel, mounting collar and rectangular drive block. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/sample-drill-head.kcad.ts",
+      "sourceSha256": "50911230c08ed8bf73106b086bf960593cc8fab716effc2668fca684ca978bd4",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#777e7a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.43,
+          0.81,
+          0.425
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#777e7a",
+          "parts": [
+            "barrel",
+            "collar",
+            "bit",
+            "drive",
+            "mount"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "sample-trailer-cart",
+      "kit": "space-exploration",
+      "title": "Sample trailer cart",
+      "description": "Low two-wheel sample trailer with cargo bed, drawbar and raised side rails. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/sample-trailer-cart.kcad.ts",
+      "sourceSha256": "3990aac20f386f65d5091aff0d1b6bfa9d5ae19044d9221b0dabda1da55b21a2",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8d8064",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 172,
+        "sizeM": [
+          1.2,
+          0.37,
+          1.14
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8d8064",
+          "parts": [
+            "bed",
+            "rail-0",
+            "rail-1",
+            "rail-2",
+            "rail-3",
+            "rail-4",
+            "drawbar",
+            "wheel--390",
+            "wheel-390"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "satellite-bus",
+      "kit": "space-exploration",
+      "title": "Satellite bus",
+      "description": "Rectangular satellite bus with corner rails, top sensor block and two side panel mounts. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/satellite-bus.kcad.ts",
+      "sourceSha256": "95144685ca145430f8a42eeff8f02a43eb94f196f694dca2e372c30942ef7d48",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#aaa99c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          1.04,
+          0.66,
+          0.6
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#aaa99c",
+          "parts": [
+            "bus",
+            "top-sensor",
+            "corner--320--270",
+            "corner--320-270",
+            "corner-320--270",
+            "corner-320-270",
+            "panel-mount-left",
+            "panel-mount-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "satellite-solar-wing",
+      "kit": "space-exploration",
+      "title": "Satellite solar wing",
+      "description": "Deployable satellite panel wing with a central spine and three framed panel sections. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/satellite-solar-wing.kcad.ts",
+      "sourceSha256": "e3b2c9f82b9437d7f723387b643fc62ee3ad552c23978952cdd52068950a7336",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#46556a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.65,
+          0.093,
+          1.289
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#46556a",
+          "parts": [
+            "spine",
+            "panel-0",
+            "panel-1",
+            "panel-2",
+            "crossbar-0",
+            "crossbar-1",
+            "crossbar-2",
+            "crossbar-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "science-instrument-tripod",
+      "kit": "space-exploration",
+      "title": "Science instrument tripod",
+      "description": "Field instrument tripod with a short mast, mounting head and three splayed legs. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/science-instrument-tripod.kcad.ts",
+      "sourceSha256": "879789f3aff034be16e7f2905a6d50f28ebc707d89db7604236966ca8182a20a",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#85887f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          0.3,
+          0.75,
+          0.3
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#85887f",
+          "parts": [
+            "mast",
+            "head",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "mount"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "science-worktable",
+      "kit": "space-exploration",
+      "title": "Field science worktable",
+      "description": "Compact science worktable with a broad deck, four legs, lower shelf and instrument rail. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/science-worktable.kcad.ts",
+      "sourceSha256": "0922d64895458c96f471644f0b3f1331e1c9b5e04dc38f48539cc34aefb99104",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#817663",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          1.1,
+          0.96,
+          0.7
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#817663",
+          "parts": [
+            "top",
+            "shelf",
+            "leg--470--270",
+            "leg--470-270",
+            "leg-470--270",
+            "leg-470-270",
+            "rail"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "seismic-sensor",
+      "kit": "space-exploration",
+      "title": "Surface seismic sensor",
+      "description": "Low seismic sensor puck with a raised cover, three feet and cable connector. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/seismic-sensor.kcad.ts",
+      "sourceSha256": "62609d67a7485963865ab54fb36d7f896250139e0986b880ad487459f06e25d1",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7c8178",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 212,
+        "sizeM": [
+          0.34,
+          0.29,
+          0.34
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7c8178",
+          "parts": [
+            "foot",
+            "body",
+            "cap",
+            "foot-0",
+            "foot-1",
+            "foot-2",
+            "port"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "specimen-tray",
+      "kit": "space-exploration",
+      "title": "Geology specimen tray",
+      "description": "Shallow specimen tray divided into six sample cells with reinforced corner blocks. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/specimen-tray.kcad.ts",
+      "sourceSha256": "9f40bc421db404231d6f620e65eece80b352131291d846249e265031059fad18",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#aa9d7d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          0.78,
+          0.18,
+          0.52
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#aa9d7d",
+          "parts": [
+            "base",
+            "divider-x-0",
+            "divider-x-1",
+            "divider-x-2",
+            "divider-y-a",
+            "divider-y-b",
+            "corner-0",
+            "corner-1",
+            "corner-2",
+            "corner-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "spectrometer-case",
+      "kit": "space-exploration",
+      "title": "Field spectrometer case",
+      "description": "Rugged instrument case with lid seam, carry handle and two front latches. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/spectrometer-case.kcad.ts",
+      "sourceSha256": "c2bbab74070dc9c70549ddfbd46c1a04c35418cfc6b4bbda2ccbf0719dcefe61",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#68746e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.76,
+          0.46,
+          0.55
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#68746e",
+          "parts": [
+            "case",
+            "lid",
+            "handle",
+            "latch--210",
+            "latch-210",
+            "foot"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "surface-antenna-mast",
+      "kit": "space-exploration",
+      "title": "Surface antenna mast",
+      "description": "Short surface mast with tripod feet, a crossbar and two small vertical aerials. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/surface-antenna-mast.kcad.ts",
+      "sourceSha256": "671c27c6e6d1d4df4eeb9efc36f8b4214f729838f04a2fbb58b6ab9ea3a1fe17",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#747c7b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          0.65,
+          1.505,
+          0.355
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#747c7b",
+          "parts": [
+            "mast",
+            "crossbar",
+            "aerial-0",
+            "aerial-1",
+            "foot-0",
+            "foot-1",
+            "foot-2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "surface-battery-bank",
+      "kit": "space-exploration",
+      "title": "Surface battery bank",
+      "description": "Four-cell battery bank on a skid frame with vent caps and lifting rails. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/surface-battery-bank.kcad.ts",
+      "sourceSha256": "39f29f9d4f43572455e95f9770ba965bfec913bf3777ed5f791c3d4a46bb3e28",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#777c76",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 248,
+        "sizeM": [
+          1.08,
+          0.671,
+          0.54
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#777c76",
+          "parts": [
+            "skid-left",
+            "skid-right",
+            "cell-0",
+            "cell-1",
+            "cell-2",
+            "cell-3",
+            "cap-0",
+            "cap-1",
+            "cap-2",
+            "cap-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "surface-cable-bridge",
+      "kit": "space-exploration",
+      "title": "Surface cable bridge",
+      "description": "Low protective cable bridge with paired ramps, central cover and side guard lips. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/surface-cable-bridge.kcad.ts",
+      "sourceSha256": "19ea7e80d29befa570e33efe8291db54a3e8b219d9f25cb0be2b2c050fb45095",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#817d6e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          1.34,
+          0.185,
+          0.46
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#817d6e",
+          "parts": [
+            "cover",
+            "ramp-left",
+            "ramp-right",
+            "lip-left",
+            "lip-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "surface-sensor-post",
+      "kit": "space-exploration",
+      "title": "Surface sensor post",
+      "description": "Short instrument post with twin sensor boxes, a crossbar and three support feet. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/surface-sensor-post.kcad.ts",
+      "sourceSha256": "b9633a40a7ac1e07983509593ce28f9ce93319b9075aaf01fc225e5d4cf7ddca",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7b8079",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 116,
+        "sizeM": [
+          0.5,
+          1,
+          0.275
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7b8079",
+          "parts": [
+            "mast",
+            "sensor-a",
+            "sensor-b",
+            "crossbar",
+            "foot-0",
+            "foot-1",
+            "foot-2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "surface-storage-shed",
+      "kit": "space-exploration",
+      "title": "Surface storage shed",
+      "description": "Boxy field storage module with double doors, roof lip and raised corner feet. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/surface-storage-shed.kcad.ts",
+      "sourceSha256": "8f182c53b16e326aa51281d79e5a4b338d6100f83e851888f3f021763315898e",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8b8174",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          1.3,
+          1.68,
+          1
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8b8174",
+          "parts": [
+            "body",
+            "roof",
+            "door-left",
+            "door-right",
+            "foot--500--350",
+            "foot--500-350",
+            "foot-500--350",
+            "foot-500-350"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "surface-utility-cart",
+      "kit": "space-exploration",
+      "title": "Surface utility cart",
+      "description": "Small utility cart with a flat deck, raised push handle and four low polygon wheels. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/surface-utility-cart.kcad.ts",
+      "sourceSha256": "46e5aa683b6a51d416fb520e423db26213fcefd88e66fbd8dc36987709461113",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#89806b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 224,
+        "sizeM": [
+          0.9,
+          1.05,
+          0.85
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#89806b",
+          "parts": [
+            "deck",
+            "handle",
+            "handle-post--330",
+            "handle-post-330",
+            "wheel--330--330",
+            "wheel--330-330",
+            "wheel-330--330",
+            "wheel-330-330"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "survey-flag",
+      "kit": "space-exploration",
+      "title": "Survey flag marker",
+      "description": "Survey marker pole with a triangular flag panel, pointed cap and round base plate. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/survey-flag.kcad.ts",
+      "sourceSha256": "13f9183d35919852519b5850fe47cbdc1ed7eada2e66a6bde496f16fd8eb9558",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d1b648",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.3,
+          1.13,
+          0.21
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d1b648",
+          "parts": [
+            "base",
+            "pole",
+            "flag",
+            "cap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "tracking-antenna-dish",
+      "kit": "space-exploration",
+      "title": "Tracking antenna dish",
+      "description": "Small tracking dish with a pedestal, offset feed arm and rotating-looking azimuth plate. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/tracking-antenna-dish.kcad.ts",
+      "sourceSha256": "de669cba4ae1a3549b3965c5aac7ace45e07d96c5a3767880ce52efee7e80415",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b4b8b3",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 232,
+        "sizeM": [
+          0.52,
+          0.705,
+          0.66
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b4b8b3",
+          "parts": [
+            "base",
+            "pedestal",
+            "turntable",
+            "dish",
+            "arm",
+            "feed"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "transport-sled",
+      "kit": "space-exploration",
+      "title": "Surface cargo sled",
+      "description": "Low cargo sled with twin runners, cross braces and a raised tow loop. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "space",
+        "exploration",
+        "lunar",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "space",
+        "science",
+        "exploration",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/space-exploration/transport-sled.kcad.ts",
+      "sourceSha256": "2ef90b46650bf8f15a1beefba709703a6eddb14fba6b984832ecead4f05b0acf",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8b7a5e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          1.25,
+          0.165,
+          0.998
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8b7a5e",
+          "parts": [
+            "runner-left",
+            "runner-right",
+            "cross-0",
+            "cross-1",
+            "cross-2",
+            "cross-3",
+            "deck",
+            "tow-loop"
           ],
           "param": "color"
         }
