@@ -1510,6 +1510,63 @@
       ]
     },
     {
+      "id": "water-treatment",
+      "title": "Water treatment",
+      "description": "Original low-poly water-treatment and wastewater plant props for intake, filtration, disinfection, pumping, monitoring, and solids handling.",
+      "assets": [
+        "activated-carbon-filter-vessel",
+        "aeration-basin",
+        "aeration-header-bridge",
+        "air-release-valve-assembly",
+        "backwash-pump-skid",
+        "bar-screen-channel",
+        "belt-filter-press",
+        "check-valve-assembly",
+        "chemical-storage-tank",
+        "chlorine-dosing-skid",
+        "chlorine-residual-analyzer",
+        "circular-clarifier",
+        "coagulant-mixing-tank",
+        "coarse-screen-panel",
+        "dewatering-screw-conveyor",
+        "dual-pump-manifold-skid",
+        "effluent-weir-channel",
+        "electromagnetic-flow-meter",
+        "equalization-basin",
+        "ferric-dosing-tank",
+        "fine-bubble-diffuser-grid",
+        "flocculation-tank",
+        "flow-meter-spool",
+        "grit-classifier",
+        "grit-removal-chamber",
+        "high-lift-pump-skid",
+        "horizontal-split-case-pump",
+        "intake-gate-hoist",
+        "knife-gate-valve-assembly",
+        "lamella-clarifier",
+        "lime-slurry-tank",
+        "membrane-filtration-rack",
+        "pressure-reducing-valve-assembly",
+        "pressure-sand-filter-vessel",
+        "pressure-transmitter-stand",
+        "process-pipe-rack",
+        "pump-station-control-panel",
+        "rapid-sand-filter",
+        "raw-water-intake-cage",
+        "reverse-osmosis-skid",
+        "sample-tap-station",
+        "sludge-thickener-tank",
+        "sodium-hypochlorite-cabinet",
+        "static-mixer-spool",
+        "submersible-lift-station-pump",
+        "surface-aerator",
+        "turbidity-analyzer-panel",
+        "uv-disinfection-channel",
+        "vertical-turbine-pump",
+        "water-filter-cartridge-housing"
+      ]
+    },
+    {
       "id": "wind-energy",
       "title": "Wind energy",
       "description": "Original low-poly wind-farm turbines, site components and service props with editable scale and color controls.",
@@ -130221,6 +130278,3534 @@
             "grip"
           ],
           "param": "grip"
+        }
+      ]
+    },
+    {
+      "id": "activated-carbon-filter-vessel",
+      "kit": "water-treatment",
+      "title": "Activated carbon filter vessel",
+      "description": "Tall carbon filter vessel with top hatch, lower skirt, side ports and three support legs. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/activated-carbon-filter-vessel.kcad.ts",
+      "sourceSha256": "4bf0a3750c645ba068bb942cc80a693395dfef0fb38660d5423ef78e140e0915",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5f7071",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 300,
+        "sizeM": [
+          0.56,
+          1.245,
+          0.672
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5f7071",
+          "parts": [
+            "vessel",
+            "top-dome",
+            "bottom-dome",
+            "hatch",
+            "port-upper",
+            "port-lower",
+            "leg--170",
+            "leg-0",
+            "leg-170"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "aeration-basin",
+      "kit": "water-treatment",
+      "title": "Aeration basin",
+      "description": "Rectangular aeration basin with divider wall, two pipe headers and service walkway. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/aeration-basin.kcad.ts",
+      "sourceSha256": "7e212d14693b53170b0768119d9cfea2a9d88e397167058d58bf2adeb7b00f26",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#72817b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 148,
+        "sizeM": [
+          1.5,
+          1.2,
+          0.955
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#72817b",
+          "parts": [
+            "basin-floor",
+            "wall-front",
+            "wall-back",
+            "divider",
+            "walkway",
+            "header-left",
+            "header-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "aeration-header-bridge",
+      "kit": "water-treatment",
+      "title": "Aeration header bridge",
+      "description": "Raised process-air bridge with twin pipe rails, cross supports and access steps. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/aeration-header-bridge.kcad.ts",
+      "sourceSha256": "c1cf7ec690854e1061bd92f2b272a3c8b8d5458842e7ad3ff3e3cb30500105d0",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#606d6c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 184,
+        "sizeM": [
+          1.245,
+          0.505,
+          0.275
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#606d6c",
+          "parts": [
+            "walkway",
+            "post--470",
+            "post-470",
+            "rail-front",
+            "rail-back",
+            "header-a",
+            "header-b",
+            "step-0",
+            "step-1",
+            "step-2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "air-release-valve-assembly",
+      "kit": "water-treatment",
+      "title": "Air release valve assembly",
+      "description": "Small vertical air-release valve with base flange, canister, bonnet and side vent port. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/air-release-valve-assembly.kcad.ts",
+      "sourceSha256": "4216ceae12889683871b3af4fe23068dd55a1674f37574554cf620d12c127ae0",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#777d72",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 232,
+        "sizeM": [
+          0.32,
+          0.413,
+          0.325
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#777d72",
+          "parts": [
+            "flange",
+            "body",
+            "bonnet",
+            "vent",
+            "cap",
+            "tag"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "backwash-pump-skid",
+      "kit": "water-treatment",
+      "title": "Filter backwash pump skid",
+      "description": "Twin backwash pump set on a shared base with suction headers and motor blocks. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/backwash-pump-skid.kcad.ts",
+      "sourceSha256": "1b5ed9118ea9ced2a7ea679995f2669b9529cbcd899938a77897ad934569526f",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#697773",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          1.25,
+          1.105,
+          0.56
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#697773",
+          "parts": [
+            "base",
+            "pump-a",
+            "pump-b",
+            "motor-a",
+            "motor-b",
+            "suction-header",
+            "discharge-header",
+            "foot--420",
+            "foot-420"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "bar-screen-channel",
+      "kit": "water-treatment",
+      "title": "Bar screen channel",
+      "description": "Open intake channel with two retaining walls, screen bars and a raised debris rack. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/bar-screen-channel.kcad.ts",
+      "sourceSha256": "c7a38b8e4407ec48759d352d0e8c3c63d06ccdc8e0c4bddab1e8de627c53ca75",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#687a7a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          1.2,
+          0.44,
+          0.9
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#687a7a",
+          "parts": [
+            "channel-base",
+            "wall-left",
+            "wall-right",
+            "screen-bar-0",
+            "screen-bar-1",
+            "screen-bar-2",
+            "screen-bar-3",
+            "screen-bar-4",
+            "screen-bar-5",
+            "screen-bar-6",
+            "top-crossbar"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "belt-filter-press",
+      "kit": "water-treatment",
+      "title": "Belt filter press",
+      "description": "Compact belt press with paired roller banks, side frame plates and collection pan. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/belt-filter-press.kcad.ts",
+      "sourceSha256": "c05a2b8c56b7d3b9e239b4578640004e42b78c752b75ea0715bc550b09567ede",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#626d68",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          1.1,
+          0.845,
+          0.56
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#626d68",
+          "parts": [
+            "base",
+            "roller-0",
+            "roller-1",
+            "roller-2",
+            "roller-3",
+            "frame-left",
+            "frame-right",
+            "collection-pan",
+            "upper-beam"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "check-valve-assembly",
+      "kit": "water-treatment",
+      "title": "Check valve assembly",
+      "description": "Compact check valve body with hinged cover, raised inspection bonnet and flange ends. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/check-valve-assembly.kcad.ts",
+      "sourceSha256": "0fed90b640620f56a4af70291cb0bee61bd0680edf3bd9a3dbd091cd7d8b42c7",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#717970",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 200,
+        "sizeM": [
+          0.36,
+          0.415,
+          0.36
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#717970",
+          "parts": [
+            "body",
+            "flange-left",
+            "flange-right",
+            "cover",
+            "hinge",
+            "inspection-bolt"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "chemical-storage-tank",
+      "kit": "water-treatment",
+      "title": "Chemical storage tank",
+      "description": "Vertical chemical storage tank with conical-look top, access hatch and containment curb. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/chemical-storage-tank.kcad.ts",
+      "sourceSha256": "de58140887e978db9ed64b54ce235f575c9fad4e1b8243e1aa4236f702dddb35",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7b8876",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 200,
+        "sizeM": [
+          0.78,
+          1.075,
+          0.78
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7b8876",
+          "parts": [
+            "containment",
+            "tank",
+            "roof",
+            "hatch",
+            "level-strip",
+            "drain"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "chlorine-dosing-skid",
+      "kit": "water-treatment",
+      "title": "Chlorine dosing skid",
+      "description": "Chemical dosing skid with metering pump, small day tank, tube rack and spill tray. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/chlorine-dosing-skid.kcad.ts",
+      "sourceSha256": "3167c8a21115ffc012860f5e613b7b73cb184a0ec22d392d9e9f10900e5b9f08",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a19b7d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 140,
+        "sizeM": [
+          0.88,
+          0.51,
+          0.52
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a19b7d",
+          "parts": [
+            "tray",
+            "day-tank",
+            "pump",
+            "control",
+            "tube-0",
+            "tube-1",
+            "tube-2",
+            "tube-3",
+            "top-rail"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "chlorine-residual-analyzer",
+      "kit": "water-treatment",
+      "title": "Residual chlorine analyzer",
+      "description": "Instrument stand with analyzer head, sample cabinet, status panel and inlet tubing. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/chlorine-residual-analyzer.kcad.ts",
+      "sourceSha256": "a3f3da047bba0a3d1c18de1dda4efa22a35cfa02e3ee5e652dfc34c19e66a58a",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d1d1c6",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          0.5,
+          0.875,
+          0.36
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d1d1c6",
+          "parts": [
+            "base",
+            "cabinet",
+            "head",
+            "display",
+            "sample-line",
+            "support-post"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "circular-clarifier",
+      "kit": "water-treatment",
+      "title": "Circular clarifier tank",
+      "description": "Circular clarifier with wide rim, central feed well, bridge beam and scraper drive housing. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/circular-clarifier.kcad.ts",
+      "sourceSha256": "22cd04bbbf08ca932a28f2d37291c23637b9e4257913e129b40bed87aa7f1e0a",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73807d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          1.12,
+          0.69,
+          1.12
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73807d",
+          "parts": [
+            "tank",
+            "rim",
+            "feed-well",
+            "bridge",
+            "drive",
+            "walkway"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "coagulant-mixing-tank",
+      "kit": "water-treatment",
+      "title": "Coagulant mixing tank",
+      "description": "Cylindrical mixing tank with a compact gearbox, crossbar and twin impeller blades. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/coagulant-mixing-tank.kcad.ts",
+      "sourceSha256": "1d69d0e56ac52c5c90a2c36aa1bb6b4dcd18ec153b898b652020e634969c6219",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7d8278",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 212,
+        "sizeM": [
+          0.71,
+          1.26,
+          0.749
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7d8278",
+          "parts": [
+            "tank",
+            "rim",
+            "shaft",
+            "gearbox",
+            "impeller-left",
+            "impeller-right",
+            "inlet"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "coarse-screen-panel",
+      "kit": "water-treatment",
+      "title": "Coarse intake screen panel",
+      "description": "Removable screen panel in a reinforced frame with evenly spaced vertical bars. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/coarse-screen-panel.kcad.ts",
+      "sourceSha256": "37b194f5ea5c7d8cc6e6737f8fe6c7750b76fdd9751632163e11bd1d0af2f452",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#626e70",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.93,
+          0.865,
+          0.119
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#626e70",
+          "parts": [
+            "frame-left",
+            "frame-right",
+            "frame-top",
+            "frame-bottom",
+            "bar-0",
+            "bar-1",
+            "bar-2",
+            "bar-3",
+            "bar-4",
+            "bar-5",
+            "bar-6",
+            "grip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "dewatering-screw-conveyor",
+      "kit": "water-treatment",
+      "title": "Sludge dewatering screw conveyor",
+      "description": "Inclined-look screw conveyor tube with feed hopper, discharge chute and support legs. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/dewatering-screw-conveyor.kcad.ts",
+      "sourceSha256": "d504888f6ccfadf26b10fc96a696270644ac529391b8ee033aee3174432d5d34",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#636e68",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          1.035,
+          0.735,
+          0.43
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#636e68",
+          "parts": [
+            "base",
+            "trough",
+            "hopper",
+            "discharge",
+            "drive",
+            "leg--250",
+            "leg-260",
+            "guard"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "dual-pump-manifold-skid",
+      "kit": "water-treatment",
+      "title": "Dual pump manifold skid",
+      "description": "Two pump bodies joined by a common suction header, discharge header and service frame. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/dual-pump-manifold-skid.kcad.ts",
+      "sourceSha256": "74b4b7c12f1d28892b321c38033664eefa6501f77d38efbf8f53edbd214e031c",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#687773",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 248,
+        "sizeM": [
+          1.2,
+          1.035,
+          0.64
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#687773",
+          "parts": [
+            "base",
+            "pump-0",
+            "pump-1",
+            "suction-header",
+            "discharge-header",
+            "branch-0",
+            "branch-1",
+            "frame-post--500",
+            "frame-post-500",
+            "top-frame"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "effluent-weir-channel",
+      "kit": "water-treatment",
+      "title": "Effluent weir channel",
+      "description": "Open effluent channel with end walls, notched weir plate and side collection trough. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/effluent-weir-channel.kcad.ts",
+      "sourceSha256": "53b4c1819bd3c323231200d3a917150e68b9f21e59318ff45f14f7a207bc0dff",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#637b77",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          1.2,
+          0.41,
+          0.76
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#637b77",
+          "parts": [
+            "floor",
+            "wall-front",
+            "wall-back",
+            "weir-plate",
+            "notch-0",
+            "notch-1",
+            "notch-2",
+            "notch-3",
+            "notch-4",
+            "notch-5",
+            "notch-6",
+            "notch-7",
+            "notch-8",
+            "collection-trough"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "electromagnetic-flow-meter",
+      "kit": "water-treatment",
+      "title": "Electromagnetic flow meter",
+      "description": "Inline flow meter with a short pipe body, twin flanges and compact electronics head. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/electromagnetic-flow-meter.kcad.ts",
+      "sourceSha256": "e730380230d9c3dc95f7d67c3d10e7a018b32016a94bd4894f08f6620126584a",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6e7772",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.37,
+          0.89,
+          0.37
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6e7772",
+          "parts": [
+            "body",
+            "flange-low",
+            "flange-high",
+            "electronics-head",
+            "display"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "equalization-basin",
+      "kit": "water-treatment",
+      "title": "Equalization basin",
+      "description": "Low open equalization basin with thick perimeter walls and a central mixer column. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/equalization-basin.kcad.ts",
+      "sourceSha256": "d7ef9ce0cffd3365fcd0da81a84c4011c8fc902e2074f8c01cd88805bedd5ab6",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#667a78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 160,
+        "sizeM": [
+          1.4,
+          0.55,
+          1.1
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#667a78",
+          "parts": [
+            "floor",
+            "wall-front",
+            "wall-back",
+            "wall-left",
+            "wall-right",
+            "mixer-pedestal",
+            "mixer-arm",
+            "mixer-hub"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ferric-dosing-tank",
+      "kit": "water-treatment",
+      "title": "Ferric coagulant day tank",
+      "description": "Small chemical day tank with bund base, level column, vent and dosing outlet. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/ferric-dosing-tank.kcad.ts",
+      "sourceSha256": "0b6321ee73805d4f8a24af6d1b84f3014dea1d2010e49dff08b96378c3958a69",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8a765f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 200,
+        "sizeM": [
+          0.65,
+          0.845,
+          0.52
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8a765f",
+          "parts": [
+            "bund",
+            "tank",
+            "lid",
+            "vent",
+            "level-column",
+            "outlet"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "fine-bubble-diffuser-grid",
+      "kit": "water-treatment",
+      "title": "Fine bubble diffuser grid",
+      "description": "Rectangular diffuser grid with parallel air laterals, end headers and short support feet. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/fine-bubble-diffuser-grid.kcad.ts",
+      "sourceSha256": "bcd6aad0739d995862a4474ad601a0d4c1318fe4c15d3558876c34089f3c5654",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#737d78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 452,
+        "sizeM": [
+          0.94,
+          0.12,
+          0.82
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#737d78",
+          "parts": [
+            "header-left",
+            "header-right",
+            "lateral-0",
+            "lateral-1",
+            "lateral-2",
+            "lateral-3",
+            "lateral-4",
+            "lateral-5",
+            "lateral-6",
+            "lateral-7",
+            "diffuser-0",
+            "diffuser-1",
+            "diffuser-2",
+            "diffuser-3",
+            "diffuser-4",
+            "diffuser-5",
+            "diffuser-6",
+            "foot--360",
+            "foot-360"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "flocculation-tank",
+      "kit": "water-treatment",
+      "title": "Flocculation tank",
+      "description": "Open flocculation tank with raised rim, central mixer shaft and three paddle arms. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/flocculation-tank.kcad.ts",
+      "sourceSha256": "ad27343cea5490f537b2f7a7a55727fd544bf825823bd30a188a365cec987aa1",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6f817a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          0.98,
+          1.09,
+          0.98
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6f817a",
+          "parts": [
+            "tank",
+            "rim",
+            "shaft",
+            "mixer-arm-a",
+            "mixer-arm-b",
+            "paddle-a",
+            "paddle-b",
+            "motor"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "flow-meter-spool",
+      "kit": "water-treatment",
+      "title": "Flow meter spool piece",
+      "description": "Straight metering spool with flange rings and a raised sensor boss. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/flow-meter-spool.kcad.ts",
+      "sourceSha256": "d55e53127b01157554dfad9eab3915aa916886257ab9465c972fcda7b35e3bb7",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#687370",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 188,
+        "sizeM": [
+          0.34,
+          0.78,
+          0.34
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#687370",
+          "parts": [
+            "spool",
+            "flange-low",
+            "flange-high",
+            "sensor-boss",
+            "transmitter"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "grit-classifier",
+      "kit": "water-treatment",
+      "title": "Grit classifier unit",
+      "description": "Compact grit classifier with sloped trough, feed hopper, discharge chute and support legs. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/grit-classifier.kcad.ts",
+      "sourceSha256": "f99b9413e5d94a2fa09e8524b0807680f2dbf33211f52984a5d5f88063ad2d9e",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#777b75",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          0.95,
+          0.67,
+          0.36
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#777b75",
+          "parts": [
+            "trough",
+            "feed-hopper",
+            "discharge",
+            "leg--330",
+            "leg-330",
+            "drive"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "grit-removal-chamber",
+      "kit": "water-treatment",
+      "title": "Grit removal chamber",
+      "description": "Rectangular grit chamber with sloped-look hopper base, inlet lip and extraction pipe stand. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/grit-removal-chamber.kcad.ts",
+      "sourceSha256": "1fc732c5c2ab51ae7a1f075266aee9e1d09701ccebd4d00661c93706ff06624a",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#737a78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 116,
+        "sizeM": [
+          1.04,
+          0.42,
+          0.76
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#737a78",
+          "parts": [
+            "basin-floor",
+            "wall-left",
+            "wall-right",
+            "end-wall",
+            "hopper",
+            "draw-off",
+            "inlet-lip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "high-lift-pump-skid",
+      "kit": "water-treatment",
+      "title": "High lift pump skid",
+      "description": "Large pump skid with motor housing, volute body, discharge elbow and a broad foundation rail. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/high-lift-pump-skid.kcad.ts",
+      "sourceSha256": "5d97e5e31fd75dd3af8df6c867eed0d372e4d07bfd13257a8283b6fa62040781",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#64716e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          1.17,
+          0.665,
+          0.7
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#64716e",
+          "parts": [
+            "base",
+            "motor",
+            "motor-cap",
+            "pump-body",
+            "discharge",
+            "suction",
+            "coupling-guard"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "horizontal-split-case-pump",
+      "kit": "water-treatment",
+      "title": "Horizontal split case pump",
+      "description": "Horizontal pump casing with paired suction-discharge ports, base rails and motor coupling. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/horizontal-split-case-pump.kcad.ts",
+      "sourceSha256": "238548fbe40113f450450dd90cf00cb983adfe104ad0054924954ad362b14b04",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#65706d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          1.05,
+          0.395,
+          0.61
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#65706d",
+          "parts": [
+            "base",
+            "pump-case",
+            "suction",
+            "discharge",
+            "motor",
+            "coupling",
+            "foot--380",
+            "foot-120",
+            "foot-390"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "intake-gate-hoist",
+      "kit": "water-treatment",
+      "title": "Intake gate hoist frame",
+      "description": "Compact lifting frame with paired uprights, crossbeam, drum and hanging gate chain. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/intake-gate-hoist.kcad.ts",
+      "sourceSha256": "af7f8817c7a4f2663852b43b9856c6c13d1fdca1acbbe3b354d115cf62d89d3e",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#555f60",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          1.01,
+          0.99,
+          0.42
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#555f60",
+          "parts": [
+            "base-left",
+            "base-right",
+            "upright-left",
+            "upright-right",
+            "beam",
+            "drum",
+            "chain",
+            "gate-plate"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "knife-gate-valve-assembly",
+      "kit": "water-treatment",
+      "title": "Knife gate valve assembly",
+      "description": "Process valve with square gate body, rising stem, handwheel and paired pipe flanges. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/knife-gate-valve-assembly.kcad.ts",
+      "sourceSha256": "f0cbd7ebd6fd2d43a1cc27590b13674fe2938213ae00935fe77d2f3eddf417c3",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6d7772",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 212,
+        "sizeM": [
+          0.38,
+          0.685,
+          0.64
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6d7772",
+          "parts": [
+            "gate-body",
+            "pipe-left",
+            "pipe-right",
+            "bonnet",
+            "stem",
+            "handwheel",
+            "mount-foot"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "lamella-clarifier",
+      "kit": "water-treatment",
+      "title": "Lamella plate clarifier",
+      "description": "Rectangular clarifier frame with a sloped-look plate pack, inlet compartment and collection trough. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/lamella-clarifier.kcad.ts",
+      "sourceSha256": "dda4a4f22feaf48f93bb578285d1ce75bfa0e85b656194b34bcbb9a38a1aaa3b",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#65736f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          1.1,
+          0.5,
+          0.72
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#65736f",
+          "parts": [
+            "tank-floor",
+            "wall-left",
+            "wall-right",
+            "plate-pack",
+            "plate-0",
+            "plate-1",
+            "plate-2",
+            "plate-3",
+            "plate-4",
+            "plate-5",
+            "inlet-box",
+            "launder"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "lime-slurry-tank",
+      "kit": "water-treatment",
+      "title": "Lime slurry mix tank",
+      "description": "Open mix tank with top rim, agitator motor, central shaft and two mixing paddles. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/lime-slurry-tank.kcad.ts",
+      "sourceSha256": "e53b3e49c1718f0ae5e1460a01541fdf14e0a9dab9a5de18c15ec14025fd89aa",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#888478",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          0.66,
+          1.135,
+          0.685
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#888478",
+          "parts": [
+            "tank",
+            "rim",
+            "shaft",
+            "motor",
+            "paddle-a",
+            "paddle-b",
+            "outlet"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "membrane-filtration-rack",
+      "kit": "water-treatment",
+      "title": "Membrane filtration rack",
+      "description": "Skid-mounted membrane rack with four horizontal pressure tubes and end manifold rails. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/membrane-filtration-rack.kcad.ts",
+      "sourceSha256": "9961d5e36c07c6d6f359b78036273084773bcbc4c83c2a3bf694399a7f57afb6",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6c7975",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 248,
+        "sizeM": [
+          1.03,
+          0.715,
+          0.75
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6c7975",
+          "parts": [
+            "base-left",
+            "base-right",
+            "membrane-0",
+            "membrane-1",
+            "membrane-2",
+            "membrane-3",
+            "manifold-left",
+            "manifold-right",
+            "post--430",
+            "post-430"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "pressure-reducing-valve-assembly",
+      "kit": "water-treatment",
+      "title": "Pressure reducing valve assembly",
+      "description": "Valve body with wide flanges, bonnet, actuator column and manual handwheel. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/pressure-reducing-valve-assembly.kcad.ts",
+      "sourceSha256": "af738d0cc648ad92cb8b082516a747e106f28cfcd14428858dbd7216d78138f8",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73796f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 276,
+        "sizeM": [
+          0.38,
+          0.735,
+          0.38
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73796f",
+          "parts": [
+            "body",
+            "flange-left",
+            "flange-right",
+            "bonnet",
+            "actuator",
+            "stem",
+            "handwheel"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "pressure-sand-filter-vessel",
+      "kit": "water-treatment",
+      "title": "Pressure sand filter vessel",
+      "description": "Vertical pressure vessel with domed-look end caps, inspection manway and side pipe nozzles. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/pressure-sand-filter-vessel.kcad.ts",
+      "sourceSha256": "9ccabaaf8e513c286ab50f79ae4c69d6d632d3d046fa1babf43904cef5d4c07f",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6d7975",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 256,
+        "sizeM": [
+          0.62,
+          1.1,
+          0.92
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6d7975",
+          "parts": [
+            "shell",
+            "top-head",
+            "bottom-head",
+            "manway",
+            "inlet",
+            "outlet",
+            "foot--190",
+            "foot-190"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "pressure-transmitter-stand",
+      "kit": "water-treatment",
+      "title": "Pressure transmitter stand",
+      "description": "Instrument stand with pressure manifold, paired transmitter blocks and a protective top rail. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/pressure-transmitter-stand.kcad.ts",
+      "sourceSha256": "e5845006f6e4bf6dea45a77aed07d5e98dc99eded090cf9117e743db1e24d3be",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#727a74",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          0.43,
+          0.715,
+          0.34
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#727a74",
+          "parts": [
+            "base",
+            "post",
+            "crossbar",
+            "manifold",
+            "transmitter-0",
+            "transmitter-1",
+            "tap-0",
+            "tap-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "process-pipe-rack",
+      "kit": "water-treatment",
+      "title": "Treatment process pipe rack",
+      "description": "Low pipe rack with four parallel process lines, portal supports and end cross braces. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/process-pipe-rack.kcad.ts",
+      "sourceSha256": "b2b367c364c018e4c405b2f038651c5c7b355192aeeb27b1407ac5bf9c26055e",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#616c69",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          1.115,
+          1.515,
+          0.668
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#616c69",
+          "parts": [
+            "pipe-0",
+            "pipe-1",
+            "pipe-2",
+            "pipe-3",
+            "portal-leg--520",
+            "portal-leg-520",
+            "portal-top-a",
+            "portal-top-b",
+            "cross-brace"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "pump-station-control-panel",
+      "kit": "water-treatment",
+      "title": "Pump station control panel",
+      "description": "Floor-mounted pump control panel with rain hood, paired access doors and status lamps. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/pump-station-control-panel.kcad.ts",
+      "sourceSha256": "af99f5e2541afb1c8c7f0ef0bd721ed197099aeecf15aaa6d5e56a5b486c12df",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#737c76",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          0.62,
+          1.375,
+          0.417
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#737c76",
+          "parts": [
+            "plinth",
+            "body",
+            "hood",
+            "door-left",
+            "door-right",
+            "lamp-0",
+            "lamp-1",
+            "lamp-2",
+            "handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "rapid-sand-filter",
+      "kit": "water-treatment",
+      "title": "Rapid sand filter bed",
+      "description": "Open rectangular rapid filter with raised walls, underdrain header and removable cover beams. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/rapid-sand-filter.kcad.ts",
+      "sourceSha256": "fce739e4d07cac6ca8a416c7267970a502be3bfa9892eab38538739a8ab25694",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#718079",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          1,
+          0.425,
+          0.76
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#718079",
+          "parts": [
+            "bed",
+            "wall-front",
+            "wall-back",
+            "wall-left",
+            "wall-right",
+            "media-layer",
+            "underdrain",
+            "cover-beam"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "raw-water-intake-cage",
+      "kit": "water-treatment",
+      "title": "Raw water intake cage",
+      "description": "Protective intake cage with corner posts, horizontal rails and a perforated-look screen face. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/raw-water-intake-cage.kcad.ts",
+      "sourceSha256": "49782c8f832eb320bff5cf9d3065a51825fb164bbddf52f979674206c39f4f66",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6d7b78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          0.8,
+          0.825,
+          0.7
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6d7b78",
+          "parts": [
+            "base",
+            "post--360--300",
+            "post--360-300",
+            "post-360--300",
+            "post-360-300",
+            "rail-160",
+            "rail-400",
+            "rail-640",
+            "screen-0",
+            "screen-1",
+            "screen-2",
+            "screen-3",
+            "screen-4",
+            "screen-5",
+            "screen-6",
+            "screen-7"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "reverse-osmosis-skid",
+      "kit": "water-treatment",
+      "title": "Reverse osmosis skid",
+      "description": "Compact reverse-osmosis skid with membrane tubes, feed pump block and paired pipe headers. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/reverse-osmosis-skid.kcad.ts",
+      "sourceSha256": "d40cdb9439f171c6f59cf2ec906502fbb5dd2a7f250370a11f728b4b2a3b89c2",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#596d69",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 224,
+        "sizeM": [
+          1.1,
+          0.845,
+          0.675
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#596d69",
+          "parts": [
+            "skid",
+            "pressure-tube-0",
+            "pressure-tube-1",
+            "pressure-tube-2",
+            "header-front",
+            "header-back",
+            "feed-pump",
+            "control-box"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "sample-tap-station",
+      "kit": "water-treatment",
+      "title": "Water sample tap station",
+      "description": "Freestanding sampling point with cabinet, short spout, drip tray and two pipe supports. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/sample-tap-station.kcad.ts",
+      "sourceSha256": "9878bfde803e32abd41ea8c8bc81744dcbaf6f6354a090001d4924f420b4b780",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#83847a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          0.46,
+          0.865,
+          0.49
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#83847a",
+          "parts": [
+            "base",
+            "cabinet",
+            "hood",
+            "spout",
+            "drip-tray",
+            "pipe-left",
+            "pipe-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "sludge-thickener-tank",
+      "kit": "water-treatment",
+      "title": "Sludge thickener tank",
+      "description": "Circular thickener tank with deep skirt, center feed well, bridge beam and scraper arm. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/sludge-thickener-tank.kcad.ts",
+      "sourceSha256": "5c2d54f210ce4c8db4e22a619836779a38e39d06985d61f04d023fe413c9fec4",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6f7770",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 212,
+        "sizeM": [
+          1.07,
+          0.74,
+          1.07
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6f7770",
+          "parts": [
+            "tank",
+            "rim",
+            "feed-well",
+            "bridge",
+            "drive",
+            "scraper-arm",
+            "skirt"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "sodium-hypochlorite-cabinet",
+      "kit": "water-treatment",
+      "title": "Hypochlorite dosing cabinet",
+      "description": "Ventilated chemical cabinet with double doors, low spill tray and pipe stub pair. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/sodium-hypochlorite-cabinet.kcad.ts",
+      "sourceSha256": "ad1cb04c2de241644fd5ab4e572985abfc8a71be2be0ce93824cf3de12efb208",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d5d4c7",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 208,
+        "sizeM": [
+          0.72,
+          1.345,
+          0.542
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d5d4c7",
+          "parts": [
+            "base",
+            "cabinet",
+            "roof",
+            "door-left",
+            "door-right",
+            "vent-0",
+            "vent-1",
+            "vent-2",
+            "vent-3",
+            "vent-4",
+            "pipe-left",
+            "pipe-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "static-mixer-spool",
+      "kit": "water-treatment",
+      "title": "Static mixer pipe spool",
+      "description": "Short process spool with two flanged ends and a protective central mixer housing. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/static-mixer-spool.kcad.ts",
+      "sourceSha256": "e152cc73cfb34fa8a162c4354672e4eec35d5b6d8b0aa4a82218f5f58b6eaa2f",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#727a75",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.32,
+          0.72,
+          0.32
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#727a75",
+          "parts": [
+            "pipe",
+            "flange-low",
+            "flange-high",
+            "mixer-housing",
+            "access-cover"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "submersible-lift-station-pump",
+      "kit": "water-treatment",
+      "title": "Submersible lift station pump",
+      "description": "Vertical submersible pump with lifting handle, motor body, screened intake and cable tail. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/submersible-lift-station-pump.kcad.ts",
+      "sourceSha256": "436053b956a41cc4db2aca56ac83a20a0aebb74ce27073ab8c72c2137aa99e67",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#525f60",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 240,
+        "sizeM": [
+          0.37,
+          0.84,
+          0.37
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#525f60",
+          "parts": [
+            "motor-body",
+            "pump-head",
+            "intake-base",
+            "intake-slot-0",
+            "intake-slot-1",
+            "intake-slot-2",
+            "intake-slot-3",
+            "intake-slot-4",
+            "intake-slot-5",
+            "handle-left",
+            "handle-right",
+            "cable"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "surface-aerator",
+      "kit": "water-treatment",
+      "title": "Surface aerator assembly",
+      "description": "Floating bridge aerator with twin pontoons, motor housing and a low polygon rotor guard. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/surface-aerator.kcad.ts",
+      "sourceSha256": "5576ebbcd5c7d2bf44921df2850e26b29b1912c3535351e564b28916c00f15c0",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#657d7a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 152,
+        "sizeM": [
+          1.12,
+          0.35,
+          0.42
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#657d7a",
+          "parts": [
+            "pontoon-left",
+            "pontoon-right",
+            "bridge",
+            "motor",
+            "shaft",
+            "guard",
+            "guard-post--180--180",
+            "guard-post--180-180",
+            "guard-post-180--180",
+            "guard-post-180-180"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "turbidity-analyzer-panel",
+      "kit": "water-treatment",
+      "title": "Turbidity analyzer panel",
+      "description": "Wall-mount analyzer panel with display hood, sample cell housing and two service ports. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/turbidity-analyzer-panel.kcad.ts",
+      "sourceSha256": "e0786f30ca07bb662f35c0d153b65a6887c1d45801d950c298cae680a83e4bbf",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d2d1c4",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 148,
+        "sizeM": [
+          0.5,
+          1.17,
+          0.253
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d2d1c4",
+          "parts": [
+            "panel",
+            "hood",
+            "display",
+            "sample-cell",
+            "port-left",
+            "port-right",
+            "label-strip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "uv-disinfection-channel",
+      "kit": "water-treatment",
+      "title": "UV disinfection channel",
+      "description": "Covered UV channel with support frame, lamp cassette bars and service bridge. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/uv-disinfection-channel.kcad.ts",
+      "sourceSha256": "dcd84f75a23d01fd2b9cccb4f2e8d29f139bb8d5410b5d30baf626092e0bd28b",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#637774",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 292,
+        "sizeM": [
+          1.2,
+          0.535,
+          0.58
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#637774",
+          "parts": [
+            "channel-floor",
+            "wall-front",
+            "wall-back",
+            "bridge",
+            "lamp-0",
+            "lamp-1",
+            "lamp-2",
+            "lamp-3",
+            "lamp-4",
+            "frame-post--520",
+            "frame-post-520"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "vertical-turbine-pump",
+      "kit": "water-treatment",
+      "title": "Vertical turbine pump head",
+      "description": "Vertical turbine pump head with discharge elbow, column pipe, motor pedestal and support plate. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/vertical-turbine-pump.kcad.ts",
+      "sourceSha256": "dd60ae6c0d3d571f71baf4e3a5af07a4c7e212cd09acdeb284551e8508f138ac",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#606d68",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          0.65,
+          1.4,
+          0.65
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#606d68",
+          "parts": [
+            "base-plate",
+            "column",
+            "discharge-elbow",
+            "outlet",
+            "motor-pedestal",
+            "motor",
+            "coupling-cover"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "water-filter-cartridge-housing",
+      "kit": "water-treatment",
+      "title": "Cartridge filter housing",
+      "description": "Short cartridge-filter housing with clamp lid, inlet outlet nozzles and a three-leg stand. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "water treatment",
+        "water utility",
+        "infrastructure",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "water-treatment",
+        "utility",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/water-treatment/water-filter-cartridge-housing.kcad.ts",
+      "sourceSha256": "3ee30d9594a0847f1aa1321459117e0be45543db293c8a95b4d9ce7c41d94571",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6a7474",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 256,
+        "sizeM": [
+          0.49,
+          0.57,
+          0.626
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6a7474",
+          "parts": [
+            "canister",
+            "lid",
+            "clamp-ring",
+            "inlet",
+            "outlet",
+            "leg--130",
+            "leg-0",
+            "leg-130"
+          ],
+          "param": "color"
         }
       ]
     },

@@ -1,0 +1,7 @@
+
+ RUN  v4.0.18 /home/andrii/worktrees/kernelCAD-web/catalog-2000
+
+ ✓ tests/integration/catalog/assetModule.test.ts (4 tests) 805ms
+ ✓ tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 217ms
+ ✓ tests/integration/catalog/catalogStudioLink.test.ts (4 tests) 51851ms
+     ✓ every committed catalog asset opens with exactly the knobs its index row lists  50893ms
