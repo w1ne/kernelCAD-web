@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-11-03T05:38:12.433038+00:00",
+  "homepageStatus": 200,
+  "homepageBytes": 50183,
+  "assetsStatus": 200,
+  "assetsTotal": 1291,
+  "assetsWithPreview": 1291,
+  "postalLogisticsRows": 0,
+  "catalogStatus": 404,
+  "scope": "live production baseline only; current feature branch is not deployed"
+}

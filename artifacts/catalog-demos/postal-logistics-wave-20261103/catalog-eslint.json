@@ -1,0 +1,7 @@
+{
+  "command": "npx eslint catalog/",
+  "status": "passed",
+  "sourceFilesChecked": 1743,
+  "errorCount": 0,
+  "warningCount": 0
+}

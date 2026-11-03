@@ -1,0 +1,13 @@
+{
+  "video": "postal-logistics-kit.mp4",
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "frameRate": "24/1",
+  "pixelFormat": "yuv420p",
+  "durationSeconds": 30.0,
+  "sampledFrameCount": 10,
+  "contactSheet": "video-review/contact-sheet.png",
+  "manualVisualInspection": "passed",
+  "inspectionNotes": "Reviewed all 10 decoded frames. The title and source/preview comparison are readable at 1280x720; seven contact sheets cover all 52 previews; the final frame reports local audits and clearly says the branch is not deployed. The corrected carrier satchel reads as a bag with attached flap, front pocket, and handle. Assets remain intentionally low-poly scene props."
+}

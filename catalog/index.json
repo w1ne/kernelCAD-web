@@ -1369,6 +1369,65 @@
       ]
     },
     {
+      "id": "postal-logistics",
+      "title": "Postal logistics",
+      "description": "Original low-poly parcel induction, scanning, sortation, mail handling, route preparation, and dispatch props with editable scale and color controls.",
+      "assets": [
+        "automated-label-applicator",
+        "barcode-tunnel-scanner",
+        "bulk-mail-hamper",
+        "bulk-mail-sack",
+        "carrier-caseload-sorter",
+        "carrier-route-sequence-rack",
+        "carrier-satchel",
+        "conveyor-drive-unit",
+        "conveyor-guard-section",
+        "conveyor-merge-module",
+        "conveyor-transfer-bridge",
+        "crossbelt-sorter-section",
+        "delivery-sequence-case",
+        "gravity-roller-conveyor",
+        "handheld-postal-scanner",
+        "high-capacity-mail-cart",
+        "in-motion-weigh-deck",
+        "mail-tray-dispatch-cart",
+        "mail-tray-stack",
+        "mailbag-closing-machine",
+        "mailpiece-thickness-gauge",
+        "mailroom-workbench",
+        "overhead-scan-gantry",
+        "package-induction-conveyor",
+        "parcel-belt-diverter",
+        "parcel-dimensioning-arch",
+        "parcel-overflow-container",
+        "parcel-singulator",
+        "parcel-staging-rack",
+        "parcel-tray-transfer-cart",
+        "parcel-weigh-station",
+        "postage-meter-workstation",
+        "postal-dispatch-cage",
+        "postal-dispatch-seal-station",
+        "postal-label-printer",
+        "postal-pallet-roller-deck",
+        "postal-route-marker-board",
+        "postal-sack-loader",
+        "postal-sack-rack",
+        "postal-sortation-tray-cabinet",
+        "powered-roller-conveyor",
+        "powered-sack-dumper",
+        "rolling-postal-container",
+        "scanner-sensor-post",
+        "sliding-shoe-sorter-section",
+        "sorter-chute-bank",
+        "sorter-emergency-stop-pedestal",
+        "sorter-maintenance-platform",
+        "sorting-operator-console",
+        "spiral-parcel-chute",
+        "telescopic-parcel-conveyor",
+        "tray-induction-loader"
+      ]
+    },
+    {
       "id": "props",
       "title": "Props",
       "description": "Low-poly crates, barrels, containers, tools, carts and market pieces for village, farm, warehouse and street scenes at real-world scale, flat-shaded on one palette material.",
@@ -118342,6 +118401,3976 @@
             "front-barrel",
             "front-rim",
             "front-glass"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "automated-label-applicator",
+      "kit": "postal-logistics",
+      "title": "Automated label applicator",
+      "description": "Labeling head suspended above a narrow parcel conveyor with guarding and feed controls. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/automated-label-applicator.kcad.ts",
+      "preview": "/assets/postal-logistics-automated-label-applicator.png",
+      "sourceSha256": "b7956692486e26e3071edf3527b6046418e272d84583128ef8800ffd53185757",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5a7287",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.825,
+          1.605,
+          1
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5a7287",
+          "parts": [
+            "conveyor",
+            "frame-left",
+            "frame-right",
+            "upright-left",
+            "upright-right",
+            "crossbeam",
+            "label-roll",
+            "applicator-head",
+            "press-pad",
+            "control-box",
+            "roller-a",
+            "roller-b",
+            "roller-c"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "barcode-tunnel-scanner",
+      "kit": "postal-logistics",
+      "title": "Barcode tunnel scanner",
+      "description": "Open-sided parcel scanning tunnel with multiple raised scan heads above a short belt. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/barcode-tunnel-scanner.kcad.ts",
+      "preview": "/assets/postal-logistics-barcode-tunnel-scanner.png",
+      "sourceSha256": "64c345b64a1d7c295267242c051f492e915e7c8629f9e5e9351df5a34ac1182e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#596e83",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.72,
+          1.32,
+          0.85
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#596e83",
+          "parts": [
+            "belt",
+            "left-leg-front",
+            "right-leg-front",
+            "left-leg-back",
+            "right-leg-back",
+            "arch-left",
+            "arch-right",
+            "arch-top",
+            "scan-head-front",
+            "scan-head-back",
+            "side-window-left",
+            "side-window-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "bulk-mail-hamper",
+      "kit": "postal-logistics",
+      "title": "Bulk mail hamper",
+      "description": "Large open hamper with reinforced corners, removable liner and low handling skids. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/bulk-mail-hamper.kcad.ts",
+      "preview": "/assets/postal-logistics-bulk-mail-hamper.png",
+      "sourceSha256": "3a21e2f39351c54b547bfa60dffd6a382cd34f04c654c9e9d53e7aeac9ab55d1",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5b737e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.765,
+          0.73,
+          0.625
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5b737e",
+          "parts": [
+            "base",
+            "front-wall",
+            "back-wall",
+            "left-wall",
+            "right-wall",
+            "liner",
+            "corner-a",
+            "corner-b",
+            "corner-c",
+            "corner-d",
+            "skid-left",
+            "skid-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "bulk-mail-sack",
+      "kit": "postal-logistics",
+      "title": "Bulk mail sack",
+      "description": "Upright dispatch sack with a reinforced base, folded collar and tie-down tabs. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/bulk-mail-sack.kcad.ts",
+      "preview": "/assets/postal-logistics-bulk-mail-sack.png",
+      "sourceSha256": "0b46c0769f4edb32aa6d8038360771463dc20fd6d6921fc67596e3c0436dfb8e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#717b75",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 116,
+        "sizeM": [
+          0.52,
+          0.7,
+          0.5525
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#717b75",
+          "parts": [
+            "sack-body",
+            "folded-collar",
+            "front-tab-left",
+            "front-tab-right",
+            "tie-bar",
+            "base-seam",
+            "label-patch"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "carrier-caseload-sorter",
+      "kit": "postal-logistics",
+      "title": "Carrier caseload sorter",
+      "description": "Portable multi-compartment case for staging route bundles with a broad carry handle. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/carrier-caseload-sorter.kcad.ts",
+      "preview": "/assets/postal-logistics-carrier-caseload-sorter.png",
+      "sourceSha256": "01a66bde195bffc1103f57ed78ef433a87b4154bc415aaa82a05302fa73d16de",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#59727e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          0.68,
+          0.565,
+          0.43
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#59727e",
+          "parts": [
+            "base",
+            "left-wall",
+            "right-wall",
+            "back-wall",
+            "front-wall",
+            "divider-a",
+            "divider-b",
+            "divider-c",
+            "handle-left",
+            "handle-right",
+            "handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "carrier-route-sequence-rack",
+      "kit": "postal-logistics",
+      "title": "Carrier route sequence rack",
+      "description": "Wall-mounted route rack with repeated sequence slots, label strips and a lower shelf. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/carrier-route-sequence-rack.kcad.ts",
+      "preview": "/assets/postal-logistics-carrier-route-sequence-rack.png",
+      "sourceSha256": "d64878ee99119e68566142aa195b3ad7dfbf3b9ee703c0bc73960d550ba42234",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#697a79",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          1.08,
+          1.635,
+          0.276
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#697a79",
+          "parts": [
+            "backboard",
+            "top-cap",
+            "left-side",
+            "right-side",
+            "shelf-a",
+            "shelf-b",
+            "divider-a",
+            "divider-b",
+            "divider-c",
+            "divider-d",
+            "label-rail-a",
+            "label-rail-b"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "carrier-satchel",
+      "kit": "postal-logistics",
+      "title": "Carrier satchel",
+      "description": "Postal carrier shoulder bag with flap, side gussets, strap loops and a broad carrying strap. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/carrier-satchel.kcad.ts",
+      "preview": "/assets/postal-logistics-carrier-satchel.png",
+      "sourceSha256": "d54d510951b96717bfff70fc8d050bf9cea26e87b99dbbabb2ee211e6deb9271",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#596f7e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          0.485,
+          0.64,
+          0.245
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#596f7e",
+          "parts": [
+            "bag-body",
+            "front-pocket",
+            "flap",
+            "side-gusset-left",
+            "side-gusset-right",
+            "strap-left",
+            "strap-right",
+            "shoulder-strap",
+            "strap-end-left",
+            "strap-end-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "conveyor-drive-unit",
+      "kit": "postal-logistics",
+      "title": "Conveyor drive unit",
+      "description": "Compact conveyor motor and gearbox assembly on a mounting plate with raised vent banks. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/conveyor-drive-unit.kcad.ts",
+      "preview": "/assets/postal-logistics-conveyor-drive-unit.png",
+      "sourceSha256": "87d2c88fdf937f4b403df4d09029033b4cff9c0de3734b3e8faf9b04bb395c8d",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#69777a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          0.6175,
+          0.465,
+          0.39
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#69777a",
+          "parts": [
+            "mounting-plate",
+            "motor-body",
+            "motor-end",
+            "gearbox",
+            "output-block",
+            "vent-a",
+            "vent-b",
+            "vent-c",
+            "terminal-box",
+            "foot-left",
+            "foot-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "conveyor-guard-section",
+      "kit": "postal-logistics",
+      "title": "Conveyor guard section",
+      "description": "Guarding panel around a conveyor bay with frame rails and closely spaced upright bars. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/conveyor-guard-section.kcad.ts",
+      "preview": "/assets/postal-logistics-conveyor-guard-section.png",
+      "sourceSha256": "e13bdfc4c65cf8b9579b11d00888e0ec616a1c8d51694922dfe79f84fcb09fe2",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#758077",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          1.09,
+          1.145,
+          0.25
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#758077",
+          "parts": [
+            "foot-left",
+            "foot-right",
+            "post-left",
+            "post-right",
+            "top-rail",
+            "bottom-rail",
+            "bar-a",
+            "bar-b",
+            "bar-c",
+            "bar-d",
+            "bar-e"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "conveyor-merge-module",
+      "kit": "postal-logistics",
+      "title": "Conveyor merge module",
+      "description": "Two infeed belts meet at a compact parcel merge deck with a central guide and support frame. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/conveyor-merge-module.kcad.ts",
+      "preview": "/assets/postal-logistics-conveyor-merge-module.png",
+      "sourceSha256": "8dd9aac89bef8585af7958f5c9d644183d42a80df7a20fb84244733f2c0ca389",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#547c87",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          1.16,
+          0.89,
+          0.98
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#547c87",
+          "parts": [
+            "merge-deck",
+            "infeed-left",
+            "infeed-right",
+            "left-guide",
+            "right-guide",
+            "center-guide",
+            "support-left",
+            "support-right",
+            "cross-brace",
+            "roller-row-a",
+            "roller-row-b",
+            "roller-row-c"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "conveyor-transfer-bridge",
+      "kit": "postal-logistics",
+      "title": "Conveyor transfer bridge",
+      "description": "Short transfer bridge that aligns roller rows between adjoining parcel conveyor beds. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/conveyor-transfer-bridge.kcad.ts",
+      "preview": "/assets/postal-logistics-conveyor-transfer-bridge.png",
+      "sourceSha256": "1008e83a217a9f7ced25f6086c9651ccc9832a9f24f386ffa8471c324570baf2",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#607b80",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          0.65,
+          0.85,
+          0.56
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#607b80",
+          "parts": [
+            "bridge-deck",
+            "left-rail",
+            "right-rail",
+            "stand-left",
+            "stand-right",
+            "crossbar",
+            "roller-1",
+            "roller-2",
+            "roller-3",
+            "roller-4",
+            "alignment-stop"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "crossbelt-sorter-section",
+      "kit": "postal-logistics",
+      "title": "Crossbelt sorter section",
+      "description": "Elevated sortation track section with repeated shallow crossbelt carriage trays. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/crossbelt-sorter-section.kcad.ts",
+      "preview": "/assets/postal-logistics-crossbelt-sorter-section.png",
+      "sourceSha256": "153af4eb2564a3004a4d8feb7dbc4ddd84ae36052fcb8d4e37facd6f64517e10",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#56777d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.775,
+          0.84,
+          1.18
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#56777d",
+          "parts": [
+            "track-base",
+            "side-left",
+            "side-right",
+            "support-left-front",
+            "support-right-front",
+            "support-left-back",
+            "support-right-back",
+            "tray-1",
+            "tray-2",
+            "tray-3",
+            "tray-4",
+            "drive-panel"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "delivery-sequence-case",
+      "kit": "postal-logistics",
+      "title": "Delivery sequence case",
+      "description": "Tall compartment case with numbered-looking bays, top cover and lower return-mail pocket. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/delivery-sequence-case.kcad.ts",
+      "preview": "/assets/postal-logistics-delivery-sequence-case.png",
+      "sourceSha256": "b840b3be1be2d7262d3e0731850b5687aaa201074c73498aaafe8666ba86576a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#667b78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          0.79,
+          1.15,
+          0.4175
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#667b78",
+          "parts": [
+            "case-body",
+            "top-lip",
+            "left-side",
+            "right-side",
+            "divider-a",
+            "divider-b",
+            "divider-c",
+            "divider-d",
+            "divider-e",
+            "return-pocket",
+            "carry-handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "gravity-roller-conveyor",
+      "kit": "postal-logistics",
+      "title": "Gravity roller conveyor",
+      "description": "Short gravity roller section with raised containment rails and two-height support stands. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/gravity-roller-conveyor.kcad.ts",
+      "preview": "/assets/postal-logistics-gravity-roller-conveyor.png",
+      "sourceSha256": "2d9ae24e4eac30bfcecd82eee5d60879ba38cd3cc516246913ef27319e3217e0",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#758078",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.615,
+          0.765,
+          0.95
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#758078",
+          "parts": [
+            "roller-bed",
+            "left-guide",
+            "right-guide",
+            "front-leg-left",
+            "front-leg-right",
+            "rear-leg-left",
+            "rear-leg-right",
+            "roller-1",
+            "roller-2",
+            "roller-3",
+            "roller-4",
+            "roller-5"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "handheld-postal-scanner",
+      "kit": "postal-logistics",
+      "title": "Handheld postal scanner",
+      "description": "Rugged handheld parcel scanner with a broad reader head, handle and raised control keys. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/handheld-postal-scanner.kcad.ts",
+      "preview": "/assets/postal-logistics-handheld-postal-scanner.png",
+      "sourceSha256": "e4b6adf69813dd442f7ab5f5fac05ad79aa31f15ee12dd371eee759b307c0076",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#4e6c7d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          0.21,
+          0.36,
+          0.235
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#4e6c7d",
+          "parts": [
+            "scanner-head",
+            "reader-window",
+            "handle",
+            "handle-end",
+            "trigger",
+            "top-key-a",
+            "top-key-b",
+            "top-key-c",
+            "battery-pack"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "high-capacity-mail-cart",
+      "kit": "postal-logistics",
+      "title": "High-capacity mail cart",
+      "description": "Two-tier mail cart with push handle, corner guards and four block-style caster housings. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/high-capacity-mail-cart.kcad.ts",
+      "preview": "/assets/postal-logistics-high-capacity-mail-cart.png",
+      "sourceSha256": "dd811b23bc7e4de5dcb373f50f571826a227ad317fc59dd145f14056c0e64d69",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#60767c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          0.78,
+          1.355,
+          0.5675
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#60767c",
+          "parts": [
+            "lower-deck",
+            "upper-deck",
+            "upright-left",
+            "upright-right",
+            "push-handle",
+            "wheel-front-left",
+            "wheel-front-right",
+            "wheel-back-left",
+            "wheel-back-right",
+            "lower-stop",
+            "upper-stop"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "in-motion-weigh-deck",
+      "kit": "postal-logistics",
+      "title": "In-motion weigh deck",
+      "description": "Short instrumented roller bed with a raised weighing platform and indicator module. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/in-motion-weigh-deck.kcad.ts",
+      "preview": "/assets/postal-logistics-in-motion-weigh-deck.png",
+      "sourceSha256": "d2184b517269580f5db25497ccd37dbbb4da3aace09d9df71d089c24bd778f07",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#697b7b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          0.97,
+          0.77,
+          0.86
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#697b7b",
+          "parts": [
+            "scale-base",
+            "weigh-deck",
+            "roller-a",
+            "roller-b",
+            "roller-c",
+            "roller-d",
+            "indicator-post",
+            "indicator-head",
+            "display",
+            "foot-left",
+            "foot-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "mail-tray-dispatch-cart",
+      "kit": "postal-logistics",
+      "title": "Mail tray dispatch cart",
+      "description": "Mobile tray cart with three low shelves, side rails and a tall push handle. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/mail-tray-dispatch-cart.kcad.ts",
+      "preview": "/assets/postal-logistics-mail-tray-dispatch-cart.png",
+      "sourceSha256": "6186295d84d46ef921391d2c3f03b37f67580b5ce8206d3d37cae080d8ef0252",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5d7581",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          0.745,
+          1.325,
+          0.57
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5d7581",
+          "parts": [
+            "wheel-left-front",
+            "wheel-right-front",
+            "wheel-left-back",
+            "wheel-right-back",
+            "bottom-shelf",
+            "middle-shelf",
+            "top-shelf",
+            "left-rail",
+            "right-rail",
+            "handle",
+            "tray-stop"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "mail-tray-stack",
+      "kit": "postal-logistics",
+      "title": "Mail tray stack",
+      "description": "Stack of four shallow mail trays with reinforced rims and hand-grip openings. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/mail-tray-stack.kcad.ts",
+      "preview": "/assets/postal-logistics-mail-tray-stack.png",
+      "sourceSha256": "edd382791ec00b526a6a84183ce3d83223404b4918d89d89c361dfeb0767e710",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#607b7b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.62,
+          0.385,
+          0.448
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#607b7b",
+          "parts": [
+            "tray-bottom",
+            "tray-2",
+            "tray-3",
+            "tray-top",
+            "rim-front",
+            "rim-back",
+            "hand-slot-left",
+            "hand-slot-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "mailbag-closing-machine",
+      "kit": "postal-logistics",
+      "title": "Mailbag closing machine",
+      "description": "Industrial bag-closing head mounted above a work surface with a sack guide and foot control. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/mailbag-closing-machine.kcad.ts",
+      "preview": "/assets/postal-logistics-mailbag-closing-machine.png",
+      "sourceSha256": "65d72e5b1a9e9a59e2d9e7c7852dee37f21b5ef1a8a08a5889bb8189e7fe4c51",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#657a7c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          0.88,
+          1.29,
+          0.565
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#657a7c",
+          "parts": [
+            "tabletop",
+            "leg-left",
+            "leg-right",
+            "rear-leg-left",
+            "rear-leg-right",
+            "machine-head",
+            "thread-post",
+            "thread-guide",
+            "bag-guide",
+            "foot-pedal",
+            "crossbar"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "mailpiece-thickness-gauge",
+      "kit": "postal-logistics",
+      "title": "Mailpiece thickness gauge",
+      "description": "Bench gauge with measuring bridge, adjustable stop and broad reference plate. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/mailpiece-thickness-gauge.kcad.ts",
+      "preview": "/assets/postal-logistics-mailpiece-thickness-gauge.png",
+      "sourceSha256": "2fdb713b0406095f81c9ec58ce95c4b99b90e351fb1f0a46433721df35bd32ab",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#707d78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          0.62,
+          0.495,
+          0.46
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#707d78",
+          "parts": [
+            "base-plate",
+            "left-post",
+            "right-post",
+            "bridge",
+            "gauge-slider",
+            "measuring-foot",
+            "stop-block",
+            "index-rail",
+            "dial"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "mailroom-workbench",
+      "kit": "postal-logistics",
+      "title": "Mailroom workbench",
+      "description": "Sorting workbench with storage cubbies, a high back rail and a broad writing surface. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/mailroom-workbench.kcad.ts",
+      "preview": "/assets/postal-logistics-mailroom-workbench.png",
+      "sourceSha256": "1a2da644688aedec4272fdd5900a682edc26af3a1f94c173627f019010fed03e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#687c7a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          1.32,
+          1.035,
+          0.635
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#687c7a",
+          "parts": [
+            "top",
+            "left-leg",
+            "right-leg",
+            "left-rear-leg",
+            "right-rear-leg",
+            "back-rail",
+            "cubby-base",
+            "cubby-top",
+            "cubby-left",
+            "cubby-right",
+            "divider-a",
+            "divider-b",
+            "keyboard-tray"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "overhead-scan-gantry",
+      "kit": "postal-logistics",
+      "title": "Overhead scan gantry",
+      "description": "Low scan gantry with twin camera heads, side posts and an integrated parcel conveyor. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/overhead-scan-gantry.kcad.ts",
+      "preview": "/assets/postal-logistics-overhead-scan-gantry.png",
+      "sourceSha256": "ab4922d07bbef81b2fda65d87539bcb39f62b7e03356d37e0c3fbcac0f481b05",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5c7685",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.8,
+          1.385,
+          0.98
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5c7685",
+          "parts": [
+            "base-bed",
+            "post-left",
+            "post-right",
+            "post-left-back",
+            "post-right-back",
+            "gantry-front",
+            "gantry-back",
+            "camera-a",
+            "camera-b",
+            "side-camera-left",
+            "side-camera-right",
+            "status-box"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "package-induction-conveyor",
+      "kit": "postal-logistics",
+      "title": "Package induction conveyor",
+      "description": "Parcel induction belt with side rails, support legs and raised roller rows. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/package-induction-conveyor.kcad.ts",
+      "preview": "/assets/postal-logistics-package-induction-conveyor.png",
+      "sourceSha256": "5c4e517b9d3ad6a28d465183668d2ed63f8ab25aaa99425ebba113e938fe3880",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#52758b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.58,
+          0.855,
+          1.05
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#52758b",
+          "parts": [
+            "belt",
+            "side-rail-left",
+            "side-rail-right",
+            "leg-front-left",
+            "leg-front-right",
+            "leg-back-left",
+            "leg-back-right",
+            "roller-row-a",
+            "roller-row-b",
+            "roller-row-c",
+            "roller-row-d",
+            "roller-row-e"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "parcel-belt-diverter",
+      "kit": "postal-logistics",
+      "title": "Parcel belt diverter",
+      "description": "Conveyor section with a side-mounted actuator and a broad parcel-pushing paddle. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/parcel-belt-diverter.kcad.ts",
+      "preview": "/assets/postal-logistics-parcel-belt-diverter.png",
+      "sourceSha256": "9686735c6913783c7c0a4ee0c9af9fbd3ded03c3fdf65b9e6c341d94344b76f4",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#587981",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.7925,
+          1.045,
+          0.95
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#587981",
+          "parts": [
+            "belt",
+            "side-left",
+            "side-right",
+            "support-1",
+            "support-2",
+            "support-3",
+            "support-4",
+            "actuator",
+            "pusher-arm",
+            "paddle",
+            "roller-a",
+            "roller-b",
+            "roller-c"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "parcel-dimensioning-arch",
+      "kit": "postal-logistics",
+      "title": "Parcel dimensioning arch",
+      "description": "Conveyor portal with overhead and side sensor blocks for parcel size measurement. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/parcel-dimensioning-arch.kcad.ts",
+      "preview": "/assets/postal-logistics-parcel-dimensioning-arch.png",
+      "sourceSha256": "2c2f1a64326b32c534fffa2c3d0596c4a2217a0ca0c2af7ca6290bd77f717382",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#536f86",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.76,
+          1.92,
+          1.05
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#536f86",
+          "parts": [
+            "conveyor",
+            "left-foot",
+            "right-foot",
+            "left-post",
+            "right-post",
+            "crossbar",
+            "top-sensor",
+            "side-sensor-left",
+            "side-sensor-right",
+            "roller-a",
+            "roller-b",
+            "roller-c"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "parcel-overflow-container",
+      "kit": "postal-logistics",
+      "title": "Parcel overflow container",
+      "description": "Deep overflow tub with a reinforcing rim, drain-like feet and two lift handles. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/parcel-overflow-container.kcad.ts",
+      "preview": "/assets/postal-logistics-parcel-overflow-container.png",
+      "sourceSha256": "faf067a376b8ec9c970389361c3eea946fb4a3cb3eacd19ab56f45efd7dfd04e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5f7880",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.915,
+          0.665,
+          0.62
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5f7880",
+          "parts": [
+            "tub-base",
+            "front-wall",
+            "back-wall",
+            "left-wall",
+            "right-wall",
+            "rim-front",
+            "rim-back",
+            "rim-left",
+            "rim-right",
+            "handle-left",
+            "handle-right",
+            "foot-left",
+            "foot-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "parcel-singulator",
+      "kit": "postal-logistics",
+      "title": "Parcel singulator",
+      "description": "Induction belt with adjustable side guides, separator bars and a raised feed throat. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/parcel-singulator.kcad.ts",
+      "preview": "/assets/postal-logistics-parcel-singulator.png",
+      "sourceSha256": "9e53eb8b9a767cd198f8d170ba4f8eaaa74d41624302b8062ad308f165fc5d2d",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#536e7b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.72,
+          0.795,
+          1.1
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#536e7b",
+          "parts": [
+            "feed-deck",
+            "guide-left",
+            "guide-right",
+            "throat-left",
+            "throat-right",
+            "separator-a",
+            "separator-b",
+            "separator-c",
+            "separator-d",
+            "stand-left",
+            "stand-right",
+            "infeed-stop"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "parcel-staging-rack",
+      "kit": "postal-logistics",
+      "title": "Parcel staging rack",
+      "description": "Three-level parcel rack with reinforced uprights, shelf beams and a top clearance frame. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/parcel-staging-rack.kcad.ts",
+      "preview": "/assets/postal-logistics-parcel-staging-rack.png",
+      "sourceSha256": "a9b919547428a9b21382fbc72c92814eb92b8f33b2701ad8b17bfa0fc46c9f45",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#687b79",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          1.06,
+          1.7,
+          0.65
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#687b79",
+          "parts": [
+            "upright-left",
+            "upright-right",
+            "front-post-left",
+            "front-post-right",
+            "rear-post-left",
+            "rear-post-right",
+            "shelf-bottom",
+            "shelf-middle",
+            "shelf-top",
+            "beam-front-a",
+            "beam-back-a",
+            "beam-front-b",
+            "beam-back-b"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "parcel-tray-transfer-cart",
+      "kit": "postal-logistics",
+      "title": "Parcel tray transfer cart",
+      "description": "Low transfer cart with wide deck, raised stops, four wheel blocks and a push bar. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/parcel-tray-transfer-cart.kcad.ts",
+      "preview": "/assets/postal-logistics-parcel-tray-transfer-cart.png",
+      "sourceSha256": "538e188cc84d3f52380c98009527517e1db3218828a6b46e54911492f1c5be21",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#607982",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          0.88,
+          1.095,
+          0.65
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#607982",
+          "parts": [
+            "deck",
+            "front-stop",
+            "back-stop",
+            "wheel-left-front",
+            "wheel-right-front",
+            "wheel-left-back",
+            "wheel-right-back",
+            "handle-left",
+            "handle-right",
+            "handle",
+            "tray-rack"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "parcel-weigh-station",
+      "kit": "postal-logistics",
+      "title": "Parcel weigh station",
+      "description": "Floor scale platform, upright digital indicator and a compact parcel staging shelf. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/parcel-weigh-station.kcad.ts",
+      "preview": "/assets/postal-logistics-parcel-weigh-station.png",
+      "sourceSha256": "356b572022494cbdafbfe00bbff781f5a8ac9afad802f3b62ee0265a559164ce",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#657a83",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          1.03,
+          0.99,
+          0.72
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#657a83",
+          "parts": [
+            "platform",
+            "top-plate",
+            "indicator-stem",
+            "indicator-head",
+            "display",
+            "shelf-left",
+            "shelf-right",
+            "foot-left",
+            "foot-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "postage-meter-workstation",
+      "kit": "postal-logistics",
+      "title": "Postage meter workstation",
+      "description": "Postage meter, small scale platform and mailpiece catch tray arranged on a service stand. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/postage-meter-workstation.kcad.ts",
+      "preview": "/assets/postal-logistics-postage-meter-workstation.png",
+      "sourceSha256": "29c17270bf82e50f33e4dda8fe7fe586b15fef4ad2a280dc10547ccbb7683246",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#617780",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          0.7,
+          1.195,
+          0.52
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#617780",
+          "parts": [
+            "cabinet",
+            "countertop",
+            "meter-base",
+            "meter-head",
+            "display",
+            "scale-platform",
+            "catch-tray",
+            "paper-roll",
+            "lower-door"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "postal-dispatch-cage",
+      "kit": "postal-logistics",
+      "title": "Postal dispatch cage",
+      "description": "Pallet-base dispatch cage with corner uprights, tie bars and a fitted top rail. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/postal-dispatch-cage.kcad.ts",
+      "preview": "/assets/postal-logistics-postal-dispatch-cage.png",
+      "sourceSha256": "e16abd877cfd42171fc8e1fb93ff3040171dd6d41cdc247e5ade7db967a037f4",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6b7977",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          1.1,
+          1.495,
+          0.9
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6b7977",
+          "parts": [
+            "pallet-base",
+            "skid-a",
+            "skid-b",
+            "skid-c",
+            "post-left-front",
+            "post-right-front",
+            "post-left-back",
+            "post-right-back",
+            "top-front",
+            "top-back",
+            "top-left",
+            "top-right",
+            "mid-rail"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "postal-dispatch-seal-station",
+      "kit": "postal-logistics",
+      "title": "Postal dispatch seal station",
+      "description": "Dispatch table with a powered sealing head, mail sack guide and completed-bag shelf. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/postal-dispatch-seal-station.kcad.ts",
+      "preview": "/assets/postal-logistics-postal-dispatch-seal-station.png",
+      "sourceSha256": "ec7841b0dad24ea3b532c1f0f6c4ed1a40c919ffdc53395ae30676754d58c253",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#667778",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          0.96,
+          1.325,
+          0.6
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#667778",
+          "parts": [
+            "table",
+            "leg-left",
+            "leg-right",
+            "leg-back-left",
+            "leg-back-right",
+            "sealer-post",
+            "sealer-head",
+            "press-foot",
+            "bag-guide",
+            "lower-shelf",
+            "control-box"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "postal-label-printer",
+      "kit": "postal-logistics",
+      "title": "Postal label printer",
+      "description": "Desktop shipping-label printer with raised lid, feed slot and output catch tray. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/postal-label-printer.kcad.ts",
+      "preview": "/assets/postal-logistics-postal-label-printer.png",
+      "sourceSha256": "a09135a99dabf4f69bad858c8ac261eb0e0d6649e20471563660ad949d4c9827",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#536d79",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          0.44,
+          0.545,
+          0.4675
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#536d79",
+          "parts": [
+            "printer-base",
+            "printer-body",
+            "lid",
+            "feed-roll",
+            "output-tray",
+            "front-panel",
+            "button",
+            "left-foot",
+            "right-foot"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "postal-pallet-roller-deck",
+      "kit": "postal-logistics",
+      "title": "Postal pallet roller deck",
+      "description": "Heavy parcel transfer deck with continuous rollers, raised end stops and forklift-clear base. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/postal-pallet-roller-deck.kcad.ts",
+      "preview": "/assets/postal-logistics-postal-pallet-roller-deck.png",
+      "sourceSha256": "e9195d96d63943b15d2385515c1b5857da03b3bcb2f0b943c1c326edaebe4234",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6a7876",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          1.18,
+          0.58,
+          1.035
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6a7876",
+          "parts": [
+            "deck-frame",
+            "left-side",
+            "right-side",
+            "roller-a",
+            "roller-b",
+            "roller-c",
+            "roller-d",
+            "roller-e",
+            "fork-channel-left",
+            "fork-channel-right",
+            "end-stop-front",
+            "end-stop-back"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "postal-route-marker-board",
+      "kit": "postal-logistics",
+      "title": "Postal route marker board",
+      "description": "Freestanding route board with a broad display panel, label ledge and two weighted feet. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/postal-route-marker-board.kcad.ts",
+      "preview": "/assets/postal-logistics-postal-route-marker-board.png",
+      "sourceSha256": "e5f61364b9f84751c8a4e510bd6751087b62a1bd33ddf3e16635f197d1d199ac",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#677b79",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          0.98,
+          1.61,
+          0.255
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#677b79",
+          "parts": [
+            "panel",
+            "header",
+            "post-left",
+            "post-right",
+            "foot-left",
+            "foot-right",
+            "label-ledge",
+            "route-row-a",
+            "route-row-b",
+            "route-row-c"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "postal-sack-loader",
+      "kit": "postal-logistics",
+      "title": "Postal sack loader",
+      "description": "Mobile sack-loading stand with a low roller deck, upright handle and alignment stops. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/postal-sack-loader.kcad.ts",
+      "preview": "/assets/postal-logistics-postal-sack-loader.png",
+      "sourceSha256": "2f3ccfb95856dcd53a36029cc082feb1491039eba2ebaf496adea0566d4b8dc8",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5b747e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          0.76,
+          1.095,
+          0.65
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5b747e",
+          "parts": [
+            "base",
+            "deck",
+            "roller-a",
+            "roller-b",
+            "roller-c",
+            "handle-left",
+            "handle-right",
+            "handle-top",
+            "stop-left",
+            "stop-right",
+            "wheel-front"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "postal-sack-rack",
+      "kit": "postal-logistics",
+      "title": "Postal sack rack",
+      "description": "Freestanding rack with hanging sack bays, crossbars and a weighted floor frame. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/postal-sack-rack.kcad.ts",
+      "preview": "/assets/postal-logistics-postal-sack-rack.png",
+      "sourceSha256": "a99ac63181541426ff51dd4a23fc51042b2d36a6a5123c403a99b9d8ff46faf8",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6e7a78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.93,
+          1.5,
+          0.7
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6e7a78",
+          "parts": [
+            "base-left",
+            "base-right",
+            "post-left",
+            "post-right",
+            "top-bar",
+            "middle-bar",
+            "bay-divider-left",
+            "bay-divider-right",
+            "sack-a",
+            "sack-b",
+            "sack-c",
+            "sack-collar-a",
+            "sack-collar-b",
+            "sack-collar-c"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "postal-sortation-tray-cabinet",
+      "kit": "postal-logistics",
+      "title": "Postal sortation tray cabinet",
+      "description": "Tall cabinet with stacked tray openings, central dividers and a low stabilizing plinth. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/postal-sortation-tray-cabinet.kcad.ts",
+      "preview": "/assets/postal-logistics-postal-sortation-tray-cabinet.png",
+      "sourceSha256": "76501669b59f9356f250d64432084845ec5bafd3ffa8853915035705ce7e3901",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#627a7a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.85,
+          1.52,
+          0.52
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#627a7a",
+          "parts": [
+            "plinth",
+            "left-side",
+            "right-side",
+            "top",
+            "back",
+            "shelf-a",
+            "shelf-b",
+            "shelf-c",
+            "shelf-d",
+            "divider-a",
+            "divider-b",
+            "divider-c",
+            "divider-d"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "powered-roller-conveyor",
+      "kit": "postal-logistics",
+      "title": "Powered roller conveyor",
+      "description": "Straight motorized roller bed with side frames, six roller bars and four adjustable legs. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/powered-roller-conveyor.kcad.ts",
+      "preview": "/assets/postal-logistics-powered-roller-conveyor.png",
+      "sourceSha256": "b222a0a03f99b620b26ba4be4a353bed0ccd73ca0c3e0c2b40e4bfe4a72886ea",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5e7a85",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.811,
+          0.795,
+          1.2
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5e7a85",
+          "parts": [
+            "bed-frame",
+            "left-side",
+            "right-side",
+            "leg-a-left",
+            "leg-a-right",
+            "leg-b-left",
+            "leg-b-right",
+            "roller-a",
+            "roller-b",
+            "roller-c",
+            "roller-d",
+            "roller-e",
+            "roller-f",
+            "drive-housing"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "powered-sack-dumper",
+      "kit": "postal-logistics",
+      "title": "Powered sack dumper",
+      "description": "Tilting-looking sack cradle on a guarded lift frame with a broad floor base. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/powered-sack-dumper.kcad.ts",
+      "preview": "/assets/postal-logistics-powered-sack-dumper.png",
+      "sourceSha256": "0e621d9b73b7f32908b66472bebcb4925fa339dadddc15ee574cd7a3183ad4bf",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#62777c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          1.055,
+          1.355,
+          0.74
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#62777c",
+          "parts": [
+            "base",
+            "left-upright",
+            "right-upright",
+            "top-beam",
+            "cradle-platform",
+            "back-plate",
+            "left-side",
+            "right-side",
+            "actuator-left",
+            "actuator-right",
+            "control-post",
+            "control-head"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "rolling-postal-container",
+      "kit": "postal-logistics",
+      "title": "Rolling postal container",
+      "description": "Four-wheel high-sided mail container with cage uprights, two shelves and a swing gate. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/rolling-postal-container.kcad.ts",
+      "preview": "/assets/postal-logistics-rolling-postal-container.png",
+      "sourceSha256": "acf5863ca68595b04112cea9a2d300e8bd20059a6a67136b51b8ecf9ed3f0a74",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6d7c7b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.72,
+          1.373,
+          0.54
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6d7c7b",
+          "parts": [
+            "base",
+            "wheel-left-front",
+            "wheel-right-front",
+            "wheel-left-back",
+            "wheel-right-back",
+            "post-left",
+            "post-right",
+            "post-left-back",
+            "post-right-back",
+            "top-front",
+            "top-back",
+            "shelf",
+            "gate"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "scanner-sensor-post",
+      "kit": "postal-logistics",
+      "title": "Scanner sensor post",
+      "description": "Floor-mounted scanner mast with a short arm, compact reader block and cable housing. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/scanner-sensor-post.kcad.ts",
+      "preview": "/assets/postal-logistics-scanner-sensor-post.png",
+      "sourceSha256": "f0ce59e9fe27fc220f764ecf8350725b46d3ce1a4e54d289fe49433f65cd78d6",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#566f83",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          0.525,
+          1.19,
+          0.26
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#566f83",
+          "parts": [
+            "foot",
+            "mast",
+            "arm",
+            "sensor",
+            "lens",
+            "junction-box",
+            "cable-gland",
+            "anchor-left",
+            "anchor-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "sliding-shoe-sorter-section",
+      "kit": "postal-logistics",
+      "title": "Sliding shoe sorter section",
+      "description": "Parcel sorter deck with diverter shoes, guide rails and a compact discharge lane. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/sliding-shoe-sorter-section.kcad.ts",
+      "preview": "/assets/postal-logistics-sliding-shoe-sorter-section.png",
+      "sourceSha256": "c0441eb1a27f8e8c8da61a5edb6bde7da6acd44b20b92aa2a1d4c82d824b9bfa",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5a737b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.954,
+          0.862,
+          1.2
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5a737b",
+          "parts": [
+            "sorter-bed",
+            "left-guide",
+            "right-guide",
+            "shoe-rail",
+            "shoe-a",
+            "shoe-b",
+            "shoe-c",
+            "shoe-d",
+            "discharge-lane",
+            "support-left-a",
+            "support-right-a",
+            "support-left-b",
+            "support-right-b"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "sorter-chute-bank",
+      "kit": "postal-logistics",
+      "title": "Sorter chute bank",
+      "description": "Multi-lane parcel discharge bank with numbered-looking bays and a high support frame. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/sorter-chute-bank.kcad.ts",
+      "preview": "/assets/postal-logistics-sorter-chute-bank.png",
+      "sourceSha256": "63935bf8a7331ace1e0ddf55e1cf555c6247729cc545f96e56f45f43f58825af",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6d7775",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          1.38,
+          1.36,
+          0.885
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6d7775",
+          "parts": [
+            "base",
+            "upright-left",
+            "upright-right",
+            "top-beam",
+            "bay-divider-a",
+            "bay-divider-b",
+            "bay-divider-c",
+            "bay-divider-d",
+            "chute-shelf-a",
+            "chute-shelf-b",
+            "chute-shelf-c",
+            "chute-shelf-d",
+            "front-label-rail"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "sorter-emergency-stop-pedestal",
+      "kit": "postal-logistics",
+      "title": "Sorter emergency-stop pedestal",
+      "description": "Standalone emergency-stop post with a weighted base, button head and low protective collar. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/sorter-emergency-stop-pedestal.kcad.ts",
+      "preview": "/assets/postal-logistics-sorter-emergency-stop-pedestal.png",
+      "sourceSha256": "b18ff7bceab04d266d3e37c17df9baeb457d212d2afdd005bad9dcb13f8f92d8",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6d7372",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 140,
+        "sizeM": [
+          0.3,
+          0.99,
+          0.325
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6d7372",
+          "parts": [
+            "base",
+            "post",
+            "head",
+            "button",
+            "guard-left",
+            "guard-right",
+            "cable-outlet",
+            "mounting-foot-left",
+            "mounting-foot-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "sorter-maintenance-platform",
+      "kit": "postal-logistics",
+      "title": "Sorter maintenance platform",
+      "description": "Raised access deck with guardrails, four support legs and a short three-step approach. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/sorter-maintenance-platform.kcad.ts",
+      "preview": "/assets/postal-logistics-sorter-maintenance-platform.png",
+      "sourceSha256": "769e418d1454ad96f28e6b62464ef33f29566d2929f77e6c600242b6c4130b0a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#687b7b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.95,
+          1.32,
+          0.815
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#687b7b",
+          "parts": [
+            "deck",
+            "post-left-front",
+            "post-right-front",
+            "post-left-back",
+            "post-right-back",
+            "rail-front",
+            "rail-back",
+            "rail-left",
+            "rail-right",
+            "leg-left",
+            "leg-right",
+            "step-a",
+            "step-b",
+            "step-c"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "sorting-operator-console",
+      "kit": "postal-logistics",
+      "title": "Sorting operator console",
+      "description": "Operator station with angled control desk, twin display blocks, key shelf and status stack. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/sorting-operator-console.kcad.ts",
+      "preview": "/assets/postal-logistics-sorting-operator-console.png",
+      "sourceSha256": "2f90d77ec5d30f9ad965f5be21912054badb41f5030e6043f37450d1fee7f7cc",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5b7182",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 240,
+        "sizeM": [
+          0.962,
+          1.29,
+          0.605
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5b7182",
+          "parts": [
+            "pedestal",
+            "desk",
+            "screen-left",
+            "screen-right",
+            "screen-base-left",
+            "screen-base-right",
+            "keyboard-shelf",
+            "keypad",
+            "status-post",
+            "status-light-a",
+            "status-light-b",
+            "status-light-c"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "spiral-parcel-chute",
+      "kit": "postal-logistics",
+      "title": "Spiral parcel chute",
+      "description": "Compact gravity chute assembled from four turning shelf sections around a central mast. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/spiral-parcel-chute.kcad.ts",
+      "preview": "/assets/postal-logistics-spiral-parcel-chute.png",
+      "sourceSha256": "27593134a1c76250f36535b7d2153336cdd11066367b67a73d38bb6fc4e4ebd2",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#747d79",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          1.2,
+          1.56,
+          1.2
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#747d79",
+          "parts": [
+            "foot",
+            "mast",
+            "level-1",
+            "level-2",
+            "level-3",
+            "level-4",
+            "guard-a",
+            "guard-b",
+            "guard-c",
+            "guard-d",
+            "landing-pad"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "telescopic-parcel-conveyor",
+      "kit": "postal-logistics",
+      "title": "Telescopic parcel conveyor",
+      "description": "Extending conveyor boom on an adjustable support frame with wheel blocks and nested belt sections. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/telescopic-parcel-conveyor.kcad.ts",
+      "preview": "/assets/postal-logistics-telescopic-parcel-conveyor.png",
+      "sourceSha256": "cc3acf668e32f9ac8b991fdea8d4f40baf2b46caf1393d7684f72bc6dae9c8d2",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#547582",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          0.815,
+          1.005,
+          1.34
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#547582",
+          "parts": [
+            "base-frame",
+            "lower-boom",
+            "middle-boom",
+            "inner-boom",
+            "left-support",
+            "right-support",
+            "crossbar",
+            "left-wheel",
+            "right-wheel",
+            "control-box"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "tray-induction-loader",
+      "kit": "postal-logistics",
+      "title": "Tray induction loader",
+      "description": "Feed station with a tray staging deck, backstop, side guides and operator controls. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "postal logistics",
+        "mail",
+        "parcel",
+        "package processing",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "postal",
+        "postal-processing",
+        "mailroom",
+        "logistics",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/postal-logistics/tray-induction-loader.kcad.ts",
+      "preview": "/assets/postal-logistics-tray-induction-loader.png",
+      "sourceSha256": "3fb1f3274f7f677a0aeda3d016ad1ed265ed6eb924bd505c5ac3cb20168b9c5f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5e7481",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          0.98,
+          0.801,
+          0.65
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5e7481",
+          "parts": [
+            "base",
+            "feed-deck",
+            "backstop",
+            "guide-left",
+            "guide-right",
+            "tray-stack-a",
+            "tray-stack-b",
+            "tray-stack-c",
+            "control-post",
+            "control-head",
+            "display"
           ],
           "param": "color"
         }
