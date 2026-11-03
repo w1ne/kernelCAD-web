@@ -71,3 +71,15 @@ records the source-to-preview workflow, full-catalog integration checks, local
 pages, package boundary audit, and inspected MP4. The kit is for visualization;
 catalog checks do not establish crop performance, equipment ratings, chemical
 compatibility, sensor calibration, or physical acceptance.
+
+## Theatre production assets
+
+The [theatre production kit](../catalog/kits/theatre-production/README.md) adds
+52 original low-poly props for modular staging, scenery, curtains and rigging,
+lighting, audio, backstage operations, and touring storage. Each source exposes
+scale and color controls and has an indexed preview. The [wave demo and
+verification bundle](../artifacts/catalog-demos/theatre-production-wave-20261103/README.md)
+records the source-to-preview workflow, full-catalog integration checks, local
+pages, package boundary audit, and inspected MP4. These are visualization props;
+catalog checks do not establish load capacity, rigging safety, electrical
+ratings, code compliance, or physical acceptance.

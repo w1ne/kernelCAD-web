@@ -1951,6 +1951,65 @@
       ]
     },
     {
+      "id": "theatre-production",
+      "title": "Theatre production",
+      "description": "Original low-poly staging, scenery, rigging, lighting, backstage, and touring props with editable scale and color controls.",
+      "assets": [
+        "adjustable-stage-leg",
+        "audio-mixing-console",
+        "audio-monitor-wedge",
+        "backstage-call-board",
+        "cable-ramp-crossing",
+        "counterweight-arbor",
+        "curtain-track-carrier",
+        "cyclorama-drop",
+        "dance-floor-panel",
+        "dimmer-rack",
+        "ellipsoidal-reflector-spotlight",
+        "floor-cable-trough",
+        "folding-flat-brace",
+        "folding-stage-ramp",
+        "fresnel-wash-fixture",
+        "grand-drape-valance",
+        "hoist-controller",
+        "led-cyc-wash-light",
+        "lighting-control-console",
+        "lighting-yoke-bracket",
+        "marley-floor-roll",
+        "masking-leg",
+        "modular-stage-deck",
+        "motorized-chain-hoist",
+        "orchestra-pit-filler",
+        "orchestra-shell-panel",
+        "par-can-fixture",
+        "prop-storage-rack",
+        "prop-table",
+        "pulley-block",
+        "rigging-handline-cleat",
+        "riser-cart",
+        "rolling-stage-platform",
+        "rope-lock",
+        "sandbag-counterweight",
+        "scenic-flat-panel",
+        "scenic-wagon",
+        "scrim-frame",
+        "spotlight-followspot-stand",
+        "stage-batten-section",
+        "stage-edge-trim",
+        "stage-extension-wing",
+        "stage-manager-console",
+        "stage-pocket-hatch",
+        "stage-power-distro",
+        "stage-riser-platform",
+        "stage-stair-unit",
+        "strip-light-battens",
+        "teaser-border",
+        "touring-road-case",
+        "traveler-curtain-track",
+        "wireless-intercom-beltpack"
+      ]
+    },
+    {
       "id": "tools-equipment",
       "title": "Tools & Equipment",
       "description": "Low-poly hand tools, power tools and workshop pieces for garage, farm, construction and survival scenes at real-world scale, flat-shaded on one palette material.",
@@ -160647,6 +160706,3885 @@
             "rope-r"
           ],
           "param": "rope"
+        }
+      ]
+    },
+    {
+      "id": "adjustable-stage-leg",
+      "kit": "theatre-production",
+      "title": "Adjustable stage leg",
+      "description": "Telescoping stage support with a broad floor plate, outer sleeve, adjustment collar and cap pad. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/adjustable-stage-leg.kcad.ts",
+      "preview": "/assets/theatre-production-adjustable-stage-leg.png",
+      "sourceSha256": "d7362fb26224f44ddf1e9c2c6cff104436b8c1095abbdee6406e9dcc9201f33d",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#747980",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          0.36,
+          0.96,
+          0.36
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#747980",
+          "parts": [
+            "floor-plate",
+            "sleeve",
+            "inner-post",
+            "deck-cap",
+            "pin-tab",
+            "collar",
+            "locking-pin",
+            "level-foot"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "audio-mixing-console",
+      "kit": "theatre-production",
+      "title": "Audio mixing console",
+      "description": "Portable audio desk with a sloped control panel, display bridge, channel fader strips and rack base. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/audio-mixing-console.kcad.ts",
+      "preview": "/assets/theatre-production-audio-mixing-console.png",
+      "sourceSha256": "5d5aab39ca8aa6a94e8190685daccc8b0b16c61b108313eaaa50d64984ad68b6",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#616d79",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 228,
+        "sizeM": [
+          1.2,
+          0.65,
+          0.81
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#616d79",
+          "parts": [
+            "base",
+            "sloped-panel",
+            "display-bridge",
+            "display-left",
+            "display-right",
+            "fader-bank-left",
+            "fader-bank-right",
+            "arm-rest",
+            "encoder-left",
+            "encoder-mid",
+            "encoder-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "audio-monitor-wedge",
+      "kit": "theatre-production",
+      "title": "Audio monitor wedge",
+      "description": "Low angled stage monitor enclosure with a broad grille, end cheeks and rear connector plate. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/audio-monitor-wedge.kcad.ts",
+      "preview": "/assets/theatre-production-audio-monitor-wedge.png",
+      "sourceSha256": "652aea018ed2ca62111bc83dc4cf1b4e40671201d118e9d88e344ffdb85332c2",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#646c77",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 172,
+        "sizeM": [
+          0.765,
+          0.32,
+          0.755
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#646c77",
+          "parts": [
+            "speaker-body",
+            "front-grille",
+            "top-panel",
+            "left-cheek",
+            "right-cheek",
+            "rear-panel",
+            "carry-recess",
+            "woofer",
+            "connector"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "backstage-call-board",
+      "kit": "theatre-production",
+      "title": "Backstage call board",
+      "description": "Freestanding call-time board with a broad display panel, marker ledge and weighted feet. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/backstage-call-board.kcad.ts",
+      "preview": "/assets/theatre-production-backstage-call-board.png",
+      "sourceSha256": "5e651383691dde1e6dec39d7c17bd92543ac87370c3e4e9a7eb56dc504fd2311",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#666e78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 208,
+        "sizeM": [
+          1.1,
+          1.61,
+          0.32
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#666e78",
+          "parts": [
+            "panel",
+            "header-strip",
+            "left-post",
+            "right-post",
+            "marker-ledge",
+            "base-left",
+            "base-right",
+            "row-line-one",
+            "row-line-two",
+            "row-line-three",
+            "magnet-left",
+            "magnet-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "cable-ramp-crossing",
+      "kit": "theatre-production",
+      "title": "Cable ramp crossing",
+      "description": "Low stage-floor cable cover with a central raceway, sloped shoulders and two end guards. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/cable-ramp-crossing.kcad.ts",
+      "preview": "/assets/theatre-production-cable-ramp-crossing.png",
+      "sourceSha256": "472fadab5572df2fc1122636fe17ba7277dd524a96b76b1cb09019a121d9082d",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#696f78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 184,
+        "sizeM": [
+          1.2,
+          0.195,
+          0.38
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#696f78",
+          "parts": [
+            "base",
+            "center-raceway",
+            "left-shoulder",
+            "right-shoulder",
+            "top-cover",
+            "end-guard-left",
+            "end-guard-right",
+            "hinge-strip",
+            "anchor-left",
+            "anchor-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "counterweight-arbor",
+      "kit": "theatre-production",
+      "title": "Counterweight arbor",
+      "description": "Stage counterweight frame with guide rails, compact weight stack, top crosshead and bottom stop. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/counterweight-arbor.kcad.ts",
+      "preview": "/assets/theatre-production-counterweight-arbor.png",
+      "sourceSha256": "7627979744c35b6ccd58d6130db10f8de852dca5472aad0d69f589586eb476f7",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6f7278",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 208,
+        "sizeM": [
+          0.7,
+          2.26,
+          0.15
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6f7278",
+          "parts": [
+            "guide-left",
+            "guide-right",
+            "crosshead",
+            "base-crossbar",
+            "weight-one",
+            "weight-two",
+            "weight-three",
+            "weight-four",
+            "weight-five",
+            "tie-bar",
+            "sheave-left",
+            "sheave-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "curtain-track-carrier",
+      "kit": "theatre-production",
+      "title": "Curtain track carrier",
+      "description": "Compact trolley carriage with roller wheels, curtain hook and end-stop tab. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/curtain-track-carrier.kcad.ts",
+      "preview": "/assets/theatre-production-curtain-track-carrier.png",
+      "sourceSha256": "fd9928390397de805f828fa135916b9c3286a320f937098fcef72a7e7878f8b2",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#74747b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          0.2925,
+          0.235,
+          0.15
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#74747b",
+          "parts": [
+            "carriage",
+            "hook-stem",
+            "hook-tip",
+            "left-cheek",
+            "right-cheek",
+            "stop-tab",
+            "wheel-left",
+            "wheel-right",
+            "hanger-eye"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "cyclorama-drop",
+      "kit": "theatre-production",
+      "title": "Cyclorama drop",
+      "description": "Broad rear-stage cloth drop with top pipe pocket, lower batten and two side tie tabs. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/cyclorama-drop.kcad.ts",
+      "preview": "/assets/theatre-production-cyclorama-drop.png",
+      "sourceSha256": "79dac8264bec2e3f3c3f886e4794a098c4f72e86605b92e559df2fe2d97da0e6",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#726f70",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 184,
+        "sizeM": [
+          2.704,
+          2.195,
+          0.11
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#726f70",
+          "parts": [
+            "cloth",
+            "top-pocket",
+            "bottom-pocket",
+            "side-hem-left",
+            "side-hem-right",
+            "top-tab-left",
+            "top-tab-center",
+            "top-tab-right",
+            "sleeve-cap-left",
+            "sleeve-cap-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "dance-floor-panel",
+      "kit": "theatre-production",
+      "title": "Dance floor panel",
+      "description": "Portable sprung-floor section with surface boards, perimeter fascia and underfloor blocks. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/dance-floor-panel.kcad.ts",
+      "preview": "/assets/theatre-production-dance-floor-panel.png",
+      "sourceSha256": "39ced0129e5b284b0d1a482e0dc1141ba759d0293aabd66f31b8cc5821abc820",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#776c5d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 284,
+        "sizeM": [
+          1.805,
+          0.205,
+          1.225
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#776c5d",
+          "parts": [
+            "floor-surface",
+            "front-fascia",
+            "back-fascia",
+            "left-fascia",
+            "right-fascia",
+            "under-rail-front",
+            "under-rail-back",
+            "under-rail-left",
+            "under-rail-right",
+            "isolation-pad-a",
+            "isolation-pad-b",
+            "isolation-pad-c",
+            "isolation-pad-d"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "dimmer-rack",
+      "kit": "theatre-production",
+      "title": "Dimmer rack",
+      "description": "Portable lighting-control rack with vented front panel, breaker rows and top cable tray. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/dimmer-rack.kcad.ts",
+      "preview": "/assets/theatre-production-dimmer-rack.png",
+      "sourceSha256": "30ba2224d26aadba5c59b46db54d20e3b3f18080bdd8fcaa2b5c6332069ac115",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#686f78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 240,
+        "sizeM": [
+          0.8,
+          1.73,
+          0.78
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#686f78",
+          "parts": [
+            "base",
+            "left-upright",
+            "right-upright",
+            "top-panel",
+            "front-panel",
+            "vent-low",
+            "vent-mid",
+            "vent-high",
+            "cable-tray",
+            "wheel-left",
+            "wheel-right",
+            "indicator"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ellipsoidal-reflector-spotlight",
+      "kit": "theatre-production",
+      "title": "Ellipsoidal reflector spotlight",
+      "description": "Theatre profile fixture with a barrel, front lens collar, rear housing, yoke and hanging stirrup. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/ellipsoidal-reflector-spotlight.kcad.ts",
+      "preview": "/assets/theatre-production-ellipsoidal-reflector-spotlight.png",
+      "sourceSha256": "263ad10465dc26efdec3f733e4767e550888433b865aa8d01a7cd77b456e7af1",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#686f79",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 228,
+        "sizeM": [
+          0.5155,
+          0.88,
+          0.34
+        ],
+        "minUpM": 0.27,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#686f79",
+          "parts": [
+            "rear-housing",
+            "barrel",
+            "lens-frame",
+            "shutter-top",
+            "shutter-left",
+            "yoke-left",
+            "yoke-right",
+            "yoke-crossbar",
+            "lens",
+            "focus-knob",
+            "stirrup-eye"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "floor-cable-trough",
+      "kit": "theatre-production",
+      "title": "Floor cable trough",
+      "description": "Open-top cable trough section with removable lid strips, sidewalls and joining flanges. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/floor-cable-trough.kcad.ts",
+      "preview": "/assets/theatre-production-floor-cable-trough.png",
+      "sourceSha256": "2d5a1c58016b500df08363845d6e05678359e48765ad983dcd11e9b0bb00fd20",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#696e77",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 184,
+        "sizeM": [
+          1.58,
+          0.263,
+          0.4
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#696e77",
+          "parts": [
+            "floor",
+            "wall-left",
+            "wall-right",
+            "lid-left",
+            "lid-right",
+            "splice-plate-left",
+            "splice-plate-right",
+            "support-crossbar",
+            "join-pin-left",
+            "join-pin-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "folding-flat-brace",
+      "kit": "theatre-production",
+      "title": "Folding flat brace",
+      "description": "Scenery-panel kick brace with a lower floor shoe, pivot plate and adjustable support rod. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/folding-flat-brace.kcad.ts",
+      "preview": "/assets/theatre-production-folding-flat-brace.png",
+      "sourceSha256": "e800bbf52fe591457d00eb5f19fb74578fa2acf8c0377b0067f3b70a74d31761",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#72747a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 172,
+        "sizeM": [
+          0.25,
+          1.53,
+          0.24
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#72747a",
+          "parts": [
+            "floor-shoe",
+            "lower-bracket",
+            "upper-bracket",
+            "brace-rail",
+            "telescoping-rail",
+            "locking-tab",
+            "panel-hook",
+            "pivot",
+            "locking-pin"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "folding-stage-ramp",
+      "kit": "theatre-production",
+      "title": "Folding stage ramp",
+      "description": "Portable inclined-access blockout with a broad tread surface, side rails and hinge-like end drums. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/folding-stage-ramp.kcad.ts",
+      "preview": "/assets/theatre-production-folding-stage-ramp.png",
+      "sourceSha256": "386a2113fdacc47d1b312ddc99411458f633347522f82ef31808140bfedff24a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#737783",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 184,
+        "sizeM": [
+          1.3,
+          0.46,
+          0.965
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#737783",
+          "parts": [
+            "ramp-surface",
+            "left-side-rail",
+            "right-side-rail",
+            "anti-slip-rib-a",
+            "anti-slip-rib-b",
+            "anti-slip-rib-c",
+            "top-hinge-plate",
+            "lower-stop",
+            "hinge-left",
+            "hinge-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "fresnel-wash-fixture",
+      "kit": "theatre-production",
+      "title": "Fresnel wash fixture",
+      "description": "Compact Fresnel wash luminaire with a broad lens rim, rear vent body, yoke and clamp spigot. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/fresnel-wash-fixture.kcad.ts",
+      "preview": "/assets/theatre-production-fresnel-wash-fixture.png",
+      "sourceSha256": "f54cbc872762b12645f7976b4bfcc6791361816e5f9d5f7829c8273a5423cfa6",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#707580",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 216,
+        "sizeM": [
+          0.485,
+          0.78,
+          0.393
+        ],
+        "minUpM": 0.045,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#707580",
+          "parts": [
+            "rear-case",
+            "side-plate-left",
+            "side-plate-right",
+            "yoke-arm-left",
+            "yoke-arm-right",
+            "yoke-crossbar",
+            "spigot",
+            "barrel",
+            "lens-rim",
+            "focus-handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "grand-drape-valance",
+      "kit": "theatre-production",
+      "title": "Grand drape valance",
+      "description": "Gathered-looking theatre valance panel with upper rail, hanging tabs and weighted lower seam. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/grand-drape-valance.kcad.ts",
+      "preview": "/assets/theatre-production-grand-drape-valance.png",
+      "sourceSha256": "75530a84b09147b8534a7c34e991a0c227882fd1da148503b9bb9796b08c3b0f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#684c5a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 196,
+        "sizeM": [
+          2.66,
+          0.775,
+          0.2075
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#684c5a",
+          "parts": [
+            "valance",
+            "top-rail",
+            "gather-panel-left",
+            "gather-panel-center",
+            "gather-panel-right",
+            "hem",
+            "hanger-left",
+            "hanger-center",
+            "hanger-right",
+            "eyelet-left",
+            "eyelet-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "hoist-controller",
+      "kit": "theatre-production",
+      "title": "Hoist controller",
+      "description": "Handheld pendant with a cord entry, two oversized control buttons and lower cable exit. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/hoist-controller.kcad.ts",
+      "preview": "/assets/theatre-production-hoist-controller.png",
+      "sourceSha256": "0155edc5208bbce0c3df7bb7ed9035a01ea52d8c8682da02948ba52c5b8215aa",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6b737a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 248,
+        "sizeM": [
+          0.3,
+          0.94,
+          0.211
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6b737a",
+          "parts": [
+            "pendant-body",
+            "shoulder",
+            "button-guard-left",
+            "button-guard-right",
+            "label-panel",
+            "grip",
+            "button-left",
+            "button-right",
+            "cable-entry",
+            "cable-tail"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "led-cyc-wash-light",
+      "kit": "theatre-production",
+      "title": "LED cyc wash light",
+      "description": "Low-profile cyclorama wash unit with a long lens window, end cheeks and floor-bounce feet. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/led-cyc-wash-light.kcad.ts",
+      "preview": "/assets/theatre-production-led-cyc-wash-light.png",
+      "sourceSha256": "8f4a41476c817aec4a935e8d630d8e64a586322c3735acd43c172605d96a78e1",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6d737e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 260,
+        "sizeM": [
+          1.315,
+          0.285,
+          0.367
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6d737e",
+          "parts": [
+            "housing",
+            "front-window",
+            "top-grille",
+            "end-left",
+            "end-right",
+            "foot-left",
+            "foot-right",
+            "lens-a",
+            "lens-b",
+            "lens-c",
+            "cable-entry"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "lighting-control-console",
+      "kit": "theatre-production",
+      "title": "Lighting control console",
+      "description": "Theatre lighting desk with two display hoods, angled control surface, key bays and side cheeks. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/lighting-control-console.kcad.ts",
+      "preview": "/assets/theatre-production-lighting-control-console.png",
+      "sourceSha256": "a47902aec9111d17c5a9792622f063002d55486cd9cfc66d5a257bb3706e4f49",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#626d79",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 240,
+        "sizeM": [
+          1.205,
+          0.72,
+          0.73
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#626d79",
+          "parts": [
+            "console-base",
+            "control-surface",
+            "left-cheek",
+            "right-cheek",
+            "left-display",
+            "right-display",
+            "keyboard-panel",
+            "fader-bank-left",
+            "fader-bank-right",
+            "trackball",
+            "encoder-left",
+            "encoder-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "lighting-yoke-bracket",
+      "kit": "theatre-production",
+      "title": "Lighting yoke bracket",
+      "description": "U-shaped luminaire yoke with paired side arms, crossbar, pivot bosses and a center clamp stem. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/lighting-yoke-bracket.kcad.ts",
+      "preview": "/assets/theatre-production-lighting-yoke-bracket.png",
+      "sourceSha256": "10db58ae02b52842b683e9ca0506be42c191d62a1428a113d8627deccc1706de",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#71757d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          0.548,
+          0.62,
+          0.28
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#71757d",
+          "parts": [
+            "arm-left",
+            "arm-right",
+            "crossbar",
+            "mount-plate",
+            "stiffener-left",
+            "stiffener-right",
+            "pivot-left",
+            "pivot-right",
+            "spigot"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "marley-floor-roll",
+      "kit": "theatre-production",
+      "title": "Marley floor roll",
+      "description": "Rolled performance-floor sheet with a broad cylindrical core, loose leading edge and carry cradle. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/marley-floor-roll.kcad.ts",
+      "preview": "/assets/theatre-production-marley-floor-roll.png",
+      "sourceSha256": "5710440cd8b645c3ad031d60c6faf984ea4f0525068fa78a68ac160ca3d32a21",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#626b77",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 248,
+        "sizeM": [
+          1.07,
+          0.95,
+          0.5575
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#626b77",
+          "parts": [
+            "cradle-left",
+            "cradle-right",
+            "cradle-crossbar",
+            "loose-sheet",
+            "end-strap-left",
+            "end-strap-right",
+            "roll-core",
+            "core-cap-left",
+            "core-cap-right",
+            "retainer-pin"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "masking-leg",
+      "kit": "theatre-production",
+      "title": "Masking leg",
+      "description": "Narrow masking curtain section with a hanging cloth panel, top sleeve and weighted floor hem. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/masking-leg.kcad.ts",
+      "preview": "/assets/theatre-production-masking-leg.png",
+      "sourceSha256": "d14989f0e44133ec96669c3218d9f8c86e1cb88e604f1fb821be2b8102c9e15d",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5f6877",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 172,
+        "sizeM": [
+          1,
+          2.205,
+          0.08
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5f6877",
+          "parts": [
+            "cloth-panel",
+            "top-sleeve",
+            "weighted-hem",
+            "side-seam-left",
+            "side-seam-right",
+            "top-hook-left",
+            "top-hook-right",
+            "hem-weight-left",
+            "hem-weight-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "modular-stage-deck",
+      "kit": "theatre-production",
+      "title": "Modular stage deck",
+      "description": "Portable stage module with a broad top, perimeter edge trim, braced underframe and leveling feet. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/modular-stage-deck.kcad.ts",
+      "preview": "/assets/theatre-production-modular-stage-deck.png",
+      "sourceSha256": "797bdcc2a7bc26a0a18c10b45f26c8ded6edc5b24d3bfce7d90ae313dc5cdfcc",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6d737c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 284,
+        "sizeM": [
+          1.82,
+          0.52,
+          1.225
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6d737c",
+          "parts": [
+            "deck-top",
+            "edge-front",
+            "edge-back",
+            "edge-left",
+            "edge-right",
+            "underframe-front",
+            "underframe-back",
+            "underframe-left",
+            "underframe-right",
+            "foot-a",
+            "foot-b",
+            "foot-c",
+            "foot-d"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "motorized-chain-hoist",
+      "kit": "theatre-production",
+      "title": "Motorized chain hoist",
+      "description": "Compact overhead hoist body with a motor cover, suspension bail, chain drop and lower hook block. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/motorized-chain-hoist.kcad.ts",
+      "preview": "/assets/theatre-production-motorized-chain-hoist.png",
+      "sourceSha256": "0a6fb8fccfd5483dbf067ea13838de15eea5631276db961b167cbd62cf80bc5d",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6b727b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 248,
+        "sizeM": [
+          0.605,
+          1.475,
+          0.3925
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6b727b",
+          "parts": [
+            "hoist-case",
+            "motor-cover",
+            "control-cover",
+            "suspension-bail-left",
+            "suspension-bail-right",
+            "bail-top",
+            "chain",
+            "hook-block",
+            "hook-tip",
+            "chain-wheel"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "orchestra-pit-filler",
+      "kit": "theatre-production",
+      "title": "Orchestra pit filler",
+      "description": "Removable pit-cover module with edge rails, underframe and two recessed handling grips. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/orchestra-pit-filler.kcad.ts",
+      "preview": "/assets/theatre-production-orchestra-pit-filler.png",
+      "sourceSha256": "5031d310e40308ab82e37f4c7fcfc76055ae9ff4a298c3cbb622f9676a7aa221",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#676e78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 196,
+        "sizeM": [
+          1.6,
+          0.415,
+          1.019
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#676e78",
+          "parts": [
+            "deck",
+            "front-edge",
+            "back-edge",
+            "support-rail-left",
+            "support-rail-right",
+            "grip-left",
+            "grip-right",
+            "stiffener-front",
+            "stiffener-back",
+            "pin-left",
+            "pin-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "orchestra-shell-panel",
+      "kit": "theatre-production",
+      "title": "Orchestra shell panel",
+      "description": "Freestanding acoustic-shell section with broad reflector face, folded side returns and support feet. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/orchestra-shell-panel.kcad.ts",
+      "preview": "/assets/theatre-production-orchestra-shell-panel.png",
+      "sourceSha256": "bcad3b6d9594e8fbb68fd90c187ab9ec4d66a06bb69a941d1a9457286c16836f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7a715f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 184,
+        "sizeM": [
+          1.47,
+          2.115,
+          0.42
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7a715f",
+          "parts": [
+            "reflector-face",
+            "left-return",
+            "right-return",
+            "top-cap",
+            "rear-stiffener-low",
+            "rear-stiffener-high",
+            "left-foot",
+            "right-foot",
+            "hinge-left",
+            "hinge-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "par-can-fixture",
+      "kit": "theatre-production",
+      "title": "PAR can fixture",
+      "description": "Compact PAR-style can with a cylindrical lamp body, lens rim, side yoke and clamp spigot. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/par-can-fixture.kcad.ts",
+      "preview": "/assets/theatre-production-par-can-fixture.png",
+      "sourceSha256": "46a5e68ba6ec6832df71005b880d40895a27211f37397d0415a13a03b486683e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73737a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 260,
+        "sizeM": [
+          0.46,
+          0.635,
+          0.356
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73737a",
+          "parts": [
+            "yoke-left",
+            "yoke-right",
+            "yoke-crossbar",
+            "spigot",
+            "lamp-door-tab",
+            "side-bolt-left",
+            "side-bolt-right",
+            "can-body",
+            "front-rim",
+            "lens",
+            "rear-cap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "prop-storage-rack",
+      "kit": "theatre-production",
+      "title": "Prop storage rack",
+      "description": "Three-tier backstage storage rack with open shelves, side uprights and caster housings. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/prop-storage-rack.kcad.ts",
+      "preview": "/assets/theatre-production-prop-storage-rack.png",
+      "sourceSha256": "77ab6d9ec13f8045a6b0b68dcbe4b030d5ce88b41379456f01e153ab6c0104c9",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6c747b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 296,
+        "sizeM": [
+          1.255,
+          1.75,
+          0.6625
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6c747b",
+          "parts": [
+            "left-upright",
+            "right-upright",
+            "left-front-post",
+            "right-front-post",
+            "shelf-low",
+            "shelf-mid",
+            "shelf-high",
+            "front-lip-low",
+            "front-lip-mid",
+            "front-lip-high",
+            "caster-left-front",
+            "caster-right-front",
+            "caster-left-back",
+            "caster-right-back"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "prop-table",
+      "kit": "theatre-production",
+      "title": "Prop table",
+      "description": "Backstage props table with a broad worktop, lower shelf, four legs and end-stop rail. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/prop-table.kcad.ts",
+      "preview": "/assets/theatre-production-prop-table.png",
+      "sourceSha256": "ba67cf7f1cfc9b5fc66b743601ce88de106d2f616676726919fb42ac09cc3788",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#756f65",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 196,
+        "sizeM": [
+          1.5,
+          0.94,
+          0.7
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#756f65",
+          "parts": [
+            "worktop",
+            "lower-shelf",
+            "left-front-leg",
+            "right-front-leg",
+            "left-back-leg",
+            "right-back-leg",
+            "back-rail",
+            "drawer-front",
+            "handle",
+            "level-foot-a",
+            "level-foot-b"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "pulley-block",
+      "kit": "theatre-production",
+      "title": "Pulley block",
+      "description": "Single-sheave block with side cheeks, top attachment eye and lower rope slot. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/pulley-block.kcad.ts",
+      "preview": "/assets/theatre-production-pulley-block.png",
+      "sourceSha256": "87a7700d5f68f9895656a7b54a363abca4b17c6d2d338a0c4ffe817b5d4083fc",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#77777a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          0.235,
+          0.4,
+          0.19
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#77777a",
+          "parts": [
+            "cheek-left",
+            "cheek-right",
+            "top-crossbar",
+            "bottom-crossbar",
+            "rope-slot-left",
+            "rope-slot-right",
+            "sheave",
+            "axle",
+            "attachment-eye"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "rigging-handline-cleat",
+      "kit": "theatre-production",
+      "title": "Rigging handline cleat",
+      "description": "Wall-mounted handline cleat panel with twin rope posts, fairlead and a lower locking bar. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/rigging-handline-cleat.kcad.ts",
+      "preview": "/assets/theatre-production-rigging-handline-cleat.png",
+      "sourceSha256": "ab1a4062e07029b3a3ed34220f3ba3ada7bbf3d9ef5cd5c14d5eefac56d099ed",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#71737b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          0.42,
+          0.675,
+          0.185
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#71737b",
+          "parts": [
+            "backplate",
+            "top-cap",
+            "left-cheek",
+            "right-cheek",
+            "locking-bar",
+            "rope-guide",
+            "cleat-post-left",
+            "cleat-post-right",
+            "fairlead"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "riser-cart",
+      "kit": "theatre-production",
+      "title": "Riser cart",
+      "description": "Rolling cart with stacked folding platform sections, end guards and a tall pull handle. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/riser-cart.kcad.ts",
+      "preview": "/assets/theatre-production-riser-cart.png",
+      "sourceSha256": "8cf5dbec355f5151fc1936b0328b8292949553dad777e935d80f80b2b0e088db",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#71747c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 296,
+        "sizeM": [
+          1.05,
+          1.185,
+          0.665
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#71747c",
+          "parts": [
+            "lower-platform",
+            "middle-platform",
+            "upper-platform",
+            "front-stop",
+            "back-stop",
+            "handle-left",
+            "handle-right",
+            "handle-top",
+            "side-rail-left",
+            "side-rail-right",
+            "wheel-a",
+            "wheel-b",
+            "wheel-c",
+            "wheel-d"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "rolling-stage-platform",
+      "kit": "theatre-production",
+      "title": "Rolling stage platform",
+      "description": "Mobile platform with a raised work deck, guard sockets and four compact caster blocks. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/rolling-stage-platform.kcad.ts",
+      "preview": "/assets/theatre-production-rolling-stage-platform.png",
+      "sourceSha256": "e93e1a5786a217dd8f706a4642360d9b93c53a9546bb8a202b72426e10b00165",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#707681",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 260,
+        "sizeM": [
+          1.4,
+          0.635,
+          1.015
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#707681",
+          "parts": [
+            "platform-deck",
+            "front-apron",
+            "rear-apron",
+            "underframe-left",
+            "underframe-right",
+            "socket-left",
+            "socket-right",
+            "caster-left-front",
+            "caster-right-front",
+            "caster-left-back",
+            "caster-right-back"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "rope-lock",
+      "kit": "theatre-production",
+      "title": "Rope lock",
+      "description": "Compact rope-line clamp with a backplate, guide jaw, locking handle and mounting pins. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/rope-lock.kcad.ts",
+      "preview": "/assets/theatre-production-rope-lock.png",
+      "sourceSha256": "dda81a767537e729dcce1b5657801b1c632dccc7485b74d5d7a4b55d514d63db",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#71747c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          0.32,
+          0.67,
+          0.275
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#71747c",
+          "parts": [
+            "baseplate",
+            "left-cheek",
+            "right-cheek",
+            "jaw",
+            "handle",
+            "grip",
+            "pivot",
+            "mount-pin-left",
+            "mount-pin-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "sandbag-counterweight",
+      "kit": "theatre-production",
+      "title": "Sandbag counterweight",
+      "description": "Soft-looking rigging sandbag with central body, folded end caps and hanging loop. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/sandbag-counterweight.kcad.ts",
+      "preview": "/assets/theatre-production-sandbag-counterweight.png",
+      "sourceSha256": "5ead1c184fb77649bc10fb950868b665aa2e2f3314df676f61950a04bed55920",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#807563",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          0.575,
+          0.445,
+          0.285
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#807563",
+          "parts": [
+            "bag-body",
+            "end-left",
+            "end-right",
+            "top-seam",
+            "label-patch",
+            "hanger-strap-left",
+            "hanger-strap-right",
+            "suspension-eye"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "scenic-flat-panel",
+      "kit": "theatre-production",
+      "title": "Scenic flat panel",
+      "description": "Lightweight scenery flat with a broad facing, perimeter rails, two battens and foot blocks. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/scenic-flat-panel.kcad.ts",
+      "preview": "/assets/theatre-production-scenic-flat-panel.png",
+      "sourceSha256": "37d68cd92f6fac70e410f7f645e00828bbfae9cafb3bc5513d5ba984aad56427",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#756f65",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 196,
+        "sizeM": [
+          1.5,
+          2.1,
+          0.3
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#756f65",
+          "parts": [
+            "face",
+            "left-stile",
+            "right-stile",
+            "top-rail",
+            "bottom-rail",
+            "batten-low",
+            "batten-high",
+            "foot-left",
+            "foot-right",
+            "hinge-pin-left",
+            "hinge-pin-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "scenic-wagon",
+      "kit": "theatre-production",
+      "title": "Scenic wagon",
+      "description": "Low rolling scenery wagon with a deck, corner posts, push bar and four wheel housings. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/scenic-wagon.kcad.ts",
+      "preview": "/assets/theatre-production-scenic-wagon.png",
+      "sourceSha256": "1f5981d880ede065d51d7e2588a658c7e05a1d81e5ff448477fb0693638758b8",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6b717b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 296,
+        "sizeM": [
+          1.575,
+          1.045,
+          0.92
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6b717b",
+          "parts": [
+            "deck",
+            "front-stop",
+            "back-stop",
+            "post-left-front",
+            "post-right-front",
+            "post-left-back",
+            "post-right-back",
+            "handle-left",
+            "handle-right",
+            "handle-top",
+            "caster-a",
+            "caster-b",
+            "caster-c",
+            "caster-d"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "scrim-frame",
+      "kit": "theatre-production",
+      "title": "Scrim frame",
+      "description": "Freestanding scenic scrim panel with a rectangular support frame and weighted stabilizer feet. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/scrim-frame.kcad.ts",
+      "preview": "/assets/theatre-production-scrim-frame.png",
+      "sourceSha256": "29bc9df8e1c213346148ef3034a591acf2e9e6033fa90d856366f4ac964243e5",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7a7770",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 184,
+        "sizeM": [
+          1.82,
+          1.935,
+          0.4
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7a7770",
+          "parts": [
+            "scrim",
+            "top-frame",
+            "bottom-frame",
+            "left-frame",
+            "right-frame",
+            "mid-rail",
+            "foot-left",
+            "foot-right",
+            "foot-pin-left",
+            "foot-pin-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "spotlight-followspot-stand",
+      "kit": "theatre-production",
+      "title": "Followspot stand",
+      "description": "Tall followspot support with a weighted base, height mast, yoke saddle and paired adjustment knobs. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/spotlight-followspot-stand.kcad.ts",
+      "preview": "/assets/theatre-production-spotlight-followspot-stand.png",
+      "sourceSha256": "f89b1f1919e04a188e7a9ace98da8d0d800baa0e195a274a0e01f5d071f8779e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#676f79",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          0.8,
+          1.66,
+          0.65
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#676f79",
+          "parts": [
+            "base",
+            "mast",
+            "crosshead",
+            "left-yoke",
+            "right-yoke",
+            "saddle",
+            "height-collar",
+            "left-adjuster",
+            "right-adjuster"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "stage-batten-section",
+      "kit": "theatre-production",
+      "title": "Stage batten section",
+      "description": "Short overhead batten assembly with a long tube, end plates, two suspension eyes and a cable clip. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/stage-batten-section.kcad.ts",
+      "preview": "/assets/theatre-production-stage-batten-section.png",
+      "sourceSha256": "0527f263c5cdd64f7490319fd2803c10af5632958935cbd09f0e97d5942c4fc2",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#777b80",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 160,
+        "sizeM": [
+          2.525,
+          0.26,
+          0.155
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#777b80",
+          "parts": [
+            "batten",
+            "end-plate-left",
+            "end-plate-right",
+            "cable-clip",
+            "suspension-tab-left",
+            "suspension-tab-right",
+            "hanger-eye-left",
+            "hanger-eye-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "stage-edge-trim",
+      "kit": "theatre-production",
+      "title": "Stage edge trim",
+      "description": "Short modular stage-edge fascia section with corner return, fixing tabs and end cap. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/stage-edge-trim.kcad.ts",
+      "preview": "/assets/theatre-production-stage-edge-trim.png",
+      "sourceSha256": "c27dcd23af2927a74114a064a55d1fec34619e1a61f0f2e907955d76b98b29a9",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6d727b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 228,
+        "sizeM": [
+          1.745,
+          0.355,
+          0.345
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6d727b",
+          "parts": [
+            "fascia",
+            "top-lip",
+            "left-return",
+            "right-return",
+            "fixing-tab-a",
+            "fixing-tab-b",
+            "fixing-tab-c",
+            "end-cap",
+            "fastener-a",
+            "fastener-b",
+            "fastener-c"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "stage-extension-wing",
+      "kit": "theatre-production",
+      "title": "Stage extension wing",
+      "description": "Side-stage extension platform with a box frame, guard posts and a small tie-in plate. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/stage-extension-wing.kcad.ts",
+      "preview": "/assets/theatre-production-stage-extension-wing.png",
+      "sourceSha256": "24f24386939b603ef9a3520cbd00bfd9b72645d76c26bf848be49d653459fe80",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#737783",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 208,
+        "sizeM": [
+          1.575,
+          0.525,
+          0.9325
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#737783",
+          "parts": [
+            "platform",
+            "front-apron",
+            "left-rail",
+            "right-rail",
+            "rear-rail",
+            "leg-left-front",
+            "leg-right-front",
+            "leg-left-back",
+            "leg-right-back",
+            "tie-in-tab",
+            "level-left",
+            "level-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "stage-manager-console",
+      "kit": "theatre-production",
+      "title": "Stage manager console",
+      "description": "Compact backstage work surface with a call-board screen, talkback controls and cable trunk. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/stage-manager-console.kcad.ts",
+      "preview": "/assets/theatre-production-stage-manager-console.png",
+      "sourceSha256": "e822b0f7e76c5113170792284760b127535734329d7e41045a24fbda179a23c8",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#676f79",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 196,
+        "sizeM": [
+          1.05,
+          1.69,
+          0.63
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#676f79",
+          "parts": [
+            "console-base",
+            "desk-top",
+            "left-leg",
+            "right-leg",
+            "rear-post-left",
+            "rear-post-right",
+            "monitor",
+            "call-board",
+            "lower-shelf",
+            "talkback-knob-left",
+            "talkback-knob-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "stage-pocket-hatch",
+      "kit": "theatre-production",
+      "title": "Stage pocket hatch",
+      "description": "Flush access-hatch panel with a perimeter frame, lift recess and corner hinge barrels. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/stage-pocket-hatch.kcad.ts",
+      "preview": "/assets/theatre-production-stage-pocket-hatch.png",
+      "sourceSha256": "19d995005edab8bd20bcae759cd5a7c92330bb376b693caec372b26e769996a4",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6a7079",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 184,
+        "sizeM": [
+          0.905,
+          0.15,
+          0.7405
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6a7079",
+          "parts": [
+            "frame-front",
+            "frame-back",
+            "frame-left",
+            "frame-right",
+            "hatch-panel",
+            "lift-recess",
+            "hinge-strap-left",
+            "hinge-strap-right",
+            "hinge-barrel-left",
+            "hinge-barrel-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "stage-power-distro",
+      "kit": "theatre-production",
+      "title": "Stage power distribution box",
+      "description": "Portable stage power enclosure with locking lid, connector rows, carry handles and skid feet. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/stage-power-distro.kcad.ts",
+      "preview": "/assets/theatre-production-stage-power-distro.png",
+      "sourceSha256": "c127cc84da22b71989c59dff3b284541d0f1be39807553f311c653055034daf4",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6d747b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 240,
+        "sizeM": [
+          1.02,
+          0.98,
+          0.73
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6d747b",
+          "parts": [
+            "case",
+            "lid",
+            "front-panel",
+            "panel-left",
+            "panel-right",
+            "handle-left",
+            "handle-right",
+            "skid-left",
+            "skid-right",
+            "connector-a",
+            "connector-b",
+            "connector-c"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "stage-riser-platform",
+      "kit": "theatre-production",
+      "title": "Stage riser platform",
+      "description": "Two-level riser assembly with stepped decks, boxed supports and a low access step. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/stage-riser-platform.kcad.ts",
+      "preview": "/assets/theatre-production-stage-riser-platform.png",
+      "sourceSha256": "fded9c723a72de68b5b8442f59b4cb2fc999660cd54818f1fb2fac32e98e5e2e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#696f79",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 208,
+        "sizeM": [
+          1.7,
+          0.66,
+          1.32
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#696f79",
+          "parts": [
+            "lower-deck",
+            "upper-deck",
+            "lower-front",
+            "upper-front",
+            "support-left-low",
+            "support-right-low",
+            "support-left-high",
+            "support-right-high",
+            "step",
+            "cross-rail",
+            "foot-left",
+            "foot-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "stage-stair-unit",
+      "kit": "theatre-production",
+      "title": "Stage stair unit",
+      "description": "Three-step stage access unit with boxed treads, side cheeks and rear stabilizing pads. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/stage-stair-unit.kcad.ts",
+      "preview": "/assets/theatre-production-stage-stair-unit.png",
+      "sourceSha256": "c816a4951ed5d307dd9987b5b30b8653bab1239d02e1dcab30d93147300a4533",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#707682",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 172,
+        "sizeM": [
+          0.805,
+          0.63,
+          1.11
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#707682",
+          "parts": [
+            "step-one",
+            "step-two",
+            "step-three",
+            "left-cheek",
+            "right-cheek",
+            "top-landing",
+            "rear-brace",
+            "front-foot-left",
+            "front-foot-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "strip-light-battens",
+      "kit": "theatre-production",
+      "title": "Strip-light batten set",
+      "description": "Three compact strip-light housings with mounting tabs and end caps, arranged as a touring set. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/strip-light-battens.kcad.ts",
+      "preview": "/assets/theatre-production-strip-light-battens.png",
+      "sourceSha256": "4fccaf682945c9591c051c7d0b2f773b0efa64babda6544cb42d45b6a7575fab",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#696f78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 208,
+        "sizeM": [
+          1.5,
+          0.28,
+          1.025
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#696f78",
+          "parts": [
+            "batten-one",
+            "batten-two",
+            "batten-three",
+            "lens-one",
+            "lens-two",
+            "lens-three",
+            "tab-left-one",
+            "tab-right-one",
+            "tab-left-two",
+            "tab-right-two",
+            "hanger-left",
+            "hanger-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "teaser-border",
+      "kit": "theatre-production",
+      "title": "Teaser border",
+      "description": "Horizontal masking border with a rectangular frame, hanging cloth and top rigging sleeves. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/teaser-border.kcad.ts",
+      "preview": "/assets/theatre-production-teaser-border.png",
+      "sourceSha256": "e077e195ff4beebe41bd45515b82a31fe9728ca07ed165a8c398a25360261ddb",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#636c79",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 184,
+        "sizeM": [
+          2.16,
+          0.81,
+          0.1
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#636c79",
+          "parts": [
+            "cloth",
+            "top-sleeve",
+            "left-hem",
+            "right-hem",
+            "bottom-weight",
+            "hang-tab-left",
+            "hang-tab-mid",
+            "hang-tab-right",
+            "grommet-left",
+            "grommet-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "touring-road-case",
+      "kit": "theatre-production",
+      "title": "Touring road case",
+      "description": "Flight case with reinforced corners, recessed pull handles, latches and low roller feet. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/touring-road-case.kcad.ts",
+      "preview": "/assets/theatre-production-touring-road-case.png",
+      "sourceSha256": "602e9171d0712c752668b63b87ccc20567d20e6ae6ad62f459bc07ec2ff13f66",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#68717b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 208,
+        "sizeM": [
+          0.98,
+          1.04,
+          0.72
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#68717b",
+          "parts": [
+            "case-shell",
+            "lid",
+            "front-rail",
+            "back-rail",
+            "left-corner",
+            "right-corner",
+            "handle-left",
+            "handle-right",
+            "latch-left",
+            "latch-right",
+            "wheel-left",
+            "wheel-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "traveler-curtain-track",
+      "kit": "theatre-production",
+      "title": "Traveler curtain track",
+      "description": "Straight curtain track with end stops, suspended support points and paired traveler panels. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/traveler-curtain-track.kcad.ts",
+      "preview": "/assets/theatre-production-traveler-curtain-track.png",
+      "sourceSha256": "3e105449f2de609f81c36b5c59697578650b554499350a560aac1c0bc8219339",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6d6e79",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 228,
+        "sizeM": [
+          2.4,
+          2.185,
+          0.09
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6d6e79",
+          "parts": [
+            "track",
+            "support-left",
+            "support-center",
+            "support-right",
+            "left-curtain",
+            "right-curtain",
+            "bottom-hem-left",
+            "bottom-hem-right",
+            "carrier-left",
+            "carrier-center",
+            "carrier-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "wireless-intercom-beltpack",
+      "kit": "theatre-production",
+      "title": "Wireless intercom beltpack",
+      "description": "Portable communications pack with antenna, belt clip, talk button and headset socket. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "theatre production",
+        "stagecraft",
+        "performing arts",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "theatre",
+        "theater",
+        "stagecraft",
+        "performing-arts",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/theatre-production/wireless-intercom-beltpack.kcad.ts",
+      "preview": "/assets/theatre-production-wireless-intercom-beltpack.png",
+      "sourceSha256": "964bbaad2752eaaccfb10b88e463a9b42521a755d24170f813fa36d0b8d9e37a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#737780",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          0.2795,
+          0.68,
+          0.185
+        ],
+        "minUpM": 0.07,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#737780",
+          "parts": [
+            "pack-body",
+            "belt-clip",
+            "top-cap",
+            "side-button",
+            "front-label",
+            "antenna-base",
+            "antenna",
+            "talk-button",
+            "headset-socket"
+          ],
+          "param": "color"
         }
       ]
     },
