@@ -11,6 +11,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, join, relative } from 'node:path';
 import { runScript } from '../../composition/runScript';
 import { runAndExport } from '../script-runtime/export';
+import { resetOcct } from '../../kernel/backends/occt/occtBackend';
 import {
   CatalogAssetSchema,
   CatalogIndexSchema,
@@ -39,7 +40,7 @@ export async function buildCatalogIndex(repoRoot: string): Promise<CatalogIndex>
   const kitIds = readdirSync(kitsDir).filter((name) => statSync(join(kitsDir, name)).isDirectory()).sort();
   const kits: CatalogIndex['kits'] = [];
   const assets: CatalogAsset[] = [];
-  for (const kitId of kitIds) {
+  for (const [kitIndex, kitId] of kitIds.entries()) {
     const kitDir = join(kitsDir, kitId);
     const kitFile = CatalogKitFileSchema.parse(JSON.parse(readFileSync(join(kitDir, 'kit.json'), 'utf8')));
     const sources = readdirSync(kitDir).filter((name) => name.endsWith(ASSET_SUFFIX)).sort();
@@ -49,6 +50,11 @@ export async function buildCatalogIndex(repoRoot: string): Promise<CatalogIndex>
     }
     kits.push({ id: kitId, ...kitFile, assets: kitAssets.map((asset) => asset.id) });
     assets.push(...kitAssets);
+
+    // Asset export allocates substantial native geometry state. The catalog
+    // retains only serialized metadata and GLB-derived stats, so reset OCCT
+    // between kits to keep full-catalog builds bounded as the library grows.
+    if (kitIndex < kitIds.length - 1) await resetOcct();
   }
   const duplicate = assets.find((asset, index) => assets.findIndex((other) => other.id === asset.id) !== index);
   if (duplicate !== undefined) throw new CatalogBuildError(`duplicate catalog asset id '${duplicate.id}'.`);

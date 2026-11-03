@@ -1508,6 +1508,63 @@
         "screwdriver",
         "sledgehammer"
       ]
+    },
+    {
+      "id": "wind-energy",
+      "title": "Wind energy",
+      "description": "Original low-poly wind-farm turbines, site components and service props with editable scale and color controls.",
+      "assets": [
+        "access-ladder-cage",
+        "access-platform-ring",
+        "aviation-light",
+        "blade-root-lifting-yoke",
+        "blade-root-protector",
+        "blade-transport-saddle",
+        "cable-entry-boot",
+        "cable-reel-stand",
+        "cable-trench-cover",
+        "converter-cabinet",
+        "crane-outrigger-pad",
+        "foundation-anchor-cage",
+        "foundation-inspection-hatch",
+        "gearbox-enclosure",
+        "generator-cover",
+        "grounding-busbar",
+        "horizontal-axis-wind-turbine",
+        "maintenance-tool-cart",
+        "monopile-foundation",
+        "nacelle-service-platform",
+        "nacelle-transport-frame",
+        "offshore-wind-turbine",
+        "oil-cooler-module",
+        "rooftop-wind-turbine",
+        "service-lift-cage",
+        "service-shelter",
+        "small-farm-wind-turbine",
+        "substation-switchgear-kiosk",
+        "torque-tool-case",
+        "tower-base-flange",
+        "tower-ladder-section",
+        "tower-section",
+        "tower-transport-saddle",
+        "transition-piece",
+        "turbine-base-skirt",
+        "turbine-base-steps",
+        "turbine-blade-root-sleeve",
+        "turbine-control-cabinet",
+        "turbine-door-frame",
+        "turbine-junction-box",
+        "turbine-nacelle-shell",
+        "turbine-number-placard",
+        "turbine-rotor-hub",
+        "vertical-axis-wind-turbine",
+        "wind-farm-access-gate",
+        "wind-farm-meter-pedestal",
+        "wind-farm-pad-mount-transformer",
+        "wind-farm-warning-sign",
+        "wind-site-bollard",
+        "wind-turbine-blade"
+      ]
     }
   ],
   "assets": [
@@ -130164,6 +130221,3457 @@
             "grip"
           ],
           "param": "grip"
+        }
+      ]
+    },
+    {
+      "id": "access-ladder-cage",
+      "kit": "wind-energy",
+      "title": "Tower access ladder cage",
+      "description": "Vertical tower ladder section with side rails, four rungs and a half-hoop safety cage. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/access-ladder-cage.kcad.ts",
+      "sourceSha256": "9bb1b5d74d47ab18626b995106647a03cd84618928220b1cdd04c5450cd9a661",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#626d6b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 260,
+        "sizeM": [
+          0.52,
+          1.25,
+          0.52
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#626d6b",
+          "parts": [
+            "rail-left",
+            "rail-right",
+            "rung-0",
+            "rung-1",
+            "rung-2",
+            "rung-3",
+            "rung-4",
+            "hoop-0",
+            "hoop-1",
+            "hoop-2",
+            "hoop-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "access-platform-ring",
+      "kit": "wind-energy",
+      "title": "Tower access platform ring",
+      "description": "Circular service platform with four guard posts, a curved-look deck and ladder opening. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/access-platform-ring.kcad.ts",
+      "sourceSha256": "e4a292a35f323c78f3d1835a54150d55b477563cedfbc65a00bf83cfbe63cdd6",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#777f7f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          0.86,
+          0.76,
+          0.9
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#777f7f",
+          "parts": [
+            "deck",
+            "post-0",
+            "post-1",
+            "post-2",
+            "post-3",
+            "rail-front",
+            "rail-back",
+            "opening-bridge"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "aviation-light",
+      "kit": "wind-energy",
+      "title": "Turbine aviation light",
+      "description": "Low polygon aviation beacon with a square bracket, cylindrical lamp and cap. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/aviation-light.kcad.ts",
+      "sourceSha256": "c96833946aa2a285f2bdaa6196c9a786a1629ec5e797f365bd56e68bc68b326d",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b34d42",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.2,
+          0.25,
+          0.2
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b34d42",
+          "parts": [
+            "mount",
+            "stem",
+            "lamp",
+            "cap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "blade-root-lifting-yoke",
+      "kit": "wind-energy",
+      "title": "Blade root lifting yoke",
+      "description": "Lifting yoke frame with a broad crossbar, paired sling lugs and central hook eye. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/blade-root-lifting-yoke.kcad.ts",
+      "sourceSha256": "00c16a6441a2e43f88740fcf28ebcf06842f5e0b0452b09454b8ce7e4e918ea7",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#727976",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          1.05,
+          0.78,
+          0.17
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#727976",
+          "parts": [
+            "beam",
+            "leg-left",
+            "leg-right",
+            "eye-left",
+            "eye-right",
+            "hook-eye"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "blade-root-protector",
+      "kit": "wind-energy",
+      "title": "Blade root protector",
+      "description": "Protective cover around a turbine blade root with flanged ring and short securing tabs. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/blade-root-protector.kcad.ts",
+      "sourceSha256": "bd3666464695e563a882d5f796af5cf2704be2593cecc4deda2e06f999175662",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#c8c8bd",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          0.5,
+          0.42,
+          0.5
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#c8c8bd",
+          "parts": [
+            "ring",
+            "sleeve",
+            "tab-0",
+            "tab-1",
+            "tab-2",
+            "tab-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "blade-transport-saddle",
+      "kit": "wind-energy",
+      "title": "Wind blade transport saddle",
+      "description": "Padded transport saddle with two curved-look support blocks and a broad trailer base. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/blade-transport-saddle.kcad.ts",
+      "sourceSha256": "e7532c59439fc2a1383889371b3592ffd7fd4c631a35f8881ecbf240b5e889e3",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#81766a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          1,
+          0.285,
+          0.6
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#81766a",
+          "parts": [
+            "base",
+            "saddle-left",
+            "saddle-right",
+            "strap-bar",
+            "foot--420",
+            "foot-420"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "cable-entry-boot",
+      "kit": "wind-energy",
+      "title": "Cable entry boot",
+      "description": "Flexible-looking cable entry boot with base plate, raised collar and short conduit riser. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/cable-entry-boot.kcad.ts",
+      "sourceSha256": "0861d3ac1aa8180b705ac478ec896d89219882a2be87bc72535f27546c67d2cb",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#575f5d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 188,
+        "sizeM": [
+          0.46,
+          0.65,
+          0.38
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#575f5d",
+          "parts": [
+            "plate",
+            "boot",
+            "collar",
+            "conduit",
+            "cap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "cable-reel-stand",
+      "kit": "wind-energy",
+      "title": "Power cable reel stand",
+      "description": "Freestanding cable drum stand with two side supports, bottom tie and central axle. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/cable-reel-stand.kcad.ts",
+      "sourceSha256": "19aae09f666d7f3855a5678f988b4628b9c6ddd95d3124c64a3688e722fc9f79",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#727976",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 148,
+        "sizeM": [
+          0.85,
+          1.02,
+          0.7
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#727976",
+          "parts": [
+            "foot-left",
+            "foot-right",
+            "upright-left",
+            "upright-right",
+            "axle",
+            "reel",
+            "crossbar"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "cable-trench-cover",
+      "kit": "wind-energy",
+      "title": "Cable trench cover",
+      "description": "Rectangular cable trench lid with reinforced cross ribs and lift slots. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/cable-trench-cover.kcad.ts",
+      "sourceSha256": "439ec32990b1ffe4bce375f5e6e70c35b1e84735158dc8b2dad5b566906f85cb",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#727976",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          1.2,
+          0.09,
+          0.54
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#727976",
+          "parts": [
+            "lid",
+            "rib-0",
+            "rib-1",
+            "rib-2",
+            "rib-3",
+            "slot-left",
+            "slot-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "converter-cabinet",
+      "kit": "wind-energy",
+      "title": "Power converter cabinet",
+      "description": "Tall converter cabinet with top lip, twin front panels and side cooling louvres. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/converter-cabinet.kcad.ts",
+      "sourceSha256": "ce596a1aa369263665b4086bedb114c45ee7e9086c6f8ea7ed4fc02a2a4d94fb",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#707a76",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          0.98,
+          1.51,
+          0.7
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#707a76",
+          "parts": [
+            "body",
+            "top",
+            "panel-left",
+            "panel-right",
+            "louver-0",
+            "louver-1",
+            "louver-2",
+            "louver-3",
+            "louver-4"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "crane-outrigger-pad",
+      "kit": "wind-energy",
+      "title": "Crane outrigger pad",
+      "description": "Square equipment pad with a shallow top plate, underside ribs and four corner chamfers. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/crane-outrigger-pad.kcad.ts",
+      "sourceSha256": "31a99ecedd01d55cd85c8d9cc0b96e7aef1f34679a40a91b30dcb2305969f611",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#555b59",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.9,
+          0.12,
+          0.9
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#555b59",
+          "parts": [
+            "pad",
+            "rib-0",
+            "rib-1",
+            "rib-2",
+            "rib-3",
+            "top-plate"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "foundation-anchor-cage",
+      "kit": "wind-energy",
+      "title": "Foundation anchor cage",
+      "description": "Circular anchor cage ring with eight vertical bolts and a central tower socket. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/foundation-anchor-cage.kcad.ts",
+      "sourceSha256": "c6f2950b447acd911281917762ca924b0595dd326ca5f4f94446e348890f8a8f",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7a8180",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 440,
+        "sizeM": [
+          0.7,
+          0.37,
+          0.7
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7a8180",
+          "parts": [
+            "ring",
+            "socket",
+            "bolt-0",
+            "bolt-1",
+            "bolt-2",
+            "bolt-3",
+            "bolt-4",
+            "bolt-5",
+            "bolt-6",
+            "bolt-7"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "foundation-inspection-hatch",
+      "kit": "wind-energy",
+      "title": "Foundation inspection hatch",
+      "description": "Circular foundation access hatch with raised rim, inset lid and twin lift tabs. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/foundation-inspection-hatch.kcad.ts",
+      "sourceSha256": "947d6c58935d3aed1bc2cfa5ff53d9b8e4c7d90ff14f33d6ca2efd2f7a859866",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#737a77",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 200,
+        "sizeM": [
+          0.66,
+          0.13,
+          0.66
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#737a77",
+          "parts": [
+            "rim",
+            "lid",
+            "tab-left",
+            "tab-right",
+            "bolt-a",
+            "bolt-b"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "gearbox-enclosure",
+      "kit": "wind-energy",
+      "title": "Gearbox assembly housing",
+      "description": "Compact gearbox housing with raised cover, mounting feet and two stepped side bosses. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/gearbox-enclosure.kcad.ts",
+      "sourceSha256": "bddfab9525314453969ddcab970e92b5d99f9be95185b41471e15cb99865aa5b",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#747b77",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          0.93,
+          0.54,
+          0.48
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#747b77",
+          "parts": [
+            "housing",
+            "cover",
+            "shaft-left",
+            "shaft-right",
+            "foot--260",
+            "foot-260"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "generator-cover",
+      "kit": "wind-energy",
+      "title": "Generator housing cover",
+      "description": "Generator cover with cylindrical end caps, central rectangular body and mounting rails. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/generator-cover.kcad.ts",
+      "sourceSha256": "e5815f00a22c5452bdf8492b15bf1315847606ddc7e4931b10f5073614bc8b0e",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#717975",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          1.14,
+          0.64,
+          0.565
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#717975",
+          "parts": [
+            "body",
+            "end-left",
+            "end-right",
+            "rail-left",
+            "rail-right",
+            "top"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "grounding-busbar",
+      "kit": "wind-energy",
+      "title": "Turbine grounding busbar",
+      "description": "Grounding bar with six terminal studs, two insulators and a broad mounting rail. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/grounding-busbar.kcad.ts",
+      "sourceSha256": "9860872c2762aa8552c86c3e3c33c521b01fe88e4dac015d51f06bda0e7404b0",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a47945",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 300,
+        "sizeM": [
+          0.85,
+          0.21,
+          0.13
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a47945",
+          "parts": [
+            "rail",
+            "insulator-left",
+            "insulator-right",
+            "stud-0",
+            "stud-1",
+            "stud-2",
+            "stud-3",
+            "stud-4",
+            "stud-5"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "horizontal-axis-wind-turbine",
+      "kit": "wind-energy",
+      "title": "Horizontal-axis wind turbine",
+      "description": "Onshore turbine silhouette with tower, box nacelle, hub, three broad blades and foundation. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/horizontal-axis-wind-turbine.kcad.ts",
+      "sourceSha256": "ad3b3f40e335c540d96202546712bf7f07b13b9dc5c4cd87e81bad3af0244e1a",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d8d8d1",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          1.99,
+          3.65,
+          0.41
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d8d8d1",
+          "parts": [
+            "tower",
+            "nacelle",
+            "hub",
+            "blade-up",
+            "blade-left",
+            "blade-right",
+            "base-flange"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "maintenance-tool-cart",
+      "kit": "wind-energy",
+      "title": "Turbine maintenance tool cart",
+      "description": "Compact maintenance cart with two shelves, push handle and four low polygon casters. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/maintenance-tool-cart.kcad.ts",
+      "sourceSha256": "9b7d248668ce1e89b45985c72bd2f540c501bd18d4845d069c04ee495b659308",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#737a77",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 260,
+        "sizeM": [
+          0.85,
+          0.805,
+          0.57
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#737a77",
+          "parts": [
+            "lower",
+            "upper",
+            "post--360--210",
+            "post--360-210",
+            "post-360--210",
+            "post-360-210",
+            "handle",
+            "wheel--330--210",
+            "wheel--330-210",
+            "wheel-330--210",
+            "wheel-330-210"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "monopile-foundation",
+      "kit": "wind-energy",
+      "title": "Monopile foundation",
+      "description": "Short offshore monopile foundation with top rim, four fender blocks and a flat seabed shoe. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/monopile-foundation.kcad.ts",
+      "sourceSha256": "cfc1ed4cdebc35e0c0c3ffa0d6b7dc490dfada666ec98da715f87e216904fa48",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#777d7a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 148,
+        "sizeM": [
+          0.73,
+          0.86,
+          0.73
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#777d7a",
+          "parts": [
+            "pile",
+            "rim",
+            "shoe",
+            "fender-0",
+            "fender-1",
+            "fender-2",
+            "fender-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "nacelle-service-platform",
+      "kit": "wind-energy",
+      "title": "Nacelle service platform",
+      "description": "Narrow service walkway with guard rails, mounting brackets and an access ladder stub. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/nacelle-service-platform.kcad.ts",
+      "sourceSha256": "326b2672bd80dde86357767ff72e9237017310bd00fcf62b76befe46487ed215",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#737c79",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          1.05,
+          0.77,
+          0.4425
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#737c79",
+          "parts": [
+            "deck",
+            "rail-left",
+            "rail-right",
+            "post--440",
+            "post-440",
+            "ladder"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "nacelle-transport-frame",
+      "kit": "wind-energy",
+      "title": "Nacelle transport frame",
+      "description": "Open transport frame with corner posts, support deck and two lifting crossbars. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/nacelle-transport-frame.kcad.ts",
+      "sourceSha256": "25af0c45b328ce63dd815872f9d58ad16ddae1af33acf0c445eb1ab557db7812",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#747b78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          1.3,
+          0.83,
+          0.95
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#747b78",
+          "parts": [
+            "deck",
+            "post--560--380",
+            "post--560-380",
+            "post-560--380",
+            "post-560-380",
+            "cross-a",
+            "cross-b"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "offshore-wind-turbine",
+      "kit": "wind-energy",
+      "title": "Offshore wind turbine",
+      "description": "Offshore turbine scene prop with monopile, transition collar, tower, nacelle and rotor. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/offshore-wind-turbine.kcad.ts",
+      "sourceSha256": "ea69532f50f36766b9129ea65dae0f812a774b3d172c883b1461dcb1e40e971e",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#c9d1d0",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 224,
+        "sizeM": [
+          2.25,
+          4.68,
+          0.505
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#c9d1d0",
+          "parts": [
+            "monopile",
+            "transition",
+            "tower",
+            "nacelle",
+            "hub",
+            "blade-up",
+            "blade-left",
+            "blade-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "oil-cooler-module",
+      "kit": "wind-energy",
+      "title": "Cooling module",
+      "description": "Cooling module with radiator core, two side fans and upper pipe headers. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/oil-cooler-module.kcad.ts",
+      "sourceSha256": "5a15608dc2867a9b90f65f654193c7f80ddf3fa98351bfa7970f408743a0d1de",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#707976",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 148,
+        "sizeM": [
+          0.76,
+          0.75,
+          0.465
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#707976",
+          "parts": [
+            "core",
+            "fan-0",
+            "fan-1",
+            "header-top",
+            "header-bottom",
+            "foot--260",
+            "foot-260"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "rooftop-wind-turbine",
+      "kit": "wind-energy",
+      "title": "Rooftop wind turbine",
+      "description": "Compact roof turbine on a tripod mast with short nacelle and three stub blades. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/rooftop-wind-turbine.kcad.ts",
+      "sourceSha256": "e00e77ef2f77d6336b86affadfade60715fa8531ed391237eb388c3b59e2e7c0",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7e8a88",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 184,
+        "sizeM": [
+          0.87,
+          1.34,
+          0.52
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7e8a88",
+          "parts": [
+            "roof-plate",
+            "mast",
+            "nacelle",
+            "hub",
+            "blade-up",
+            "blade-left",
+            "blade-right",
+            "leg--180--180",
+            "leg-180--180",
+            "leg-0-180"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "service-lift-cage",
+      "kit": "wind-energy",
+      "title": "Turbine service lift cage",
+      "description": "Rectangular service cage with platform floor, four uprights and overhead rail. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/service-lift-cage.kcad.ts",
+      "sourceSha256": "4f024a199226d69792575181c7eea06b60d0a0643628cc04b6d996c7b52ccf51",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#787e7b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.65,
+          0.985,
+          0.62
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#787e7b",
+          "parts": [
+            "floor",
+            "post--280--260",
+            "post--280-260",
+            "post-280--260",
+            "post-280-260",
+            "top-rail",
+            "back-rail",
+            "gate"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "service-shelter",
+      "kit": "wind-energy",
+      "title": "Wind farm service shelter",
+      "description": "Small field shelter with double doors, corner feet, a roof lip and vent block. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/service-shelter.kcad.ts",
+      "sourceSha256": "7e34e68b3b8075b526df2c0b3ae7c981b988932cee2127351bb34314b7806437",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#86857a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          2,
+          2.5,
+          1.56
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#86857a",
+          "parts": [
+            "base",
+            "body",
+            "roof",
+            "door-left",
+            "door-right",
+            "vent"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "small-farm-wind-turbine",
+      "kit": "wind-energy",
+      "title": "Small farm wind turbine",
+      "description": "Small three-blade farm turbine with narrow tower, tail vane and square ground base. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/small-farm-wind-turbine.kcad.ts",
+      "sourceSha256": "84e42ee00668d0edfb791ab8dabcc0ac236270dc3da5e01ce3bfb4a7cda4af39",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b9bdab",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 160,
+        "sizeM": [
+          1.14,
+          1.99,
+          0.29
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b9bdab",
+          "parts": [
+            "tower",
+            "nacelle",
+            "hub",
+            "blade-up",
+            "blade-left",
+            "blade-right",
+            "tail",
+            "base"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "substation-switchgear-kiosk",
+      "kit": "wind-energy",
+      "title": "Substation switchgear kiosk",
+      "description": "Low switchgear kiosk with paired doors, roof cap, service step and cable plinth. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/substation-switchgear-kiosk.kcad.ts",
+      "sourceSha256": "5b68774520272171af5da59832c5f8df878d5a31d88ee3bbbfe9c534cc6c9877",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#758078",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          1.75,
+          2.2,
+          1.47
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#758078",
+          "parts": [
+            "base",
+            "body",
+            "roof",
+            "door-left",
+            "door-right",
+            "step"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "torque-tool-case",
+      "kit": "wind-energy",
+      "title": "Torque tool case",
+      "description": "Rugged torque tool case with lid seam, front latches and side handles. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/torque-tool-case.kcad.ts",
+      "sourceSha256": "b72ef6d631c8349a66bee57bd4f2f58a0534c2a25d837dc625eec875bfa15d82",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6f746f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.88,
+          0.36,
+          0.5375
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6f746f",
+          "parts": [
+            "body",
+            "lid",
+            "latch--220",
+            "latch-220",
+            "handle-left",
+            "handle-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "tower-base-flange",
+      "kit": "wind-energy",
+      "title": "Tower base flange",
+      "description": "Circular tower base flange with raised center sleeve and eight anchor bosses. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/tower-base-flange.kcad.ts",
+      "sourceSha256": "7f0aedeecfbfc73392831a45ffa6973ef0dd51fbcdc40eaabd72175950d26e81",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#747c7d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 440,
+        "sizeM": [
+          0.62,
+          0.63,
+          0.62
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#747c7d",
+          "parts": [
+            "flange",
+            "sleeve",
+            "anchor-0",
+            "anchor-1",
+            "anchor-2",
+            "anchor-3",
+            "anchor-4",
+            "anchor-5",
+            "anchor-6",
+            "anchor-7"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "tower-ladder-section",
+      "kit": "wind-energy",
+      "title": "Tower ladder section",
+      "description": "Straight internal ladder segment with side rails, rungs and two wall mounts. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/tower-ladder-section.kcad.ts",
+      "sourceSha256": "f0b68abf5c8cddfc2a0b1cfa25438ff433e3fef0055a7e38c2246415d835c094",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#666f70",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.4,
+          1.2,
+          0.305
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#666f70",
+          "parts": [
+            "rail-left",
+            "rail-right",
+            "rung-0",
+            "rung-1",
+            "rung-2",
+            "rung-3",
+            "rung-4",
+            "rung-5",
+            "rung-6",
+            "rung-7",
+            "mount-low",
+            "mount-high"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "tower-section",
+      "kit": "wind-energy",
+      "title": "Tapered tower section",
+      "description": "Single steel tower segment with a flared lower collar and upper joint band. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/tower-section.kcad.ts",
+      "sourceSha256": "e5dd096733504676310e993f8ab4ec1b54fab9a4e7f3be38ed741ccf5755a1a7",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#909796",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.36,
+          1.75,
+          0.36
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#909796",
+          "parts": [
+            "shaft",
+            "lower-collar",
+            "upper-band",
+            "access-panel"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "tower-transport-saddle",
+      "kit": "wind-energy",
+      "title": "Tower section transport saddle",
+      "description": "Low transport cradle with V-shaped-looking supports, tie-down posts and skid rails. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/tower-transport-saddle.kcad.ts",
+      "sourceSha256": "1682ea501e4f2b5b326637ac539cec3801df3e9896375bcbdc6543505b3ca882",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#786f62",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          1.2,
+          0.39,
+          0.61
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#786f62",
+          "parts": [
+            "rail-left",
+            "rail-right",
+            "support-left",
+            "support-right",
+            "tie--500",
+            "tie-500"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "transition-piece",
+      "kit": "wind-energy",
+      "title": "Offshore transition piece",
+      "description": "Offshore tower transition collar with a broad flange, inspection door and two boat-landing rails. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/transition-piece.kcad.ts",
+      "sourceSha256": "88b5d24de717fd2a8ec776dba9819a22d9b8be5c335ee58856a29af8fd5ad798",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#797f7c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.72,
+          1.18,
+          0.72
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#797f7c",
+          "parts": [
+            "lower-flange",
+            "body",
+            "top-flange",
+            "door",
+            "boat-rail-left",
+            "boat-rail-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "turbine-base-skirt",
+      "kit": "wind-energy",
+      "title": "Tower base skirt",
+      "description": "Low polygon tower base fairing with a circular foot, raised skirt and access cutout panel. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/turbine-base-skirt.kcad.ts",
+      "sourceSha256": "9957965710707b93acc59dd7a2455159c963aeba928d1d2a4c095d178d8495f9",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#858a88",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.66,
+          0.515,
+          0.66
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#858a88",
+          "parts": [
+            "foot",
+            "skirt",
+            "access-panel",
+            "rim"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "turbine-base-steps",
+      "kit": "wind-energy",
+      "title": "Tower base access steps",
+      "description": "Three-step access stair with side stringers and a short top landing. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/turbine-base-steps.kcad.ts",
+      "sourceSha256": "f43e4dc31a4f6edead843959ecd60eb8a43c3b2baeadd89b2997aee60da12871",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#747b78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.76,
+          0.39,
+          0.965
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#747b78",
+          "parts": [
+            "step-1",
+            "step-2",
+            "step-3",
+            "landing",
+            "side-left",
+            "side-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "turbine-blade-root-sleeve",
+      "kit": "wind-energy",
+      "title": "Blade root sleeve",
+      "description": "Short blade-root sleeve with a broad flange, inner collar and four attachment lugs. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/turbine-blade-root-sleeve.kcad.ts",
+      "sourceSha256": "3af1dcbf49e7b533f079c0737c832f8633581eef48141537506dbd8901b89ed2",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8d9189",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          0.62,
+          0.5,
+          0.62
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8d9189",
+          "parts": [
+            "flange",
+            "sleeve",
+            "lug-0",
+            "lug-1",
+            "lug-2",
+            "lug-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "turbine-control-cabinet",
+      "kit": "wind-energy",
+      "title": "Turbine control cabinet",
+      "description": "Ground control cabinet with double doors, shallow rain hood and bottom vent bank. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/turbine-control-cabinet.kcad.ts",
+      "sourceSha256": "5002ecdd4e20c32589a22a2c87fec296781ecbc2202815cca5ac882154246a2f",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#687572",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.78,
+          1.26,
+          0.58
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#687572",
+          "parts": [
+            "body",
+            "hood",
+            "door-left",
+            "door-right",
+            "vent",
+            "foot--250",
+            "foot-250"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "turbine-door-frame",
+      "kit": "wind-energy",
+      "title": "Tower access door frame",
+      "description": "Access door frame prop with rectangular jambs, header and a threshold plate. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/turbine-door-frame.kcad.ts",
+      "sourceSha256": "8b920ef95c5f95f55f9ab6aa49bf8b72c89cffee2d3b5bb792ec8245de93f4cf",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#727976",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.83,
+          1.805,
+          0.34
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#727976",
+          "parts": [
+            "jamb-left",
+            "jamb-right",
+            "header",
+            "threshold",
+            "door",
+            "handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "turbine-junction-box",
+      "kit": "wind-energy",
+      "title": "Turbine junction box",
+      "description": "Compact sealed junction box with four cable glands, lid lip and mounting feet. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/turbine-junction-box.kcad.ts",
+      "sourceSha256": "88d94664559f3e2780b55108e28263a327dd954e053e63116b1a7dc18e928757",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#767d74",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 224,
+        "sizeM": [
+          0.45,
+          0.3,
+          0.33
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#767d74",
+          "parts": [
+            "case",
+            "lid",
+            "gland-0",
+            "gland-1",
+            "gland-2",
+            "gland-3",
+            "foot--160",
+            "foot-160"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "turbine-nacelle-shell",
+      "kit": "wind-energy",
+      "title": "Turbine nacelle shell",
+      "description": "Long nacelle housing with raised roof, nose cap, rear service panel and support saddle. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/turbine-nacelle-shell.kcad.ts",
+      "sourceSha256": "2615be5ce9d7e4a6d3013a430b72c195b8a528e9348a445102b237334d68e88a",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d8d9d2",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 92,
+        "sizeM": [
+          1.2325,
+          0.305,
+          0.5
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d8d9d2",
+          "parts": [
+            "shell",
+            "roof",
+            "nose",
+            "rear-panel",
+            "saddle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "turbine-number-placard",
+      "kit": "wind-energy",
+      "title": "Turbine number placard",
+      "description": "Small numbered turbine ID plate on a short post with a broad mounting foot. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/turbine-number-placard.kcad.ts",
+      "sourceSha256": "893e38ee6e6a2ba3696a3d9c32eee306bb1fd67c9d51228efb39cbf904d38711",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#c3c6be",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 80,
+        "sizeM": [
+          0.42,
+          0.86,
+          0.2
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#c3c6be",
+          "parts": [
+            "plate",
+            "post",
+            "foot",
+            "border"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "turbine-rotor-hub",
+      "kit": "wind-energy",
+      "title": "Turbine rotor hub",
+      "description": "Three-arm rotor hub with central barrel, front cap and three blade-root sockets. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/turbine-rotor-hub.kcad.ts",
+      "sourceSha256": "77e74743a9d1d07a27cd1c6556f697d7d40318e8fc59938307ac141f3dfc1f5d",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#737a78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 256,
+        "sizeM": [
+          1.35,
+          0.79,
+          0.49
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#737a78",
+          "parts": [
+            "hub",
+            "nose",
+            "arm-up",
+            "arm-left",
+            "arm-right",
+            "root-0",
+            "root-1",
+            "root-2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "vertical-axis-wind-turbine",
+      "kit": "wind-energy",
+      "title": "Vertical-axis wind turbine",
+      "description": "Vertical-axis rotor with central shaft, two curved-look blade panels and base bearings. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/vertical-axis-wind-turbine.kcad.ts",
+      "sourceSha256": "1536aed9225cd290453cbba76c2e3f972aa6f9828267593ce9aa77c53bea8f8c",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7e8582",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          0.68,
+          1.055,
+          0.6
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7e8582",
+          "parts": [
+            "shaft",
+            "blade-a",
+            "blade-b",
+            "cross-top",
+            "cross-bottom",
+            "bearing-top",
+            "bearing-low",
+            "base"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "wind-farm-access-gate",
+      "kit": "wind-energy",
+      "title": "Wind farm access gate",
+      "description": "Two-post service gate with a framed swing panel and two weighted post shoes. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/wind-farm-access-gate.kcad.ts",
+      "sourceSha256": "9907acc688e4d5c1bd4ce23d79855c61268035864099666119822262742cacff",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#747b78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          1.62,
+          1.29,
+          0.22
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#747b78",
+          "parts": [
+            "post-left",
+            "post-right",
+            "top",
+            "bottom",
+            "bar-a",
+            "bar-b",
+            "bar-c",
+            "shoe--700",
+            "shoe-700"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "wind-farm-meter-pedestal",
+      "kit": "wind-energy",
+      "title": "Wind farm meter pedestal",
+      "description": "Short metering pedestal with a cabinet head, status light and broad footplate. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/wind-farm-meter-pedestal.kcad.ts",
+      "sourceSha256": "13108747590b394344d08f321fa36b9c8c8818986977a31c82611e010e00a702",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#75817b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          0.42,
+          1.045,
+          0.372
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#75817b",
+          "parts": [
+            "foot",
+            "post",
+            "head",
+            "screen",
+            "light",
+            "hood"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "wind-farm-pad-mount-transformer",
+      "kit": "wind-energy",
+      "title": "Pad-mount transformer",
+      "description": "Outdoor transformer box with two side cooling banks, top bushings and concrete pad. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/wind-farm-pad-mount-transformer.kcad.ts",
+      "sourceSha256": "117d7f389d08361687860cd360aeda5915c0d27a7636712d72852e969aae2777",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#758078",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 228,
+        "sizeM": [
+          0.9,
+          1.015,
+          0.7
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#758078",
+          "parts": [
+            "pad",
+            "tank",
+            "lid",
+            "fin-0",
+            "fin-1",
+            "fin-2",
+            "fin-3",
+            "fin-4",
+            "bushing-0",
+            "bushing-1",
+            "bushing-2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "wind-farm-warning-sign",
+      "kit": "wind-energy",
+      "title": "Wind farm warning sign",
+      "description": "Field warning placard with two posts, reinforced top edge and weighted feet. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/wind-farm-warning-sign.kcad.ts",
+      "sourceSha256": "0795ce1407ea3e8406ceaaaaca4a60f2bad3bea9eef597da1ac7712c09cdc41c",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d1a644",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          0.87,
+          1.51,
+          0.18
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d1a644",
+          "parts": [
+            "panel",
+            "top-edge",
+            "post--300",
+            "post-300",
+            "foot--300",
+            "foot-300"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "wind-site-bollard",
+      "kit": "wind-energy",
+      "title": "Wind site bollard",
+      "description": "Low site bollard with a rounded cap, square foot and two raised reflector bands. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/wind-site-bollard.kcad.ts",
+      "sourceSha256": "ca87161224be001c4dfdba3f7590f41d1694d83c9ff4f08d5b10d0f57afd472e",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#747a76",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 188,
+        "sizeM": [
+          0.22,
+          0.79,
+          0.22
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#747a76",
+          "parts": [
+            "foot",
+            "post",
+            "band-low",
+            "band-high",
+            "cap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "wind-turbine-blade",
+      "kit": "wind-energy",
+      "title": "Wind turbine blade",
+      "description": "Tapered-look turbine blade with a broad root block and slender tip section. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "wind",
+        "energy",
+        "renewable",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "wind",
+        "energy",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/wind-energy/wind-turbine-blade.kcad.ts",
+      "sourceSha256": "ee754ca30fdc3534727a2e1327982d48bf763dcf9f2ee8cb8463ab5c40a91ba6",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#e2e3dc",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.28,
+          2.01,
+          0.205
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#e2e3dc",
+          "parts": [
+            "root",
+            "inner",
+            "mid",
+            "tip",
+            "root-ring"
+          ],
+          "param": "color"
         }
       ]
     }

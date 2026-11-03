@@ -1,0 +1,10 @@
+
+ RUN  v4.0.18 /home/andrii/worktrees/kernelCAD-web/catalog-2000
+
+ ✓ src/kernel/backends/occt/occtResetPoison.test.ts (5 tests) 1587ms
+     ✓ replaces the old Node exception handlers when OCCT is reset repeatedly  480ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  00:24:58
+   Duration  2.36s (transform 537ms, setup 89ms, import 557ms, tests 1.59s, environment 0ms)

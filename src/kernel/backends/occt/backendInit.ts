@@ -15,6 +15,45 @@ let lastInitOpts: InitOcctOptions | undefined;
 let initInFlight: Promise<void> | null = null;
 /** Hooks run at the start of resetOcct (e.g. abandon STEP parse-cache masters). */
 const occtResetHooks: Array<() => void> = [];
+type ProcessEvent = 'uncaughtException' | 'unhandledRejection';
+type ProcessListener = (...args: never[]) => void;
+type ProcessListenerSet = Record<ProcessEvent, ProcessListener[]>;
+const processEvents: readonly ProcessEvent[] = ['uncaughtException', 'unhandledRejection'];
+let activeOcctProcessListeners: ProcessListenerSet = {
+  uncaughtException: [],
+  unhandledRejection: [],
+};
+
+function snapshotProcessListeners(): ProcessListenerSet | undefined {
+  if (typeof process === 'undefined' || typeof process.listeners !== 'function') return undefined;
+  return {
+    uncaughtException: process.listeners('uncaughtException') as ProcessListener[],
+    unhandledRejection: process.listeners('unhandledRejection') as ProcessListener[],
+  };
+}
+
+function newProcessListeners(before: ProcessListenerSet | undefined): ProcessListenerSet {
+  const after = snapshotProcessListeners();
+  if (before === undefined || after === undefined) {
+    return { uncaughtException: [], unhandledRejection: [] };
+  }
+  return {
+    uncaughtException: after.uncaughtException.filter((listener) => !before.uncaughtException.includes(listener)),
+    unhandledRejection: after.unhandledRejection.filter((listener) => !before.unhandledRejection.includes(listener)),
+  };
+}
+
+function removeProcessListeners(listeners: ProcessListenerSet): void {
+  if (typeof process === 'undefined' || typeof process.removeListener !== 'function') return;
+  for (const event of processEvents) {
+    for (const listener of listeners[event]) process.removeListener(event, listener);
+  }
+}
+
+function replaceOcctProcessListeners(listeners: ProcessListenerSet): void {
+  removeProcessListeners(activeOcctProcessListeners);
+  activeOcctProcessListeners = listeners;
+}
 
 /** Whether `initOcct` has completed in this module instance. */
 export function isOcctInitialized(): boolean {
@@ -80,21 +119,31 @@ async function loadAndBindOcct(opts?: InitOcctOptions): Promise<void> {
       ...(opts.wasmBinary ? { wasmBinary: opts.wasmBinary } : {}),
     }
     : undefined;
-  let OC: unknown;
+  const listenersBefore = snapshotProcessListeners();
+  let factoryResult: Promise<unknown>;
   if (typeof opencascade === 'function') {
-    OC = await (opencascade as unknown as (m?: unknown) => Promise<unknown>)(moduleArg);
+    factoryResult = Promise.resolve((opencascade as unknown as (m?: unknown) => Promise<unknown>)(moduleArg));
   } else if (
     opencascade &&
     typeof (opencascade as { default?: (m?: unknown) => Promise<unknown> }).default === 'function'
   ) {
-    OC = await (opencascade as { default: (m?: unknown) => Promise<unknown> }).default(moduleArg);
+    factoryResult = Promise.resolve((opencascade as { default: (m?: unknown) => Promise<unknown> }).default(moduleArg));
   } else {
     throw new Error('Could not find opencascade factory function');
+  }
+  const newListeners = newProcessListeners(listenersBefore);
+  let OC: unknown;
+  try {
+    OC = await factoryResult;
+  } catch (error) {
+    removeProcessListeners(newListeners);
+    throw error;
   }
   installOcctFinalizers(OC as Record<string, unknown>);
   installReplicadLeakFixes();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   replicad.setOC(OC as any);
+  replaceOcctProcessListeners(newListeners);
   initialized = true;
 }
 
