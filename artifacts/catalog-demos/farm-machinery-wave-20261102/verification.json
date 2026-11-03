@@ -1,0 +1,889 @@
+{
+  "checkedAt": "2026-11-02T22:26:25.291Z",
+  "totalAssets": 1015,
+  "kit": "farm-machinery",
+  "addedAssets": 60,
+  "query": {
+    "tool": "search_assets",
+    "q": "row crop tractor",
+    "coverage": "ok",
+    "rows": [
+      "row-crop-tractor",
+      "high-clearance-sprayer-tractor",
+      "row-crop-cultivator",
+      "row-crop-planter",
+      "row-cover-tunnel",
+      "articulated-4wd-tractor",
+      "baggage-tractor",
+      "compact-utility-tractor"
+    ]
+  },
+  "assets": [
+    {
+      "id": "articulated-4wd-tractor",
+      "triangles": 576,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "bale-accumulator",
+      "triangles": 84,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "bale-spear-attachment",
+      "triangles": 192,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "bale-wrapper",
+      "triangles": 136,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "center-pivot-irrigation-span",
+      "triangles": 748,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "chisel-plow",
+      "triangles": 192,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "combine-harvester",
+      "triangles": 448,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "compact-utility-tractor",
+      "triangles": 516,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "corn-header",
+      "triangles": 252,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "cotton-picker",
+      "triangles": 544,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "drip-irrigation-filter-unit",
+      "triangles": 420,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "farm-grain-auger",
+      "triangles": 284,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "fertilizer-spreader",
+      "triangles": 160,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "field-cultivator",
+      "triangles": 416,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "flail-mower-implement",
+      "triangles": 324,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "forage-harvester",
+      "triangles": 472,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "forage-wagon",
+      "triangles": 260,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "front-end-loader-frame",
+      "triangles": 172,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "general-purpose-loader-bucket",
+      "triangles": 84,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "grain-bin-aeration-fan",
+      "triangles": 140,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "grain-cart",
+      "triangles": 296,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "grain-dryer",
+      "triangles": 156,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "grain-header",
+      "triangles": 252,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "high-clearance-sprayer-tractor",
+      "triangles": 564,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "irrigation-hose-reel",
+      "triangles": 268,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "land-leveling-scraper",
+      "triangles": 72,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "manure-spreader",
+      "triangles": 444,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "moldboard-plow",
+      "triangles": 132,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "no-till-seeder",
+      "triangles": 712,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "offset-disc-harrow",
+      "triangles": 648,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "orchard-air-blast-sprayer",
+      "triangles": 400,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "orchard-tractor",
+      "triangles": 552,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "pallet-fork-attachment",
+      "triangles": 60,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "portable-grain-conveyor",
+      "triangles": 380,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "potato-harvester",
+      "triangles": 600,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "precision-planter",
+      "triangles": 716,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "pto-shaft-guard",
+      "triangles": 104,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "rear-landscape-rake",
+      "triangles": 192,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "root-grapple-attachment",
+      "triangles": 156,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "rotary-mower-implement",
+      "triangles": 324,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "rotary-tedder",
+      "triangles": 488,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "round-baler",
+      "triangles": 600,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "row-crop-cultivator",
+      "triangles": 344,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "row-crop-planter",
+      "triangles": 756,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "row-crop-tractor",
+      "triangles": 552,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "seed-drill",
+      "triangles": 848,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "self-propelled-field-sprayer",
+      "triangles": 424,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "sicklebar-mower",
+      "triangles": 368,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "square-baler",
+      "triangles": 568,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "stone-picker-implement",
+      "triangles": 444,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "subsoiler-implement",
+      "triangles": 204,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "sugar-beet-harvester",
+      "triangles": 612,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "three-point-hitch-frame",
+      "triangles": 160,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "tracked-field-tractor",
+      "triangles": 1104,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "tractor-ballast-weight",
+      "triangles": 60,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "tractor-box-blade",
+      "triangles": 132,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "tractor-drawbar-hitch",
+      "triangles": 92,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "trailed-field-sprayer",
+      "triangles": 864,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "traveling-sprinkler-cart",
+      "triangles": 256,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "wheel-hay-rake",
+      "triangles": 764,
+      "triangleBudget": 2200,
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "materials": 1,
+      "minUpM": 0
+    }
+  ],
+  "variants": [
+    {
+      "id": "row-crop-tractor",
+      "want": "scale 1.15 blue body yellow accent",
+      "params": {
+        "scale": 1.15,
+        "body": "#2e6fd8",
+        "accent": "#f1c40f"
+      },
+      "unmatched": [],
+      "matched": [
+        {
+          "term": "scale 1.15",
+          "param": "scale",
+          "value": 1.15
+        },
+        {
+          "term": "blue body",
+          "param": "body",
+          "value": "#2e6fd8"
+        },
+        {
+          "term": "yellow accent",
+          "param": "accent",
+          "value": "#f1c40f"
+        }
+      ],
+      "defaultTriangles": 552,
+      "resolvedTriangles": 552,
+      "triangleBudget": 2200,
+      "defaultMaterials": 1,
+      "resolvedMaterials": 1,
+      "defaultMinUpM": 0,
+      "resolvedMinUpM": 0,
+      "defaultGlbSha256": "5831be5f3d931e25426de3c95c0a866640220ef39c9c55edc466d472603fdf89",
+      "resolvedGlbSha256": "14770bf65b61de64b69a38919b1c27361174565fddd8b37ac48e8dd89ae7a853"
+    },
+    {
+      "id": "round-baler",
+      "want": "scale 0.85 green body orange accent",
+      "params": {
+        "scale": 0.85,
+        "body": "#2e8b57",
+        "accent": "#e67e22"
+      },
+      "unmatched": [],
+      "matched": [
+        {
+          "term": "scale 0.85",
+          "param": "scale",
+          "value": 0.85
+        },
+        {
+          "term": "green body",
+          "param": "body",
+          "value": "#2e8b57"
+        },
+        {
+          "term": "orange accent",
+          "param": "accent",
+          "value": "#e67e22"
+        }
+      ],
+      "defaultTriangles": 600,
+      "resolvedTriangles": 600,
+      "triangleBudget": 2200,
+      "defaultMaterials": 1,
+      "resolvedMaterials": 1,
+      "defaultMinUpM": 0,
+      "resolvedMinUpM": 0,
+      "defaultGlbSha256": "d1933cae3772917c81714fa49362ab16dc0133153e9d81f190fa3da5821387d8",
+      "resolvedGlbSha256": "05192870681c78b506fb9adc3bc4d83e7c106bf4d3722ce8cadcd685b053ae77"
+    },
+    {
+      "id": "center-pivot-irrigation-span",
+      "want": "scale 1.1 red body yellow accent",
+      "params": {
+        "scale": 1.1,
+        "body": "#c0392b",
+        "accent": "#f1c40f"
+      },
+      "unmatched": [],
+      "matched": [
+        {
+          "term": "scale 1.1",
+          "param": "scale",
+          "value": 1.1
+        },
+        {
+          "term": "red body",
+          "param": "body",
+          "value": "#c0392b"
+        },
+        {
+          "term": "yellow accent",
+          "param": "accent",
+          "value": "#f1c40f"
+        }
+      ],
+      "defaultTriangles": 748,
+      "resolvedTriangles": 748,
+      "triangleBudget": 2200,
+      "defaultMaterials": 1,
+      "resolvedMaterials": 1,
+      "defaultMinUpM": 0,
+      "resolvedMinUpM": 0,
+      "defaultGlbSha256": "fb73af4765e0ae47a954e7441e39cc3b080bafe65b8b2eb96b5061a121a4b00f",
+      "resolvedGlbSha256": "53d5257b2c5bc7dca7688d08a0ca5eba0c35974d869a335691135cbbda0d8f18"
+    }
+  ],
+  "settings": {
+    "kit": "farm-machinery",
+    "width": 1280,
+    "height": 720,
+    "frameRate": 2,
+    "videoFrameRate": 24,
+    "videoCodec": "libx264",
+    "pixelFormat": "yuv420p",
+    "crf": 23,
+    "render": "software-rendered GLB triangles from local catalog source and parameter resolution",
+    "assetsPerOverviewFrame": 20,
+    "variants": [
+      {
+        "id": "row-crop-tractor",
+        "want": "scale 1.15 blue body yellow accent"
+      },
+      {
+        "id": "round-baler",
+        "want": "scale 0.85 green body orange accent"
+      },
+      {
+        "id": "center-pivot-irrigation-span",
+        "want": "scale 1.1 red body yellow accent"
+      }
+    ]
+  },
+  "claims": {
+    "originalGeometry": true,
+    "localCatalogSearchAndVariantWorkflow": true,
+    "glbExport": true,
+    "softwareRender": true,
+    "threeJsRendered": false,
+    "deployedBehavior": false,
+    "simulation": false,
+    "hardwareAcceptance": false
+  }
+}

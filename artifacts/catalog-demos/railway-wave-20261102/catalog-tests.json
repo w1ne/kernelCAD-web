@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-11-02",
+  "command": "npx vitest run tests/integration/catalog/",
+  "filesPassed": 4,
+  "filesFailed": 0,
+  "testsPassed": 15,
+  "testsFailed": 0,
+  "durationSeconds": 81.26,
+  "auditedCatalogAssets": 755,
+  "assertions": "Every catalog source builds, exports within its triangle budget on one material, matches the committed index, and opens with exactly the indexed Studio knobs; base-origin checks pass."
+}

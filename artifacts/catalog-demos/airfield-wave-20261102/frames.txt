@@ -1,0 +1,17 @@
+file 'frames/frame-01.png'
+duration 3
+file 'frames/frame-02.png'
+duration 3
+file 'frames/frame-03.png'
+duration 3
+file 'frames/frame-04.png'
+duration 3
+file 'frames/frame-05.png'
+duration 3
+file 'frames/frame-06.png'
+duration 3
+file 'frames/frame-07.png'
+duration 3
+file 'frames/frame-08.png'
+duration 3
+file 'frames/frame-08.png'

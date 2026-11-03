@@ -1,0 +1,5 @@
+{
+  "command": "npx eslint catalog/",
+  "status": "passed",
+  "output": "no lint findings"
+}

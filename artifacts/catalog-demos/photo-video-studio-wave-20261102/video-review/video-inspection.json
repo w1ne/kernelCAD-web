@@ -1,0 +1,22 @@
+{
+  "video": "artifacts/catalog-demos/photo-video-studio-wave-20261102/photo-video-studio-kit.mp4",
+  "bytes": 329320,
+  "sha256": "05c74309975a37e6903d7174b55b905b07101aaf7131f9b69b018bda00ca634e",
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "pixelFormat": "yuv420p",
+  "durationSeconds": 24.0,
+  "decodedFrameSamples": [
+    "artifacts/catalog-demos/photo-video-studio-wave-20261102/video-review/decoded-01.png",
+    "artifacts/catalog-demos/photo-video-studio-wave-20261102/video-review/decoded-02.png",
+    "artifacts/catalog-demos/photo-video-studio-wave-20261102/video-review/decoded-03.png",
+    "artifacts/catalog-demos/photo-video-studio-wave-20261102/video-review/decoded-04.png",
+    "artifacts/catalog-demos/photo-video-studio-wave-20261102/video-review/decoded-05.png",
+    "artifacts/catalog-demos/photo-video-studio-wave-20261102/video-review/decoded-06.png",
+    "artifacts/catalog-demos/photo-video-studio-wave-20261102/video-review/decoded-07.png",
+    "artifacts/catalog-demos/photo-video-studio-wave-20261102/video-review/decoded-08.png"
+  ],
+  "contactSheet": "artifacts/catalog-demos/photo-video-studio-wave-20261102/video-review/contact-sheet.png",
+  "manualVisualInspection": true
+}

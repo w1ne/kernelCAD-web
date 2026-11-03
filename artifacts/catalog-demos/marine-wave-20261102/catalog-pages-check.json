@@ -1,0 +1,211 @@
+{
+  "checkedAt": "2026-11-02",
+  "kit": "marine",
+  "kitPages": 40,
+  "hubContainsKit": true,
+  "pages": [
+    {
+      "id": "anchor-chain",
+      "path": "catalog/marine/anchor-chain/index.html",
+      "previewBytes": 26875
+    },
+    {
+      "id": "anchor-winch",
+      "path": "catalog/marine/anchor-winch/index.html",
+      "previewBytes": 24417
+    },
+    {
+      "id": "anchor",
+      "path": "catalog/marine/anchor/index.html",
+      "previewBytes": 19992
+    },
+    {
+      "id": "bait-bucket",
+      "path": "catalog/marine/bait-bucket/index.html",
+      "previewBytes": 19807
+    },
+    {
+      "id": "binnacle-compass",
+      "path": "catalog/marine/binnacle-compass/index.html",
+      "previewBytes": 21625
+    },
+    {
+      "id": "boat-cleat",
+      "path": "catalog/marine/boat-cleat/index.html",
+      "previewBytes": 17130
+    },
+    {
+      "id": "boat-fender",
+      "path": "catalog/marine/boat-fender/index.html",
+      "previewBytes": 21887
+    },
+    {
+      "id": "boat-hook",
+      "path": "catalog/marine/boat-hook/index.html",
+      "previewBytes": 10573
+    },
+    {
+      "id": "boat-oar",
+      "path": "catalog/marine/boat-oar/index.html",
+      "previewBytes": 9610
+    },
+    {
+      "id": "boat-paddle",
+      "path": "catalog/marine/boat-paddle/index.html",
+      "previewBytes": 12652
+    },
+    {
+      "id": "boat-trailer",
+      "path": "catalog/marine/boat-trailer/index.html",
+      "previewBytes": 26218
+    },
+    {
+      "id": "cargo-ship",
+      "path": "catalog/marine/cargo-ship/index.html",
+      "previewBytes": 19359
+    },
+    {
+      "id": "channel-marker-buoy",
+      "path": "catalog/marine/channel-marker-buoy/index.html",
+      "previewBytes": 17070
+    },
+    {
+      "id": "coiled-mooring-rope",
+      "path": "catalog/marine/coiled-mooring-rope/index.html",
+      "previewBytes": 22055
+    },
+    {
+      "id": "crab-trap",
+      "path": "catalog/marine/crab-trap/index.html",
+      "previewBytes": 34544
+    },
+    {
+      "id": "dock-bollard",
+      "path": "catalog/marine/dock-bollard/index.html",
+      "previewBytes": 19672
+    },
+    {
+      "id": "dock-ladder",
+      "path": "catalog/marine/dock-ladder/index.html",
+      "previewBytes": 22828
+    },
+    {
+      "id": "dock-piling",
+      "path": "catalog/marine/dock-piling/index.html",
+      "previewBytes": 13654
+    },
+    {
+      "id": "fish-crate",
+      "path": "catalog/marine/fish-crate/index.html",
+      "previewBytes": 14391
+    },
+    {
+      "id": "fishing-boat",
+      "path": "catalog/marine/fishing-boat/index.html",
+      "previewBytes": 20447
+    },
+    {
+      "id": "fishing-net",
+      "path": "catalog/marine/fishing-net/index.html",
+      "previewBytes": 25950
+    },
+    {
+      "id": "inflatable-life-raft",
+      "path": "catalog/marine/inflatable-life-raft/index.html",
+      "previewBytes": 26659
+    },
+    {
+      "id": "life-jacket",
+      "path": "catalog/marine/life-jacket/index.html",
+      "previewBytes": 24205
+    },
+    {
+      "id": "life-raft-canister",
+      "path": "catalog/marine/life-raft-canister/index.html",
+      "previewBytes": 33918
+    },
+    {
+      "id": "life-ring",
+      "path": "catalog/marine/life-ring/index.html",
+      "previewBytes": 28979
+    },
+    {
+      "id": "lobster-pot",
+      "path": "catalog/marine/lobster-pot/index.html",
+      "previewBytes": 24804
+    },
+    {
+      "id": "magnetic-compass",
+      "path": "catalog/marine/magnetic-compass/index.html",
+      "previewBytes": 20902
+    },
+    {
+      "id": "mooring-buoy",
+      "path": "catalog/marine/mooring-buoy/index.html",
+      "previewBytes": 23057
+    },
+    {
+      "id": "motorboat",
+      "path": "catalog/marine/motorboat/index.html",
+      "previewBytes": 18467
+    },
+    {
+      "id": "outboard-motor",
+      "path": "catalog/marine/outboard-motor/index.html",
+      "previewBytes": 20060
+    },
+    {
+      "id": "porthole",
+      "path": "catalog/marine/porthole/index.html",
+      "previewBytes": 25165
+    },
+    {
+      "id": "rescue-lifeboat",
+      "path": "catalog/marine/rescue-lifeboat/index.html",
+      "previewBytes": 20515
+    },
+    {
+      "id": "sailboat",
+      "path": "catalog/marine/sailboat/index.html",
+      "previewBytes": 21879
+    },
+    {
+      "id": "sextant",
+      "path": "catalog/marine/sextant/index.html",
+      "previewBytes": 32832
+    },
+    {
+      "id": "ship-bell",
+      "path": "catalog/marine/ship-bell/index.html",
+      "previewBytes": 22068
+    },
+    {
+      "id": "ship-horn",
+      "path": "catalog/marine/ship-horn/index.html",
+      "previewBytes": 22837
+    },
+    {
+      "id": "ship-wheel",
+      "path": "catalog/marine/ship-wheel/index.html",
+      "previewBytes": 29502
+    },
+    {
+      "id": "throw-rope-bag",
+      "path": "catalog/marine/throw-rope-bag/index.html",
+      "previewBytes": 22430
+    },
+    {
+      "id": "tugboat",
+      "path": "catalog/marine/tugboat/index.html",
+      "previewBytes": 23240
+    },
+    {
+      "id": "yacht",
+      "path": "catalog/marine/yacht/index.html",
+      "previewBytes": 19252
+    }
+  ],
+  "localPageGenerator": "scripts/buildCatalogPages.ts",
+  "liveRouteStatus": "unverified pending merge",
+  "deploymentVerified": false
+}
