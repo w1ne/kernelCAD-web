@@ -30,11 +30,11 @@ export const EXPORT_CODES = {
   },
   'export.dxf.non-planar': {
     hintTemplate:
-      'DXF needs a flat part (plate, panel, extruded profile). For any other part use `options.section: { axis, at }` for a cross-section, `flatten_pattern` for sheet metal, or STEP/STL for 3D.',
+      'This is a 3D part, not a flat plate or panel. Use `options.section: { axis, at }` for a cross-section, `flatten_pattern` for sheet metal, or STEP/STL for the solid.',
     nextAction: { kind: 'fix-arg', field: 'options.section' },
     defaultSeverity: 'error',
     group: 'export',
-    description: 'A DXF export was attempted on a part that is not flat (not a constant-thickness plate or extruded profile) without options.section, or the section plane missed the part.',
+    description: 'A DXF export was attempted on a 3D part that is not a flat plate or panel (not a constant-thickness plate or extruded profile) without options.section, or the section plane missed the part.',
   },
   'export.3mf.not-watertight': {
     hintTemplate:

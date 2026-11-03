@@ -280,7 +280,7 @@ describe('DXF export of flat parts', () => {
     expect(c.cy).toBeCloseTo(20, 6);
   });
 
-  it('a part that is neither flat nor sectioned is refused with the section / flatten_pattern / STEP hint', async () => {
+  it('a 3D part that is neither flat nor sectioned is named as 3D, with the section / flatten_pattern / STEP hint', async () => {
     for (const code of [
       'return box(100, 80, 30).subtract(box(40, 30, 10).translate(30, 25, 20));',
       'return sphere(10);',
@@ -289,9 +289,26 @@ describe('DXF export of flat parts', () => {
       expect(r.bytes.length).toBe(0);
       const d = r.diagnostics.find((x) => x.code === 'export.dxf.non-planar');
       expect(d).toBeDefined();
-      expect(d!.hint).toContain('section: { axis, at }');
+      expect(d!.message).toMatch(/3D part/);
+      expect(d!.message).toMatch(/not a flat plate/);
+      expect(d!.hint).toMatch(/^This is a 3D part, not a flat plate or panel\./);
+      expect(d!.hint).toContain('options.section: { axis, at }');
       expect(d!.hint).toContain('flatten_pattern');
       expect(d!.hint).toContain('STEP/STL');
     }
+  });
+
+  it('a multi-part model with a 3D part names that part as 3D, not flat', async () => {
+    const r = await dxf(`
+      const cab = assembly('cabinet');
+      cab.part('side', box(18, 300, 500));
+      cab.part('knob', sphere(12), { at: [40, 40, 40] });
+      return cab.model();
+    `);
+    expect(r.bytes.length).toBe(0);
+    const d = r.diagnostics.find((x) => x.code === 'export.dxf.non-planar');
+    expect(d?.message).toMatch(/3D/);
+    expect(d?.message).toMatch(/not flat/);
+    expect(d?.message).toMatch(/knob/);
   });
 });
