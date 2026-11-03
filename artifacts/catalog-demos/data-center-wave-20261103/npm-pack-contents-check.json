@@ -1,0 +1,18 @@
+{
+  "command": "npm pack --ignore-scripts --json --pack-destination /tmp/kernelcad-data-center-npm-pack",
+  "tarball": "/tmp/kernelcad-data-center-npm-pack/kernelcad-0.17.4.tgz",
+  "tarballBytes": 50055942,
+  "tarballSha256": "dbea3f713a828b5cdb427a62dc33a3ce6949c63369995ff94f5be3558e240762",
+  "package": "kernelcad@0.17.4",
+  "packedFileCount": 3373,
+  "catalogIndexIncluded": true,
+  "dataCenterSources": 50,
+  "dataCenterPreviews": 50,
+  "cliEntryIncluded": true,
+  "headlessPlayerIncluded": true,
+  "packageExports": {
+    "./package.json": "./package.json"
+  },
+  "privateProductPaths": [],
+  "passed": true
+}

@@ -249,6 +249,63 @@
       ]
     },
     {
+      "id": "data-center-infrastructure",
+      "title": "Data-center infrastructure",
+      "description": "Original generic props for IT racks, power distribution, thermal management, containment, monitoring, and facility safety.",
+      "assets": [
+        "air-cooled-chiller",
+        "automatic-transfer-switch-cabinet",
+        "blade-server-enclosure",
+        "busway-plug-in-unit",
+        "ceiling-return-plenum",
+        "clean-agent-cylinder-bank",
+        "cold-aisle-roof-panel",
+        "condenser-pump-skid",
+        "coolant-distribution-unit",
+        "cooling-tower-cell",
+        "data-center-battery-cabinet",
+        "data-center-plate-heat-exchanger",
+        "data-center-security-camera",
+        "day-fuel-tank",
+        "distribution-panelboard",
+        "dry-type-transformer",
+        "emergency-power-off-station",
+        "enclosed-it-rack",
+        "environmental-sensor",
+        "fiber-patch-panel",
+        "floor-air-grille",
+        "floor-cable-grommet",
+        "high-density-server-chassis",
+        "hot-aisle-containment-door",
+        "in-row-cooler",
+        "leak-detection-module",
+        "liquid-cooling-manifold",
+        "maintenance-bypass-cabinet",
+        "modular-ups-cabinet",
+        "monolithic-ups-cabinet",
+        "open-frame-it-rack",
+        "overhead-cable-ladder",
+        "overhead-coolant-header",
+        "overhead-power-busway",
+        "perforated-floor-tile",
+        "perimeter-precision-cooler",
+        "power-meter-pedestal",
+        "rack-blanking-panel",
+        "rack-kvm-console",
+        "rack-mounted-battery-tray",
+        "rack-power-distribution-unit",
+        "raised-floor-tile",
+        "rear-door-heat-exchanger",
+        "standby-generator-enclosure",
+        "static-transfer-switch",
+        "storage-array-chassis",
+        "switchgear-lineup",
+        "top-of-rack-network-switch",
+        "vertical-cable-manager",
+        "wall-mount-network-cabinet"
+      ]
+    },
+    {
       "id": "electronics",
       "title": "Electronics",
       "description": "Low-poly consumer electronics - screens, computers, phones, audio and networking gear - for home, office and retro scenes at real-world scale, flat-shaded on one palette material.",
@@ -28874,6 +28931,3882 @@
             "apple-3"
           ],
           "param": "goods"
+        }
+      ]
+    },
+    {
+      "id": "air-cooled-chiller",
+      "kit": "data-center-infrastructure",
+      "title": "Air-cooled chiller",
+      "description": "Outdoor chiller frame with multiple top fans, coil banks, and service panels. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/air-cooled-chiller.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-air-cooled-chiller.png",
+      "sourceSha256": "9e02a9f34f7f65004fcdd5dba9887670dba6d153b9434647a6899f0f39294c49",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#657379",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 356,
+        "sizeM": [
+          3.2,
+          0.895,
+          1.5
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#657379",
+          "parts": [
+            "chiller-skid",
+            "coil-bank-left",
+            "coil-bank-right",
+            "condenser-fan-0",
+            "condenser-fan-1",
+            "condenser-fan-2",
+            "condenser-fan-3",
+            "condenser-fan-4",
+            "condenser-fan-5",
+            "compressor-cover",
+            "refrigerant-port"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "automatic-transfer-switch-cabinet",
+      "kit": "data-center-infrastructure",
+      "title": "Automatic transfer switch cabinet",
+      "description": "Transfer cabinet with controller window, source handles, and lower cable plate. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/automatic-transfer-switch-cabinet.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-automatic-transfer-switch-cabinet.png",
+      "sourceSha256": "9627bdf8543f0e8023db7fc0f4f8cd6422943b2104c321324e4fa94333063816",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6c7478",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 220,
+        "sizeM": [
+          1.02,
+          1.8,
+          0.893
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6c7478",
+          "parts": [
+            "base-plinth",
+            "cabinet-shell",
+            "front-door",
+            "vent-louver-0",
+            "vent-louver-1",
+            "vent-louver-2",
+            "vent-louver-3",
+            "vent-louver-4",
+            "vent-louver-5",
+            "operator-display",
+            "door-handle",
+            "control-knob",
+            "cable-entry"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "blade-server-enclosure",
+      "kit": "data-center-infrastructure",
+      "title": "Blade server enclosure",
+      "description": "Modular blade enclosure with repeated vertical sleds and rear service rails. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/blade-server-enclosure.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-blade-server-enclosure.png",
+      "sourceSha256": "dde24ad9d5a73d5a12595a85bd0a45901d4fafa479e757e4f8579196432b7764",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#707a82",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 220,
+        "sizeM": [
+          0.72,
+          0.44,
+          0.844
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#707a82",
+          "parts": [
+            "chassis-shell",
+            "front-face",
+            "left-mounting-ear",
+            "right-mounting-ear",
+            "slide-rail-left",
+            "slide-rail-right",
+            "blade-sled-0",
+            "blade-sled-1",
+            "blade-sled-2",
+            "blade-sled-3",
+            "blade-sled-4",
+            "blade-sled-5",
+            "service-handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "busway-plug-in-unit",
+      "kit": "data-center-infrastructure",
+      "title": "Busway plug-in unit",
+      "description": "Compact plug-in tap box with operating handle and cable outlet gland. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/busway-plug-in-unit.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-busway-plug-in-unit.png",
+      "sourceSha256": "585701d2592e8cab80af16b45beaa7031621a64463d9cf52e381401731c0eb4d",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8b7955",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.3,
+          0.46,
+          0.3875
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8b7955",
+          "parts": [
+            "tap-box",
+            "cover",
+            "handle",
+            "cable-gland",
+            "interlock-knob"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ceiling-return-plenum",
+      "kit": "data-center-infrastructure",
+      "title": "Ceiling return plenum",
+      "description": "Ducted return-air box with support legs, branch collar, and access panel. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/ceiling-return-plenum.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-ceiling-return-plenum.png",
+      "sourceSha256": "7bda7d7bfba73c699062130147d367b7ca611a32e1351e921a814ca6a4d21f73",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6e7b79",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 140,
+        "sizeM": [
+          1.5,
+          1.25,
+          1.05
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6e7b79",
+          "parts": [
+            "duct-body",
+            "service-panel",
+            "support-leg-0",
+            "support-leg-1",
+            "support-leg-2",
+            "support-leg-3",
+            "branch-collar",
+            "hanger-strap-left",
+            "hanger-strap-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "clean-agent-cylinder-bank",
+      "kit": "data-center-infrastructure",
+      "title": "Clean-agent cylinder bank",
+      "description": "Suppression cylinder rack with manifold header, valve caps, and anchoring frame. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/clean-agent-cylinder-bank.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-clean-agent-cylinder-bank.png",
+      "sourceSha256": "9a1e177d948f31d7c811be8b79153125b22e3c8151af3a871426db5307b77deb",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8a6c53",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 520,
+        "sizeM": [
+          1.8,
+          1.472,
+          1.6
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8a6c53",
+          "parts": [
+            "cylinder-rack-base",
+            "upper-restraint",
+            "lower-restraint",
+            "agent-cylinder-0",
+            "agent-cylinder-1",
+            "agent-cylinder-2",
+            "agent-cylinder-3",
+            "agent-cylinder-4",
+            "manifold-header",
+            "valve-cap-0",
+            "valve-cap-1",
+            "valve-cap-2",
+            "valve-cap-3",
+            "valve-cap-4"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "cold-aisle-roof-panel",
+      "kit": "data-center-infrastructure",
+      "title": "Cold-aisle roof panel",
+      "description": "Overhead containment canopy with a light frame and repeated ceiling panels. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/cold-aisle-roof-panel.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-cold-aisle-roof-panel.png",
+      "sourceSha256": "d15f467536483e53ec37ce87f02669147bf7fb76b5f38b9d7e0a458b0f94054c",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#69787d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 196,
+        "sizeM": [
+          1.405,
+          2.2,
+          1.465
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#69787d",
+          "parts": [
+            "canopy-frame-front",
+            "canopy-frame-rear",
+            "canopy-left-beam",
+            "canopy-right-beam",
+            "roof-panel-0",
+            "roof-panel-1",
+            "roof-panel-2",
+            "roof-panel-3",
+            "roof-panel-4",
+            "support-post-front",
+            "support-post-rear"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "condenser-pump-skid",
+      "kit": "data-center-infrastructure",
+      "title": "Condenser pump skid",
+      "description": "Pumping skid with paired motors, horizontal pump bodies, and manifold pipes. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/condenser-pump-skid.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-condenser-pump-skid.png",
+      "sourceSha256": "d259b661676f9124c1371acc8c051f62611d78b49d286d138e36b0b2ef388656",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#727a6f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 300,
+        "sizeM": [
+          1.9,
+          0.685,
+          1.7
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#727a6f",
+          "parts": [
+            "base-skid",
+            "motor-0",
+            "motor-1",
+            "pump-body-0",
+            "pump-body-1",
+            "suction-header",
+            "discharge-header",
+            "pipe-support-0",
+            "pipe-support-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "coolant-distribution-unit",
+      "kit": "data-center-infrastructure",
+      "title": "Coolant distribution unit",
+      "description": "Liquid-cooling cabinet with pump bay, heat-exchanger block, and pipe connections. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/coolant-distribution-unit.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-coolant-distribution-unit.png",
+      "sourceSha256": "1ab9f220c4cb5df500298665b6837e37793f5180c594f3f82ad5d669878d1604",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#56727a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 264,
+        "sizeM": [
+          1.45,
+          1.7,
+          0.96
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#56727a",
+          "parts": [
+            "cdu-skid",
+            "cdu-cabinet",
+            "service-door",
+            "heat-exchanger-plate-0",
+            "heat-exchanger-plate-1",
+            "heat-exchanger-plate-2",
+            "heat-exchanger-plate-3",
+            "heat-exchanger-plate-4",
+            "heat-exchanger-plate-5",
+            "heat-exchanger-plate-6",
+            "heat-exchanger-plate-7",
+            "supply-connection",
+            "return-connection",
+            "pump-motor"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "cooling-tower-cell",
+      "kit": "data-center-infrastructure",
+      "title": "Cooling tower cell",
+      "description": "Open cooling-tower cell with basin, fan deck, fill pack, and water riser. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/cooling-tower-cell.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-cooling-tower-cell.png",
+      "sourceSha256": "901e21c6194ad8ea58cd44e3f69f39209ce5fd86a45fdfc41b4ca83f8b993bee",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#768079",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 172,
+        "sizeM": [
+          1.8,
+          2.12,
+          1.5
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#768079",
+          "parts": [
+            "basin",
+            "fill-pack",
+            "frame-post-0",
+            "frame-post-1",
+            "frame-post-2",
+            "frame-post-3",
+            "fan-deck",
+            "fan-stack",
+            "water-riser"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "data-center-battery-cabinet",
+      "kit": "data-center-infrastructure",
+      "title": "Data-center battery cabinet",
+      "description": "Tall battery enclosure with repeated drawer fronts and isolated base plinth. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/data-center-battery-cabinet.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-data-center-battery-cabinet.png",
+      "sourceSha256": "3a02ca44237000e4cf30c6bedeb97e916bcb83185959d80d03ea6beabddd24ed",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#626b70",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 220,
+        "sizeM": [
+          0.93,
+          1.92,
+          0.953
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#626b70",
+          "parts": [
+            "base-plinth",
+            "cabinet-shell",
+            "front-door",
+            "vent-louver-0",
+            "vent-louver-1",
+            "vent-louver-2",
+            "vent-louver-3",
+            "vent-louver-4",
+            "vent-louver-5",
+            "operator-display",
+            "door-handle",
+            "control-knob",
+            "cable-entry"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "data-center-plate-heat-exchanger",
+      "kit": "data-center-infrastructure",
+      "title": "Data-center plate heat exchanger",
+      "description": "Compact exchanger stack with tie bars, frame plates, and pipe flanges. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/data-center-plate-heat-exchanger.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-data-center-plate-heat-exchanger.png",
+      "sourceSha256": "2c8a5ddd7a43b64b2c6e686c8c5c435fbd08f72e7f163855dafaa7ecaa111cc1",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#65767a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 304,
+        "sizeM": [
+          1.1,
+          1.12,
+          0.91
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#65767a",
+          "parts": [
+            "support-skid",
+            "plate-stack",
+            "plate-0",
+            "plate-1",
+            "plate-2",
+            "plate-3",
+            "plate-4",
+            "plate-5",
+            "plate-6",
+            "plate-7",
+            "plate-8",
+            "plate-9",
+            "plate-10",
+            "plate-11",
+            "plate-12",
+            "plate-13",
+            "fixed-frame",
+            "pressure-frame",
+            "inlet-flange",
+            "outlet-flange"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "data-center-security-camera",
+      "kit": "data-center-infrastructure",
+      "title": "Data-center security camera",
+      "description": "Compact fixed camera on a service mast with sunshield and mounting base. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/data-center-security-camera.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-data-center-security-camera.png",
+      "sourceSha256": "32f78d92ae1fa20a6b60106243b2dfc6fdf0b2b166202b7a0d19290e1c4b77ba",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5b666d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.38,
+          1.165,
+          0.385
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5b666d",
+          "parts": [
+            "mounting-base",
+            "mast",
+            "camera-housing",
+            "sunshield",
+            "lens-barrel",
+            "bracket"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "day-fuel-tank",
+      "kit": "data-center-infrastructure",
+      "title": "Generator day tank",
+      "description": "Compact fuel reservoir with support feet, top fill neck, and level gauge. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/day-fuel-tank.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-day-fuel-tank.png",
+      "sourceSha256": "aa8500307839041d9d84e08621c3a4c5ad493d06948aedad0334c63fb33d50be",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#827356",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 200,
+        "sizeM": [
+          1.05,
+          1.28,
+          0.865
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#827356",
+          "parts": [
+            "support-skid",
+            "reservoir",
+            "fill-neck",
+            "level-gauge",
+            "access-platform",
+            "drain-valve"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "distribution-panelboard",
+      "kit": "data-center-infrastructure",
+      "title": "Distribution panelboard",
+      "description": "Panelboard enclosure with hinged door, breaker rows, and cable entry gland. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/distribution-panelboard.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-distribution-panelboard.png",
+      "sourceSha256": "9ae3bba8cfc6e6fef9c6dc5ec7a15d149c8fe7892ceb7ceb333a225053c1865d",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#788087",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 172,
+        "sizeM": [
+          0.76,
+          1.3,
+          0.373
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#788087",
+          "parts": [
+            "wall-enclosure",
+            "door",
+            "interior-deadfront",
+            "breaker-row-0",
+            "breaker-row-1",
+            "breaker-row-2",
+            "breaker-row-3",
+            "cable-entry",
+            "door-latch"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "dry-type-transformer",
+      "kit": "data-center-infrastructure",
+      "title": "Dry-type transformer",
+      "description": "Ventilated transformer block with cooling fins, terminal bushings, and base rails. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/dry-type-transformer.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-dry-type-transformer.png",
+      "sourceSha256": "39d69b840e64d584b67165700085a18dbbd73c011c5759468a32a477afa5ad02",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8b795a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 276,
+        "sizeM": [
+          1.2,
+          1.11,
+          1
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8b795a",
+          "parts": [
+            "base-frame",
+            "transformer-core",
+            "cooling-fin-0",
+            "cooling-fin-1",
+            "cooling-fin-2",
+            "cooling-fin-3",
+            "cooling-fin-4",
+            "cooling-fin-5",
+            "cooling-fin-6",
+            "cooling-fin-7",
+            "cooling-fin-8",
+            "terminal-bushing-0",
+            "terminal-bushing-1",
+            "terminal-bushing-2",
+            "terminal-cover"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "emergency-power-off-station",
+      "kit": "data-center-infrastructure",
+      "title": "Emergency power-off station",
+      "description": "Wall-mounted protected control station with actuator and guard hood. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/emergency-power-off-station.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-emergency-power-off-station.png",
+      "sourceSha256": "ca476cb1e74dd1b62c07b18976811c4012536db29f9ea71be38b945f4d00dfd0",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b04b3e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          0.32,
+          0.42,
+          0.2895
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b04b3e",
+          "parts": [
+            "back-plate",
+            "control-body",
+            "guard-hood",
+            "actuator-base",
+            "push-button",
+            "label-panel"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "enclosed-it-rack",
+      "kit": "data-center-infrastructure",
+      "title": "Enclosed IT rack",
+      "description": "Full-height rack cabinet with front door frame, side panels, rails, and leveling feet. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/enclosed-it-rack.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-enclosed-it-rack.png",
+      "sourceSha256": "8e1f0a39f0b27264b5da4a5cf71f3a9d29443871608b3eb4e7acbc214cbf9613",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#53616d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 256,
+        "sizeM": [
+          0.76,
+          2.18,
+          1.1245
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#53616d",
+          "parts": [
+            "base-plinth",
+            "top-frame",
+            "front-left-post",
+            "front-right-post",
+            "rear-left-post",
+            "rear-right-post",
+            "front-rail-left",
+            "front-rail-right",
+            "rear-crossbar",
+            "leveling-foot-front-left",
+            "leveling-foot-front-right",
+            "left-side-panel",
+            "right-side-panel",
+            "rear-door",
+            "front-door",
+            "door-handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "environmental-sensor",
+      "kit": "data-center-infrastructure",
+      "title": "Environmental sensor",
+      "description": "Room sensor mast with compact head, directional cap, and mounting plate. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/environmental-sensor.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-environmental-sensor.png",
+      "sourceSha256": "3ef6ba474f33340b639a311979f6d4f3691764fd98f6b87f6d57946c31bc4857",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6d7773",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.22,
+          1.255,
+          0.217
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6d7773",
+          "parts": [
+            "mount-plate",
+            "mast",
+            "sensor-head",
+            "vent-cap",
+            "probe-tip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "fiber-patch-panel",
+      "kit": "data-center-infrastructure",
+      "title": "Fiber patch panel",
+      "description": "Slim fiber distribution panel with paired connector rows and mounting flanges. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/fiber-patch-panel.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-fiber-patch-panel.png",
+      "sourceSha256": "0c2a05a7efdcbb61aaad32336bed008d6709a15116661f3a3070be7c62a14e61",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#4d5965",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 708,
+        "sizeM": [
+          0.56,
+          0.09,
+          0.0976
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#4d5965",
+          "parts": [
+            "chassis-shell",
+            "front-face",
+            "left-mounting-ear",
+            "right-mounting-ear",
+            "slide-rail-left",
+            "slide-rail-right",
+            "fiber-coupler-0",
+            "fiber-coupler-1",
+            "fiber-coupler-2",
+            "fiber-coupler-3",
+            "fiber-coupler-4",
+            "fiber-coupler-5",
+            "fiber-coupler-6",
+            "fiber-coupler-7",
+            "fiber-coupler-8",
+            "fiber-coupler-9",
+            "fiber-coupler-10",
+            "fiber-coupler-11",
+            "status-control"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "floor-air-grille",
+      "kit": "data-center-infrastructure",
+      "title": "Floor air grille",
+      "description": "Low air-distribution grille with perimeter frame, louver bars, and support feet. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/floor-air-grille.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-floor-air-grille.png",
+      "sourceSha256": "f38e6b9e672e51658587f4d68cbdf2338ce32c2ecbc7778f31b4465f7adbce1a",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#727b78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 340,
+        "sizeM": [
+          0.6,
+          0.15,
+          0.6
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#727b78",
+          "parts": [
+            "tile-panel",
+            "edge-frame",
+            "pedestal-0",
+            "pedestal-1",
+            "pedestal-2",
+            "pedestal-3",
+            "air-slot-bar-0",
+            "air-slot-bar-1",
+            "air-slot-bar-2",
+            "air-slot-bar-3",
+            "air-slot-bar-4",
+            "air-slot-bar-5",
+            "air-slot-bar-6",
+            "air-slot-bar-7",
+            "lift-ring"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "floor-cable-grommet",
+      "kit": "data-center-infrastructure",
+      "title": "Floor cable grommet",
+      "description": "Raised-floor cable pass-through with split collar and protective curb. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/floor-cable-grommet.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-floor-cable-grommet.png",
+      "sourceSha256": "449fd120e7ade12388957e97198210e729c45778448d3f8fa215c11869bf4029",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#505d62",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.44,
+          0.13,
+          0.36
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#505d62",
+          "parts": [
+            "floor-curb",
+            "split-collar-left",
+            "split-collar-right",
+            "cable-pass-ring",
+            "clamp-boss"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "high-density-server-chassis",
+      "kit": "data-center-infrastructure",
+      "title": "High-density server chassis",
+      "description": "Short-depth compute chassis with front drive bays, status strip, and slide rails. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/high-density-server-chassis.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-high-density-server-chassis.png",
+      "sourceSha256": "534ead9c307b63411bfe483df31a6a6f865f789007f90367623d5c9520a95d49",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#737b80",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 276,
+        "sizeM": [
+          0.56,
+          0.135,
+          0.792
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#737b80",
+          "parts": [
+            "chassis-shell",
+            "front-face",
+            "left-mounting-ear",
+            "right-mounting-ear",
+            "slide-rail-left",
+            "slide-rail-right",
+            "drive-carrier-0",
+            "drive-carrier-1",
+            "drive-carrier-2",
+            "drive-carrier-3",
+            "drive-carrier-4",
+            "drive-carrier-5",
+            "drive-carrier-6",
+            "drive-carrier-7",
+            "status-control"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "hot-aisle-containment-door",
+      "kit": "data-center-infrastructure",
+      "title": "Hot-aisle containment door",
+      "description": "Aisle-end door assembly with uprights, clear-panel frame, and pull handle. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/hot-aisle-containment-door.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-hot-aisle-containment-door.png",
+      "sourceSha256": "8790c8b813140d0e41bf4ee5b09dc8e88b60557f0ceec98d402ddc2875134618",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#78858a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 116,
+        "sizeM": [
+          1.32,
+          2.25,
+          0.125
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#78858a",
+          "parts": [
+            "left-jamb",
+            "right-jamb",
+            "header",
+            "door-panel-left",
+            "door-panel-right",
+            "pull-handle",
+            "hinge-top"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "in-row-cooler",
+      "kit": "data-center-infrastructure",
+      "title": "In-row precision cooler",
+      "description": "Row cooling cabinet with front intake grille, top return, and pipe stubs. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/in-row-cooler.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-in-row-cooler.png",
+      "sourceSha256": "4e53772938187873a9ca1421f0ea2e5ad66de7b2d18b3de723b13e37f4fa075e",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#69777d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 320,
+        "sizeM": [
+          0.9,
+          2.065,
+          0.985
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#69777d",
+          "parts": [
+            "base-plinth",
+            "cooler-cabinet",
+            "intake-louver-0",
+            "intake-louver-1",
+            "intake-louver-2",
+            "intake-louver-3",
+            "intake-louver-4",
+            "intake-louver-5",
+            "intake-louver-6",
+            "intake-louver-7",
+            "intake-louver-8",
+            "intake-louver-9",
+            "top-fan-left",
+            "top-fan-right",
+            "pipe-stub-supply",
+            "pipe-stub-return"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "leak-detection-module",
+      "kit": "data-center-infrastructure",
+      "title": "Leak detection module",
+      "description": "Water-leak monitor enclosure with probe terminals and floor sensor puck. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/leak-detection-module.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-leak-detection-module.png",
+      "sourceSha256": "849ea67dac4a148f7192a57280480011f971ddd865404efa2a78f7fc7a42af1c",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#78816d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.74,
+          0.25,
+          0.5
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#78816d",
+          "parts": [
+            "monitor-box",
+            "control-face",
+            "probe-terminal-left",
+            "probe-terminal-right",
+            "floor-sensor-puck",
+            "sensor-cable"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "liquid-cooling-manifold",
+      "kit": "data-center-infrastructure",
+      "title": "Liquid-cooling manifold",
+      "description": "Supply and return headers with evenly spaced branch outlets and support feet. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/liquid-cooling-manifold.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-liquid-cooling-manifold.png",
+      "sourceSha256": "4e8d9197af30b0efdf0176af0fbafc2d841c2697ec628d41c2a75badfa4141ec",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#637a7d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 552,
+        "sizeM": [
+          1.58,
+          0.735,
+          1.7
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#637a7d",
+          "parts": [
+            "support-base-left",
+            "support-base-right",
+            "supply-header",
+            "return-header",
+            "branch-drop-0",
+            "branch-drop-1",
+            "branch-drop-2",
+            "branch-drop-3",
+            "branch-drop-4",
+            "branch-valve-0",
+            "branch-valve-1",
+            "branch-valve-2",
+            "branch-valve-3",
+            "branch-valve-4"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "maintenance-bypass-cabinet",
+      "kit": "data-center-infrastructure",
+      "title": "Maintenance bypass cabinet",
+      "description": "Bypass switchboard enclosure with interlock handle and labeled control area. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/maintenance-bypass-cabinet.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-maintenance-bypass-cabinet.png",
+      "sourceSha256": "15d48626d1d0bfbc9d3328e5356e621e26f923b33dd9bb7dd22e29d79f39dc59",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#77745f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 220,
+        "sizeM": [
+          0.93,
+          1.8,
+          0.893
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#77745f",
+          "parts": [
+            "base-plinth",
+            "cabinet-shell",
+            "front-door",
+            "vent-louver-0",
+            "vent-louver-1",
+            "vent-louver-2",
+            "vent-louver-3",
+            "vent-louver-4",
+            "vent-louver-5",
+            "operator-display",
+            "door-handle",
+            "control-knob",
+            "cable-entry"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "modular-ups-cabinet",
+      "kit": "data-center-infrastructure",
+      "title": "Modular UPS cabinet",
+      "description": "Power cabinet with modular front drawers, service display, and ventilation louvers. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/modular-ups-cabinet.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-modular-ups-cabinet.png",
+      "sourceSha256": "1e7bf23d8df11b2f478acaca6402a14e24408f7874671d4bb9b3800c1404ce26",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#65727b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 220,
+        "sizeM": [
+          1.02,
+          1.68,
+          0.833
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#65727b",
+          "parts": [
+            "base-plinth",
+            "cabinet-shell",
+            "front-door",
+            "vent-louver-0",
+            "vent-louver-1",
+            "vent-louver-2",
+            "vent-louver-3",
+            "vent-louver-4",
+            "vent-louver-5",
+            "operator-display",
+            "door-handle",
+            "control-knob",
+            "cable-entry"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "monolithic-ups-cabinet",
+      "kit": "data-center-infrastructure",
+      "title": "UPS cabinet",
+      "description": "Floor UPS enclosure with control panel, service doors, and cooling slots. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/monolithic-ups-cabinet.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-monolithic-ups-cabinet.png",
+      "sourceSha256": "3fdde68f8a01ccac1bd3fb59c612b3692dfb7963969c0d90cb9e179b5cefb72f",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5b6973",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 220,
+        "sizeM": [
+          0.84,
+          1.8,
+          0.893
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5b6973",
+          "parts": [
+            "base-plinth",
+            "cabinet-shell",
+            "front-door",
+            "vent-louver-0",
+            "vent-louver-1",
+            "vent-louver-2",
+            "vent-louver-3",
+            "vent-louver-4",
+            "vent-louver-5",
+            "operator-display",
+            "door-handle",
+            "control-knob",
+            "cable-entry"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "open-frame-it-rack",
+      "kit": "data-center-infrastructure",
+      "title": "Open-frame IT rack",
+      "description": "Four-post equipment rack with adjustable rails, cross-bracing, and base frame. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/open-frame-it-rack.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-open-frame-it-rack.png",
+      "sourceSha256": "67ee9d7f8dc9ac8d7a06b3087aa422591e9692854b12f2d039a7cba2f67872ea",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#68747a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 304,
+        "sizeM": [
+          0.72,
+          2.08,
+          1.0175
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#68747a",
+          "parts": [
+            "base-plinth",
+            "top-frame",
+            "front-left-post",
+            "front-right-post",
+            "rear-left-post",
+            "rear-right-post",
+            "front-rail-left",
+            "front-rail-right",
+            "rear-crossbar",
+            "leveling-foot-front-left",
+            "leveling-foot-front-right",
+            "left-side-brace",
+            "right-side-brace",
+            "cross-brace-a",
+            "cross-brace-b",
+            "equipment-rail-0",
+            "equipment-rail-1",
+            "equipment-rail-2",
+            "equipment-rail-3",
+            "equipment-rail-4"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "overhead-cable-ladder",
+      "kit": "data-center-infrastructure",
+      "title": "Overhead cable ladder",
+      "description": "Suspended ladder tray with side rails, cross rungs, and ceiling hangers. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/overhead-cable-ladder.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-overhead-cable-ladder.png",
+      "sourceSha256": "daf54ebac22010b6ce37fd42f947bf5970332dd42af6536d043b120dacbcbea5",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#727a78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 292,
+        "sizeM": [
+          2.4,
+          0.41,
+          0.62
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#727a78",
+          "parts": [
+            "left-side-rail",
+            "right-side-rail",
+            "cross-rung-0",
+            "cross-rung-1",
+            "cross-rung-2",
+            "cross-rung-3",
+            "cross-rung-4",
+            "cross-rung-5",
+            "cross-rung-6",
+            "cross-rung-7",
+            "cross-rung-8",
+            "cross-rung-9",
+            "cross-rung-10",
+            "cross-rung-11",
+            "cross-rung-12",
+            "hanger-left",
+            "hanger-right",
+            "hanger-cap-left",
+            "hanger-cap-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "overhead-coolant-header",
+      "kit": "data-center-infrastructure",
+      "title": "Overhead coolant header",
+      "description": "Suspended supply and return pipes with branch drops and hanger brackets. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/overhead-coolant-header.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-overhead-coolant-header.png",
+      "sourceSha256": "27be401df8ed3c349e64a35a2c3db308b3e03ac5690c00499f90c3686e036077",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#647b79",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 392,
+        "sizeM": [
+          1.71,
+          0.45,
+          1.9
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#647b79",
+          "parts": [
+            "hanger-left",
+            "hanger-right",
+            "supply-main",
+            "return-main",
+            "branch-drop-0",
+            "branch-drop-1",
+            "branch-drop-2",
+            "branch-drop-3",
+            "branch-drop-4",
+            "pipe-clamp-0",
+            "pipe-clamp-1",
+            "pipe-clamp-2",
+            "pipe-clamp-3",
+            "pipe-clamp-4"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "overhead-power-busway",
+      "kit": "data-center-infrastructure",
+      "title": "Overhead power busway",
+      "description": "Enclosed busway segment with joined covers, hanger brackets, and end caps. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/overhead-power-busway.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-overhead-power-busway.png",
+      "sourceSha256": "b81221cfa4ff0c05897ad782c12064f0cb565c13f4d8bec968c2df744066d8e3",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6e7470",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 140,
+        "sizeM": [
+          2.51,
+          0.53,
+          0.56
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6e7470",
+          "parts": [
+            "busway-housing",
+            "cover-joint-0",
+            "cover-joint-1",
+            "cover-joint-2",
+            "cover-joint-3",
+            "end-cap-left",
+            "end-cap-right",
+            "hanger",
+            "hanger-bolt"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "perforated-floor-tile",
+      "kit": "data-center-infrastructure",
+      "title": "Perforated floor tile",
+      "description": "Airflow floor panel with a dense low-relief grille and four support feet. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/perforated-floor-tile.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-perforated-floor-tile.png",
+      "sourceSha256": "74c9b56e83a46ba095412c615cf801f1fcf5d8969647a4ab3d8e4868bc4ba764",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#707977",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 340,
+        "sizeM": [
+          0.6,
+          0.15,
+          0.6
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#707977",
+          "parts": [
+            "tile-panel",
+            "edge-frame",
+            "pedestal-0",
+            "pedestal-1",
+            "pedestal-2",
+            "pedestal-3",
+            "air-slot-bar-0",
+            "air-slot-bar-1",
+            "air-slot-bar-2",
+            "air-slot-bar-3",
+            "air-slot-bar-4",
+            "air-slot-bar-5",
+            "air-slot-bar-6",
+            "air-slot-bar-7",
+            "lift-ring"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "perimeter-precision-cooler",
+      "kit": "data-center-infrastructure",
+      "title": "Perimeter precision cooler",
+      "description": "Room cooling unit with front grille, fan compartment, and service plinth. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/perimeter-precision-cooler.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-perimeter-precision-cooler.png",
+      "sourceSha256": "be1a5cbd2243f466dde7815b606112a4d39a9ca7374f5ce3e153a0213110bdbb",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#67747a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 320,
+        "sizeM": [
+          0.9,
+          2.065,
+          0.985
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#67747a",
+          "parts": [
+            "base-plinth",
+            "cooler-cabinet",
+            "intake-louver-0",
+            "intake-louver-1",
+            "intake-louver-2",
+            "intake-louver-3",
+            "intake-louver-4",
+            "intake-louver-5",
+            "intake-louver-6",
+            "intake-louver-7",
+            "intake-louver-8",
+            "intake-louver-9",
+            "top-fan-left",
+            "top-fan-right",
+            "pipe-stub-supply",
+            "pipe-stub-return"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "power-meter-pedestal",
+      "kit": "data-center-infrastructure",
+      "title": "Power meter pedestal",
+      "description": "Utility metering pedestal with display head, service door, and cable riser. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/power-meter-pedestal.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-power-meter-pedestal.png",
+      "sourceSha256": "f783cf6f1b858892e00d78aac519664c96627387a259d594b2df7d1385489848",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#69767b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          0.52,
+          1.6,
+          0.46
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#69767b",
+          "parts": [
+            "base-plate",
+            "riser",
+            "meter-head",
+            "display-window",
+            "service-door",
+            "cable-port"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "rack-blanking-panel",
+      "kit": "data-center-infrastructure",
+      "title": "Rack blanking panel",
+      "description": "Removable rack face panel with end brackets and a small grip tab. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/rack-blanking-panel.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-rack-blanking-panel.png",
+      "sourceSha256": "7f3b8a182ead09d2c41ac8905173ef977e793d739b958aa15e49174e54ff27d3",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6b7379",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          0.56,
+          0.09,
+          0.07088
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6b7379",
+          "parts": [
+            "chassis-shell",
+            "front-face",
+            "left-mounting-ear",
+            "right-mounting-ear",
+            "slide-rail-left",
+            "slide-rail-right",
+            "drive-carrier-0",
+            "status-control"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "rack-kvm-console",
+      "kit": "data-center-infrastructure",
+      "title": "Rack KVM console",
+      "description": "Pull-out console tray with display housing, keyboard surface, and rack ears. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/rack-kvm-console.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-rack-kvm-console.png",
+      "sourceSha256": "e0c195318517ffc27b291eb1b1c0983cab57bade25a3ce8be5af49733c810947",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#616e78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 248,
+        "sizeM": [
+          0.56,
+          0.395,
+          0.6479
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#616e78",
+          "parts": [
+            "chassis-shell",
+            "front-face",
+            "left-mounting-ear",
+            "right-mounting-ear",
+            "slide-rail-left",
+            "slide-rail-right",
+            "display-housing",
+            "keyboard-tray",
+            "hinge-left",
+            "hinge-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "rack-mounted-battery-tray",
+      "kit": "data-center-infrastructure",
+      "title": "Rack-mounted battery tray",
+      "description": "Compact rack battery module with cell covers, front latch, and slide rails. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/rack-mounted-battery-tray.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-rack-mounted-battery-tray.png",
+      "sourceSha256": "c8370dba5524a526f25557e345c115cbfd08d868a2affb5e79ad600d756e8499",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5a666e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 248,
+        "sizeM": [
+          0.52,
+          0.335,
+          0.751
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5a666e",
+          "parts": [
+            "tray-shell",
+            "front-cover",
+            "cell-cover-0",
+            "cell-cover-1",
+            "cell-cover-2",
+            "cell-cover-3",
+            "slide-rail-left",
+            "slide-rail-right",
+            "terminal-post-positive",
+            "terminal-post-negative"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "rack-power-distribution-unit",
+      "kit": "data-center-infrastructure",
+      "title": "Rack power distribution unit",
+      "description": "Vertical rack PDU with repeated outlet sockets, feed cable, and mounting clips. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/rack-power-distribution-unit.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-rack-power-distribution-unit.png",
+      "sourceSha256": "82a05536500fef8d82b84e0b13298fb023ca2fc2e3f7897065434bb3b3be024b",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#59676e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 304,
+        "sizeM": [
+          0.72,
+          2.08,
+          1.0175
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#59676e",
+          "parts": [
+            "base-plinth",
+            "top-frame",
+            "front-left-post",
+            "front-right-post",
+            "rear-left-post",
+            "rear-right-post",
+            "front-rail-left",
+            "front-rail-right",
+            "rear-crossbar",
+            "leveling-foot-front-left",
+            "leveling-foot-front-right",
+            "left-side-brace",
+            "right-side-brace",
+            "cross-brace-a",
+            "cross-brace-b",
+            "equipment-rail-0",
+            "equipment-rail-1",
+            "equipment-rail-2",
+            "equipment-rail-3",
+            "equipment-rail-4"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "raised-floor-tile",
+      "kit": "data-center-infrastructure",
+      "title": "Raised floor tile",
+      "description": "Square access-floor panel with support pedestals and edge stringers. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/raised-floor-tile.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-raised-floor-tile.png",
+      "sourceSha256": "ecd909aa0673c0c4971af1bf9996822501bc581bff9b83c7968b277d6dbad2d5",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#777b78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 268,
+        "sizeM": [
+          0.6,
+          0.173,
+          0.6
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#777b78",
+          "parts": [
+            "tile-panel",
+            "edge-frame",
+            "pedestal-0",
+            "pedestal-1",
+            "pedestal-2",
+            "pedestal-3",
+            "stringer-x",
+            "stringer-y",
+            "corner-fastener"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "rear-door-heat-exchanger",
+      "kit": "data-center-infrastructure",
+      "title": "Rear-door heat exchanger",
+      "description": "Rack-door cooling frame with serpentine-look tube runs and inlet connections. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/rear-door-heat-exchanger.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-rear-door-heat-exchanger.png",
+      "sourceSha256": "5ca0c06c34aa23f82b5adf430f94d8ed35f338a8509b323f30a37587086f243e",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5d7478",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 532,
+        "sizeM": [
+          0.885,
+          2.1,
+          0.61
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5d7478",
+          "parts": [
+            "door-frame",
+            "heat-exchanger-panel",
+            "tube-run-0",
+            "tube-run-1",
+            "tube-run-2",
+            "tube-run-3",
+            "tube-run-4",
+            "tube-run-5",
+            "tube-run-6",
+            "tube-run-7",
+            "tube-run-8",
+            "hinge-left",
+            "hinge-right",
+            "inlet-port",
+            "outlet-port"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "standby-generator-enclosure",
+      "kit": "data-center-infrastructure",
+      "title": "Standby generator enclosure",
+      "description": "Packaged generator skid with acoustic canopy, exhaust stack, and service doors. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/standby-generator-enclosure.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-standby-generator-enclosure.png",
+      "sourceSha256": "d029faa9df00e2d546e2fa26e3b3a9e9117d745e33f42d0b8ad895d3b683faa5",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7c765d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 224,
+        "sizeM": [
+          2.6,
+          1.83,
+          1.15
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7c765d",
+          "parts": [
+            "skid",
+            "acoustic-canopy",
+            "service-door-left",
+            "service-door-right",
+            "engine-block",
+            "alternator",
+            "exhaust-stack",
+            "service-filter"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "static-transfer-switch",
+      "kit": "data-center-infrastructure",
+      "title": "Static transfer switch",
+      "description": "Electrical transfer cabinet with paired source controls and status display. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/static-transfer-switch.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-static-transfer-switch.png",
+      "sourceSha256": "e0375db259dd0d0de01393d5c5530934fe948af8fa588a06dc7285f4926f63ef",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#77745f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 220,
+        "sizeM": [
+          0.84,
+          1.68,
+          0.833
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#77745f",
+          "parts": [
+            "base-plinth",
+            "cabinet-shell",
+            "front-door",
+            "vent-louver-0",
+            "vent-louver-1",
+            "vent-louver-2",
+            "vent-louver-3",
+            "vent-louver-4",
+            "vent-louver-5",
+            "operator-display",
+            "door-handle",
+            "control-knob",
+            "cable-entry"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "storage-array-chassis",
+      "kit": "data-center-infrastructure",
+      "title": "Storage array chassis",
+      "description": "Rack storage chassis with drive carriers, controller bays, and paired handles. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/storage-array-chassis.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-storage-array-chassis.png",
+      "sourceSha256": "ab20da6dca67fb9d01c5f5879ed4274e4cacd733cc02e871b1dc44aac9060b55",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#586775",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 276,
+        "sizeM": [
+          0.56,
+          0.135,
+          0.792
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#586775",
+          "parts": [
+            "chassis-shell",
+            "front-face",
+            "left-mounting-ear",
+            "right-mounting-ear",
+            "slide-rail-left",
+            "slide-rail-right",
+            "drive-carrier-0",
+            "drive-carrier-1",
+            "drive-carrier-2",
+            "drive-carrier-3",
+            "drive-carrier-4",
+            "drive-carrier-5",
+            "drive-carrier-6",
+            "drive-carrier-7",
+            "status-control"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "switchgear-lineup",
+      "kit": "data-center-infrastructure",
+      "title": "Switchgear lineup",
+      "description": "Joined electrical bays with breaker doors, instrument panels, and bus compartment. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/switchgear-lineup.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-switchgear-lineup.png",
+      "sourceSha256": "6d284de04f13a7ae877cbf4ac3ced750bfc6a1598afccb1e4d742de039f52709",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#667078",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 332,
+        "sizeM": [
+          2.5,
+          2.06,
+          0.953
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#667078",
+          "parts": [
+            "lineup-base",
+            "bay-0",
+            "breaker-door-0",
+            "instrument-panel-0",
+            "selector-0",
+            "bay-1",
+            "breaker-door-1",
+            "instrument-panel-1",
+            "selector-1",
+            "bay-2",
+            "breaker-door-2",
+            "instrument-panel-2",
+            "selector-2",
+            "bay-3",
+            "breaker-door-3",
+            "instrument-panel-3",
+            "selector-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "top-of-rack-network-switch",
+      "kit": "data-center-infrastructure",
+      "title": "Top-of-rack network switch",
+      "description": "Rack switch body with a repeated front port row, indicator strip, and mounting ears. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/top-of-rack-network-switch.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-top-of-rack-network-switch.png",
+      "sourceSha256": "7d02498c6d43caedbb38020e3649b91f293004e7f72193f10fc7c55bd7b4badf",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#626c75",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 1060,
+        "sizeM": [
+          0.56,
+          0.047,
+          0.63
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#626c75",
+          "parts": [
+            "chassis-shell",
+            "front-face",
+            "left-mounting-ear",
+            "right-mounting-ear",
+            "slide-rail-left",
+            "slide-rail-right",
+            "network-port-0",
+            "network-port-1",
+            "network-port-2",
+            "network-port-3",
+            "network-port-4",
+            "network-port-5",
+            "network-port-6",
+            "network-port-7",
+            "network-port-8",
+            "network-port-9",
+            "network-port-10",
+            "network-port-11",
+            "network-port-12",
+            "network-port-13",
+            "network-port-14",
+            "network-port-15",
+            "network-port-16",
+            "network-port-17",
+            "network-port-18",
+            "network-port-19",
+            "status-control"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "vertical-cable-manager",
+      "kit": "data-center-infrastructure",
+      "title": "Vertical cable manager",
+      "description": "Rack-side cable channel with repeated fingers, covers, and mounting rails. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/vertical-cable-manager.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-vertical-cable-manager.png",
+      "sourceSha256": "6eae29deb1c4037bc86cbe0997aa2fe261868e133ed8a042475bf7199890ca32",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#4d5e66",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 260,
+        "sizeM": [
+          0.43,
+          2.05,
+          0.28
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#4d5e66",
+          "parts": [
+            "back-channel",
+            "mounting-left",
+            "mounting-right",
+            "cable-finger-0",
+            "cable-finger-1",
+            "cable-finger-2",
+            "cable-finger-3",
+            "cable-finger-4",
+            "cable-finger-5",
+            "cable-finger-6",
+            "cable-finger-7",
+            "cable-finger-8",
+            "cable-finger-9",
+            "cable-finger-10",
+            "cable-finger-11",
+            "cable-finger-12",
+            "cable-finger-13",
+            "cable-finger-14",
+            "anchor-boss"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "wall-mount-network-cabinet",
+      "kit": "data-center-infrastructure",
+      "title": "Wall-mount network cabinet",
+      "description": "Compact wall cabinet with framed door, mounting ears, and cable-entry plate. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "data center",
+        "critical infrastructure",
+        "IT equipment",
+        "power",
+        "cooling",
+        "low poly",
+        "scene prop"
+      ],
+      "compat": [
+        "data-center",
+        "infrastructure",
+        "industrial",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/data-center-infrastructure/wall-mount-network-cabinet.kcad.ts",
+      "preview": "/assets/data-center-infrastructure-wall-mount-network-cabinet.png",
+      "sourceSha256": "15fcb80bbf6878f660e64e66765238d525b739f8975a9f7abb61f7269f4c7484",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#64717a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 288,
+        "sizeM": [
+          0.72,
+          0.943,
+          0.54
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#64717a",
+          "parts": [
+            "base-plinth",
+            "top-frame",
+            "front-left-post",
+            "front-right-post",
+            "rear-left-post",
+            "rear-right-post",
+            "front-rail-left",
+            "front-rail-right",
+            "rear-crossbar",
+            "leveling-foot-front-left",
+            "leveling-foot-front-right",
+            "rear-mounting-plate",
+            "front-door",
+            "left-mounting-ear",
+            "right-mounting-ear",
+            "door-lock"
+          ],
+          "param": "color"
         }
       ]
     },
