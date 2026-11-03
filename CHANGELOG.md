@@ -1,5 +1,8 @@
 # Unreleased
 
+- GLB `asset.extras.kernelcad.stats` and the `asset_manifest` tool now include
+  `materials`, `drawCalls`, `parts`, `hasRig` and `hasIk` beside `triangles`,
+  `sizeM` and `minUpM`.
 - Construction Equipment catalog wave: 60 original parametric low-poly CC0
   assets for paving, compaction, concrete placement, formwork/rebar and site
   logistics in the new `catalog/kits/construction-equipment` kit. The generated

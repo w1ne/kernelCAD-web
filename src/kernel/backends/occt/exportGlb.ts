@@ -52,11 +52,11 @@ import { computeProjectedUVs } from '../../../shared/intent/textureProjection';
 import { resolveAndLoadTextureBytes } from '../../../shared/textures';
 import { attributionGenerator } from '../../../shared/links/attribution';
 import { createMaterialNameRegistry } from '../../export/materialNaming';
+import { measureGlbStats, rigStatsFlags } from '../../export/assetStats';
 import {
   createPaletteCollector,
   flatColoredGeometry,
   lowPolyDeflection,
-  measureMeshes,
   needsOwnMaterial,
   paletteMaterial,
   type GlbStats,
@@ -147,10 +147,13 @@ export async function exportGlbAsync(
     throw new Error('exportGlbAsync: no parts to write.');
   }
 
-  const { meshed, layout, stats } = meshPartsForGlb(parts, options);
-  const rigTree = options.hierarchy !== 'flat' && solvedAssembly !== undefined && solvedAssembly.mates.length > 0
+  const { meshed, layout, stats: measured } = meshPartsForGlb(parts, options);
+  const solvedRig = solvedAssembly !== undefined && solvedAssembly.mates.length > 0
     ? buildRigTree(solvedAssembly)
     : undefined;
+  const rigTree = options.hierarchy === 'flat' ? undefined : solvedRig;
+  const rigMetadata = solvedRig === undefined ? undefined : rigMetadataFromTree(solvedRig);
+  const stats = { ...measured, ...rigStatsFlags(rigMetadata) };
   const { scene, wrappedParts, palette } = createExportScene(meshed, layout, rigTree, solvedAssembly);
 
   const exporter = new GLTFExporter();
@@ -199,10 +202,9 @@ export async function exportGlbAsync(
     stats,
   };
   if (palette !== undefined) kernelcadExtras.palette = palette;
-  if (rigTree !== undefined) {
-    const metadata = rigMetadataFromTree(rigTree);
-    kernelcadExtras.rig = metadata.rig;
-    kernelcadExtras.rigWarnings = metadata.warnings;
+  if (rigTree !== undefined && rigMetadata !== undefined) {
+    kernelcadExtras.rig = rigMetadata.rig;
+    kernelcadExtras.rigWarnings = rigMetadata.warnings;
   }
   return injectAssetExtras(out, { kernelcad: kernelcadExtras }, attributionGenerator(KERNELCAD_VERSION));
 }
@@ -225,7 +227,13 @@ function meshPartsForGlb(
     units: options.units ?? (style === 'lowpoly' ? 'm' : 'mm'),
     style,
   };
-  const stats = measureMeshes(meshed.map((p) => p.mesh), layout.axis);
+  const stats = measureGlbStats(meshed.map((part) => ({
+    mesh: part.mesh,
+    name: part.name,
+    material: part.material,
+    color: part.color,
+    colorParamName: part.colorParamName,
+  })), { axis: layout.axis, style: layout.style });
   const maxTriangles = options.lowpoly?.maxTriangles;
   if (maxTriangles !== undefined && stats.triangles > maxTriangles) {
     throw new Error(
