@@ -30,6 +30,12 @@ describe('Shape.finish()', () => {
     expect(materialOf(sf, finished.id)).toEqual(materialOf(sm, manual.id));
   });
 
+  it('accepts the aluminium finish token', () => {
+    const session = new CaptureSession();
+    const kcad = createModelingApi({ session });
+    expect(() => kcad.box(1, 1, 1).finish('aluminium')).not.toThrow();
+  });
+
   it('is chainable and returns the same Shape', () => {
     const session = new CaptureSession();
     const kcad = createModelingApi({ session });
