@@ -118,3 +118,15 @@ records the native sources, rendered previews, local page checks and inspected
 MP4. These are generic visualization props; checks do not establish
 building-code compliance, fire-protection performance, ventilation,
 contamination control, PPE performance, or operational acceptance.
+
+## Amusement park assets
+
+The [amusement park kit](../catalog/kits/amusement-park/README.md) adds 70
+original low-poly props for park entry, guest services, family attractions,
+midway games, concessions, rest areas, and operations. Each source exposes
+scale and color controls and has an indexed preview. The [wave demo and
+verification bundle](../artifacts/catalog-demos/amusement-park-wave-20261103/README.md)
+records the generated sources, rendered previews, local catalog checks, and
+inspected MP4. These are visualization props; checks do not establish ride
+structure, restraints, barrier design, accessibility compliance, equipment
+ratings, operating procedures, or attraction safety.

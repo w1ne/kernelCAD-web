@@ -1,0 +1,41 @@
+// Original amusement-park scene asset. Millimetres, Z up, base origin.
+meta({
+  name: "pirate-ship-ride-car",
+  license: "CC0-1.0",
+  title: "Pirate ship ride car",
+  description: "Static swinging-ship-shaped ride car with stepped seating rows, a raised prow, and a central keel. Editable overall scale and asset color.",
+  tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "attractions and queues"],
+  kit: "amusement-park",
+  category: "prop",
+  origin: "base",
+  compat: ["amusement-park", "theme-park", "midway", "visitor-attraction"],
+  triangleBudget: 1800,
+});
+
+const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
+const color = param("color", "#8c7358", { label: "Asset color" });
+const originOffsetMm = -120;
+const p = assembly("pirate-ship-ride-car");
+
+const place = (name: string, shape: Shape, at: [number, number, number]) => {
+  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+};
+const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
+  let shape = box(size[0], size[1], size[2], true);
+  if (rotation?.[0]) shape = shape.rotate([1, 0, 0], rotation[0]);
+  if (rotation?.[1]) shape = shape.rotate([0, 1, 0], rotation[1]);
+  if (rotation?.[2]) shape = shape.rotate([0, 0, 1], rotation[2]);
+  place(name, shape, at);
+};
+
+B("keel", [2280, 360, 220], [0, 0, 230]);
+B("hull", [2240, 720, 420], [0, 0, 500]);
+B("prow", [620, 760, 500], [970, 0, 730], [0, -28, 0]);
+B("stern", [460, 760, 390], [-970, 0, 660], [0, 18, 0]);
+B("seat-row-0", [340, 620, 210], [-480, 0, 870]);
+B("seat-row-1", [340, 620, 210], [0, 0, 1130]);
+B("seat-row-2", [340, 620, 210], [480, 0, 1390]);
+B("mast", [85, 85, 990], [0, 0, 1440]);
+B("sail", [60, 620, 740], [0, 0, 1530]);
+
+return p.model();

@@ -106,6 +106,83 @@
       ]
     },
     {
+      "id": "amusement-park",
+      "title": "Amusement park",
+      "description": "Guest precinct and ride-scene props for park entry, family attractions, midway games, concessions, rest areas, and operations.",
+      "assets": [
+        "accessible-entry-queue-gate",
+        "accessible-ride-transfer-bench",
+        "admission-turnstile-bank",
+        "ball-toss-target-wall",
+        "balloon-dart-gallery",
+        "bumper-car",
+        "character-meet-backdrop",
+        "character-meet-photo-easel",
+        "churro-warmer-cart",
+        "condiment-counter",
+        "cotton-candy-cart",
+        "drop-tower-seat-ring",
+        "duck-pond-game-trough",
+        "entrance-photo-frame",
+        "entrance-planter",
+        "family-carousel",
+        "family-locker-bank",
+        "family-plaza-shade-pavilion",
+        "family-rest-bench",
+        "first-aid-response-cart",
+        "funnel-cake-kiosk",
+        "game-token-counter",
+        "guest-services-map-kiosk",
+        "height-check-marker",
+        "ice-cream-cart",
+        "junior-coaster-track-section",
+        "junior-coaster-train-car",
+        "lemonade-dispenser-cart",
+        "log-flume-boat",
+        "lost-child-kiosk",
+        "midway-barker-microphone-stand",
+        "midway-scoreboard",
+        "miniature-park-tram-coach",
+        "miniature-park-tram-engine",
+        "parade-rope-stanchion",
+        "park-entry-arch",
+        "park-maintenance-golf-cart",
+        "park-observation-wheel",
+        "park-operations-radio-rack",
+        "park-pathway-bollard-light",
+        "park-stroller",
+        "park-waste-sorting-station",
+        "park-water-fountain",
+        "picnic-table-with-umbrella",
+        "pirate-ship-ride-car",
+        "playground-climber",
+        "popcorn-warmer-kiosk",
+        "pretzel-warmer-counter",
+        "prize-wall-display",
+        "queue-shade-canopy",
+        "queue-switchback-rail",
+        "refillable-cup-rack",
+        "ride-load-platform",
+        "ride-maintenance-tool-cart",
+        "ride-operator-console",
+        "ride-photo-camera",
+        "ride-photo-preview-kiosk",
+        "ring-toss-game-counter",
+        "rope-net-tunnel",
+        "skee-ball-lane",
+        "soft-drink-fountain",
+        "splash-pad-jet-column",
+        "stroller-parking-rack",
+        "stroller-service-station",
+        "tea-cup-spinner-car",
+        "ticket-vending-kiosk",
+        "ticket-window-booth",
+        "water-race-game-lane",
+        "wayfinding-pylon",
+        "wristband-checkin-desk"
+      ]
+    },
+    {
       "id": "apiary",
       "title": "Apiary",
       "description": "Original low-poly beekeeping, hive-yard and honey-handling scene props with editable scale and color controls.",
@@ -9202,6 +9279,5341 @@
             "front-hook-1",
             "closure-tab-0",
             "closure-tab-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "accessible-entry-queue-gate",
+      "kit": "amusement-park",
+      "title": "Accessible entry queue gate",
+      "description": "Wide clear-opening gate with swing leaf, paired handrails, and a low threshold plate. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "entry and guest services"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/accessible-entry-queue-gate.kcad.ts",
+      "preview": "/assets/amusement-park-accessible-entry-queue-gate.png",
+      "sourceSha256": "c54b58fa165bf7008e457dcdb7cd7270e28915d1a35c4a959863a981105cbe39",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#69847d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          2.6,
+          1.2,
+          1.268878
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#69847d",
+          "parts": [
+            "threshold",
+            "left-post",
+            "right-post",
+            "swing-leaf",
+            "left-handrail",
+            "right-handrail",
+            "operator-latch"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "accessible-ride-transfer-bench",
+      "kit": "amusement-park",
+      "title": "Accessible ride transfer bench",
+      "description": "Transfer area bench with clear side approach, back rail, and adjacent bag shelf. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "attractions and queues"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/accessible-ride-transfer-bench.kcad.ts",
+      "preview": "/assets/amusement-park-accessible-ride-transfer-bench.png",
+      "sourceSha256": "13b58b200013a9421b37798c86339e8ee442db2305ca27eb97a04e03e8fbad38",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7a8e84",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          1.575,
+          1.37,
+          0.5675
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7a8e84",
+          "parts": [
+            "seat",
+            "back",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3",
+            "bag-shelf",
+            "side-grab-rail",
+            "front-grab-rail"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "admission-turnstile-bank",
+      "kit": "amusement-park",
+      "title": "Admission turnstile bank",
+      "description": "Three waist-high admission gates with rotating arms and a shared approach rail. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "entry and guest services"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/admission-turnstile-bank.kcad.ts",
+      "preview": "/assets/amusement-park-admission-turnstile-bank.png",
+      "sourceSha256": "56a9264f36df595bf9e705d4df16b1dd0f037747312f9d3374205fa8a16ab505",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#718b87",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          2.2,
+          1.0125,
+          1.095
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#718b87",
+          "parts": [
+            "approach-rail-front",
+            "approach-rail-rear",
+            "pedestal-0",
+            "pedestal-1",
+            "pedestal-2",
+            "turnstile-arm-0-0",
+            "turnstile-arm-0-1",
+            "turnstile-arm-0-2",
+            "turnstile-arm-1-0",
+            "turnstile-arm-1-1",
+            "turnstile-arm-1-2",
+            "turnstile-arm-2-0",
+            "turnstile-arm-2-1",
+            "turnstile-arm-2-2",
+            "reader-0",
+            "reader-1",
+            "reader-2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ball-toss-target-wall",
+      "kit": "amusement-park",
+      "title": "Ball toss target wall",
+      "description": "Three-bay beanbag toss stand with stepped target openings, side braces, and a front counter shelf. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "midway games"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/ball-toss-target-wall.kcad.ts",
+      "preview": "/assets/amusement-park-ball-toss-target-wall.png",
+      "sourceSha256": "46b11a8b27cfe942ede64af15b68394df2dec39f1de94adb076a58aaf56d92a8",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d19750",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          2.15,
+          1.625,
+          1.033763
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d19750",
+          "parts": [
+            "backboard",
+            "side-left",
+            "side-right",
+            "counter-shelf",
+            "target-ring-0",
+            "target-ring-1",
+            "target-ring-2",
+            "base-foot"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "balloon-dart-gallery",
+      "kit": "amusement-park",
+      "title": "Balloon dart gallery",
+      "description": "Counter-height dart game with a pegged balloon wall, side dividers, and an overhead net frame. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "midway games"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/balloon-dart-gallery.kcad.ts",
+      "preview": "/assets/amusement-park-balloon-dart-gallery.png",
+      "sourceSha256": "6e519e6fff25cb634ff017e99dfb651157bbf3482691636a415530d7ea9088ae",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#aa7d69",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 732,
+        "sizeM": [
+          2.24,
+          2.26,
+          1.465
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#aa7d69",
+          "parts": [
+            "backboard",
+            "counter",
+            "balloon-0",
+            "balloon-1",
+            "balloon-2",
+            "balloon-3",
+            "balloon-4",
+            "balloon-5",
+            "balloon-6",
+            "balloon-7",
+            "side-divider-0",
+            "side-divider-1",
+            "net-post-0",
+            "net-post-1",
+            "net-post-2",
+            "net-post-3",
+            "net-header"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "bumper-car",
+      "kit": "amusement-park",
+      "title": "Bumper car",
+      "description": "Single electric bumper car with four perimeter bumper rails, a low cockpit, overhead pickup mast, steering control, and four floor rollers. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "attractions and queues"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/bumper-car.kcad.ts",
+      "preview": "/assets/amusement-park-bumper-car.png",
+      "sourceSha256": "6d1049652e9d771a5af2160773928ef05841408caaf3372e9cfe8fe252dd7e44",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d27057",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 392,
+        "sizeM": [
+          1.429849,
+          1.3,
+          1.135
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d27057",
+          "parts": [
+            "floor-pan",
+            "bumper-front",
+            "bumper-rear",
+            "bumper-left",
+            "bumper-right",
+            "nose",
+            "seat",
+            "steering-column",
+            "steering-wheel",
+            "roller-0",
+            "roller-1",
+            "roller-2",
+            "roller-3",
+            "power-pickup"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "character-meet-backdrop",
+      "kit": "amusement-park",
+      "title": "Character meet-and-greet backdrop",
+      "description": "Photo-op backdrop with a decorative portal, shallow stage, curtain wings, and two waiting marks. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "park operations and guest comfort"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/character-meet-backdrop.kcad.ts",
+      "preview": "/assets/amusement-park-character-meet-backdrop.png",
+      "sourceSha256": "114b27d2e3d3102904c7b01adbed50a98db15f7e4de139c02dfb74c9eb41f5b5",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a47783",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 172,
+        "sizeM": [
+          2.4,
+          2.015,
+          1.49
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a47783",
+          "parts": [
+            "stage",
+            "backdrop",
+            "portal-left",
+            "portal-right",
+            "portal-top",
+            "curtain-wing-0",
+            "curtain-wing-1",
+            "waiting-mark-0",
+            "waiting-mark-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "character-meet-photo-easel",
+      "kit": "amusement-park",
+      "title": "Character meet photo easel",
+      "description": "Portable guest photo display with a tripod back, framed sample print, and a low caption shelf. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "park operations and guest comfort"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/character-meet-photo-easel.kcad.ts",
+      "preview": "/assets/amusement-park-character-meet-photo-easel.png",
+      "sourceSha256": "ce61929ecc3b2bb183453a367706d1e79ef4d19109c13b6c26487c2e7e0090d0",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#987d65",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          1.36,
+          2.056268,
+          0.97703
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#987d65",
+          "parts": [
+            "display-frame",
+            "sample-panel",
+            "caption-shelf",
+            "easel-leg-0",
+            "easel-leg-1",
+            "easel-leg-2",
+            "frame-corner-0",
+            "frame-corner-1",
+            "frame-corner-2",
+            "frame-corner-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "churro-warmer-cart",
+      "kit": "amusement-park",
+      "title": "Churro warmer cart",
+      "description": "Narrow snack cart with a heated tray, draining rack, flour-dusting station, and bicycle-style wheels. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "concessions and rest areas"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/churro-warmer-cart.kcad.ts",
+      "preview": "/assets/amusement-park-churro-warmer-cart.png",
+      "sourceSha256": "84b6a4020da395837900b10997f5d15d72b68942b16c56feeb970fc144ff408a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#bc8051",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 444,
+        "sizeM": [
+          2.69,
+          2.1,
+          1.285
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#bc8051",
+          "parts": [
+            "cart-cabinet",
+            "hot-tray",
+            "churro-roller-0",
+            "churro-roller-1",
+            "churro-roller-2",
+            "churro-roller-3",
+            "churro-roller-4",
+            "churro-roller-5",
+            "dusting-shelf",
+            "umbrella-pole",
+            "umbrella",
+            "wheel-0",
+            "wheel-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "condiment-counter",
+      "kit": "amusement-park",
+      "title": "Condiment counter",
+      "description": "Park dining condiment station with four bottle wells, napkin cubbies, tray return, and a wipe-clean top. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "concessions and rest areas"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/condiment-counter.kcad.ts",
+      "preview": "/assets/amusement-park-condiment-counter.png",
+      "sourceSha256": "6c636514f6cc0fcecd903267dc8d6264775fb18b3f83b2fb7670e0814f05f17f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#927b61",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 248,
+        "sizeM": [
+          1.98,
+          1.5,
+          1.35
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#927b61",
+          "parts": [
+            "cabinet",
+            "top",
+            "napkin-holder-left",
+            "napkin-holder-right",
+            "sauce-bottle-0",
+            "sauce-bottle-1",
+            "sauce-bottle-2",
+            "sauce-bottle-3",
+            "tray-return",
+            "splash-guard"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "cotton-candy-cart",
+      "kit": "amusement-park",
+      "title": "Cotton candy cart",
+      "description": "Push cart with a round candy bowl, umbrella mast, flavor tubs, push handle, and paired wheels. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "concessions and rest areas"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/cotton-candy-cart.kcad.ts",
+      "preview": "/assets/amusement-park-cotton-candy-cart.png",
+      "sourceSha256": "b4145aba469cb58575a31b61f85cc8663fd898766f282faeb06d914e7ae09438",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#c77f93",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 372,
+        "sizeM": [
+          1.91,
+          2.06,
+          1.41
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#c77f93",
+          "parts": [
+            "cart-bed",
+            "cart-cabinet",
+            "candy-bowl",
+            "spinner-hub",
+            "umbrella-pole",
+            "umbrella-canopy",
+            "flavor-tub-0",
+            "flavor-tub-1",
+            "flavor-tub-2",
+            "wheel-axle",
+            "axle-bracket-0",
+            "axle-bracket-1",
+            "wheel-0",
+            "wheel-1",
+            "push-handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "drop-tower-seat-ring",
+      "kit": "amusement-park",
+      "title": "Drop tower seat ring",
+      "description": "Static circular ride-seat assembly with padded-looking backs, a central hub, and lower foot bars. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "attractions and queues"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/drop-tower-seat-ring.kcad.ts",
+      "preview": "/assets/amusement-park-drop-tower-seat-ring.png",
+      "sourceSha256": "1fa1770e89a66775d4d9f51cc3fa72dbf3d2534c249073e393e4f56ed2873825",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d59a54",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 376,
+        "sizeM": [
+          1.99,
+          0.96,
+          1.99
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d59a54",
+          "parts": [
+            "center-hub",
+            "seat-ring",
+            "seat-back-0",
+            "seat-back-1",
+            "seat-back-2",
+            "seat-back-3",
+            "seat-back-4",
+            "seat-back-5",
+            "seat-back-6",
+            "seat-back-7",
+            "foot-bar-0",
+            "foot-bar-1",
+            "foot-bar-2",
+            "foot-bar-3",
+            "foot-bar-4",
+            "foot-bar-5",
+            "foot-bar-6",
+            "foot-bar-7",
+            "seat-base-0",
+            "seat-base-1",
+            "seat-base-2",
+            "seat-base-3",
+            "seat-base-4",
+            "seat-base-5",
+            "seat-base-6",
+            "seat-base-7"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "duck-pond-game-trough",
+      "kit": "amusement-park",
+      "title": "Duck pond game trough",
+      "description": "Shallow midway fishing-game basin with a raised rim, four duck targets, and a prize-catch lip. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "midway games"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/duck-pond-game-trough.kcad.ts",
+      "preview": "/assets/amusement-park-duck-pond-game-trough.png",
+      "sourceSha256": "885e528311339dc823a71d3bc34c4521cdc0f3511dfb97a421443b49b47e441f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7b9ca0",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 384,
+        "sizeM": [
+          2.02,
+          0.555,
+          1.66
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7b9ca0",
+          "parts": [
+            "basin",
+            "rim-front",
+            "rim-back",
+            "rim-left",
+            "rim-right",
+            "duck-target-0",
+            "duck-target-1",
+            "duck-target-2",
+            "duck-target-3",
+            "prize-lip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "entrance-photo-frame",
+      "kit": "amusement-park",
+      "title": "Entrance photo frame",
+      "description": "Freestanding family photo portal with a broad top beam, side plinths, and a camera-marked crest. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "entry and guest services"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/entrance-photo-frame.kcad.ts",
+      "preview": "/assets/amusement-park-entrance-photo-frame.png",
+      "sourceSha256": "0f9683ced9a5b69e4cdc1786b63aab45af626bc77809045cf23b3a9b22062e9e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d9a657",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 116,
+        "sizeM": [
+          2.35,
+          1.8775,
+          0.56
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d9a657",
+          "parts": [
+            "left-plinth",
+            "right-plinth",
+            "photo-beam",
+            "top-cap",
+            "camera-emblem",
+            "frame-accent-0",
+            "frame-accent-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "entrance-planter",
+      "kit": "amusement-park",
+      "title": "Entrance planter",
+      "description": "Long entry plaza planter with four low ornamental shrubs spaced along a raised rim. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "entry and guest services"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/entrance-planter.kcad.ts",
+      "preview": "/assets/amusement-park-entrance-planter.png",
+      "sourceSha256": "c84f560dcaaf21601b535c9c34dd45aa22271645a8e2ab9c1f4a36bec350b70f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#758967",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 512,
+        "sizeM": [
+          2.22,
+          1.08,
+          0.82
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#758967",
+          "parts": [
+            "planter-box",
+            "rim",
+            "shrub-0",
+            "shrub-1",
+            "shrub-2",
+            "shrub-3",
+            "shrub-crown-0",
+            "shrub-crown-1",
+            "shrub-crown-2",
+            "shrub-crown-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "family-carousel",
+      "kit": "amusement-park",
+      "title": "Family carousel",
+      "description": "Round family ride platform with a central mast, radial canopy braces, and eight outward-facing seats. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "attractions and queues"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/family-carousel.kcad.ts",
+      "preview": "/assets/amusement-park-family-carousel.png",
+      "sourceSha256": "9dca514c132f4df0ab2731f2c3a03d0b9da0fa2c8edf95957fa5b273a3bd24f7",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d89055",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 976,
+        "sizeM": [
+          2.9,
+          2.86,
+          2.9
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d89055",
+          "parts": [
+            "platform",
+            "center-mast",
+            "canopy",
+            "canopy-crown",
+            "canopy-support-0",
+            "canopy-support-1",
+            "canopy-support-2",
+            "canopy-support-3",
+            "canopy-support-4",
+            "canopy-support-5",
+            "canopy-support-6",
+            "canopy-support-7",
+            "seat-pole-0",
+            "seat-pole-1",
+            "seat-pole-2",
+            "seat-pole-3",
+            "seat-pole-4",
+            "seat-pole-5",
+            "seat-pole-6",
+            "seat-pole-7",
+            "seat-0",
+            "seat-1",
+            "seat-2",
+            "seat-3",
+            "seat-4",
+            "seat-5",
+            "seat-6",
+            "seat-7"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "family-locker-bank",
+      "kit": "amusement-park",
+      "title": "Family locker bank",
+      "description": "Six-door day-use locker unit with recessed-looking door panels, toe kick, and numbered header strip. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "entry and guest services"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/family-locker-bank.kcad.ts",
+      "preview": "/assets/amusement-park-family-locker-bank.png",
+      "sourceSha256": "dd14b4e101b6dab55169a2f407609caf36c93564979071b70c11152360d9cc54",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#728b80",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          2.36,
+          2.03,
+          0.76
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#728b80",
+          "parts": [
+            "locker-case",
+            "toe-kick",
+            "top-header",
+            "locker-door-0",
+            "locker-door-1",
+            "locker-door-2",
+            "locker-door-3",
+            "locker-door-4",
+            "locker-door-5",
+            "locker-handle-0",
+            "locker-handle-1",
+            "locker-handle-2",
+            "locker-handle-3",
+            "locker-handle-4",
+            "locker-handle-5"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "family-plaza-shade-pavilion",
+      "kit": "amusement-park",
+      "title": "Family plaza shade pavilion",
+      "description": "Four-post plaza shelter with two gently pitched canopy panels and a raised ridge mast. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "park operations and guest comfort"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/family-plaza-shade-pavilion.kcad.ts",
+      "preview": "/assets/amusement-park-family-plaza-shade-pavilion.png",
+      "sourceSha256": "cc467e5f6d631db54a64196e2af757e074892dcd01a657fe44c1ca117e2015b0",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7d8d84",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 260,
+        "sizeM": [
+          3.34,
+          3.1,
+          2.54
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7d8d84",
+          "parts": [
+            "corner-post-0",
+            "corner-post-1",
+            "corner-post-2",
+            "corner-post-3",
+            "center-mast",
+            "canopy-panel-left",
+            "canopy-panel-right",
+            "anchor-foot-0",
+            "anchor-foot-1",
+            "anchor-foot-2",
+            "anchor-foot-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "family-rest-bench",
+      "kit": "amusement-park",
+      "title": "Family rest bench",
+      "description": "Wide plaza bench with back slats, arm dividers, and a shaded stroller-clear zone underneath. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "park operations and guest comfort"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/family-rest-bench.kcad.ts",
+      "preview": "/assets/amusement-park-family-rest-bench.png",
+      "sourceSha256": "445cdaacd774bea98efdda955c43b92aed3fb1729d0b8244a98dec1bcf926c42",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8c785f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          2.2,
+          1.3225,
+          0.56
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8c785f",
+          "parts": [
+            "seat",
+            "seat-slat-0",
+            "seat-slat-1",
+            "seat-slat-2",
+            "seat-slat-3",
+            "back-slat-0",
+            "back-slat-1",
+            "back-slat-2",
+            "back-slat-3",
+            "leg-0",
+            "leg-1",
+            "arm-rest-0",
+            "arm-rest-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "first-aid-response-cart",
+      "kit": "amusement-park",
+      "title": "First aid response cart",
+      "description": "Compact wheeled response cart with divided supply drawers, grab handles, and a raised cross panel. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "entry and guest services"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/first-aid-response-cart.kcad.ts",
+      "preview": "/assets/amusement-park-first-aid-response-cart.png",
+      "sourceSha256": "b3772c8f762d12c20101053802de2ace33e2b052ce80d283bb32b9aee32fe245",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#c96b58",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 272,
+        "sizeM": [
+          1.04,
+          1.255,
+          0.78
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#c96b58",
+          "parts": [
+            "cart-body",
+            "top-tray",
+            "drawer-0",
+            "drawer-1",
+            "drawer-2",
+            "cross-vertical",
+            "cross-horizontal",
+            "caster-0",
+            "caster-1",
+            "caster-2",
+            "caster-3",
+            "push-bar"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "funnel-cake-kiosk",
+      "kit": "amusement-park",
+      "title": "Funnel cake kiosk",
+      "description": "Fair-food fry stand with a vent hood, serving pass, fryer tub silhouette, and side-order shelf. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "concessions and rest areas"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/funnel-cake-kiosk.kcad.ts",
+      "preview": "/assets/amusement-park-funnel-cake-kiosk.png",
+      "sourceSha256": "193fbb50585f8d3df184f598f305e780cd04850c4479a658fbcdbea4b846fd23",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a27b57",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          2.28,
+          1.975,
+          1.585
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a27b57",
+          "parts": [
+            "kiosk-base",
+            "service-pass",
+            "fryer-casing",
+            "fryer-vat",
+            "vent-riser",
+            "hood",
+            "side-shelf",
+            "queue-counter"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "game-token-counter",
+      "kit": "amusement-park",
+      "title": "Game token counter",
+      "description": "Midway exchange counter with a token hopper, change tray, service window, and queue-side awning. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "midway games"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/game-token-counter.kcad.ts",
+      "preview": "/assets/amusement-park-game-token-counter.png",
+      "sourceSha256": "41a29d1e2135c23ece91b19bd5d913412c3611d086c3cabc069173fb3b9b21e2",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8a765e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          1.95,
+          1.76,
+          0.89
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8a765e",
+          "parts": [
+            "counter-body",
+            "service-window",
+            "counter-ledge",
+            "token-hopper",
+            "change-tray",
+            "awning",
+            "awning-post-0",
+            "awning-post-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "guest-services-map-kiosk",
+      "kit": "amusement-park",
+      "title": "Guest services map kiosk",
+      "description": "Covered information stand with a large park map panel and a low shelf for printed guides. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "entry and guest services"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/guest-services-map-kiosk.kcad.ts",
+      "preview": "/assets/amusement-park-guest-services-map-kiosk.png",
+      "sourceSha256": "24a0822da76d739f952f6207caadd02952fbe93a729f10f310f95db245e27adc",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#94785c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          1.64,
+          2.6,
+          1.025
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#94785c",
+          "parts": [
+            "base",
+            "support-post",
+            "map-panel",
+            "map-frame-top",
+            "map-frame-bottom",
+            "guide-shelf",
+            "shelter-roof"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "height-check-marker",
+      "kit": "amusement-park",
+      "title": "Rider height check marker",
+      "description": "Queue entry height guide with two graduated side posts, an overhead bar, and a free-standing base. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "attractions and queues"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/height-check-marker.kcad.ts",
+      "preview": "/assets/amusement-park-height-check-marker.png",
+      "sourceSha256": "3d139e2f61ab053812fc202afdd1647050c9f7a91fef647e84c2568d1d2802f7",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d0a44f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          1.285,
+          2.2975,
+          0.46
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d0a44f",
+          "parts": [
+            "left-foot",
+            "right-foot",
+            "left-post",
+            "right-post",
+            "top-bar",
+            "graduation-0",
+            "graduation-1",
+            "graduation-2",
+            "graduation-3",
+            "graduation-4",
+            "graduation-5",
+            "graduation-6",
+            "graduation-7",
+            "graduation-8",
+            "graduation-9",
+            "marker-cap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ice-cream-cart",
+      "kit": "amusement-park",
+      "title": "Ice cream cart",
+      "description": "Mobile frozen-treat cart with insulated chest, hinged lid, flavor-board canopy, and four wheels. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "concessions and rest areas"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/ice-cream-cart.kcad.ts",
+      "preview": "/assets/amusement-park-ice-cream-cart.png",
+      "sourceSha256": "2273c29e353b56d85e57fe5ac40e7889c181d8a0dbdc15a44e70972d722f99fd",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7d9aa1",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 248,
+        "sizeM": [
+          1.65,
+          1.985,
+          1.055
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7d9aa1",
+          "parts": [
+            "cart-body",
+            "insulated-chest",
+            "hinged-lid",
+            "handle",
+            "menu-board",
+            "awning",
+            "wheel-0",
+            "wheel-1",
+            "wheel-2",
+            "wheel-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "junior-coaster-track-section",
+      "kit": "amusement-park",
+      "title": "Junior coaster track section",
+      "description": "Short display section of family coaster rail with cross ties, two supports, and a gentle rise. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "attractions and queues"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/junior-coaster-track-section.kcad.ts",
+      "preview": "/assets/amusement-park-junior-coaster-track-section.png",
+      "sourceSha256": "27aa54e87c121a27b152551ed5d53f5a59ee506de2a538556bffaed8f9539c0b",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#707d82",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          3.6,
+          1.147467,
+          1.02
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#707d82",
+          "parts": [
+            "rail-0",
+            "rail-1",
+            "cross-tie-0",
+            "cross-tie-1",
+            "cross-tie-2",
+            "cross-tie-3",
+            "cross-tie-4",
+            "cross-tie-5",
+            "support-0",
+            "support-1",
+            "support-2",
+            "base-foot"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "junior-coaster-train-car",
+      "kit": "amusement-park",
+      "title": "Junior coaster train car",
+      "description": "Two-row family coaster car with paired wheels, lap-bar silhouettes, and a raised front fairing. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "attractions and queues"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/junior-coaster-train-car.kcad.ts",
+      "preview": "/assets/amusement-park-junior-coaster-train-car.png",
+      "sourceSha256": "0e79806ee6c1729b5de7162eff12291653441b0103f46452df45bb22911d1d4f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6e8e9d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 248,
+        "sizeM": [
+          1.537959,
+          0.985,
+          0.86
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6e8e9d",
+          "parts": [
+            "chassis",
+            "front-fairing",
+            "rear-seat",
+            "front-seat",
+            "lap-bar-0",
+            "lap-bar-1",
+            "wheel-0",
+            "wheel-1",
+            "wheel-2",
+            "wheel-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "lemonade-dispenser-cart",
+      "kit": "amusement-park",
+      "title": "Lemonade dispenser cart",
+      "description": "Beverage cart with paired transparent-tank silhouettes, tap handles, ice bin, and a push bar. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "concessions and rest areas"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/lemonade-dispenser-cart.kcad.ts",
+      "preview": "/assets/amusement-park-lemonade-dispenser-cart.png",
+      "sourceSha256": "dde19eebcf8e9cb9bda7349a70ba45cdcc80c5c49ba9ac6e9b139e551aae271d",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b89a50",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 400,
+        "sizeM": [
+          1.53,
+          1.71,
+          0.9825
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b89a50",
+          "parts": [
+            "cart-frame",
+            "front-counter",
+            "drink-tank-0",
+            "drink-tank-1",
+            "tap-0",
+            "tap-1",
+            "ice-bin",
+            "push-bar",
+            "wheel-0",
+            "wheel-1",
+            "wheel-2",
+            "wheel-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "log-flume-boat",
+      "kit": "amusement-park",
+      "title": "Log flume boat",
+      "description": "Two-seat flume boat with raised bow, open seating well, rear grab bar, and keel-like lower profile. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "attractions and queues"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/log-flume-boat.kcad.ts",
+      "preview": "/assets/amusement-park-log-flume-boat.png",
+      "sourceSha256": "91d3f94ef924dfb231f3dd6dc5c06345ea95ef723ad3329e6159368a4072a653",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#79917f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          2.242447,
+          1.0525,
+          1.04
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#79917f",
+          "parts": [
+            "keel",
+            "hull",
+            "bow-cap",
+            "seat-front",
+            "seat-rear",
+            "grab-bar",
+            "foot-well"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "lost-child-kiosk",
+      "kit": "amusement-park",
+      "title": "Lost child reunification kiosk",
+      "description": "Quiet guest-support station with a canopy, two-sided service counter, privacy screen, and waiting seat. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "entry and guest services"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/lost-child-kiosk.kcad.ts",
+      "preview": "/assets/amusement-park-lost-child-kiosk.png",
+      "sourceSha256": "ce70bce2bc27e1338725dd035ec6ef0d115e4d3e9fe61ef7cec77c6d81d627d1",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#738d89",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          1.78,
+          1.48,
+          1.44
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#738d89",
+          "parts": [
+            "base",
+            "service-counter",
+            "privacy-screen",
+            "canopy",
+            "side-panel-left",
+            "side-panel-right",
+            "waiting-seat"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "midway-barker-microphone-stand",
+      "kit": "amusement-park",
+      "title": "Midway game microphone stand",
+      "description": "Portable host microphone podium with an angled script shelf, hand mic, and folded-stand feet. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "midway games"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/midway-barker-microphone-stand.kcad.ts",
+      "preview": "/assets/amusement-park-midway-barker-microphone-stand.png",
+      "sourceSha256": "85e9b81f928cb80794aa07d2cd7e4e673ee25951e171b75825b2f5c818d49987",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#927a5f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          0.90509,
+          1.85,
+          0.754932
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#927a5f",
+          "parts": [
+            "podium-base",
+            "stem",
+            "script-shelf",
+            "front-panel",
+            "microphone",
+            "foot-0",
+            "foot-1",
+            "foot-2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "midway-scoreboard",
+      "kit": "amusement-park",
+      "title": "Midway scoreboard",
+      "description": "Freestanding race scoreboard with two lane panels, a roof cap, and a weighted ground frame. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "midway games"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/midway-scoreboard.kcad.ts",
+      "preview": "/assets/amusement-park-midway-scoreboard.png",
+      "sourceSha256": "c721764c0ca4a1d0110708264a59b680d0d1e0956b02f0fa208fea916895845a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#737f83",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 248,
+        "sizeM": [
+          1.68,
+          1.765,
+          0.85
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#737f83",
+          "parts": [
+            "base",
+            "left-panel",
+            "right-panel",
+            "center-divider",
+            "header",
+            "roof",
+            "score-lamp-0",
+            "score-lamp-1",
+            "score-lamp-2",
+            "score-lamp-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "miniature-park-tram-coach",
+      "kit": "amusement-park",
+      "title": "Miniature park tram coach",
+      "description": "Open-air visitor train coach with paired bench rows, side step, canopy roof, and four rail wheels. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "attractions and queues"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/miniature-park-tram-coach.kcad.ts",
+      "preview": "/assets/amusement-park-miniature-park-tram-coach.png",
+      "sourceSha256": "4d4c42a9d2e3bf3d5328102c8b9cf6c1847fe50ae98786705c7dd0182d0c9778",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7b9280",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 308,
+        "sizeM": [
+          1.98,
+          1.695,
+          1.04
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7b9280",
+          "parts": [
+            "underframe",
+            "floor",
+            "canopy-roof",
+            "canopy-post-0",
+            "canopy-post-1",
+            "canopy-post-2",
+            "canopy-post-3",
+            "bench-0",
+            "bench-1",
+            "bench-2",
+            "bench-3",
+            "wheel-0",
+            "wheel-1",
+            "wheel-2",
+            "wheel-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "miniature-park-tram-engine",
+      "kit": "amusement-park",
+      "title": "Miniature park tram engine",
+      "description": "Low-speed park railway locomotive with an open cab, front buffer, boiler hood, and four wheels. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "attractions and queues"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/miniature-park-tram-engine.kcad.ts",
+      "preview": "/assets/amusement-park-miniature-park-tram-engine.png",
+      "sourceSha256": "4a8cd9b512a1df84051322cc445d20bbfd6182483c59dfe060cd1c3b391a994a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6b8580",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 324,
+        "sizeM": [
+          2.19,
+          1.6825,
+          0.975
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6b8580",
+          "parts": [
+            "chassis",
+            "cab-floor",
+            "cab-back",
+            "cab-roof",
+            "boiler",
+            "smokestack",
+            "front-buffer",
+            "wheel-0",
+            "wheel-1",
+            "wheel-2",
+            "wheel-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "parade-rope-stanchion",
+      "kit": "amusement-park",
+      "title": "Parade rope stanchion pair",
+      "description": "Portable crowd-control rope set with two weighted posts, a cross-span rail, and a central clip. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "park operations and guest comfort"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/parade-rope-stanchion.kcad.ts",
+      "preview": "/assets/amusement-park-parade-rope-stanchion.png",
+      "sourceSha256": "8abb71c7ba5c52696707df8763ef4f9906cf724e5478afb05c8f1f77b0e21edd",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b5955f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 256,
+        "sizeM": [
+          2.72,
+          1.58,
+          0.42
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b5955f",
+          "parts": [
+            "weighted-base-0",
+            "weighted-base-1",
+            "post-0",
+            "post-1",
+            "rope-span",
+            "center-clip",
+            "base-inset-0",
+            "base-inset-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "park-entry-arch",
+      "kit": "amusement-park",
+      "title": "Park entry arch",
+      "description": "Freestanding entry portal with paired columns, overhead canopy, and a raised central crest. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "entry and guest services"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/park-entry-arch.kcad.ts",
+      "preview": "/assets/amusement-park-park-entry-arch.png",
+      "sourceSha256": "1462c7355cc718501c0ca0c545c607957fec55dccfadf4e8449d7ee81c3d4775",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d66d4d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 162,
+        "sizeM": [
+          2.74,
+          3.45,
+          0.64
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d66d4d",
+          "parts": [
+            "left-column",
+            "right-column",
+            "header-beam",
+            "canopy",
+            "crest-plinth",
+            "crest",
+            "column-band-0",
+            "column-band-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "park-maintenance-golf-cart",
+      "kit": "amusement-park",
+      "title": "Park maintenance cart",
+      "description": "Compact utility cart with open operator cab, short cargo bed, front bumper, and four treaded wheels. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "park operations and guest comfort"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/park-maintenance-golf-cart.kcad.ts",
+      "preview": "/assets/amusement-park-park-maintenance-golf-cart.png",
+      "sourceSha256": "98b39c7c841227517e493766a8e17f8c1582c59bc0d68da47e183a53ce3217fb",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7e8a62",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 308,
+        "sizeM": [
+          2.195,
+          1.505,
+          1.265
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7e8a62",
+          "parts": [
+            "chassis",
+            "cargo-bed",
+            "hood",
+            "operator-floor",
+            "front-screen",
+            "roof",
+            "cab-post-0",
+            "cab-post-1",
+            "cab-post-2",
+            "cab-post-3",
+            "wheel-0",
+            "wheel-1",
+            "wheel-2",
+            "wheel-3",
+            "front-bumper"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "park-observation-wheel",
+      "kit": "amusement-park",
+      "title": "Park observation wheel",
+      "description": "Static scene wheel with a segmented rim, radial braces, ten enclosed gondolas, and a twin-leg base. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "attractions and queues"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/park-observation-wheel.kcad.ts",
+      "preview": "/assets/amusement-park-park-observation-wheel.png",
+      "sourceSha256": "a6b91bc0ae29eeb5086c986280b3495a4ab33dca248113bc6624d4f3429f25ff",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6e8885",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 620,
+        "sizeM": [
+          1.78,
+          5.538596,
+          3.635
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6e8885",
+          "parts": [
+            "left-foundation",
+            "right-foundation",
+            "left-support",
+            "right-support",
+            "rim-segment-0",
+            "rim-segment-1",
+            "rim-segment-2",
+            "rim-segment-3",
+            "rim-segment-4",
+            "rim-segment-5",
+            "rim-segment-6",
+            "rim-segment-7",
+            "rim-segment-8",
+            "rim-segment-9",
+            "rim-segment-10",
+            "rim-segment-11",
+            "spoke-0",
+            "spoke-1",
+            "spoke-2",
+            "spoke-3",
+            "spoke-4",
+            "spoke-5",
+            "spoke-6",
+            "spoke-7",
+            "spoke-8",
+            "spoke-9",
+            "spoke-10",
+            "spoke-11",
+            "axle",
+            "gondola-hanger-0",
+            "gondola-hanger-1",
+            "gondola-hanger-2",
+            "gondola-hanger-3",
+            "gondola-hanger-4",
+            "gondola-hanger-5",
+            "gondola-hanger-6",
+            "gondola-hanger-7",
+            "gondola-hanger-8",
+            "gondola-hanger-9",
+            "gondola-0",
+            "gondola-1",
+            "gondola-2",
+            "gondola-3",
+            "gondola-4",
+            "gondola-5",
+            "gondola-6",
+            "gondola-7",
+            "gondola-8",
+            "gondola-9"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "park-operations-radio-rack",
+      "kit": "amusement-park",
+      "title": "Park operations radio rack",
+      "description": "Back-of-house charging stand with six radio cradles, overhead status strip, and cable-routing shelf. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "park operations and guest comfort"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/park-operations-radio-rack.kcad.ts",
+      "preview": "/assets/amusement-park-park-operations-radio-rack.png",
+      "sourceSha256": "5148b3475a378605f8ae29a5725da7e400a1e5a07c4b213af21bf559159b9845",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6f8581",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 384,
+        "sizeM": [
+          1.66,
+          1.8,
+          0.745
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6f8581",
+          "parts": [
+            "backplate",
+            "base",
+            "charging-cradle-0",
+            "charging-cradle-1",
+            "charging-cradle-2",
+            "charging-cradle-3",
+            "charging-cradle-4",
+            "charging-cradle-5",
+            "status-strip",
+            "cable-shelf",
+            "status-indicator-0",
+            "status-indicator-1",
+            "status-indicator-2",
+            "status-indicator-3",
+            "status-indicator-4",
+            "status-indicator-5"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "park-pathway-bollard-light",
+      "kit": "amusement-park",
+      "title": "Park pathway bollard light",
+      "description": "Low path marker with a broad anchor foot, fluted post, and a down-shielded cap. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "park operations and guest comfort"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/park-pathway-bollard-light.kcad.ts",
+      "preview": "/assets/amusement-park-park-pathway-bollard-light.png",
+      "sourceSha256": "d843bb4afb84b72b4583b7143615cbed4754c0ae355449bf4c2176d40aa7b2d5",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d2a254",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          0.44,
+          0.885,
+          0.44
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d2a254",
+          "parts": [
+            "anchor-foot",
+            "bollard-post",
+            "light-cap",
+            "glare-shield",
+            "vertical-flute-0",
+            "vertical-flute-1",
+            "vertical-flute-2",
+            "vertical-flute-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "park-stroller",
+      "kit": "amusement-park",
+      "title": "Park stroller",
+      "description": "Single-seat visitor stroller with folding canopy, push handle, footrest, and paired wheels. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "entry and guest services"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/park-stroller.kcad.ts",
+      "preview": "/assets/amusement-park-park-stroller.png",
+      "sourceSha256": "9c1978d4e8e47b25753f1551b7ec124dda3dddbe456184a6c1dfa1f71d436244",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#688b89",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 208,
+        "sizeM": [
+          0.79,
+          1.661666,
+          0.9575
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#688b89",
+          "parts": [
+            "seat-pan",
+            "backrest",
+            "footrest",
+            "canopy-rib",
+            "canopy",
+            "push-handle",
+            "wheel-0",
+            "wheel-1",
+            "frame-leg-0",
+            "frame-leg-1",
+            "frame-leg-2",
+            "frame-leg-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "park-waste-sorting-station",
+      "kit": "amusement-park",
+      "title": "Park waste sorting station",
+      "description": "Three-stream visitor waste point with distinct lid openings, a shared roof, and a trolley-clear front. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "park operations and guest comfort"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/park-waste-sorting-station.kcad.ts",
+      "preview": "/assets/amusement-park-park-waste-sorting-station.png",
+      "sourceSha256": "f16951518cc2a24805615a8cf31bc104ce2615372d0a292942f52878fb31c3b3",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#71877e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 240,
+        "sizeM": [
+          2.25,
+          1.67,
+          0.85
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#71877e",
+          "parts": [
+            "bin-0",
+            "bin-1",
+            "bin-2",
+            "lid-0",
+            "lid-1",
+            "lid-2",
+            "opening-rim-0",
+            "opening-rim-1",
+            "opening-rim-2",
+            "shared-canopy",
+            "support-0",
+            "support-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "park-water-fountain",
+      "kit": "amusement-park",
+      "title": "Park drinking fountain",
+      "description": "Freestanding guest fountain with a raised bowl, two push-button stations, and a bottle-fill spout. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "concessions and rest areas"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/park-water-fountain.kcad.ts",
+      "preview": "/assets/amusement-park-park-water-fountain.png",
+      "sourceSha256": "609b3ab302f6853c54bc20935cef36545408bb3a3c44f108daf553b0f0d2ed01",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#718b88",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 224,
+        "sizeM": [
+          0.82,
+          1.412,
+          0.82
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#718b88",
+          "parts": [
+            "pedestal",
+            "bowl",
+            "backsplash",
+            "bubbler-post-0",
+            "bubbler-post-1",
+            "push-button-0",
+            "push-button-1",
+            "bottle-fill-spout"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "picnic-table-with-umbrella",
+      "kit": "amusement-park",
+      "title": "Picnic table with umbrella",
+      "description": "Family dining table with two bench seats, umbrella mast, and a broad shade canopy. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "concessions and rest areas"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/picnic-table-with-umbrella.kcad.ts",
+      "preview": "/assets/amusement-park-picnic-table-with-umbrella.png",
+      "sourceSha256": "10852c83963a442ad514c9fc4138f740d6dd1279c54035ff33224677c045b45e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9d7b58",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 152,
+        "sizeM": [
+          2.35,
+          2.84,
+          2.2
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9d7b58",
+          "parts": [
+            "tabletop",
+            "table-pedestal",
+            "bench-front",
+            "bench-back",
+            "bench-leg-0",
+            "bench-leg-1",
+            "bench-leg-2",
+            "bench-leg-3",
+            "umbrella-mast",
+            "umbrella-canopy"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "pirate-ship-ride-car",
+      "kit": "amusement-park",
+      "title": "Pirate ship ride car",
+      "description": "Static swinging-ship-shaped ride car with stepped seating rows, a raised prow, and a central keel. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "attractions and queues"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/pirate-ship-ride-car.kcad.ts",
+      "preview": "/assets/amusement-park-pirate-ship-ride-car.png",
+      "sourceSha256": "0380f89f16007fbc0c8abf3969512050c385dd6bafd77cf2ee61bab40c5047ab",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8c7358",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          2.610083,
+          1.815,
+          0.76
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8c7358",
+          "parts": [
+            "keel",
+            "hull",
+            "prow",
+            "stern",
+            "seat-row-0",
+            "seat-row-1",
+            "seat-row-2",
+            "mast",
+            "sail"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "playground-climber",
+      "kit": "amusement-park",
+      "title": "Playground climber",
+      "description": "Small family-zone climbing frame with a raised platform, ladder rungs, crawl-through opening, and slide. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "attractions and queues"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/playground-climber.kcad.ts",
+      "preview": "/assets/amusement-park-playground-climber.png",
+      "sourceSha256": "61e83aa8d2d5a796ba419be78402d5c78652987ea521314b8aa88689877c9df1",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d39b57",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.88,
+          1.175,
+          2.131188
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d39b57",
+          "parts": [
+            "platform",
+            "platform-post-0",
+            "platform-post-1",
+            "platform-post-2",
+            "platform-post-3",
+            "ladder-rung-0",
+            "ladder-rung-1",
+            "ladder-rung-2",
+            "ladder-rung-3",
+            "ladder-rung-4",
+            "slide-bed",
+            "slide-rail-0",
+            "slide-rail-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "popcorn-warmer-kiosk",
+      "kit": "amusement-park",
+      "title": "Popcorn warmer kiosk",
+      "description": "Countertop popcorn service kiosk with a tall warming case, serving shelf, and striped rain canopy. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "concessions and rest areas"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/popcorn-warmer-kiosk.kcad.ts",
+      "preview": "/assets/amusement-park-popcorn-warmer-kiosk.png",
+      "sourceSha256": "1e84b1421ea3bea0db2aa2a344eebeda380242207066171f73e55979785518ae",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d29a52",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          1.95,
+          2.42,
+          1.31
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d29a52",
+          "parts": [
+            "counter",
+            "warmer-base",
+            "warming-case",
+            "case-roof",
+            "serving-shelf",
+            "awning",
+            "awning-post-0",
+            "awning-post-1",
+            "awning-post-2",
+            "awning-post-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "pretzel-warmer-counter",
+      "kit": "amusement-park",
+      "title": "Pretzel warmer counter",
+      "description": "Warm pretzel display with two-tier glass case, condiment niche, service shelf, and cash drawer. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "concessions and rest areas"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/pretzel-warmer-counter.kcad.ts",
+      "preview": "/assets/amusement-park-pretzel-warmer-counter.png",
+      "sourceSha256": "0080d9b1c87688b4048adf3781b5fa01f1ca68a25dfb36d586194e1a59e95b3e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a87c55",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          1.64,
+          1.6775,
+          1.015
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a87c55",
+          "parts": [
+            "counter-body",
+            "display-base",
+            "glass-case-back",
+            "glass-case-top",
+            "glass-case-front",
+            "display-shelf",
+            "condiment-cubby",
+            "cash-drawer"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "prize-wall-display",
+      "kit": "amusement-park",
+      "title": "Midway prize wall",
+      "description": "Prize counter backdrop with three open display shelves, hanging plush silhouettes, and a lower redemption ledge. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "midway games"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/prize-wall-display.kcad.ts",
+      "preview": "/assets/amusement-park-prize-wall-display.png",
+      "sourceSha256": "723a7cefdd01cba68ce0b82c03a8eb58e9e48bacf3aa81a1420ff58b051fce2d",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9a7960",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 774,
+        "sizeM": [
+          2.4,
+          1.85,
+          1
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9a7960",
+          "parts": [
+            "back-panel",
+            "display-shelf-0",
+            "display-shelf-1",
+            "display-shelf-2",
+            "prize-plush-0",
+            "prize-plush-1",
+            "prize-plush-2",
+            "prize-plush-3",
+            "prize-plush-4",
+            "prize-plush-5",
+            "prize-plush-6",
+            "prize-plush-7",
+            "prize-plush-8",
+            "redemption-counter",
+            "counter-lip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "queue-shade-canopy",
+      "kit": "amusement-park",
+      "title": "Queue shade canopy",
+      "description": "Open-sided queue shelter with four posts, a peaked roof silhouette, and hanging wayfinding tabs. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "attractions and queues"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/queue-shade-canopy.kcad.ts",
+      "preview": "/assets/amusement-park-queue-shade-canopy.png",
+      "sourceSha256": "7cc2dd92c7797217ec965459d1d80939fe144c11861a82cd2c908722f53aacb1",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a4775d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          3.675281,
+          3.045,
+          1.505047
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a4775d",
+          "parts": [
+            "post-0",
+            "post-1",
+            "post-2",
+            "post-3",
+            "left-roof-slope",
+            "right-roof-slope",
+            "ridge-beam",
+            "queue-tab-0",
+            "queue-tab-1",
+            "queue-tab-2",
+            "queue-tab-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "queue-switchback-rail",
+      "kit": "amusement-park",
+      "title": "Queue switchback rail",
+      "description": "Modular two-lane queue divider with paired rails, seven posts, and a rounded turning end. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "attractions and queues"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/queue-switchback-rail.kcad.ts",
+      "preview": "/assets/amusement-park-queue-switchback-rail.png",
+      "sourceSha256": "8153cccc9f4d9e1c209118e8661419ea1767846c3d8728a1496892dba73eeb16",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7c817a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 904,
+        "sizeM": [
+          3.108,
+          0.98,
+          0.948
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7c817a",
+          "parts": [
+            "post-0",
+            "post-1",
+            "post-2",
+            "post-3",
+            "post-4",
+            "post-5",
+            "post-6",
+            "post-7",
+            "post-8",
+            "post-9",
+            "post-10",
+            "post-11",
+            "post-12",
+            "post-13",
+            "upper-rail-0",
+            "upper-rail-1",
+            "upper-rail-2",
+            "upper-rail-3",
+            "upper-rail-4",
+            "upper-rail-5",
+            "upper-rail-6",
+            "upper-rail-7",
+            "upper-rail-8",
+            "upper-rail-9",
+            "upper-rail-10",
+            "upper-rail-11",
+            "lower-rail-0",
+            "lower-rail-1",
+            "lower-rail-2",
+            "lower-rail-3",
+            "lower-rail-4",
+            "lower-rail-5",
+            "lower-rail-6",
+            "lower-rail-7",
+            "lower-rail-8",
+            "lower-rail-9",
+            "lower-rail-10",
+            "lower-rail-11"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "refillable-cup-rack",
+      "kit": "amusement-park",
+      "title": "Refillable cup rack",
+      "description": "Countertop carousel for reusable park cups with a rotating-style central mast and four storage shelves. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "concessions and rest areas"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/refillable-cup-rack.kcad.ts",
+      "preview": "/assets/amusement-park-refillable-cup-rack.png",
+      "sourceSha256": "4299d9e4b2ee55dc2d00e35d887063f4af019204fc136ad63b0b8c9450613cce",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7d9188",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 324,
+        "sizeM": [
+          1.1,
+          1.267,
+          1.08
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7d9188",
+          "parts": [
+            "base",
+            "mast",
+            "cup-shelf-0",
+            "cup-shelf-1",
+            "cup-shelf-2",
+            "cup-shelf-3",
+            "cup-holder-0",
+            "cup-holder-1",
+            "cup-holder-2",
+            "cup-holder-3",
+            "top-cap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ride-load-platform",
+      "kit": "amusement-park",
+      "title": "Ride load platform",
+      "description": "Queue-side loading deck with three boarding bays, stairs, handrails, and a hinged-looking access gate. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "attractions and queues"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/ride-load-platform.kcad.ts",
+      "preview": "/assets/amusement-park-ride-load-platform.png",
+      "sourceSha256": "842c41529fc1a7fd2b7b673f6ef325ec4b7d4f935c80d2c78c96ad64ed1db48e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#78817c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 216,
+        "sizeM": [
+          2.8,
+          1.5825,
+          2.295
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#78817c",
+          "parts": [
+            "deck",
+            "stair-base",
+            "stair-step-0",
+            "stair-step-1",
+            "stair-step-2",
+            "stair-step-3",
+            "stair-step-4",
+            "stair-step-5",
+            "rail-post-0",
+            "rail-post-1",
+            "rail-post-2",
+            "rail-post-3",
+            "rail-post-4",
+            "rail-post-5",
+            "rear-handrail",
+            "side-handrail-left",
+            "side-handrail-right",
+            "boarding-gate"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ride-maintenance-tool-cart",
+      "kit": "amusement-park",
+      "title": "Ride maintenance tool cart",
+      "description": "Workshop cart with locking drawers, a parts tray, side handle, and four casters for attraction back-of-house scenes. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "park operations and guest comfort"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/ride-maintenance-tool-cart.kcad.ts",
+      "preview": "/assets/amusement-park-ride-maintenance-tool-cart.png",
+      "sourceSha256": "d8387666bb12e399eeabb0860aad4f3551405bd16a2aacfa6151d73a54b2dfaf",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#78877f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 272,
+        "sizeM": [
+          1.295,
+          1.29,
+          0.85
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#78877f",
+          "parts": [
+            "cabinet",
+            "top-tray",
+            "drawer-0",
+            "drawer-1",
+            "drawer-2",
+            "drawer-3",
+            "side-handle",
+            "parts-bin",
+            "caster-0",
+            "caster-1",
+            "caster-2",
+            "caster-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ride-operator-console",
+      "kit": "amusement-park",
+      "title": "Ride operator console",
+      "description": "Freestanding dispatch console with a slanted control face, stop button, status lamps, and weather hood. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "attractions and queues"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/ride-operator-console.kcad.ts",
+      "preview": "/assets/amusement-park-ride-operator-console.png",
+      "sourceSha256": "5a8f2b02950409fd1fc0e7f8d082e4d4cf11115ea25b7a1977f6a553589cbb8e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#778983",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 248,
+        "sizeM": [
+          1.08,
+          1.44,
+          0.59
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#778983",
+          "parts": [
+            "pedestal",
+            "control-face",
+            "hood",
+            "status-lamp-0",
+            "status-lamp-1",
+            "status-lamp-2",
+            "status-lamp-3",
+            "stop-button-guard",
+            "side-grab-left",
+            "side-grab-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ride-photo-camera",
+      "kit": "amusement-park",
+      "title": "Ride photo camera",
+      "description": "Elevated attraction camera on a three-leg stand with a sun hood and a large front lens barrel. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "attractions and queues"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/ride-photo-camera.kcad.ts",
+      "preview": "/assets/amusement-park-ride-photo-camera.png",
+      "sourceSha256": "aa6727fac516df4b8b4042769ccc652d7f5b06794ef6aff617f8900a2ab4f480",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#606f73",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 196,
+        "sizeM": [
+          1.05,
+          2.264219,
+          1.073696
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#606f73",
+          "parts": [
+            "camera-body",
+            "lens-barrel",
+            "sun-hood",
+            "lens",
+            "mast",
+            "tripod-leg-0",
+            "tripod-leg-1",
+            "tripod-leg-2",
+            "tripod-foot-0",
+            "tripod-foot-1",
+            "tripod-foot-2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ride-photo-preview-kiosk",
+      "kit": "amusement-park",
+      "title": "Ride photo preview kiosk",
+      "description": "Guest-facing image preview station with a large display, purchase ledge, and a tilted sun shield. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "attractions and queues"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/ride-photo-preview-kiosk.kcad.ts",
+      "preview": "/assets/amusement-park-ride-photo-preview-kiosk.png",
+      "sourceSha256": "0abb9bd8c92978b890e350291dc77b2fbb80243a8f8d97cf4e8772b51aacbb7a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6d8380",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          1.25,
+          2.155698,
+          0.65
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6d8380",
+          "parts": [
+            "base",
+            "pedestal",
+            "display-frame",
+            "display-face",
+            "purchase-ledge",
+            "sun-shield",
+            "receipt-slot"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ring-toss-game-counter",
+      "kit": "amusement-park",
+      "title": "Ring toss game counter",
+      "description": "Midway toss booth with a raised bottle rack, counter ledge, and a high striped canopy frame. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "midway games"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/ring-toss-game-counter.kcad.ts",
+      "preview": "/assets/amusement-park-ring-toss-game-counter.png",
+      "sourceSha256": "6f4da04b652a824cf246b530efb637cce095aef5ebd0d543f7ef8fd20078c555",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d28650",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 304,
+        "sizeM": [
+          2.2,
+          2.12,
+          0.865
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d28650",
+          "parts": [
+            "counter",
+            "front-ledge",
+            "target-bottle-0",
+            "target-bottle-1",
+            "target-bottle-2",
+            "target-bottle-3",
+            "target-bottle-4",
+            "canopy-post-0",
+            "canopy-post-1",
+            "canopy-post-2",
+            "canopy-post-3",
+            "canopy"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "rope-net-tunnel",
+      "kit": "amusement-park",
+      "title": "Rope net tunnel",
+      "description": "Short crawl-through play tunnel with six arch frames, cross braces, and a low net-grid silhouette. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "attractions and queues"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/rope-net-tunnel.kcad.ts",
+      "preview": "/assets/amusement-park-rope-net-tunnel.png",
+      "sourceSha256": "e8baf7a3cbe01226cbb101f19afafc085ac88b8f72257f57ab9f5e72b8c61fd9",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a07a60",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 240,
+        "sizeM": [
+          2.38,
+          1.515,
+          1.876892
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a07a60",
+          "parts": [
+            "arch-foot-0",
+            "arch-foot-1",
+            "arch-foot-2",
+            "arch-foot-3",
+            "arch-rib-0",
+            "arch-rib-1",
+            "arch-rib-2",
+            "arch-rib-3",
+            "arch-rib-4",
+            "arch-rib-5",
+            "net-strand-0",
+            "net-strand-1",
+            "net-strand-2",
+            "net-strand-3",
+            "net-strand-4",
+            "net-strand-5",
+            "net-strand-6",
+            "cross-brace-0",
+            "cross-brace-1",
+            "cross-brace-2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "skee-ball-lane",
+      "kit": "amusement-park",
+      "title": "Skee-ball lane",
+      "description": "Single midway rolling lane with a sloped launch bed, side gutters, target arch, and scoring pockets. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "midway games"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/skee-ball-lane.kcad.ts",
+      "preview": "/assets/amusement-park-skee-ball-lane.png",
+      "sourceSha256": "3ddeaec26a3da88d31a9cfd8cf330f9a56144b4569307a95d18decbb499d028f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#957657",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 228,
+        "sizeM": [
+          3.25,
+          1.645,
+          1
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#957657",
+          "parts": [
+            "lane-base",
+            "ramp-bed",
+            "left-gutter",
+            "right-gutter",
+            "target-backboard",
+            "score-ring-0",
+            "score-ring-1",
+            "score-ring-2",
+            "score-pocket-0",
+            "score-pocket-1",
+            "score-pocket-2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "soft-drink-fountain",
+      "kit": "amusement-park",
+      "title": "Soft drink fountain",
+      "description": "Self-service beverage dispenser with cup ledge, four nozzle stations, drip tray, and splashback. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "concessions and rest areas"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/soft-drink-fountain.kcad.ts",
+      "preview": "/assets/amusement-park-soft-drink-fountain.png",
+      "sourceSha256": "5d575b432a39ad4a82cca4baefae1be0d804a0f49ecf2fc70d436d640de0f960",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#718d91",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 272,
+        "sizeM": [
+          1.34,
+          1.78,
+          0.776
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#718d91",
+          "parts": [
+            "cabinet",
+            "splashback",
+            "cup-ledge",
+            "drip-tray",
+            "nozzle-station-0",
+            "nozzle-station-1",
+            "nozzle-station-2",
+            "nozzle-station-3",
+            "nozzle-0",
+            "nozzle-1",
+            "nozzle-2",
+            "nozzle-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "splash-pad-jet-column",
+      "kit": "amusement-park",
+      "title": "Splash pad jet column",
+      "description": "Low interactive water-play feature with a central jet post, four short spray arms, and a raised drain base. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "attractions and queues"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/splash-pad-jet-column.kcad.ts",
+      "preview": "/assets/amusement-park-splash-pad-jet-column.png",
+      "sourceSha256": "db25f311407d341cbb513d571d1cfaad1a48f307a2b17b1c60d174bd55786b93",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6b9ba0",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 576,
+        "sizeM": [
+          1.08,
+          0.965,
+          1.08
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6b9ba0",
+          "parts": [
+            "drain-base",
+            "jet-column",
+            "spray-arm-0",
+            "spray-arm-1",
+            "spray-arm-2",
+            "spray-arm-3",
+            "nozzle-0",
+            "nozzle-1",
+            "nozzle-2",
+            "nozzle-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "stroller-parking-rack",
+      "kit": "amusement-park",
+      "title": "Stroller parking rack",
+      "description": "Queue-side stroller corral with numbered bays, wheel stops, and a clear central aisle. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "entry and guest services"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/stroller-parking-rack.kcad.ts",
+      "preview": "/assets/amusement-park-stroller-parking-rack.png",
+      "sourceSha256": "d0517e1034b24fb0473997ce92c214d58bc7321b3bcb1bc5ce0980c4f76813ab",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#71827a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          2.5375,
+          1.1,
+          0.945
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#71827a",
+          "parts": [
+            "base-rail-front",
+            "base-rail-back",
+            "bay-divider-0",
+            "bay-divider-1",
+            "bay-divider-2",
+            "bay-divider-3",
+            "bay-divider-4",
+            "bay-number-plate-0",
+            "bay-number-plate-1",
+            "bay-number-plate-2",
+            "bay-number-plate-3",
+            "bay-number-plate-4",
+            "entry-side-rail"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "stroller-service-station",
+      "kit": "amusement-park",
+      "title": "Stroller service station",
+      "description": "Guest support stand with parking rail, compact air pump, repair shelf, and a wheel service cradle. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "park operations and guest comfort"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/stroller-service-station.kcad.ts",
+      "preview": "/assets/amusement-park-stroller-service-station.png",
+      "sourceSha256": "edc5074ba62c2590635e7d7970e93dd83fc1985eefd4c87df5474a48f087fd28",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#738b81",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 280,
+        "sizeM": [
+          2.58,
+          1.79,
+          0.97
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#738b81",
+          "parts": [
+            "backboard",
+            "service-shelf",
+            "pump-cylinder",
+            "pump-handle",
+            "wheel-cradle-left",
+            "wheel-cradle-right",
+            "parking-rail-0",
+            "parking-rail-1",
+            "parking-rail-2",
+            "repair-tray"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "tea-cup-spinner-car",
+      "kit": "amusement-park",
+      "title": "Tea cup spinner car",
+      "description": "Single round spinner tub with raised rim, seat bench, center grip, and a broad display base. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "attractions and queues"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/tea-cup-spinner-car.kcad.ts",
+      "preview": "/assets/amusement-park-tea-cup-spinner-car.png",
+      "sourceSha256": "81d7e45fafe848a650b57604b366898972bf9cb1cd4f652fa9c77e3209bc9bbd",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9c7891",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          1.2,
+          0.99,
+          1.08
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9c7891",
+          "parts": [
+            "spinner-base",
+            "cup-body",
+            "cup-rim",
+            "center-grip",
+            "seat-bench",
+            "cup-handle-0",
+            "cup-handle-1",
+            "cup-handle-2",
+            "cup-handle-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ticket-vending-kiosk",
+      "kit": "amusement-park",
+      "title": "Ticket vending kiosk",
+      "description": "Self-service ticket terminal with a sheltered screen, receipt slot, and accessible-height controls. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "entry and guest services"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/ticket-vending-kiosk.kcad.ts",
+      "preview": "/assets/amusement-park-ticket-vending-kiosk.png",
+      "sourceSha256": "45a780a958c429c55cb8bac4d791392ce6c26d70b2e1c62781c382f7d8239356",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#69807e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.76,
+          1.6625,
+          0.645
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#69807e",
+          "parts": [
+            "pedestal",
+            "screen-housing",
+            "display",
+            "weather-hood",
+            "ticket-slot",
+            "side-return",
+            "foot-plate"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ticket-window-booth",
+      "kit": "amusement-park",
+      "title": "Ticket window booth",
+      "description": "Compact staffed entry booth with a deep transaction ledge, shuttered window, side door, and rain canopy. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "entry and guest services"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/ticket-window-booth.kcad.ts",
+      "preview": "/assets/amusement-park-ticket-window-booth.png",
+      "sourceSha256": "8b96c9b021e5548463a6bc572443c13863e3d6722aac0304a52cd25ce2dfe260",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9c7550",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          1.78,
+          2.045,
+          1.4325
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9c7550",
+          "parts": [
+            "booth-body",
+            "front-counter",
+            "window-frame",
+            "window-sill",
+            "service-shutter",
+            "side-door",
+            "canopy",
+            "step"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "water-race-game-lane",
+      "kit": "amusement-park",
+      "title": "Water race game lane",
+      "description": "Two-player midway race fixture with parallel troughs, pump handles, and a raised finish marker. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "midway games"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/water-race-game-lane.kcad.ts",
+      "preview": "/assets/amusement-park-water-race-game-lane.png",
+      "sourceSha256": "bd1a67fbe05329deda27e7c8efca054637ce048796968a79309fc0a7bd3a9df0",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6c9ba0",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 316,
+        "sizeM": [
+          2.36,
+          0.86,
+          0.95
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6c9ba0",
+          "parts": [
+            "base",
+            "race-trough-0",
+            "race-trough-1",
+            "pump-handle-0",
+            "pump-handle-1",
+            "race-ball-0",
+            "race-ball-1",
+            "finish-post-left",
+            "finish-post-right",
+            "finish-bar"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "wayfinding-pylon",
+      "kit": "amusement-park",
+      "title": "Park wayfinding pylon",
+      "description": "Tall freestanding direction marker with three offset destination blades and a broad ground plinth. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "entry and guest services"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/wayfinding-pylon.kcad.ts",
+      "preview": "/assets/amusement-park-wayfinding-pylon.png",
+      "sourceSha256": "57a86770c8da7673f22472352ecef4c563761eaa2a96af37ba4c331eb3e16ca1",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d8aa54",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          1.632911,
+          3.36,
+          0.68
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d8aa54",
+          "parts": [
+            "plinth",
+            "mast",
+            "north-blade",
+            "east-blade",
+            "west-blade",
+            "emblem"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "wristband-checkin-desk",
+      "kit": "amusement-park",
+      "title": "Wristband check-in desk",
+      "description": "Guest check-in counter with wristband dispenser, handheld scanner cradle, and an accessible return shelf. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "amusement park",
+        "theme park",
+        "guest experience",
+        "low poly",
+        "CC0",
+        "entry and guest services"
+      ],
+      "compat": [
+        "amusement-park",
+        "theme-park",
+        "midway",
+        "visitor-attraction"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/amusement-park/wristband-checkin-desk.kcad.ts",
+      "preview": "/assets/amusement-park-wristband-checkin-desk.png",
+      "sourceSha256": "e8d3b8c9556333c256a9fc0119326c92a174834d3344e69ea02ffd4bec4d037a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#967a59",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          1.9,
+          1.38,
+          0.85
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#967a59",
+          "parts": [
+            "counter-body",
+            "countertop",
+            "wristband-dispenser",
+            "scanner-cradle",
+            "privacy-screen",
+            "lower-return-shelf"
           ],
           "param": "color"
         }
