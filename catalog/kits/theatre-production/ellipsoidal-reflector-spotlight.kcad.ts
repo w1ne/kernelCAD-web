@@ -9,7 +9,7 @@ meta({
   tags: ['theatre production', 'stagecraft', 'performing arts', 'low poly', 'scene prop'],
   kit: 'theatre-production',
   category: 'prop',
-  origin: 'base',
+  origin: 'center',
   compat: ['theatre', 'theater', 'stagecraft', 'performing-arts', 'scene'],
   triangleBudget: 1800,
 });
