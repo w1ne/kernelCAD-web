@@ -68,10 +68,6 @@ export function escapeHtml(s: string): string {
     return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-function escapeXml(s: string): string {
-    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
 /** JSON safe to inline in a <script> element. */
 function jsonForScript(value: unknown): string {
     return JSON.stringify(value, null, 2).replace(/</g, '\\u003c');
@@ -417,19 +413,6 @@ const FINDER = `      <div class="finder">
         })();
       </script>`;
 
-/** Same shape as kernelCAD-server site/scripts/build-sitemap.ts renderSitemap. */
-export function renderSitemap(urls: readonly string[]): string {
-    const sorted = [...new Set(urls)].sort((a, b) => a.localeCompare(b));
-    return ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">', ...sorted.map((u) => `  <url><loc>${escapeXml(u)}</loc></url>`), '</urlset>', ''].join('\n');
-}
-
-export const ROBOTS = `User-agent: *
-Allow: /
-Allow: /catalog/
-
-Sitemap: ${ORIGIN}sitemap.xml
-`;
-
 /** Every text file of the export, relative to the output directory. */
 export function renderCatalogSite(index: CatalogIndex): PageFile[] {
     const kits = new Map(index.kits.map((k) => [k.id, k]));
@@ -439,9 +422,13 @@ export function renderCatalogSite(index: CatalogIndex): PageFile[] {
     for (const a of index.assets) {
         files.push({ path: `${assetPath(a)}index.html`, content: renderAssetPage(a, kits.get(a.kit), byKit.get(a.kit) ?? []) });
     }
-    files.push({ path: 'sitemap.xml', content: renderSitemap([`${ORIGIN}catalog/`, ...index.assets.map(assetUrl)]) });
-    files.push({ path: 'robots.txt', content: ROBOTS });
     return files;
+}
+
+/** Catalog URLs for the SITE's sitemap. The site owns sitemap.xml and robots.txt —
+ *  the catalog only contributes its own pages, it must never write those files. */
+export function catalogUrls(index: CatalogIndex): string[] {
+    return [`${ORIGIN}catalog/`, ...index.assets.map(assetUrl)];
 }
 
 export function writeCatalogSite(repoRoot: string, outDir: string): number {
