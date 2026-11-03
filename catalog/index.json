@@ -220,6 +220,63 @@
       ]
     },
     {
+      "id": "beverage-bottling-line",
+      "title": "Beverage bottling line",
+      "description": "Original low-poly props for container handling, rinse-fill-cap, labelling, inspection, case packing, pallet handling, beverage preparation, and clean-in-place scenes.",
+      "assets": [
+        "air-rinse-enclosure",
+        "beverage-blend-tank",
+        "bottle-accumulation-table",
+        "bottle-case-packer",
+        "bottle-date-coder",
+        "bottle-infeed-conveyor",
+        "bottle-reject-pusher",
+        "bottle-rinser-carousel",
+        "bottle-unscrambler",
+        "cap-delivery-chute",
+        "cap-elevator",
+        "cap-feed-hopper",
+        "cap-orienter",
+        "cap-torque-head",
+        "carbonation-vessel",
+        "carton-bottom-sealer",
+        "carton-roller-conveyor",
+        "case-checkweigher",
+        "case-erector",
+        "case-labeler",
+        "case-layer-palletizer",
+        "case-taper",
+        "cip-supply-return-skid",
+        "cip-valve-manifold",
+        "corrugated-case-stack",
+        "empty-bottle-divider-tray",
+        "fill-level-inspection-lamp",
+        "filler-valve-head",
+        "flash-pasteurizer",
+        "inline-bottle-sample-station",
+        "label-reel-stand",
+        "neck-handling-air-conveyor",
+        "pet-blow-molder",
+        "preform-bulk-bin",
+        "preform-elevator",
+        "preform-orienter-bowl",
+        "pressure-sensitive-labeler",
+        "rinse-water-recovery-tank",
+        "rotary-capper",
+        "rotary-filler",
+        "sanitary-filter-skid",
+        "sanitary-lobe-pump",
+        "shrink-bundle-wrapper",
+        "sleeve-label-applicator",
+        "sleeve-shrink-tunnel",
+        "slip-sheet-dispenser",
+        "stretch-wrapper",
+        "tamper-band-shrink-station",
+        "vision-inspection-arch",
+        "wraparound-labeler"
+      ]
+    },
+    {
       "id": "characters",
       "title": "Characters",
       "description": "Mechanical low-poly characters built from rigid parts and rigged through mates: every joint is a GLB pivot node, ready to pose or animate in three.js, Godot or Unity.",
@@ -16315,6 +16372,4472 @@
             "wire-row-5"
           ],
           "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "air-rinse-enclosure",
+      "kit": "beverage-bottling-line",
+      "title": "Air rinse enclosure",
+      "description": "Compact enclosure around an ionized-air bottle rinse with access doors and extraction hood. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/air-rinse-enclosure.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-air-rinse-enclosure.png",
+      "sourceSha256": "fc76d360f60a217d747443b3ed575ac8bfc0df0b2e12ff874a43203aa9584aef",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 436,
+        "sizeM": [
+          1.25,
+          1.08,
+          0.78
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "base-tray",
+            "front-door-left",
+            "front-door-right",
+            "exhaust-stack"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "left-panel",
+            "right-panel",
+            "rear-panel",
+            "roof",
+            "air-jet-0",
+            "air-jet-1",
+            "air-jet-2",
+            "air-jet-3",
+            "air-jet-4",
+            "air-jet-5",
+            "air-jet-6"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "beverage-blend-tank",
+      "kit": "beverage-bottling-line",
+      "title": "Beverage blend tank",
+      "description": "Agitated blend tank with jacket band, manway, sight glass, and sanitary outlet. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/beverage-blend-tank.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-beverage-blend-tank.png",
+      "sourceSha256": "5896a9016913a423007f06715af6aa889f22cec29f730a5b7f5e8c3ba3f75455",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 424,
+        "sizeM": [
+          0.83,
+          1.48,
+          0.97
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "vessel-shell",
+            "top-head",
+            "bottom-head",
+            "manway",
+            "shaft",
+            "outlet",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "jacket-band",
+            "agitator-drive",
+            "impeller-a",
+            "impeller-b"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "bottle-accumulation-table",
+      "kit": "beverage-bottling-line",
+      "title": "Bottle accumulation table",
+      "description": "Low-speed round accumulation table with entry rail, exit lane, and central drive. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/bottle-accumulation-table.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-bottle-accumulation-table.png",
+      "sourceSha256": "719e511fc1da16a32ace4445dd5a794f563be11b1e8385125e5b944ca5f17972",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 276,
+        "sizeM": [
+          1.77,
+          0.395,
+          1.25
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "table-top",
+            "outfeed-lane",
+            "outer-guide-0",
+            "outer-guide-1",
+            "outer-guide-2",
+            "outer-guide-3",
+            "outer-guide-4",
+            "outer-guide-5"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "central-drive",
+            "turntable-rim",
+            "infeed-lane",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "bottle-case-packer",
+      "kit": "beverage-bottling-line",
+      "title": "Bottle case packer",
+      "description": "Guarded pick-and-place case packer with bottle grouping lanes and carton lift table. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/bottle-case-packer.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-bottle-case-packer.png",
+      "sourceSha256": "43468185e4d14bde0dc66e5c5c474c9b2eead72ba203ff9359c02fd5ca6708c8",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 384,
+        "sizeM": [
+          1.5,
+          1.275,
+          0.93
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "base",
+            "gantry-beam",
+            "gripper-plate",
+            "control-box"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "infeed-conveyor",
+            "case-conveyor",
+            "left-post",
+            "right-post",
+            "lift-carriage",
+            "gripper-0",
+            "gripper-1",
+            "gripper-2",
+            "gripper-3",
+            "gripper-4",
+            "gripper-5",
+            "guard-front"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "bottle-date-coder",
+      "kit": "beverage-bottling-line",
+      "title": "Bottle date coder",
+      "description": "Compact inkjet coding head and touchscreen stand beside a moving-bottle guide. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/bottle-date-coder.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-bottle-date-coder.png",
+      "sourceSha256": "23fd45a18cc53c6a0c6594582de653e2acc2b14fda7a221df33338bd63fa031f",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 140,
+        "sizeM": [
+          0.655,
+          0.83,
+          0.34
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "base",
+            "screen",
+            "adjustment-wheel",
+            "cable-cover"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "pedestal",
+            "controller",
+            "print-arm",
+            "print-head",
+            "photoeye"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "bottle-infeed-conveyor",
+      "kit": "beverage-bottling-line",
+      "title": "Bottle infeed conveyor",
+      "description": "Narrow belt with adjustable guides and a dead-plate transfer into the rinser. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/bottle-infeed-conveyor.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-bottle-infeed-conveyor.png",
+      "sourceSha256": "63973878efecab7c05fd2568079fc2753ecebcf02cc60644d663d43000afbc28",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 208,
+        "sizeM": [
+          1.585,
+          0.812,
+          0.34
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "belt",
+            "drive-roller-0",
+            "drive-roller-1"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "side-frame-front",
+            "side-frame-back",
+            "guide-front",
+            "guide-back",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3",
+            "transfer-plate"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "bottle-reject-pusher",
+      "kit": "beverage-bottling-line",
+      "title": "Bottle reject pusher",
+      "description": "Side-mounted pneumatic pusher diverts a failed bottle into a padded reject chute. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/bottle-reject-pusher.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-bottle-reject-pusher.png",
+      "sourceSha256": "7647c8f011d696d211cc25b0a23a30bd02830b81ed561c1b42f2027fe69af2de",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 152,
+        "sizeM": [
+          0.95,
+          0.65,
+          0.809
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "conveyor-bed",
+            "piston-rod",
+            "reject-chute",
+            "valve-block"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "side-frame",
+            "pneumatic-cylinder",
+            "pusher-pad",
+            "leg-0",
+            "leg-1",
+            "leg-2"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "bottle-rinser-carousel",
+      "kit": "beverage-bottling-line",
+      "title": "Bottle rinser carousel",
+      "description": "Rotary bottle rinser with an infeed starwheel, spray turret, and catch basin. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/bottle-rinser-carousel.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-bottle-rinser-carousel.png",
+      "sourceSha256": "ff50af18a8df2bba6842d04c126ac63a5c90b0d248a3702498319f5b28f18086",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 568,
+        "sizeM": [
+          1.42,
+          1.05,
+          0.96
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "catch-basin",
+            "rinse-turret",
+            "top-drive",
+            "support-0",
+            "support-1",
+            "support-2",
+            "support-3",
+            "spray-guard"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "rotary-table",
+            "infeed-lane",
+            "outfeed-lane",
+            "rinse-nozzle-0",
+            "rinse-nozzle-1",
+            "rinse-nozzle-2",
+            "rinse-nozzle-3",
+            "rinse-nozzle-4",
+            "rinse-nozzle-5",
+            "rinse-nozzle-6"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "bottle-unscrambler",
+      "kit": "beverage-bottling-line",
+      "title": "Bottle unscrambler",
+      "description": "Rotary bowl and discharge starwheel orient empty bottles before the line infeed. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/bottle-unscrambler.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-bottle-unscrambler.png",
+      "sourceSha256": "6421919749906666077e958165b626b7a2176d8f20a5880733b637d7de360e0b",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 328,
+        "sizeM": [
+          1.255,
+          0.85,
+          0.94
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "support-base",
+            "outer-rim",
+            "center-column",
+            "lane-guide-a",
+            "lane-guide-b",
+            "drive-motor",
+            "bowl-cleat-0",
+            "bowl-cleat-1",
+            "bowl-cleat-2",
+            "bowl-cleat-3",
+            "bowl-cleat-4",
+            "bowl-cleat-5"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "turntable",
+            "discharge-lane"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "cap-delivery-chute",
+      "kit": "beverage-bottling-line",
+      "title": "Closure delivery chute",
+      "description": "Covered gravity chute with inspection lid, clear side slot, and capper handoff nose. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/cap-delivery-chute.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-cap-delivery-chute.png",
+      "sourceSha256": "779a29c5e6199abfd37f6dcadf98de3093e558fbb88b621b7db020a57214fce1",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          0.9425,
+          0.4,
+          0.32
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "chute-floor",
+            "handoff-nose"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "side-left",
+            "side-right",
+            "cover",
+            "inlet-funnel",
+            "mount-tab-0",
+            "mount-tab-1",
+            "mount-tab-2"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "cap-elevator",
+      "kit": "beverage-bottling-line",
+      "title": "Bottle-cap elevator",
+      "description": "Enclosed cleated elevator lifts closures from the hopper to an overhead cap sorter. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/cap-elevator.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-cap-elevator.png",
+      "sourceSha256": "95bd8bf485e02bdc282d685351799203ecc68aad05d42061be82645482a2998b",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 188,
+        "sizeM": [
+          0.572,
+          1.22,
+          0.56
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "base",
+            "side-rail-a",
+            "side-rail-b",
+            "cleat-0",
+            "cleat-1",
+            "cleat-2",
+            "cleat-3",
+            "cleat-4",
+            "cleat-5"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "lower-guard",
+            "elevator-shroud",
+            "top-discharge",
+            "drive"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "cap-feed-hopper",
+      "kit": "beverage-bottling-line",
+      "title": "Bottle-cap feed hopper",
+      "description": "Covered hopper and metering throat that supplies plastic closures to an orienter. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/cap-feed-hopper.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-cap-feed-hopper.png",
+      "sourceSha256": "eb4e0a79a657b4167f134f46aa7ec76e703b006d9a67de12fe9f3490aee4bcf6",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 152,
+        "sizeM": [
+          0.6,
+          0.66,
+          0.48
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "stand",
+            "lid"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "hopper",
+            "throat",
+            "inspection-door",
+            "vibrator-motor",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "cap-orienter",
+      "kit": "beverage-bottling-line",
+      "title": "Bottle-cap orienter",
+      "description": "Vibratory cap bowl with a guarded spiral track and single-file cap exit. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/cap-orienter.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-cap-orienter.png",
+      "sourceSha256": "2eb6725cbd9f59698234d373ca5abd14c730e1352c91dbecea29b9902e102f2f",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 284,
+        "sizeM": [
+          1.03,
+          0.49,
+          0.78
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "bowl-base",
+            "center-hub",
+            "exit-track",
+            "track-tab-0",
+            "track-tab-1",
+            "track-tab-2",
+            "track-tab-3",
+            "track-tab-4"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "bowl-body",
+            "upper-ring",
+            "guide-front",
+            "guide-back",
+            "drive-box"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "cap-torque-head",
+      "kit": "beverage-bottling-line",
+      "title": "Cap torque head",
+      "description": "Compact capping chuck with drive housing, adjustable spindle, and closure grip ring. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/cap-torque-head.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-cap-torque-head.png",
+      "sourceSha256": "be781e830baf1de6c778148f23556151c9dc9915145153f920f0caaec8622632",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 216,
+        "sizeM": [
+          0.3775,
+          0.785,
+          0.32
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "spindle",
+            "grip-ring",
+            "drive-body",
+            "air-port",
+            "bolt-tab-0",
+            "bolt-tab-1",
+            "bolt-tab-2",
+            "bolt-tab-3"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "chuck",
+            "mount-plate"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "carbonation-vessel",
+      "kit": "beverage-bottling-line",
+      "title": "Beverage carbonation vessel",
+      "description": "Insulated pressure vessel with manway, sample valve, pressure gauge, and base ring. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/carbonation-vessel.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-carbonation-vessel.png",
+      "sourceSha256": "dd0842e1e79941be065f22e6edc946750a1f219a280139d0168230fc4d2b2a31",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 412,
+        "sizeM": [
+          0.756,
+          1.55,
+          0.87
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "shell",
+            "top-cap",
+            "bottom-cap",
+            "top-nozzle",
+            "carbon-dioxide-port",
+            "sample-valve",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "insulation-jacket",
+            "pressure-gauge",
+            "nameplate"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "carton-bottom-sealer",
+      "kit": "beverage-bottling-line",
+      "title": "Carton bottom sealer",
+      "description": "Drive-belt case sealer closes erected carton flaps before bottle loading. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/carton-bottom-sealer.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-carton-bottom-sealer.png",
+      "sourceSha256": "115c94b5256f1b7d53db1da539b25583fb6ba3f99136196fe1b4a16578c7d7bc",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 176,
+        "sizeM": [
+          1.3,
+          0.995,
+          0.75
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "base-frame",
+            "top-crossbeam",
+            "tape-roll"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "infeed-bed",
+            "outfeed-bed",
+            "tower-left",
+            "tower-right",
+            "tape-head",
+            "guide-0",
+            "guide-1",
+            "guide-2",
+            "guide-3"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "carton-roller-conveyor",
+      "kit": "beverage-bottling-line",
+      "title": "Carton roller conveyor",
+      "description": "Wide gravity roller conveyor transfers sealed cartons between packing stations. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/carton-roller-conveyor.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-carton-roller-conveyor.png",
+      "sourceSha256": "1e3c190bc65a4bf727511cb7dd127d9b77f600ce6b3fdcbffab729280fc1abf3",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 704,
+        "sizeM": [
+          1.96,
+          0.495,
+          0.585
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "side-frame-front",
+            "side-frame-back"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "roller-0",
+            "roller-1",
+            "roller-2",
+            "roller-3",
+            "roller-4",
+            "roller-5",
+            "roller-6",
+            "roller-7",
+            "roller-8",
+            "roller-9",
+            "roller-10",
+            "roller-11",
+            "roller-12",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3",
+            "crossbar-0",
+            "crossbar-1",
+            "crossbar-2",
+            "crossbar-3",
+            "end-stop"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "case-checkweigher",
+      "kit": "beverage-bottling-line",
+      "title": "Packed-case checkweigher",
+      "description": "Short in-line weigh belt with isolated weigh section, reject output, and status tower. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/case-checkweigher.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-case-checkweigher.png",
+      "sourceSha256": "c96a0f41c2bd390ebf34aca997f40cbbcf00a545339312fc034c521b738cd181",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 212,
+        "sizeM": [
+          1.26,
+          0.78,
+          0.785
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "left-bed",
+            "right-bed",
+            "frame-front",
+            "frame-back",
+            "hmi-post",
+            "hmi",
+            "leg-0",
+            "leg-1",
+            "leg-2"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "weigh-bed",
+            "load-cell-0",
+            "load-cell-1",
+            "load-cell-2",
+            "load-cell-3",
+            "status-lamp"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "case-erector",
+      "kit": "beverage-bottling-line",
+      "title": "Corrugated case erector",
+      "description": "Magazine-fed case erector with squaring frame, suction pick head, and bottom-flap folding rails. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/case-erector.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-case-erector.png",
+      "sourceSha256": "ec09b7374321cbd39edfba15bb5b11ab302b4906ee1e7c8db0a0152f4c20d35e",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          1.22,
+          1.2,
+          0.76
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "base",
+            "top-beam",
+            "folding-rail-0",
+            "folding-rail-1",
+            "folding-rail-2",
+            "folding-rail-3",
+            "hmi"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "case-magazine",
+            "pick-head",
+            "squaring-frame-front",
+            "squaring-frame-back",
+            "case-platform",
+            "control-post"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "case-labeler",
+      "kit": "beverage-bottling-line",
+      "title": "Case label applicator",
+      "description": "Print-and-apply head places a shipping label on the face of a moving carton. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/case-labeler.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-case-labeler.png",
+      "sourceSha256": "28c61b37af965714b9b2cdae67c89e0a99f3a46b33c628099485c133155f4b94",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 172,
+        "sizeM": [
+          0.765,
+          0.995,
+          0.51
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "floor-base",
+            "display",
+            "peel-roller",
+            "air-regulator"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "mast",
+            "printer-body",
+            "label-roll",
+            "apply-pad",
+            "mounting-arm"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "case-layer-palletizer",
+      "kit": "beverage-bottling-line",
+      "title": "Case layer palletizer",
+      "description": "Layer-forming head lifts a complete case pattern and builds a pallet stack under a safety frame. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/case-layer-palletizer.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-case-layer-palletizer.png",
+      "sourceSha256": "1b92b3da49756879eb14b8e71581eb30f708347e32a5938e3103c47490fb4300",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          2.39,
+          2.025,
+          1.1875
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "floor-rails",
+            "floor-rail-back",
+            "lift-carriage",
+            "pallet-deck"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "column-left",
+            "column-right",
+            "top-bridge",
+            "layer-plate",
+            "infeed-bed",
+            "operator-gate",
+            "control-console"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "case-taper",
+      "kit": "beverage-bottling-line",
+      "title": "Case taper",
+      "description": "Adjustable side-belt carton taper with upper tape head and centering rails. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/case-taper.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-case-taper.png",
+      "sourceSha256": "35665cbe13e0500c574a5dd83f6d2a5cafe9f34ac8bfd8e5379bd36227a0ef20",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 176,
+        "sizeM": [
+          1.18,
+          0.97,
+          0.76
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "base",
+            "bridge",
+            "tape-roll",
+            "hmi"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "infeed-belt",
+            "outfeed-belt",
+            "upright-front",
+            "upright-back",
+            "tape-head",
+            "adjuster-front",
+            "adjuster-back",
+            "hmi-post"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "cip-supply-return-skid",
+      "kit": "beverage-bottling-line",
+      "title": "CIP supply and return skid",
+      "description": "Compact cleaning-in-place skid with two solution tanks, pump, heat exchanger, and pipe loop. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/cip-supply-return-skid.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-cip-supply-return-skid.png",
+      "sourceSha256": "8b1b6b55b1c4abee4efc35756fbb6dc4d62a5423f24ea43c23f65e6e6cfb9574",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 648,
+        "sizeM": [
+          1.47,
+          1.66,
+          0.837
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "skid",
+            "cip-lid-0",
+            "cip-lid-1",
+            "exchanger-plate-0",
+            "exchanger-plate-1",
+            "exchanger-plate-2",
+            "exchanger-plate-3",
+            "exchanger-plate-4",
+            "exchanger-plate-5",
+            "control-cabinet"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "cip-tank-0",
+            "cip-tank-1",
+            "return-pump",
+            "pump-motor",
+            "plate-exchanger",
+            "supply-header",
+            "return-header",
+            "valve-0",
+            "valve-1",
+            "valve-2",
+            "valve-3",
+            "valve-4"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "cip-valve-manifold",
+      "kit": "beverage-bottling-line",
+      "title": "CIP valve manifold",
+      "description": "Sanitary valve cluster routes clean-in-place supply and return through color-coded branches. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/cip-valve-manifold.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-cip-valve-manifold.png",
+      "sourceSha256": "4e4d63834a236a3329c6fd9bcdc0b4a6a914945d0d5ccfc8aa8f5f388a1a8b8a",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 448,
+        "sizeM": [
+          0.79,
+          0.88,
+          0.51
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "supply-header",
+            "return-header",
+            "branch-0",
+            "branch-1",
+            "branch-2",
+            "branch-3",
+            "mount-foot-0",
+            "mount-foot-1",
+            "mount-foot-2",
+            "mount-foot-3",
+            "drain-leg"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "cross-header",
+            "valve-actuator-0",
+            "valve-actuator-1",
+            "valve-actuator-2",
+            "valve-actuator-3"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "corrugated-case-stack",
+      "kit": "beverage-bottling-line",
+      "title": "Corrugated case stack",
+      "description": "Neat stack of knocked-down corrugated cases staged beside a case erector. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/corrugated-case-stack.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-corrugated-case-stack.png",
+      "sourceSha256": "7bd98e9cbd5d6d78cf2ad1c15b544f4dce55a881d8e6e115bd9968a049f01b92",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 216,
+        "sizeM": [
+          0.73,
+          0.76,
+          0.615
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "case-0-body",
+            "case-1-body",
+            "case-2-body",
+            "case-3-body",
+            "case-4-body",
+            "corner-protector-left",
+            "corner-protector-right"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "case-0-flap-front",
+            "case-1-flap-front",
+            "case-2-flap-front",
+            "case-3-flap-front",
+            "case-4-flap-front",
+            "case-0-flap-back",
+            "case-1-flap-back",
+            "case-2-flap-back",
+            "case-3-flap-back",
+            "case-4-flap-back",
+            "stack-label"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "empty-bottle-divider-tray",
+      "kit": "beverage-bottling-line",
+      "title": "Empty bottle divider tray",
+      "description": "Washable compartment tray spaces glass bottles for returnable-container handling. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "item",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/empty-bottle-divider-tray.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-empty-bottle-divider-tray.png",
+      "sourceSha256": "c9687552809def76106386809c0d485155a4b5bb3714932510790c0942239be7",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          0.765,
+          0.14,
+          0.575
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "tray-floor",
+            "foot-0",
+            "foot-1",
+            "foot-2",
+            "foot-3"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "rim-front",
+            "rim-back",
+            "rim-left",
+            "rim-right",
+            "divider-x-0",
+            "divider-x-1",
+            "divider-x-2",
+            "divider-x-3",
+            "divider-y-0",
+            "divider-y-1",
+            "divider-y-2"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "fill-level-inspection-lamp",
+      "kit": "beverage-bottling-line",
+      "title": "Fill-level inspection lamp",
+      "description": "Backlit inspection panel and bottle guide rails for a manual fill-level check. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/fill-level-inspection-lamp.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-fill-level-inspection-lamp.png",
+      "sourceSha256": "24daccba42c4c20d7041d48b9a86706380e054401cf5f196b2ff15bebfe75bdb",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 140,
+        "sizeM": [
+          0.6,
+          1.45,
+          0.348
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "base",
+            "diffuser-face",
+            "bottle-guide-front",
+            "bottle-guide-back"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "light-panel",
+            "top-hood",
+            "side-support-left",
+            "side-support-right",
+            "inspection-knob"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "filler-valve-head",
+      "kit": "beverage-bottling-line",
+      "title": "Filler valve head",
+      "description": "Single sanitary fill valve with spring bonnet, bottle centering bell, and product inlet port. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/filler-valve-head.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-filler-valve-head.png",
+      "sourceSha256": "ca20d524c6ad98552425c74d2ba002689f1b40dcc66cf12d2981b401c3dcd622",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 256,
+        "sizeM": [
+          0.31,
+          0.603,
+          0.31
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "valve-body",
+            "stem",
+            "centering-bell",
+            "product-port",
+            "clamp-ear-0",
+            "clamp-ear-1"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "bonnet",
+            "mounting-tab"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "flash-pasteurizer",
+      "kit": "beverage-bottling-line",
+      "title": "Flash pasteurizer skid",
+      "description": "Plate heat exchanger and balance tank on a sanitary skid with return and product pumps. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/flash-pasteurizer.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-flash-pasteurizer.png",
+      "sourceSha256": "bd8f9fff273e1d6fbf100ab5a583bdac915305ba47c81c647ef17b3aca74bea4",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 508,
+        "sizeM": [
+          1.52,
+          0.91,
+          0.785
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "skid-base",
+            "plate-0",
+            "plate-1",
+            "plate-2",
+            "plate-3",
+            "plate-4",
+            "plate-5",
+            "plate-6",
+            "plate-7",
+            "tank-lid",
+            "control-panel"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "exchanger-pack",
+            "balance-tank",
+            "product-pump",
+            "pump-motor",
+            "process-pipe-0",
+            "process-pipe-1",
+            "process-pipe-2",
+            "process-pipe-3",
+            "process-pipe-4",
+            "upper-header"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "inline-bottle-sample-station",
+      "kit": "beverage-bottling-line",
+      "title": "In-line bottle sample station",
+      "description": "Small sanitary sample point with bottle shelf, rinse sink, and product line valve. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/inline-bottle-sample-station.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-inline-bottle-sample-station.png",
+      "sourceSha256": "98a488d514ce3261a70eaac2022e18b238c0672c90c8c52cb779971dc734a35b",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 184,
+        "sizeM": [
+          0.6,
+          0.76,
+          0.455
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "base",
+            "sample-bottle-holder",
+            "sample-spout",
+            "line-guard"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "upright",
+            "shelf",
+            "rinse-cup",
+            "sample-valve",
+            "drain-pan",
+            "nameplate"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "label-reel-stand",
+      "kit": "beverage-bottling-line",
+      "title": "Label reel stand",
+      "description": "Freestanding unwind and rewind reels with a tensioning roller and web guide. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/label-reel-stand.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-label-reel-stand.png",
+      "sourceSha256": "518e885ca8392fe909ae57406c36aa831f998febe8da2905dd3136fc893e7eed",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 304,
+        "sizeM": [
+          0.675,
+          0.92,
+          0.42
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "base",
+            "rewind-reel",
+            "tension-arm"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "upright",
+            "unwind-reel",
+            "top-web-roller",
+            "lower-web-roller",
+            "adjustment-knob",
+            "foot-0",
+            "foot-1",
+            "foot-2",
+            "foot-3"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "neck-handling-air-conveyor",
+      "kit": "beverage-bottling-line",
+      "title": "Bottle neck-handling air conveyor",
+      "description": "Raised guide track and four support columns carry bottles by their neck rings over a clear floor path. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/neck-handling-air-conveyor.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-neck-handling-air-conveyor.png",
+      "sourceSha256": "a6ecf85185fd5cdb5eb78b4cb22cfc9557c5a25ba3e70d66f1fb1bfe2ab0b4b1",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 360,
+        "sizeM": [
+          1.7,
+          1.3,
+          0.285
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "top-spine",
+            "air-rail"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "support-column-0",
+            "support-column-1",
+            "support-column-2",
+            "support-column-3",
+            "neck-guide-front",
+            "neck-guide-back",
+            "guide-spacer-0",
+            "guide-spacer-1",
+            "guide-spacer-2",
+            "guide-spacer-3",
+            "guide-spacer-4",
+            "guide-spacer-5"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "pet-blow-molder",
+      "kit": "beverage-bottling-line",
+      "title": "PET stretch blow molder",
+      "description": "Guarded stretch-blow station with preform heating bays and paired bottle mold nests. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/pet-blow-molder.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-pet-blow-molder.png",
+      "sourceSha256": "e6f2241ffd02aea2865ba1a00d85bc9b2bc799b96852b7987ea94a00154cc821",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 364,
+        "sizeM": [
+          1.515,
+          1.51,
+          0.72
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "base",
+            "service-door-left",
+            "service-door-right",
+            "control-pedestal",
+            "mold-column-0",
+            "mold-column-1",
+            "mold-column-2",
+            "mold-column-3",
+            "mold-column-4",
+            "top-crossbeam"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "machine-body",
+            "heating-tunnel",
+            "mold-station-0",
+            "mold-station-1",
+            "mold-station-2",
+            "mold-station-3",
+            "mold-station-4"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "preform-bulk-bin",
+      "kit": "beverage-bottling-line",
+      "title": "PET preform bulk bin",
+      "description": "Ventilated bulk hopper for empty PET preforms with a steep throat and inspection lid. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/preform-bulk-bin.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-preform-bulk-bin.png",
+      "sourceSha256": "9db2bab5ca3dd1eef60c180b3177a5923ff1efec68557891f3c6d0837e5e19b5",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.76,
+          0.665,
+          0.66
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "foot-left",
+            "foot-right",
+            "foot-back-left",
+            "foot-back-right",
+            "inspection-lid"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "hopper-body",
+            "sloped-throat",
+            "outlet-collar"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "preform-elevator",
+      "kit": "beverage-bottling-line",
+      "title": "Preform elevator",
+      "description": "Enclosed cleated elevator that lifts preforms to an overhead unscrambler feed. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/preform-elevator.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-preform-elevator.png",
+      "sourceSha256": "1bfd945886fb0cab1d93aaa53a0ec75336cb754376036ef52a502db0d663ef53",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 220,
+        "sizeM": [
+          0.5975,
+          1.27,
+          0.62
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "base-frame",
+            "side-rail-a",
+            "side-rail-b",
+            "upper-pulley",
+            "cleat-0",
+            "cleat-1",
+            "cleat-2",
+            "cleat-3",
+            "cleat-4"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "lower-guard",
+            "inclined-elevator-cover",
+            "upper-discharge",
+            "drive-motor"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "preform-orienter-bowl",
+      "kit": "beverage-bottling-line",
+      "title": "Preform orienter bowl",
+      "description": "Vibratory bowl with a spiral rim track, central cone, and single-file discharge rail. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/preform-orienter-bowl.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-preform-orienter-bowl.png",
+      "sourceSha256": "354c5f6bf7159ea72eeecd0ff21be15273268502ab5c917794100b07d456291f",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 224,
+        "sizeM": [
+          1.11,
+          0.385,
+          0.84
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "bowl-skirt",
+            "central-cone",
+            "vibrator-base",
+            "track-side-a",
+            "track-side-b",
+            "motor-box"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "bowl-rim",
+            "discharge-track"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "pressure-sensitive-labeler",
+      "kit": "beverage-bottling-line",
+      "title": "Pressure-sensitive labeler",
+      "description": "Front-and-back label applicators with tamp pads, web rolls, bottle guides, and HMI stand. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/pressure-sensitive-labeler.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-pressure-sensitive-labeler.png",
+      "sourceSha256": "05475c6936ad2a709ddbdf5f60debab500be352eea16712076a788e1ae8bf7be",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 232,
+        "sizeM": [
+          1.16,
+          0.975,
+          0.79
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "base",
+            "front-roll",
+            "back-roll",
+            "hmi-post"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "conveyor",
+            "mast-front",
+            "mast-back",
+            "front-tamp-pad",
+            "back-tamp-pad",
+            "hmi-screen",
+            "guide-0",
+            "guide-1",
+            "guide-2",
+            "guide-3"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "rinse-water-recovery-tank",
+      "kit": "beverage-bottling-line",
+      "title": "Rinse-water recovery tank",
+      "description": "Small recovery tank with screened inlet, pump stand, level column, and return nozzle. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/rinse-water-recovery-tank.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-rinse-water-recovery-tank.png",
+      "sourceSha256": "f293aca4f3cf7eed23c4d9236bec5f8546f49377c5557a32043b1755d2b29dd7",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 268,
+        "sizeM": [
+          0.745,
+          0.715,
+          0.699
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "tank-shell",
+            "inlet-screen",
+            "return-nozzle",
+            "pump",
+            "pump-motor"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "cover",
+            "support-a",
+            "support-b",
+            "level-column"
+          ],
+          "param": "accent"
+        }
+      ]
+    },
+    {
+      "id": "rotary-capper",
+      "kit": "beverage-bottling-line",
+      "title": "Rotary bottle capper",
+      "description": "Capping turret with torque-head ring, bottle table, cap-feed hood, and guarded discharge. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/rotary-capper.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-rotary-capper.png",
+      "sourceSha256": "0498e342abfac31c75731844201c34815a7fc65e29e2e81361ea4aae0f9301a3",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 624,
+        "sizeM": [
+          1.41,
+          1.075,
+          1.016
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "base-skirt",
+            "top-plate",
+            "infeed-deck",
+            "outfeed-deck",
+            "capper-head-0",
+            "capper-head-1",
+            "capper-head-2",
+            "capper-head-3",
+            "capper-head-4",
+            "capper-head-5",
+            "capper-head-6",
+            "capper-head-7"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "bottle-table",
+            "turret-column",
+            "cap-feed-hood",
+            "front-guard",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "rotary-filler",
+      "kit": "beverage-bottling-line",
+      "title": "Rotary bottle filler",
+      "description": "Filling carousel with a covered product bowl, dosing valves, guard skirt, and discharge deck. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/rotary-filler.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-rotary-filler.png",
+      "sourceSha256": "d22123a23cb220bb2a6d592981abf0723f3385ccbde038c6c1bfcb2853abff7d",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 832,
+        "sizeM": [
+          1.48,
+          1.015,
+          1.131
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "base-skirt",
+            "top-cover",
+            "operator-rail"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "filler-table",
+            "product-bowl",
+            "center-drive",
+            "infeed-deck",
+            "outfeed-deck",
+            "fill-valve-0",
+            "fill-valve-1",
+            "fill-valve-2",
+            "fill-valve-3",
+            "fill-valve-4",
+            "fill-valve-5",
+            "fill-valve-6",
+            "fill-valve-7",
+            "fill-valve-8",
+            "fill-valve-9",
+            "fill-valve-10",
+            "fill-valve-11",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "sanitary-filter-skid",
+      "kit": "beverage-bottling-line",
+      "title": "Sanitary cartridge filter skid",
+      "description": "Twin stainless cartridge housings with vent, drain, and sanitary pipe headers. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/sanitary-filter-skid.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-sanitary-filter-skid.png",
+      "sourceSha256": "364380abaa31abff674240f0541847f0606d6cb6ec32776d9b225d3d32ed0188",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 360,
+        "sizeM": [
+          1.05,
+          1.72,
+          0.65
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "skid",
+            "filter-lid-0",
+            "filter-lid-1",
+            "vent-manifold"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "filter-housing-0",
+            "filter-housing-1",
+            "inlet-header",
+            "outlet-header",
+            "branch-0",
+            "branch-1",
+            "skid-foot-0",
+            "skid-foot-1",
+            "skid-foot-2",
+            "skid-foot-3"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "sanitary-lobe-pump",
+      "kit": "beverage-bottling-line",
+      "title": "Sanitary rotary-lobe pump",
+      "description": "Low-shear lobe pump with polished casing, motor, coupling guard, and cleanable feet. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/sanitary-lobe-pump.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-sanitary-lobe-pump.png",
+      "sourceSha256": "153204ef2063b57d0072f11a3821d6c129b36a66107fa5b02760590c9897a555",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 304,
+        "sizeM": [
+          0.84,
+          0.445,
+          0.592
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "base",
+            "front-cover",
+            "coupling-guard"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "pump-casing",
+            "inlet",
+            "outlet",
+            "gearbox",
+            "motor",
+            "foot-0",
+            "foot-1",
+            "foot-2",
+            "foot-3"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "shrink-bundle-wrapper",
+      "kit": "beverage-bottling-line",
+      "title": "Bottle bundle shrink wrapper",
+      "description": "Film-feed frame gathers multipacks and wraps them before the shrink tunnel. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/shrink-bundle-wrapper.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-shrink-bundle-wrapper.png",
+      "sourceSha256": "f35b455bf369b6896301e8be0e4ba0882cef4cfec2e77b2f3fa10fe252e7d9e8",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 264,
+        "sizeM": [
+          1.33,
+          0.885,
+          0.78
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "base",
+            "film-reel",
+            "film-cut-bar"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "product-bed",
+            "portal-left",
+            "portal-right",
+            "portal-top",
+            "film-roller-a",
+            "film-roller-b",
+            "control-pod",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "sleeve-label-applicator",
+      "kit": "beverage-bottling-line",
+      "title": "Shrink-sleeve applicator",
+      "description": "Sleeve web former and cutting head positioned over a centered bottle conveyor. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/sleeve-label-applicator.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-sleeve-label-applicator.png",
+      "sourceSha256": "d685471c376e825e4ced9285983b48759bbb737a1db4e6f7bef3145ba077548d",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 348,
+        "sizeM": [
+          1.12,
+          0.975,
+          0.67
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "base",
+            "film-roll",
+            "control-pod"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "conveyor",
+            "portal-left",
+            "portal-right",
+            "portal-top",
+            "forming-shoulder",
+            "cutting-collar",
+            "feed-roller-0",
+            "feed-roller-1",
+            "feed-roller-2",
+            "feed-roller-3"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "sleeve-shrink-tunnel",
+      "kit": "beverage-bottling-line",
+      "title": "Bottle sleeve shrink tunnel",
+      "description": "Heated tunnel with insulated hood, bottle openings, ventilation fan, and guarded conveyor. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/sleeve-shrink-tunnel.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-sleeve-shrink-tunnel.png",
+      "sourceSha256": "9531d49d7c30ed85dded3e18ff45c62fe274cb509149f62a5db17cea2ba22693",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 252,
+        "sizeM": [
+          1.45,
+          1.02,
+          0.6
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "conveyor-bed",
+            "opening-front",
+            "opening-back",
+            "temperature-panel"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "tunnel-shell",
+            "roof",
+            "vent-0",
+            "vent-1",
+            "vent-2",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "slip-sheet-dispenser",
+      "kit": "beverage-bottling-line",
+      "title": "Pallet slip-sheet dispenser",
+      "description": "Magazine and vacuum pick head feed a separator sheet to the palletizing station. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/slip-sheet-dispenser.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-slip-sheet-dispenser.png",
+      "sourceSha256": "e6b9e57bd9f39f46df3c783b2ea02c38a4c9297cbcd04e8342f982f97b2ab48c",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 304,
+        "sizeM": [
+          0.76,
+          0.96,
+          0.9
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "base",
+            "pick-head"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "sheet-stack",
+            "magazine-post-left",
+            "magazine-post-right",
+            "top-beam",
+            "vacuum-cup-0",
+            "vacuum-cup-1",
+            "vacuum-cup-2",
+            "vacuum-cup-3",
+            "outfeed-shelf",
+            "vacuum-pump"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "stretch-wrapper",
+      "kit": "beverage-bottling-line",
+      "title": "Pallet stretch wrapper",
+      "description": "Turntable wrapper with film carriage, mast rollers, and adjustable load-height sensor. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/stretch-wrapper.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-stretch-wrapper.png",
+      "sourceSha256": "60fd789620f81652b4d6c90385d4dfcaa8c5685c3c3c4179b48aa1c58f4852be",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 356,
+        "sizeM": [
+          1.5,
+          1.8,
+          1.3
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "turntable",
+            "mast-base",
+            "film-roll",
+            "control-box"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "turntable-hub",
+            "mast",
+            "film-carriage",
+            "film-roller-0",
+            "film-roller-1",
+            "film-roller-2",
+            "photoeye"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "tamper-band-shrink-station",
+      "kit": "beverage-bottling-line",
+      "title": "Tamper-band shrink station",
+      "description": "Bottle neck band station with a compact heat ring, guide rails, and exhaust hood. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/tamper-band-shrink-station.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-tamper-band-shrink-station.png",
+      "sourceSha256": "3609ba3b20d62b2324e22259675aac6b93d3686cb550849fce69ae62a6fd74a9",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 140,
+        "sizeM": [
+          1.14,
+          1.03,
+          0.72
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "base",
+            "opening-frame"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "heat-ring",
+            "side-panel-left",
+            "side-panel-right",
+            "top-hood",
+            "exhaust-fan",
+            "infeed-guide",
+            "outfeed-guide"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "vision-inspection-arch",
+      "kit": "beverage-bottling-line",
+      "title": "Bottle vision inspection arch",
+      "description": "Inspection portal with overhead camera, backlights, side cameras, and a guarded conveyor gap. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/vision-inspection-arch.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-vision-inspection-arch.png",
+      "sourceSha256": "b4c4d1eb32d0ce0c57a215d3768e463036ebd9c0e8f5907c59fce4d80e8ed5e4",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          1.7,
+          0.965,
+          0.6
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "base-left",
+            "base-right",
+            "camera-beam",
+            "reject-sensor"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "column-left",
+            "column-right",
+            "top-camera",
+            "side-camera-0",
+            "side-camera-1",
+            "backlight",
+            "conveyor-left",
+            "conveyor-right"
+          ],
+          "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "wraparound-labeler",
+      "kit": "beverage-bottling-line",
+      "title": "Wraparound bottle labeler",
+      "description": "Roll-fed label station with a vacuum drum, applicator plate, bottle wrap belt, and control box. Knobs: overall scale, equipment color, and safety accent.",
+      "category": "structure",
+      "origin": "base",
+      "tags": [
+        "beverage bottling",
+        "packaging line",
+        "food manufacturing",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "beverage-bottling-line",
+        "factory",
+        "food-manufacturing",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/beverage-bottling-line/wraparound-labeler.kcad.ts",
+      "preview": "/assets/beverage-bottling-line-wraparound-labeler.png",
+      "sourceSha256": "b3c8982f97e1e476d91aa8f845be05edf17af5628780c23d9ddf13a975dcc3b1",
+      "triangleBudget": 2200,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#a6b3b4",
+          "label": "Equipment color"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a23d",
+          "label": "Safety accent"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 216,
+        "sizeM": [
+          1.185,
+          0.985,
+          0.705
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "accent",
+          "color": "#e3a23d",
+          "parts": [
+            "base-frame",
+            "label-roll",
+            "control-box"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "body",
+          "color": "#a6b3b4",
+          "parts": [
+            "bottle-deck",
+            "left-column",
+            "right-column",
+            "top-beam",
+            "vacuum-drum",
+            "pressure-roller",
+            "web-guide"
+          ],
+          "param": "body"
         }
       ]
     },
