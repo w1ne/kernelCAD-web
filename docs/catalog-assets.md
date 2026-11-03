@@ -107,3 +107,14 @@ records the source-to-preview workflow, catalog audit, generated pages, and
 inspected MP4. These are visualization props; checks do not establish clinical
 suitability, safety, ratings, hygiene, calibration, regulatory compliance, or
 physical acceptance.
+
+## Fire station assets
+
+The [fire station kit](../catalog/kits/fire-station/README.md) adds 70 original
+low-poly fixtures for apparatus-bay readiness, equipment washing,
+decontamination, protective-gear processing, clean storage and station
+alerting. The [wave demo and verification bundle](../artifacts/catalog-demos/fire-station-wave-20261103/README.md)
+records the native sources, rendered previews, local page checks and inspected
+MP4. These are generic visualization props; checks do not establish
+building-code compliance, fire-protection performance, ventilation,
+contamination control, PPE performance, or operational acceptance.

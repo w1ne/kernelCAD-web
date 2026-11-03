@@ -1,0 +1,1 @@
+rendered station-alerting-control-console at scale 1.15 and color #b46f3d

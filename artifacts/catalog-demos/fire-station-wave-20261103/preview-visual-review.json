@@ -1,0 +1,36 @@
+{
+  "reviewedAt": "2026-11-03",
+  "assetsReviewed": 70,
+  "reviewSheets": [
+    "preview-review/set-01.png",
+    "preview-review/set-02.png",
+    "preview-review/set-03.png",
+    "preview-review/set-04.png",
+    "preview-review/set-05.png",
+    "preview-review/set-06.png",
+    "preview-review/set-07.png"
+  ],
+  "initialFindings": [
+    {
+      "assets": [
+        "apparatus-exhaust-capture-rail",
+        "retractable-exhaust-hose-reel",
+        "bay-washdown-hose-reel"
+      ],
+      "finding": "Hanging hoses and end fittings were spatially separated in the rendered previews."
+    },
+    {
+      "assets": ["exhaust-capture-nozzle"],
+      "finding": "The upper grip was detached from its handle."
+    }
+  ],
+  "sourceCorrections": [
+    "Aligned the exhaust capture rail's hanging cylinder and nozzle hanger vertically below the trolley.",
+    "Moved the retractable reel hose and coupler to meet below the reel drum.",
+    "Moved the bay washdown hose to run from the drum to the spray grip.",
+    "Joined the exhaust capture nozzle grip to the cross-handle."
+  ],
+  "correctedAssetsRerendered": 4,
+  "correctedAssetsReinspected": 4,
+  "result": "The revised preview sheet shows each hose connected to its reel or nozzle. Station fixtures remain visibly distinct at catalog-preview scale."
+}

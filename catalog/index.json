@@ -744,6 +744,83 @@
       ]
     },
     {
+      "id": "fire-station",
+      "title": "Fire station",
+      "description": "Station fixtures for apparatus-bay readiness, equipment washing, decontamination, breathing-apparatus processing, gear storage, and crew alerting.",
+      "assets": [
+        "apparatus-bay-bollard",
+        "apparatus-bay-sectional-door",
+        "apparatus-exhaust-capture-rail",
+        "bay-column-protector",
+        "bay-door-control-station",
+        "bay-hose-test-rack",
+        "bay-trench-drain",
+        "bay-utility-hose-station",
+        "bay-warning-beacon",
+        "bay-washdown-hose-reel",
+        "boot-wash-scrubber",
+        "breathing-air-cascade-bank",
+        "clean-gear-cabinet",
+        "clean-turnout-gear-locker",
+        "clean-zone-handwash-sink",
+        "contaminated-gear-bagging-cart",
+        "contaminated-gear-rinse-sink",
+        "decon-boot-brush-set",
+        "decon-chemical-cabinet",
+        "decon-eyewash-station",
+        "decon-shower-control-station",
+        "decon-shower-stall",
+        "dirty-laundry-drop-cabinet",
+        "exhaust-capture-nozzle",
+        "facepiece-drying-cabinet",
+        "fire-hose-washing-machine",
+        "gear-glove-drying-cabinet",
+        "gear-inspection-bench",
+        "hose-drying-tower",
+        "hose-spin-dryer",
+        "hot-zone-boundary-sign",
+        "radio-charging-rack",
+        "retractable-exhaust-hose-reel",
+        "scba-cylinder-drying-rack",
+        "scba-cylinder-fill-bank",
+        "scba-cylinder-storage-rack",
+        "scba-fill-control-panel",
+        "scba-washing-machine",
+        "station-air-compressor",
+        "station-airlock-door-closer",
+        "station-alerting-control-console",
+        "station-alerting-speaker",
+        "station-boot-drying-rack",
+        "station-call-board",
+        "station-callout-light-strip",
+        "station-clean-gear-hamper",
+        "station-clean-room-airlock-cabinet",
+        "station-clean-zone-clock",
+        "station-decon-tool-rack",
+        "station-door-traffic-signal",
+        "station-electrical-transfer-cabinet",
+        "station-equipment-service-cart",
+        "station-facepiece-cleaning-sink",
+        "station-fitness-weight-rack",
+        "station-gear-tag-printer",
+        "station-hand-sanitizer-dispenser",
+        "station-key-control-cabinet",
+        "station-maintenance-workbench",
+        "station-pager-locker",
+        "station-response-map-cabinet",
+        "station-standby-generator",
+        "station-training-whiteboard",
+        "station-turnout-gear-inspection-light",
+        "station-utility-sink",
+        "transition-zone-airlock-bench",
+        "transition-zone-floor-mat",
+        "turnout-bench-with-boot-cubbies",
+        "turnout-gear-drying-cabinet",
+        "turnout-gear-extractor",
+        "turnout-gear-open-drying-rack"
+      ]
+    },
+    {
       "id": "food-kitchen",
       "title": "Food & Kitchen",
       "description": "Low-poly food, produce and table pieces for kitchen, market, picnic and tavern scenes at real-world scale, flat-shaded on one palette material.",
@@ -65796,6 +65873,5449 @@
             "chin-strap-1"
           ],
           "param": "body"
+        }
+      ]
+    },
+    {
+      "id": "apparatus-bay-bollard",
+      "kit": "fire-station",
+      "title": "Apparatus bay bollard",
+      "description": "Heavy floor bollard with a broad anchor plate and high-visibility upper sleeve. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "apparatus",
+        "bay",
+        "bollard"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/apparatus-bay-bollard.kcad.ts",
+      "preview": "/assets/fire-station-apparatus-bay-bollard.png",
+      "sourceSha256": "ff54d12b77045843f1b8ece9027c6bed3e5f13e806029399e7618eb2ceeea286",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d09b51",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 100,
+        "sizeM": [
+          0.26,
+          0.9,
+          0.26
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d09b51",
+          "parts": [
+            "post",
+            "reflective-band",
+            "anchor-foot"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "apparatus-bay-sectional-door",
+      "kit": "fire-station",
+      "title": "Apparatus bay sectional door",
+      "description": "Full-height sectional door assembly with side guides, horizontal panels and upper vision lites. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "apparatus",
+        "bay",
+        "sectional",
+        "door"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/apparatus-bay-sectional-door.kcad.ts",
+      "preview": "/assets/fire-station-apparatus-bay-sectional-door.png",
+      "sourceSha256": "6100cbeac086115d601b003a10456803f5b47423c1358a356711e4f275bd689b",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#778786",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          3.4,
+          3.3,
+          0.14
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#778786",
+          "parts": [
+            "left-guide",
+            "right-guide",
+            "door-leaf",
+            "door-seam-1",
+            "door-seam-2",
+            "door-seam-3",
+            "door-seam-4",
+            "door-seam-5",
+            "door-seam-6",
+            "door-seam-7",
+            "vision-lite-1",
+            "vision-lite-2",
+            "vision-lite-3",
+            "header"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "apparatus-exhaust-capture-rail",
+      "kit": "fire-station",
+      "title": "Apparatus exhaust capture rail",
+      "description": "Ceiling-suspended rail, trolley and hose drop for a vehicle exhaust capture line. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "ceiling",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "apparatus",
+        "exhaust",
+        "capture",
+        "rail"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/apparatus-exhaust-capture-rail.kcad.ts",
+      "preview": "/assets/fire-station-apparatus-exhaust-capture-rail.png",
+      "sourceSha256": "893e50c626a0fa0f742db4773eeaa946913a6c388207f4580065ef23abefce40",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#788985",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          4.2,
+          2.606,
+          0.22
+        ],
+        "minUpM": -1.896,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#788985",
+          "parts": [
+            "ceiling-rail",
+            "hanger-left",
+            "hanger-right",
+            "trolley",
+            "hose-drop",
+            "nozzle-hanger"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "bay-column-protector",
+      "kit": "fire-station",
+      "title": "Bay column protector",
+      "description": "Low two-sided guard around a structural post with beveled top caps. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "bay",
+        "column",
+        "protector"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/bay-column-protector.kcad.ts",
+      "preview": "/assets/fire-station-bay-column-protector.png",
+      "sourceSha256": "b592f8bff6fbd6cf493967f74f39adbdaf3fc9aa19aee0a2366de45a3f61665a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#d09b51",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.73,
+          0.62,
+          0.545086
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#d09b51",
+          "parts": [
+            "front-guard",
+            "side-guard",
+            "top-cap-front",
+            "top-cap-side",
+            "stripe-0",
+            "stripe-1",
+            "stripe-2",
+            "stripe-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "bay-door-control-station",
+      "kit": "fire-station",
+      "title": "Bay door control station",
+      "description": "Wall-mounted open, stop and close controls with a protected manual-release handle. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "wall",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "bay",
+        "door",
+        "control"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/bay-door-control-station.kcad.ts",
+      "preview": "/assets/fire-station-bay-door-control-station.png",
+      "sourceSha256": "2d8321d5fbf57bf548bb4cced2591c2a8ed3a012051156afa067e375ea03db50",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6d8580",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.271,
+          0.43,
+          0.125
+        ],
+        "minUpM": 1.285,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6d8580",
+          "parts": [
+            "backplate",
+            "control-face",
+            "button-0",
+            "button-1",
+            "button-2",
+            "release-cover"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "bay-hose-test-rack",
+      "kit": "fire-station",
+      "title": "Hose test rack",
+      "description": "Ground-mounted rack with spaced hose couplings, test manifold and catch trough. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "hose",
+        "test",
+        "rack"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/bay-hose-test-rack.kcad.ts",
+      "preview": "/assets/fire-station-bay-hose-test-rack.png",
+      "sourceSha256": "85f298eb85ce5ca3103d8f90a733eb3717b6cd74fa01fbcb8e577d4d62fe3d35",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#70827e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 316,
+        "sizeM": [
+          1.6,
+          1.059,
+          0.5
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#70827e",
+          "parts": [
+            "trough",
+            "upright-0",
+            "upright-1",
+            "upright-2",
+            "upright-3",
+            "upright-4",
+            "top-rail",
+            "coupling-0",
+            "coupling-1",
+            "coupling-2",
+            "coupling-3",
+            "coupling-4",
+            "test-manifold"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "bay-trench-drain",
+      "kit": "fire-station",
+      "title": "Apparatus bay trench drain",
+      "description": "Long grated drain channel with end outlet and removable grate panels. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "apparatus",
+        "bay",
+        "trench",
+        "drain"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/bay-trench-drain.kcad.ts",
+      "preview": "/assets/fire-station-bay-trench-drain.png",
+      "sourceSha256": "b5d7c54d472b4c93ce6d500ef662b86516d70232675c7a005a91d08914da675d",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#687978",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 560,
+        "sizeM": [
+          3.6,
+          0.2,
+          0.21
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#687978",
+          "parts": [
+            "channel-body",
+            "grate-panel-0",
+            "grate-panel-1",
+            "grate-panel-2",
+            "grate-panel-3",
+            "grate-panel-4",
+            "grate-panel-5",
+            "grate-panel-6",
+            "grate-slot-0",
+            "grate-slot-1",
+            "grate-slot-2",
+            "grate-slot-3",
+            "grate-slot-4",
+            "grate-slot-5",
+            "grate-slot-6",
+            "grate-slot-7",
+            "grate-slot-8",
+            "grate-slot-9",
+            "grate-slot-10",
+            "grate-slot-11",
+            "grate-slot-12",
+            "grate-slot-13",
+            "grate-slot-14",
+            "grate-slot-15",
+            "grate-slot-16",
+            "grate-slot-17",
+            "grate-slot-18",
+            "grate-slot-19",
+            "grate-slot-20",
+            "grate-slot-21",
+            "grate-slot-22",
+            "grate-slot-23",
+            "grate-slot-24",
+            "grate-slot-25",
+            "grate-slot-26",
+            "grate-slot-27",
+            "grate-slot-28",
+            "grate-slot-29",
+            "grate-slot-30",
+            "grate-slot-31",
+            "grate-slot-32",
+            "grate-slot-33",
+            "grate-slot-34",
+            "outlet"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "bay-utility-hose-station",
+      "kit": "fire-station",
+      "title": "Bay utility hose station",
+      "description": "Wall-mounted compressed-air and water hose outlets with two short reel lines. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "wall",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "bay",
+        "utility",
+        "hose"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/bay-utility-hose-station.kcad.ts",
+      "preview": "/assets/fire-station-bay-utility-hose-station.png",
+      "sourceSha256": "0f51131325c0284ebf35ea52136d4e8169b81b17bd3ffcb81b71e84c1cc9cdf6",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7b8980",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 244,
+        "sizeM": [
+          0.63,
+          0.797,
+          0.2375
+        ],
+        "minUpM": 1.188,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7b8980",
+          "parts": [
+            "panel",
+            "shelf",
+            "outlet-0",
+            "outlet-1",
+            "outlet-2",
+            "hose-loop-0",
+            "hose-loop-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "bay-warning-beacon",
+      "kit": "fire-station",
+      "title": "Bay warning beacon",
+      "description": "Wall-mounted red and green signal lamps for a vehicle bay opening. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "wall",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "bay",
+        "warning",
+        "beacon"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/bay-warning-beacon.kcad.ts",
+      "preview": "/assets/fire-station-bay-warning-beacon.png",
+      "sourceSha256": "53682bc429048d27ff7cfe7c67e9b12abdc72c7dd0bfd38270a314bb7dedcc4c",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8b6b5c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.19,
+          0.48,
+          0.164
+        ],
+        "minUpM": 1.64,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8b6b5c",
+          "parts": [
+            "wall-plate",
+            "lower-lamp",
+            "upper-lamp",
+            "hood-lower",
+            "hood-upper"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "bay-washdown-hose-reel",
+      "kit": "fire-station",
+      "title": "Bay washdown hose reel",
+      "description": "Wall reel with a circular hose drum, swivel mount, spray hose and pistol grip. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "wall",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "bay",
+        "washdown",
+        "hose",
+        "reel"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/bay-washdown-hose-reel.kcad.ts",
+      "preview": "/assets/fire-station-bay-washdown-hose-reel.png",
+      "sourceSha256": "9180e460ebdbf8cecf16cf2cd414f6bdbf166bf437acd18e0ef55b0c96d78cc4",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#668b88",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 200,
+        "sizeM": [
+          0.44,
+          1.11,
+          0.2325
+        ],
+        "minUpM": 0.46,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#668b88",
+          "parts": [
+            "mount-plate",
+            "drum",
+            "hub",
+            "hose",
+            "spray-grip",
+            "trigger"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "boot-wash-scrubber",
+      "kit": "fire-station",
+      "title": "Boot wash scrubber",
+      "description": "Low boot-cleaning station with two tread brushes, splash guards and a drain pan. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "boot",
+        "wash",
+        "scrubber"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/boot-wash-scrubber.kcad.ts",
+      "preview": "/assets/fire-station-boot-wash-scrubber.png",
+      "sourceSha256": "e578fa84d6b999f1043ac93297daa389df361add468343b75d2ceba52bac3fa7",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#72857e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.76,
+          0.35,
+          0.52
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#72857e",
+          "parts": [
+            "pan",
+            "left-brush",
+            "right-brush",
+            "rear-splash",
+            "brush-ridge-0",
+            "brush-ridge-1",
+            "brush-ridge-2",
+            "brush-ridge-3",
+            "brush-ridge-4",
+            "brush-ridge-5",
+            "brush-ridge-6",
+            "brush-ridge-7"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "breathing-air-cascade-bank",
+      "kit": "fire-station",
+      "title": "Breathing air cascade bank",
+      "description": "Three-cylinder high-pressure storage bank with shared header, gauges and protective frame. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "breathing",
+        "air",
+        "cascade",
+        "bank"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/breathing-air-cascade-bank.kcad.ts",
+      "preview": "/assets/fire-station-breathing-air-cascade-bank.png",
+      "sourceSha256": "8985856a6b29f00adc0f2e72598d7f2af79ab829b229db8c211ef89c29fa38bd",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6f817e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 336,
+        "sizeM": [
+          1.36,
+          1.875,
+          0.37
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6f817e",
+          "parts": [
+            "storage-cylinder-0",
+            "storage-cylinder-1",
+            "storage-cylinder-2",
+            "frame-upright-0",
+            "frame-upright-1",
+            "frame-upright-2",
+            "frame-upright-3",
+            "top-rail",
+            "header",
+            "gauge-0",
+            "gauge-1",
+            "gauge-2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "clean-gear-cabinet",
+      "kit": "fire-station",
+      "title": "Clean gear cabinet",
+      "description": "Ventilated clean-storage cabinet with divided shelves and a sealed door. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "clean",
+        "gear",
+        "cabinet"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/clean-gear-cabinet.kcad.ts",
+      "preview": "/assets/fire-station-clean-gear-cabinet.png",
+      "sourceSha256": "7480564297eea302864edfbf610df824c7e1f370d84c661b7af10ff048e5365a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#71847f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 144,
+        "sizeM": [
+          0.98,
+          1.9,
+          0.661
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#71847f",
+          "parts": [
+            "base",
+            "cabinet",
+            "door",
+            "shelf-0",
+            "shelf-1",
+            "shelf-2",
+            "shelf-3",
+            "vent-0",
+            "vent-1",
+            "vent-2",
+            "vent-3",
+            "vent-4"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "clean-turnout-gear-locker",
+      "kit": "fire-station",
+      "title": "Clean turnout gear locker",
+      "description": "Tall clean-storage locker with helmet shelf, coat hooks and nameplate strip. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "clean",
+        "turnout",
+        "gear",
+        "locker"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/clean-turnout-gear-locker.kcad.ts",
+      "preview": "/assets/fire-station-clean-turnout-gear-locker.png",
+      "sourceSha256": "c6ca4bf3b097addaf0099507e4b8bdcf12fa7de4e8c938d2ea5eea3d92959035",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#71847d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          0.78,
+          1.95,
+          0.751
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#71847d",
+          "parts": [
+            "cabinet",
+            "door-left",
+            "door-right",
+            "nameplate",
+            "hook-0",
+            "hook-1",
+            "hook-2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "clean-zone-handwash-sink",
+      "kit": "fire-station",
+      "title": "Clean-zone handwash sink",
+      "description": "Compact wall basin with splashback, hands-free control and soap dispenser. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "clean-zone",
+        "handwash",
+        "sink"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/clean-zone-handwash-sink.kcad.ts",
+      "preview": "/assets/fire-station-clean-zone-handwash-sink.png",
+      "sourceSha256": "2d6c594dba97c7ca3492a67bf3c111fa15edf4ad42ef9b0b1603ada903304dc7",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7e9088",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          0.88,
+          1.38,
+          0.46
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7e9088",
+          "parts": [
+            "basin",
+            "splashback",
+            "wall-bracket",
+            "tap",
+            "soap-dispenser",
+            "towel-dispenser",
+            "pedestal-leg-0",
+            "pedestal-leg-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "contaminated-gear-bagging-cart",
+      "kit": "fire-station",
+      "title": "Contaminated gear bagging cart",
+      "description": "Closed transport cart with segregated bag bins and a lid for recently used equipment. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "contaminated",
+        "gear",
+        "bagging",
+        "cart"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/contaminated-gear-bagging-cart.kcad.ts",
+      "preview": "/assets/fire-station-contaminated-gear-bagging-cart.png",
+      "sourceSha256": "4023f991baecb42b5c822de321476a431ac82bf08cf94526ecbc6d6803758ad6",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#857c69",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          0.86,
+          0.86,
+          0.697
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#857c69",
+          "parts": [
+            "cart-body",
+            "lid",
+            "bin-front-0",
+            "bin-front-1",
+            "caster-0",
+            "caster-1",
+            "caster-2",
+            "caster-3",
+            "push-handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "contaminated-gear-rinse-sink",
+      "kit": "fire-station",
+      "title": "Contaminated gear rinse sink",
+      "description": "Deep stainless rinse basin with backsplash, hose spray and lower storage shelf. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "contaminated",
+        "gear",
+        "rinse",
+        "sink"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/contaminated-gear-rinse-sink.kcad.ts",
+      "preview": "/assets/fire-station-contaminated-gear-rinse-sink.png",
+      "sourceSha256": "c24459f2536596ca2d7711685c7abb6bd1cb9a44c57ef41a72f9f74140ffcf93",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#788c86",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 184,
+        "sizeM": [
+          1.05,
+          1.31,
+          0.67
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#788c86",
+          "parts": [
+            "basin",
+            "front-apron",
+            "backsplash",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3",
+            "lower-shelf",
+            "sprayer-neck",
+            "spray-head"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "decon-boot-brush-set",
+      "kit": "fire-station",
+      "title": "Decontamination boot brush set",
+      "description": "Pair of upright boot brushes fixed to a drainable floor plate. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "decontamination",
+        "boot",
+        "brush",
+        "set"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/decon-boot-brush-set.kcad.ts",
+      "preview": "/assets/fire-station-decon-boot-brush-set.png",
+      "sourceSha256": "e9a58061aff7bf47c889fccba057ce8e8d222bd4cb85264553092aa4b2d12258",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#72857e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 240,
+        "sizeM": [
+          0.58,
+          0.585,
+          0.39
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#72857e",
+          "parts": [
+            "footplate",
+            "brush-0",
+            "brush-1",
+            "bristle-0",
+            "bristle-1",
+            "bristle-2",
+            "bristle-3",
+            "bristle-4",
+            "bristle-5",
+            "bristle-6",
+            "bristle-7",
+            "bristle-8",
+            "bristle-9",
+            "bristle-10",
+            "bristle-11",
+            "bristle-12",
+            "bristle-13",
+            "bristle-14",
+            "bristle-15",
+            "grab-rail"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "decon-chemical-cabinet",
+      "kit": "fire-station",
+      "title": "Decontamination supply cabinet",
+      "description": "Labeled cabinet for segregated cleaning supplies with drip shelf and lockable doors. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "decontamination",
+        "supply",
+        "cabinet"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/decon-chemical-cabinet.kcad.ts",
+      "preview": "/assets/fire-station-decon-chemical-cabinet.png",
+      "sourceSha256": "d3614c092fcb0ccc171546a0fd934d6c0a7e3f495578950b44da2b09cda220fb",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#827e70",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.94,
+          1.8,
+          0.594
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#827e70",
+          "parts": [
+            "cabinet",
+            "left-door",
+            "right-door",
+            "drip-shelf",
+            "shelf-0",
+            "shelf-1",
+            "shelf-2",
+            "lock"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "decon-eyewash-station",
+      "kit": "fire-station",
+      "title": "Decontamination eyewash station",
+      "description": "Floor eyewash pedestal with paired spray heads and a catch bowl. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "decontamination",
+        "eyewash"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/decon-eyewash-station.kcad.ts",
+      "preview": "/assets/fire-station-decon-eyewash-station.png",
+      "sourceSha256": "f930256c5460c3e72cd187fa69096f9132078ee3463792b00dd7add0e66adad5",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#759187",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 200,
+        "sizeM": [
+          0.4,
+          0.862,
+          0.36
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#759187",
+          "parts": [
+            "base",
+            "pedestal",
+            "bowl",
+            "spray-head-left",
+            "spray-head-right",
+            "pull-handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "decon-shower-control-station",
+      "kit": "fire-station",
+      "title": "Decontamination shower controls",
+      "description": "Wall control panel with separate rinse and soap valves and a temperature dial. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "wall",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "decontamination",
+        "shower",
+        "controls"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/decon-shower-control-station.kcad.ts",
+      "preview": "/assets/fire-station-decon-shower-control-station.png",
+      "sourceSha256": "30e2e09fdb29e38f3425d6367013b521e4b761acf6f63bd5615f585101ab31bc",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#71817d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.35,
+          0.52,
+          0.132
+        ],
+        "minUpM": 1.19,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#71817d",
+          "parts": [
+            "mount-plate",
+            "face",
+            "valve-0",
+            "valve-1",
+            "temperature-dial",
+            "label"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "decon-shower-stall",
+      "kit": "fire-station",
+      "title": "Decontamination shower stall",
+      "description": "Open shower bay with a raised pan, three-sided splash screen and overhead spray. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "decontamination",
+        "shower",
+        "stall"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/decon-shower-stall.kcad.ts",
+      "preview": "/assets/fire-station-decon-shower-stall.png",
+      "sourceSha256": "860b8a7f57d4323b620836032d633c1c902d388b05460baa34283127662d34ab",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#71817d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 148,
+        "sizeM": [
+          1.1,
+          2.18,
+          1
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#71817d",
+          "parts": [
+            "shower-pan",
+            "rear-screen",
+            "left-screen",
+            "right-screen",
+            "shower-riser",
+            "shower-head",
+            "grab-bar"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "dirty-laundry-drop-cabinet",
+      "kit": "fire-station",
+      "title": "Dirty laundry drop cabinet",
+      "description": "Wall-mounted lined chute cabinet with a swing flap and bag-retention rim. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "wall",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "dirty",
+        "laundry",
+        "drop",
+        "cabinet"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/dirty-laundry-drop-cabinet.kcad.ts",
+      "preview": "/assets/fire-station-dirty-laundry-drop-cabinet.png",
+      "sourceSha256": "20ca2c818dd59f910e050fde601a09512e344d2fb707fbc9290441ad94338cc1",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7d8278",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.78,
+          0.96,
+          0.4482
+        ],
+        "minUpM": 0.8,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7d8278",
+          "parts": [
+            "cabinet",
+            "front",
+            "drop-flap",
+            "bag-rim",
+            "label-plate"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "exhaust-capture-nozzle",
+      "kit": "fire-station",
+      "title": "Exhaust capture nozzle",
+      "description": "Flexible tailpipe capture head with a tapered socket and hanging handle. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "exhaust",
+        "capture",
+        "nozzle"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/exhaust-capture-nozzle.kcad.ts",
+      "preview": "/assets/fire-station-exhaust-capture-nozzle.png",
+      "sourceSha256": "46339e836786ca375bc4f78dcf2756150de90ab3e96dcd5cf61d535636e92023",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#697b78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.34,
+          0.37,
+          0.207
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#697b78",
+          "parts": [
+            "socket",
+            "neck",
+            "handle",
+            "grip",
+            "hose-collar"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "facepiece-drying-cabinet",
+      "kit": "fire-station",
+      "title": "Facepiece drying cabinet",
+      "description": "Clean cabinet with individually spaced mask hooks and filtered-air vents. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "facepiece",
+        "drying",
+        "cabinet"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/facepiece-drying-cabinet.kcad.ts",
+      "preview": "/assets/fire-station-facepiece-drying-cabinet.png",
+      "sourceSha256": "d9fc577293a829c6617592af21d5fc6e1008b49121b437104c82e2b50581945a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#70847f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 316,
+        "sizeM": [
+          0.8,
+          1.45,
+          0.553
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#70847f",
+          "parts": [
+            "base",
+            "body",
+            "door",
+            "mask-hook-0",
+            "mask-hook-1",
+            "mask-hook-2",
+            "mask-hook-3",
+            "mask-hook-4",
+            "vent-0",
+            "vent-1",
+            "vent-2",
+            "vent-3",
+            "vent-4"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "fire-hose-washing-machine",
+      "kit": "fire-station",
+      "title": "Fire hose washing machine",
+      "description": "Station hose washer with feed rollers, covered wash chamber and drain tray. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "hose",
+        "washing",
+        "machine"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/fire-hose-washing-machine.kcad.ts",
+      "preview": "/assets/fire-station-fire-hose-washing-machine.png",
+      "sourceSha256": "9f01c9fb1afc18fe7610fbfe03f9daafb186c209d055daada99b5e0b4b7d41dd",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#69817f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          1,
+          0.94,
+          0.763
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#69817f",
+          "parts": [
+            "base",
+            "wash-cabinet",
+            "front-door",
+            "feed-roller-0",
+            "feed-roller-1",
+            "feed-roller-2",
+            "feed-roller-3",
+            "top-control",
+            "drip-tray"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "gear-glove-drying-cabinet",
+      "kit": "fire-station",
+      "title": "Gear glove drying cabinet",
+      "description": "Compact forced-air cabinet with four removable glove drying fingers. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "gear",
+        "glove",
+        "drying",
+        "cabinet"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/gear-glove-drying-cabinet.kcad.ts",
+      "preview": "/assets/fire-station-gear-glove-drying-cabinet.png",
+      "sourceSha256": "622158fe019a03803c9dbf0307d0f48d34e0e6b8686552a18645df938caee2ba",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6e827d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 224,
+        "sizeM": [
+          0.7,
+          1.09,
+          0.775
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6e827d",
+          "parts": [
+            "base",
+            "body",
+            "door",
+            "drying-finger-0",
+            "drying-finger-1",
+            "drying-finger-2",
+            "drying-finger-3",
+            "air-grille"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "gear-inspection-bench",
+      "kit": "fire-station",
+      "title": "Gear inspection bench",
+      "description": "Durable inspection table with bright task-light mast, tool strip and shallow parts tray. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "gear",
+        "inspection",
+        "bench"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/gear-inspection-bench.kcad.ts",
+      "preview": "/assets/fire-station-gear-inspection-bench.png",
+      "sourceSha256": "5a03edb5569f9ecf02526f1447c44d18d7dff4e94dc4cd5a5972de3dad321379",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7e8981",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 140,
+        "sizeM": [
+          1.5,
+          1,
+          0.76
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7e8981",
+          "parts": [
+            "top",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3",
+            "rear-tool-strip",
+            "parts-tray",
+            "task-light-mast",
+            "task-light-head"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "hose-drying-tower",
+      "kit": "fire-station",
+      "title": "Hose drying tower",
+      "description": "Freestanding hose drying frame with an overhead spreader and four hanging bays. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "hose",
+        "drying",
+        "tower"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/hose-drying-tower.kcad.ts",
+      "preview": "/assets/fire-station-hose-drying-tower.png",
+      "sourceSha256": "5eb8d6958936b58bd0540ecc3c2ba404fe0bc78108c92f4de8b16a30c585ae10",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#788985",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          1.2,
+          3.15,
+          0.36
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#788985",
+          "parts": [
+            "foot-left",
+            "foot-right",
+            "mast-left",
+            "mast-right",
+            "top-spreader",
+            "hose-hook-0",
+            "hose-hook-1",
+            "hose-hook-2",
+            "hose-hook-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "hose-spin-dryer",
+      "kit": "fire-station",
+      "title": "Hose spin dryer",
+      "description": "Vertical hose dryer with a guarded drum, top lid and drain foot. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "hose",
+        "spin",
+        "dryer"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/hose-spin-dryer.kcad.ts",
+      "preview": "/assets/fire-station-hose-spin-dryer.png",
+      "sourceSha256": "bc475354d73c39c39fb8f8c919eaff17310d21392134f4cd5a460440c0804839",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6b8382",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.65,
+          0.96,
+          0.652
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6b8382",
+          "parts": [
+            "base",
+            "drum",
+            "door-frame",
+            "lid",
+            "status-light"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "hot-zone-boundary-sign",
+      "kit": "fire-station",
+      "title": "Hot-zone boundary sign",
+      "description": "Wall sign marking the transition from apparatus contamination zone to clean spaces. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "wall",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "hot-zone",
+        "boundary",
+        "sign"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/hot-zone-boundary-sign.kcad.ts",
+      "preview": "/assets/fire-station-hot-zone-boundary-sign.png",
+      "sourceSha256": "ea93113f276f756ed270fcbeb7f84ce6004a1172ff1eb78ca9b983095cef9298",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b07a57",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.92,
+          0.69,
+          0.117
+        ],
+        "minUpM": 1.29,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b07a57",
+          "parts": [
+            "sign-panel",
+            "top-header",
+            "left-mount",
+            "right-mount",
+            "zone-bar-0",
+            "zone-bar-1",
+            "zone-bar-2"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "radio-charging-rack",
+      "kit": "fire-station",
+      "title": "Radio charging rack",
+      "description": "Wall rack with six handheld-radio charging bays and cable management. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "wall",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "radio",
+        "charging",
+        "rack"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/radio-charging-rack.kcad.ts",
+      "preview": "/assets/fire-station-radio-charging-rack.png",
+      "sourceSha256": "e7945a26a0a5133023fbbb621c9afdf4b46cb901551ba7b6777a70b590c53fb9",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#657c7d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 372,
+        "sizeM": [
+          1.16,
+          0.88,
+          0.2275
+        ],
+        "minUpM": 1.035,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#657c7d",
+          "parts": [
+            "backplate",
+            "upper-rail",
+            "charger-0",
+            "charger-1",
+            "charger-2",
+            "charger-3",
+            "charger-4",
+            "charger-5",
+            "radio-antenna-0",
+            "radio-antenna-1",
+            "radio-antenna-2",
+            "radio-antenna-3",
+            "radio-antenna-4",
+            "radio-antenna-5",
+            "cable-tray"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "retractable-exhaust-hose-reel",
+      "kit": "fire-station",
+      "title": "Retractable exhaust hose reel",
+      "description": "Ceiling hose reel with a compact motor housing, hose loop and tailpipe connector. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "ceiling",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "retractable",
+        "exhaust",
+        "hose",
+        "reel"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/retractable-exhaust-hose-reel.kcad.ts",
+      "preview": "/assets/fire-station-retractable-exhaust-hose-reel.png",
+      "sourceSha256": "c2468d5c706e8aa8cabd12b17ff2829a269c9074afe494da14694288972cebea",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#697d7d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.52,
+          1.625,
+          0.45
+        ],
+        "minUpM": -1.4625,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#697d7d",
+          "parts": [
+            "motor-box",
+            "reel-drum",
+            "hose",
+            "tailpipe-coupler",
+            "mount-plate"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "scba-cylinder-drying-rack",
+      "kit": "fire-station",
+      "title": "SCBA cylinder drying rack",
+      "description": "Wall rack for clean breathing-air cylinders with four cradles and retaining straps. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "wall",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "scba",
+        "cylinder",
+        "drying",
+        "rack"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/scba-cylinder-drying-rack.kcad.ts",
+      "preview": "/assets/fire-station-scba-cylinder-drying-rack.png",
+      "sourceSha256": "b900abc989037f75ca7e6df0524e26c0a95ed97c269ac690fa38a65e38e61db6",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#74847e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 248,
+        "sizeM": [
+          1.4,
+          0.8825,
+          0.57
+        ],
+        "minUpM": 0.91,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#74847e",
+          "parts": [
+            "backplate",
+            "cradle-0",
+            "cradle-1",
+            "cradle-2",
+            "cradle-3",
+            "strap-0",
+            "strap-1",
+            "strap-2",
+            "strap-3",
+            "label-strip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "scba-cylinder-fill-bank",
+      "kit": "fire-station",
+      "title": "SCBA cylinder fill bank",
+      "description": "Cylinder refill cabinet with guarded fill sockets and hinged blast-shield lid. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "scba",
+        "cylinder",
+        "fill",
+        "bank"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/scba-cylinder-fill-bank.kcad.ts",
+      "preview": "/assets/fire-station-scba-cylinder-fill-bank.png",
+      "sourceSha256": "33d8f77481f01ff9b8814a41c27dfc5433183ceda189e796eec4ca4b0b224a63",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#70827e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          0.98,
+          1.03,
+          0.864
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#70827e",
+          "parts": [
+            "base",
+            "cabinet",
+            "shield",
+            "top-cover",
+            "fill-port-0",
+            "fill-port-1",
+            "fill-port-2",
+            "fill-port-3",
+            "pressure-display"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "scba-cylinder-storage-rack",
+      "kit": "fire-station",
+      "title": "SCBA cylinder storage rack",
+      "description": "Floor rack with four upright cylinder bays, lower heel stops and retaining bar. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "scba",
+        "cylinder",
+        "storage",
+        "rack"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/scba-cylinder-storage-rack.kcad.ts",
+      "preview": "/assets/fire-station-scba-cylinder-storage-rack.png",
+      "sourceSha256": "ec9bdc4895246dee0e36873295f2bac7c29a726ef8369403d0f14bcd985452ad",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#70827e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 260,
+        "sizeM": [
+          1.5,
+          1.21,
+          0.435
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#70827e",
+          "parts": [
+            "base",
+            "back-rail",
+            "divider-0",
+            "divider-1",
+            "divider-2",
+            "divider-3",
+            "heel-stop-0",
+            "heel-stop-1",
+            "heel-stop-2",
+            "heel-stop-3",
+            "retaining-bar"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "scba-fill-control-panel",
+      "kit": "fire-station",
+      "title": "SCBA fill control panel",
+      "description": "Wall panel with pressure gauges, fill-valve controls and guarded hose sockets. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "wall",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "scba",
+        "fill",
+        "control",
+        "panel"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/scba-fill-control-panel.kcad.ts",
+      "preview": "/assets/fire-station-scba-fill-control-panel.png",
+      "sourceSha256": "ef888bde13adad1ac822d475e38390b261b9c5547cd79c5f0b4acb5ab92717a3",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#667d7b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 300,
+        "sizeM": [
+          0.68,
+          1.0925,
+          0.212
+        ],
+        "minUpM": 0.9575,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#667d7b",
+          "parts": [
+            "backplate",
+            "control-face",
+            "gauge-0",
+            "gauge-1",
+            "gauge-2",
+            "fill-socket-0",
+            "fill-socket-1",
+            "fill-socket-2",
+            "instruction-card"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "scba-washing-machine",
+      "kit": "fire-station",
+      "title": "SCBA washing machine",
+      "description": "Dedicated breathing-apparatus washer with sealed chamber, latch and cycle controls. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "scba",
+        "washing",
+        "machine"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/scba-washing-machine.kcad.ts",
+      "preview": "/assets/fire-station-scba-washing-machine.png",
+      "sourceSha256": "d7d1c948d0c80f2a1fa0c64924b8afff5aa9ca449eedc69c99e04363d89e7998",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#738481",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          0.96,
+          1.48,
+          0.946
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#738481",
+          "parts": [
+            "base",
+            "cabinet",
+            "door-frame",
+            "door-window",
+            "control-panel",
+            "latch"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-air-compressor",
+      "kit": "fire-station",
+      "title": "Station breathing-air compressor",
+      "description": "Enclosed breathing-air compressor skid with vertical receiver and filter stack. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "breathing-air",
+        "compressor"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/station-air-compressor.kcad.ts",
+      "preview": "/assets/fire-station-station-air-compressor.png",
+      "sourceSha256": "3bea459be3947476be02359f7c72cdaab4babd7896f8ffb871ab65e20a5516cd",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#75857e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 224,
+        "sizeM": [
+          1.275,
+          1.1,
+          0.935
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#75857e",
+          "parts": [
+            "base",
+            "compressor-housing",
+            "receiver",
+            "filter-stack",
+            "filter-bowl-0",
+            "filter-bowl-1",
+            "filter-bowl-2",
+            "control-box"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-airlock-door-closer",
+      "kit": "fire-station",
+      "title": "Station airlock door closer",
+      "description": "Door-top closer assembly with hydraulic body, swing arm and wall shoe. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "airlock",
+        "door",
+        "closer"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/station-airlock-door-closer.kcad.ts",
+      "preview": "/assets/fire-station-station-airlock-door-closer.png",
+      "sourceSha256": "d116ca905af23638812cd9e4c973aa7ab1d2f8c898371dd6966a91134cf16a66",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#777f79",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.92,
+          2.2,
+          0.211831
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#777f79",
+          "parts": [
+            "door-leaf",
+            "closer-body",
+            "arm",
+            "shoe",
+            "threshold"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-alerting-control-console",
+      "kit": "fire-station",
+      "title": "Station alerting control console",
+      "description": "Duty desk panel with incident display, station status buttons and speaker grille. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "alerting",
+        "control",
+        "console"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/station-alerting-control-console.kcad.ts",
+      "preview": "/assets/fire-station-station-alerting-control-console.png",
+      "sourceSha256": "2f056bade7461e711e19ddc9c14b446cf78460b4a01f80ae789d7bbb5aef312d",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#687e7f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          1.4,
+          1.275,
+          0.84
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#687e7f",
+          "parts": [
+            "desk-base",
+            "worktop",
+            "raised-console",
+            "display",
+            "status-button-0",
+            "status-button-1",
+            "status-button-2",
+            "speaker-grille"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-alerting-speaker",
+      "kit": "fire-station",
+      "title": "Station alerting speaker",
+      "description": "Wall-mounted horn speaker with protective grille and shallow backbox. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "wall",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "alerting",
+        "speaker"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/station-alerting-speaker.kcad.ts",
+      "preview": "/assets/fire-station-station-alerting-speaker.png",
+      "sourceSha256": "3d7bb40fbaf945cfbcf5ad52be29faa140ff3a249d18d06bed01dfffa81804ce",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#718481",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 80,
+        "sizeM": [
+          0.32,
+          0.44,
+          0.285
+        ],
+        "minUpM": 1.48,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#718481",
+          "parts": [
+            "backbox",
+            "horn",
+            "grille",
+            "mount-bracket"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-boot-drying-rack",
+      "kit": "fire-station",
+      "title": "Station boot drying rack",
+      "description": "Wall rail with six inverted boot nozzles and a removable drip channel. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "wall",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "boot",
+        "drying",
+        "rack"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/station-boot-drying-rack.kcad.ts",
+      "preview": "/assets/fire-station-station-boot-drying-rack.png",
+      "sourceSha256": "81d69e8a995d6d505fdd486c10e7aef5cc70daebab0ff103807598824b45ca35",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#71817b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 312,
+        "sizeM": [
+          1.6,
+          0.72,
+          0.21
+        ],
+        "minUpM": 0.82,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#71817b",
+          "parts": [
+            "mount-rail",
+            "drip-channel",
+            "boot-nozzle-0",
+            "boot-nozzle-1",
+            "boot-nozzle-2",
+            "boot-nozzle-3",
+            "boot-nozzle-4",
+            "boot-nozzle-5",
+            "mount-bracket-0",
+            "mount-bracket-1"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-call-board",
+      "kit": "fire-station",
+      "title": "Station call assignment board",
+      "description": "Wall board with unit-ready columns, crew cards and a magnetic incident strip. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "wall",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "call",
+        "assignment",
+        "board"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/station-call-board.kcad.ts",
+      "preview": "/assets/fire-station-station-call-board.png",
+      "sourceSha256": "9ca5bdc8ef922391e95cf50d45ac11dd0c6d37315a0ed75abf70d52ad919fa40",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7b8580",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          1.6,
+          1.13,
+          0.101
+        ],
+        "minUpM": 1.005,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7b8580",
+          "parts": [
+            "backboard",
+            "top-title",
+            "column-0",
+            "column-1",
+            "column-2",
+            "column-3",
+            "column-4",
+            "crew-card-0",
+            "crew-card-1",
+            "crew-card-2",
+            "crew-card-3",
+            "crew-card-4",
+            "incident-strip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-callout-light-strip",
+      "kit": "fire-station",
+      "title": "Station callout light strip",
+      "description": "Hallway callout light bar with three labeled response-zone indicators. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "wall",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "callout",
+        "light",
+        "strip"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/station-callout-light-strip.kcad.ts",
+      "preview": "/assets/fire-station-station-callout-light-strip.png",
+      "sourceSha256": "3d30ff6dc2e7641665f29a804cb840290fe5efc55f15b3eea37df4122ea29d51",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#77867e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          1.45,
+          0.25,
+          0.101
+        ],
+        "minUpM": 1.73,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#77867e",
+          "parts": [
+            "backplate",
+            "lens-0",
+            "lens-1",
+            "lens-2",
+            "label-0",
+            "label-1",
+            "label-2",
+            "mount-left",
+            "mount-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-clean-gear-hamper",
+      "kit": "fire-station",
+      "title": "Clean gear hamper",
+      "description": "Covered clean-laundry hamper with divided bag frame and foot-operated lid. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "clean",
+        "gear",
+        "hamper"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/station-clean-gear-hamper.kcad.ts",
+      "preview": "/assets/fire-station-station-clean-gear-hamper.png",
+      "sourceSha256": "8f6d5de95d51c73705df0a4d68e2237309a494cd161e2250e3670d17821d156b",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7b877e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 224,
+        "sizeM": [
+          0.8,
+          0.82,
+          0.735
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7b877e",
+          "parts": [
+            "body",
+            "lid",
+            "front-label",
+            "pedal",
+            "caster-0",
+            "caster-1",
+            "caster-2",
+            "caster-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-clean-room-airlock-cabinet",
+      "kit": "fire-station",
+      "title": "Clean-room airlock cabinet",
+      "description": "Pass-through cabinet with separate dirty-side and clean-side doors. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "clean-room",
+        "airlock",
+        "cabinet"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/station-clean-room-airlock-cabinet.kcad.ts",
+      "preview": "/assets/fire-station-station-clean-room-airlock-cabinet.png",
+      "sourceSha256": "dbaf9dd46a379cf0b10b47e35109b4073c1995cba7d151e78ab261041767469f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#718580",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          1.08,
+          1.115,
+          0.824
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#718580",
+          "parts": [
+            "cabinet",
+            "dirty-door",
+            "clean-door",
+            "shelf",
+            "door-handle-dirty",
+            "door-handle-clean",
+            "status-strip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-clean-zone-clock",
+      "kit": "fire-station",
+      "title": "Station clean-zone clock",
+      "description": "Large wall clock with a deep bezel and high-contrast index marks. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "wall",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "clean-zone",
+        "clock"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/station-clean-zone-clock.kcad.ts",
+      "preview": "/assets/fire-station-station-clean-zone-clock.png",
+      "sourceSha256": "263c92f3722eb569c445776c53a67d1efee2a1244edf3608b7cc75c63e2269b6",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#748782",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 208,
+        "sizeM": [
+          0.62,
+          0.62,
+          0.230952
+        ],
+        "minUpM": 1.44,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#748782",
+          "parts": [
+            "backplate",
+            "bezel",
+            "face",
+            "hour-mark-0",
+            "hour-mark-1",
+            "hour-mark-2",
+            "hour-mark-3",
+            "hour-mark-4",
+            "hour-mark-5",
+            "hour-mark-6",
+            "hour-mark-7",
+            "minute-hand"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-decon-tool-rack",
+      "kit": "fire-station",
+      "title": "Decontamination tool rack",
+      "description": "Wall rack with removable brush slots and a drip channel for cleaning tools. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "wall",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "decontamination",
+        "tool",
+        "rack"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/station-decon-tool-rack.kcad.ts",
+      "preview": "/assets/fire-station-station-decon-tool-rack.png",
+      "sourceSha256": "14553d24d4a64c4687ab0fce36c419fc7f3d975b06a413f3150d279370ea37fd",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#78857d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          1.26,
+          1.128,
+          0.187
+        ],
+        "minUpM": 0.816,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#78857d",
+          "parts": [
+            "backplate",
+            "drip-channel",
+            "tool-loop-0",
+            "tool-loop-1",
+            "tool-loop-2",
+            "tool-loop-3",
+            "handle-clip-0",
+            "handle-clip-1",
+            "handle-clip-2",
+            "handle-clip-3",
+            "label-strip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-door-traffic-signal",
+      "kit": "fire-station",
+      "title": "Station door traffic signal",
+      "description": "Two-lamp wall signal with a protective cage for airlock traffic status. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "wall",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "door",
+        "traffic",
+        "signal"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/station-door-traffic-signal.kcad.ts",
+      "preview": "/assets/fire-station-station-door-traffic-signal.png",
+      "sourceSha256": "72a2111bbeaddced101c77c6f63ad2f56457337c8bb1aa9df4c7c7fb4e10c35f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a17c55",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.26,
+          0.646,
+          0.2
+        ],
+        "minUpM": 1.484,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a17c55",
+          "parts": [
+            "mount-plate",
+            "upper-lamp",
+            "lower-lamp",
+            "guard-top",
+            "guard-bottom"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-electrical-transfer-cabinet",
+      "kit": "fire-station",
+      "title": "Station transfer switch cabinet",
+      "description": "Floor cabinet with labeled transfer switch door and cable raceway. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "transfer",
+        "switch",
+        "cabinet"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/station-electrical-transfer-cabinet.kcad.ts",
+      "preview": "/assets/fire-station-station-electrical-transfer-cabinet.png",
+      "sourceSha256": "2da2ff17842a952fc0e99e4ddfad807cdca6f31274f5b1944b434e2654235e46",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6e827d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 72,
+        "sizeM": [
+          1.03,
+          2.21,
+          0.7225
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6e827d",
+          "parts": [
+            "base",
+            "cabinet",
+            "door",
+            "switch-handle",
+            "label-window",
+            "cable-raceway"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-equipment-service-cart",
+      "kit": "fire-station",
+      "title": "Station equipment service cart",
+      "description": "Mobile two-shelf cart with labeled equipment bins and a push handle. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "equipment",
+        "service",
+        "cart"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/station-equipment-service-cart.kcad.ts",
+      "preview": "/assets/fire-station-station-equipment-service-cart.png",
+      "sourceSha256": "981b95d18967d88c8fceec7733784bf0eba9723b78392319b95dc43b43ac0f90",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#748781",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 260,
+        "sizeM": [
+          0.82,
+          1.051,
+          0.521
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#748781",
+          "parts": [
+            "lower-shelf",
+            "upper-shelf",
+            "post-0",
+            "post-1",
+            "post-2",
+            "post-3",
+            "caster-0",
+            "caster-1",
+            "caster-2",
+            "caster-3",
+            "handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-facepiece-cleaning-sink",
+      "kit": "fire-station",
+      "title": "Facepiece cleaning sink",
+      "description": "Dedicated facepiece basin with rinse spout, drying hooks and a clean-side shelf. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "facepiece",
+        "cleaning",
+        "sink"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/station-facepiece-cleaning-sink.kcad.ts",
+      "preview": "/assets/fire-station-station-facepiece-cleaning-sink.png",
+      "sourceSha256": "d0af75926d1812a114bd2fd8d64a2112355bd7533b7313d88caf188f6da3fbc7",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7a8b85",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 304,
+        "sizeM": [
+          1.17,
+          1.37,
+          0.6
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7a8b85",
+          "parts": [
+            "basin",
+            "backsplash",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3",
+            "clean-side-shelf",
+            "rinse-spout",
+            "dry-hook-0",
+            "dry-hook-1",
+            "dry-hook-2",
+            "dry-hook-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-fitness-weight-rack",
+      "kit": "fire-station",
+      "title": "Station fitness weight rack",
+      "description": "Low equipment rack with tiered shelves and end stops for training weights. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "fitness",
+        "weight",
+        "rack"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/station-fitness-weight-rack.kcad.ts",
+      "preview": "/assets/fire-station-station-fitness-weight-rack.png",
+      "sourceSha256": "e15b4ef1df806447a745fda99a3156eae6b0c56a8d821a69537b3383105e41c0",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#717d78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 304,
+        "sizeM": [
+          1.5,
+          1.12,
+          0.48
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#717d78",
+          "parts": [
+            "base",
+            "upright-0",
+            "upright-1",
+            "upright-2",
+            "upright-3",
+            "lower-shelf",
+            "upper-shelf",
+            "weight-stop-0",
+            "weight-stop-1",
+            "weight-stop-2",
+            "weight-stop-3",
+            "weight-stop-4"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-gear-tag-printer",
+      "kit": "fire-station",
+      "title": "Station gear tag printer",
+      "description": "Compact label printer with tag roll, feed slot and cleanable work shelf. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "gear",
+        "tag",
+        "printer"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/station-gear-tag-printer.kcad.ts",
+      "preview": "/assets/fire-station-station-gear-tag-printer.png",
+      "sourceSha256": "597e301f162ced45fe315d888ed09653f00762721f2ecf10d5ac8d0dac51d23d",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#72827d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          0.66,
+          0.62,
+          0.645
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#72827d",
+          "parts": [
+            "printer-body",
+            "top",
+            "display",
+            "feed-slot",
+            "tag-roll",
+            "output-tray"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-hand-sanitizer-dispenser",
+      "kit": "fire-station",
+      "title": "Station sanitizer dispenser",
+      "description": "Wall dispenser with a protected reservoir, push lever and drip-catch plate. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "wall",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "sanitizer",
+        "dispenser"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/station-hand-sanitizer-dispenser.kcad.ts",
+      "preview": "/assets/fire-station-station-hand-sanitizer-dispenser.png",
+      "sourceSha256": "bb7054ddda032d004589b817ca087cdd4347ed6cd24c3ac67e544dc3f61e76a9",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7c8980",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 60,
+        "sizeM": [
+          0.23,
+          0.4675,
+          0.1845
+        ],
+        "minUpM": 1.2225,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7c8980",
+          "parts": [
+            "backplate",
+            "reservoir",
+            "push-lever",
+            "catch-tray",
+            "level-window"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-key-control-cabinet",
+      "kit": "fire-station",
+      "title": "Station key control cabinet",
+      "description": "Lockable key cabinet with numbered hooks, access keypad and issue-return slots. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "key",
+        "control",
+        "cabinet"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/station-key-control-cabinet.kcad.ts",
+      "preview": "/assets/fire-station-station-key-control-cabinet.png",
+      "sourceSha256": "65785ec76c9661e13ba70935e1a94fbb15640f4e58d6425dba2f98453f9024c8",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7b837a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 488,
+        "sizeM": [
+          0.9125,
+          0.98,
+          0.3625
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7b837a",
+          "parts": [
+            "cabinet",
+            "door",
+            "key-hook-0",
+            "key-hook-1",
+            "key-hook-2",
+            "key-hook-3",
+            "key-hook-4",
+            "key-hook-5",
+            "key-hook-6",
+            "key-hook-7",
+            "key-hook-8",
+            "key-hook-9",
+            "keypad",
+            "return-slot"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-maintenance-workbench",
+      "kit": "fire-station",
+      "title": "Station maintenance workbench",
+      "description": "Shop bench with tool backboard, vise, drawer bank and parts tray. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "maintenance",
+        "workbench"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/station-maintenance-workbench.kcad.ts",
+      "preview": "/assets/fire-station-station-maintenance-workbench.png",
+      "sourceSha256": "b8e38770db379432b6f34a2f25faa9b28963878219fd2718ac9ad7db01352790",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7d8982",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          1.8,
+          1.86,
+          0.76
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7d8982",
+          "parts": [
+            "worktop",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3",
+            "drawer-bank",
+            "backboard",
+            "vise-base",
+            "vise-jaw",
+            "parts-tray"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-pager-locker",
+      "kit": "fire-station",
+      "title": "Station pager locker",
+      "description": "Small lockable charging cabinet with individual numbered slots and status lights. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "pager",
+        "locker"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/station-pager-locker.kcad.ts",
+      "preview": "/assets/fire-station-station-pager-locker.png",
+      "sourceSha256": "8fd9fdf1cee7aff677c312b8bc3a88698b3f4577aae25983664acf15f3955a30",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73817c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 260,
+        "sizeM": [
+          1.1625,
+          1.25,
+          0.482
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73817c",
+          "parts": [
+            "cabinet",
+            "door",
+            "slot-0",
+            "slot-1",
+            "slot-2",
+            "slot-3",
+            "ready-light-0",
+            "ready-light-1",
+            "ready-light-2",
+            "ready-light-3",
+            "name-strip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-response-map-cabinet",
+      "kit": "fire-station",
+      "title": "Station response map cabinet",
+      "description": "Wall map cabinet with hinged cover, grid insert and route-card pockets. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "wall",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "response",
+        "map",
+        "cabinet"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/station-response-map-cabinet.kcad.ts",
+      "preview": "/assets/fire-station-station-response-map-cabinet.png",
+      "sourceSha256": "0e2cb2ceae4d507d798a886a8172b79a802d4ed4d8234b6f1adf2a51c6065581",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7c8983",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          1.5,
+          1.11,
+          0.171
+        ],
+        "minUpM": 1.09,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7c8983",
+          "parts": [
+            "backboard",
+            "map-panel",
+            "cover",
+            "route-pocket-0",
+            "route-pocket-1",
+            "route-pocket-2",
+            "hinge-top",
+            "hinge-bottom"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-standby-generator",
+      "kit": "fire-station",
+      "title": "Station standby generator",
+      "description": "Enclosed standby generator with cooling louvers, exhaust stack and service panel. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "standby",
+        "generator"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/station-standby-generator.kcad.ts",
+      "preview": "/assets/fire-station-station-standby-generator.png",
+      "sourceSha256": "d83aaa5a0f5834fb28a763ade4883ffd262e2d1d5ca4df1209d4a12fcb1ab023",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#798880",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 140,
+        "sizeM": [
+          1.765,
+          1.73,
+          0.76
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#798880",
+          "parts": [
+            "skid",
+            "enclosure",
+            "louver-0",
+            "louver-1",
+            "louver-2",
+            "louver-3",
+            "service-door",
+            "exhaust-stack",
+            "control-box"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-training-whiteboard",
+      "kit": "fire-station",
+      "title": "Station training whiteboard",
+      "description": "Wall training board with marker ledge, grid lines and three magnetic panels. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "wall",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "training",
+        "whiteboard"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/station-training-whiteboard.kcad.ts",
+      "preview": "/assets/fire-station-station-training-whiteboard.png",
+      "sourceSha256": "65fabb2aa7efc96887b0fa8271db471e0b24b2c176c692e9e09c5f1a2d5226c9",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7e8982",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          1.8,
+          1.14,
+          0.187
+        ],
+        "minUpM": 1.01,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7e8982",
+          "parts": [
+            "board",
+            "left-panel",
+            "center-panel",
+            "right-panel",
+            "marker-tray",
+            "grid-v-0",
+            "grid-v-1",
+            "grid-v-2",
+            "grid-v-3",
+            "grid-v-4",
+            "grid-v-5",
+            "grid-v-6",
+            "grid-v-7",
+            "grid-v-8"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-turnout-gear-inspection-light",
+      "kit": "fire-station",
+      "title": "Turnout gear inspection light",
+      "description": "Free-standing task light with wide weighted base and adjustable inspection head. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "turnout",
+        "gear",
+        "inspection",
+        "light"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/station-turnout-gear-inspection-light.kcad.ts",
+      "preview": "/assets/fire-station-station-turnout-gear-inspection-light.png",
+      "sourceSha256": "46926ff09626634cb503b2948626e15ae21e3e224d0d34d6a10dc03e9cff949b",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7e8980",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 124,
+        "sizeM": [
+          0.815,
+          1.55,
+          0.38
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7e8980",
+          "parts": [
+            "base",
+            "mast",
+            "arm",
+            "light-head",
+            "knob"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "station-utility-sink",
+      "kit": "fire-station",
+      "title": "Station utility sink",
+      "description": "Deep mop sink with tall backsplash, faucet and pail-clearance legs. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "utility",
+        "sink"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/station-utility-sink.kcad.ts",
+      "preview": "/assets/fire-station-station-utility-sink.png",
+      "sourceSha256": "4f8a09c04a073d289a9b7cdda3cba5e7b1f0bcf589fb999b2c5358a0e7fbdec0",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#798b85",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 140,
+        "sizeM": [
+          0.9,
+          1.495,
+          0.62
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#798b85",
+          "parts": [
+            "basin",
+            "backsplash",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3",
+            "lower-shelf",
+            "faucet",
+            "spray-handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "transition-zone-airlock-bench",
+      "kit": "fire-station",
+      "title": "Transition zone airlock bench",
+      "description": "Compact wipe-clean bench with boot shelves and a dividing rail for gear transitions. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "transition",
+        "zone",
+        "airlock",
+        "bench"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/transition-zone-airlock-bench.kcad.ts",
+      "preview": "/assets/fire-station-transition-zone-airlock-bench.png",
+      "sourceSha256": "632c9c69530699979f41983fdb7e5803b3f7a7ec03c25fbb2ae069ada2f3202e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#827f72",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          1.4,
+          1.1,
+          0.64
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#827f72",
+          "parts": [
+            "seat",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3",
+            "lower-shelf",
+            "divider",
+            "boot-slot-0",
+            "boot-slot-1",
+            "boot-slot-2",
+            "boot-slot-3",
+            "boot-slot-4",
+            "boot-slot-5",
+            "boot-slot-6"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "transition-zone-floor-mat",
+      "kit": "fire-station",
+      "title": "Transition zone floor mat",
+      "description": "Low slip-resistant walk-off mat with a raised tread pattern and beveled rim. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "transition",
+        "zone",
+        "floor",
+        "mat"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/transition-zone-floor-mat.kcad.ts",
+      "preview": "/assets/fire-station-transition-zone-floor-mat.png",
+      "sourceSha256": "4c73a08b6166342a0b87b4f74d76be72ccb91ce21c895567b373a586fb2d0789",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#706e5d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          1.6,
+          0.028,
+          0.948
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#706e5d",
+          "parts": [
+            "mat",
+            "tread-0",
+            "tread-1",
+            "tread-2",
+            "tread-3",
+            "tread-4",
+            "tread-5",
+            "tread-6",
+            "tread-7",
+            "tread-8",
+            "tread-9",
+            "tread-10",
+            "tread-11",
+            "tread-12",
+            "tread-13",
+            "front-rim",
+            "back-rim"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "turnout-bench-with-boot-cubbies",
+      "kit": "fire-station",
+      "title": "Turnout bench with boot cubbies",
+      "description": "Entry bench with four boot bays, coat hooks and a divided personal-equipment shelf. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "turnout",
+        "bench",
+        "with",
+        "boot",
+        "cubbies"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/turnout-bench-with-boot-cubbies.kcad.ts",
+      "preview": "/assets/fire-station-turnout-bench-with-boot-cubbies.png",
+      "sourceSha256": "b55bebf241a86ddafee0e2c833d434e40d515b7c956b62f34a68f0f619ff576f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#807b6e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 260,
+        "sizeM": [
+          1.6,
+          1.18,
+          0.52
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#807b6e",
+          "parts": [
+            "seat",
+            "divider-0",
+            "divider-1",
+            "divider-2",
+            "divider-3",
+            "base",
+            "back",
+            "coat-hook-0",
+            "coat-hook-1",
+            "coat-hook-2",
+            "coat-hook-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "turnout-gear-drying-cabinet",
+      "kit": "fire-station",
+      "title": "Turnout gear drying cabinet",
+      "description": "Ventilated cabinet with hanging rails, perforated door and low drain tray. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "turnout",
+        "gear",
+        "drying",
+        "cabinet"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/turnout-gear-drying-cabinet.kcad.ts",
+      "preview": "/assets/fire-station-turnout-gear-drying-cabinet.png",
+      "sourceSha256": "97c26d1437b19e62724a18a182d8472287f0c7c81aa2ae00ddda49c286a11de2",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6d8280",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 148,
+        "sizeM": [
+          0.98,
+          1.8,
+          0.7
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6d8280",
+          "parts": [
+            "base",
+            "cabinet",
+            "left-door",
+            "right-door",
+            "hanger-rail-0",
+            "hanger-rail-1",
+            "vent-grille"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "turnout-gear-extractor",
+      "kit": "fire-station",
+      "title": "Turnout gear extractor",
+      "description": "Dedicated garment extractor with drum door, control panel and vibration feet. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "turnout",
+        "gear",
+        "extractor"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/turnout-gear-extractor.kcad.ts",
+      "preview": "/assets/fire-station-turnout-gear-extractor.png",
+      "sourceSha256": "83bee45d032b8b65718aada70aab5a8a25d5501ea0f29679bb56dbdfa2b08a9f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#738584",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 140,
+        "sizeM": [
+          0.94,
+          1.29,
+          1.14
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#738584",
+          "parts": [
+            "base",
+            "cabinet",
+            "door-rim",
+            "door-window",
+            "control-panel",
+            "vibration-foot-0",
+            "vibration-foot-1",
+            "vibration-foot-2",
+            "vibration-foot-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "turnout-gear-open-drying-rack",
+      "kit": "fire-station",
+      "title": "Turnout gear open drying rack",
+      "description": "Freestanding frame with four gear bays, boot shelves and hanging rails. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "fire",
+        "station",
+        "apparatus bay",
+        "firefighter health",
+        "low poly",
+        "CC0",
+        "turnout",
+        "gear",
+        "open",
+        "drying",
+        "rack"
+      ],
+      "compat": [
+        "fire",
+        "fire-station",
+        "station",
+        "apparatus-bay",
+        "interior"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/fire-station/turnout-gear-open-drying-rack.kcad.ts",
+      "preview": "/assets/fire-station-turnout-gear-open-drying-rack.png",
+      "sourceSha256": "95be4aafb40617abb4e7cff1e146bfbeda59218f6f20df0c44883546d21eb2bd",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#74827d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 308,
+        "sizeM": [
+          1.44,
+          1.98,
+          0.572
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#74827d",
+          "parts": [
+            "upright-0",
+            "upright-1",
+            "upright-2",
+            "upright-3",
+            "upright-4",
+            "upright-5",
+            "upright-6",
+            "upright-7",
+            "top-rail-front",
+            "top-rail-back",
+            "boot-shelf",
+            "hook-0",
+            "hook-1",
+            "hook-2",
+            "hook-3"
+          ],
+          "param": "color"
         }
       ]
     },
