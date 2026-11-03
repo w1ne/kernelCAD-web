@@ -325,6 +325,63 @@
       ]
     },
     {
+      "id": "ev-charging-infrastructure",
+      "title": "EV charging infrastructure",
+      "description": "Original generic props for AC and DC charging, connectors, power cabinets, parking fixtures, fleet depots, and charging canopies.",
+      "assets": [
+        "ac-charging-bollard",
+        "battery-buffer-charger-container",
+        "bus-depot-pantograph-post",
+        "ccs-combo-1-connector",
+        "ccs-combo-2-connector",
+        "chademo-connector",
+        "charger-cable-holster-bollard",
+        "charger-cable-retractor",
+        "charger-canopy-column-base",
+        "charger-load-management-panel",
+        "charger-status-display-post",
+        "charging-island-plinth",
+        "charging-payment-terminal",
+        "charging-station-direction-sign",
+        "coiled-charging-cable-reel",
+        "compact-dc-fast-charger",
+        "curbside-ac-charger-post",
+        "curbside-lamp-charger",
+        "destination-charging-pedestal",
+        "dual-connector-dc-dispenser",
+        "dual-outlet-wallbox",
+        "dual-port-ac-pedestal",
+        "ev-charger-protection-bollard",
+        "ev-emergency-stop-station",
+        "ev-metering-pedestal",
+        "ev-parking-bay-sign",
+        "ev-service-disconnect-cabinet",
+        "ev-site-distribution-panel",
+        "fleet-charging-canopy",
+        "fleet-depot-dc-dispenser",
+        "high-power-charge-dispenser",
+        "home-ac-wallbox",
+        "j1772-ac-connector",
+        "liquid-cooled-charging-cable",
+        "mobile-fast-charge-cart",
+        "modular-charger-power-stack",
+        "nacs-connector",
+        "outdoor-charger-switchboard",
+        "overhead-cable-balance-arm",
+        "overhead-cable-management-boom",
+        "overhead-pantograph-head",
+        "parking-cable-protection-ramp",
+        "parking-wheel-stop",
+        "remote-charger-power-cabinet",
+        "rfid-access-reader-pedestal",
+        "site-energy-management-controller",
+        "solar-ev-carport",
+        "streetlight-charger-arm",
+        "vehicle-to-grid-power-cabinet",
+        "wall-mounted-connector-holster"
+      ]
+    },
+    {
       "id": "farm-machinery",
       "title": "Farm Machinery",
       "description": "Original low-poly agricultural tractors, field implements, crop-care equipment, harvest machinery and irrigation props with editable scale and palette controls.",
@@ -34524,6 +34581,3801 @@
             "antenna-2"
           ],
           "param": "rod"
+        }
+      ]
+    },
+    {
+      "id": "ac-charging-bollard",
+      "kit": "ev-charging-infrastructure",
+      "title": "AC charging bollard",
+      "description": "Short protective charging post with an inset status panel and a pair of plug holders. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/ac-charging-bollard.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-ac-charging-bollard.png",
+      "sourceSha256": "54f883945f5d8a987fc1db357ffbbb9d1ae13f6a8bb11d86e87da44716f4fc02",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7b6956",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 340,
+        "sizeM": [
+          0.474,
+          0.925,
+          0.57
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7b6956",
+          "parts": [
+            "ground-plate",
+            "pedestal-column",
+            "main-enclosure",
+            "top-cap",
+            "front-door",
+            "display-bezel",
+            "display-window",
+            "status-button",
+            "vent-slot-1",
+            "vent-slot-2",
+            "head-cap",
+            "left-connector-cradle",
+            "right-connector-cradle",
+            "cable-tail",
+            "cable-tail-second"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "battery-buffer-charger-container",
+      "kit": "ev-charging-infrastructure",
+      "title": "Battery-buffer charger container",
+      "description": "Containerized buffer cabinet with access doors, vent banks, and a cable service side. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/battery-buffer-charger-container.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-battery-buffer-charger-container.png",
+      "sourceSha256": "bf948c5041d8ab820d98b33aa042fb1e4448092d4e3335ff1c6f1f5279c6f801",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#66716b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 244,
+        "sizeM": [
+          3.2,
+          2.495,
+          1.7
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#66716b",
+          "parts": [
+            "container-skid",
+            "container-body",
+            "roof-cap",
+            "front-service-door",
+            "right-service-door",
+            "vent-louver-1",
+            "vent-louver-2",
+            "vent-louver-3",
+            "vent-louver-4",
+            "vent-louver-5",
+            "vent-louver-6",
+            "vent-louver-7",
+            "vent-louver-8",
+            "cable-port-left",
+            "cable-port-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "bus-depot-pantograph-post",
+      "kit": "ev-charging-infrastructure",
+      "title": "Bus depot pantograph post",
+      "description": "Tall depot mast with an offset beam and a suspended charging-head support. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/bus-depot-pantograph-post.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-bus-depot-pantograph-post.png",
+      "sourceSha256": "0e0b76b60e8b3d8cb9221054733547ad5def7401634b052a91ff7d05b6e7b8c3",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6b7470",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 288,
+        "sizeM": [
+          1.83,
+          5.55,
+          0.42
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6b7470",
+          "parts": [
+            "foundation",
+            "support-mast",
+            "cantilever-beam",
+            "beam-stay",
+            "head-mount",
+            "contact-head",
+            "contact-bar",
+            "hinge-pin"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ccs-combo-1-connector",
+      "kit": "ev-charging-infrastructure",
+      "title": "CCS Combo 1 connector",
+      "description": "Generic CCS Combo 1 plug body with a broad grip shell, lower contact block, and cable tail. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/ccs-combo-1-connector.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-ccs-combo-1-connector.png",
+      "sourceSha256": "feb1ca034874136b0a29fe57524106e31e71aa64a6feaf40005014556697fccd",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#4a555b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          0.118,
+          0.153,
+          0.478
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#4a555b",
+          "parts": [
+            "hand-grip",
+            "front-coupling",
+            "connector-nose",
+            "strain-relief",
+            "cable-stub",
+            "grip-ridge-top",
+            "lower-contact-block"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ccs-combo-2-connector",
+      "kit": "ev-charging-infrastructure",
+      "title": "CCS Combo 2 connector",
+      "description": "Generic CCS Combo 2 plug body with a shaped grip, strain relief, and cable tail. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/ccs-combo-2-connector.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-ccs-combo-2-connector.png",
+      "sourceSha256": "c69b98d883c928aa6852021586ac6927849bc8ed466e8fcd721acd0b9f4fc520",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#424f55",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          0.112,
+          0.157,
+          0.472
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#424f55",
+          "parts": [
+            "hand-grip",
+            "front-coupling",
+            "connector-nose",
+            "strain-relief",
+            "cable-stub",
+            "grip-ridge-top",
+            "lower-contact-block"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "chademo-connector",
+      "kit": "ev-charging-infrastructure",
+      "title": "CHAdeMO connector",
+      "description": "Generic CHAdeMO plug with a rounded hand shell, broad coupling nose, and cable strain relief. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/chademo-connector.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-chademo-connector.png",
+      "sourceSha256": "3a1cb9bc81622392b07e6eadcde0e5b0c62ea5eb5b1537d0aaccf3d6652ebb49",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#4c565a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          0.128,
+          0.167,
+          0.494
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#4c565a",
+          "parts": [
+            "hand-grip",
+            "front-coupling",
+            "connector-nose",
+            "strain-relief",
+            "cable-stub",
+            "grip-ridge-top",
+            "lower-contact-block"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "charger-cable-holster-bollard",
+      "kit": "ev-charging-infrastructure",
+      "title": "Cable holster bollard",
+      "description": "Protective post with a raised connector cradle, cable loop, and heavy base plate. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/charger-cable-holster-bollard.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-charger-cable-holster-bollard.png",
+      "sourceSha256": "eff7914e906ddacb2a9169b62e66110d8e054c646ede8fe199d4512f480f8f2b",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#777263",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 200,
+        "sizeM": [
+          0.445,
+          1.215,
+          0.3975
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#777263",
+          "parts": [
+            "anchor-foot",
+            "bollard-post",
+            "cap",
+            "cradle-support",
+            "connector-cradle",
+            "cable-guide"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "charger-cable-retractor",
+      "kit": "ev-charging-infrastructure",
+      "title": "Charger cable retractor",
+      "description": "Compact overhead retractor body with an arm, pulley housing, and vertical cable drop. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/charger-cable-retractor.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-charger-cable-retractor.png",
+      "sourceSha256": "2489c39f4db030832683546a815f8bb64af6437c93c0bf56c8881b1ad6a51f8a",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#626f70",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 244,
+        "sizeM": [
+          1.25,
+          2.86,
+          1
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#626f70",
+          "parts": [
+            "base-plate",
+            "support-mast",
+            "swing-arm",
+            "arm-pivot",
+            "retractor-housing",
+            "pulley",
+            "hanging-cable"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "charger-canopy-column-base",
+      "kit": "ev-charging-infrastructure",
+      "title": "Charger canopy column base",
+      "description": "Steel column shoe with anchor plates, gussets, and a tall support post. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/charger-canopy-column-base.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-charger-canopy-column-base.png",
+      "sourceSha256": "4783704173555088686892c0b66646b1daffb0e61c4a918fc8eb26a078d05852",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#74776e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 260,
+        "sizeM": [
+          0.52,
+          2.665,
+          0.52
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#74776e",
+          "parts": [
+            "base-plate",
+            "column-shoe",
+            "column-post",
+            "gusset-0",
+            "gusset-1",
+            "gusset-2",
+            "gusset-3",
+            "anchor-bolt-0",
+            "anchor-bolt-1",
+            "anchor-bolt-2",
+            "anchor-bolt-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "charger-load-management-panel",
+      "kit": "ev-charging-infrastructure",
+      "title": "Charger load-management panel",
+      "description": "Wall panel with a central controller display, service door, and connection terminals. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/charger-load-management-panel.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-charger-load-management-panel.png",
+      "sourceSha256": "224943a1fa1d70d45533811d74ae1614d53aa68aa994c746a9ffba873cab49c9",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#68746f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 244,
+        "sizeM": [
+          0.735,
+          0.952,
+          0.32
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#68746f",
+          "parts": [
+            "main-enclosure",
+            "base-plinth",
+            "top-cap",
+            "door-seam-1",
+            "door-seam-2",
+            "display-bezel",
+            "display-window",
+            "status-button",
+            "vent-slot-1",
+            "vent-slot-2",
+            "vent-slot-3",
+            "vent-slot-4",
+            "vent-slot-5",
+            "cable-entry-skirt",
+            "ground-terminal"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "charger-status-display-post",
+      "kit": "ev-charging-infrastructure",
+      "title": "Charger status display post",
+      "description": "Wayfinding-height display post with a framed status screen and a slim base. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/charger-status-display-post.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-charger-status-display-post.png",
+      "sourceSha256": "e1376c610ab4c461b1c15ca8553eccea91d8f282883ba22519e1e26c0128e5ba",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#586c71",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 252,
+        "sizeM": [
+          0.5022,
+          1.785,
+          0.32
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#586c71",
+          "parts": [
+            "ground-plate",
+            "pedestal-column",
+            "main-enclosure",
+            "top-cap",
+            "front-door",
+            "display-bezel",
+            "display-window",
+            "status-button",
+            "vent-slot-1",
+            "vent-slot-2",
+            "head-cap",
+            "left-connector-cradle",
+            "right-connector-cradle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "charging-island-plinth",
+      "kit": "ev-charging-infrastructure",
+      "title": "Charging island plinth",
+      "description": "Raised site island with two charger mounting pads, edge curb, and corner markers. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/charging-island-plinth.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-charging-island-plinth.png",
+      "sourceSha256": "0bcb046c7fa3ad0d14092e468d6ef0d2fd7bf3749043285c40cccbdf851a8751",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#85827a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 224,
+        "sizeM": [
+          2.6,
+          0.48,
+          0.82
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#85827a",
+          "parts": [
+            "island-curb",
+            "raised-deck",
+            "left-mount-pad",
+            "right-mount-pad",
+            "corner-marker-0",
+            "corner-marker-1",
+            "corner-marker-2",
+            "corner-marker-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "charging-payment-terminal",
+      "kit": "ev-charging-infrastructure",
+      "title": "Charging payment terminal",
+      "description": "Public payment pedestal with a raised display, keypad panel, and card reader slot. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/charging-payment-terminal.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-charging-payment-terminal.png",
+      "sourceSha256": "f5bfafba9ed3c5c79399f3a21b236ecc5f23c554e0e5dafb58441760701c75e4",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#495d66",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          0.44,
+          1.148,
+          0.455
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#495d66",
+          "parts": [
+            "terminal-base",
+            "support-column",
+            "screen-bezel",
+            "screen-window",
+            "keypad-panel",
+            "card-slot",
+            "contactless-reader",
+            "weather-hood"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "charging-station-direction-sign",
+      "kit": "ev-charging-infrastructure",
+      "title": "Charging station direction sign",
+      "description": "Roadside direction sign with a two-panel face, support post, and ground sleeve. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/charging-station-direction-sign.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-charging-station-direction-sign.png",
+      "sourceSha256": "8874ada0fbbdf178b2fed19274a15f53e7607eff49e4259e1284992487121fdd",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#64756c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 148,
+        "sizeM": [
+          0.74,
+          2.808,
+          0.26
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#64756c",
+          "parts": [
+            "ground-sleeve",
+            "sign-post",
+            "sign-panel",
+            "sign-face",
+            "top-cap",
+            "lower-arrow-panel",
+            "arrow-shaft"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "coiled-charging-cable-reel",
+      "kit": "ev-charging-infrastructure",
+      "title": "Coiled charging cable reel",
+      "description": "Wall-mounted cable reel with side plates, a central drum, and a guided cable outlet. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/coiled-charging-cable-reel.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-coiled-charging-cable-reel.png",
+      "sourceSha256": "9f63108ea89c8d5144582660b5dcf2e8b5660c41b78623ad9adab4a094babd76",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#596b70",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 276,
+        "sizeM": [
+          0.52,
+          0.6,
+          0.874
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#596b70",
+          "parts": [
+            "wall-mount-plate",
+            "drum-axle",
+            "spool-core",
+            "spool-left-flange",
+            "spool-right-flange",
+            "cable-outlet-guide",
+            "cable-tail"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "compact-dc-fast-charger",
+      "kit": "ev-charging-infrastructure",
+      "title": "Compact DC fast charger",
+      "description": "Floor-standing DC charger with a front display, service door, and paired charging leads. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/compact-dc-fast-charger.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-compact-dc-fast-charger.png",
+      "sourceSha256": "4b122ffb919ab0b34b0fe0465c5154690b263b8c2956ad867e3cea59c5bed92a",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#536c77",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 364,
+        "sizeM": [
+          0.7836,
+          1.752,
+          1.075
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#536c77",
+          "parts": [
+            "main-enclosure",
+            "base-plinth",
+            "top-cap",
+            "front-door",
+            "display-bezel",
+            "display-window",
+            "status-button",
+            "vent-slot-1",
+            "vent-slot-2",
+            "vent-slot-3",
+            "vent-slot-4",
+            "vent-slot-5",
+            "roof-visor",
+            "left-connector-cradle",
+            "right-connector-cradle",
+            "left-charging-cable",
+            "right-charging-cable"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "curbside-ac-charger-post",
+      "kit": "ev-charging-infrastructure",
+      "title": "Curbside AC charger post",
+      "description": "Slim public AC post with a readable front panel, paired cable ports, and a broad base. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/curbside-ac-charger-post.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-curbside-ac-charger-post.png",
+      "sourceSha256": "fb1c432228b7a91174ab402c218793bfc9c0e503efb4262f1b0d2697719a4bf9",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#526973",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 340,
+        "sizeM": [
+          0.474,
+          1.555,
+          0.57
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#526973",
+          "parts": [
+            "ground-plate",
+            "pedestal-column",
+            "main-enclosure",
+            "top-cap",
+            "front-door",
+            "display-bezel",
+            "display-window",
+            "status-button",
+            "vent-slot-1",
+            "vent-slot-2",
+            "head-cap",
+            "left-connector-cradle",
+            "right-connector-cradle",
+            "cable-tail",
+            "cable-tail-second"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "curbside-lamp-charger",
+      "kit": "ev-charging-infrastructure",
+      "title": "Curbside lamp charger",
+      "description": "Short area-light mast with an integrated side-mounted charger and compact light head. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/curbside-lamp-charger.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-curbside-lamp-charger.png",
+      "sourceSha256": "1f70db757d324bc62560c571730f6c910eacef10b1b746ff480bf5320b634456",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6c7773",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 212,
+        "sizeM": [
+          0.825,
+          3.02,
+          0.385
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6c7773",
+          "parts": [
+            "mast-base",
+            "lamp-mast",
+            "light-arm",
+            "light-head",
+            "charger-box",
+            "charger-screen",
+            "cable-holster"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "destination-charging-pedestal",
+      "kit": "ev-charging-infrastructure",
+      "title": "Destination charging pedestal",
+      "description": "Parking-lot charger pedestal with a sheltered display head and side cable holsters. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/destination-charging-pedestal.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-destination-charging-pedestal.png",
+      "sourceSha256": "998e5ce43bdd2bc49945ae51734f2f544bebb4f3c022115a9827d1de7a134d48",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#617578",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 340,
+        "sizeM": [
+          0.5424,
+          1.655,
+          0.57
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#617578",
+          "parts": [
+            "ground-plate",
+            "pedestal-column",
+            "main-enclosure",
+            "top-cap",
+            "front-door",
+            "display-bezel",
+            "display-window",
+            "status-button",
+            "vent-slot-1",
+            "vent-slot-2",
+            "head-cap",
+            "left-connector-cradle",
+            "right-connector-cradle",
+            "cable-tail",
+            "cable-tail-second"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "dual-connector-dc-dispenser",
+      "kit": "ev-charging-infrastructure",
+      "title": "Dual-connector DC dispenser",
+      "description": "Public DC charging dispenser with two plug cradles, a central status display, and cable loops. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/dual-connector-dc-dispenser.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-dual-connector-dc-dispenser.png",
+      "sourceSha256": "2f96ba85d817e5dada2ddf18527143fe2c3c8bcc28ba43ce3c649d23e9113444",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#536a75",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 364,
+        "sizeM": [
+          0.7256,
+          1.892,
+          1.005
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#536a75",
+          "parts": [
+            "main-enclosure",
+            "base-plinth",
+            "top-cap",
+            "front-door",
+            "display-bezel",
+            "display-window",
+            "status-button",
+            "vent-slot-1",
+            "vent-slot-2",
+            "vent-slot-3",
+            "vent-slot-4",
+            "vent-slot-5",
+            "roof-visor",
+            "left-connector-cradle",
+            "right-connector-cradle",
+            "left-charging-cable",
+            "right-charging-cable"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "dual-outlet-wallbox",
+      "kit": "ev-charging-infrastructure",
+      "title": "Dual-outlet wallbox",
+      "description": "Workplace wall charger with two cable outlets, paired status windows, and mounting rails. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/dual-outlet-wallbox.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-dual-outlet-wallbox.png",
+      "sourceSha256": "0c28dec5312d06832c5804116c4a9189452bc6e5bf44c0e0f0fe79efaa72b63a",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#576d77",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 252,
+        "sizeM": [
+          0.556,
+          0.72,
+          0.272
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#576d77",
+          "parts": [
+            "mounting-rail",
+            "main-enclosure",
+            "top-cap",
+            "front-door",
+            "display-bezel",
+            "display-window",
+            "status-button",
+            "vent-slot-1",
+            "vent-slot-2",
+            "vent-slot-3",
+            "second-display-bezel",
+            "left-holster",
+            "right-holster"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "dual-port-ac-pedestal",
+      "kit": "ev-charging-infrastructure",
+      "title": "Dual-port AC pedestal",
+      "description": "Twin-sided AC pedestal with two front panels and two hanging cable leads. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/dual-port-ac-pedestal.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-dual-port-ac-pedestal.png",
+      "sourceSha256": "ef37ce8f9fe3f8b5f0df0d2bfda19bbe3e3e0aac199b3412b95349f81fb85f52",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#60757a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 352,
+        "sizeM": [
+          0.6228,
+          1.705,
+          0.65
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#60757a",
+          "parts": [
+            "ground-plate",
+            "pedestal-column",
+            "main-enclosure",
+            "top-cap",
+            "front-door",
+            "display-bezel",
+            "display-window",
+            "status-button",
+            "vent-slot-1",
+            "vent-slot-2",
+            "head-cap",
+            "left-connector-cradle",
+            "right-connector-cradle",
+            "rear-control-panel",
+            "left-cable",
+            "right-cable"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ev-charger-protection-bollard",
+      "kit": "ev-charging-infrastructure",
+      "title": "Charger protection bollard",
+      "description": "Heavy tubular guard post with a protective cap and square anchor plate. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/ev-charger-protection-bollard.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-ev-charger-protection-bollard.png",
+      "sourceSha256": "83a8b82a98fc193a713c59889b8ad26b1fbe116391bda7eb96ba97ecc4e97e27",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#9d6943",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 308,
+        "sizeM": [
+          0.3,
+          1.056,
+          0.3
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#9d6943",
+          "parts": [
+            "anchor-flange",
+            "guard-post",
+            "top-cap",
+            "base-anchor-0",
+            "base-anchor-1",
+            "base-anchor-2",
+            "base-anchor-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ev-emergency-stop-station",
+      "kit": "ev-charging-infrastructure",
+      "title": "EV emergency-stop station",
+      "description": "Protected emergency control post with an overhanging guard and prominent actuator. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/ev-emergency-stop-station.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-ev-emergency-stop-station.png",
+      "sourceSha256": "94ab86658ee123e0c109c6078cae51b984518d916951a663a866e116f0c41673",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#a3443d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          0.42,
+          1.1,
+          0.51
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#a3443d",
+          "parts": [
+            "ground-plate",
+            "control-post",
+            "guard-hood",
+            "actuator-base",
+            "stop-actuator",
+            "label-frame"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ev-metering-pedestal",
+      "kit": "ev-charging-infrastructure",
+      "title": "EV metering pedestal",
+      "description": "Utility metering post with a meter head, service panel, and protective plinth. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/ev-metering-pedestal.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-ev-metering-pedestal.png",
+      "sourceSha256": "e651228ec74cbfd738a763b5124f8e53122fc4e28badf1d86dc1229b6eab4ca8",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#65716f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 148,
+        "sizeM": [
+          0.46,
+          1.65,
+          0.465
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#65716f",
+          "parts": [
+            "base-skirt",
+            "pedestal-body",
+            "meter-head",
+            "meter-window",
+            "meter-dial",
+            "service-door",
+            "cable-riser"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ev-parking-bay-sign",
+      "kit": "ev-charging-infrastructure",
+      "title": "EV parking bay sign",
+      "description": "Single-post parking sign with a rectangular face plate and a broad ground socket. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/ev-parking-bay-sign.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-ev-parking-bay-sign.png",
+      "sourceSha256": "f17ba3df0cfd2fb77f1472f13f6397c8c214bc8a5aeced5ebb144adebdae3651",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5f756e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 92,
+        "sizeM": [
+          0.56,
+          2.808,
+          0.26
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5f756e",
+          "parts": [
+            "ground-sleeve",
+            "sign-post",
+            "sign-panel",
+            "sign-face",
+            "top-cap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ev-service-disconnect-cabinet",
+      "kit": "ev-charging-infrastructure",
+      "title": "EV service disconnect cabinet",
+      "description": "Outdoor service disconnect with a guarded handle, meter window, and lower cable entry. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/ev-service-disconnect-cabinet.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-ev-service-disconnect-cabinet.png",
+      "sourceSha256": "17045176643f70555124df6fcc2a13088dd78c6539003f8ea941c16a4c280133",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6e756e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 300,
+        "sizeM": [
+          0.875,
+          1.812,
+          0.572
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6e756e",
+          "parts": [
+            "main-enclosure",
+            "base-plinth",
+            "top-cap",
+            "door-seam-1",
+            "door-seam-2",
+            "display-bezel",
+            "display-window",
+            "status-button",
+            "vent-slot-1",
+            "vent-slot-2",
+            "vent-slot-3",
+            "vent-slot-4",
+            "vent-slot-5",
+            "cable-entry-skirt",
+            "ground-terminal",
+            "handle-guard",
+            "disconnect-handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "ev-site-distribution-panel",
+      "kit": "ev-charging-infrastructure",
+      "title": "EV site distribution panel",
+      "description": "Multi-bay panelboard with grouped breaker doors, indicator windows, and conduit stubs. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/ev-site-distribution-panel.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-ev-site-distribution-panel.png",
+      "sourceSha256": "fcd70751a6feb06c66cb9c65b5cf7c0216f4395321207a93df8a65385d4aed9f",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#707873",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 344,
+        "sizeM": [
+          1.475,
+          2.042,
+          0.66
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#707873",
+          "parts": [
+            "main-enclosure",
+            "base-plinth",
+            "top-cap",
+            "door-seam-1",
+            "door-seam-2",
+            "door-seam-3",
+            "display-bezel",
+            "display-window",
+            "status-button",
+            "vent-slot-1",
+            "vent-slot-2",
+            "vent-slot-3",
+            "vent-slot-4",
+            "vent-slot-5",
+            "cable-entry-skirt",
+            "ground-terminal",
+            "conduit-left",
+            "conduit-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "fleet-charging-canopy",
+      "kit": "ev-charging-infrastructure",
+      "title": "Fleet charging canopy",
+      "description": "Open fleet shelter with repeated charger bays, roof frame, and protective corner posts. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/fleet-charging-canopy.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-fleet-charging-canopy.png",
+      "sourceSha256": "92ec6f230730f652f3fd79b78087e42038b185ca36b2e7373ad3ebe35c787e44",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6e7770",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 388,
+        "sizeM": [
+          4.3,
+          3.812,
+          2.49
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6e7770",
+          "parts": [
+            "left-column-front",
+            "left-column-rear",
+            "right-column-front",
+            "right-column-rear",
+            "front-rafter",
+            "rear-rafter",
+            "roof-spine",
+            "bay-divider-0",
+            "bay-divider-1",
+            "bay-divider-2",
+            "bay-divider-3",
+            "charger-post-1",
+            "cable-drop-1",
+            "charger-post-2",
+            "cable-drop-2",
+            "charger-post-3",
+            "cable-drop-3",
+            "charger-post-4",
+            "cable-drop-4"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "fleet-depot-dc-dispenser",
+      "kit": "ev-charging-infrastructure",
+      "title": "Fleet depot DC dispenser",
+      "description": "Fleet charger post with twin high-reach cables, overhead cable guides, and a reinforced foot. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/fleet-depot-dc-dispenser.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-fleet-depot-dc-dispenser.png",
+      "sourceSha256": "25d551c4ab6d8a43d0ceee573b3a1ce1d510d4fd2ffd0b63b7739c57ef8730da",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5b6870",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 364,
+        "sizeM": [
+          0.8184,
+          1.912,
+          1.045
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5b6870",
+          "parts": [
+            "main-enclosure",
+            "base-plinth",
+            "top-cap",
+            "front-door",
+            "display-bezel",
+            "display-window",
+            "status-button",
+            "vent-slot-1",
+            "vent-slot-2",
+            "vent-slot-3",
+            "vent-slot-4",
+            "vent-slot-5",
+            "roof-visor",
+            "left-connector-cradle",
+            "right-connector-cradle",
+            "left-charging-cable",
+            "right-charging-cable"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "high-power-charge-dispenser",
+      "kit": "ev-charging-infrastructure",
+      "title": "High-power charge dispenser",
+      "description": "Tall high-power dispenser with a broad screen, paired cable outlets, and service plinth. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/high-power-charge-dispenser.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-high-power-charge-dispenser.png",
+      "sourceSha256": "f309aa1fb2c5dab55c47b1090e77dce826e023cf5d99601157ea475e75757464",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#394f5a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 376,
+        "sizeM": [
+          0.9576,
+          2.052,
+          1.115
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#394f5a",
+          "parts": [
+            "main-enclosure",
+            "base-plinth",
+            "top-cap",
+            "door-seam-1",
+            "door-seam-2",
+            "display-bezel",
+            "display-window",
+            "status-button",
+            "vent-slot-1",
+            "vent-slot-2",
+            "vent-slot-3",
+            "vent-slot-4",
+            "vent-slot-5",
+            "roof-visor",
+            "left-connector-cradle",
+            "right-connector-cradle",
+            "left-charging-cable",
+            "right-charging-cable"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "home-ac-wallbox",
+      "kit": "ev-charging-infrastructure",
+      "title": "Home AC wallbox",
+      "description": "Compact wall-mounted AC charger with a status screen, cable hook, and mounting plate. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/home-ac-wallbox.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-home-ac-wallbox.png",
+      "sourceSha256": "e94386e298d48015a0d23be93b579fc62a633120fee6620488d5887403208426",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#65747b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 208,
+        "sizeM": [
+          0.414,
+          0.62,
+          0.262
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#65747b",
+          "parts": [
+            "mounting-plate",
+            "main-enclosure",
+            "top-cap",
+            "front-door",
+            "display-bezel",
+            "display-window",
+            "status-button",
+            "vent-slot-1",
+            "vent-slot-2",
+            "vent-slot-3",
+            "cable-hook",
+            "side-holster"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "j1772-ac-connector",
+      "kit": "ev-charging-infrastructure",
+      "title": "J1772 AC connector",
+      "description": "Generic J1772 AC plug with a short tapered nose, hand grip, and rear cable stub. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/j1772-ac-connector.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-j1772-ac-connector.png",
+      "sourceSha256": "be7773820b0aa13a60702255f963cc2ecf26c78ccfd73aa2209f136131c2927d",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#555c5e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.098,
+          0.143,
+          0.444
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#555c5e",
+          "parts": [
+            "hand-grip",
+            "front-coupling",
+            "connector-nose",
+            "strain-relief",
+            "cable-stub",
+            "grip-ridge-top"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "liquid-cooled-charging-cable",
+      "kit": "ev-charging-infrastructure",
+      "title": "Liquid-cooled charging cable",
+      "description": "Thick high-current cable segment with cooling-line collars and a reinforced connector end. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/liquid-cooled-charging-cable.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-liquid-cooled-charging-cable.png",
+      "sourceSha256": "9ef33ce898539b3777d49feefded243878162bab9ebe69edc99202b2e46711e7",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#4c6269",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 376,
+        "sizeM": [
+          0.18,
+          0.16,
+          2.29
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#4c6269",
+          "parts": [
+            "main-cable",
+            "coolant-line-a",
+            "coolant-line-b",
+            "connector-shell",
+            "strain-guard",
+            "coolant-collar-0",
+            "coolant-collar-1",
+            "coolant-collar-2",
+            "coolant-collar-3",
+            "coolant-collar-4"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "mobile-fast-charge-cart",
+      "kit": "ev-charging-infrastructure",
+      "title": "Mobile fast-charge cart",
+      "description": "Portable charging cart with a compact power enclosure, cable reel, handle, and casters. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/mobile-fast-charge-cart.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-mobile-fast-charge-cart.png",
+      "sourceSha256": "95fd237a38e6181eb638361453fb16b7a187d96f9b5c45535fb1d76aca5002d1",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#667570",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 384,
+        "sizeM": [
+          0.82,
+          1.182,
+          1.178
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#667570",
+          "parts": [
+            "cart-chassis",
+            "main-enclosure",
+            "top-cap",
+            "front-door",
+            "display-bezel",
+            "display-window",
+            "status-button",
+            "vent-slot-1",
+            "vent-slot-2",
+            "vent-slot-3",
+            "vent-slot-4",
+            "left-wheel",
+            "right-wheel",
+            "push-handle",
+            "cable-reel",
+            "cable-tail"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "modular-charger-power-stack",
+      "kit": "ev-charging-infrastructure",
+      "title": "Modular charger power stack",
+      "description": "Stacked converter modules with repeated front drawers, service handles, and a base frame. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/modular-charger-power-stack.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-modular-charger-power-stack.png",
+      "sourceSha256": "1cf28dc54e94b827656feae3f3782ee6b7ae660b660ca4051599c3eb1f8595f8",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#68777a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          0.92,
+          1.68,
+          0.686
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#68777a",
+          "parts": [
+            "base-frame",
+            "power-module-1",
+            "module-front-1",
+            "module-handle-1",
+            "power-module-2",
+            "module-front-2",
+            "module-handle-2",
+            "power-module-3",
+            "module-front-3",
+            "module-handle-3",
+            "power-module-4",
+            "module-front-4",
+            "module-handle-4"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "nacs-connector",
+      "kit": "ev-charging-infrastructure",
+      "title": "NACS connector",
+      "description": "Compact generic NACS plug with a tapered nose, grip ribs, and flexible cable stub. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/nacs-connector.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-nacs-connector.png",
+      "sourceSha256": "8e5bd528639d7e4605cc5ca9f6fcd266ba10a78d0721932d533fb51af04e1f97",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#39464b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 168,
+        "sizeM": [
+          0.094,
+          0.137,
+          0.438
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#39464b",
+          "parts": [
+            "hand-grip",
+            "front-coupling",
+            "connector-nose",
+            "strain-relief",
+            "cable-stub",
+            "grip-ridge-top"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "outdoor-charger-switchboard",
+      "kit": "ev-charging-infrastructure",
+      "title": "Outdoor charger switchboard",
+      "description": "Site switchboard enclosure with adjacent electrical bays, instrument windows, and cable glands. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/outdoor-charger-switchboard.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-outdoor-charger-switchboard.png",
+      "sourceSha256": "e3ab9d85bfcbae442c0bb948d19f4af2db8d82f78ec921e23b1e3de88de12664",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#737a70",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 344,
+        "sizeM": [
+          1.735,
+          2.192,
+          0.79
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#737a70",
+          "parts": [
+            "main-enclosure",
+            "base-plinth",
+            "top-cap",
+            "door-seam-1",
+            "door-seam-2",
+            "door-seam-3",
+            "display-bezel",
+            "display-window",
+            "status-button",
+            "vent-slot-1",
+            "vent-slot-2",
+            "vent-slot-3",
+            "vent-slot-4",
+            "vent-slot-5",
+            "cable-entry-skirt",
+            "ground-terminal",
+            "conduit-left",
+            "conduit-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "overhead-cable-balance-arm",
+      "kit": "ev-charging-infrastructure",
+      "title": "Overhead cable balance arm",
+      "description": "Support mast and balanced arm routing two charging leads above a parking bay. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/overhead-cable-balance-arm.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-overhead-cable-balance-arm.png",
+      "sourceSha256": "fb88a3fa558e7aca9cc4103af32645b3c968ad8924da5b51770eae15f3dde04e",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#69766f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 288,
+        "sizeM": [
+          1.338,
+          3.41,
+          1.15
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#69766f",
+          "parts": [
+            "base-plate",
+            "support-mast",
+            "swing-arm",
+            "arm-pivot",
+            "balance-counterweight",
+            "cable-guide",
+            "left-cable-drop",
+            "right-cable-drop"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "overhead-cable-management-boom",
+      "kit": "ev-charging-infrastructure",
+      "title": "Overhead cable management boom",
+      "description": "Pedestal-mounted swing arm with a hanging cable guide and balancing weight. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/overhead-cable-management-boom.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-overhead-cable-management-boom.png",
+      "sourceSha256": "a38cfb21c0ae5cfb128574a7532561fa03bc7cca9f442ae04733ae7b0c1ba53c",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#68736d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 244,
+        "sizeM": [
+          1.17,
+          2.86,
+          1
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#68736d",
+          "parts": [
+            "base-plate",
+            "support-mast",
+            "swing-arm",
+            "arm-pivot",
+            "cable-guide",
+            "hanging-cable",
+            "balance-weight"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "overhead-pantograph-head",
+      "kit": "ev-charging-infrastructure",
+      "title": "Overhead pantograph head",
+      "description": "Compact overhead charging head with contact bar, hinge blocks, and a mounting yoke. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/overhead-pantograph-head.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-overhead-pantograph-head.png",
+      "sourceSha256": "ec7303d91eedc8ec9769393bd13ae7bd1f6e50e5946526c6909cc922d5e4de69",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5e6d70",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          0.84,
+          0.5,
+          0.514
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5e6d70",
+          "parts": [
+            "mounting-yoke-left",
+            "mounting-yoke-right",
+            "head-housing",
+            "contact-rail",
+            "pivot-left",
+            "pivot-right",
+            "cover-panel"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "parking-cable-protection-ramp",
+      "kit": "ev-charging-infrastructure",
+      "title": "Parking cable protection ramp",
+      "description": "Low-profile cable bridge with two raised covers, end slopes, and ground anchors. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/parking-cable-protection-ramp.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-parking-cable-protection-ramp.png",
+      "sourceSha256": "96bb5361bba951774b037b1ca42fdf634db4e9cd5cf01bdae8151606cdaccd21",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6a6e68",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 160,
+        "sizeM": [
+          1.33,
+          0.15,
+          0.36
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6a6e68",
+          "parts": [
+            "ramp-base",
+            "cover-left",
+            "cover-right",
+            "center-divider",
+            "end-slope-left",
+            "end-slope-right",
+            "anchor-left",
+            "anchor-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "parking-wheel-stop",
+      "kit": "ev-charging-infrastructure",
+      "title": "Parking wheel stop",
+      "description": "Low parking barrier with beveled ends and recessed anchor locations. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/parking-wheel-stop.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-parking-wheel-stop.png",
+      "sourceSha256": "b8b17f3dfb94fc99d64bb2e1c9553414874e3100ac3c57bf056072ba86f74cc0",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#766d5d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          1.74,
+          0.19,
+          0.18
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#766d5d",
+          "parts": [
+            "stop-body",
+            "top-face",
+            "anchor-0",
+            "anchor-1",
+            "end-left",
+            "end-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "remote-charger-power-cabinet",
+      "kit": "ev-charging-infrastructure",
+      "title": "Remote charger power cabinet",
+      "description": "Outdoor power cabinet with divided service doors, top vent slots, and cable-entry base. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/remote-charger-power-cabinet.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-remote-charger-power-cabinet.png",
+      "sourceSha256": "99a078e5c10699c1b9dd14228bbbb64540dbcc31a7c1f8f2788d6070a1860520",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6b7574",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 176,
+        "sizeM": [
+          1.205,
+          2.052,
+          0.66
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6b7574",
+          "parts": [
+            "main-enclosure",
+            "base-plinth",
+            "top-cap",
+            "door-seam-1",
+            "door-seam-2",
+            "vent-slot-1",
+            "vent-slot-2",
+            "vent-slot-3",
+            "vent-slot-4",
+            "vent-slot-5",
+            "cable-entry-skirt",
+            "ground-terminal"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "rfid-access-reader-pedestal",
+      "kit": "ev-charging-infrastructure",
+      "title": "RFID access reader pedestal",
+      "description": "Short access pedestal with a reader face, indicator cap, and bolted floor plate. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/rfid-access-reader-pedestal.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-rfid-access-reader-pedestal.png",
+      "sourceSha256": "32d3c4187534fb28755d89a8b702d9451a0c3a648785d645a9a62a579e4bd8fb",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#566b70",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          0.36,
+          0.98,
+          0.36
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#566b70",
+          "parts": [
+            "base-plate",
+            "post",
+            "reader-face",
+            "reader-window",
+            "status-lamp",
+            "cap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "site-energy-management-controller",
+      "kit": "ev-charging-infrastructure",
+      "title": "Site energy management controller",
+      "description": "Wall enclosure with a control screen, antenna pair, and cable glands. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/site-energy-management-controller.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-site-energy-management-controller.png",
+      "sourceSha256": "d90dca22f52f71f1e5f77db586495e8ab9cd94ce0736985b3f1241c350cfd8ba",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#55676b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 240,
+        "sizeM": [
+          0.56,
+          1.1,
+          0.352
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#55676b",
+          "parts": [
+            "mounting-plate",
+            "main-enclosure",
+            "top-cap",
+            "front-door",
+            "display-bezel",
+            "display-window",
+            "status-button",
+            "vent-slot-1",
+            "vent-slot-2",
+            "antenna-left",
+            "antenna-right",
+            "cable-gland-strip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "solar-ev-carport",
+      "kit": "ev-charging-infrastructure",
+      "title": "Solar EV carport",
+      "description": "Parking shelter with tilted panel rows, long-span rafters, and paired support frames. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/solar-ev-carport.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-solar-ev-carport.png",
+      "sourceSha256": "74073dc461ba552ceb121c87fefa4646b9c7beea228c9d2d5f724d0447f26e27",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#526d73",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 276,
+        "sizeM": [
+          4.15,
+          3.64,
+          1.45
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#526d73",
+          "parts": [
+            "post-left-front",
+            "post-left-rear",
+            "post-right-front",
+            "post-right-rear",
+            "front-beam",
+            "rear-beam",
+            "panel-rafter-a",
+            "panel-rafter-b",
+            "panel-rafter-c",
+            "pv-panel-1",
+            "pv-panel-2",
+            "pv-panel-3",
+            "pv-panel-4",
+            "pv-panel-5",
+            "pv-panel-6"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "streetlight-charger-arm",
+      "kit": "ev-charging-infrastructure",
+      "title": "Streetlight charger arm",
+      "description": "Streetlight pole with a compact charging head, side arm, and grounded base collar. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/streetlight-charger-arm.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-streetlight-charger-arm.png",
+      "sourceSha256": "8e7bb1e129c8563b56105463cd50ddb46b1171b4fa81c9c5cdcc6d5d068cf804",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6d7774",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 212,
+        "sizeM": [
+          0.825,
+          3.82,
+          0.385
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6d7774",
+          "parts": [
+            "mast-base",
+            "lamp-mast",
+            "light-arm",
+            "light-head",
+            "charger-box",
+            "charger-screen",
+            "cable-holster"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "vehicle-to-grid-power-cabinet",
+      "kit": "ev-charging-infrastructure",
+      "title": "Vehicle-to-grid power cabinet",
+      "description": "Bidirectional power cabinet with converter bays, a control window, and bus-cable exits. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/vehicle-to-grid-power-cabinet.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-vehicle-to-grid-power-cabinet.png",
+      "sourceSha256": "89b87cf076551e215c269c7290f1a13341ad78fd03f03bc8a38f77b77c35c0f3",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5c6d71",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 244,
+        "sizeM": [
+          1.095,
+          1.972,
+          0.62
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5c6d71",
+          "parts": [
+            "main-enclosure",
+            "base-plinth",
+            "top-cap",
+            "door-seam-1",
+            "door-seam-2",
+            "display-bezel",
+            "display-window",
+            "status-button",
+            "vent-slot-1",
+            "vent-slot-2",
+            "vent-slot-3",
+            "vent-slot-4",
+            "vent-slot-5",
+            "cable-entry-skirt",
+            "ground-terminal"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "wall-mounted-connector-holster",
+      "kit": "ev-charging-infrastructure",
+      "title": "Wall-mounted connector holster",
+      "description": "Mounting plate and open-front plug cradle for a parked charging connector. Knobs: overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "EV charging",
+        "electric vehicle",
+        "charging station",
+        "low poly",
+        "scene prop",
+        "CC0"
+      ],
+      "compat": [
+        "ev-charging",
+        "parking",
+        "fleet",
+        "electric-vehicle",
+        "scene"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/ev-charging-infrastructure/wall-mounted-connector-holster.kcad.ts",
+      "preview": "/assets/ev-charging-infrastructure-wall-mounted-connector-holster.png",
+      "sourceSha256": "034edd472582184abad81f7d935beaae61712ffc21b56f301b67f7aeb95a6d20",
+      "triangleBudget": 2400,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.7,
+          "max": 1.3,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#5d6c70",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 104,
+        "sizeM": [
+          0.28,
+          0.34,
+          0.27
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#5d6c70",
+          "parts": [
+            "mounting-plate",
+            "cradle-back",
+            "cradle-left",
+            "cradle-right",
+            "cradle-lip",
+            "cable-hook"
+          ],
+          "param": "color"
         }
       ]
     },
@@ -142788,7 +146640,7 @@
     {
       "id": "water-filter-cartridge-housing",
       "kit": "water-treatment",
-      "title": "Cartridge filter housing",
+      "title": "Water-treatment cartridge filter housing",
       "description": "Short cartridge-filter housing with clamp lid, inlet outlet nozzles and a three-leg stand. Knobs: overall scale and asset color.",
       "category": "prop",
       "origin": "base",
@@ -142808,7 +146660,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/water-filter-cartridge-housing.kcad.ts",
       "preview": "/assets/water-treatment-water-filter-cartridge-housing.png",
-      "sourceSha256": "3ee30d9594a0847f1aa1321459117e0be45543db293c8a95b4d9ce7c41d94571",
+      "sourceSha256": "01c6fce19f9fc20cd6ea9fe3dd0afea38f00753f556298fcab976533ca2e0384",
       "triangleBudget": 2200,
       "params": [
         {
@@ -146081,7 +149933,7 @@
     {
       "id": "wind-farm-pad-mount-transformer",
       "kit": "wind-energy",
-      "title": "Pad-mount transformer",
+      "title": "Wind-farm pad-mount transformer",
       "description": "Outdoor transformer box with two side cooling banks, top bushings and concrete pad. Knobs: overall scale and asset color.",
       "category": "prop",
       "origin": "base",
@@ -146101,7 +149953,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/wind-farm-pad-mount-transformer.kcad.ts",
       "preview": "/assets/wind-energy-wind-farm-pad-mount-transformer.png",
-      "sourceSha256": "117d7f389d08361687860cd360aeda5915c0d27a7636712d72852e969aae2777",
+      "sourceSha256": "8d8abece90584fbc057cf70e6ddfe15695adf8bfd694c0da30c075623547daa4",
       "triangleBudget": 2200,
       "params": [
         {

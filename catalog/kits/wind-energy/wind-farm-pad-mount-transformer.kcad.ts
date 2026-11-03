@@ -4,7 +4,7 @@
 meta({
   name: "wind-farm-pad-mount-transformer",
   license: 'CC0-1.0',
-  title: "Pad-mount transformer",
+  title: "Wind-farm pad-mount transformer",
   description: "Outdoor transformer box with two side cooling banks, top bushings and concrete pad. Knobs: overall scale and asset color.",
   tags: ['wind', 'energy', 'renewable', 'low poly', 'scene prop'],
   kit: 'wind-energy',

@@ -1,0 +1,4 @@
+(node:1572069) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+water-treatment/water-filter-cartridge-housing: 256 tris
+wind-energy/wind-farm-pad-mount-transformer: 228 tris

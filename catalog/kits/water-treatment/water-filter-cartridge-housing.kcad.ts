@@ -4,7 +4,7 @@
 meta({
   name: "water-filter-cartridge-housing",
   license: 'CC0-1.0',
-  title: "Cartridge filter housing",
+  title: "Water-treatment cartridge filter housing",
   description: "Short cartridge-filter housing with clamp lid, inlet outlet nozzles and a three-leg stand. Knobs: overall scale and asset color.",
   tags: ['water treatment', 'water utility', 'infrastructure', 'low poly', 'scene prop'],
   kit: 'water-treatment',

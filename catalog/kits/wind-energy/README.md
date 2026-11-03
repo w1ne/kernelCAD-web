@@ -52,7 +52,7 @@ The [wind energy wave demo bundle](../../../artifacts/catalog-demos/wind-energy-
 | `vertical-axis-wind-turbine` | Vertical-axis wind turbine | Vertical-axis rotor with central shaft, two curved-look blade panels and base bearings. Knobs: overall scale and asset color. | scale · color | 192 |
 | `wind-farm-access-gate` | Wind farm access gate | Two-post service gate with a framed swing panel and two weighted post shoes. Knobs: overall scale and asset color. | scale · color | 108 |
 | `wind-farm-meter-pedestal` | Wind farm meter pedestal | Short metering pedestal with a cabinet head, status light and broad footplate. Knobs: overall scale and asset color. | scale · color | 136 |
-| `wind-farm-pad-mount-transformer` | Pad-mount transformer | Outdoor transformer box with two side cooling banks, top bushings and concrete pad. Knobs: overall scale and asset color. | scale · color | 228 |
+| `wind-farm-pad-mount-transformer` | Wind-farm pad-mount transformer | Outdoor transformer box with two side cooling banks, top bushings and concrete pad. Knobs: overall scale and asset color. | scale · color | 228 |
 | `wind-farm-warning-sign` | Wind farm warning sign | Field warning placard with two posts, reinforced top edge and weighted feet. Knobs: overall scale and asset color. | scale · color | 72 |
 | `wind-site-bollard` | Wind site bollard | Low site bollard with a rounded cap, square foot and two raised reflector bands. Knobs: overall scale and asset color. | scale · color | 188 |
 | `wind-turbine-blade` | Wind turbine blade | Tapered-look turbine blade with a broad root block and slender tip section. Knobs: overall scale and asset color. | scale · color | 60 |
