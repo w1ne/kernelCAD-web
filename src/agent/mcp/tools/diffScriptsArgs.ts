@@ -3,11 +3,12 @@
 // src/agent/mcp/tools/diffScriptsArgs.ts
 //
 // Argument normalisation for `diff_scripts`. LLM clients reach for the
-// natural names of a two-sided diff — `base_code` / `revised_code`,
-// `old_code` / `new_code`, `before` / `after` — rather than the camelCase
-// `baseCode` / `code` pair the schema declares. Every one of those calls used
-// to fail with a bare "must provide baseCode" even though the intent was
-// unambiguous. This module folds the aliases onto the canonical four keys and,
+// natural names of a two-sided diff — `revised_code`, `old_code` / `new_code`,
+// `before` / `after` — and the previous camelCase `baseCode` / `baseFile`.
+// The schema declares `base_code` / `base_file` / `code` / `file`. Every one
+// of those calls used to fail with a bare "must provide baseCode" even though
+// the intent was unambiguous. This module folds the aliases onto the four
+// internal keys and,
 // when a side is genuinely missing or malformed, returns a coded diagnostic
 // that names the argument, the bad value and a working example.
 
@@ -24,10 +25,10 @@ export type DiffScriptsArgsResult =
 
 /** Example call quoted in every argument diagnostic. */
 export const DIFF_SCRIPTS_EXAMPLE =
-  "diff_scripts({ baseCode: 'return box(10, 10, 10);', code: 'return box(10, 10, 12);' })";
+  "diff_scripts({ base_code: 'return box(10, 10, 10);', code: 'return box(10, 10, 12);' })";
 
-const BASE_CODE_KEYS = ['baseCode', 'base_code', 'baselineCode', 'baseline_code', 'oldCode', 'old_code', 'beforeCode', 'before_code', 'originalCode', 'original_code'];
-const BASE_FILE_KEYS = ['baseFile', 'base_file', 'baselineFile', 'baseline_file', 'oldFile', 'old_file', 'beforeFile', 'before_file'];
+const BASE_CODE_KEYS = ['base_code', 'baseCode', 'baselineCode', 'baseline_code', 'oldCode', 'old_code', 'beforeCode', 'before_code', 'originalCode', 'original_code'];
+const BASE_FILE_KEYS = ['base_file', 'baseFile', 'baselineFile', 'baseline_file', 'oldFile', 'old_file', 'beforeFile', 'before_file'];
 const REVISED_CODE_KEYS = ['code', 'revisedCode', 'revised_code', 'newCode', 'new_code', 'afterCode', 'after_code', 'revisionCode', 'revision_code'];
 const REVISED_FILE_KEYS = ['file', 'revisedFile', 'revised_file', 'newFile', 'new_file', 'afterFile', 'after_file', 'revisionFile', 'revision_file'];
 /** Keys whose value may be either inline source or a path. */
@@ -79,7 +80,7 @@ function resolveSide(
 
 function missingSide(side: 'base' | 'revised'): DiffScriptsArgsResult {
   const [codeKey, fileKey, what] = side === 'base'
-    ? ['baseCode', 'baseFile', 'baseline (the version before the edit)']
+    ? ['base_code', 'base_file', 'baseline (the version before the edit)']
     : ['code', 'file', 'revision (the version after the edit)'];
   return {
     ok: false,

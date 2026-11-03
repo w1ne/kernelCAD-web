@@ -22,7 +22,7 @@ const evaluateScriptToolEntry: ToolRegistryEntry = {
       'joint) needs every part linked by connectors + mates/joints ' +
       '(axis+revolute for shafts/hinges/gears; frame+fastened for rigid; or ' +
       'arm.revolute/.prismatic/.ball/.fixed). A plain multi-part assembly with no mates (base + lid, ' +
-      'print layout) is independent bodies and passes. Pass { skipMechanismCheck: true } to opt out ' +
+      'print layout) is independent bodies and passes. Pass { skip_mechanism_check: true } to opt out ' +
       '(e.g. a deliberately free part next to a mechanism). ' +
       'An animation or drive on a fastened joint (mechanism.motion-on-fixed-joint) is broken: animate a revolute/prismatic mate pose. ' +
       'For a model with moving joints or motion intent, `mechanismSummary.statement` is one plain line: ' +
@@ -32,7 +32,7 @@ const evaluateScriptToolEntry: ToolRegistryEntry = {
       'carry their own .finish()/.material(), the same one, share > 1 mm³ — cut members to fit, e.g. a cross ' +
       'tube between rails is span minus two rail widths) make ok:false. ' +
       'Pass either { file: "<path>" } or { code: "<inline source>" }. ' +
-      'Set { dryRun: true } for fast validation while iterating: transpile + capture + ' +
+      'Set { dry_run: true } for fast validation while iterating: transpile + capture + ' +
       'capture-light checks without building solids, DFM gates, or meshing — milliseconds ' +
       'instead of seconds (100x+ on boolean/fillet-heavy scripts). A dry run catches script ' +
       'throws, capture-time API misuse, and assembly validity-gate failures, but NOT ' +
@@ -45,7 +45,7 @@ const evaluateScriptToolEntry: ToolRegistryEntry = {
       properties: {
         file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
         code: { type: 'string', description: 'Inline kernelCAD script source.' },
-        dryRun: {
+        dry_run: {
           type: 'boolean',
           description:
             'Fast validation only: skip solid build, DFM gates, and meshing. ' +
@@ -57,14 +57,14 @@ const evaluateScriptToolEntry: ToolRegistryEntry = {
           description:
             "Solid-modeling kernel. Default 'occt' (OpenCascade); opt-in 'smlib' uses guarded candidates with explicit OCCT fallback diagnostics.",
         },
-        skipMechanismCheck: {
+        skip_mechanism_check: {
           type: 'boolean',
           description:
             'Opt out of the default mechanism-truth gate. By default a full ' +
             'evaluation of an assembly-built scene runs checkMechanismTruth and ' +
             'returns a `mechanism` verdict (real/broken/unverified); a broken ' +
             "mechanism makes ok:false. Set true to skip the sweep entirely (no " +
-            '`mechanism` field, no cost). Ignored for dryRun and non-assembly scripts.',
+            '`mechanism` field, no cost). Ignored for dry_run and non-assembly scripts.',
         },
         baseline: {
           type: 'array',
@@ -96,7 +96,7 @@ const diffScriptsToolEntry: ToolRegistryEntry = {
     description:
       'Use this when you need to see exactly what changed between two script versions. ' +
       'Structured geometric delta between two versions of a kernelCAD script — a baseline ' +
-      '({ baseFile } or { baseCode }) and a revision ({ file } or { code }). Returns ' +
+      '({ base_file } or { base_code }) and a revision ({ file } or { code }). Returns ' +
       'agent-readable JSON: per-part added/removed/renamed/changed (volume mm³ + exact bbox ' +
       "deltas, numbers matching inspect({ of: 'part-stats' })), total interference-volume delta with " +
       'per-pair detail, mate-graph changes (added/removed/changed mates incl. type, ' +
@@ -104,14 +104,14 @@ const diffScriptsToolEntry: ToolRegistryEntry = {
       'diff as one "(root)" pseudo-part; a `return [a, b]` multi-body script diffs per body as "body[0]", "body[1]". ' +
       'An error that still leaves geometry (e.g. a skipped fillet) is listed under base/revised.errors beside the diff. ' +
       'Use after editing a script to verify exactly what changed physically before re-rendering. ' +
-      "On a hosted server pass both versions inline: { baseCode: 'return box(10, 10, 10);', code: 'return box(10, 10, 12);' } " +
+      "On a hosted server pass both versions inline: { base_code: 'return box(10, 10, 10);', code: 'return box(10, 10, 12);' } " +
       '(base_code/old_code/before and revised_code/new_code/after are accepted as aliases). ' +
       'Read-only — never touches the active session.',
     inputSchema: {
       type: 'object',
       properties: {
-        baseFile: { type: 'string', description: 'Baseline (before) script — path to a .kcad.ts file. Local servers only.' },
-        baseCode: { type: 'string', description: 'Baseline (before) script — inline source. One of baseFile / baseCode is required.' },
+        base_file: { type: 'string', description: 'Baseline (before) script — path to a .kcad.ts file. Local servers only.' },
+        base_code: { type: 'string', description: 'Baseline (before) script — inline source. One of base_file / base_code is required.' },
         file: { type: 'string', description: 'Revised (after) script — path to a .kcad.ts file. Local servers only.' },
         code: { type: 'string', description: 'Revised (after) script — inline source. One of file / code is required.' },
       },

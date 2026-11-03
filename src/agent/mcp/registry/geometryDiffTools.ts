@@ -16,7 +16,7 @@ const diffGeometryToolEntry: ToolRegistryEntry = {
       "just how much. The deeper sibling of diff_scripts: a volume delta alone is ambiguous (a boss " +
       'that grew and a pocket that deepened report the same magnitude, and a part that only moved ' +
       'reports zero), so this tool answers it with geometry instead of pixels. Baseline is ' +
-      '{ baseFile } or { baseCode }; the revised side is either another script ({ file } or ' +
+      '{ base_file } or { base_code }; the revised side is either another script ({ file } or ' +
       '{ code }) or the SAME script re-lowered with { params } overrides — a bag of declared ' +
       'param() name -> new value, which is the one-script form a parameter sweep actually asks for. ' +
       'Bodies pair by name and fall back to declaration-order positional pairing; anything left ' +
@@ -45,8 +45,8 @@ const diffGeometryToolEntry: ToolRegistryEntry = {
     inputSchema: {
       type: 'object',
       properties: {
-        baseFile: { type: 'string', description: 'Baseline script — path to a .kcad.ts file.' },
-        baseCode: { type: 'string', description: 'Baseline script — inline source.' },
+        base_file: { type: 'string', description: 'Baseline script — path to a .kcad.ts file.' },
+        base_code: { type: 'string', description: 'Baseline script — inline source.' },
         file: { type: 'string', description: 'Revised script — path to a .kcad.ts file. Mutually exclusive with params.' },
         code: { type: 'string', description: 'Revised script — inline source. Mutually exclusive with params.' },
         params: {

@@ -28,11 +28,12 @@ function expectRootGrew(r: DiffScriptsOutput): void {
 describe('diff_scripts — LLM-style calls', () => {
   beforeAll(async () => { await initOcct(); });
 
-  it('the documented example call ({ baseCode, code }) succeeds', async () => {
-    expectRootGrew(await call({ baseCode: BEFORE, code: AFTER }));
+  it('the documented example call ({ base_code, code }) succeeds', async () => {
+    expectRootGrew(await call({ base_code: BEFORE, code: AFTER }));
   });
 
   it.each([
+    ['baseCode / code', { baseCode: BEFORE, code: AFTER }],
     ['base_code / revised_code', { base_code: BEFORE, revised_code: AFTER }],
     ['old_code / new_code', { old_code: BEFORE, new_code: AFTER }],
     ['before / after', { before: BEFORE, after: AFTER }],
@@ -60,8 +61,8 @@ describe('diff_scripts — LLM-style calls', () => {
     if (r.ok) return;
     expect(r.side).toBe('base');
     expect(r.errorCode).toBe('cli.invalid-args');
-    expect(r.error).toContain("'baseCode'");
-    expect(r.error).toContain('Example: diff_scripts({ baseCode:');
+    expect(r.error).toContain("'base_code'");
+    expect(r.error).toContain('Example: diff_scripts({ base_code:');
   });
 
   it('rejects a non-string source with the argument and the bad value', async () => {
