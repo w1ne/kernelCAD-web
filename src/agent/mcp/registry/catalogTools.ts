@@ -47,7 +47,7 @@ export const catalogToolEntries: ToolRegistryEntry[] = [
       name: 'find_part',
       description:
         'Use this when you need to find a part in the catalog. ' +
-        'Discover bundled (and optionally remote) part-catalog records by fuzzy query and faceted filters. Tokens AND-combine; cross-facet filters AND-combine. Pass partsBaseUrl (or set KERNELCAD_PARTS_BASE_URL) to enable the remote tier; otherwise results are bundled-only.',
+        'Discover bundled (and optionally remote) part-catalog records by fuzzy query and faceted filters. Tokens AND-combine; cross-facet filters AND-combine. Pass parts_base_url (or set KERNELCAD_PARTS_BASE_URL) to enable the remote tier; otherwise results are bundled-only.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -58,7 +58,7 @@ export const catalogToolEntries: ToolRegistryEntry[] = [
           tag: { type: 'string' },
           limit: { type: 'number' },
           source: { type: 'string', enum: ['local', 'remote', 'auto'] },
-          partsBaseUrl: { type: 'string', description: 'Opt-in remote endpoint; no default value ships with kernelCAD.' },
+          parts_base_url: { type: 'string', description: 'Opt-in remote endpoint; no default value ships with kernelCAD.' },
         },
       },
     },
@@ -69,8 +69,8 @@ export const catalogToolEntries: ToolRegistryEntry[] = [
       name: 'fetch_part',
       description:
         'Use this when you need to download a catalog part as a STEP file. ' +
-        'Resolve an id (or single-match query) to a part record and write its STEP file to the local cache. Bundled ids resolve offline; non-bundled ids require partsBaseUrl (or KERNELCAD_PARTS_BASE_URL). Returns the cache path plus a sha256 fingerprint. ' +
-        'Set includeModel (or pass model.url) to instead resolve a verified STEP or GLB model file: a model.url must be public HTTPS with model.sha256 plus model.source and model.license; a catalog id/query (matched as catalog id or MPN) uses the catalog hash. The bytes are hash-checked and cached by SHA-256, optional model.expectedBboxMm is compared with the measured STEP/GLB dimensions (GLB only when POSITION bounds exist, else bbox_check.status is not_checked), and the result is { ok, format, model_path, sha256, cache_hit, bbox_check, attribution } or an errorCode such as model_not_found.',
+        'Resolve an id (or single-match query) to a part record and write its STEP file to the local cache. Bundled ids resolve offline; non-bundled ids require parts_base_url (or KERNELCAD_PARTS_BASE_URL). Returns the cache path plus a sha256 fingerprint. ' +
+        'Set include_model (or pass model.url) to instead resolve a verified STEP or GLB model file: a model.url must be public HTTPS with model.sha256 plus model.source and model.license; a catalog id/query (matched as catalog id or MPN) uses the catalog hash. The bytes are hash-checked and cached by SHA-256, optional model.expected_bbox_mm is compared with the measured STEP/GLB dimensions (GLB only when POSITION bounds exist, else bbox_check.status is not_checked), and the result is { ok, format, model_path, sha256, cache_hit, bbox_check, attribution } or an errorCode such as model_not_found.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -79,19 +79,19 @@ export const catalogToolEntries: ToolRegistryEntry[] = [
           category: { type: 'string' },
           family: { type: 'string' },
           standard: { type: 'string' },
-          partsBaseUrl: { type: 'string', description: 'Opt-in remote endpoint; no default value ships with kernelCAD.' },
-          includeModel: { type: 'boolean', description: 'Resolve a hash-verified STEP/GLB model file instead of the plain catalog STEP record.' },
+          parts_base_url: { type: 'string', description: 'Opt-in remote endpoint; no default value ships with kernelCAD.' },
+          include_model: { type: 'boolean', description: 'Resolve a hash-verified STEP/GLB model file instead of the plain catalog STEP record.' },
           model: {
             type: 'object',
-            description: 'Verified model options; supplying model implies includeModel.',
+            description: 'Verified model options; supplying model implies include_model.',
             properties: {
               url: { type: 'string', description: 'Direct public HTTPS .step/.stp/.glb download URL. Requires sha256, source and license.' },
               sha256: { type: 'string', description: 'Required SHA-256 digest for an explicit URL; for catalog parts it overrides the catalog GLB digest.' },
               source: { type: 'string', description: 'Catalog or manufacturer name, such as KiCad Packages3D.' },
               license: { type: 'string', description: 'License string supplied by the source.' },
               attribution: { type: 'string' },
-              expectedBboxMm: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: 'Expected [x,y,z] dimensions to compare with the measured model.' },
-              toleranceRatio: { type: 'number', description: 'Relative expected-versus-measured bbox tolerance, default 0.25.' },
+              expected_bbox_mm: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: 'Expected [x,y,z] dimensions to compare with the measured model.' },
+              tolerance_ratio: { type: 'number', description: 'Relative expected-versus-measured bbox tolerance, default 0.25.' },
             },
           },
         },

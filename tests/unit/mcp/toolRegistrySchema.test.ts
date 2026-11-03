@@ -17,9 +17,9 @@ describe('toolRegistry pose-envelope schema options', () => {
     expect(props.asserted_plane).toMatchObject({ type: 'object', required: ['origin','normal'] });
     expect(def.description).toContain('sampled');
   });
-  it('review_cad schema declares samplesPerMate as integer with minimum 1', () => {
+  it('review_cad schema declares samples_per_mate as integer with minimum 1', () => {
     const def = findTool('review_cad');
-    const prop = def.inputSchema.properties.samplesPerMate as {
+    const prop = def.inputSchema.properties.samples_per_mate as {
       type: string;
       minimum: number;
     };
@@ -37,7 +37,7 @@ describe('toolRegistry pose-envelope schema options', () => {
 
   it('review_cad schema declares one escalating physical-use-case level', () => {
     const def = findTool('review_cad');
-    expect(def.inputSchema.properties.physicalUseCaseLevel).toMatchObject({
+    expect(def.inputSchema.properties.physical_use_case_level).toMatchObject({
       type: 'string',
       enum: ['reachability', 'statics', 'reactions'],
     });
@@ -50,7 +50,7 @@ describe('toolRegistry pose-envelope schema options', () => {
     const attempts = def.inputSchema.properties.attempts as {
       items: {
         properties: {
-          visualReview: {
+          visual_review: {
             properties: {
               checks: { description: string };
             };
@@ -58,7 +58,7 @@ describe('toolRegistry pose-envelope schema options', () => {
         };
       };
     };
-    const description = attempts.items.properties.visualReview.properties.checks.description;
+    const description = attempts.items.properties.visual_review.properties.checks.description;
     for (const code of [
       'main-object-count',
       'proportions-match-reference',
@@ -72,9 +72,9 @@ describe('toolRegistry pose-envelope schema options', () => {
     }
   });
 
-  it('design_loop schema declares samplesPerMate as integer with minimum 1', () => {
+  it('design_loop schema declares samples_per_mate as integer with minimum 1', () => {
     const def = findTool('design_loop');
-    const prop = def.inputSchema.properties.samplesPerMate as {
+    const prop = def.inputSchema.properties.samples_per_mate as {
       type: string;
       minimum: number;
     };

@@ -162,10 +162,10 @@ export const sketchAssemblyToolEntries: ToolRegistryEntry[] = [
       name: 'add_mate',
       description:
         "Use this when you need to author a mate-graph relationship into the source, selected by `relation` (default 'mate'):\n" +
-        "- 'mate' — a typed mate between two connectors ({ name, a, b, type, pose?, limitsDeg?, limitsMm? }).\n" +
+        "- 'mate' — a typed mate between two connectors ({ name, a, b, type, pose?, limits_deg?, limits_mm? }).\n" +
         "- 'coupling' — couple a driven mate to a source mate by ratio ({ driven, source, ratio, offset? }).\n" +
-        "- 'transmission' — a physical drive path across mates ({ name, kind, sourceMate, drivenMates, path, ... }).\n" +
-        'All durably edit source and need { code, assembly_binding }. Params other than `relation` are forwarded verbatim; each relation fails closed on its own missing required params.',
+        "- 'transmission' — a physical drive path across mates ({ name, kind, source_mate, driven_mates, path, ... }).\n" +
+        'All durably edit source and need { code, assembly_binding }. The inserted script keeps `limitsDeg`, `limitsMm`, `sourceMate`, and `drivenMates`; pass `limits_deg`, `limits_mm`, `source_mate`, and `driven_mates`. Each relation fails closed on its own missing required params.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -177,15 +177,15 @@ export const sketchAssemblyToolEntries: ToolRegistryEntry[] = [
           b: { type: 'string', description: "relation:'mate' — connector ref \"<partName>.<connectorName>\"." },
           type: { type: 'string', enum: ['fastened', 'revolute', 'prismatic', 'cylindrical', 'planar', 'ball', 'pin_slot'], description: "relation:'mate' — mate type." },
           pose: { type: 'object', description: "relation:'mate' — optional mate pose." },
-          limitsDeg: { type: 'array', items: { type: 'number' }, description: "relation:'mate' — optional [minDeg, maxDeg]." },
-          limitsMm: { type: 'array', items: { type: 'number' }, description: "relation:'mate' — optional [minMm, maxMm]." },
+          limits_deg: { type: 'array', items: { type: 'number' }, description: "relation:'mate' — optional [minDeg, maxDeg]." },
+          limits_mm: { type: 'array', items: { type: 'number' }, description: "relation:'mate' — optional [minMm, maxMm]." },
           driven: { type: 'string', description: "relation:'coupling' — driven mate name." },
           source: { type: 'string', description: "relation:'coupling' — source mate name." },
           ratio: { type: 'number', description: "relation:'coupling' — driven pose = source pose * ratio + offset." },
           offset: { type: 'number', description: "relation:'coupling' — optional pose offset." },
           kind: { type: 'string', enum: ['direct', 'link-rod', 'four-bar', 'gear-pair', 'belt', 'tendon'], description: "relation:'transmission' — transmission kind." },
-          sourceMate: { type: 'string', description: "relation:'transmission' — source mate name." },
-          drivenMates: { type: 'array', items: { type: 'string' }, description: "relation:'transmission' — driven mate names." },
+          source_mate: { type: 'string', description: "relation:'transmission' — source mate name." },
+          driven_mates: { type: 'array', items: { type: 'string' }, description: "relation:'transmission' — driven mate names." },
           actuator: { type: 'string', description: "relation:'transmission' — optional actuator." },
           input: { type: 'string', description: "relation:'transmission' — optional input." },
           output: { type: 'string', description: "relation:'transmission' — optional output." },
@@ -195,7 +195,7 @@ export const sketchAssemblyToolEntries: ToolRegistryEntry[] = [
         required: ['code', 'assembly_binding'],
         allOf: [
           { if: { properties: { relation: { const: 'coupling' } }, required: ['relation'] }, then: { required: ['driven', 'source', 'ratio'] } },
-          { if: { properties: { relation: { const: 'transmission' } }, required: ['relation'] }, then: { required: ['name', 'kind', 'sourceMate', 'drivenMates', 'path'] } },
+          { if: { properties: { relation: { const: 'transmission' } }, required: ['relation'] }, then: { required: ['name', 'kind', 'source_mate', 'driven_mates', 'path'] } },
           { if: { properties: { relation: { enum: ['coupling', 'transmission'] } }, required: ['relation'] }, then: {}, else: { required: ['name', 'a', 'b', 'type'] } },
         ],
       },
@@ -206,7 +206,7 @@ export const sketchAssemblyToolEntries: ToolRegistryEntry[] = [
     definition: {
       name: 'add_workspace_target',
       description:
-        'Use this when you need to declare a reachability target for a connector. Durably insert `<assembly>.workspace(connectorRef, { reachable, toleranceMm? })` before the final top-level return. Workspace targets are checked by solvedModel validation/review pose-envelope gates. Returns modified source plus diagnostics from re-evaluation.',
+        'Use this when you need to declare a reachability target for a connector. Durably insert `<assembly>.workspace(connectorRef, { reachable, toleranceMm? })` before the final top-level return. Pass `tolerance_mm` for that script option. Workspace targets are checked by solvedModel validation/review pose-envelope gates. Returns modified source plus diagnostics from re-evaluation.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -218,7 +218,7 @@ export const sketchAssemblyToolEntries: ToolRegistryEntry[] = [
             description: 'World-frame Vec3 targets the connector must be able to reach.',
             items: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
           },
-          toleranceMm: { type: 'number', description: 'Optional non-negative tolerance in mm.' },
+          tolerance_mm: { type: 'number', description: 'Optional non-negative tolerance in mm.' },
         },
         required: ['code', 'assembly_binding', 'connector_ref', 'reachable'],
       },

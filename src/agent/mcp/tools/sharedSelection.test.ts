@@ -58,6 +58,17 @@ describe('selection MCP transport', () => {
     expect(fetcher).toHaveBeenCalledTimes(1);
     expect(String(fetcher.mock.calls[0]![0])).toContain('/__kernelcad/selection');
   });
+  it('accepts snake_case picks and posts the Studio camelCase wire', async () => {
+    const fetcher = vi.fn(async () => new Response(JSON.stringify({ ok: true, selection: null, revision: 1, modelGeneration: 0 })));
+    vi.stubGlobal('fetch', fetcher);
+    const selection = { shape_index: 0, kind: 'edge', id: 2, feature_id: 'box', stable_id: 's1111111111111111', ref: '@kc[body/edge/s1111111111111111]' };
+    await sharedSelectionTool('POST', {
+      studio_url: 'http://localhost:5173', session: 'token', model_generation: 0, selection,
+    });
+    expect(JSON.parse((fetcher.mock.calls[0]![1] as RequestInit).body as string).selection).toEqual({
+      shapeIndex: 0, kind: 'edge', id: 2, featureId: 'box', stableId: 's1111111111111111', ref: '@kc[body/edge/s1111111111111111]',
+    });
+  });
   it('rejects non-local URLs and malformed picks before fetching', async () => {
     const fetcher = vi.fn();
     vi.stubGlobal('fetch', fetcher);
