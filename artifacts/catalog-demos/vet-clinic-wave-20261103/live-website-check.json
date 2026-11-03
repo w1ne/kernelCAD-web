@@ -1,0 +1,13 @@
+{
+  "checkedAt": "2026-11-03T11:26:04.469Z",
+  "homepageStatus": 200,
+  "assetsStatus": 200,
+  "catalogStatus": 404,
+  "assetRows": 1291,
+  "previewRows": 1291,
+  "kits": 31,
+  "vetClinicRows": 0,
+  "medicalRows": 40,
+  "branchDeployed": false,
+  "note": "Read-only live baseline from the existing Chrome CDP session. This branch is not deployed; public post-deployment visibility remains pending merge and deployment."
+}

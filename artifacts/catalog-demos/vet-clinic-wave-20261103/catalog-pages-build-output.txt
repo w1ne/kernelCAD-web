@@ -1,0 +1,1 @@
+wrote 2100 asset page(s) + hub, sitemap.xml and robots.txt to /tmp/kernelcad-vet-clinic-catalog-pages

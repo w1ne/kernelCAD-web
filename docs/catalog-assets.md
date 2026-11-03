@@ -95,3 +95,15 @@ records the source-to-preview workflow, full-catalog integration checks, local
 pages, and inspected MP4. These are visualization props; catalog checks do not
 establish equipment specifications, process performance, operator safety,
 environmental compliance, or physical acceptance.
+
+## Veterinary clinic assets
+
+The [veterinary clinic kit](../catalog/kits/vet-clinic/README.md) adds 50
+original low-poly props for reception and examination, treatment and imaging,
+surgery and instrument processing, diagnostics, inpatient housing, and grooming.
+Each source exposes scale and color controls and has an indexed preview. The
+[wave demo and verification bundle](../artifacts/catalog-demos/vet-clinic-wave-20261103/README.md)
+records the source-to-preview workflow, catalog audit, generated pages, and
+inspected MP4. These are visualization props; checks do not establish clinical
+suitability, safety, ratings, hygiene, calibration, regulatory compliance, or
+physical acceptance.

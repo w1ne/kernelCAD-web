@@ -1,0 +1,47 @@
+{
+  "createdAtUtc": "2026-11-03T11:41:06Z",
+  "kit": "vet-clinic",
+  "assetCount": 50,
+  "generator": "generate_vet_clinic_assets.py",
+  "sourceUnits": "millimetres",
+  "upAxis": "Z",
+  "origin": "base at z=0",
+  "license": "CC0-1.0",
+  "parameters": [
+    "scale:number",
+    "color:color"
+  ],
+  "materialCount": 1,
+  "triangleBudget": 1800,
+  "catalogCommands": [
+    "npx eslint catalog/ --fix",
+    "npx eslint catalog/",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "npx tsx scripts/renderCatalogPreviews.ts <50 vet-clinic ids>",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "npx vitest run tests/integration/catalog/"
+  ],
+  "renderer": "scripts/renderCatalogPreviews.ts",
+  "nodeVersion": "v22.23.4",
+  "variant": {
+    "asset": "mobile-ultrasound-cart",
+    "scale": 1.15,
+    "color": "#4b817b"
+  },
+  "demo": {
+    "output": "vet-clinic-kit.mp4",
+    "resolution": "1280x720",
+    "durationSeconds": 30,
+    "frames": 10,
+    "frameSeconds": 3,
+    "codec": "H.264/libx264",
+    "frameRate": 24,
+    "pixelFormat": "yuv420p",
+    "crf": 25
+  },
+  "verificationModes": {
+    "mesh": "local source audit",
+    "pages": "local generated page verification",
+    "production": "baseline only; this branch not deployed"
+  }
+}

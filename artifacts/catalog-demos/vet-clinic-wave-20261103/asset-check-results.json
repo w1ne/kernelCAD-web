@@ -1,0 +1,827 @@
+{
+  "kit": "vet-clinic",
+  "catalogAssets": 2100,
+  "catalogKits": 45,
+  "catalogRowsWithPreview": 2100,
+  "newAssets": 50,
+  "newAssetsWithPreview": 50,
+  "newPreviewPngs": 50,
+  "allSourceHashesMatch": true,
+  "allSourceAuditsPass": true,
+  "allNewPreviewFilesExist": true,
+  "triangleRange": [
+    84,
+    488
+  ],
+  "materials": [
+    1
+  ],
+  "parameters": [
+    "scale",
+    "color"
+  ],
+  "assets": [
+    {
+      "id": "anesthesia-machine",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 392,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "appointment-status-display",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 136,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "basket-muzzle",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 180,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "cage-card-panel",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 156,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "chemistry-analyzer",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 248,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "dental-delivery-unit",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 412,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "dental-scaler-console",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 236,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "dental-xray-arm",
+      "origin": "wall",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 192,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0.2,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "dog-run-gate",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 280,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "electrosurgery-generator",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 304,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "exam-step-stool",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 96,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "exam-wall-station",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 280,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "fluid-warmer",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 128,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "grooming-bath-tub",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 188,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "hard-sided-pet-carrier",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 252,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "hematology-analyzer",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 96,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "high-velocity-dryer-stand",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 324,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "isolation-kennel",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 204,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "kennel-bowl-rail",
+      "origin": "wall",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 228,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0.236,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "leash-hook-board",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 300,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "mayo-instrument-stand",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 216,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "mobile-exam-light",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 356,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "mobile-surgical-light",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 488,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "mobile-ultrasound-cart",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 292,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "multi-channel-infusion-pump",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 304,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "multiparameter-monitor",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 312,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "oxygen-therapy-cage",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 248,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "patient-recovery-incubator",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 184,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "pet-floor-scale",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 256,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "radiography-tube-stand",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 248,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "reception-check-in-counter",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 84,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "restraint-loop-stand",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 256,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "sample-prep-bench",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 380,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "slide-storage-cabinet",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 132,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "specimen-transport-cooler",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 120,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "stacked-feline-condo",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 120,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "stainless-kennel-bank",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 372,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "surgical-scrub-sink",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 228,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "surgical-suction-unit",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 312,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "tabletop-autoclave",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 236,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "treatment-cart",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 196,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "urinalysis-analyzer",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 248,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "veterinary-exam-stool",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 332,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "veterinary-radiography-table",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 120,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "veterinary-surgery-table",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 184,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "waiting-area-partition-gate",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 204,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "waiting-bench",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 108,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "warming-cabinet",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 172,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "wet-treatment-table",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 196,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    },
+    {
+      "id": "xray-cassette",
+      "origin": "base",
+      "sourceShaMatches": true,
+      "indexedPreview": true,
+      "previewPngExists": true,
+      "triangles": 84,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "params": [
+        "scale",
+        "color"
+      ],
+      "minUpM": 0,
+      "sourceAuditPassed": true
+    }
+  ],
+  "catalogPreviewPngsExisting": 2100,
+  "allCatalogPreviewsExist": true
+}

@@ -2246,6 +2246,63 @@
       ]
     },
     {
+      "id": "vet-clinic",
+      "title": "Veterinary clinic",
+      "description": "Original low-poly props for small-animal clinic reception, exam, treatment, imaging, surgery, diagnostics, inpatient housing, and grooming scenes.",
+      "assets": [
+        "anesthesia-machine",
+        "appointment-status-display",
+        "basket-muzzle",
+        "cage-card-panel",
+        "chemistry-analyzer",
+        "dental-delivery-unit",
+        "dental-scaler-console",
+        "dental-xray-arm",
+        "dog-run-gate",
+        "electrosurgery-generator",
+        "exam-step-stool",
+        "exam-wall-station",
+        "fluid-warmer",
+        "grooming-bath-tub",
+        "hard-sided-pet-carrier",
+        "hematology-analyzer",
+        "high-velocity-dryer-stand",
+        "isolation-kennel",
+        "kennel-bowl-rail",
+        "leash-hook-board",
+        "mayo-instrument-stand",
+        "mobile-exam-light",
+        "mobile-surgical-light",
+        "mobile-ultrasound-cart",
+        "multi-channel-infusion-pump",
+        "multiparameter-monitor",
+        "oxygen-therapy-cage",
+        "patient-recovery-incubator",
+        "pet-floor-scale",
+        "radiography-tube-stand",
+        "reception-check-in-counter",
+        "restraint-loop-stand",
+        "sample-prep-bench",
+        "slide-storage-cabinet",
+        "specimen-transport-cooler",
+        "stacked-feline-condo",
+        "stainless-kennel-bank",
+        "surgical-scrub-sink",
+        "surgical-suction-unit",
+        "tabletop-autoclave",
+        "treatment-cart",
+        "urinalysis-analyzer",
+        "veterinary-exam-stool",
+        "veterinary-radiography-table",
+        "veterinary-surgery-table",
+        "waiting-area-partition-gate",
+        "waiting-bench",
+        "warming-cabinet",
+        "wet-treatment-table",
+        "xray-cassette"
+      ]
+    },
+    {
       "id": "water-treatment",
       "title": "Water treatment",
       "description": "Original low-poly water-treatment and wastewater plant props for intake, filtration, disinfection, pumping, monitoring, and solids handling.",
@@ -182135,6 +182192,3904 @@
             "grip"
           ],
           "param": "grip"
+        }
+      ]
+    },
+    {
+      "id": "anesthesia-machine",
+      "kit": "vet-clinic",
+      "title": "Veterinary anesthesia machine",
+      "description": "Mobile anesthesia workstation with gas cylinders, absorber canister, flow controls and monitor. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "anesthesia",
+        "machine",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/anesthesia-machine.kcad.ts",
+      "preview": "/assets/vet-clinic-anesthesia-machine.png",
+      "sourceSha256": "f99ea96b3e5a3328013ae078be93da774e3c070dd2b922b5fc3a18c4215d113d",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#647a80",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 392,
+        "sizeM": [
+          0.63,
+          1.2025,
+          0.515
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#647a80",
+          "parts": [
+            "base",
+            "wheel-a",
+            "wheel-b",
+            "wheel-bracket-a",
+            "wheel-bracket-b",
+            "tower",
+            "oxygen-cylinder-left",
+            "oxygen-cylinder-right",
+            "absorber-canister",
+            "upper-shelf",
+            "monitor",
+            "flow-control-a",
+            "flow-control-b",
+            "breathing-circuit-block"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "appointment-status-display",
+      "kit": "vet-clinic",
+      "title": "Appointment status display",
+      "description": "Reception display with a floor stand, wide screen housing and angled viewing face. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "appointment",
+        "status",
+        "display",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/appointment-status-display.kcad.ts",
+      "preview": "/assets/vet-clinic-appointment-status-display.png",
+      "sourceSha256": "858d4095cb3bf3f2bf2250b757c7a2051d349d07055bffc32cf2800c9f12bcf6",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#536d78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          0.668244,
+          1.1195,
+          0.3
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#536d78",
+          "parts": [
+            "base",
+            "stand-column",
+            "screen-housing",
+            "screen-panel",
+            "service-slot",
+            "status-beacon"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "basket-muzzle",
+      "kit": "vet-clinic",
+      "title": "Basket muzzle",
+      "description": "Open-frame basket muzzle with nose band, side rails and a wider rear strap frame. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "basket",
+        "muzzle",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/basket-muzzle.kcad.ts",
+      "preview": "/assets/vet-clinic-basket-muzzle.png",
+      "sourceSha256": "5ea885e289e8e04b067f6c9be1baf4707b92c7701bad0089d4b9c399e9b407bb",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#b49468",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          0.330004,
+          0.272,
+          0.383
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#b49468",
+          "parts": [
+            "front-rim-top",
+            "front-rim-bottom",
+            "front-rim-left",
+            "front-rim-right",
+            "rear-rim-top",
+            "rear-rim-bottom",
+            "rear-rim-left",
+            "rear-rim-right",
+            "upper-rail-left",
+            "upper-rail-right",
+            "lower-rail-left",
+            "lower-rail-right",
+            "basket-crossbar",
+            "crown-strap",
+            "chin-strap"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "cage-card-panel",
+      "kit": "vet-clinic",
+      "title": "Kennel card panel",
+      "description": "Clip-on kennel identification board with multiple card pockets and reinforced top and bottom rails. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "kennel",
+        "card",
+        "panel",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/cage-card-panel.kcad.ts",
+      "preview": "/assets/vet-clinic-cage-card-panel.png",
+      "sourceSha256": "cca652d597e2ddacae0352edd690ccb51fb4eb19e19936a05ac2def8831b1f8d",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6d8184",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 156,
+        "sizeM": [
+          1.1,
+          0.665,
+          0.151
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6d8184",
+          "parts": [
+            "panel",
+            "top-rail",
+            "bottom-rail",
+            "card-pocket-0",
+            "card-pocket-1",
+            "card-pocket-2",
+            "card-pocket-3",
+            "clip-0",
+            "clip-1",
+            "clip-2",
+            "clip-3",
+            "mount-bracket-left",
+            "mount-bracket-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "chemistry-analyzer",
+      "kit": "vet-clinic",
+      "title": "Veterinary chemistry analyzer",
+      "description": "Bench analyzer with a reagent lid, sample carousel, front access bay and status display. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "chemistry",
+        "analyzer",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/chemistry-analyzer.kcad.ts",
+      "preview": "/assets/vet-clinic-chemistry-analyzer.png",
+      "sourceSha256": "d5c2fb7725b94c6d7e22fcf62718713674461c4c1dc807a2abc688c9d3214101",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#718388",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 248,
+        "sizeM": [
+          0.725,
+          0.638,
+          0.528
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#718388",
+          "parts": [
+            "analyzer-base",
+            "main-housing",
+            "reagent-cover",
+            "sample-tray",
+            "sample-cup-0",
+            "sample-cup-1",
+            "sample-cup-2",
+            "sample-cup-3",
+            "display-frame",
+            "sample-door"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "dental-delivery-unit",
+      "kit": "vet-clinic",
+      "title": "Veterinary dental delivery unit",
+      "description": "Mobile dental cart with instrument tray, handpiece booms, controls and rinse bowl. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "dental",
+        "delivery",
+        "unit",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/dental-delivery-unit.kcad.ts",
+      "preview": "/assets/vet-clinic-dental-delivery-unit.png",
+      "sourceSha256": "ee76dc0032758cc19d44c407cbf1bd751b387fe747f476ecfa613444e543185f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#738a87",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 412,
+        "sizeM": [
+          0.919457,
+          0.962,
+          0.485
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#738a87",
+          "parts": [
+            "cart-base",
+            "caster-a",
+            "caster-b",
+            "caster-c",
+            "caster-d",
+            "mast",
+            "control-housing",
+            "instrument-tray",
+            "boom-left",
+            "boom-right",
+            "rinse-bowl",
+            "handpiece-a",
+            "handpiece-b"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "dental-scaler-console",
+      "kit": "vet-clinic",
+      "title": "Dental scaler console",
+      "description": "Compact scaler console with sloped control face, handpiece sockets and foot pedal. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "dental",
+        "scaler",
+        "console",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/dental-scaler-console.kcad.ts",
+      "preview": "/assets/vet-clinic-dental-scaler-console.png",
+      "sourceSha256": "e8c484a19c4008d14c1f657375cd9cf26981bdc689fa5e00486aea48d8e66b1e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#58747b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          0.437,
+          0.4515,
+          0.603615
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#58747b",
+          "parts": [
+            "console-base",
+            "console-body",
+            "top-panel",
+            "dial-one",
+            "dial-two",
+            "dial-three",
+            "handpiece-rack",
+            "foot-pedal",
+            "cable-post"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "dental-xray-arm",
+      "kit": "vet-clinic",
+      "title": "Veterinary dental X-ray arm",
+      "description": "Wall-mounted articulated imaging arm with two pivots and a compact sensor head. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "wall",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "dental",
+        "x-ray",
+        "arm",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/dental-xray-arm.kcad.ts",
+      "preview": "/assets/vet-clinic-dental-xray-arm.png",
+      "sourceSha256": "47224a8c787c5ed50b7c6ac6f8221b80751ca3d6b20ffc77f78a57b91cad7875",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#748386",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 192,
+        "sizeM": [
+          1.048,
+          0.485,
+          0.413519
+        ],
+        "minUpM": 0.2,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#748386",
+          "parts": [
+            "wall-plate",
+            "pivot-lower",
+            "arm-one",
+            "pivot-upper",
+            "arm-two",
+            "sensor-head",
+            "collimator",
+            "handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "dog-run-gate",
+      "kit": "vet-clinic",
+      "title": "Veterinary dog-run gate",
+      "description": "Full-height run gate with a framed swing panel, upright bars and a secure latch. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "dog-run",
+        "gate",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/dog-run-gate.kcad.ts",
+      "preview": "/assets/vet-clinic-dog-run-gate.png",
+      "sourceSha256": "8847b3ff95cd2c43b9769c784724f412ba061ed16b0fd1cbeb7f436df3b7be3f",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#677d7c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 280,
+        "sizeM": [
+          1.71,
+          1.5275,
+          0.43
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#677d7c",
+          "parts": [
+            "left-foot",
+            "right-foot",
+            "left-post",
+            "right-post",
+            "gate-top",
+            "gate-bottom",
+            "gate-bar-0",
+            "gate-bar-1",
+            "gate-bar-2",
+            "gate-bar-3",
+            "gate-bar-4",
+            "gate-bar-5",
+            "gate-bar-6",
+            "gate-bar-7",
+            "gate-bar-8",
+            "latch-plate",
+            "hinge-upper",
+            "hinge-lower"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "electrosurgery-generator",
+      "kit": "vet-clinic",
+      "title": "Electrosurgery generator cart",
+      "description": "Compact generator on a cart with a display face, output sockets and accessory hooks. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "electrosurgery",
+        "generator",
+        "cart",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/electrosurgery-generator.kcad.ts",
+      "preview": "/assets/vet-clinic-electrosurgery-generator.png",
+      "sourceSha256": "df1f817fdd59197976c88a5f681777ead4b9b6b6e64fb16bc3b90ddd075cfa2b",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#596e75",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 304,
+        "sizeM": [
+          0.55,
+          0.7675,
+          0.562451
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#596e75",
+          "parts": [
+            "cart-base",
+            "caster-a",
+            "caster-b",
+            "column",
+            "generator-body",
+            "display-frame",
+            "output-panel",
+            "socket-left",
+            "socket-right",
+            "accessory-hook-left",
+            "accessory-hook-right",
+            "foot-pedal"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "exam-step-stool",
+      "kit": "vet-clinic",
+      "title": "Veterinary exam step stool",
+      "description": "Two-tier non-slip step stool with a broad base and side support panels. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "exam",
+        "step",
+        "stool",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/exam-step-stool.kcad.ts",
+      "preview": "/assets/vet-clinic-exam-step-stool.png",
+      "sourceSha256": "8c8595fc41c1a28191575d85fb3f644398f7fb2303420037b03ec3fc6937a858",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#82928f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.63,
+          0.3825,
+          0.565
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#82928f",
+          "parts": [
+            "lower-tread",
+            "upper-tread",
+            "left-support",
+            "right-support",
+            "front-riser",
+            "upper-riser",
+            "base-foot-left",
+            "base-foot-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "exam-wall-station",
+      "kit": "vet-clinic",
+      "title": "Examination room wall station",
+      "description": "Wall panel with organized tool hooks, glove box, dispenser and a shallow utility shelf. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "examination",
+        "room",
+        "wall",
+        "station",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/exam-wall-station.kcad.ts",
+      "preview": "/assets/vet-clinic-exam-wall-station.png",
+      "sourceSha256": "d655e15a60cb0d34816410d3956cddccb4b0e5c3b7db9e9f8d5f5f9fc3c8a0d3",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#607b7b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 280,
+        "sizeM": [
+          0.8,
+          0.786,
+          0.246
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#607b7b",
+          "parts": [
+            "backplate",
+            "upper-shelf",
+            "glove-box",
+            "dispenser",
+            "lower-rail",
+            "tool-hook-a",
+            "tool-hook-b",
+            "tool-hook-c",
+            "tool-hook-d",
+            "tool-hook-e"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "fluid-warmer",
+      "kit": "vet-clinic",
+      "title": "Veterinary fluid warmer",
+      "description": "Counter-top fluid warmer with an insulated housing, front access slot and control panel. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "fluid",
+        "warmer",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/fluid-warmer.kcad.ts",
+      "preview": "/assets/vet-clinic-fluid-warmer.png",
+      "sourceSha256": "2d165b9b04082e9d14873c637dc812bbf28ec35999c6329210360755f048ae8b",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#718486",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          0.45,
+          0.57,
+          0.443
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#718486",
+          "parts": [
+            "housing",
+            "front-door",
+            "door-window",
+            "control-panel",
+            "temperature-knob",
+            "top-lid",
+            "handle",
+            "power-base"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "grooming-bath-tub",
+      "kit": "vet-clinic",
+      "title": "Veterinary grooming bath tub",
+      "description": "Raised wash tub with splash rim, access ramp, faucet and handheld sprayer support. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "grooming",
+        "bath",
+        "tub",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/grooming-bath-tub.kcad.ts",
+      "preview": "/assets/vet-clinic-grooming-bath-tub.png",
+      "sourceSha256": "a65d6885567855bea74cc880857e5c404d638b76a2acc5c1f8b1c6b42b3d2fc9",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7d8a84",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 188,
+        "sizeM": [
+          1.38,
+          1.37,
+          1.262051
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7d8a84",
+          "parts": [
+            "tub-shell",
+            "inner-basin",
+            "front-rim",
+            "rear-rim",
+            "left-rim",
+            "right-rim",
+            "leg-left-front",
+            "leg-right-front",
+            "leg-left-back",
+            "leg-right-back",
+            "access-ramp",
+            "faucet-riser",
+            "sprayer-handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "hard-sided-pet-carrier",
+      "kit": "vet-clinic",
+      "title": "Hard-sided pet carrier",
+      "description": "Portable carrier with a ventilated door, side walls, roof and carry handle. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "hard-sided",
+        "pet",
+        "carrier",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/hard-sided-pet-carrier.kcad.ts",
+      "preview": "/assets/vet-clinic-hard-sided-pet-carrier.png",
+      "sourceSha256": "c81d226e5488520d4000ba7176ccd748cf632fd0daa8edc27b15008b32c49c5a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8a7869",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 252,
+        "sizeM": [
+          0.47,
+          0.445,
+          0.941
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8a7869",
+          "parts": [
+            "floor",
+            "rear-wall",
+            "left-wall",
+            "right-wall",
+            "roof",
+            "door-top",
+            "door-bottom",
+            "door-left",
+            "door-right",
+            "door-bar-a",
+            "door-bar-b",
+            "door-bar-c",
+            "carry-handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "hematology-analyzer",
+      "kit": "vet-clinic",
+      "title": "Veterinary hematology analyzer",
+      "description": "Compact blood-cell analyzer with a front sample loader and raised reagent bay. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "hematology",
+        "analyzer",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/hematology-analyzer.kcad.ts",
+      "preview": "/assets/vet-clinic-hematology-analyzer.png",
+      "sourceSha256": "9135bcb4ade9ec81df32ac33c2c81b7eb21d5fb45c0db945ecb583b230d99cd5",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#62787f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 96,
+        "sizeM": [
+          0.63,
+          0.686,
+          0.54
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#62787f",
+          "parts": [
+            "base",
+            "housing",
+            "reagent-bay",
+            "loader-platform",
+            "sample-tube-a",
+            "sample-tube-b",
+            "front-display",
+            "service-door"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "high-velocity-dryer-stand",
+      "kit": "vet-clinic",
+      "title": "Veterinary grooming dryer stand",
+      "description": "Mobile forced-air dryer stand with a weighted base, adjustable boom and shaped outlet nozzle. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "grooming",
+        "dryer",
+        "stand",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/high-velocity-dryer-stand.kcad.ts",
+      "preview": "/assets/vet-clinic-high-velocity-dryer-stand.png",
+      "sourceSha256": "93953550eaa0f8915159e6ba8e4ceef4d233e00e4f6ce0a391aa25bc92b7b881",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#667c7c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 324,
+        "sizeM": [
+          1.238624,
+          1.153647,
+          0.48
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#667c7c",
+          "parts": [
+            "base-foot-x",
+            "base-foot-y",
+            "caster-a",
+            "caster-b",
+            "mast",
+            "dryer-housing",
+            "control-panel",
+            "boom",
+            "hose-segment-a",
+            "hose-segment-b",
+            "air-nozzle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "isolation-kennel",
+      "kit": "vet-clinic",
+      "title": "Veterinary isolation kennel",
+      "description": "Single isolation bay with solid side panels, a framed barred door and status card. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "isolation",
+        "kennel",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/isolation-kennel.kcad.ts",
+      "preview": "/assets/vet-clinic-isolation-kennel.png",
+      "sourceSha256": "4e1c316f1672db9f95fbed62f0a2337899396fb8166f91321e211648034ed29b",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#788580",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          0.92,
+          1.13,
+          0.8375
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#788580",
+          "parts": [
+            "floor-pan",
+            "rear-panel",
+            "left-panel",
+            "right-panel",
+            "top-cap",
+            "door-top",
+            "door-bottom",
+            "door-left",
+            "door-right",
+            "door-bar-0",
+            "door-bar-1",
+            "door-bar-2",
+            "door-bar-3",
+            "door-bar-4",
+            "door-bar-5",
+            "door-bar-6",
+            "status-card-holder"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "kennel-bowl-rail",
+      "kit": "vet-clinic",
+      "title": "Kennel feeding bowl rail",
+      "description": "Wall-mounted feeding rail with three removable bowls and height-adjustable brackets. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "wall",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "kennel",
+        "feeding",
+        "bowl",
+        "rail",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/kennel-bowl-rail.kcad.ts",
+      "preview": "/assets/vet-clinic-kennel-bowl-rail.png",
+      "sourceSha256": "38d81dfedd56237a29eecf326cc55aa022bb3b263c9592722b3ad405f8d3c9f9",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#70817e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 228,
+        "sizeM": [
+          1.26,
+          0.308,
+          0.27
+        ],
+        "minUpM": 0.236,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#70817e",
+          "parts": [
+            "wall-rail",
+            "upper-channel",
+            "lower-channel",
+            "bowl-1",
+            "bowl-2",
+            "bowl-3",
+            "cup-bracket-1",
+            "cup-bracket-2",
+            "cup-bracket-3",
+            "adjuster-left",
+            "adjuster-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "leash-hook-board",
+      "kit": "vet-clinic",
+      "title": "Leash and collar hook board",
+      "description": "Wall board with spaced pegs for leashes, collars and lead loops in a treatment area. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "leash",
+        "and",
+        "collar",
+        "hook",
+        "board",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/leash-hook-board.kcad.ts",
+      "preview": "/assets/vet-clinic-leash-hook-board.png",
+      "sourceSha256": "ad143d4672d1d9897e2654cc79a33e387a064784076d3e3b6883ee56a53978e2",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#596d70",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 300,
+        "sizeM": [
+          0.94,
+          0.4375,
+          0.137
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#596d70",
+          "parts": [
+            "backboard",
+            "top-cap",
+            "lower-rail",
+            "peg-1",
+            "peg-2",
+            "peg-3",
+            "peg-4",
+            "peg-5",
+            "peg-6"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "mayo-instrument-stand",
+      "kit": "vet-clinic",
+      "title": "Mayo instrument stand",
+      "description": "Height-adjustable instrument tray on a narrow mobile base with four small casters. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "mayo",
+        "instrument",
+        "stand",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/mayo-instrument-stand.kcad.ts",
+      "preview": "/assets/vet-clinic-mayo-instrument-stand.png",
+      "sourceSha256": "507e38c845c6b8d04338383326a6e60d74ad56006cbd920136a87e5f12a7c0ea",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#788986",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 216,
+        "sizeM": [
+          0.6,
+          1.123,
+          0.448
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#788986",
+          "parts": [
+            "base-spoke-x",
+            "base-spoke-y",
+            "caster-a",
+            "caster-b",
+            "column",
+            "height-clamp",
+            "tray",
+            "tray-lip-front",
+            "tray-lip-left",
+            "tray-lip-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "mobile-exam-light",
+      "kit": "vet-clinic",
+      "title": "Mobile examination light",
+      "description": "Adjustable lamp head on a weighted mobile base with a tall mast and offset arm. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "mobile",
+        "examination",
+        "light",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/mobile-exam-light.kcad.ts",
+      "preview": "/assets/vet-clinic-mobile-exam-light.png",
+      "sourceSha256": "ec0dbff8e8f17cfa4156642f03939afe2f602b2942fa3afe339b441d9fe8e552",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#80918e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 356,
+        "sizeM": [
+          0.895,
+          1.52,
+          0.54
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#80918e",
+          "parts": [
+            "base-disc",
+            "base-foot-a",
+            "base-foot-b",
+            "caster-a",
+            "caster-b",
+            "mast",
+            "joint-a",
+            "upper-arm",
+            "head-yoke",
+            "lamp-head",
+            "lamp-handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "mobile-surgical-light",
+      "kit": "vet-clinic",
+      "title": "Mobile surgical light",
+      "description": "Mobile multi-head procedure light with a floor mast and articulated overhead arm. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "mobile",
+        "surgical",
+        "light",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/mobile-surgical-light.kcad.ts",
+      "preview": "/assets/vet-clinic-mobile-surgical-light.png",
+      "sourceSha256": "b6a146e22ee55b56f65e6684a9735ebbe00fb61ed709ea69a14391efd2016436",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#83918a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 488,
+        "sizeM": [
+          1.48,
+          1.641,
+          0.56
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#83918a",
+          "parts": [
+            "base-cross-x",
+            "base-cross-y",
+            "caster-a",
+            "caster-b",
+            "caster-c",
+            "mast",
+            "arm-lower",
+            "arm-upper",
+            "lamp-yoke",
+            "light-head",
+            "lamp-lens-1",
+            "lamp-lens-2",
+            "lamp-lens-3",
+            "lamp-lens-4"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "mobile-ultrasound-cart",
+      "kit": "vet-clinic",
+      "title": "Mobile ultrasound cart",
+      "description": "Compact imaging cart with a console, angled display, probe cups and twin rear handles. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "mobile",
+        "ultrasound",
+        "cart",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/mobile-ultrasound-cart.kcad.ts",
+      "preview": "/assets/vet-clinic-mobile-ultrasound-cart.png",
+      "sourceSha256": "6e5826a46881ba60c0d60a459a026f77d3687977dd8bcb75300e914877e4088c",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#70858b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 292,
+        "sizeM": [
+          0.616,
+          1.102483,
+          0.47
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#70858b",
+          "parts": [
+            "base-platform",
+            "wheel-left",
+            "wheel-right",
+            "column",
+            "console-body",
+            "control-panel",
+            "display",
+            "left-handle",
+            "right-handle",
+            "probe-cup-a",
+            "probe-cup-b"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "multi-channel-infusion-pump",
+      "kit": "vet-clinic",
+      "title": "Multi-channel infusion pump stand",
+      "description": "Treatment stand carrying two compact infusion pump modules below a multi-hook rail. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "multi-channel",
+        "infusion",
+        "pump",
+        "stand",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/multi-channel-infusion-pump.kcad.ts",
+      "preview": "/assets/vet-clinic-multi-channel-infusion-pump.png",
+      "sourceSha256": "be3afe92ba34c65ac8e746f78edde0f6a185fedc267a69f85a56cda7bc620819",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#688087",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 304,
+        "sizeM": [
+          0.52,
+          1.396,
+          0.46
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#688087",
+          "parts": [
+            "base-spoke-x",
+            "base-spoke-y",
+            "caster-a",
+            "caster-b",
+            "upright",
+            "pump-upper",
+            "pump-lower",
+            "pump-face-upper",
+            "pump-face-lower",
+            "hook-bar",
+            "hook-left",
+            "hook-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "multiparameter-monitor",
+      "kit": "vet-clinic",
+      "title": "Veterinary patient monitor",
+      "description": "Bedside monitor with a stable floor stand, display frame and control knob row. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "patient",
+        "monitor",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/multiparameter-monitor.kcad.ts",
+      "preview": "/assets/vet-clinic-multiparameter-monitor.png",
+      "sourceSha256": "e72dc3227fc49210d07f165384542a5f15788a6ce56a4822cae895df2fbb81f7",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#596f78",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 312,
+        "sizeM": [
+          0.527037,
+          1.294569,
+          0.38
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#596f78",
+          "parts": [
+            "stand-base",
+            "stand-column",
+            "monitor-housing",
+            "screen",
+            "lower-control-strip",
+            "control-a",
+            "control-b",
+            "control-c",
+            "control-d",
+            "control-e"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "oxygen-therapy-cage",
+      "kit": "vet-clinic",
+      "title": "Veterinary oxygen therapy cage",
+      "description": "Sealed care cage with a gasketed door frame, flow-control panel and a low wheeled base. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "oxygen",
+        "therapy",
+        "cage",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/oxygen-therapy-cage.kcad.ts",
+      "preview": "/assets/vet-clinic-oxygen-therapy-cage.png",
+      "sourceSha256": "065d9779d8a76455367f9a1d996b13977b1b4e9ef80688e26621d44a934d755d",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#657b81",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 248,
+        "sizeM": [
+          0.88,
+          1.025,
+          0.925
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#657b81",
+          "parts": [
+            "base-cabinet",
+            "chamber",
+            "door-frame",
+            "door-window",
+            "lower-kick",
+            "flow-panel",
+            "flow-meter",
+            "inlet-port",
+            "caster-a",
+            "caster-b"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "patient-recovery-incubator",
+      "kit": "vet-clinic",
+      "title": "Patient recovery incubator",
+      "description": "Compact recovery enclosure with a raised access hood, internal shelf and front controller. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "patient",
+        "recovery",
+        "incubator",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/patient-recovery-incubator.kcad.ts",
+      "preview": "/assets/vet-clinic-patient-recovery-incubator.png",
+      "sourceSha256": "b98bf630a44264c0302d81759e6e1f6f3e20e1afe4c71be28ac328dd41e906d9",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7b8983",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 184,
+        "sizeM": [
+          0.82,
+          1.03,
+          0.683
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7b8983",
+          "parts": [
+            "wheeled-base",
+            "caster-a",
+            "caster-b",
+            "lower-chamber",
+            "upper-hood",
+            "front-access-door",
+            "door-window",
+            "inside-shelf",
+            "controller",
+            "top-handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "pet-floor-scale",
+      "kit": "vet-clinic",
+      "title": "Veterinary floor scale",
+      "description": "Low platform scale with a raised readout post for weighing small and medium animals. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "floor",
+        "scale",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/pet-floor-scale.kcad.ts",
+      "preview": "/assets/vet-clinic-pet-floor-scale.png",
+      "sourceSha256": "4c658a2d3c1d6664f094cd8cb17623bb7dda79c268f557dc7002f9c3231e9ebe",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#778b8e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 256,
+        "sizeM": [
+          0.54,
+          0.671916,
+          0.52
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#778b8e",
+          "parts": [
+            "weighing-platform",
+            "foot-a",
+            "foot-b",
+            "foot-c",
+            "foot-d",
+            "readout-post",
+            "display-housing",
+            "display-face"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "radiography-tube-stand",
+      "kit": "vet-clinic",
+      "title": "Veterinary radiography tube stand",
+      "description": "Mobile stand with an upright column, reach arm, counterweight and compact tube head. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "radiography",
+        "tube",
+        "stand",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/radiography-tube-stand.kcad.ts",
+      "preview": "/assets/vet-clinic-radiography-tube-stand.png",
+      "sourceSha256": "d299bfe71920419b1c8d654ecf5be5106393c1eb5978116d2654775e9609e815",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#687d82",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 248,
+        "sizeM": [
+          1.058,
+          1.483,
+          0.48
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#687d82",
+          "parts": [
+            "base-foot-n",
+            "base-foot-e",
+            "wheel-a",
+            "wheel-b",
+            "column",
+            "reach-arm",
+            "counterweight",
+            "tube-head",
+            "tube-face",
+            "handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "reception-check-in-counter",
+      "kit": "vet-clinic",
+      "title": "Veterinary check-in counter",
+      "description": "Reception counter with a client ledge, staff work surface, monitor and keyboard. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "check-in",
+        "counter",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/reception-check-in-counter.kcad.ts",
+      "preview": "/assets/vet-clinic-reception-check-in-counter.png",
+      "sourceSha256": "6fa7919a1cafcd0f7b81028ff9128c96cdfe8f78d96cd97ee69e937394400cef",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#75888c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          1.75,
+          1.05,
+          0.72
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#75888c",
+          "parts": [
+            "front-plinth",
+            "transaction-counter",
+            "privacy-screen",
+            "monitor-base",
+            "monitor-housing",
+            "keyboard",
+            "drawer-front"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "restraint-loop-stand",
+      "kit": "vet-clinic",
+      "title": "Animal restraint loop stand",
+      "description": "Freestanding restraint support with a broad weighted foot, upright post and multiple tie points. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "animal",
+        "restraint",
+        "loop",
+        "stand",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/restraint-loop-stand.kcad.ts",
+      "preview": "/assets/vet-clinic-restraint-loop-stand.png",
+      "sourceSha256": "ce6e7053767583870920b85d60a52a78446677d3d8f338403218e7f5cdcc37cc",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#677b7d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 256,
+        "sizeM": [
+          0.52,
+          1.3275,
+          0.43
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#677b7d",
+          "parts": [
+            "weighted-base",
+            "upright-post",
+            "cross-arm",
+            "end-hook-left",
+            "end-hook-right",
+            "tie-ring-left",
+            "tie-ring-right",
+            "height-adjust-clamp"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "sample-prep-bench",
+      "kit": "vet-clinic",
+      "title": "Veterinary sample preparation bench",
+      "description": "Lab bench with drawers, tube rack and reagent bottles for a clinic diagnostics room. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "sample",
+        "preparation",
+        "bench",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/sample-prep-bench.kcad.ts",
+      "preview": "/assets/vet-clinic-sample-prep-bench.png",
+      "sourceSha256": "1df0b6435bfe161ee4b41aa9f725dd05fbda17b15b8cb41b62f47b881f8f661e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7f8d88",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 380,
+        "sizeM": [
+          1.26,
+          1.18,
+          0.6
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7f8d88",
+          "parts": [
+            "worktop",
+            "cabinet-left",
+            "cabinet-right",
+            "drawer-left-top",
+            "drawer-right-top",
+            "tube-rack",
+            "tube-0",
+            "tube-1",
+            "tube-2",
+            "tube-3",
+            "tube-4",
+            "reagent-bottle-a",
+            "reagent-bottle-b"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "slide-storage-cabinet",
+      "kit": "vet-clinic",
+      "title": "Microscope slide storage cabinet",
+      "description": "Compact indexed drawer cabinet with labeled fronts and a raised top lip. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "microscope",
+        "slide",
+        "storage",
+        "cabinet",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/slide-storage-cabinet.kcad.ts",
+      "preview": "/assets/vet-clinic-slide-storage-cabinet.png",
+      "sourceSha256": "6ebf7e206da2ac775647ebe434e3bfd4d660eea979acd458f8f80622c27eae6a",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#687a7d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 132,
+        "sizeM": [
+          0.61,
+          0.7345,
+          0.5025
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#687a7d",
+          "parts": [
+            "cabinet-body",
+            "top-cap",
+            "drawer-0",
+            "drawer-1",
+            "drawer-2",
+            "drawer-3",
+            "drawer-pull-0",
+            "drawer-pull-1",
+            "drawer-pull-2",
+            "drawer-pull-3",
+            "label-strip"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "specimen-transport-cooler",
+      "kit": "vet-clinic",
+      "title": "Specimen transport cooler",
+      "description": "Insulated specimen case with a clamped lid, carry handle and temperature indicator. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "specimen",
+        "transport",
+        "cooler",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/specimen-transport-cooler.kcad.ts",
+      "preview": "/assets/vet-clinic-specimen-transport-cooler.png",
+      "sourceSha256": "20744e47d2ff2a433b0631905805a9b66c08d9db70030e1edd33c066e687ccc8",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#73888b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          0.694,
+          0.627,
+          0.4785
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#73888b",
+          "parts": [
+            "cooler-body",
+            "lid",
+            "lid-rim",
+            "handle-left",
+            "handle-right",
+            "carry-grip",
+            "latch-front",
+            "temperature-window",
+            "side-grip-left",
+            "side-grip-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "stacked-feline-condo",
+      "kit": "vet-clinic",
+      "title": "Stacked feline condo",
+      "description": "Four-compartment feline housing unit with shelves, entry openings and a low climbing step. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "stacked",
+        "feline",
+        "condo",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/stacked-feline-condo.kcad.ts",
+      "preview": "/assets/vet-clinic-stacked-feline-condo.png",
+      "sourceSha256": "268f9445262ac812781805c2298a186b16eb6192482d19620332731ab22ea9ed",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#8d7f70",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          1.38,
+          1.2,
+          0.885
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#8d7f70",
+          "parts": [
+            "base",
+            "rear-panel-lower",
+            "rear-panel-upper",
+            "outer-side-left",
+            "center-divider",
+            "outer-side-right",
+            "middle-shelf",
+            "top-cap",
+            "climb-step-one",
+            "climb-step-two"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "stainless-kennel-bank",
+      "kit": "vet-clinic",
+      "title": "Three-bay stainless kennel bank",
+      "description": "Three-bay clinic kennel bank with tray fronts, shared frame and barred doors. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "three-bay",
+        "stainless",
+        "kennel",
+        "bank",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/stainless-kennel-bank.kcad.ts",
+      "preview": "/assets/vet-clinic-stainless-kennel-bank.png",
+      "sourceSha256": "cc51de21509ee57df0ba9246191c1a12e58d09430e60b49ff0766123f923dc1e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7d8987",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 372,
+        "sizeM": [
+          1.74,
+          1.26,
+          0.712
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7d8987",
+          "parts": [
+            "base-plinth",
+            "roof",
+            "rear-panel",
+            "left-side",
+            "right-side",
+            "partition-left",
+            "partition-right",
+            "door-post-0",
+            "door-post-1",
+            "door-post-2",
+            "door-post-3",
+            "door-bar-0",
+            "door-bar-1",
+            "door-bar-2",
+            "door-bar-3",
+            "door-bar-4",
+            "door-bar-5",
+            "door-bar-6",
+            "door-bar-7",
+            "door-bar-8",
+            "door-bar-9",
+            "door-bar-10",
+            "door-bar-11",
+            "door-bar-12",
+            "door-bar-13",
+            "door-bar-14",
+            "door-bar-15",
+            "door-bar-16",
+            "tray-left",
+            "tray-center",
+            "tray-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "surgical-scrub-sink",
+      "kit": "vet-clinic",
+      "title": "Surgical scrub sink",
+      "description": "Deep wash basin with backsplash, twin taps, four legs and a lower foot control. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "surgical",
+        "scrub",
+        "sink",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/surgical-scrub-sink.kcad.ts",
+      "preview": "/assets/vet-clinic-surgical-scrub-sink.png",
+      "sourceSha256": "8b05e0eff29faa14a5a93b70a483c95086a4190cdb87eef1601584585068ad96",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#82908d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 228,
+        "sizeM": [
+          0.98,
+          1.31,
+          0.59
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#82908d",
+          "parts": [
+            "basin-shell",
+            "basin-rim",
+            "backsplash",
+            "leg-left-front",
+            "leg-right-front",
+            "leg-left-back",
+            "leg-right-back",
+            "tap-left",
+            "tap-right",
+            "drain",
+            "foot-control"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "surgical-suction-unit",
+      "kit": "vet-clinic",
+      "title": "Veterinary surgical suction unit",
+      "description": "Mobile suction cart with collection canister, gauge, control housing and hose outlet. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "surgical",
+        "suction",
+        "unit",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/surgical-suction-unit.kcad.ts",
+      "preview": "/assets/vet-clinic-surgical-suction-unit.png",
+      "sourceSha256": "6c53a00649769e6e567bdff2b04449c3e9c65a5b26b577aaf5f6587136bb9307",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6b8082",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 312,
+        "sizeM": [
+          0.5,
+          0.946,
+          0.42
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6b8082",
+          "parts": [
+            "cart-base",
+            "wheel-a",
+            "wheel-b",
+            "pump-housing",
+            "collection-canister",
+            "canister-lid",
+            "vacuum-gauge",
+            "hose-outlet",
+            "push-handle",
+            "side-control"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "tabletop-autoclave",
+      "kit": "vet-clinic",
+      "title": "Tabletop instrument sterilizer",
+      "description": "Bench-top sterilizer with a front chamber door, latch and a small control panel. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "tabletop",
+        "instrument",
+        "sterilizer",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/tabletop-autoclave.kcad.ts",
+      "preview": "/assets/vet-clinic-tabletop-autoclave.png",
+      "sourceSha256": "209d66dd9efcfaf1124dc44941ffa336857c0815e4fead34923cffb569e601b8",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#6e8182",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 236,
+        "sizeM": [
+          0.655,
+          0.581,
+          0.68
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#6e8182",
+          "parts": [
+            "body",
+            "lower-foot-left",
+            "lower-foot-right",
+            "chamber-door",
+            "door-handle-left",
+            "door-handle-right",
+            "control-panel",
+            "control-knob",
+            "top-vent"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "treatment-cart",
+      "kit": "vet-clinic",
+      "title": "Veterinary treatment cart",
+      "description": "Two-shelf mobile cart with shallow drawers, push handle and four casters. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "treatment",
+        "cart",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/treatment-cart.kcad.ts",
+      "preview": "/assets/vet-clinic-treatment-cart.png",
+      "sourceSha256": "2e1ff0e6e47051d1cd0ab5732cb3334eba47db0822474e0953b4b14e73b950f1",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#74888b",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 196,
+        "sizeM": [
+          0.65,
+          0.859,
+          0.488
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#74888b",
+          "parts": [
+            "lower-shelf",
+            "upper-shelf",
+            "drawer-one",
+            "drawer-two",
+            "post-a",
+            "post-b",
+            "post-c",
+            "post-d",
+            "caster-a",
+            "caster-b",
+            "push-handle"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "urinalysis-analyzer",
+      "kit": "vet-clinic",
+      "title": "Veterinary urinalysis analyzer",
+      "description": "Small urine analyzer with a strip insertion slot, sample rack and compact angled display. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "urinalysis",
+        "analyzer",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/urinalysis-analyzer.kcad.ts",
+      "preview": "/assets/vet-clinic-urinalysis-analyzer.png",
+      "sourceSha256": "0bb2fa0a36dc30b28ebdacb587f72da10036d07778c6aa360c149ba584aa372e",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#89958f",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 248,
+        "sizeM": [
+          0.46,
+          0.435,
+          0.476
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#89958f",
+          "parts": [
+            "base",
+            "body",
+            "lid",
+            "display",
+            "strip-slot",
+            "sample-rack",
+            "sample-position-0",
+            "sample-position-1",
+            "sample-position-2",
+            "sample-position-3"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "veterinary-exam-stool",
+      "kit": "vet-clinic",
+      "title": "Veterinary exam stool",
+      "description": "Compact wheeled clinician stool with a circular seat, adjustable post and foot ring. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "exam",
+        "stool",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/veterinary-exam-stool.kcad.ts",
+      "preview": "/assets/vet-clinic-veterinary-exam-stool.png",
+      "sourceSha256": "e7332a28fc0c580e025d7a5dcc3b5af8ea20577da9efa37d2a4ad3648175b2d2",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#657b80",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 332,
+        "sizeM": [
+          0.46,
+          0.624,
+          0.46
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#657b80",
+          "parts": [
+            "seat",
+            "seat-post",
+            "foot-ring",
+            "base-spoke-n",
+            "base-spoke-s",
+            "caster-a",
+            "caster-b",
+            "caster-c",
+            "caster-d"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "veterinary-radiography-table",
+      "kit": "vet-clinic",
+      "title": "Veterinary radiography table",
+      "description": "Low imaging table with a floating-style top, under-table carriage and four braced legs. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "radiography",
+        "table",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/veterinary-radiography-table.kcad.ts",
+      "preview": "/assets/vet-clinic-veterinary-radiography-table.png",
+      "sourceSha256": "65d35a3e6ba43ad9f90e2e65646c64570d986930bf21dbe76bd13dac8b65e798",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#7c8987",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 120,
+        "sizeM": [
+          1.538,
+          0.946,
+          0.68
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#7c8987",
+          "parts": [
+            "imaging-top",
+            "under-table-carriage",
+            "left-leg",
+            "right-leg",
+            "rear-left-leg",
+            "rear-right-leg",
+            "lower-crossbar-front",
+            "lower-crossbar-back",
+            "side-rail-left",
+            "side-rail-right"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "veterinary-surgery-table",
+      "kit": "vet-clinic",
+      "title": "Veterinary surgery table",
+      "description": "Height-lift operating table with drainage tray, adjustable side ledges and support frame. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "surgery",
+        "table",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/veterinary-surgery-table.kcad.ts",
+      "preview": "/assets/vet-clinic-veterinary-surgery-table.png",
+      "sourceSha256": "50b49e0958c73b38897a62d62dc21b4e7fc5ec2b1ea44b0579ebc9c09abd0c35",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#788987",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 184,
+        "sizeM": [
+          1.665564,
+          0.861533,
+          0.636
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#788987",
+          "parts": [
+            "base-plate",
+            "lift-column",
+            "table-center",
+            "table-wing-left",
+            "table-wing-right",
+            "drain-channel",
+            "side-ledge-left",
+            "side-ledge-right",
+            "leveling-foot-a",
+            "leveling-foot-b"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "waiting-area-partition-gate",
+      "kit": "vet-clinic",
+      "title": "Waiting area partition gate",
+      "description": "Freestanding gate panel with a framed opening, closely spaced bars and a latch. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "waiting",
+        "area",
+        "partition",
+        "gate",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/waiting-area-partition-gate.kcad.ts",
+      "preview": "/assets/vet-clinic-waiting-area-partition-gate.png",
+      "sourceSha256": "cf953be5a4b711610439a744e54afcc7b1c96fd577de891c1959901adaaad137",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#627a7e",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 204,
+        "sizeM": [
+          1.33,
+          0.961,
+          0.33
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#627a7e",
+          "parts": [
+            "left-foot",
+            "right-foot",
+            "left-post",
+            "right-post",
+            "top-rail",
+            "bottom-rail",
+            "bar-0",
+            "bar-1",
+            "bar-2",
+            "bar-3",
+            "bar-4",
+            "bar-5",
+            "bar-6",
+            "bar-7",
+            "bar-8",
+            "bar-9",
+            "latch-body"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "waiting-bench",
+      "kit": "vet-clinic",
+      "title": "Clinic waiting bench",
+      "description": "Three-seat waiting bench with a continuous back, arm rests and open leg clearance. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "clinic",
+        "waiting",
+        "bench",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/waiting-bench.kcad.ts",
+      "preview": "/assets/vet-clinic-waiting-bench.png",
+      "sourceSha256": "dd2c21ae953f221e31d9a25d37d0197b2aa6addd76ee3d9403b00b1210aaad12",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#78909a",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 108,
+        "sizeM": [
+          1.5,
+          1.11,
+          0.51
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#78909a",
+          "parts": [
+            "seat",
+            "back",
+            "arm-left",
+            "arm-right",
+            "front-left-leg",
+            "front-right-leg",
+            "rear-left-leg",
+            "rear-right-leg",
+            "lower-crossbar"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "warming-cabinet",
+      "kit": "vet-clinic",
+      "title": "Veterinary patient warming cabinet",
+      "description": "Mobile warming cabinet with paired doors, interior shelves and a top-mounted control panel. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "patient",
+        "warming",
+        "cabinet",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/warming-cabinet.kcad.ts",
+      "preview": "/assets/vet-clinic-warming-cabinet.png",
+      "sourceSha256": "984dfff82808b292b21535d1413ebd0646b358aa0c69847f03a92aa470f42846",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#82918c",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 172,
+        "sizeM": [
+          0.76,
+          1.175,
+          0.72
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#82918c",
+          "parts": [
+            "cabinet-shell",
+            "left-door",
+            "right-door",
+            "center-seam",
+            "shelf-one",
+            "shelf-two",
+            "control-panel",
+            "caster-a",
+            "caster-b"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "wet-treatment-table",
+      "kit": "vet-clinic",
+      "title": "Wet treatment table",
+      "description": "Stainless-style treatment table with raised edges, a central drain and a braced frame. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "wet",
+        "treatment",
+        "table",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/wet-treatment-table.kcad.ts",
+      "preview": "/assets/vet-clinic-wet-treatment-table.png",
+      "sourceSha256": "6c159e41ec750ed39ed8e952fda2a13bc407570a70e9f1ed663f34e3b5381094",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#758b8d",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 196,
+        "sizeM": [
+          1.32,
+          0.9425,
+          0.71
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#758b8d",
+          "parts": [
+            "table-top",
+            "rear-lip",
+            "left-lip",
+            "right-lip",
+            "leg-front-left",
+            "leg-front-right",
+            "leg-rear-left",
+            "leg-rear-right",
+            "lower-brace",
+            "drain",
+            "drain-stem"
+          ],
+          "param": "color"
+        }
+      ]
+    },
+    {
+      "id": "xray-cassette",
+      "kit": "vet-clinic",
+      "title": "Radiography cassette",
+      "description": "Flat protective cassette with reinforced perimeter rails and a small pull handle. Editable overall scale and asset color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "veterinary",
+        "animal clinic",
+        "animal health",
+        "radiography",
+        "cassette",
+        "low poly",
+        "CC0"
+      ],
+      "compat": [
+        "veterinary",
+        "animal-clinic",
+        "animal-health",
+        "clinic",
+        "indoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/vet-clinic/xray-cassette.kcad.ts",
+      "preview": "/assets/vet-clinic-xray-cassette.png",
+      "sourceSha256": "bb816936f79a70bfe7f4c92a9254df5e5c46c9895e0e7d0130a56fd145105246",
+      "triangleBudget": 1800,
+      "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
+        {
+          "name": "color",
+          "type": "color",
+          "default": "#536a70",
+          "label": "Asset color"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.43,
+          0.056,
+          0.562
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "color",
+          "color": "#536a70",
+          "parts": [
+            "cassette-body",
+            "edge-left",
+            "edge-right",
+            "edge-front",
+            "edge-back",
+            "pull-handle",
+            "label-tab"
+          ],
+          "param": "color"
         }
       ]
     },

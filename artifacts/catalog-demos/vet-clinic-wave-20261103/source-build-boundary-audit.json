@@ -1,0 +1,18 @@
+{
+  "sourceTrees": [
+    "src",
+    "dist/cli",
+    "dist/headless-player"
+  ],
+  "sourceBuildMarkerPattern": "shopify|createCheckoutSession|createCheckout|billingPortal|entitlementService|supplierRouting|supplierQuote|commissionRate|manufacturingPolicy|commercialOrchestrator|quoteRouter",
+  "sourceBuildMatches": [],
+  "sourceBuildScanClean": true,
+  "npmFileList": "npm-pack-dry-run.json",
+  "npmFileCount": 4611,
+  "commercialSpecificPackagePaths": [],
+  "packageExports": {
+    "./package.json": "./package.json"
+  },
+  "packageExportsUnchanged": true,
+  "pass": true
+}
