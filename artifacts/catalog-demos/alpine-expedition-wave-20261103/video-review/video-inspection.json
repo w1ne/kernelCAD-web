@@ -1,0 +1,12 @@
+{
+  "video": "alpine-expedition-kit.mp4",
+  "sha256": "918415fe92bbe898fac600c7a08e3b2d52dbb901b375b351fa192458c2654f99",
+  "durationSeconds": 30.0,
+  "width": 1280,
+  "height": 720,
+  "frameRate": "24/1",
+  "encodedFrames": 720,
+  "sampledFrames": 10,
+  "sampleContactSheet": "video-review/contact-sheet.png",
+  "passed": true
+}

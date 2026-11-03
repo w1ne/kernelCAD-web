@@ -1,0 +1,54 @@
+{
+  "date": "2026-11-03",
+  "kit": "theatre-production",
+  "assetCount": 52,
+  "demo": {
+    "source": "capture_theatre_demo.py",
+    "output": "theatre-production-kit.mp4",
+    "codec": "H.264 / libx264",
+    "width": 1280,
+    "height": 720,
+    "frameRate": 24,
+    "frameHoldSeconds": 3,
+    "frameCount": 10,
+    "pixelFormat": "yuv420p",
+    "quality": "CRF 25",
+    "previewFrames": 7,
+    "assetsPerPreviewFrame": 8
+  },
+  "commands": [
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/theatre-production-wave-20261103/generate_theatre_assets.py",
+    "npx eslint catalog/ --fix",
+    "npx --silent eslint catalog/",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH node --import ./artifacts/catalog-demos/recycling-facility-wave-20261103/node-preload.mjs --import tsx scripts/buildAssetCatalog.ts",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH node --import ./artifacts/catalog-demos/recycling-facility-wave-20261103/node-preload.mjs --import tsx scripts/renderCatalogPreviews.ts",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH node --import ./artifacts/catalog-demos/recycling-facility-wave-20261103/node-preload.mjs --import tsx scripts/buildAssetCatalog.ts",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH NODE_OPTIONS=--import=./artifacts/catalog-demos/recycling-facility-wave-20261103/node-preload.mjs npx vitest run tests/integration/catalog/",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/theatre-production-wave-20261103/verify_previews.py",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH node --import ./artifacts/catalog-demos/recycling-facility-wave-20261103/node-preload.mjs --import tsx scripts/buildCatalogPages.ts /tmp/kernelcad-recycling-facility-pages-wave-20261103",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/theatre-production-wave-20261103/verify_theatre_pages.py /tmp/kernelcad-recycling-facility-pages-wave-20261103",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH npm run build",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH npm pack --dry-run --ignore-scripts --json > artifacts/catalog-demos/theatre-production-wave-20261103/npm-pack-dry-run.json",
+    "node artifacts/catalog-demos/theatre-production-wave-20261103/audit_npm_pack.mjs",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/theatre-production-wave-20261103/capture_theatre_demo.py",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/theatre-production-wave-20261103/inspect_theatre_video.py"
+  ],
+  "verificationScope": {
+    "covered": [
+      "local source and generated catalog index",
+      "catalog integration suite for load, knobs, mesh, triangle budget, one material and Studio opening",
+      "catalog ESLint",
+      "rendered PNG previews for every indexed asset",
+      "local generated static catalog pages",
+      "built npm package contents and public source boundary",
+      "MP4 decode and visual review"
+    ],
+    "notCovered": [
+      "deployed website behavior for this feature branch",
+      "stage or scenery load capacity",
+      "overhead rigging safety or electrical ratings",
+      "fire-code compliance or acoustic performance",
+      "physical acceptance"
+    ]
+  }
+}

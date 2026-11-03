@@ -1,0 +1,342 @@
+{
+  "kit": "alpine-expedition",
+  "generatedOn": "2026-11-03",
+  "assetCount": 50,
+  "sourceCommand": "python3 artifacts/catalog-demos/alpine-expedition-wave-20261103/generate_alpine_assets.py",
+  "catalogCommand": "npx tsx scripts/buildAssetCatalog.ts",
+  "previewCommand": "npx tsx scripts/renderCatalogPreviews.ts",
+  "knobs": {
+    "scale": {
+      "default": 1,
+      "min": 0.75,
+      "max": 1.25,
+      "step": 0.05
+    },
+    "color": "asset-specific hex color; one material per asset"
+  },
+  "triangleBudget": 2400,
+  "materialCount": 1,
+  "grounding": "A measured analytic minimum-Z offset is applied to all geometry before scale so each source rests at z = 0.",
+  "verificationScope": {
+    "covered": [
+      "source and metadata",
+      "generated index and source hashes",
+      "mesh triangle and material audit",
+      "catalog integration suite",
+      "preview images and indexed paths",
+      "local generated catalog pages",
+      "current public homepage snapshot",
+      "npm tarball contents and export boundary"
+    ],
+    "notCovered": [
+      "deployed behavior for this unmerged branch",
+      "climbing or rescue safety",
+      "load rating or product performance",
+      "weather protection",
+      "regulatory compliance",
+      "physical acceptance"
+    ]
+  },
+  "assets": [
+    {
+      "id": "basecamp-dome-tent",
+      "title": "Basecamp dome tent",
+      "partCount": 6,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "four-season-tent",
+      "title": "Four-season mountain tent",
+      "partCount": 9,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "mountaineering-bivy",
+      "title": "Mountaineering bivy sack",
+      "partCount": 5,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "expedition-tarp",
+      "title": "Expedition tarp shelter",
+      "partCount": 9,
+      "groundOffsetMm": 0
+    },
+    {
+      "id": "tent-footprint",
+      "title": "Tent footprint sheet",
+      "partCount": 6,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "tent-pole-bundle",
+      "title": "Tent pole bundle",
+      "partCount": 10,
+      "groundOffsetMm": 45.0
+    },
+    {
+      "id": "snow-wall-shovel",
+      "title": "Snow wall shovel",
+      "partCount": 5,
+      "groundOffsetMm": -4.5670167313328704
+    },
+    {
+      "id": "camp-cot",
+      "title": "Backcountry camp cot",
+      "partCount": 9,
+      "groundOffsetMm": 0.3705292542263692
+    },
+    {
+      "id": "insulated-sleeping-pad",
+      "title": "Insulated sleeping pad",
+      "partCount": 11,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "expedition-duffel",
+      "title": "Expedition duffel bag",
+      "partCount": 7,
+      "groundOffsetMm": 90.0
+    },
+    {
+      "id": "alpine-pack-cover",
+      "title": "Alpine pack cover",
+      "partCount": 6,
+      "groundOffsetMm": 30.0
+    },
+    {
+      "id": "alpine-dry-bag",
+      "title": "Alpine dry bag",
+      "partCount": 6,
+      "groundOffsetMm": 0
+    },
+    {
+      "id": "trail-gaiters",
+      "title": "Trail gaiters",
+      "partCount": 8,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "glacier-goggles",
+      "title": "Glacier goggles",
+      "partCount": 6,
+      "groundOffsetMm": -126
+    },
+    {
+      "id": "alpine-helmet",
+      "title": "Alpine climbing helmet",
+      "partCount": 8,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "climbing-harness",
+      "title": "Climbing harness",
+      "partCount": 8,
+      "groundOffsetMm": 8.0
+    },
+    {
+      "id": "climbing-rope-coil",
+      "title": "Climbing rope coil",
+      "partCount": 8,
+      "groundOffsetMm": 0
+    },
+    {
+      "id": "rope-haul-bag",
+      "title": "Rope haul bag",
+      "partCount": 7,
+      "groundOffsetMm": 0
+    },
+    {
+      "id": "locking-carabiner",
+      "title": "Locking carabiner",
+      "partCount": 4,
+      "groundOffsetMm": 0
+    },
+    {
+      "id": "climbing-quickdraw",
+      "title": "Climbing quickdraw",
+      "partCount": 5,
+      "groundOffsetMm": -47
+    },
+    {
+      "id": "belay-device",
+      "title": "Belay device",
+      "partCount": 6,
+      "groundOffsetMm": -37.0
+    },
+    {
+      "id": "climbing-chalk-bag",
+      "title": "Climbing chalk bag",
+      "partCount": 5,
+      "groundOffsetMm": 0
+    },
+    {
+      "id": "climbing-cam",
+      "title": "Spring-loaded climbing cam",
+      "partCount": 8,
+      "groundOffsetMm": 0
+    },
+    {
+      "id": "nut-tool",
+      "title": "Climbing nut tool",
+      "partCount": 5,
+      "groundOffsetMm": -2.1562050477282355
+    },
+    {
+      "id": "ice-axe",
+      "title": "Mountaineering ice axe",
+      "partCount": 6,
+      "groundOffsetMm": 0
+    },
+    {
+      "id": "ice-screw",
+      "title": "Ice screw",
+      "partCount": 10,
+      "groundOffsetMm": 0
+    },
+    {
+      "id": "glacier-picket",
+      "title": "Glacier snow picket",
+      "partCount": 8,
+      "groundOffsetMm": -1.9125224351136438
+    },
+    {
+      "id": "snowshoes",
+      "title": "Alpine snowshoes",
+      "partCount": 8,
+      "groundOffsetMm": -37
+    },
+    {
+      "id": "crampons",
+      "title": "Mountaineering crampons",
+      "partCount": 14,
+      "groundOffsetMm": 10.988666488662332
+    },
+    {
+      "id": "ski-touring-skins",
+      "title": "Ski touring skins",
+      "partCount": 8,
+      "groundOffsetMm": -44
+    },
+    {
+      "id": "avalanche-probe",
+      "title": "Avalanche probe",
+      "partCount": 10,
+      "groundOffsetMm": 0
+    },
+    {
+      "id": "avalanche-shovel",
+      "title": "Avalanche shovel",
+      "partCount": 6,
+      "groundOffsetMm": -3.8151764118852896
+    },
+    {
+      "id": "avalanche-transceiver",
+      "title": "Avalanche transceiver",
+      "partCount": 7,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "snow-anchor",
+      "title": "Snow deadman anchor",
+      "partCount": 6,
+      "groundOffsetMm": -26.28717828227756
+    },
+    {
+      "id": "snow-saw",
+      "title": "Snow pit saw",
+      "partCount": 24,
+      "groundOffsetMm": -16.133208072516112
+    },
+    {
+      "id": "rescue-pulley",
+      "title": "Alpine rescue pulley",
+      "partCount": 6,
+      "groundOffsetMm": -60
+    },
+    {
+      "id": "alpine-rescue-stretcher",
+      "title": "Alpine rescue stretcher",
+      "partCount": 11,
+      "groundOffsetMm": 67
+    },
+    {
+      "id": "rescue-bivy",
+      "title": "Emergency rescue bivy",
+      "partCount": 6,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "expedition-radio",
+      "title": "Expedition field radio",
+      "partCount": 6,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "handheld-gps",
+      "title": "Handheld GPS receiver",
+      "partCount": 9,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "satellite-messenger",
+      "title": "Satellite messenger",
+      "partCount": 6,
+      "groundOffsetMm": -58
+    },
+    {
+      "id": "expedition-headlamp",
+      "title": "Expedition headlamp",
+      "partCount": 7,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "expedition-solar-panel",
+      "title": "Folding expedition solar panel",
+      "partCount": 12,
+      "groundOffsetMm": -119.67694301725504
+    },
+    {
+      "id": "expedition-power-bank",
+      "title": "Expedition power bank",
+      "partCount": 10,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "expedition-water-filter",
+      "title": "Expedition squeeze water filter",
+      "partCount": 5,
+      "groundOffsetMm": 0
+    },
+    {
+      "id": "hydration-reservoir",
+      "title": "Hydration reservoir",
+      "partCount": 6,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "insulated-flask",
+      "title": "Insulated mountain flask",
+      "partCount": 5,
+      "groundOffsetMm": 0
+    },
+    {
+      "id": "bear-canister",
+      "title": "Bear-resistant food canister",
+      "partCount": 9,
+      "groundOffsetMm": 0
+    },
+    {
+      "id": "summit-marker-post",
+      "title": "Summit marker post",
+      "partCount": 5,
+      "groundOffsetMm": 0.0
+    },
+    {
+      "id": "mountain-weather-meter",
+      "title": "Mountain weather meter",
+      "partCount": 11,
+      "groundOffsetMm": 0.0
+    }
+  ]
+}

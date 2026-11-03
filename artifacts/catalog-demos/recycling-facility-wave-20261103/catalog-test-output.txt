@@ -1,0 +1,8 @@
+
+ RUN  v4.1.12 /home/andrii/worktrees/kernelCAD-web/catalog-2000
+
+
+ Test Files  4 passed (4)
+      Tests  15 passed (15)
+   Start at  10:17:14
+   Duration  207.14s (transform 15.99s, setup 424ms, import 20.91s, tests 323.15s, environment 1ms)

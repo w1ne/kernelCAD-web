@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-11-03T04:38:54.378983+00:00",
+  "homepageStatus": 200,
+  "assetFeedStatus": 200,
+  "catalogStatus": 404,
+  "liveGeneratedAt": "2026-11-03T01:39:22.642Z",
+  "liveAssetCount": 1291,
+  "livePreviewCount": 1291,
+  "newKitPresent": false,
+  "scope": "current production response; this branch's apiary kit is not deployed"
+}

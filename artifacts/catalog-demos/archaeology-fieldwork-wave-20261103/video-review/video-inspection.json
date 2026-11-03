@@ -1,0 +1,12 @@
+{
+  "video": "archaeology-fieldwork-kit.mp4",
+  "sha256": "695b0e6eccd9298d6ba6a47c45c9de66452f49edb55c161f0508fd1b6a075603",
+  "durationSeconds": 30.0,
+  "width": 1280,
+  "height": 720,
+  "frameRate": "24/1",
+  "encodedFrames": 720,
+  "sampledFrames": 10,
+  "sampleContactSheet": "video-review/contact-sheet.png",
+  "passed": true
+}

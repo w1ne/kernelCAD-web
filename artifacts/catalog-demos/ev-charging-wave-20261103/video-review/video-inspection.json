@@ -1,0 +1,24 @@
+{
+  "video": "artifacts/catalog-demos/ev-charging-wave-20261103/ev-charging-infrastructure.mp4",
+  "bytes": 351065,
+  "sha256": "5a7d53f7ef4e8b4558fd5fdd5ddba7d07a293e373462a1a114373b86dd4a028f",
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "pixelFormat": "yuv420p",
+  "durationSeconds": 30.0,
+  "decodedFrameSamples": [
+    "artifacts/catalog-demos/ev-charging-wave-20261103/video-review/decoded-01.png",
+    "artifacts/catalog-demos/ev-charging-wave-20261103/video-review/decoded-02.png",
+    "artifacts/catalog-demos/ev-charging-wave-20261103/video-review/decoded-03.png",
+    "artifacts/catalog-demos/ev-charging-wave-20261103/video-review/decoded-04.png",
+    "artifacts/catalog-demos/ev-charging-wave-20261103/video-review/decoded-05.png",
+    "artifacts/catalog-demos/ev-charging-wave-20261103/video-review/decoded-06.png",
+    "artifacts/catalog-demos/ev-charging-wave-20261103/video-review/decoded-07.png",
+    "artifacts/catalog-demos/ev-charging-wave-20261103/video-review/decoded-08.png",
+    "artifacts/catalog-demos/ev-charging-wave-20261103/video-review/decoded-09.png",
+    "artifacts/catalog-demos/ev-charging-wave-20261103/video-review/decoded-10.png"
+  ],
+  "contactSheet": "artifacts/catalog-demos/ev-charging-wave-20261103/video-review/contact-sheet.png",
+  "manualVisualInspection": true
+}

@@ -1,0 +1,9 @@
+{
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-water-pages",
+  "kitPages": 50,
+  "assetsInIndex": 1391,
+  "pageAndPreviewPairs": 50,
+  "hubListsKit": true,
+  "missing": [],
+  "passed": true
+}

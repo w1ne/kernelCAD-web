@@ -1,0 +1,5 @@
+{
+  "command": "npx eslint src/kernel/backends/occt/backendInit.ts src/agent/catalog/buildCatalog.ts src/shared/assets/catalogSchema.ts tests/integration/catalog/catalogIndex.test.ts",
+  "passed": true,
+  "exitCode": 0
+}

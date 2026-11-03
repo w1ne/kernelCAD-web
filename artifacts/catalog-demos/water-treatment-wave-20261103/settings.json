@@ -1,0 +1,49 @@
+{
+  "date": "2026-11-03",
+  "kit": "water-treatment",
+  "assetCount": 50,
+  "demo": {
+    "source": "capture_water_demo.py",
+    "output": "water-treatment-kit.mp4",
+    "codec": "H.264 / libx264",
+    "width": 1280,
+    "height": 720,
+    "frameRate": 24,
+    "frameHoldSeconds": 3,
+    "frameCount": 10,
+    "pixelFormat": "yuv420p",
+    "quality": "CRF 25",
+    "previewFrames": 7,
+    "assetsPerPreviewFrame": 8
+  },
+  "commands": [
+    "python3 artifacts/catalog-demos/water-treatment-wave-20261103/generate_water_assets.py",
+    "npx eslint catalog/",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "npx vitest run src/kernel/backends/occt/occtResetPoison.test.ts",
+    "npx vitest run tests/integration/catalog/",
+    "python3 artifacts/catalog-demos/water-treatment-wave-20261103/render_water_previews.py",
+    "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-water-pages",
+    "python3 artifacts/catalog-demos/water-treatment-wave-20261103/verify_water_pages.py /tmp/kernelcad-water-pages",
+    "python3 artifacts/catalog-demos/water-treatment-wave-20261103/capture_water_demo.py",
+    "python3 artifacts/catalog-demos/water-treatment-wave-20261103/inspect_water_video.py --manual-inspection-passed"
+  ],
+  "verificationScope": {
+    "covered": [
+      "local source and index",
+      "local mesh export and triangle/material audit",
+      "catalog integration suite",
+      "local generated static pages",
+      "rendered previews",
+      "OCCT reset listener lifecycle"
+    ],
+    "notCovered": [
+      "deployed website behavior",
+      "flow rates",
+      "water-treatment performance",
+      "chemical dosing accuracy",
+      "installation suitability",
+      "physical acceptance"
+    ]
+  }
+}

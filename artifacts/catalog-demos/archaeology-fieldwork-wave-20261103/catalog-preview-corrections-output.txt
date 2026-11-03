@@ -1,0 +1,10 @@
+(node:2005892) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+archaeology-fieldwork/archaeologist-trowel: 156 tris
+archaeology-fieldwork/detail-paintbrush: 220 tris
+archaeology-fieldwork/detail-scoop: 124 tris
+archaeology-fieldwork/dustpan-and-brush: 84 tris
+archaeology-fieldwork/field-loupe: 120 tris
+archaeology-fieldwork/margin-trowel: 112 tris
+archaeology-fieldwork/pointing-trowel: 156 tris
+archaeology-fieldwork/soft-finds-brush: 408 tris
