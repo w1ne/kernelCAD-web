@@ -41,6 +41,7 @@ import { meshBooleanToolEntries } from './registry/meshBooleanTools';
 import { cookbookExecutionToolEntries } from './registry/cookbookExecutionTools';
 import { cfdToolEntries } from './registry/cfdTools';
 import { costEstimateToolEntries } from './registry/costTools';
+import { toleranceStackToolEntries } from './registry/toleranceTools';
 import type { McpToolDefinition, ToolRegistryEntry } from './registry/types';
 import { guardMcpToolArgs } from './sandboxArgs';
 import { foldMcpInputAliases } from './snakeCaseArgs';
@@ -130,6 +131,8 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...manufacturingFixRecheckToolEntries,
   // Appended after dfm_fix_recheck: offline fabrication cost heuristic.
   ...costEstimateToolEntries,
+  // Appended after estimate_cost: 1D worst-case and RSS tolerance stack.
+  ...toleranceStackToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints

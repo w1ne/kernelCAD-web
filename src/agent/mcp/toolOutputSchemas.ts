@@ -36,6 +36,7 @@ import { SURFACE_BLEND_OUTPUT_SCHEMAS } from './registry/surfaceBlendTools.outpu
 import { ASSET_CATALOG_OUTPUT_SCHEMAS } from './registry/assetCatalogTools.outputSchemas';
 import { INSPECTION_VERIFICATION_OUTPUT_SCHEMAS } from './registry/inspectionVerificationTools.outputSchemas';
 import { COST_ESTIMATE_OUTPUT_SCHEMAS } from './registry/costTools.outputSchemas';
+import { TOLERANCE_STACK_OUTPUT_SCHEMAS } from './registry/toleranceTools.outputSchemas';
 
 export type { JSONSchemaObject } from './toolOutputSchemaParts';
 import { MECHANISM_SUMMARY, SELECTION, SET_PARAM, SOURCE_EDIT, TUBE_JOINT, type JSONSchemaObject } from './toolOutputSchemaParts';
@@ -862,4 +863,5 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   },
   ...EXPLODE_VIEW_OUTPUT_SCHEMAS,
   ...COST_ESTIMATE_OUTPUT_SCHEMAS,
+  ...TOLERANCE_STACK_OUTPUT_SCHEMAS,
 };

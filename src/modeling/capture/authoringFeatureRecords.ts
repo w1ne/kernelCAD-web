@@ -28,6 +28,7 @@ import {
   type DrawingToleranceMetadata,
   type DrawingToleranceSpec,
 } from '../../shared/intent/drawingGdtRecord';
+import { DimensionTolError, parseDimensionTol } from '../../shared/tol/stackup';
 import type { Curve3DMetadata } from '../../shared/intent/curve3dRecord';
 import type {
   EmbossTextAlign,
@@ -691,6 +692,21 @@ export function buildDrawingToleranceFeatureSpec(
 
 const DIMENSION_KINDS = ['linear', 'diameter', 'radius', 'angular'] as const;
 
+function dimensionTol(raw: unknown): { upper: number; lower: number } | undefined {
+  if (raw === undefined) return undefined;
+  try {
+    return parseDimensionTol(raw);
+  } catch (err) {
+    const why = err instanceof DimensionTolError ? err.message : 'must be a number or { upper, lower }';
+    invalidGdt('dimension', 'tol', why);
+  }
+}
+
+function dimensionMetadata(s: Record<string, unknown>): DrawingDimensionMetadata {
+  const tol = dimensionTol(s.tol);
+  return { ...(s as object), virtual: true, ...(tol !== undefined ? { tol } : {}) } as DrawingDimensionMetadata;
+}
+
 function isAnchor(v: unknown): boolean {
   if (Array.isArray(v)) return v.length === 3 && v.every(n => typeof n === 'number' && Number.isFinite(n));
   if (!v || typeof v !== 'object') return false;
@@ -722,7 +738,7 @@ export function buildDrawingDimensionFeatureSpec(
   if (s.label !== undefined && typeof s.label !== 'string') {
     invalidGdt('dimension', 'label', 'must be a string');
   }
-  const metadata = { ...(s as object), virtual: true } as DrawingDimensionMetadata;
+  const metadata = dimensionMetadata(s);
   return {
     kind: 'drawingDimension',
     params: {},

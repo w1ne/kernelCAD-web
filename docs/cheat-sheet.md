@@ -8,6 +8,8 @@ description of any entry, call `lookup_api(query)`.
 
 Offline fabrication cost is not a script call. Use the MCP tool `estimate_cost`
 for a labelled USD heuristic (3d-print, cnc, sheet-cut). It is not a supplier quote.
+A 1D fit check is `analyze_tolerance_stack`: worst case and RSS from explicit
+contributors or from `shape.dimension` tolerances. It is not a GD&T study.
 
 | Task | What it covers |
 |---|---|
@@ -343,5 +345,5 @@ Present a model and declare drawing intent without changing its geometry: text, 
 | `animationView(spec: { param: string; from: number; to: number; durationMs: number; fps?: number } \| { name?: string; tracks: Array<{ param: string; keys: Array<{ atMs: number; value: number; ease?: "linear" \| "step" \| "easeIn" \| "easeOut" \| "easeInOut" }> }>; fps?: number }) => AnimationViewHandle` | Declare an animation timeline for offline kinematic-motion MP4 capture. |
 | `Shape.datum(label: string, face: FaceQuery) => Shape` | Declare datum `label` (one or two capitals, not I/O/Q) on the face `face` resolves to, for `svg-drawing` sheets. |
 | `Shape.tolerance(spec: { type: 'position' \| 'flatness' \| 'perpendicularity' \| 'parallelism' \| 'concentricity' \| 'cylindricity'; value: number; face?: FaceQuery; edge?: EdgeQuery; datums?: string[]; modifier?: '⌀' \| 'M' \| 'S' }) => Shape` | Declare a geometric tolerance (feature control frame) on exactly one of `face` / `edge`, for `svg-drawing` sheets. |
-| `Shape.dimension(spec: { id?: string } & ({ kind: 'linear'; from: Vec3 \| { edge: EdgeQuery } \| { face: FaceQuery }; to: Vec3 \| { edge: EdgeQuery } \| { face: FaceQuery }; label?: string } \| { kind: 'diameter' \| 'radius'; edge: EdgeQuery; label?: string } \| { kind: 'angular'; from: EdgeQuery; to: EdgeQuery; label?: string })) => Shape` | Declare a dimension to show on the 3D viewer model and on drawings. |
+| `Shape.dimension(spec: { id?: string; tol?: number \| { upper: number; lower: number } \| { plus: number; minus: number } } & ({ kind: 'linear'; from: Vec3 \| { edge: EdgeQuery } \| { face: FaceQuery }; to: Vec3 \| { edge: EdgeQuery } \| { face: FaceQuery }; label?: string } \| { kind: 'diameter' \| 'radius'; edge: EdgeQuery; label?: string } \| { kind: 'angular'; from: EdgeQuery; to: EdgeQuery; label?: string })) => Shape` | Declare a dimension to show on the 3D viewer model and on drawings. |
 | `Shape.drawingReview(plan: DrawingReviewPlan) => Shape` | Declare required geometric callouts and engineering decisions for this shape and downstream exports. |

@@ -52,6 +52,7 @@ export const TOOL_TITLES: Record<string, string> = {
   cfd_summary: 'Get CFD Summary',
   assembly_checks: 'Check Assembly',
   estimate_cost: 'Estimate Fabrication Cost',
+  analyze_tolerance_stack: 'Analyze Tolerance Stack',
   send_to_printer: 'Send G-code to Printer',
   repair_script: 'Repair CAD Script',
   sweep_tolerance: 'Sweep Tolerance Range',

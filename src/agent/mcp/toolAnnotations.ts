@@ -170,6 +170,7 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   assembly_checks: READ,
   // Evaluates the script and returns a labelled heuristic. Writes nothing and calls no supplier.
   estimate_cost: READ,
+  analyze_tolerance_stack: READ,
   // Evaluates the script in-process and reports; writes nothing.
   dfm_review: READ,
   // Returns revised source for the caller to persist. Writes nothing.
