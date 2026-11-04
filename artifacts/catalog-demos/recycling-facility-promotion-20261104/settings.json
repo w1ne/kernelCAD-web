@@ -1,0 +1,41 @@
+{
+  "date": "2026-11-04",
+  "runtime": {
+    "node": "v22.23.4",
+    "python": "3.14.9",
+    "ffmpeg": "6.1.1",
+    "npx": "11.20.0",
+    "nodeCompatibilityPreload": "node-preload.mjs"
+  },
+  "promotion": {
+    "script": "promote_recycling_facility.py",
+    "kit": "recycling-facility",
+    "existingAssetCount": 153,
+    "newAssets": 0,
+    "geometry": "named source parts, faceted ruled lofts, explicit ground-contact alignment, visible container lid and handle, visible digester ladder"
+  },
+  "previewRender": {
+    "command": "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH node --import ./artifacts/catalog-demos/recycling-facility-promotion-20261104/node-preload.mjs --import tsx scripts/renderCatalogPreviews.ts",
+    "scope": "all indexed catalog assets; includes every recycling-facility asset",
+    "output": "catalog-preview-render-output.txt"
+  },
+  "catalogBuild": {
+    "command": "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH node --import ./artifacts/catalog-demos/recycling-facility-promotion-20261104/node-preload.mjs --import tsx scripts/buildAssetCatalog.ts",
+    "output": "catalog-build-final-output.txt"
+  },
+  "checks": {
+    "eslint": "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH npx --silent eslint catalog/kits/recycling-facility/",
+    "integration": "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH NODE_OPTIONS=--import=./artifacts/catalog-demos/recycling-facility-promotion-20261104/node-preload.mjs npx vitest run tests/integration/catalog/",
+    "pagesBuild": "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH node --import ./artifacts/catalog-demos/recycling-facility-promotion-20261104/node-preload.mjs --import tsx scripts/buildCatalogPages.ts /tmp/kernelcad-recycling-facility-promotion-20261104",
+    "pageAudit": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/recycling-facility-promotion-20261104/verify_recycling_facility_pages.py /tmp/kernelcad-recycling-facility-promotion-20261104",
+    "qualityGate": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/checkCatalogQuality.py --kit recycling-facility"
+  },
+  "demo": {
+    "capture": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/recycling-facility-promotion-20261104/capture_recycling_promotion_demo.py",
+    "inspect": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/recycling-facility-promotion-20261104/inspect_promotion_video.py",
+    "resolution": "1280x720",
+    "durationSeconds": 24,
+    "frameCount": 8,
+    "visualInspection": "decode final MP4 at three-second intervals and inspect the eight-frame contact sheet"
+  }
+}

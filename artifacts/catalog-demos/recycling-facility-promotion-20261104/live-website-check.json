@@ -1,0 +1,33 @@
+{
+  "checkedAt": "2026-11-04T17:45:04.223258+00:00",
+  "homepageStatus": 200,
+  "assetsStatus": 200,
+  "assetsGeneratedAt": "2026-11-04T10:24:31.383Z",
+  "assetsTotal": 2100,
+  "assetsWithPreview": 2100,
+  "recyclingFacilityRows": 153,
+  "homepageHasOriginalKitRail": true,
+  "publishedSampleSources": {
+    "optical-sorter-arch": {
+      "found": true,
+      "sourceStatus": 200,
+      "genericColorKnob": true,
+      "hasPresets": false
+    },
+    "anaerobic-digester-tank": {
+      "found": true,
+      "sourceStatus": 200,
+      "genericColorKnob": true,
+      "hasPresets": false
+    },
+    "open-top-roll-off-skip": {
+      "found": true,
+      "sourceStatus": 200,
+      "genericColorKnob": true,
+      "hasPresets": false
+    }
+  },
+  "publishedSamplesStillSingleColor": true,
+  "branchDeployed": false,
+  "passed": true
+}
