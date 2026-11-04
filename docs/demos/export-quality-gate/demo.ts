@@ -17,6 +17,7 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { strFromU8, unzipSync } from 'fflate';
 import sharp from 'sharp';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { runAndExport } from '../../../src/agent/script-runtime/export';
@@ -31,7 +32,10 @@ interface Mesh { p: V3[]; f: [number, number, number][] }
 
 function parseObj(bytes: Uint8Array): Mesh {
   const m: Mesh = { p: [], f: [] };
-  for (const line of new TextDecoder().decode(bytes).split('\n')) {
+  const source = bytes[0] === 0x50 && bytes[1] === 0x4b
+    ? strFromU8(unzipSync(bytes)['model.obj']!)
+    : new TextDecoder().decode(bytes);
+  for (const line of source.split('\n')) {
     const t = line.trim().split(/\s+/);
     if (t[0] === 'v') m.p.push([Number(t[1]), Number(t[2]), Number(t[3])]);
     if (t[0] === 'f') m.f.push(t.slice(1, 4).map(s => Number(s.split('/')[0]) - 1) as [number, number, number]);

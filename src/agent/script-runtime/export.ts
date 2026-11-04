@@ -132,6 +132,7 @@ export type ExportOptions =
       /** Default 'mm' for pbr, 'm' for lowpoly. */
       units?: 'mm' | 'm';
     }
+  /** `bytes` is a zip of `model.obj` (with `mtllib` / `usemtl`) and sibling `model.mtl`. */
   | { format: 'obj' }
   | {
       /** Stanford PLY triangle mesh (mm, Z-up); assemblies merge every part

@@ -10,14 +10,14 @@ const triangle = {
 
 describe('mesh interchange writers', () => {
   it('writes OBJ vertices and 1-based triangular faces', () => {
-    const text = new TextDecoder().decode(exportMeshObj([{ name: 'Plate', mesh: triangle }]));
+    const text = new TextDecoder().decode(exportMeshObj([{ name: 'Plate', mesh: triangle }]).obj);
     expect(text).toContain('o Plate');
     expect(text).toContain('v 10 0 0');
     expect(text).toContain('f 1 2 3');
   });
 
   it('sanitizes comment markers in OBJ object names', () => {
-    const text = new TextDecoder().decode(exportMeshObj([{ name: 'plate#v2', mesh: triangle }]));
+    const text = new TextDecoder().decode(exportMeshObj([{ name: 'plate#v2', mesh: triangle }]).obj);
     expect(text).toContain('o plate_v2');
     expect(text).not.toContain('o plate#v2');
   });
