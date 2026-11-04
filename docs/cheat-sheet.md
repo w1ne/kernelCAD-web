@@ -6,6 +6,9 @@ The script API, grouped by the job you are doing rather than by the object you
 call it on. Rows come from `src/agent/mcp/tools/listApi.ts`; for the full
 description of any entry, call `lookup_api(query)`.
 
+Offline fabrication cost is not a script call. Use the MCP tool `estimate_cost`
+for a labelled USD heuristic (3d-print, cnc, sheet-cut). It is not a supplier quote.
+
 | Task | What it covers |
 |---|---|
 | [Start a shape](#start-a-shape) | The first call in any model: a solid primitive, or a 2D profile to extrude. |

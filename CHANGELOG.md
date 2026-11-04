@@ -4,6 +4,9 @@
   existing fillet radius, `shell()` thickness, or `draft()` angle), and
   reviews the edited source. The caller persists `new_code`. Nothing is
   written. Other findings come back as suggestions.
+- `estimate_cost` returns a labelled offline USD heuristic for 3d-print, cnc,
+  and sheet-cut from part volume, bounding box, and any declared material,
+  FabProcess, or StockSpec. It is not a supplier quote.
 - GLB `asset.extras.kernelcad.stats` and the `asset_manifest` tool now include
   `materials`, `drawCalls`, `parts`, `hasRig` and `hasIk` beside `triangles`,
   `sizeM` and `minUpM`.

@@ -35,6 +35,7 @@ import { EXPLODE_VIEW_OUTPUT_SCHEMAS } from './registry/explodeViewTools.outputS
 import { SURFACE_BLEND_OUTPUT_SCHEMAS } from './registry/surfaceBlendTools.outputSchemas';
 import { ASSET_CATALOG_OUTPUT_SCHEMAS } from './registry/assetCatalogTools.outputSchemas';
 import { INSPECTION_VERIFICATION_OUTPUT_SCHEMAS } from './registry/inspectionVerificationTools.outputSchemas';
+import { COST_ESTIMATE_OUTPUT_SCHEMAS } from './registry/costTools.outputSchemas';
 
 export type { JSONSchemaObject } from './toolOutputSchemaParts';
 import { MECHANISM_SUMMARY, SELECTION, SET_PARAM, SOURCE_EDIT, TUBE_JOINT, type JSONSchemaObject } from './toolOutputSchemaParts';
@@ -860,4 +861,5 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     type: 'object', properties: { ok: { type: 'boolean' } }, required: ['ok'], additionalProperties: true,
   },
   ...EXPLODE_VIEW_OUTPUT_SCHEMAS,
+  ...COST_ESTIMATE_OUTPUT_SCHEMAS,
 };
