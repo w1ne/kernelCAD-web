@@ -1,7 +1,7 @@
 ---
 id: sheet-metal-edge-flange-hem
 title: Sheet-metal edge flange and hem sugar over bend
-tags: [sheet-metal, flange, hem, bend, manufacturing]
+tags: [sheet-metal, bend, manufacturing]
 keywords:
   - edgeFlange hem cornerRelief sheet metal
   - flange length 90 degree bend sugar
