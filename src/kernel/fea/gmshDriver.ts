@@ -22,10 +22,10 @@
 import { writeFile, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { runBounded } from './toolchain';
+import { LOW_QUALITY_SICN } from './meshQuality';
 import type { FeaMesh, FeaSurface, FeaTet10 } from './types';
 
-/** Tets below this signed-inverse-condition-number are counted as poor. */
-export const LOW_QUALITY_SICN = 0.1;
+export { LOW_QUALITY_SICN };
 
 const DRIVER_PY = String.raw`
 import json, sys
