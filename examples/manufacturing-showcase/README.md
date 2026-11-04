@@ -7,6 +7,9 @@ integration tests, and the STEP exports are reopened by the kernel's STEP
 inspector. This checks CAD geometry and file round-trip behavior; it does not
 establish physical fit, strength or shop readiness.
 
+See the [annotated CLI walkthrough](../../docs/demos/manufacturing-showcase/README.md)
+for the source-evaluate-export path and all seven model previews.
+
 | Process | Model | Intended interface | Local checks | Still needed |
 | --- | --- | --- | --- | --- |
 | Laser / waterjet | [Motor mounting plate](cut-motor-plate.kcad.ts) | NEMA 17: editable motor pitch and pilot; four frame mounts with a 10 mm edge inset | Length 80–160 mm, width 70–120 mm, thickness 2–8 mm, motor pitch 28–40 mm, pilot 16–26 mm, frame-hole diameter 3.4–8 mm; DXF loops, edited centres/diameters and thickness variation | Confirm motor drawing, tolerances and cutter compensation; physically cut and fit |
