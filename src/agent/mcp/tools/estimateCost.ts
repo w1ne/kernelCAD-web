@@ -35,9 +35,10 @@ export interface EstimateCostInput {
   quantity?: number;
 }
 
-export interface EstimateCostOutput extends OfflineEstimateResult {
+/** MCP output: offline estimate plus optional purchased-part skip list. */
+export type EstimateCostOutput = OfflineEstimateResult & {
   skippedPurchased?: string[];
-}
+};
 
 const NO_GEOMETRY = 'estimate.no-geometry' as const;
 
