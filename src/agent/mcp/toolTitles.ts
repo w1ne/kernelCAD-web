@@ -50,6 +50,7 @@ export const TOOL_TITLES: Record<string, string> = {
   fea_summary: 'Get FEA Summary',
   run_cfd: 'Run CFD Flow Study',
   cfd_summary: 'Get CFD Summary',
+  assembly_checks: 'Check Assembly',
   send_to_printer: 'Send G-code to Printer',
   repair_script: 'Repair CAD Script',
   sweep_tolerance: 'Sweep Tolerance Range',

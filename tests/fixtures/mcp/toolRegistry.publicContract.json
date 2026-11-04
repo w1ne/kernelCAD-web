@@ -11911,5 +11911,278 @@
       ],
       "additionalProperties": true
     }
+  },
+  {
+    "name": "assembly_checks",
+    "description": "Use this when you need a named assembly check instead of the full review. `assembly_checks` is the entry for targeted checks: interference (default-pose overlap), floating (unconnected parts), joints (limits, axis, topology, plausibility), and stability (approximate support). Pass `{ file?, code?, assembly?, checks? }`. `checks` is a subset of `interference`, `floating`, `joints`, `stability`; omit it to run all four. Each check reuses the existing static assembly review. `stability` also runs the assembly-path support projection and says so when that path cannot run. `verify({ check: 'assembly' })` and `review_cad` remain available: verify assembly is the full static review, and review_cad adds the pose-envelope sweep and the physics probe.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "string",
+          "description": "Path to a .kcad.ts script. Omit both file and code to use the active session."
+        },
+        "code": {
+          "type": "string",
+          "description": "Inline kernelCAD script source."
+        },
+        "assembly": {
+          "type": "string",
+          "description": "Assembly name. Defaults to the first captured assembly."
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "interference",
+              "floating",
+              "joints",
+              "stability"
+            ]
+          },
+          "uniqueItems": true,
+          "description": "Checks to run. Default: interference, floating, joints, and stability."
+        }
+      }
+    },
+    "title": "Check Assembly",
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Check Assembly"
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "description": "False when any selected check has a blocking finding, or the review did not run."
+        },
+        "checks": {
+          "type": "object",
+          "properties": {
+            "interference": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean",
+                  "description": "False when this check has a severity-error finding."
+                },
+                "findings": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "hint": {
+                        "type": "string"
+                      },
+                      "severity": {
+                        "type": "string"
+                      },
+                      "parts": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "code",
+                      "message"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "summary": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "ok",
+                "findings",
+                "summary"
+              ],
+              "additionalProperties": false
+            },
+            "floating": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean",
+                  "description": "False when this check has a severity-error finding."
+                },
+                "findings": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "hint": {
+                        "type": "string"
+                      },
+                      "severity": {
+                        "type": "string"
+                      },
+                      "parts": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "code",
+                      "message"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "summary": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "ok",
+                "findings",
+                "summary"
+              ],
+              "additionalProperties": false
+            },
+            "joints": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean",
+                  "description": "False when this check has a severity-error finding."
+                },
+                "findings": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "hint": {
+                        "type": "string"
+                      },
+                      "severity": {
+                        "type": "string"
+                      },
+                      "parts": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "code",
+                      "message"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "summary": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "ok",
+                "findings",
+                "summary"
+              ],
+              "additionalProperties": false
+            },
+            "stability": {
+              "type": "object",
+              "properties": {
+                "ok": {
+                  "type": "boolean",
+                  "description": "False when this check has a severity-error finding."
+                },
+                "findings": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "message": {
+                        "type": "string"
+                      },
+                      "hint": {
+                        "type": "string"
+                      },
+                      "severity": {
+                        "type": "string"
+                      },
+                      "parts": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "code",
+                      "message"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "summary": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "ok",
+                "findings",
+                "summary"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false,
+          "description": "One entry per requested check. Default is all four."
+        },
+        "summary": {
+          "type": "string"
+        },
+        "error": {
+          "type": "string"
+        },
+        "errorCode": {
+          "type": "string"
+        },
+        "errorHint": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "checks",
+        "summary"
+      ],
+      "additionalProperties": true
+    }
   }
 ]

@@ -16,6 +16,7 @@ import { geometryAuthoringToolEntries } from './registry/geometryAuthoringTools'
 import { drawingImportToolEntries } from './registry/drawingImportTools';
 import { geometryDiffToolEntries } from './registry/geometryDiffTools';
 import {
+  inspectionVerificationAssemblyChecksToolEntries,
   inspectionVerificationPreludeToolEntries,
   inspectionVerificationQueryToolEntries,
   inspectionVerificationRepairToolEntries,
@@ -120,6 +121,9 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...assetCatalogToolEntries,
   // Appended at the tail: steady CFD through OpenFOAM (run_cfd, cfd_summary).
   ...cfdToolEntries,
+  // Appended at the tail: targeted assembly checks. Belongs to the inspection
+  // family, but index order is a public contract so it does not shift earlier slices.
+  ...inspectionVerificationAssemblyChecksToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints

@@ -18,7 +18,7 @@ import { geometryAuthoringToolEntries } from './registry/geometryAuthoringTools'
 import { feaToolEntries } from './registry/feaTools';
 import { drawingImportToolEntries } from './registry/drawingImportTools';
 import { geometryDiffToolEntries } from './registry/geometryDiffTools';
-import { inspectionVerificationPreludeToolEntries, inspectionVerificationQueryToolEntries, inspectionVerificationRepairToolEntries } from './registry/inspectionVerificationTools';
+import { inspectionVerificationAssemblyChecksToolEntries, inspectionVerificationPreludeToolEntries, inspectionVerificationQueryToolEntries, inspectionVerificationRepairToolEntries } from './registry/inspectionVerificationTools';
 import { printToolEntries } from './registry/printTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
@@ -110,6 +110,7 @@ const EXPECTED_TOOL_NAMES = [
   'get_kit',
   'run_cfd',
   'cfd_summary',
+  'assembly_checks',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -428,8 +429,9 @@ describe('toolRegistry public contract', () => {
        'get_kit',
        'run_cfd',
        'cfd_summary',
+       'assembly_checks',
      ]);
-    expect(TOOL_REGISTRY).toHaveLength(67);
+    expect(TOOL_REGISTRY).toHaveLength(68);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
@@ -487,26 +489,40 @@ describe('toolRegistry public contract', () => {
 
   it('appends the generic blockout assembly generator at the registry tail', () => {
     expect(blockoutToolEntries.map(entry => entry.definition.name)).toEqual(['blockout_assembly']);
-    expect(TOOL_REGISTRY.slice(-10, -9)).toEqual(blockoutToolEntries);
+    expect(TOOL_REGISTRY.slice(-11, -10)).toEqual(blockoutToolEntries);
     expect(blockoutToolEntries[0].definition.description).toMatch(/^Use this when /);
   });
 
   it('appends the read-only asset manifest tool after the historical blockout tail', () => {
     expect(assetManifestToolEntries.map(entry => entry.definition.name)).toEqual(['asset_manifest']);
-    expect(TOOL_REGISTRY.slice(-9, -8)).toEqual(assetManifestToolEntries);
+    expect(TOOL_REGISTRY.slice(-10, -9)).toEqual(assetManifestToolEntries);
   });
 
   it('appends the read-only asset catalog family before the CFD tail', () => {
-    expect(TOOL_REGISTRY.slice(-assetCatalogToolEntries.length - cfdToolEntries.length, -cfdToolEntries.length)).toEqual(assetCatalogToolEntries);
+    expect(TOOL_REGISTRY.slice(
+      -assetCatalogToolEntries.length - cfdToolEntries.length - inspectionVerificationAssemblyChecksToolEntries.length,
+      -cfdToolEntries.length - inspectionVerificationAssemblyChecksToolEntries.length,
+    )).toEqual(assetCatalogToolEntries);
     expect(assetCatalogToolEntries.map(entry => entry.definition.name)).toEqual([
       'search_assets', 'get_asset', 'find_matching', 'get_variant', 'list_kits', 'get_kit',
     ]);
   });
 
-  it('appends the CFD family (run_cfd, cfd_summary) at the registry tail', () => {
+  it('appends the CFD family (run_cfd, cfd_summary) before assembly checks', () => {
     expect(cfdToolEntries.map(entry => entry.definition.name)).toEqual(['run_cfd', 'cfd_summary']);
-    expect(TOOL_REGISTRY.slice(-cfdToolEntries.length)).toEqual(cfdToolEntries);
+    expect(TOOL_REGISTRY.slice(
+      -cfdToolEntries.length - inspectionVerificationAssemblyChecksToolEntries.length,
+      -inspectionVerificationAssemblyChecksToolEntries.length,
+    )).toEqual(cfdToolEntries);
     expect(cfdToolEntries[0].definition.description).toMatch(/^Use this when /);
+  });
+
+  it('appends assembly_checks at the registry tail', () => {
+    expect(inspectionVerificationAssemblyChecksToolEntries.map(entry => entry.definition.name)).toEqual(['assembly_checks']);
+    expect(TOOL_REGISTRY.slice(-inspectionVerificationAssemblyChecksToolEntries.length)).toEqual(inspectionVerificationAssemblyChecksToolEntries);
+    expect(inspectionVerificationAssemblyChecksToolEntries[0].definition.description).toMatch(/^Use this when /);
+    expect(inspectionVerificationAssemblyChecksToolEntries[0].definition.description).toMatch(/verify\(\{ check: 'assembly' \}\)/);
+    expect(inspectionVerificationAssemblyChecksToolEntries[0].definition.description).toMatch(/review_cad/);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {
