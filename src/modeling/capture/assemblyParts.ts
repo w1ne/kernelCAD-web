@@ -4,6 +4,7 @@ import { assertTopoRefSafeName } from '../../kernel/naming/uniquenessValidator';
 import { KernelError } from '../../shared/intent/kernelError';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { isFabProcess } from '../../shared/fab';
+import { optionalStockField, parseOptionalStockSpec } from '../../shared/stock';
 import type { EditableVec3, FeatureId, Param, Unit, Vec3, Vec3Param } from '../../shared/intent/types';
 import { formatScalarForError, isValidEditableVec3 } from '../../shared/intent/types';
 import {
@@ -733,6 +734,7 @@ export function recordPartInternal(
   promoteCatalogConnectors: boolean,
 ): AssemblyPartRef {
   assertTopoRefSafeName(name, 'part-name', shape.id);
+  const stock = parseOptionalStockSpec(opts.stock, { partName: name, featureId: shape.id });
   const { resolvedMaterial, effectiveDensity } = resolvePartMaterialAndValidateOpts(state, name, shape, opts);
   const connectors = normalizeConnectors(name, shape.id, opts.connectors);
   const transformedCatalogConnectors = promoteCatalogConnectors
@@ -743,6 +745,7 @@ export function recordPartInternal(
   const record = state.session.assemblyPart(state.name, name, shape, {
     at, connectors, placedBy: opts.connect,
     ...(resolvedMaterial !== undefined ? { materialName: resolvedMaterial.name } : {}),
+    ...optionalStockField(stock),
   });
   // Q1.5: write the part-lineage entry now that the capture-session has
   // minted the `assemblyPart` FeatureRecord. The lineage's `featureId`
@@ -790,6 +793,7 @@ export function recordPartInternal(
     ...(effectiveDensity !== undefined ? { density: effectiveDensity } : {}),
     ...(resolvedMaterial !== undefined ? { material: resolvedMaterial.name } : {}),
     ...(opts.process !== undefined ? { process: opts.process } : {}),
+    ...optionalStockField(stock),
     ...(opts.massKg !== undefined ? { massKg: opts.massKg } : {}),
     ...(opts.crossSection !== undefined ? { crossSection: opts.crossSection } : {}),
     ...(opts.role !== undefined ? { role: opts.role } : {}),
