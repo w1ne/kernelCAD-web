@@ -26,6 +26,30 @@ describe('printed electronics enclosure', () => {
     // the outer envelope. A plain lid without the lip is below this bound.
     expect(result.sceneSummary?.volume).toBeGreaterThan(72_000);
   }, 120_000);
+
+  it('keeps a 16 mm connector gauge clear through the finished front wall', async () => {
+    const code = await readFile('examples/manufacturing-showcase/electronics-enclosure.kcad.ts', 'utf8');
+    const gaugeInsertion = "arm.part('base', base, { material: 'abs' });";
+    const gaugeCode = code.replace(
+      gaugeInsertion,
+      "base = base.subtract(box(16, wall.add(0.4), 6).translate(connectorX, -0.2, 8));\n" + gaugeInsertion,
+    );
+    expect(gaugeCode).not.toBe(code);
+
+    const model = await evaluateScriptTool({ code, skipMechanismCheck: true });
+    expect(model.ok, JSON.stringify(model.diagnostics)).toBe(true);
+
+    // The modeling kernel emits this diagnostic when the gauge is wholly in
+    // free space; a partial intersection would instead subtract material.
+    const withGaugeSubtracted = await evaluateScriptTool({ code: gaugeCode, skipMechanismCheck: true });
+    const noOp = withGaugeSubtracted.diagnostics.find(diagnostic => diagnostic.code === 'feature.subtractive-noop');
+    expect(noOp?.message).toContain('result volume equals the input volume');
+    expect(withGaugeSubtracted.diagnostics
+      .filter(diagnostic => diagnostic.severity === 'error')
+      .every(diagnostic => ['feature.subtractive-noop', 'recompute.input.missing'].includes(diagnostic.code)))
+      .toBe(true);
+  }, 180_000);
+
   it('keeps PCB posts clear of lid bosses at the combined minimum footprint and maximum wall', async () => {
     const code = (await readFile('examples/manufacturing-showcase/electronics-enclosure.kcad.ts', 'utf8'))
       .replace("param('length', 100", "param('length', 80")
