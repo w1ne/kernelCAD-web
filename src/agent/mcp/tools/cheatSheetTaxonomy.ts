@@ -109,7 +109,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   {
     task: 'Combine shapes',
     blurb: 'Merge or intersect solids, or group them without paying for a boolean.',
-    names: ['union', 'intersect', 'toCompound', 'toUnion'],
+    names: ['union', 'intersect', 'split', 'toCompound', 'toUnion'],
   },
   {
     task: 'Finish edges',

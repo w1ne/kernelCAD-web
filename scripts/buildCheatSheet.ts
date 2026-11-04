@@ -37,6 +37,9 @@ const HEADER = [
   'A bare nominal diameter becomes a coarse ISO thread with',
   '`hole({ diameter, thread: true })` or the MCP tool `resolve_metric_thread`.',
   'Clearance bores stay on `clearanceFitForHoleDiameter`.',
+  'A boolean that must keep the scrap is `shape.split(other)`.',
+  "Default keep `parts` returns a Scene of `intersection`, `a_only` and `b_only`.",
+  'The MCP tool is `split_keep_parts`.',
   '',
 ];
 

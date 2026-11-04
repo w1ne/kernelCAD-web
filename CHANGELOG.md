@@ -1,5 +1,9 @@
 # Unreleased
 
+- `shape.split` keeps the overlap and both leftovers. Default `keep: 'parts'`
+  returns a Scene of `intersection`, `a_only` and `b_only` (empty fragments
+  omitted). A single keep returns that Shape. `subtract`, `intersect` and
+  `union` are unchanged. MCP: `split_keep_parts`.
 - `metricThreadFromDiameter` and `resolve_metric_thread` map a nominal diameter
   (12 mm → M12×1.75) or a tap drill (D − P; 5 mm → M6) to the ISO 261 coarse
   designation. `hole` / `holes` accept `thread: true` to fill that pitch.

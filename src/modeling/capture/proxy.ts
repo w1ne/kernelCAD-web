@@ -11,6 +11,8 @@ import type { ShapeTransform } from '../../shared/intent/featureRecord';
 import type { CaptureSession } from './captureSession';
 import { buildFaceInputRef } from './shapeOperationFeatureRecords';
 import { captureFilletIntersection } from './filletIntersectionCapture';
+import { captureBooleanSplit } from './booleanSplitCapture';
+import type { Scene } from '../validation/scene';
 import { captureMoveFaces, captureOffsetFaces, type CanonicalFace, type FaceEditInput, type FaceSelector } from './faceEditCapture';
 import type { EdgeQuery, FaceQuery, EdgeSegment } from '../../kernel/backends/occt/edgeQueries';
 import type { Query, EdgeMarker } from '../../kernel/naming/query';
@@ -797,6 +799,13 @@ export class Shape {
 
   intersect(...others: Shape[]): Shape {
     return this.session.boolean('intersection', this, others);
+  }
+
+  /** Keep the overlap and both leftovers. Default `parts` returns a Scene. */
+  split(other: Shape, opts: { keep: 'intersection' | 'a_only' | 'b_only' }): Shape;
+  split(other: Shape, opts?: { keep?: 'parts' }): Scene;
+  split(other: Shape, opts?: { keep?: 'parts' | 'intersection' | 'a_only' | 'b_only' }): Shape | Scene {
+    return captureBooleanSplit(this.session, this, other, opts);
   }
 
   // Single-radius form (rc.6) + optional continuity opts (Slice C Task 6).

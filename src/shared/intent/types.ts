@@ -138,6 +138,9 @@ export type FeatureKind =
   | 'extrude' | 'revolve' | 'loft' | 'sweep'
   // boolean
   | 'boolean'
+  // Keep intersection, A−B, and B−A as separate solids. Not a wasm bind:
+  // lowered with the existing Cut and Common history helpers.
+  | 'booleanSplit'
   // edge/face features (v0.2+)
   | 'fillet' | 'chamfer' | 'shell' | 'hole' | 'holes' | 'cutout' | 'draft' | 'moveFaces' | 'offsetFaces' | 'pattern'
   // symmetric (v0.13+)

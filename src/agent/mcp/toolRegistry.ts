@@ -45,6 +45,7 @@ import { toleranceStackToolEntries } from './registry/toleranceTools';
 import { scanReferenceToolEntries } from './registry/scanReferenceTools';
 import { cncCamToolEntries } from './registry/cncCamTools';
 import { metricThreadToolEntries } from './registry/metricThreadTools';
+import { splitKeepPartsToolEntries } from './registry/splitKeepPartsTools';
 import type { McpToolDefinition, ToolRegistryEntry } from './registry/types';
 import { guardMcpToolArgs } from './sandboxArgs';
 import { foldMcpInputAliases } from './snakeCaseArgs';
@@ -142,6 +143,8 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...cncCamToolEntries,
   // Appended after the mill planner: diameter → ISO metric coarse designation.
   ...metricThreadToolEntries,
+  // Appended after the metric-thread resolver: shape.split keep-parts.
+  ...splitKeepPartsToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints

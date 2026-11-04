@@ -175,6 +175,8 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   fit_model_to_scan: READ,
   plan_cnc_toolpaths: READ,
   resolve_metric_thread: READ,
+  // Evaluates a split and returns part measures. Writes nothing.
+  split_keep_parts: READ,
   // Evaluates the script in-process and reports; writes nothing.
   dfm_review: READ,
   // Returns revised source for the caller to persist. Writes nothing.

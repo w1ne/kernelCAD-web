@@ -40,6 +40,7 @@ import { TOLERANCE_STACK_OUTPUT_SCHEMAS } from './registry/toleranceTools.output
 import { SCAN_REFERENCE_OUTPUT_SCHEMAS } from './registry/scanReferenceTools.outputSchemas';
 import { CNC_CAM_OUTPUT_SCHEMAS } from './registry/cncCamTools.outputSchemas';
 import { METRIC_THREAD_OUTPUT_SCHEMAS } from './registry/metricThreadTools.outputSchemas';
+import { SPLIT_KEEP_PARTS_OUTPUT_SCHEMAS } from './registry/splitKeepPartsTools.outputSchemas';
 import { SDF_EXPORT_PREVIEW_OUTPUT_SCHEMAS } from './registry/sdfExportPreviewTools.outputSchemas';
 
 export type { JSONSchemaObject } from './toolOutputSchemaParts';
@@ -762,4 +763,5 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   ...SCAN_REFERENCE_OUTPUT_SCHEMAS,
   ...CNC_CAM_OUTPUT_SCHEMAS,
   ...METRIC_THREAD_OUTPUT_SCHEMAS,
+  ...SPLIT_KEEP_PARTS_OUTPUT_SCHEMAS,
 };

@@ -18,6 +18,9 @@ from a bounding box plus stock. Its G-code is not the FDM slicer export.
 A bare nominal diameter becomes a coarse ISO thread with
 `hole({ diameter, thread: true })` or the MCP tool `resolve_metric_thread`.
 Clearance bores stay on `clearanceFitForHoleDiameter`.
+A boolean that must keep the scrap is `shape.split(other)`.
+Default keep `parts` returns a Scene of `intersection`, `a_only` and `b_only`.
+The MCP tool is `split_keep_parts`.
 
 | Task | What it covers |
 |---|---|
@@ -128,6 +131,8 @@ Merge or intersect solids, or group them without paying for a boolean.
 | `Shape.union(...others) => Shape` | Boolean union with one or more shapes. |
 | `Shape.intersect(...others) => Shape` | Boolean intersection. |
 | `Curve3D.analytics.intersect(other: Curve3D \| Surface, opts?: { tolerance?: number }) => CurveCurveIntersection[] \| CurveSurfaceIntersection[]` | Geometric intersection of this curve with another `Curve3D` (returns `{ tA, tB, ptA, ptB, distance }` records) or with a `Surface` from `nurbsSurface()` (returns `{ tCurve, uv, pt }` records). |
+| `Shape.split(other: Shape, opts?: { keep?: 'parts' \| 'intersection' \| 'a_only' \| 'b_only' }) => Scene \| Shape` | Keep the overlap and both leftovers as named parts. |
+| `Surface.split(by: Surface \| Shape) => [Surface, Surface]` | Split this surface at its intersection with `by` and return both resulting Surface halves as `[first, second]`, ordered by descending face area. |
 | `Scene.toCompound() => Shape` | Groups bodies without booleaning. |
 | `Scene.toUnion() => Shape` | Explicit boolean fuse of all parts into one Shape. |
 
@@ -231,6 +236,7 @@ NURBS curves and surfaces, plus the evaluators for measuring them before they be
 | `Surface.thicken(t: Editable<number>) => Shape` | Offset both sides of this surface by `t` mm and return the closed solid Shape. |
 | `Surface.toShape() => Shape` | Wrap this surface as a single-face zero-volume Shape. |
 | `Surface.trimTo(by: Surface \| Shape) => Surface` | Trim this surface at its intersection with `by` and return a new Surface representing the kept half. |
+| `Shape.split(other: Shape, opts?: { keep?: 'parts' \| 'intersection' \| 'a_only' \| 'b_only' }) => Scene \| Shape` | Keep the overlap and both leftovers as named parts. |
 | `Surface.split(by: Surface \| Shape) => [Surface, Surface]` | Split this surface at its intersection with `by` and return both resulting Surface halves as `[first, second]`, ordered by descending face area. |
 | `Shape.projectCurve(opts: { source: ProjectCurveSource; face: FaceSelector \| string; scaleMode?: 'original' \| 'native' \| 'bounds'; asEdge?: boolean }) => Sketch` | Wrap a 2D closed curve onto a 3D face along the face normal. |
 | `Curve3D.sample(n: number) => [number, number, number][]` | Sample `n + 1` evenly-spaced points along the curve in the public `[0, 1]` parameter domain. |
