@@ -74,13 +74,13 @@ export { stlNotWatertightDiagnostic, brepInvalidDiagnostic } from './exportDiagn
 export type { GcodeStats } from '../../kernel/export/gcode/gcodeHeaderParser';
 
 export type ExportFormat =
-  | 'stl' | 'step' | 'dxf' | '3mf' | 'glb' | 'obj' | 'ply' | 'usd' | 'svg-drawing' | 'pdf-drawing'
+  | 'stl' | 'step' | 'dxf' | '3mf' | 'glb' | 'asset-pack' | 'obj' | 'ply' | 'usd' | 'svg-drawing' | 'pdf-drawing'
   | 'urdf' | 'srdf' | 'sdf-gazebo' | 'gcode' | 'usd-isaac'
   | 'bom-csv' | 'bom-json' | 'bend-table';
 
 /** Supported export formats, checked before evaluating untyped caller input. */
 export const EXPORT_FORMATS: readonly ExportFormat[] = [
-  'stl', 'step', 'dxf', '3mf', 'glb', 'obj', 'ply', 'usd', 'svg-drawing', 'pdf-drawing',
+  'stl', 'step', 'dxf', '3mf', 'glb', 'asset-pack', 'obj', 'ply', 'usd', 'svg-drawing', 'pdf-drawing',
   'urdf', 'srdf', 'sdf-gazebo', 'gcode', 'usd-isaac', 'bom-csv', 'bom-json', 'bend-table',
 ];
 
@@ -200,7 +200,8 @@ export type ExportOptions =
     }
   | { format: 'bom-csv' }
   | { format: 'bom-json' }
-  | { format: 'bend-table' };
+  | { format: 'bend-table' }
+  | { format: 'asset-pack' };
 
 /**
  * `pdf-drawing`: the svg-drawing sheet (same views, hidden lines, dimensions,

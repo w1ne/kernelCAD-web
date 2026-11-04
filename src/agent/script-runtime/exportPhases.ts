@@ -6,6 +6,7 @@ import { exportDxf, type DxfWriterOptions } from '../../kernel/backends/occt/exp
 import { exportSceneDxf, exportShapeDxfProfile } from './exportDxfProfiles';
 import { export3mfWithReportAsync, type Export3mfOptions } from '../../kernel/backends/occt/export3mf';
 import { exportGlbAsync, type ExportGlbOptions } from '../../kernel/backends/occt/exportGlb';
+import { exportSceneAssetPack, exportSingleAssetPack } from './exportAssetPack';
 import { exportMeshObjZip, exportMeshUsd, type NamedMesh } from '../../kernel/export/meshFormats';
 import { exportScenePly, exportSinglePly, plyOptionsDiagnostic } from './exportPly';
 import { buildRigMetadata } from '../../kernel/export/rigHierarchy';
@@ -429,6 +430,9 @@ export async function exportSceneBackend(
   if (format === 'glb') {
     return exportSceneGlb(input, scene, targetId, diagnostics, featureCount);
   }
+  if (format === 'asset-pack') {
+    return exportSceneAssetPack(input, scene, run, diagnostics, featureCount);
+  }
   if (format === 'ply') {
     return exportScenePly(input, scene, diagnostics, featureCount);
   }
@@ -795,6 +799,8 @@ export async function exportSingleShape(
       return exportSingle3mf(input, shape, targetId, diagnostics, featureCount);
     case 'glb':
       return exportSingleGlb(input, shape, targetId, scriptDir, run, diagnostics, featureCount);
+    case 'asset-pack':
+      return exportSingleAssetPack(input, shape, targetId, scriptDir, run, diagnostics, featureCount);
     case 'obj':
       return exportSingleMeshText(shape, 'obj', targetId, run.records, diagnostics, featureCount);
     case 'usd':

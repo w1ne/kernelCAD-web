@@ -43,6 +43,8 @@ const slug = z.string().trim().min(1).max(64).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
 const AssetMetadataFields = {
   schemaVersion: z.literal(1).default(1),
+  /** Kebab-case file stem for an `asset-pack` download. */
+  id: slug.optional(),
   name: z.string().trim().min(1).max(128).optional(),
   title: z.string().trim().min(1).max(128).optional(),
   description: z.string().trim().max(4000).optional(),
