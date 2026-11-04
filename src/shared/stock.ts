@@ -137,6 +137,22 @@ export function parseStockSpec(raw: unknown, ctx: StockParseContext): StockSpec 
   fail(ctx, 'opts.stock.kind', kind, "one of 'bar' | 'plate' | 'blank' | 'filament'");
 }
 
+
+/** Parse stock when present; `undefined` stays `undefined` (no throw). */
+export function parseOptionalStockSpec(
+  raw: unknown | undefined,
+  ctx: StockParseContext,
+): StockSpec | undefined {
+  if (raw === undefined) return undefined;
+  return parseStockSpec(raw, ctx);
+}
+
+/** Spread helper so call sites do not pay ternary complexity. */
+export function optionalStockField(stock: StockSpec | undefined): { stock?: StockSpec } {
+  if (stock === undefined) return {};
+  return { stock };
+}
+
 /** One CSV / pack cell. Dimensions are millimetres. */
 export function formatStockSpec(stock: StockSpec): string {
   if (stock.kind === 'bar') {

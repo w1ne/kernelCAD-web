@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
-import { formatStockSpec, parseStockSpec } from './stock';
+import { formatStockSpec, optionalStockField, parseOptionalStockSpec, parseStockSpec } from './stock';
 
 const ctx = { partName: 'shaft' };
 
@@ -79,5 +79,18 @@ describe('formatStockSpec', () => {
     expect(formatStockSpec({ kind: 'plate', lengthMm: 200, widthMm: 120, thicknessMm: 3 })).toBe('plate 200x120x3 mm');
     expect(formatStockSpec({ kind: 'blank', lengthMm: 40, widthMm: 30, heightMm: 20 })).toBe('blank 40x30x20 mm');
     expect(formatStockSpec({ kind: 'filament', diameterMm: 1.75 })).toBe('filament D1.75 mm');
+  });
+});
+
+describe('parseOptionalStockSpec / optionalStockField', () => {
+  it('leaves undefined stock undefined and spreads nothing', () => {
+    expect(parseOptionalStockSpec(undefined, ctx)).toBeUndefined();
+    expect(optionalStockField(undefined)).toEqual({});
+  });
+
+  it('parses and spreads a present stock', () => {
+    const stock = parseOptionalStockSpec({ kind: 'bar', lengthMm: 80, diameterMm: 20 }, ctx);
+    expect(stock).toEqual({ kind: 'bar', lengthMm: 80, diameterMm: 20 });
+    expect(optionalStockField(stock)).toEqual({ stock });
   });
 });
