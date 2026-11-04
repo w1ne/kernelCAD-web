@@ -64,6 +64,34 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       step: { type: 'object', additionalProperties: true, description: 'Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs.' },
       featureCount: { type: 'number', description: 'Number of features captured by the script.' },
       diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
+      refuse: {
+        type: 'object',
+        description: 'Present only when ok is false and an error diagnostic exists. The first error: code (DiagnosticCode), message, optional location, and try (the recovery hint). Warnings alone omit refuse.',
+        properties: {
+          code: { type: 'string', description: 'DiagnosticCode of the first error-severity diagnostic.' },
+          message: { type: 'string' },
+          location: {
+            type: 'object',
+            properties: {
+              featureId: { type: 'string' },
+              param: { type: 'string', description: 'Parameter named by the diagnostic details, when present.' },
+              scriptLocation: {
+                type: 'object',
+                properties: {
+                  line: { type: 'number' },
+                  column: { type: 'number' },
+                  path: { type: 'string' },
+                },
+                additionalProperties: false,
+              },
+            },
+            additionalProperties: false,
+          },
+          try: { type: 'string', description: 'Actionable recovery hint from the diagnostic or its hint template.' },
+        },
+        required: ['code', 'message', 'try'],
+        additionalProperties: false,
+      },
       dryRun: { type: 'boolean', description: 'True when the result came from a fast dry run.' },
       parts: { type: 'object', additionalProperties: true, description: 'Assembly parts summary { count, names } when the scene is assembly-built.' },
       featureHealth: {
