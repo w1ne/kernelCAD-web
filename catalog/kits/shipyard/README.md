@@ -1,6 +1,6 @@
 # Shipyard kit
 
-Seventy original low-poly scene props for shipyard construction, repair, block fabrication, and drydock operations. Sources use millimetres and Z up. Each asset exposes overall scale and asset color, uses one material, and declares a 1,800-triangle ceiling. All geometry is dedicated to the public domain under CC0 1.0.
+Seventy original low-poly scene props for shipyard construction, repair, block fabrication, and drydock operations. Sources use millimetres and Z up. Each asset exposes overall scale, 2–4 material-specific color controls, and `fresh-coat` and `weathered-yard` presets. Profiled panels, beams, tanks, and fittings give each prop a distinct low-poly silhouette; every source keeps its 1,800-triangle ceiling. All geometry is dedicated to the public domain under CC0 1.0.
 
 ## Yard and dock operations
 
@@ -28,6 +28,6 @@ Seventy original low-poly scene props for shipyard construction, repair, block f
 
 ## Preview and verification
 
-The [shipyard wave bundle](../../../artifacts/catalog-demos/shipyard-wave-20261103/README.md) contains the reproducible source generator, catalog audit, rendered previews, parameter check, and inspected MP4 walkthrough.
+The [shipyard quality-promotion bundle](../../../artifacts/catalog-demos/shipyard-quality-20261104/README.md) contains the source generator, catalog and preview checks, material variant, and inspected MP4 walkthrough.
 
 These are generic visualization props. They do not specify vessel structure, lift capacity, welding procedures, drydock certification, occupational-safety compliance, or repair instructions. Catalog validation does not establish shipyard or vessel safety, regulatory compliance, or operational acceptance.

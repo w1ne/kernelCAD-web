@@ -1,50 +1,89 @@
-// Original shipyard scene asset. Millimetres, Z up, base origin.
+// Plate pack transfer cart: Shop cart for short plate packs with fork-shaped deck rails, end stops, push bar, and four large wheels. This profile, component layout, and color zoning define its yard role. Millimetres, Z up, base origin.
 meta({
   name: "plate-pack-transfer-cart",
-  license: "CC0-1.0",
+  license: 'CC0-1.0',
   title: "Plate pack transfer cart",
-  description: "Shop cart for short plate packs with fork-shaped deck rails, end stops, push bar, and four large wheels. Editable overall scale and asset color.",
-  tags: ["shipyard", "shipbuilding", "drydock", "refit", "low poly", "CC0", "block and material movement"],
-  kit: "shipyard",
-  category: "prop",
-  origin: "base",
-  compat: ["shipyard", "marine", "drydock", "ship-repair"],
+  description: "Shop cart for short plate packs with fork-shaped deck rails, end stops, push bar, and four large wheels. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+  tags: ["shipyard", "shipbuilding", "drydock", "refit", "low poly", "CC0", "plate", "pack", "transfer", "cart"],
+  kit: 'shipyard',
+  category: 'prop',
+  origin: 'base',
+  compat: ['shipyard', 'marine', 'drydock', 'ship-repair'],
   triangleBudget: 1800,
 });
 
-const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#8a765d", { label: "Asset color" });
-const originOffsetMm = 0;
+const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
+const yardPaint = param("yardPaint", "#8a765d", { label: "Yard finish" });
+const structuralSteel = param("structuralSteel", "#b6c1c4", { label: "Structural steel" });
+const elastomer = param("elastomer", "#30383b", { label: "Elastomer" });
+
+presets({
+  'fresh-coat': {"yardPaint": "#9f8f7a", "structuralSteel": "#d0d7d8", "elastomer": "#3a4245"},
+  'weathered-yard': {"yardPaint": "#73624d", "structuralSteel": "#828d91", "elastomer": "#252b2d"},
+});
+
 const p = assembly("plate-pack-transfer-cart");
+const originOffsetMm = 0;
 
-const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+const panelProfile = (w: number, d: number, corner: number) => {
+  const c = Math.max(0.5, Math.min(corner, w * 0.18, d * 0.18));
+  return path().moveTo(-w / 2 + c, -d / 2).lineTo(w / 2 - c, -d / 2)
+    .lineTo(w / 2, -d / 2 + c).lineTo(w / 2, d / 2 - c)
+    .lineTo(w / 2 - c, d / 2).lineTo(-w / 2 + c, d / 2)
+    .lineTo(-w / 2, d / 2 - c).lineTo(-w / 2, -d / 2 + c).close();
 };
-const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
-  let shape = box(size[0], size[1], size[2], true);
-  if (rotation?.[0]) shape = shape.rotate([1, 0, 0], rotation[0]);
-  if (rotation?.[1]) shape = shape.rotate([0, 1, 0], rotation[1]);
-  if (rotation?.[2]) shape = shape.rotate([0, 0, 1], rotation[2]);
-  place(name, shape, at);
+const profiledBox = (w: number, d: number, h: number) => {
+  const corner = Math.min(w, d) * 0.08;
+  const inset = Math.min(w, d) * 0.025;
+  return panelProfile(w, d, corner)
+    .loft(panelProfile(w - inset * 2, d - inset * 2, corner * 0.9), { spacing: h, ruled: true })
+    .translate(0, 0, -h / 2);
 };
-const C = (name: string, height: number, radius: number, at: [number, number, number], rotation: [number, number, number] = [0, 0, 0], segments = 10) => {
-  let shape = cylinder(height, radius, segments);
-  if (rotation[0]) shape = shape.rotate([1, 0, 0], rotation[0]);
-  if (rotation[1]) shape = shape.rotate([0, 1, 0], rotation[1]);
-  if (rotation[2]) shape = shape.rotate([0, 0, 1], rotation[2]);
-  place(name, shape, at);
+const taperedBox = (w: number, d: number, h: number) => {
+  const bottom = panelProfile(w * 0.68, d * 0.68, Math.min(w, d) * 0.05);
+  const top = panelProfile(w, d, Math.min(w, d) * 0.08);
+  return bottom.loft(top, { spacing: h, ruled: true }).translate(0, 0, -h / 2);
+};
+const b = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
+  let shape = /^(bin-body|hopper-body|collection-bin)$/.test(name) ? taperedBox(size[0], size[1], size[2]) : profiledBox(size[0], size[1], size[2]);
+  if (rotation?.[0]) shape = shape.rotateX(rotation[0]);
+  if (rotation?.[1]) shape = shape.rotateY(rotation[1]);
+  if (rotation?.[2]) shape = shape.rotateZ(rotation[2]);
+  return shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+};
+const ngon = (r: number, sides: number, rotation = 0) => {
+  let profile = path().moveTo(r * Math.cos(rotation), r * Math.sin(rotation));
+  for (let i = 1; i < sides; i++) {
+    const angle = rotation + 2 * Math.PI * i / sides;
+    profile = profile.lineTo(r * Math.cos(angle), r * Math.sin(angle));
+  }
+  return profile.close();
+};
+const profiledCylinder = (h: number, r: number, sides: number, name: string, profileAngle: number) => {
+  const lower = /hopper|funnel|cone|diffuser/i.test(name) ? r * 0.62 : r * 0.94;
+  return ngon(lower, sides, profileAngle).loft(ngon(r, sides, profileAngle), { spacing: h, ruled: true });
+};
+const c = (name: string, h: number, r: number, sides: number, at: [number, number, number], axis?: [number, number, number], degrees = 0) => {
+  const profileAngle = axis?.[0] ? Math.PI / 2 : 0;
+  let shape = profiledCylinder(h, r, sides, name, profileAngle);
+  if (axis && degrees) {
+    if (axis[0]) shape = shape.rotateX(degrees);
+    else if (axis[1]) shape = shape.rotateY(degrees);
+    else if (axis[2]) shape = shape.rotateZ(degrees);
+  }
+  return shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
 };
 
-B("cart-deck", [1840, 1050, 180], [0, 0, 470]);
-B("deck-rail-0", [1630, 130, 180], [0, -340, 650]);
-B("deck-rail-1", [1630, 130, 180], [0, 340, 650]);
-B("end-stop-0", [140, 1020, 400], [-850, 0, 760]);
-B("end-stop-1", [140, 1020, 400], [850, 0, 760]);
-C("wheel-0", 110, 230, [-650, -450, 230], [90, 0, 0], 12);
-C("wheel-1", 110, 230, [650, -450, 230], [90, 0, 0], 12);
-C("wheel-2", 110, 230, [-650, 450, 230], [90, 0, 0], 12);
-C("wheel-3", 110, 230, [650, 450, 230], [90, 0, 0], 12);
-B("push-bar", [100, 920, 100], [-930, 0, 980]);
-B("handle-grip", [120, 780, 120], [-930, 0, 1480]);
+p.part("cart-deck", b("cart-deck", [1840, 1050, 180], [0, 0, 470]).color(yardPaint));
+p.part("deck-rail-0", b("deck-rail-0", [1630, 130, 180], [0, -340, 650]).color(structuralSteel));
+p.part("deck-rail-1", b("deck-rail-1", [1630, 130, 180], [0, 340, 650]).color(structuralSteel));
+p.part("end-stop-0", b("end-stop-0", [140, 1020, 400], [-850, 0, 760]).color(structuralSteel));
+p.part("end-stop-1", b("end-stop-1", [140, 1020, 400], [850, 0, 760]).color(structuralSteel));
+p.part("wheel-0", c("wheel-0", 110, 230, 12, [-650, -450, 230], [90, 0, 0], 90).color(elastomer));
+p.part("wheel-1", c("wheel-1", 110, 230, 12, [650, -450, 230], [90, 0, 0], 90).color(elastomer));
+p.part("wheel-2", c("wheel-2", 110, 230, 12, [-650, 450, 230], [90, 0, 0], 90).color(elastomer));
+p.part("wheel-3", c("wheel-3", 110, 230, 12, [650, 450, 230], [90, 0, 0], 90).color(elastomer));
+p.part("push-bar", b("push-bar", [100, 920, 100], [-930, 0, 980]).color(structuralSteel));
+p.part("handle-grip", b("handle-grip", [120, 780, 120], [-930, 0, 1480]).color(elastomer));
 
 return p.model();
