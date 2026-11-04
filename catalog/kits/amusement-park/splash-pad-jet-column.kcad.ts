@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Splash pad jet column: Low interactive water-play feature with a central jet post, four short spray arms, and a raised drain base.
 meta({
   name: "splash-pad-jet-column",
   license: "CC0-1.0",
   title: "Splash pad jet column",
-  description: "Low interactive water-play feature with a central jet post, four short spray arms, and a raised drain base. Editable overall scale and asset color.",
+  description: "Low interactive water-play feature with a central jet post, four short spray arms, and a raised drain base. Controls: overall scale, stainlessSteel, rubber, enamel; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "attractions and queues"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#6b9ba0", { label: "Asset color" });
+const stainlessSteel = param("stainlessSteel", "#b0b9b6", { label: "Stainless steel" });
+const rubber = param("rubber", "#292f33", { label: "Rubber" });
+const enamel = param("enamel", "#cc684e", { label: "Baked enamel" });
+
+presets({
+  festival: {
+    "stainlessSteel": "#d1d1c6",
+    "rubber": "#3c4245",
+    "enamel": "#edb34d"
+},
+  twilight: {
+    "stainlessSteel": "#788b91",
+    "rubber": "#20262a",
+    "enamel": "#385b81"
+},
+});
 const originOffsetMm = -45;
 const p = assembly("splash-pad-jet-column");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["drain-base", "spray-arm-0", "spray-arm-1", "spray-arm-2", "spray-arm-3"].includes(name)) p.part(name, positioned.color(stainlessSteel));
+  else if (["nozzle-3"].includes(name)) p.part(name, positioned.color(enamel));
+  else if (["jet-column", "nozzle-0", "nozzle-1", "nozzle-2"].includes(name)) p.part(name, positioned.color(rubber));
+  else p.part(name, positioned.color(stainlessSteel));
 };
 const C = (name: string, height: number, radius: number, at: [number, number, number], rotation: [number, number, number] = [0, 0, 0], segments = 10) => {
   let shape = cylinder(height, radius, segments);

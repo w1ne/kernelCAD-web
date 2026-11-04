@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Family rest bench: Wide plaza bench with back slats, arm dividers, and a shaded stroller-clear zone underneath.
 meta({
   name: "family-rest-bench",
   license: "CC0-1.0",
   title: "Family rest bench",
-  description: "Wide plaza bench with back slats, arm dividers, and a shaded stroller-clear zone underneath. Editable overall scale and asset color.",
+  description: "Wide plaza bench with back slats, arm dividers, and a shaded stroller-clear zone underneath. Controls: overall scale, timber, steel, rubber; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "park operations and guest comfort"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#8c785f", { label: "Asset color" });
+const timber = param("timber", "#8a6748", { label: "Sealed timber" });
+const steel = param("steel", "#738087", { label: "Painted steel" });
+const rubber = param("rubber", "#292f33", { label: "Rubber" });
+
+presets({
+  festival: {
+    "timber": "#ab8051",
+    "steel": "#9da3a0",
+    "rubber": "#3c4245"
+},
+  twilight: {
+    "timber": "#604b3b",
+    "steel": "#4f626c",
+    "rubber": "#20262a"
+},
+});
 const originOffsetMm = 0;
 const p = assembly("family-rest-bench");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["arm-rest-0", "back-slat-0", "back-slat-1", "back-slat-2", "back-slat-3", "seat", "seat-slat-0", "seat-slat-1", "seat-slat-2", "seat-slat-3"].includes(name)) p.part(name, positioned.color(timber));
+  else if (["arm-rest-1"].includes(name)) p.part(name, positioned.color(rubber));
+  else if (["leg-0", "leg-1"].includes(name)) p.part(name, positioned.color(steel));
+  else p.part(name, positioned.color(timber));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

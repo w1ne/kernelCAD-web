@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Wristband check-in desk: Guest check-in counter with wristband dispenser, handheld scanner cradle, and an accessible return shelf.
 meta({
   name: "wristband-checkin-desk",
   license: "CC0-1.0",
   title: "Wristband check-in desk",
-  description: "Guest check-in counter with wristband dispenser, handheld scanner cradle, and an accessible return shelf. Editable overall scale and asset color.",
+  description: "Guest check-in counter with wristband dispenser, handheld scanner cradle, and an accessible return shelf. Controls: overall scale, paintedTimber, stainlessSteel, acrylic; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "entry and guest services"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#967a59", { label: "Asset color" });
+const paintedTimber = param("paintedTimber", "#92704e", { label: "Painted timber" });
+const stainlessSteel = param("stainlessSteel", "#b0b9b6", { label: "Stainless steel" });
+const acrylic = param("acrylic", "#63aab8", { label: "Tinted acrylic" });
+
+presets({
+  festival: {
+    "paintedTimber": "#be8a4e",
+    "stainlessSteel": "#d1d1c6",
+    "acrylic": "#79c8d2"
+},
+  twilight: {
+    "paintedTimber": "#5e7181",
+    "stainlessSteel": "#788b91",
+    "acrylic": "#41768b"
+},
+});
 const originOffsetMm = 0;
 const p = assembly("wristband-checkin-desk");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["counter-body", "countertop", "wristband-dispenser"].includes(name)) p.part(name, positioned.color(paintedTimber));
+  else if (["privacy-screen"].includes(name)) p.part(name, positioned.color(acrylic));
+  else if (["lower-return-shelf", "scanner-cradle"].includes(name)) p.part(name, positioned.color(stainlessSteel));
+  else p.part(name, positioned.color(paintedTimber));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

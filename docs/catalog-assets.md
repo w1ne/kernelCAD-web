@@ -123,13 +123,14 @@ contamination control, PPE performance, or operational acceptance.
 
 The [amusement park kit](../catalog/kits/amusement-park/README.md) adds 70
 original low-poly props for park entry, guest services, family attractions,
-midway games, concessions, rest areas, and operations. Each source exposes
-scale and color controls and has an indexed preview. The [wave demo and
-verification bundle](../artifacts/catalog-demos/amusement-park-wave-20261103/README.md)
-records the generated sources, rendered previews, local catalog checks, and
-inspected MP4. These are visualization props; checks do not establish ride
-structure, restraints, barrier design, accessibility compliance, equipment
-ratings, operating procedures, or attraction safety.
+midway games, concessions, rest areas, and operations. Every asset now exposes
+three or four material-named controls and `festival` / `twilight` presets, with
+refreshed preview paths in the generated index. The [quality promotion handoff](../artifacts/catalog-demos/amusement-park-quality-promotion-20261104/README.md)
+records the source changes, preview review, index, lint, integration and local
+page evidence, plus an inspected MP4. The [original wave bundle](../artifacts/catalog-demos/amusement-park-wave-20261103/README.md)
+retains the kit creation workflow. These are visualization props; checks do
+not establish ride structure, restraints, barrier design, accessibility
+compliance, equipment ratings, operating procedures, or attraction safety.
 
 ## Shipyard assets
 

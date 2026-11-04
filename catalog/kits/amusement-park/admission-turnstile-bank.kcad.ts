@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Admission turnstile bank: Three waist-high admission gates with rotating arms and a shared approach rail.
 meta({
   name: "admission-turnstile-bank",
   license: "CC0-1.0",
   title: "Admission turnstile bank",
-  description: "Three waist-high admission gates with rotating arms and a shared approach rail. Editable overall scale and asset color.",
+  description: "Three waist-high admission gates with rotating arms and a shared approach rail. Controls: overall scale, stainlessSteel, anodizedAluminum, polymer; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "entry and guest services"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#718b87", { label: "Asset color" });
+const stainlessSteel = param("stainlessSteel", "#b0b9b6", { label: "Stainless steel" });
+const anodizedAluminum = param("anodizedAluminum", "#859b9e", { label: "Anodized aluminum" });
+const polymer = param("polymer", "#586f7a", { label: "Molded polymer" });
+
+presets({
+  festival: {
+    "stainlessSteel": "#d1d1c6",
+    "anodizedAluminum": "#b7c4c3",
+    "polymer": "#7d9b93"
+},
+  twilight: {
+    "stainlessSteel": "#788b91",
+    "anodizedAluminum": "#576f78",
+    "polymer": "#455e83"
+},
+});
 const originOffsetMm = 0;
 const p = assembly("admission-turnstile-bank");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["pedestal-0", "pedestal-1", "pedestal-2"].includes(name)) p.part(name, positioned.color(stainlessSteel));
+  else if (["reader-0", "reader-1", "reader-2", "turnstile-arm-0-0", "turnstile-arm-0-1", "turnstile-arm-0-2", "turnstile-arm-1-0", "turnstile-arm-1-1", "turnstile-arm-1-2", "turnstile-arm-2-0", "turnstile-arm-2-1", "turnstile-arm-2-2"].includes(name)) p.part(name, positioned.color(polymer));
+  else if (["approach-rail-front", "approach-rail-rear"].includes(name)) p.part(name, positioned.color(anodizedAluminum));
+  else p.part(name, positioned.color(stainlessSteel));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

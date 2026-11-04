@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Game token counter: Midway exchange counter with a token hopper, change tray, service window, and queue-side awning.
 meta({
   name: "game-token-counter",
   license: "CC0-1.0",
   title: "Game token counter",
-  description: "Midway exchange counter with a token hopper, change tray, service window, and queue-side awning. Editable overall scale and asset color.",
+  description: "Midway exchange counter with a token hopper, change tray, service window, and queue-side awning. Controls: overall scale, paintedTimber, steel, glass; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "midway games"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#8a765e", { label: "Asset color" });
+const paintedTimber = param("paintedTimber", "#92704e", { label: "Painted timber" });
+const steel = param("steel", "#738087", { label: "Painted steel" });
+const glass = param("glass", "#75b9bf", { label: "Tinted glass" });
+
+presets({
+  festival: {
+    "paintedTimber": "#be8a4e",
+    "steel": "#9da3a0",
+    "glass": "#efce70"
+},
+  twilight: {
+    "paintedTimber": "#5e7181",
+    "steel": "#4f626c",
+    "glass": "#6387aa"
+},
+});
 const originOffsetMm = 0;
 const p = assembly("game-token-counter");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["awning", "counter-body", "counter-ledge", "token-hopper"].includes(name)) p.part(name, positioned.color(paintedTimber));
+  else if (["service-window"].includes(name)) p.part(name, positioned.color(glass));
+  else if (["awning-post-0", "awning-post-1", "change-tray"].includes(name)) p.part(name, positioned.color(steel));
+  else p.part(name, positioned.color(paintedTimber));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

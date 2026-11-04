@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Lemonade dispenser cart: Beverage cart with paired transparent-tank silhouettes, tap handles, ice bin, and a push bar.
 meta({
   name: "lemonade-dispenser-cart",
   license: "CC0-1.0",
   title: "Lemonade dispenser cart",
-  description: "Beverage cart with paired transparent-tank silhouettes, tap handles, ice bin, and a push bar. Editable overall scale and asset color.",
+  description: "Beverage cart with paired transparent-tank silhouettes, tap handles, ice bin, and a push bar. Controls: overall scale, stainlessSteel, acrylic, rubber; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "concessions and rest areas"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#b89a50", { label: "Asset color" });
+const stainlessSteel = param("stainlessSteel", "#b0b9b6", { label: "Stainless steel" });
+const acrylic = param("acrylic", "#63aab8", { label: "Tinted acrylic" });
+const rubber = param("rubber", "#292f33", { label: "Rubber" });
+
+presets({
+  festival: {
+    "stainlessSteel": "#d1d1c6",
+    "acrylic": "#79c8d2",
+    "rubber": "#3c4245"
+},
+  twilight: {
+    "stainlessSteel": "#788b91",
+    "acrylic": "#41768b",
+    "rubber": "#20262a"
+},
+});
 const originOffsetMm = 0;
 const p = assembly("lemonade-dispenser-cart");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["drink-tank-0", "drink-tank-1", "front-counter", "ice-bin", "tap-0", "tap-1"].includes(name)) p.part(name, positioned.color(stainlessSteel));
+  else if (["wheel-0", "wheel-1", "wheel-2", "wheel-3"].includes(name)) p.part(name, positioned.color(rubber));
+  else if (["cart-frame", "push-bar"].includes(name)) p.part(name, positioned.color(acrylic));
+  else p.part(name, positioned.color(stainlessSteel));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

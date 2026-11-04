@@ -1,6 +1,6 @@
 # Amusement park kit
 
-Seventy original low-poly props for an amusement-park guest precinct and its supporting operations. Sources use millimetres and Z up. Each asset exposes overall scale and asset color, uses one material, and declares a 1,800-triangle ceiling. All geometry is dedicated to the public domain under CC0 1.0.
+Seventy original low-poly props for an amusement-park guest precinct and its supporting operations. Sources use millimetres and Z up. Each prop exposes overall scale, three material-named colour controls, and `festival` / `twilight` presets. Attraction and food-service silhouettes use faceted metalwork, tapered ride cabins and boat hulls, shaped car fairings, and a glazed popcorn warmer. Every asset keeps its 1,800-triangle ceiling. All geometry is dedicated to the public domain under CC0 1.0.
 
 ## Entry and guest services
 
@@ -24,6 +24,6 @@ Seventy original low-poly props for an amusement-park guest precinct and its sup
 
 ## Preview and verification
 
-The [amusement-park wave bundle](../../../artifacts/catalog-demos/amusement-park-wave-20261103/README.md) contains the reproducible source generator, catalog audit, rendered previews, parameter check, and inspected MP4 walkthrough.
+The [amusement-park quality-promotion bundle](../../../artifacts/catalog-demos/amusement-park-quality-promotion-20261104/README.md) retains the source promotion, preview checks, catalog validation, and inspected MP4 walkthrough. The earlier [kit creation bundle](../../../artifacts/catalog-demos/amusement-park-wave-20261103/README.md) retains the original source generator.
 
 These are generic visualization props. They do not specify ride structure, restraints, barriers, controls, accessibility compliance, food equipment ratings, or operating procedures. Catalog validation does not establish attraction safety, code compliance, or operational acceptance.

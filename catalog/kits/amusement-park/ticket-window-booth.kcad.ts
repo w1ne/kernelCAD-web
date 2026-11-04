@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Ticket window booth: Compact staffed entry booth with a deep transaction ledge, shuttered window, side door, and rain canopy.
 meta({
   name: "ticket-window-booth",
   license: "CC0-1.0",
   title: "Ticket window booth",
-  description: "Compact staffed entry booth with a deep transaction ledge, shuttered window, side door, and rain canopy. Editable overall scale and asset color.",
+  description: "Compact staffed entry booth with a deep transaction ledge, shuttered window, side door, and rain canopy. Controls: overall scale, paintedTimber, stainlessSteel, glass; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "entry and guest services"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#9c7550", { label: "Asset color" });
+const paintedTimber = param("paintedTimber", "#92704e", { label: "Painted timber" });
+const stainlessSteel = param("stainlessSteel", "#b0b9b6", { label: "Stainless steel" });
+const glass = param("glass", "#75b9bf", { label: "Tinted glass" });
+
+presets({
+  festival: {
+    "paintedTimber": "#be8a4e",
+    "stainlessSteel": "#d1d1c6",
+    "glass": "#efce70"
+},
+  twilight: {
+    "paintedTimber": "#5e7181",
+    "stainlessSteel": "#788b91",
+    "glass": "#6387aa"
+},
+});
 const originOffsetMm = 0;
 const p = assembly("ticket-window-booth");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["booth-body", "canopy", "front-counter", "service-shutter", "side-door"].includes(name)) p.part(name, positioned.color(paintedTimber));
+  else if (["window-frame", "window-sill"].includes(name)) p.part(name, positioned.color(glass));
+  else if (["step"].includes(name)) p.part(name, positioned.color(stainlessSteel));
+  else p.part(name, positioned.color(paintedTimber));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

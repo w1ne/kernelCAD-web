@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Rope net tunnel: Short crawl-through play tunnel with six arch frames, cross braces, and a low net-grid silhouette.
 meta({
   name: "rope-net-tunnel",
   license: "CC0-1.0",
   title: "Rope net tunnel",
-  description: "Short crawl-through play tunnel with six arch frames, cross braces, and a low net-grid silhouette. Editable overall scale and asset color.",
+  description: "Short crawl-through play tunnel with six arch frames, cross braces, and a low net-grid silhouette. Controls: overall scale, steel, nylon, rubber; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "attractions and queues"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#a07a60", { label: "Asset color" });
+const steel = param("steel", "#738087", { label: "Painted steel" });
+const nylon = param("nylon", "#a98b58", { label: "Nylon" });
+const rubber = param("rubber", "#292f33", { label: "Rubber" });
+
+presets({
+  festival: {
+    "steel": "#9da3a0",
+    "nylon": "#d3a84f",
+    "rubber": "#3c4245"
+},
+  twilight: {
+    "steel": "#4f626c",
+    "nylon": "#627e8d",
+    "rubber": "#20262a"
+},
+});
 const originOffsetMm = 0;
 const p = assembly("rope-net-tunnel");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["arch-rib-0", "arch-rib-1", "arch-rib-2", "arch-rib-3", "arch-rib-4", "arch-rib-5", "net-strand-0", "net-strand-1", "net-strand-2", "net-strand-3", "net-strand-4", "net-strand-5", "net-strand-6"].includes(name)) p.part(name, positioned.color(steel));
+  else if (["cross-brace-2"].includes(name)) p.part(name, positioned.color(rubber));
+  else if (["arch-foot-0", "arch-foot-1", "arch-foot-2", "arch-foot-3", "cross-brace-0", "cross-brace-1"].includes(name)) p.part(name, positioned.color(nylon));
+  else p.part(name, positioned.color(steel));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

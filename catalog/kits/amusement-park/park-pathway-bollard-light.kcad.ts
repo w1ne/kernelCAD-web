@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Park pathway bollard light: Low path marker with a broad anchor foot, fluted post, and a down-shielded cap.
 meta({
   name: "park-pathway-bollard-light",
   license: "CC0-1.0",
   title: "Park pathway bollard light",
-  description: "Low path marker with a broad anchor foot, fluted post, and a down-shielded cap. Editable overall scale and asset color.",
+  description: "Low path marker with a broad anchor foot, fluted post, and a down-shielded cap. Controls: overall scale, stainlessSteel, acrylic, concrete; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "park operations and guest comfort"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#d2a254", { label: "Asset color" });
+const stainlessSteel = param("stainlessSteel", "#b0b9b6", { label: "Stainless steel" });
+const acrylic = param("acrylic", "#63aab8", { label: "Tinted acrylic" });
+const concrete = param("concrete", "#92938b", { label: "Concrete" });
+
+presets({
+  festival: {
+    "stainlessSteel": "#d1d1c6",
+    "acrylic": "#79c8d2",
+    "concrete": "#aaa99e"
+},
+  twilight: {
+    "stainlessSteel": "#788b91",
+    "acrylic": "#41768b",
+    "concrete": "#6f7477"
+},
+});
 const originOffsetMm = -45;
 const p = assembly("park-pathway-bollard-light");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["glare-shield", "light-cap", "vertical-flute-0", "vertical-flute-1", "vertical-flute-2", "vertical-flute-3"].includes(name)) p.part(name, positioned.color(stainlessSteel));
+  else if (["anchor-foot"].includes(name)) p.part(name, positioned.color(concrete));
+  else if (["bollard-post"].includes(name)) p.part(name, positioned.color(acrylic));
+  else p.part(name, positioned.color(stainlessSteel));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

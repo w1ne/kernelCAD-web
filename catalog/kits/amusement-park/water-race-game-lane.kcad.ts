@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Water race game lane: Two-player midway race fixture with parallel troughs, pump handles, and a raised finish marker.
 meta({
   name: "water-race-game-lane",
   license: "CC0-1.0",
   title: "Water race game lane",
-  description: "Two-player midway race fixture with parallel troughs, pump handles, and a raised finish marker. Editable overall scale and asset color.",
+  description: "Two-player midway race fixture with parallel troughs, pump handles, and a raised finish marker. Controls: overall scale, fiberglass, stainlessSteel, acrylic; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "midway games"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#6c9ba0", { label: "Asset color" });
+const fiberglass = param("fiberglass", "#4d8290", { label: "Painted fiberglass" });
+const stainlessSteel = param("stainlessSteel", "#b0b9b6", { label: "Stainless steel" });
+const acrylic = param("acrylic", "#63aab8", { label: "Tinted acrylic" });
+
+presets({
+  festival: {
+    "fiberglass": "#d7a83f",
+    "stainlessSteel": "#d1d1c6",
+    "acrylic": "#79c8d2"
+},
+  twilight: {
+    "fiberglass": "#96566d",
+    "stainlessSteel": "#788b91",
+    "acrylic": "#41768b"
+},
+});
 const originOffsetMm = 0;
 const p = assembly("water-race-game-lane");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["base", "race-trough-0", "race-trough-1"].includes(name)) p.part(name, positioned.color(fiberglass));
+  else if (["race-ball-0", "race-ball-1"].includes(name)) p.part(name, positioned.color(acrylic));
+  else if (["finish-bar", "finish-post-left", "finish-post-right", "pump-handle-0", "pump-handle-1"].includes(name)) p.part(name, positioned.color(stainlessSteel));
+  else p.part(name, positioned.color(fiberglass));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

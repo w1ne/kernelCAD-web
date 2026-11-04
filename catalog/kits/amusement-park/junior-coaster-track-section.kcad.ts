@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Junior coaster track section: Short display section of family coaster rail with cross ties, two supports, and a gentle rise.
 meta({
   name: "junior-coaster-track-section",
   license: "CC0-1.0",
   title: "Junior coaster track section",
-  description: "Short display section of family coaster rail with cross ties, two supports, and a gentle rise. Editable overall scale and asset color.",
+  description: "Short display section of family coaster rail with cross ties, two supports, and a gentle rise. Controls: overall scale, steel, timber, concrete; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "attractions and queues"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#707d82", { label: "Asset color" });
+const steel = param("steel", "#738087", { label: "Painted steel" });
+const timber = param("timber", "#8a6748", { label: "Sealed timber" });
+const concrete = param("concrete", "#92938b", { label: "Concrete" });
+
+presets({
+  festival: {
+    "steel": "#9da3a0",
+    "timber": "#ab8051",
+    "concrete": "#aaa99e"
+},
+  twilight: {
+    "steel": "#4f626c",
+    "timber": "#604b3b",
+    "concrete": "#6f7477"
+},
+});
 const originOffsetMm = 10;
 const p = assembly("junior-coaster-track-section");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if ([].includes(name)) p.part(name, positioned.color(steel));
+  else if (["base-foot"].includes(name)) p.part(name, positioned.color(concrete));
+  else if (["cross-tie-0", "cross-tie-1", "cross-tie-2", "cross-tie-3", "cross-tie-4", "cross-tie-5", "rail-0", "rail-1", "support-0", "support-1", "support-2"].includes(name)) p.part(name, positioned.color(timber));
+  else p.part(name, positioned.color(steel));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

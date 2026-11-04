@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Ride maintenance tool cart: Workshop cart with locking drawers, a parts tray, side handle, and four casters for attraction back-of-house scenes.
 meta({
   name: "ride-maintenance-tool-cart",
   license: "CC0-1.0",
   title: "Ride maintenance tool cart",
-  description: "Workshop cart with locking drawers, a parts tray, side handle, and four casters for attraction back-of-house scenes. Editable overall scale and asset color.",
+  description: "Workshop cart with locking drawers, a parts tray, side handle, and four casters for attraction back-of-house scenes. Controls: overall scale, powderCoat, steel, rubber; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "park operations and guest comfort"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#78877f", { label: "Asset color" });
+const powderCoat = param("powderCoat", "#477985", { label: "Powder-coated steel" });
+const steel = param("steel", "#738087", { label: "Painted steel" });
+const rubber = param("rubber", "#292f33", { label: "Rubber" });
+
+presets({
+  festival: {
+    "powderCoat": "#d47452",
+    "steel": "#9da3a0",
+    "rubber": "#3c4245"
+},
+  twilight: {
+    "powderCoat": "#35576f",
+    "steel": "#4f626c",
+    "rubber": "#20262a"
+},
+});
 const originOffsetMm = -80;
 const p = assembly("ride-maintenance-tool-cart");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["parts-bin"].includes(name)) p.part(name, positioned.color(powderCoat));
+  else if (["caster-0", "caster-1", "caster-2", "caster-3"].includes(name)) p.part(name, positioned.color(rubber));
+  else if (["cabinet", "drawer-0", "drawer-1", "drawer-2", "drawer-3", "side-handle", "top-tray"].includes(name)) p.part(name, positioned.color(steel));
+  else p.part(name, positioned.color(powderCoat));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

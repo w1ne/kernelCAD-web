@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Picnic table with umbrella: Family dining table with two bench seats, umbrella mast, and a broad shade canopy.
 meta({
   name: "picnic-table-with-umbrella",
   license: "CC0-1.0",
   title: "Picnic table with umbrella",
-  description: "Family dining table with two bench seats, umbrella mast, and a broad shade canopy. Editable overall scale and asset color.",
+  description: "Family dining table with two bench seats, umbrella mast, and a broad shade canopy. Controls: overall scale, timber, steel, canvas; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "concessions and rest areas"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#9d7b58", { label: "Asset color" });
+const timber = param("timber", "#8a6748", { label: "Sealed timber" });
+const steel = param("steel", "#738087", { label: "Painted steel" });
+const canvas = param("canvas", "#e0c98e", { label: "Canvas" });
+
+presets({
+  festival: {
+    "timber": "#ab8051",
+    "steel": "#9da3a0",
+    "canvas": "#eddaa9"
+},
+  twilight: {
+    "timber": "#604b3b",
+    "steel": "#4f626c",
+    "canvas": "#a85e4f"
+},
+});
 const originOffsetMm = 0;
 const p = assembly("picnic-table-with-umbrella");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["bench-back", "bench-front", "table-pedestal", "tabletop"].includes(name)) p.part(name, positioned.color(timber));
+  else if (["umbrella-canopy", "umbrella-mast"].includes(name)) p.part(name, positioned.color(canvas));
+  else if (["bench-leg-0", "bench-leg-1", "bench-leg-2", "bench-leg-3"].includes(name)) p.part(name, positioned.color(steel));
+  else p.part(name, positioned.color(timber));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

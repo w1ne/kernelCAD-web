@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Miniature park tram engine: Low-speed park railway locomotive with an open cab, front buffer, boiler hood, and four wheels.
 meta({
   name: "miniature-park-tram-engine",
   license: "CC0-1.0",
   title: "Miniature park tram engine",
-  description: "Low-speed park railway locomotive with an open cab, front buffer, boiler hood, and four wheels. Editable overall scale and asset color.",
+  description: "Low-speed park railway locomotive with an open cab, front buffer, boiler hood, and four wheels. Controls: overall scale, enamel, steel, rubber; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "attractions and queues"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#6b8580", { label: "Asset color" });
+const enamel = param("enamel", "#cc684e", { label: "Baked enamel" });
+const steel = param("steel", "#738087", { label: "Painted steel" });
+const rubber = param("rubber", "#292f33", { label: "Rubber" });
+
+presets({
+  festival: {
+    "enamel": "#edb34d",
+    "steel": "#9da3a0",
+    "rubber": "#3c4245"
+},
+  twilight: {
+    "enamel": "#385b81",
+    "steel": "#4f626c",
+    "rubber": "#20262a"
+},
+});
 const originOffsetMm = 0;
 const p = assembly("miniature-park-tram-engine");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["cab-back", "cab-floor", "cab-roof", "smokestack"].includes(name)) p.part(name, positioned.color(enamel));
+  else if (["front-buffer", "wheel-0", "wheel-1", "wheel-2", "wheel-3"].includes(name)) p.part(name, positioned.color(rubber));
+  else if (["boiler", "chassis"].includes(name)) p.part(name, positioned.color(steel));
+  else p.part(name, positioned.color(enamel));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

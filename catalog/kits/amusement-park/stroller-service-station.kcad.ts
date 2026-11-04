@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Stroller service station: Guest support stand with parking rail, compact air pump, repair shelf, and a wheel service cradle.
 meta({
   name: "stroller-service-station",
   license: "CC0-1.0",
   title: "Stroller service station",
-  description: "Guest support stand with parking rail, compact air pump, repair shelf, and a wheel service cradle. Editable overall scale and asset color.",
+  description: "Guest support stand with parking rail, compact air pump, repair shelf, and a wheel service cradle. Controls: overall scale, steel, stainlessSteel, rubber; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "park operations and guest comfort"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#738b81", { label: "Asset color" });
+const steel = param("steel", "#738087", { label: "Painted steel" });
+const stainlessSteel = param("stainlessSteel", "#b0b9b6", { label: "Stainless steel" });
+const rubber = param("rubber", "#292f33", { label: "Rubber" });
+
+presets({
+  festival: {
+    "steel": "#9da3a0",
+    "stainlessSteel": "#d1d1c6",
+    "rubber": "#3c4245"
+},
+  twilight: {
+    "steel": "#4f626c",
+    "stainlessSteel": "#788b91",
+    "rubber": "#20262a"
+},
+});
 const originOffsetMm = 30;
 const p = assembly("stroller-service-station");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["backboard", "pump-cylinder"].includes(name)) p.part(name, positioned.color(steel));
+  else if (["wheel-cradle-left", "wheel-cradle-right"].includes(name)) p.part(name, positioned.color(rubber));
+  else if (["parking-rail-0", "parking-rail-1", "parking-rail-2", "pump-handle", "repair-tray", "service-shelf"].includes(name)) p.part(name, positioned.color(stainlessSteel));
+  else p.part(name, positioned.color(steel));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

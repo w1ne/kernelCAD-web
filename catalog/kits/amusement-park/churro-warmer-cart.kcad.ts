@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Churro warmer cart: Narrow snack cart with a heated tray, draining rack, flour-dusting station, and bicycle-style wheels.
 meta({
   name: "churro-warmer-cart",
   license: "CC0-1.0",
   title: "Churro warmer cart",
-  description: "Narrow snack cart with a heated tray, draining rack, flour-dusting station, and bicycle-style wheels. Editable overall scale and asset color.",
+  description: "Narrow snack cart with a heated tray, draining rack, flour-dusting station, and bicycle-style wheels. Controls: overall scale, stainlessSteel, enamel, rubber; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "concessions and rest areas"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#bc8051", { label: "Asset color" });
+const stainlessSteel = param("stainlessSteel", "#b0b9b6", { label: "Stainless steel" });
+const enamel = param("enamel", "#cc684e", { label: "Baked enamel" });
+const rubber = param("rubber", "#292f33", { label: "Rubber" });
+
+presets({
+  festival: {
+    "stainlessSteel": "#d1d1c6",
+    "enamel": "#edb34d",
+    "rubber": "#3c4245"
+},
+  twilight: {
+    "stainlessSteel": "#788b91",
+    "enamel": "#385b81",
+    "rubber": "#20262a"
+},
+});
 const originOffsetMm = 0;
 const p = assembly("churro-warmer-cart");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["umbrella"].includes(name)) p.part(name, positioned.color(stainlessSteel));
+  else if (["churro-roller-0", "churro-roller-1", "churro-roller-2", "churro-roller-3", "churro-roller-4", "churro-roller-5", "wheel-0", "wheel-1"].includes(name)) p.part(name, positioned.color(rubber));
+  else if (["cart-cabinet", "dusting-shelf", "hot-tray", "umbrella-pole"].includes(name)) p.part(name, positioned.color(enamel));
+  else p.part(name, positioned.color(stainlessSteel));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

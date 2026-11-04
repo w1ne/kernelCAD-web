@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Ride operator console: Freestanding dispatch console with a slanted control face, stop button, status lamps, and weather hood.
 meta({
   name: "ride-operator-console",
   license: "CC0-1.0",
   title: "Ride operator console",
-  description: "Freestanding dispatch console with a slanted control face, stop button, status lamps, and weather hood. Editable overall scale and asset color.",
+  description: "Freestanding dispatch console with a slanted control face, stop button, status lamps, and weather hood. Controls: overall scale, powderCoat, stainlessSteel, acrylic; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "attractions and queues"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#778983", { label: "Asset color" });
+const powderCoat = param("powderCoat", "#477985", { label: "Powder-coated steel" });
+const stainlessSteel = param("stainlessSteel", "#b0b9b6", { label: "Stainless steel" });
+const acrylic = param("acrylic", "#63aab8", { label: "Tinted acrylic" });
+
+presets({
+  festival: {
+    "powderCoat": "#d47452",
+    "stainlessSteel": "#d1d1c6",
+    "acrylic": "#79c8d2"
+},
+  twilight: {
+    "powderCoat": "#35576f",
+    "stainlessSteel": "#788b91",
+    "acrylic": "#41768b"
+},
+});
 const originOffsetMm = 0;
 const p = assembly("ride-operator-console");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["hood", "side-grab-left", "side-grab-right"].includes(name)) p.part(name, positioned.color(powderCoat));
+  else if (["control-face", "status-lamp-0", "status-lamp-1", "status-lamp-2", "status-lamp-3", "stop-button-guard"].includes(name)) p.part(name, positioned.color(acrylic));
+  else if (["pedestal"].includes(name)) p.part(name, positioned.color(stainlessSteel));
+  else p.part(name, positioned.color(powderCoat));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

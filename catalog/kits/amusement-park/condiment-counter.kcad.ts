@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Condiment counter: Park dining condiment station with four bottle wells, napkin cubbies, tray return, and a wipe-clean top.
 meta({
   name: "condiment-counter",
   license: "CC0-1.0",
   title: "Condiment counter",
-  description: "Park dining condiment station with four bottle wells, napkin cubbies, tray return, and a wipe-clean top. Editable overall scale and asset color.",
+  description: "Park dining condiment station with four bottle wells, napkin cubbies, tray return, and a wipe-clean top. Controls: overall scale, stainlessSteel, acrylic, polymer; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "concessions and rest areas"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#927b61", { label: "Asset color" });
+const stainlessSteel = param("stainlessSteel", "#b0b9b6", { label: "Stainless steel" });
+const acrylic = param("acrylic", "#63aab8", { label: "Tinted acrylic" });
+const polymer = param("polymer", "#586f7a", { label: "Molded polymer" });
+
+presets({
+  festival: {
+    "stainlessSteel": "#d1d1c6",
+    "acrylic": "#79c8d2",
+    "polymer": "#7d9b93"
+},
+  twilight: {
+    "stainlessSteel": "#788b91",
+    "acrylic": "#41768b",
+    "polymer": "#455e83"
+},
+});
 const originOffsetMm = 0;
 const p = assembly("condiment-counter");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["napkin-holder-left", "napkin-holder-right", "splash-guard", "top"].includes(name)) p.part(name, positioned.color(stainlessSteel));
+  else if (["cabinet", "sauce-bottle-0", "sauce-bottle-1", "sauce-bottle-2", "sauce-bottle-3"].includes(name)) p.part(name, positioned.color(polymer));
+  else if (["tray-return"].includes(name)) p.part(name, positioned.color(acrylic));
+  else p.part(name, positioned.color(stainlessSteel));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

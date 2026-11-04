@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Cotton candy cart: Push cart with a round candy bowl, umbrella mast, flavor tubs, push handle, and paired wheels.
 meta({
   name: "cotton-candy-cart",
   license: "CC0-1.0",
   title: "Cotton candy cart",
-  description: "Push cart with a round candy bowl, umbrella mast, flavor tubs, push handle, and paired wheels. Editable overall scale and asset color.",
+  description: "Push cart with a round candy bowl, umbrella mast, flavor tubs, push handle, and paired wheels. Controls: overall scale, powderCoat, stainlessSteel, acrylic; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "concessions and rest areas"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#c77f93", { label: "Asset color" });
+const powderCoat = param("powderCoat", "#477985", { label: "Powder-coated steel" });
+const stainlessSteel = param("stainlessSteel", "#b0b9b6", { label: "Stainless steel" });
+const acrylic = param("acrylic", "#63aab8", { label: "Tinted acrylic" });
+
+presets({
+  festival: {
+    "powderCoat": "#d47452",
+    "stainlessSteel": "#d1d1c6",
+    "acrylic": "#79c8d2"
+},
+  twilight: {
+    "powderCoat": "#35576f",
+    "stainlessSteel": "#788b91",
+    "acrylic": "#41768b"
+},
+});
 const originOffsetMm = 0;
 const p = assembly("cotton-candy-cart");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["candy-bowl", "cart-bed", "flavor-tub-0", "flavor-tub-1", "flavor-tub-2", "umbrella-canopy"].includes(name)) p.part(name, positioned.color(powderCoat));
+  else if (["push-handle"].includes(name)) p.part(name, positioned.color(acrylic));
+  else if (["axle-bracket-0", "axle-bracket-1", "cart-cabinet", "spinner-hub", "umbrella-pole", "wheel-0", "wheel-1", "wheel-axle"].includes(name)) p.part(name, positioned.color(stainlessSteel));
+  else p.part(name, positioned.color(powderCoat));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

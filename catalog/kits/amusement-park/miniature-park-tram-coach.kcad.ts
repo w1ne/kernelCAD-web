@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Miniature park tram coach: Open-air visitor train coach with paired bench rows, side step, canopy roof, and four rail wheels.
 meta({
   name: "miniature-park-tram-coach",
   license: "CC0-1.0",
   title: "Miniature park tram coach",
-  description: "Open-air visitor train coach with paired bench rows, side step, canopy roof, and four rail wheels. Editable overall scale and asset color.",
+  description: "Open-air visitor train coach with paired bench rows, side step, canopy roof, and four rail wheels. Controls: overall scale, enamel, steel, rubber; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "attractions and queues"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#7b9280", { label: "Asset color" });
+const enamel = param("enamel", "#cc684e", { label: "Baked enamel" });
+const steel = param("steel", "#738087", { label: "Painted steel" });
+const rubber = param("rubber", "#292f33", { label: "Rubber" });
+
+presets({
+  festival: {
+    "enamel": "#edb34d",
+    "steel": "#9da3a0",
+    "rubber": "#3c4245"
+},
+  twilight: {
+    "enamel": "#385b81",
+    "steel": "#4f626c",
+    "rubber": "#20262a"
+},
+});
 const originOffsetMm = 0;
 const p = assembly("miniature-park-tram-coach");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["bench-0", "bench-1", "bench-2", "bench-3", "canopy-roof", "floor"].includes(name)) p.part(name, positioned.color(enamel));
+  else if (["wheel-0", "wheel-1", "wheel-2", "wheel-3"].includes(name)) p.part(name, positioned.color(rubber));
+  else if (["canopy-post-0", "canopy-post-1", "canopy-post-2", "canopy-post-3", "underframe"].includes(name)) p.part(name, positioned.color(steel));
+  else p.part(name, positioned.color(enamel));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

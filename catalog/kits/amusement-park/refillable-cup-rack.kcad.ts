@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Refillable cup rack: Countertop carousel for reusable park cups with a rotating-style central mast and four storage shelves.
 meta({
   name: "refillable-cup-rack",
   license: "CC0-1.0",
   title: "Refillable cup rack",
-  description: "Countertop carousel for reusable park cups with a rotating-style central mast and four storage shelves. Editable overall scale and asset color.",
+  description: "Countertop carousel for reusable park cups with a rotating-style central mast and four storage shelves. Controls: overall scale, stainlessSteel, polymer, enamel; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "concessions and rest areas"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#7d9188", { label: "Asset color" });
+const stainlessSteel = param("stainlessSteel", "#b0b9b6", { label: "Stainless steel" });
+const polymer = param("polymer", "#586f7a", { label: "Molded polymer" });
+const enamel = param("enamel", "#cc684e", { label: "Baked enamel" });
+
+presets({
+  festival: {
+    "stainlessSteel": "#d1d1c6",
+    "polymer": "#7d9b93",
+    "enamel": "#edb34d"
+},
+  twilight: {
+    "stainlessSteel": "#788b91",
+    "polymer": "#455e83",
+    "enamel": "#385b81"
+},
+});
 const originOffsetMm = -48;
 const p = assembly("refillable-cup-rack");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["base", "cup-holder-0", "cup-holder-1", "cup-holder-2", "cup-holder-3"].includes(name)) p.part(name, positioned.color(stainlessSteel));
+  else if (["top-cap"].includes(name)) p.part(name, positioned.color(enamel));
+  else if (["cup-shelf-0", "cup-shelf-1", "cup-shelf-2", "cup-shelf-3", "mast"].includes(name)) p.part(name, positioned.color(polymer));
+  else p.part(name, positioned.color(stainlessSteel));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Family plaza shade pavilion: Four-post plaza shelter with two gently pitched canopy panels and a raised ridge mast.
 meta({
   name: "family-plaza-shade-pavilion",
   license: "CC0-1.0",
   title: "Family plaza shade pavilion",
-  description: "Four-post plaza shelter with two gently pitched canopy panels and a raised ridge mast. Editable overall scale and asset color.",
+  description: "Four-post plaza shelter with two gently pitched canopy panels and a raised ridge mast. Controls: overall scale, steel, canvas, concrete; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "park operations and guest comfort"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#7d8d84", { label: "Asset color" });
+const steel = param("steel", "#738087", { label: "Painted steel" });
+const canvas = param("canvas", "#e0c98e", { label: "Canvas" });
+const concrete = param("concrete", "#92938b", { label: "Concrete" });
+
+presets({
+  festival: {
+    "steel": "#9da3a0",
+    "canvas": "#eddaa9",
+    "concrete": "#aaa99e"
+},
+  twilight: {
+    "steel": "#4f626c",
+    "canvas": "#a85e4f",
+    "concrete": "#6f7477"
+},
+});
 const originOffsetMm = 0;
 const p = assembly("family-plaza-shade-pavilion");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["canopy-panel-left", "canopy-panel-right"].includes(name)) p.part(name, positioned.color(steel));
+  else if (["anchor-foot-0", "anchor-foot-1", "anchor-foot-2", "anchor-foot-3"].includes(name)) p.part(name, positioned.color(concrete));
+  else if (["center-mast", "corner-post-0", "corner-post-1", "corner-post-2", "corner-post-3"].includes(name)) p.part(name, positioned.color(canvas));
+  else p.part(name, positioned.color(steel));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

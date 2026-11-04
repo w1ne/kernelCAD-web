@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Funnel cake kiosk: Fair-food fry stand with a vent hood, serving pass, fryer tub silhouette, and side-order shelf.
 meta({
   name: "funnel-cake-kiosk",
   license: "CC0-1.0",
   title: "Funnel cake kiosk",
-  description: "Fair-food fry stand with a vent hood, serving pass, fryer tub silhouette, and side-order shelf. Editable overall scale and asset color.",
+  description: "Fair-food fry stand with a vent hood, serving pass, fryer tub silhouette, and side-order shelf. Controls: overall scale, stainlessSteel, enamel, powderCoat; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "concessions and rest areas"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#a27b57", { label: "Asset color" });
+const stainlessSteel = param("stainlessSteel", "#b0b9b6", { label: "Stainless steel" });
+const enamel = param("enamel", "#cc684e", { label: "Baked enamel" });
+const powderCoat = param("powderCoat", "#477985", { label: "Powder-coated steel" });
+
+presets({
+  festival: {
+    "stainlessSteel": "#d1d1c6",
+    "enamel": "#edb34d",
+    "powderCoat": "#d47452"
+},
+  twilight: {
+    "stainlessSteel": "#788b91",
+    "enamel": "#385b81",
+    "powderCoat": "#35576f"
+},
+});
 const originOffsetMm = 0;
 const p = assembly("funnel-cake-kiosk");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["fryer-casing", "fryer-vat", "hood", "kiosk-base", "service-pass", "vent-riser"].includes(name)) p.part(name, positioned.color(stainlessSteel));
+  else if (["queue-counter"].includes(name)) p.part(name, positioned.color(powderCoat));
+  else if (["side-shelf"].includes(name)) p.part(name, positioned.color(enamel));
+  else p.part(name, positioned.color(stainlessSteel));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

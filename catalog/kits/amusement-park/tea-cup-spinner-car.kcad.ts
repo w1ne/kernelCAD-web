@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Tea cup spinner car: Single round spinner tub with raised rim, seat bench, center grip, and a broad display base.
 meta({
   name: "tea-cup-spinner-car",
   license: "CC0-1.0",
   title: "Tea cup spinner car",
-  description: "Single round spinner tub with raised rim, seat bench, center grip, and a broad display base. Editable overall scale and asset color.",
+  description: "Single round spinner tub with raised rim, seat bench, center grip, and a broad display base. Controls: overall scale, fiberglass, stainlessSteel, rubber; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "attractions and queues"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#9c7891", { label: "Asset color" });
+const fiberglass = param("fiberglass", "#4d8290", { label: "Painted fiberglass" });
+const stainlessSteel = param("stainlessSteel", "#b0b9b6", { label: "Stainless steel" });
+const rubber = param("rubber", "#292f33", { label: "Rubber" });
+
+presets({
+  festival: {
+    "fiberglass": "#d7a83f",
+    "stainlessSteel": "#d1d1c6",
+    "rubber": "#3c4245"
+},
+  twilight: {
+    "fiberglass": "#96566d",
+    "stainlessSteel": "#788b91",
+    "rubber": "#20262a"
+},
+});
 const originOffsetMm = -55;
 const p = assembly("tea-cup-spinner-car");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["cup-body", "seat-bench", "spinner-base"].includes(name)) p.part(name, positioned.color(fiberglass));
+  else if (["center-grip"].includes(name)) p.part(name, positioned.color(rubber));
+  else if (["cup-handle-0", "cup-handle-1", "cup-handle-2", "cup-handle-3", "cup-rim"].includes(name)) p.part(name, positioned.color(stainlessSteel));
+  else p.part(name, positioned.color(fiberglass));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Balloon dart gallery: Counter-height dart game with a pegged balloon wall, side dividers, and an overhead net frame.
 meta({
   name: "balloon-dart-gallery",
   license: "CC0-1.0",
   title: "Balloon dart gallery",
-  description: "Counter-height dart game with a pegged balloon wall, side dividers, and an overhead net frame. Editable overall scale and asset color.",
+  description: "Counter-height dart game with a pegged balloon wall, side dividers, and an overhead net frame. Controls: overall scale, paintedTimber, steel, rubber; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "midway games"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#aa7d69", { label: "Asset color" });
+const paintedTimber = param("paintedTimber", "#92704e", { label: "Painted timber" });
+const steel = param("steel", "#738087", { label: "Painted steel" });
+const rubber = param("rubber", "#292f33", { label: "Rubber" });
+
+presets({
+  festival: {
+    "paintedTimber": "#be8a4e",
+    "steel": "#9da3a0",
+    "rubber": "#3c4245"
+},
+  twilight: {
+    "paintedTimber": "#5e7181",
+    "steel": "#4f626c",
+    "rubber": "#20262a"
+},
+});
 const originOffsetMm = 0;
 const p = assembly("balloon-dart-gallery");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["backboard", "balloon-0", "balloon-1", "balloon-2", "balloon-3", "balloon-4", "balloon-5", "balloon-6", "balloon-7", "counter", "side-divider-0", "side-divider-1"].includes(name)) p.part(name, positioned.color(paintedTimber));
+  else if (["net-header"].includes(name)) p.part(name, positioned.color(rubber));
+  else if (["net-post-0", "net-post-1", "net-post-2", "net-post-3"].includes(name)) p.part(name, positioned.color(steel));
+  else p.part(name, positioned.color(paintedTimber));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

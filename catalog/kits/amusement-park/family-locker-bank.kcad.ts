@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Family locker bank: Six-door day-use locker unit with recessed-looking door panels, toe kick, and numbered header strip.
 meta({
   name: "family-locker-bank",
   license: "CC0-1.0",
   title: "Family locker bank",
-  description: "Six-door day-use locker unit with recessed-looking door panels, toe kick, and numbered header strip. Editable overall scale and asset color.",
+  description: "Six-door day-use locker unit with recessed-looking door panels, toe kick, and numbered header strip. Controls: overall scale, powderCoat, stainlessSteel, polymer; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "entry and guest services"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#728b80", { label: "Asset color" });
+const powderCoat = param("powderCoat", "#477985", { label: "Powder-coated steel" });
+const stainlessSteel = param("stainlessSteel", "#b0b9b6", { label: "Stainless steel" });
+const polymer = param("polymer", "#586f7a", { label: "Molded polymer" });
+
+presets({
+  festival: {
+    "powderCoat": "#d47452",
+    "stainlessSteel": "#d1d1c6",
+    "polymer": "#7d9b93"
+},
+  twilight: {
+    "powderCoat": "#35576f",
+    "stainlessSteel": "#788b91",
+    "polymer": "#455e83"
+},
+});
 const originOffsetMm = 0;
 const p = assembly("family-locker-bank");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["toe-kick", "top-header"].includes(name)) p.part(name, positioned.color(powderCoat));
+  else if (["locker-door-0", "locker-door-1", "locker-door-2", "locker-door-3", "locker-door-4", "locker-door-5", "locker-handle-0", "locker-handle-1", "locker-handle-2", "locker-handle-3", "locker-handle-4", "locker-handle-5"].includes(name)) p.part(name, positioned.color(polymer));
+  else if (["locker-case"].includes(name)) p.part(name, positioned.color(stainlessSteel));
+  else p.part(name, positioned.color(powderCoat));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

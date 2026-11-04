@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Character meet-and-greet backdrop: Photo-op backdrop with a decorative portal, shallow stage, curtain wings, and two waiting marks.
 meta({
   name: "character-meet-backdrop",
   license: "CC0-1.0",
   title: "Character meet-and-greet backdrop",
-  description: "Photo-op backdrop with a decorative portal, shallow stage, curtain wings, and two waiting marks. Editable overall scale and asset color.",
+  description: "Photo-op backdrop with a decorative portal, shallow stage, curtain wings, and two waiting marks. Controls: overall scale, fabric, timber, powderCoat; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "park operations and guest comfort"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#a47783", { label: "Asset color" });
+const fabric = param("fabric", "#c77786", { label: "Upholstery fabric" });
+const timber = param("timber", "#8a6748", { label: "Sealed timber" });
+const powderCoat = param("powderCoat", "#477985", { label: "Powder-coated steel" });
+
+presets({
+  festival: {
+    "fabric": "#e4b765",
+    "timber": "#ab8051",
+    "powderCoat": "#d47452"
+},
+  twilight: {
+    "fabric": "#557b8a",
+    "timber": "#604b3b",
+    "powderCoat": "#35576f"
+},
+});
 const originOffsetMm = 0;
 const p = assembly("character-meet-backdrop");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["backdrop", "curtain-wing-0", "curtain-wing-1", "portal-left", "portal-right", "portal-top", "waiting-mark-0"].includes(name)) p.part(name, positioned.color(fabric));
+  else if (["waiting-mark-1"].includes(name)) p.part(name, positioned.color(powderCoat));
+  else if (["stage"].includes(name)) p.part(name, positioned.color(timber));
+  else p.part(name, positioned.color(fabric));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

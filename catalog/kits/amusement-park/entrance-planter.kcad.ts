@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Entrance planter: Long entry plaza planter with four low ornamental shrubs spaced along a raised rim.
 meta({
   name: "entrance-planter",
   license: "CC0-1.0",
   title: "Entrance planter",
-  description: "Long entry plaza planter with four low ornamental shrubs spaced along a raised rim. Editable overall scale and asset color.",
+  description: "Long entry plaza planter with four low ornamental shrubs spaced along a raised rim. Controls: overall scale, concrete, powderCoat, leaves; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "entry and guest services"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#758967", { label: "Asset color" });
+const concrete = param("concrete", "#92938b", { label: "Concrete" });
+const powderCoat = param("powderCoat", "#477985", { label: "Powder-coated steel" });
+const leaves = param("leaves", "#6d8d47", { label: "Foliage" });
+
+presets({
+  festival: {
+    "concrete": "#aaa99e",
+    "powderCoat": "#d47452",
+    "leaves": "#91a84e"
+},
+  twilight: {
+    "concrete": "#6f7477",
+    "powderCoat": "#35576f",
+    "leaves": "#456f42"
+},
+});
 const originOffsetMm = 0;
 const p = assembly("entrance-planter");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["planter-box"].includes(name)) p.part(name, positioned.color(concrete));
+  else if (["shrub-0", "shrub-1", "shrub-2", "shrub-3", "shrub-crown-0", "shrub-crown-1", "shrub-crown-2", "shrub-crown-3"].includes(name)) p.part(name, positioned.color(leaves));
+  else if (["rim"].includes(name)) p.part(name, positioned.color(powderCoat));
+  else p.part(name, positioned.color(concrete));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

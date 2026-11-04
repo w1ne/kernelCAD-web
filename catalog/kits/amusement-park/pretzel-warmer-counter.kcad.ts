@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Pretzel warmer counter: Warm pretzel display with two-tier glass case, condiment niche, service shelf, and cash drawer.
 meta({
   name: "pretzel-warmer-counter",
   license: "CC0-1.0",
   title: "Pretzel warmer counter",
-  description: "Warm pretzel display with two-tier glass case, condiment niche, service shelf, and cash drawer. Editable overall scale and asset color.",
+  description: "Warm pretzel display with two-tier glass case, condiment niche, service shelf, and cash drawer. Controls: overall scale, stainlessSteel, enamel, glass; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "concessions and rest areas"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#a87c55", { label: "Asset color" });
+const stainlessSteel = param("stainlessSteel", "#b0b9b6", { label: "Stainless steel" });
+const enamel = param("enamel", "#cc684e", { label: "Baked enamel" });
+const glass = param("glass", "#75b9bf", { label: "Tinted glass" });
+
+presets({
+  festival: {
+    "stainlessSteel": "#d1d1c6",
+    "enamel": "#edb34d",
+    "glass": "#efce70"
+},
+  twilight: {
+    "stainlessSteel": "#788b91",
+    "enamel": "#385b81",
+    "glass": "#6387aa"
+},
+});
 const originOffsetMm = 0;
 const p = assembly("pretzel-warmer-counter");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["condiment-cubby", "counter-body"].includes(name)) p.part(name, positioned.color(stainlessSteel));
+  else if (["display-base", "display-shelf", "glass-case-back", "glass-case-front", "glass-case-top"].includes(name)) p.part(name, positioned.color(glass));
+  else if (["cash-drawer"].includes(name)) p.part(name, positioned.color(enamel));
+  else p.part(name, positioned.color(stainlessSteel));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

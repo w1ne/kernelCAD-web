@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Family carousel: Round family ride platform with a central mast, radial canopy braces, and eight outward-facing seats.
 meta({
   name: "family-carousel",
   license: "CC0-1.0",
   title: "Family carousel",
-  description: "Round family ride platform with a central mast, radial canopy braces, and eight outward-facing seats. Editable overall scale and asset color.",
+  description: "Round family ride platform with a central mast, radial canopy braces, and eight outward-facing seats. Controls: overall scale, powderCoat, stainlessSteel, fiberglass; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "attractions and queues"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#d89055", { label: "Asset color" });
+const powderCoat = param("powderCoat", "#477985", { label: "Powder-coated steel" });
+const stainlessSteel = param("stainlessSteel", "#b0b9b6", { label: "Stainless steel" });
+const fiberglass = param("fiberglass", "#4d8290", { label: "Painted fiberglass" });
+
+presets({
+  festival: {
+    "powderCoat": "#d47452",
+    "stainlessSteel": "#d1d1c6",
+    "fiberglass": "#d7a83f"
+},
+  twilight: {
+    "powderCoat": "#35576f",
+    "stainlessSteel": "#788b91",
+    "fiberglass": "#96566d"
+},
+});
 const originOffsetMm = 0;
 const p = assembly("family-carousel");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["canopy", "canopy-crown", "platform", "seat-0", "seat-1", "seat-2", "seat-3", "seat-4", "seat-5", "seat-6"].includes(name)) p.part(name, positioned.color(powderCoat));
+  else if (["seat-7"].includes(name)) p.part(name, positioned.color(fiberglass));
+  else if (["canopy-support-0", "canopy-support-1", "canopy-support-2", "canopy-support-3", "canopy-support-4", "canopy-support-5", "canopy-support-6", "canopy-support-7", "center-mast", "seat-pole-0", "seat-pole-1", "seat-pole-2", "seat-pole-3", "seat-pole-4", "seat-pole-5", "seat-pole-6", "seat-pole-7"].includes(name)) p.part(name, positioned.color(stainlessSteel));
+  else p.part(name, positioned.color(powderCoat));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

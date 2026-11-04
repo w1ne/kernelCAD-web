@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Park entry arch: Freestanding entry portal with paired columns, overhead canopy, and a raised central crest.
 meta({
   name: "park-entry-arch",
   license: "CC0-1.0",
   title: "Park entry arch",
-  description: "Freestanding entry portal with paired columns, overhead canopy, and a raised central crest. Editable overall scale and asset color.",
+  description: "Freestanding entry portal with paired columns, overhead canopy, and a raised central crest. Controls: overall scale, concrete, powderCoat, enamel; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "entry and guest services"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#d66d4d", { label: "Asset color" });
+const concrete = param("concrete", "#92938b", { label: "Concrete" });
+const powderCoat = param("powderCoat", "#477985", { label: "Powder-coated steel" });
+const enamel = param("enamel", "#cc684e", { label: "Baked enamel" });
+
+presets({
+  festival: {
+    "concrete": "#aaa99e",
+    "powderCoat": "#d47452",
+    "enamel": "#edb34d"
+},
+  twilight: {
+    "concrete": "#6f7477",
+    "powderCoat": "#35576f",
+    "enamel": "#385b81"
+},
+});
 const originOffsetMm = 0;
 const p = assembly("park-entry-arch");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["canopy"].includes(name)) p.part(name, positioned.color(concrete));
+  else if (["crest", "crest-plinth"].includes(name)) p.part(name, positioned.color(enamel));
+  else if (["column-band-0", "column-band-1", "header-beam", "left-column", "right-column"].includes(name)) p.part(name, positioned.color(powderCoat));
+  else p.part(name, positioned.color(concrete));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

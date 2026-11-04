@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Park waste sorting station: Three-stream visitor waste point with distinct lid openings, a shared roof, and a trolley-clear front.
 meta({
   name: "park-waste-sorting-station",
   license: "CC0-1.0",
   title: "Park waste sorting station",
-  description: "Three-stream visitor waste point with distinct lid openings, a shared roof, and a trolley-clear front. Editable overall scale and asset color.",
+  description: "Three-stream visitor waste point with distinct lid openings, a shared roof, and a trolley-clear front. Controls: overall scale, powderCoat, stainlessSteel, enamel; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "park operations and guest comfort"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#71877e", { label: "Asset color" });
+const powderCoat = param("powderCoat", "#477985", { label: "Powder-coated steel" });
+const stainlessSteel = param("stainlessSteel", "#b0b9b6", { label: "Stainless steel" });
+const enamel = param("enamel", "#cc684e", { label: "Baked enamel" });
+
+presets({
+  festival: {
+    "powderCoat": "#d47452",
+    "stainlessSteel": "#d1d1c6",
+    "enamel": "#edb34d"
+},
+  twilight: {
+    "powderCoat": "#35576f",
+    "stainlessSteel": "#788b91",
+    "enamel": "#385b81"
+},
+});
 const originOffsetMm = 0;
 const p = assembly("park-waste-sorting-station");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["shared-canopy"].includes(name)) p.part(name, positioned.color(powderCoat));
+  else if (["bin-0", "bin-1", "bin-2", "lid-0", "lid-1", "lid-2"].includes(name)) p.part(name, positioned.color(enamel));
+  else if (["opening-rim-0", "opening-rim-1", "opening-rim-2", "support-0", "support-1"].includes(name)) p.part(name, positioned.color(stainlessSteel));
+  else p.part(name, positioned.color(powderCoat));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);

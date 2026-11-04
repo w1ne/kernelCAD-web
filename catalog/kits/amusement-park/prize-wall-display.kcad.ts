@@ -1,9 +1,9 @@
-// Original amusement-park scene asset. Millimetres, Z up, base origin.
+// Midway prize wall: Prize counter backdrop with three open display shelves, hanging plush silhouettes, and a lower redemption ledge.
 meta({
   name: "prize-wall-display",
   license: "CC0-1.0",
   title: "Midway prize wall",
-  description: "Prize counter backdrop with three open display shelves, hanging plush silhouettes, and a lower redemption ledge. Editable overall scale and asset color.",
+  description: "Prize counter backdrop with three open display shelves, hanging plush silhouettes, and a lower redemption ledge. Controls: overall scale, paintedTimber, steel, fabric; festival and twilight material presets.",
   tags: ["amusement park", "theme park", "guest experience", "low poly", "CC0", "midway games"],
   kit: "amusement-park",
   category: "prop",
@@ -13,12 +13,31 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#9a7960", { label: "Asset color" });
+const paintedTimber = param("paintedTimber", "#92704e", { label: "Painted timber" });
+const steel = param("steel", "#738087", { label: "Painted steel" });
+const fabric = param("fabric", "#c77786", { label: "Upholstery fabric" });
+
+presets({
+  festival: {
+    "paintedTimber": "#be8a4e",
+    "steel": "#9da3a0",
+    "fabric": "#e4b765"
+},
+  twilight: {
+    "paintedTimber": "#5e7181",
+    "steel": "#4f626c",
+    "fabric": "#557b8a"
+},
+});
 const originOffsetMm = 0;
 const p = assembly("prize-wall-display");
 
 const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale).color(color));
+  const positioned = shape.translate(at[0], at[1], at[2] + originOffsetMm).scale(scale);
+  if (["back-panel", "counter-lip", "redemption-counter"].includes(name)) p.part(name, positioned.color(paintedTimber));
+  else if (["prize-plush-0", "prize-plush-1", "prize-plush-2", "prize-plush-3", "prize-plush-4", "prize-plush-5", "prize-plush-6", "prize-plush-7", "prize-plush-8"].includes(name)) p.part(name, positioned.color(fabric));
+  else if (["display-shelf-0", "display-shelf-1", "display-shelf-2"].includes(name)) p.part(name, positioned.color(steel));
+  else p.part(name, positioned.color(paintedTimber));
 };
 const B = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
   let shape = box(size[0], size[1], size[2], true);
