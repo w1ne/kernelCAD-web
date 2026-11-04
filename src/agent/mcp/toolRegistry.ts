@@ -43,6 +43,7 @@ import { cfdToolEntries } from './registry/cfdTools';
 import { costEstimateToolEntries } from './registry/costTools';
 import { toleranceStackToolEntries } from './registry/toleranceTools';
 import { scanReferenceToolEntries } from './registry/scanReferenceTools';
+import { cncCamToolEntries } from './registry/cncCamTools';
 import type { McpToolDefinition, ToolRegistryEntry } from './registry/types';
 import { guardMcpToolArgs } from './sandboxArgs';
 import { foldMcpInputAliases } from './snakeCaseArgs';
@@ -136,6 +137,8 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...toleranceStackToolEntries,
   // Appended after the tolerance stack: PLY/XYZ scan references. Not solids.
   ...scanReferenceToolEntries,
+  // Appended after the scan tools: bbox mill toolpaths. Not FDM G-code.
+  ...cncCamToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints

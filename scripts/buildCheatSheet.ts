@@ -32,6 +32,8 @@ const HEADER = [
   'A scanned envelope is not a solid. `load_scan_reference` reads a PLY or XYZ',
   'cloud, and `fit_model_to_scan` compares a parametric bounding box. Booleans',
   'on the cloud are refused.',
+  'A 2.5D mill plan is `plan_cnc_toolpaths`: facing, profile, pocket, and drill',
+  'from a bounding box plus stock. Its G-code is not the FDM slicer export.',
   '',
 ];
 
