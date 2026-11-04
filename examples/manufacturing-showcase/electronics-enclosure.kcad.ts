@@ -51,9 +51,19 @@ base = base.holes({ byNormal: '-Z', atZ: 0 }, {
   positions: postPositions.map(([u, v]) => ({u, v})), diameter: 2.7,
   depth: wall.add(6), name: 'pcbMounts',
 });
-// Rectangular 16 × 10 mm connector window, cut through the front wall.
-// It is a starter opening; measure the chosen connector before production.
-base = base.subtract(box(16, wall.add(0.4), 10).translate(L.divide(2).subtract(8), -0.2, 8));
+// A 16 × 10 mm connector opening with 45° upper shoulders and an 8 mm flat
+// crown. This keeps the roof within the generic 10 mm bridge gate while
+// leaving a wide lower opening. It is still a starter profile: measure the
+// chosen connector before production.
+const connectorX = L.divide(2).subtract(8);
+const connectorLower = box(16, wall.add(0.4), 6)
+  .translate(connectorX, -0.2, 8);
+const connectorCrown = path()
+  .moveTo(0, 0).lineTo(16, 0).lineTo(12, 4).lineTo(4, 4).close()
+  .extrude(wall.add(0.4))
+  .rotate([1, 0, 0], 90)
+  .translate(connectorX, wall.add(0.2), 14);
+base = base.subtract(connectorLower).subtract(connectorCrown);
 base = base.fillet(1, { parallel: [0, 0, 1] });
 arm.part('base', base, { material: 'abs' });
 
