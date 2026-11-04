@@ -505,15 +505,19 @@ describe('toolRegistry public contract', () => {
 
   it('appends the generic blockout assembly generator at the registry tail', () => {
     expect(blockoutToolEntries.map(entry => entry.definition.name)).toEqual(['blockout_assembly']);
+    expect(TOOL_REGISTRY.slice(-16 - (metricThreadToolEntries.length), -15 - (metricThreadToolEntries.length))).toEqual(blockoutToolEntries);
     expect(blockoutToolEntries[0].definition.description).toMatch(/^Use this when /);
   });
 
   it('appends the read-only asset manifest tool after the historical blockout tail', () => {
     expect(assetManifestToolEntries.map(entry => entry.definition.name)).toEqual(['asset_manifest']);
+    expect(TOOL_REGISTRY.slice(-15 - (metricThreadToolEntries.length), -14 - (metricThreadToolEntries.length))).toEqual(assetManifestToolEntries);
   });
 
   it('appends the read-only asset catalog family before the CFD tail', () => {
     expect(TOOL_REGISTRY.slice(
+      -assetCatalogToolEntries.length - cfdToolEntries.length - inspectionVerificationAssemblyChecksToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
+      -cfdToolEntries.length - inspectionVerificationAssemblyChecksToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
     )).toEqual(assetCatalogToolEntries);
     expect(assetCatalogToolEntries.map(entry => entry.definition.name)).toEqual([
       'search_assets', 'get_asset', 'find_matching', 'get_variant', 'list_kits', 'get_kit',
@@ -523,6 +527,8 @@ describe('toolRegistry public contract', () => {
   it('appends the CFD family (run_cfd, cfd_summary) before assembly checks', () => {
     expect(cfdToolEntries.map(entry => entry.definition.name)).toEqual(['run_cfd', 'cfd_summary']);
     expect(TOOL_REGISTRY.slice(
+      -cfdToolEntries.length - inspectionVerificationAssemblyChecksToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
+      -inspectionVerificationAssemblyChecksToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
     )).toEqual(cfdToolEntries);
     expect(cfdToolEntries[0].definition.description).toMatch(/^Use this when /);
   });
@@ -530,6 +536,8 @@ describe('toolRegistry public contract', () => {
   it('appends dfm_fix_recheck after assembly_checks without moving dfm_review', () => {
     expect(manufacturingFixRecheckToolEntries.map(entry => entry.definition.name)).toEqual(['dfm_fix_recheck']);
     expect(TOOL_REGISTRY.slice(
+      -manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
+      -costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
     )).toEqual(manufacturingFixRecheckToolEntries);
     expect(TOOL_REGISTRY[50]?.definition.name).toBe('dfm_review');
     expect(manufacturingFixRecheckToolEntries[0].definition.description).toMatch(/^Use this when /);
@@ -538,6 +546,8 @@ describe('toolRegistry public contract', () => {
   it('appends assembly_checks before dfm_fix_recheck and estimate_cost', () => {
     expect(inspectionVerificationAssemblyChecksToolEntries.map(entry => entry.definition.name)).toEqual(['assembly_checks']);
     expect(TOOL_REGISTRY.slice(
+      -inspectionVerificationAssemblyChecksToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
+      -manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
     )).toEqual(inspectionVerificationAssemblyChecksToolEntries);
     expect(inspectionVerificationAssemblyChecksToolEntries[0].definition.description).toMatch(/^Use this when /);
     expect(inspectionVerificationAssemblyChecksToolEntries[0].definition.description).toMatch(/verify\(\{ check: 'assembly' \}\)/);
@@ -547,6 +557,8 @@ describe('toolRegistry public contract', () => {
   it('appends estimate_cost immediately before the tolerance stack', () => {
     expect(costEstimateToolEntries.map(entry => entry.definition.name)).toEqual(['estimate_cost']);
     expect(TOOL_REGISTRY.slice(
+      -costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
+      -toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
     )).toEqual(costEstimateToolEntries);
     expect(costEstimateToolEntries[0].definition.description).toMatch(/^Use this when /);
     expect(costEstimateToolEntries[0].definition.description).toMatch(/not supplier quotes/i);
@@ -555,20 +567,22 @@ describe('toolRegistry public contract', () => {
   it('appends analyze_tolerance_stack immediately before the scan references', () => {
     expect(toleranceStackToolEntries.map(entry => entry.definition.name)).toEqual(['analyze_tolerance_stack']);
     expect(TOOL_REGISTRY.slice(
+      -toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
+      -scanReferenceToolEntries.length - (metricThreadToolEntries.length),
     )).toEqual(toleranceStackToolEntries);
     expect(toleranceStackToolEntries[0].definition.description).toMatch(/^Use this when /);
     expect(toleranceStackToolEntries[0].definition.description).toMatch(/not a full GD&T/i);
     expect(toleranceStackToolEntries[0].definition.description).toMatch(/ISO 2768/i);
   });
 
-  it(appends the scan reference tools at the registry tail, () => {
+  it('appends the scan reference tools at the registry tail', () => {
     expect(scanReferenceToolEntries.map(entry => entry.definition.name)).toEqual([
-      load_scan_reference,
-      fit_model_to_scan,
+      'load_scan_reference',
+      'fit_model_to_scan',
     ]);
     expect(TOOL_REGISTRY.slice(
-      -(scanReferenceToolEntries.length + metricThreadToolEntries.length),
-      -metricThreadToolEntries.length,
+      -(scanReferenceToolEntries.length + (metricThreadToolEntries.length)),
+      -(metricThreadToolEntries.length),
     )).toEqual(scanReferenceToolEntries);
     expect(scanReferenceToolEntries[0].definition.description).toMatch(/^Use this when /);
     expect(scanReferenceToolEntries[0].definition.description).toMatch(/not a BREP/i);
