@@ -51,7 +51,9 @@ describe('FIX-10 fillet / chamfer max-feasible probe', () => {
     // Half the 10 mm height is the geometric ceiling; the probe lands just under.
     expect(max).toBeGreaterThan(4.9);
     expect(max).toBeLessThan(5);
-    expect(d!.hint).toContain(`largest radius that works on these 12 edges is ${max} mm`);
+    expect(d!.hint).toMatch(/Limiting radius on limiting edge set \(12 edges\) on feature /);
+    expect(d!.hint).toContain(`${max.toFixed(2)} mm`);
+    expect(d!.hint).toContain('requested 5');
     expect(d!.nextAction).toMatchObject({ kind: 'retry-with-smaller-param', param: 'radius' });
     // Reported, not silently applied: the feature failed.
     expect(m.tailShape).toBeUndefined();
