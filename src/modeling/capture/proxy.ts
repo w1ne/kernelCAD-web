@@ -40,7 +40,6 @@ import { isTextureRef } from '../../shared/intent/textureRef';
 import type { TextureProjection } from '../../shared/intent/textureProjection';
 import { isTextureProjection } from '../../shared/intent/textureProjection';
 import { validateBendArgs } from '../sheetMetal'
-import { cornerReliefMetadata, edgeFlangeToBendArgs, hemToBendArgs } from '../sheetMetalFlange';
 import type { Region } from '../../shared/intent/region';
 import type { DrawingDimensionSpec, DrawingToleranceSpec } from '../../shared/intent/drawingGdtRecord';
 import type { FeaStudyHandle, FeaStudyMetadata, FeaStudySpec } from '../../shared/intent/feaStudyRecord';
@@ -49,9 +48,7 @@ import { captureCfdStudy } from './cfdStudyRecord';
 import {
   type FilletContinuity, isFilletContinuity,
 } from '../../shared/intent/filletContinuityRecord';
-
 import { NONFINITE_TRANSFORM_GUIDANCE, invalidEditableVec3Components, invalidTransformVec3Error } from './transformGuards';
-
 export type EdgeSelector =
   | EdgeQuery
   | EdgeSegment
@@ -70,7 +67,6 @@ export type EdgeSelector =
   | Query<EdgeMarker>
   | Query<unknown>
   | undefined;
-
 export type { FaceSelector };
 
 /**
@@ -1019,68 +1015,6 @@ export class Shape {
     return this.session.bendFeature(this, angleParam, radiusParam, edgeRef as EdgeSelector | { face: FaceSelector | CanonicalFace | string });
   }
 
-  /**
-   * Edge flange sugar over `.bend`. Validates length/angle/radius, then bends
-   * the selected edge. Flange length is recorded in metadata for docs/DFM;
-   * the geometric flange length still comes from the blank extent past the
-   * bend line (same as a manual `.bend`). Pass `radius` or fill from thickness.
-   * Metadata is best-effort documentation — bendFeature does not yet persist
-   * arbitrary metadata on the feature record.
-   */
-  edgeFlange(
-    edgeRef: EdgeSelector | { face: FaceSelector | CanonicalFace | string } | CanonicalFace | string,
-    opts: import('../sheetMetalFlange').EdgeFlangeOpts,
-  ): Shape {
-    const args = edgeFlangeToBendArgs(opts);
-    if (args.radius === null) {
-      invalidArgs({
-        api: 'edgeFlange(edgeRef, opts)',
-        path: 'radius',
-        got: opts.radius,
-        showType: opts.radius === undefined,
-        requires: 'a finite inner bend radius > 0 mm (fill from sheet thickness when unknown, e.g. thickness)',
-        unit: 'mm',
-        example: "blank.edgeFlange({ atX: 50 }, { length: 20, angle: 90, radius: 1.5 })",
-        featureId: this.id,
-      });
-    }
-    void args.metadata; // documented intent; record persistence not wired yet
-    return this.bend(edgeRef, args.angle, args.radius);
-  }
-
-  /**
-   * Hem sugar over `.bend` (~180°). `open` uses 170°; `closed`/`teardrop` use 180°.
-   * Metadata is best-effort (see edgeFlange).
-   */
-  hem(
-    edgeRef: EdgeSelector | { face: FaceSelector | CanonicalFace | string } | CanonicalFace | string,
-    opts: import('../sheetMetalFlange').HemOpts,
-  ): Shape {
-    const args = hemToBendArgs(opts);
-    if (args.radius === null) {
-      invalidArgs({
-        api: 'hem(edgeRef, opts)',
-        path: 'radius',
-        got: opts.radius,
-        showType: opts.radius === undefined,
-        requires: 'a finite inner bend radius > 0 mm',
-        unit: 'mm',
-        example: "blank.hem({ atY: 0 }, { type: 'closed', length: 6, radius: 1 })",
-        featureId: this.id,
-      });
-    }
-    void args.metadata;
-    return this.bend(edgeRef, args.angle, args.radius);
-  }
-
-  /**
-   * Corner-relief intent metadata. Returns `this` unchanged — no OCCT lowerer
-   * in this slice; agents can still declare relief for DFM/docs.
-   */
-  cornerRelief(opts: import('../sheetMetalFlange').CornerReliefOpts): Shape {
-    void cornerReliefMetadata(opts);
-    return this;
-  }
 
   /**
    * W2.2: Return the unfolded 2D flat-pattern of this bent sheet-metal Shape

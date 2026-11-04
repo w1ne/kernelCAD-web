@@ -183,3 +183,69 @@ export function cornerReliefMetadata(opts: CornerReliefOpts): Record<string, str
     ...(n.size !== null ? { reliefSize: n.size } : {}),
   };
 }
+
+
+/** Minimal Shape surface needed by flange/hem sugar (avoids importing proxy). */
+export interface SheetMetalFlangeHost {
+  readonly id: string;
+  bend(
+    edgeRef: unknown,
+    angle: number,
+    radius: number,
+  ): SheetMetalFlangeHost;
+}
+
+/**
+ * Install edgeFlange / hem / cornerRelief on Shape.prototype.
+ * Kept out of capture/proxy.ts so the max-lines ratchet stays at the develop ceiling.
+ */
+export function installSheetMetalFlangeSugar(
+  ShapeCtor: { prototype: SheetMetalFlangeHost },
+): void {
+  const proto = ShapeCtor.prototype as SheetMetalFlangeHost & {
+    edgeFlange?: (edgeRef: unknown, opts: EdgeFlangeOpts) => SheetMetalFlangeHost;
+    hem?: (edgeRef: unknown, opts: HemOpts) => SheetMetalFlangeHost;
+    cornerRelief?: (opts: CornerReliefOpts) => SheetMetalFlangeHost;
+  };
+
+  proto.edgeFlange = function edgeFlange(this: SheetMetalFlangeHost, edgeRef: unknown, opts: EdgeFlangeOpts) {
+    const args = edgeFlangeToBendArgs(opts);
+    if (args.radius === null) {
+      invalidArgs({
+        api: 'edgeFlange(edgeRef, opts)',
+        path: 'radius',
+        got: opts.radius,
+        showType: opts.radius === undefined,
+        requires: 'a finite inner bend radius > 0 mm (fill from sheet thickness when unknown, e.g. thickness)',
+        unit: 'mm',
+        example: "blank.edgeFlange({ atX: 50 }, { length: 20, angle: 90, radius: 1.5 })",
+        featureId: this.id,
+      });
+    }
+    void args.metadata;
+    return this.bend(edgeRef, args.angle, args.radius as number);
+  };
+
+  proto.hem = function hem(this: SheetMetalFlangeHost, edgeRef: unknown, opts: HemOpts) {
+    const args = hemToBendArgs(opts);
+    if (args.radius === null) {
+      invalidArgs({
+        api: 'hem(edgeRef, opts)',
+        path: 'radius',
+        got: opts.radius,
+        showType: opts.radius === undefined,
+        requires: 'a finite inner bend radius > 0 mm',
+        unit: 'mm',
+        example: "blank.hem({ atY: 0 }, { type: 'closed', length: 6, radius: 1 })",
+        featureId: this.id,
+      });
+    }
+    void args.metadata;
+    return this.bend(edgeRef, args.angle, args.radius as number);
+  };
+
+  proto.cornerRelief = function cornerRelief(this: SheetMetalFlangeHost, opts: CornerReliefOpts) {
+    void cornerReliefMetadata(opts);
+    return this;
+  };
+}

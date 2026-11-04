@@ -19,6 +19,7 @@ import type { DrawingToleranceSpec } from '../../shared/intent/drawingGdtRecord'
 import { Curve3DProxy } from './curveProxy';
 import { lazyEvalCurve } from '../backends/occt/curve3dEval';
 import { Shape } from './proxy';
+import { installSheetMetalFlangeSugar } from '../sheetMetalFlange';
 import { ShapeVersions, type VersionedOp } from './shapeVersions';
 export type { VersionedOp } from './shapeVersions';
 import { Sketch } from './sketch';
@@ -1233,3 +1234,5 @@ export class CaptureSession {
 function cloneJson<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
+
+installSheetMetalFlangeSugar(Shape);
