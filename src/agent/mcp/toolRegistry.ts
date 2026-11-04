@@ -126,7 +126,6 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...cfdToolEntries,
   // Appended at the tail: targeted assembly checks. Belongs to the inspection
   // family, but index order is a public contract so it does not shift earlier slices.
-  ...inspectionVerificationAssemblyChecksToolEntries,
   // Appended at the tail: one DFM parameter edit, then the same dfm_review.
   // Stays out of manufacturingToolEntries so dfm_review keeps index 50.
   ...manufacturingFixRecheckToolEntries,
