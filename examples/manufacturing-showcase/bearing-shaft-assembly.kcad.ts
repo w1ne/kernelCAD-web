@@ -5,6 +5,9 @@
 // bearing supplier. A two-screw plate retains the bearing; screws are not modeled.
 const frame = (origin: [number, number, number]) => ({ type: 'frame' as const, origin: { kind: 'vec3' as const, value: origin }, axis: [0, 0, 1] as [number, number, number] });
 const axis = (origin: [number, number, number]) => ({ type: 'axis' as const, origin: { kind: 'vec3' as const, value: origin }, axis: [0, 0, 1] as [number, number, number] });
+const shaftLength = param('shaftLength', 30, { min: 24, max: 50 });
+const shaftDiameter = param('shaftDiameter', 7.9, { min: 7.7, max: 7.95 });
+const shoulderDiameter = param('shoulderDiameter', 12, { min: 10, max: 14 });
 const assemblyModel = assembly('bearing-shaft');
 let housingShape = box(80, 50, 18).holes('top', {
   positions: [{u: -30, v: -15}, {u: 30, v: -15}, {u: -30, v: 15}, {u: 30, v: 15}],
@@ -20,8 +23,8 @@ const retainerShape = box(34, 30, 2).holes('top', {
 }).hole('top', {u:0, v:0, diameter:18, depth:'through'}).translate(23, 10, 18);
 // A shoulder locates the inner race axially. The 0.02 mm clearance is an
 // illustrative modeling gap, not a proven bearing fit or retention system.
-const shaftShape = cylinder(30, 3.95).translate(40, 25, -4)
-  .union(cylinder(2, 6).translate(40, 25, 18.02));
+const shaftShape = cylinder(shaftLength, shaftDiameter.divide(2)).translate(40, 25, -4)
+  .union(cylinder(2, shoulderDiameter.divide(2)).translate(40, 25, 18.02));
 assemblyModel.part('housing', housingShape, {material: 'aluminum-6061'})
   .connector('seat', frame([40,25,11])).connector('retainer', frame([26,25,18]));
 assemblyModel.part('bearing', bearingShape).connector('outer', frame([40,25,11])).connector('axis', axis([40,25,14.5]));

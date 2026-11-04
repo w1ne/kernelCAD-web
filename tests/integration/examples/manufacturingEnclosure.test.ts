@@ -2,6 +2,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { evaluateScriptTool } from '../../../src/agent/mcp/tools/evaluateScript';
+import { reviewCadTool } from '../../../src/agent/mcp/tools/reviewCad';
 import { readFile } from 'node:fs/promises';
 
 describe('printed electronics enclosure', () => {
@@ -27,10 +28,10 @@ describe('printed electronics enclosure', () => {
     expect(code).toContain("param('width', 60, { min: 60");
     const result = await evaluateScriptTool({ code, skipMechanismCheck: true });
     expect(result.ok, JSON.stringify(result.diagnostics)).toBe(true);
-    // Closest post centre is (25,20), closest lid boss centre is (13,13).
-    // Their radii are 3.5 and 5 mm, leaving a positive physical gap.
-    expect(Math.hypot(25 - 13, 20 - 13) - 3.5 - 5).toBeGreaterThan(5);
     expect(result.sceneSummary?.size[0]).toBeCloseTo(80, 3);
     expect(result.sceneSummary?.size[1]).toBeCloseTo(60, 3);
+    const review = await reviewCadTool({ code, includeInterference: true });
+    expect(review.ok, JSON.stringify(review.diagnostics)).toBe(true);
+    if (review.ok) expect(review.rawInterferencePairs).toEqual([]);
   }, 120_000);
 });

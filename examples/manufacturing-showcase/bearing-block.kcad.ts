@@ -2,11 +2,17 @@
 // envelope of a 608 bearing; specify the fit/tolerances with the actual bearing
 // and shop. The 8.5 mm through bore leaves clearance for an 8 mm shaft.
 // A retaining plate or other axial retention is a separate design decision.
+const length = param('length', 80, { min: 70, max: 120 });
 const thickness = param('thickness', 18, { min: 14, max: 30 });
 const bearingSeat = param('seatDiameter', 22, { min: 21.8, max: 22.2 });
-let block = box(80, 50, thickness);
+let block = box(length, 50, thickness);
 block = block.holes('top', {
-  positions: [{u: -30, v: -15}, {u: 30, v: -15}, {u: -30, v: 15}, {u: 30, v: 15}],
+  positions: [
+    {u: length.divide(2).subtract(10).negate(), v: -15},
+    {u: length.divide(2).subtract(10), v: -15},
+    {u: length.divide(2).subtract(10).negate(), v: 15},
+    {u: length.divide(2).subtract(10), v: 15},
+  ],
   diameter: 5.5, depth: 'through', name: 'frameMounts',
 });
 block = block.hole('top', {
