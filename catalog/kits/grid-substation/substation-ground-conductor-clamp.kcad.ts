@@ -1,9 +1,9 @@
-// Original grid substation scene asset. Millimetres, Z up, base origin.
+// Ground conductor clamp: Bolt-on conductor clamp with a base plate, paired jaws, and crossbolt. Low-poly visualization geometry in millimetres, Z up.
 meta({
   name: "substation-ground-conductor-clamp",
   license: "CC0-1.0",
   title: "Ground conductor clamp",
-  description: "Bolt-on conductor clamp with a base plate, paired jaws, and crossbolt. Editable overall scale and asset color.",
+  description: "Bolt-on conductor clamp with a base plate, paired jaws, and crossbolt. Material controls: galvanized steel, copper; finish presets: weathered and maintenance.",
   tags: ["grid substation", "electrical infrastructure", "utility yard", "low poly", "CC0", "cable and grounding"],
   kit: "grid-substation",
   category: "prop",
@@ -13,19 +13,26 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#73828b", { label: "Asset color" });
+const galvanizedSteel = param('galvanizedSteel', '#7f8c92', { label: 'Galvanized steel' });
+const copper = param('copper', '#b87545', { label: 'Copper' });
+presets({
+  weathered: { galvanizedSteel: '#778080', copper: '#9f704a' },
+  maintenance: { galvanizedSteel: '#e1b63d' },
+});
 const p = assembly("substation-ground-conductor-clamp");
 
-const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(color));
-};
-const B = (name: string, size: [number, number, number], at: [number, number, number]) => {
-  place(name, box(size[0], size[1], size[2], true), [at[0], at[1], at[2] + size[2] / 2]);
-};
+const beveledPlate = (width: number, depth: number, thickness: number, cut: number) =>
+  path().moveTo(-width / 2 + cut, -depth / 2).lineTo(width / 2 - cut, -depth / 2)
+    .lineTo(width / 2, -depth / 2 + cut).lineTo(width / 2, depth / 2 - cut)
+    .lineTo(width / 2 - cut, depth / 2).lineTo(-width / 2 + cut, depth / 2)
+    .lineTo(-width / 2, depth / 2 - cut).lineTo(-width / 2, -depth / 2 + cut)
+    .close().extrude(thickness);
 
-B("base-plate", [560, 420, 90], [0, 0, 0]);
-B("jaw-left", [150, 252, 266], [-145.60, 0, 90]);
-B("jaw-right", [150, 252, 266], [145.60, 0, 90]);
-B("crossbolt", [448, 100, 100], [0, 0, 281.20]);
+p.part("base-plate", beveledPlate(560, 420, 90, 25.20).translate(0, 0, 0).scale(scale).color(galvanizedSteel));
+p.part("jaw-left", box(150, 252, 266, true).translate(-145.60, 0, 223).scale(scale).color(galvanizedSteel));
+p.part("jaw-right", box(150, 252, 266, true).translate(145.60, 0, 223).scale(scale).color(galvanizedSteel));
+p.part("crossbolt", box(448, 100, 100, true).translate(0, 0, 331.20).scale(scale).color(copper));
+p.part("bolt-left", cylinder(190, 32, 10).translate(-145.60, 0, 90).scale(scale).color(copper));
+p.part("bolt-right", cylinder(190, 32, 10).translate(145.60, 0, 90).scale(scale).color(copper));
 
 return p.model();

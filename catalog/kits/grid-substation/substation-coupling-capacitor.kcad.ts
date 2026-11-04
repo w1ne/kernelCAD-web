@@ -1,9 +1,9 @@
-// Original grid substation scene asset. Millimetres, Z up, base origin.
+// Coupling capacitor: Stacked capacitor column on a frame with a small secondary terminal box. Low-poly visualization geometry in millimetres, Z up.
 meta({
   name: "substation-coupling-capacitor",
   license: "CC0-1.0",
   title: "Coupling capacitor",
-  description: "Stacked capacitor column on a frame with a small secondary terminal box. Editable overall scale and asset color.",
+  description: "Stacked capacitor column on a frame with a small secondary terminal box. Material controls: stainless steel, powder-coated steel; finish presets: weathered and maintenance.",
   tags: ["grid substation", "electrical infrastructure", "utility yard", "low poly", "CC0", "primary switching equipment"],
   kit: "grid-substation",
   category: "prop",
@@ -13,25 +13,43 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#73828b", { label: "Asset color" });
+const stainlessSteel = param('stainlessSteel', '#b5c0c0', { label: 'Stainless steel' });
+const powderCoat = param('powderCoat', '#526f68', { label: 'Powder-coated steel' });
+presets({
+  weathered: { stainlessSteel: '#9da4a0', powderCoat: '#586b63' },
+  maintenance: { powderCoat: '#cf7736' },
+});
 const p = assembly("substation-coupling-capacitor");
 
-const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(color));
+const ngon = (r: number, sides: number) => {
+  let outline = path().moveTo(r, 0);
+  for (let i = 1; i < sides; i++) {
+    const a = (2 * Math.PI * i) / sides;
+    outline = outline.lineTo(r * Math.cos(a), r * Math.sin(a));
+  }
+  return outline.close();
 };
-const B = (name: string, size: [number, number, number], at: [number, number, number]) => {
-  place(name, box(size[0], size[1], size[2], true), [at[0], at[1], at[2] + size[2] / 2]);
+const taperedColumn = (height: number, radius: number, sides = 10) => {
+  const profiles = [ngon(radius * 1.2, sides), ngon(radius * .72, sides)];
+  return profiles[0].loft(profiles.slice(1), {
+    planes: [{ plane: 'XY' as const, origin: [0, 0, 0] as [number, number, number] },
+      { plane: 'XY' as const, origin: [0, 0, height] as [number, number, number] }],
+    ruled: true,
+  });
 };
-const C = (name: string, height: number, radius: number, at: [number, number, number]) => {
-  place(name, cylinder(height, radius, 10), at);
-};
+const beveledPlate = (width: number, depth: number, thickness: number, cut: number) =>
+  path().moveTo(-width / 2 + cut, -depth / 2).lineTo(width / 2 - cut, -depth / 2)
+    .lineTo(width / 2, -depth / 2 + cut).lineTo(width / 2, depth / 2 - cut)
+    .lineTo(width / 2 - cut, depth / 2).lineTo(-width / 2 + cut, depth / 2)
+    .lineTo(-width / 2, depth / 2 - cut).lineTo(-width / 2, -depth / 2 + cut)
+    .close().extrude(thickness);
 
-B("base-plate", [1120, 900, 180], [0, 0, 0]);
-C("pedestal", 1144, 156.80, [0, 0, 180]);
-C("divider-section-1", 312, 380.80, [0, 0, 1144]);
-C("divider-section-2", 312, 341.60, [0, 0, 1482.00]);
-C("divider-section-3", 312, 302.40, [0, 0, 1820.00]);
-C("divider-section-4", 312, 263.20, [0, 0, 2158]);
-B("secondary-box", [470.40, 342, 416], [268.80, 202.50, 312]);
+p.part("base-plate", beveledPlate(1120, 900, 180, 54).translate(0, 0, 0).scale(scale).color(stainlessSteel));
+p.part("pedestal", taperedColumn(1144, 156.80, 10).translate(0, 0, 180).scale(scale).color(stainlessSteel));
+p.part("divider-section-1", cylinder(312, 380.80, 10).translate(0, 0, 1144).scale(scale).color(powderCoat));
+p.part("divider-section-2", cylinder(312, 341.60, 10).translate(0, 0, 1482).scale(scale).color(powderCoat));
+p.part("divider-section-3", cylinder(312, 302.40, 10).translate(0, 0, 1820).scale(scale).color(powderCoat));
+p.part("divider-section-4", cylinder(312, 263.20, 10).translate(0, 0, 2158).scale(scale).color(powderCoat));
+p.part("secondary-box", box(470.40, 342, 416, true).translate(268.80, 202.50, 520).scale(scale).color(powderCoat));
 
 return p.model();

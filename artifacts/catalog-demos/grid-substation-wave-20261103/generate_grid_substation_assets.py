@@ -187,7 +187,7 @@ def recipe(form, subtype, w, d, h):
                 p.append(cyl(f"phase-{i + 1}-support-{side}", h * 0.55, 95, x, y, 220))
                 p.append(cyl(f"phase-{i + 1}-insulator-{side}", h * 0.19, 145, x, y, h * 0.55))
             blade_z = h * (0.83 if subtype in ("center-break", "vertical-break") else 0.75)
-            p.append(box(f"phase-{i + 1}-blade", w * 0.27, 115, 110, x, 0, blade_z))
+            p.append(box(f"phase-{i + 1}-blade", 110, d * 0.5, 90, x, 0, blade_z))
         p += [box("drive-cabinet", w * 0.18, d * 0.3, h * 0.34, -w * 0.36, 0, 220), box("operating-link", w * 0.62, 95, 90, 0, d * 0.38, h * 0.42)]
     elif form == "breaker":
         p += [box("breaker-base", w, d, 300, 0, 0)]
@@ -224,7 +224,7 @@ def recipe(form, subtype, w, d, h):
     elif form == "lineTrap":
         p += [box("support-frame", w * 0.92, d * 0.76, 220, 0, 0), box("end-support-left", 180, d * 0.5, h * 0.7, -sx * 0.68, 0, 220), box("end-support-right", 180, d * 0.5, h * 0.7, sx * 0.68, 0, 220)]
         for i in range(5):
-            p.append(cyl(f"coil-turn-{i + 1}", h * 0.62, w * (0.36 - i * 0.035), 0, 0, 250 + i * 42))
+            p.append(drum(f"coil-turn-{i + 1}", h * 0.62, w * (0.36 - i * 0.035), 0, 0, 250 + i * 42))
         p += [box("terminal-pad-left", 300, 340, 150, -sx * 0.82, 0, h - 150), box("terminal-pad-right", 300, 340, 150, sx * 0.82, 0, h - 150)]
     elif form == "grading":
         p += [box("base", w * 0.68, d * 0.68, 220, 0, 0), cyl("support", h * 0.66, 105, 0, 0, 220), box("ring-side-left", w, 130, 130, -sx * 0.3, 0, h * 0.83), box("ring-side-right", w, 130, 130, sx * 0.3, 0, h * 0.83), box("ring-top", w * 0.62, d * 0.62, 130, 0, 0, h * 0.93), box("terminal", 230, 230, 170, 0, 0, h - 170)]
@@ -238,9 +238,12 @@ def recipe(form, subtype, w, d, h):
         tank_w, tank_d, tank_h = w * 0.62, d * 0.66, h * 0.54
         p += [box("main-tank", tank_w, tank_d, tank_h, 0, 0, 320), box("tank-cover", tank_w * 1.06, tank_d * 1.06, 180, 0, 0, 320 + tank_h)]
         for i in range(7):
-            x = -tank_w * 0.48 + i * tank_w * 0.16
-            p += [box(f"cooler-fin-left-{i + 1}", 100, d * 0.2, tank_h * 0.78, -tank_w * 0.62, 0, 430), box(f"cooler-fin-right-{i + 1}", 100, d * 0.2, tank_h * 0.78, tank_w * 0.62, 0, 430)]
-        p += [box("conservator", tank_w * 0.62, tank_d * 0.28, 280, 0, -tank_d * 0.48, h * 0.84), box("conservator-pipe", 180, tank_d * 0.16, h * 0.28, 0, -tank_d * 0.35, h * 0.6)]
+            y = -tank_d * 0.42 + i * tank_d * 0.14
+            side_x = tank_w * 0.5 + 55
+            p += [box(f"cooler-fin-left-{i + 1}", 90, 90, tank_h * 0.78, -side_x, y, 430), box(f"cooler-fin-right-{i + 1}", 90, 90, tank_h * 0.78, side_x, y, 430)]
+        for side, x in (("left", -tank_w * 0.5 - 55), ("right", tank_w * 0.5 + 55)):
+            p += [box(f"cooler-header-lower-{side}", 180, tank_d * 0.94, 150, x, 0, 430), box(f"cooler-header-upper-{side}", 180, tank_d * 0.94, 150, x, 0, 430 + tank_h * 0.78)]
+        p += [drum("conservator", tank_w * 0.62, tank_d * 0.14, 0, -tank_d * 0.48, h * 0.82 - tank_d * 0.14), box("conservator-pipe", 180, tank_d * 0.16, h * 0.28, 0, -tank_d * 0.35, h * 0.6)]
         for i in range(4):
             x = -tank_w * 0.34 + i * tank_w * 0.22
             p += [cyl(f"bushing-{i + 1}", h * (0.24 if subtype == "main" else 0.2), 145, x, tank_d * 0.12, 320 + tank_h + 180)]
@@ -257,7 +260,8 @@ def recipe(form, subtype, w, d, h):
         p += [box("fan-skid", w, d, 220, 0, 0), box("fan-guard", w * 0.86, 220, h * 0.72, 0, -sy * 0.55, 220)]
         for i in range(3):
             x = (i - 1) * w * 0.28
-            p += [cyl(f"fan-housing-{i + 1}", 240, d * 0.32, x, 0, h * 0.42), box(f"fan-motor-{i + 1}", w * 0.16, d * 0.42, h * 0.24, x, sy * 0.25, 250)]
+            radius = d * 0.29
+            p += [wheel(f"fan-housing-{i + 1}", 240, radius, x, -sy * 0.55 - 120, h * 0.42 - radius), box(f"fan-motor-{i + 1}", w * 0.16, d * 0.42, h * 0.24, x, sy * 0.25, 250)]
     elif form == "oilTank":
         p += [box("saddle-left", w * 0.15, d * 0.72, h * 0.36, -w * 0.27, 0), box("saddle-right", w * 0.15, d * 0.72, h * 0.36, w * 0.27, 0)]
         p += [drum("vessel-shell", w * 0.72, d * 0.27, 0, 0, h * 0.34), box("end-cap-left", 150, d * 0.65, h * 0.46, -w * 0.34, 0, h * 0.32), box("end-cap-right", 150, d * 0.65, h * 0.46, w * 0.34, 0, h * 0.32), box("level-gauge", 170, 120, h * 0.36, sx * 0.46, sy * 0.42, h * 0.44), box("top-nozzle", 220, 220, 250, 0, 0, h - 250)]
@@ -339,9 +343,9 @@ def recipe(form, subtype, w, d, h):
     elif form == "ground":
         p += [box("inspection-box", w, d, h * 0.72, 0, 0), box("cover-lid", w * 1.12, d * 1.12, 100, 0, 0, h * 0.72), cyl("ground-riser", h * 0.35, 75, 0, 0, h * 0.72)]
     elif form == "clamp":
-        p += [box("base-plate", w, d, 90, 0, 0), box("jaw-left", 150, d * 0.6, h * 0.7, -sx * 0.52, 0, 90), box("jaw-right", 150, d * 0.6, h * 0.7, sx * 0.52, 0, 90), box("crossbolt", w * 0.8, 100, 100, 0, 0, h * 0.74)]
+        p += [box("base-plate", w, d, 90, 0, 0), box("jaw-left", 150, d * 0.6, h * 0.7, -sx * 0.52, 0, 90), box("jaw-right", 150, d * 0.6, h * 0.7, sx * 0.52, 0, 90), box("crossbolt", w * 0.8, 100, 100, 0, 0, h * 0.74), cyl("bolt-left", h * 0.5, 32, -sx * 0.52, 0, 90), cyl("bolt-right", h * 0.5, 32, sx * 0.52, 0, 90)]
     elif form == "groundbar":
-        p += [box("base", w * 0.9, d, 200, 0, 0), box("insulating-support-left", 220, 220, h * 0.58, -sx * 0.62, 0, 200), box("insulating-support-right", 220, 220, h * 0.58, sx * 0.62, 0, 200), box("ground-bar", w, 180, 180, 0, 0, h * 0.72)]
+        p += [box("base", w * 0.9, d, 200, 0, 0), cyl("insulating-support-left", h * 0.58, 110, -sx * 0.62, 0, 200), cyl("insulating-support-right", h * 0.58, 110, sx * 0.62, 0, 200), box("ground-bar", w, 180, 180, 0, 0, h * 0.72)]
         for i in range(5):
             p.append(box(f"connection-pad-{i + 1}", 150, 280, 110, -sx * 0.72 + i * w * 0.36, 0, h * 0.86))
     elif form == "reel":
@@ -391,7 +395,7 @@ def recipe(form, subtype, w, d, h):
         p += [box("pedestal-foot", w, d, 250, 0, 0), cyl("standpipe", h * 0.62, 140, 0, 0, 250), box("monitor-body", w * 0.55, d * 0.42, 280, 0, 0, h * 0.75), box("nozzle", w * 0.5, d * 0.25, 190, 0, -sy * 0.5, h * 0.84)]
         p += [box("handle-left", 90, d * 0.78, 120, -sx * 0.52, 0, h * 0.72), box("handle-right", 90, d * 0.78, 120, sx * 0.52, 0, h * 0.72)]
     elif form == "separator":
-        p += [box("bund-base", w, d, 260, 0, 0), box("vessel", w * 0.72, d * 0.58, h * 0.54, 0, 0, 260), box("access-cover-left", w * 0.2, d * 0.3, 130, -sx * 0.26, 0, h * 0.75), box("access-cover-right", w * 0.2, d * 0.3, 130, sx * 0.26, 0, h * 0.75)]
+        p += [box("bund-base", w, d, 260, 0, 0), cyl("vessel", h * 0.54, min(w * 0.30, d * 0.26), 0, 0, 260), box("access-cover-left", w * 0.2, d * 0.3, 130, -sx * 0.26, 0, h * 0.75), box("access-cover-right", w * 0.2, d * 0.3, 130, sx * 0.26, 0, h * 0.75)]
         p += [box("inlet-pipe", w * 0.3, 180, 180, -sx * 0.54, 0, h * 0.57), box("outlet-pipe", w * 0.3, 180, 180, sx * 0.54, 0, h * 0.57), box("sampling-box", w * 0.2, d * 0.23, h * 0.33, sx * 0.48, sy * 0.36, 260)]
     elif form == "light":
         p += [box("base-plate", w, d, 300, 0, 0), cyl("mast-pole", h - 300, 115, 0, 0, 300), box("outreach-arm", w * 1.45, 170, 160, w * 0.48, 0, h - 620), box("luminaire", w * 0.72, d * 0.44, 220, w * 1.05, 0, h - 840)]
@@ -436,7 +440,7 @@ def recipe(form, subtype, w, d, h):
         for y in (-sy * 0.7, sy * 0.7):
             p.append(box("rail-shoe", w * 0.92, 220, 160, 0, y, 0))
     elif form == "pump":
-        p += [box("skid-base", w, d, 220, 0, 0), box("pump-housing", w * 0.32, d * 0.46, h * 0.43, -sx * 0.34, 0, 220), cyl("motor", h * 0.48, w * 0.17, sx * 0.25, 0, 220), box("coupling-guard", w * 0.18, d * 0.5, h * 0.28, -w * 0.02, 0, 250), box("suction-pipe", w * 0.7, 170, 170, -sx * 0.18, -sy * 0.53, h * 0.48), box("discharge-pipe", w * 0.5, 170, 170, -sx * 0.34, sy * 0.45, h * 0.73)]
+        p += [box("skid-base", w, d, 220, 0, 0), box("pump-housing", w * 0.32, d * 0.46, h * 0.43, -sx * 0.34, 0, 220), drum("motor", w * 0.44, w * 0.17, sx * 0.25, 0, 220), box("coupling-guard", w * 0.18, d * 0.5, h * 0.28, -w * 0.02, 0, 250), box("suction-pipe", w * 0.7, 170, 170, -sx * 0.18, -sy * 0.53, h * 0.48), box("discharge-pipe", w * 0.5, 170, 170, -sx * 0.34, sy * 0.45, h * 0.73)]
         for x in (-sx * 0.35, sx * 0.42):
             p.append(box("pipe-support", 160, 160, h * 0.48, x, sy * 0.48, 220))
     else:

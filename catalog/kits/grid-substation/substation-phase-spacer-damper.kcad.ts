@@ -1,9 +1,9 @@
-// Original grid substation scene asset. Millimetres, Z up, base origin.
+// Phase spacer damper: Cross-shaped spacer assembly for a bundled conductor scene. Low-poly visualization geometry in millimetres, Z up.
 meta({
   name: "substation-phase-spacer-damper",
   license: "CC0-1.0",
   title: "Phase spacer damper",
-  description: "Cross-shaped spacer assembly for a bundled conductor scene. Editable overall scale and asset color.",
+  description: "Cross-shaped spacer assembly for a bundled conductor scene. Material controls: copper, galvanized steel; finish presets: weathered and maintenance.",
   tags: ["grid substation", "electrical infrastructure", "utility yard", "low poly", "CC0", "incoming lines and structures"],
   kit: "grid-substation",
   category: "prop",
@@ -13,24 +13,36 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#73828b", { label: "Asset color" });
+const copper = param('copper', '#b87545', { label: 'Copper' });
+const galvanizedSteel = param('galvanizedSteel', '#7f8c92', { label: 'Galvanized steel' });
+presets({
+  weathered: { copper: '#9f704a', galvanizedSteel: '#778080' },
+  maintenance: { galvanizedSteel: '#e1b63d' },
+});
 const p = assembly("substation-phase-spacer-damper");
 
-const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(color));
+const ngon = (r: number, sides: number) => {
+  let outline = path().moveTo(r, 0);
+  for (let i = 1; i < sides; i++) {
+    const a = (2 * Math.PI * i) / sides;
+    outline = outline.lineTo(r * Math.cos(a), r * Math.sin(a));
+  }
+  return outline.close();
 };
-const B = (name: string, size: [number, number, number], at: [number, number, number]) => {
-  place(name, box(size[0], size[1], size[2], true), [at[0], at[1], at[2] + size[2] / 2]);
-};
-const C = (name: string, height: number, radius: number, at: [number, number, number]) => {
-  place(name, cylinder(height, radius, 10), at);
+const taperedColumn = (height: number, radius: number, sides = 10) => {
+  const profiles = [ngon(radius * 1.2, sides), ngon(radius * .72, sides)];
+  return profiles[0].loft(profiles.slice(1), {
+    planes: [{ plane: 'XY' as const, origin: [0, 0, 0] as [number, number, number] },
+      { plane: 'XY' as const, origin: [0, 0, height] as [number, number, number] }],
+    ruled: true,
+  });
 };
 
-B("lower-conductor-support", [1444, 180, 120], [0, 0, 0]);
-B("cross-core", [1368, 180, 180], [0, 0, 294]);
-B("arm-left", [684, 420, 200], [-408.50, 0, 224]);
-B("arm-right", [684, 420, 200], [408.50, 0, 224]);
-C("conductor-sleeve-1", 210, 115, [-446.50, 0, 385.00]);
-C("conductor-sleeve-2", 210, 115, [446.50, 0, 385.00]);
+p.part("lower-conductor-support", box(1444, 180, 120, true).translate(0, 0, 60).scale(scale).color(copper));
+p.part("cross-core", box(1368, 180, 180, true).translate(0, 0, 384).scale(scale).color(copper));
+p.part("arm-left", box(684, 420, 200, true).translate(-408.50, 0, 324).scale(scale).color(galvanizedSteel));
+p.part("arm-right", box(684, 420, 200, true).translate(408.50, 0, 324).scale(scale).color(galvanizedSteel));
+p.part("conductor-sleeve-1", taperedColumn(210, 115, 10).translate(-446.50, 0, 385).scale(scale).color(copper));
+p.part("conductor-sleeve-2", taperedColumn(210, 115, 10).translate(446.50, 0, 385).scale(scale).color(copper));
 
 return p.model();

@@ -1,6 +1,6 @@
 # Grid Substation kit
 
-Eighty original low-poly scene assets for a utility substation yard. Sources use millimetres and Z up. Each asset exposes overall scale and asset color, uses one material, and declares a 1,800-triangle ceiling. All geometry is dedicated to the public domain under CC0 1.0.
+Eighty original low-poly utility-yard scene assets. Sources use millimetres and Z up. Each asset exposes overall scale plus two to four named material controls, with `weathered` and `maintenance` finish presets. Distinct equipment geometry includes repeated steel, porcelain, copper, concrete, glass, and insulating-polymer components where each material belongs. The 1,800-triangle ceiling remains the default and is raised only for an asset whose reviewed geometry requires it. All geometry is dedicated to the public domain under CC0 1.0.
 
 ## Incoming lines and structures
 
@@ -28,6 +28,6 @@ Eighty original low-poly scene assets for a utility substation yard. Sources use
 
 ## Preview and verification
 
-The [grid substation wave bundle](../../../artifacts/catalog-demos/grid-substation-wave-20261103/README.md) records generated sources, catalog previews, local audits, and the inspected MP4 walkthrough.
+The [grid substation wave bundle](../../../artifacts/catalog-demos/grid-substation-wave-20261103/README.md) records the original source recipes. The [quality-promotion handoff](../../../artifacts/catalog-demos/grid-substation-quality-promotion-20261104/README.md) records the 80-asset material and geometry promotion, refreshed previews, validation, and inspected MP4 walkthrough.
 
 These are generic visualization props. They do not specify voltage or current ratings, clearances, fault performance, switching procedures, electrical safety, grid compliance, or operational acceptance. Catalog checks do not establish electrical or field safety.

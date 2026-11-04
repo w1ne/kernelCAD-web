@@ -1,9 +1,9 @@
-// Original grid substation scene asset. Millimetres, Z up, base origin.
+// AC station service board: Multi-bay station board with separate incoming and outgoing panel sections. Low-poly visualization geometry in millimetres, Z up.
 meta({
   name: "substation-ac-station-service-board",
   license: "CC0-1.0",
   title: "AC station service board",
-  description: "Multi-bay station board with separate incoming and outgoing panel sections. Editable overall scale and asset color.",
+  description: "Multi-bay station board with separate incoming and outgoing panel sections. Material controls: powder-coated steel, stainless steel, signal amber; finish presets: weathered and maintenance.",
   tags: ["grid substation", "electrical infrastructure", "utility yard", "low poly", "CC0", "protection and control"],
   kit: "grid-substation",
   category: "prop",
@@ -13,27 +13,41 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#73828b", { label: "Asset color" });
+const powderCoat = param('powderCoat', '#526f68', { label: 'Powder-coated steel' });
+const stainlessSteel = param('stainlessSteel', '#b5c0c0', { label: 'Stainless steel' });
+const signalAmber = param('signalAmber', '#f39c36', { label: 'Signal amber' });
+presets({
+  weathered: { powderCoat: '#586b63', stainlessSteel: '#9da4a0', signalAmber: '#c98b40' },
+  maintenance: { signalAmber: '#ffc04d' },
+});
 const p = assembly("substation-ac-station-service-board");
 
-const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(color));
-};
-const B = (name: string, size: [number, number, number], at: [number, number, number]) => {
-  place(name, box(size[0], size[1], size[2], true), [at[0], at[1], at[2] + size[2] / 2]);
-};
+const beveledPlate = (width: number, depth: number, thickness: number, cut: number) =>
+  path().moveTo(-width / 2 + cut, -depth / 2).lineTo(width / 2 - cut, -depth / 2)
+    .lineTo(width / 2, -depth / 2 + cut).lineTo(width / 2, depth / 2 - cut)
+    .lineTo(width / 2 - cut, depth / 2).lineTo(-width / 2 + cut, depth / 2)
+    .lineTo(-width / 2, depth / 2 - cut).lineTo(-width / 2, -depth / 2 + cut)
+    .close().extrude(thickness);
+const beveledPanel = (width: number, height: number, thickness: number, cut: number) =>
+  path().moveTo(-width / 2 + cut, 0).lineTo(width / 2 - cut, 0)
+    .lineTo(width / 2, cut).lineTo(width / 2, height - cut)
+    .lineTo(width / 2 - cut, height).lineTo(-width / 2 + cut, height)
+    .lineTo(-width / 2, height - cut).lineTo(-width / 2, cut)
+    .close().extrude(thickness).rotateX(90);
 
-B("plinth", [1900, 820, 220], [0, 0, 0]);
-B("cabinet-body", [1748, 705.20, 1990], [0, 0, 220]);
-B("rain-hood", [1976, 836.40, 140], [0, 0, 2210]);
-B("front-panel-1", [351.12, 75, 1692], [-598.50, -360.80, 329.00]);
-B("handle-1", [45, 75, 305.50], [-486.78, -385.40, 1057.50]);
-B("front-panel-2", [351.12, 75, 1692], [-199.50, -360.80, 329.00]);
-B("handle-2", [45, 75, 305.50], [-87.78, -385.40, 1057.50]);
-B("front-panel-3", [351.12, 75, 1692], [199.50, -360.80, 329.00]);
-B("handle-3", [45, 75, 305.50], [311.22, -385.40, 1057.50]);
-B("front-panel-4", [351.12, 75, 1692], [598.50, -360.80, 329.00]);
-B("handle-4", [45, 75, 305.50], [710.22, -385.40, 1057.50]);
-B("cable-entry-plinth", [874, 262.40, 150], [0, 135.30, 0]);
+p.part("plinth", beveledPlate(1900, 820, 220, 49.20).translate(0, 0, 0).scale(scale).color(powderCoat));
+p.part("cabinet-body", beveledPanel(1748, 1990, 705.20, 104.88).translate(0, 352.60, 220).scale(scale).color(powderCoat));
+p.part("rain-hood", beveledPlate(1976, 836.40, 140, 50.18).translate(0, 0, 2210).scale(scale).color(powderCoat));
+p.part("front-panel-1", beveledPanel(351.12, 1692, 75, 21.07).translate(-598.50, -323.30, 329).scale(scale).color(powderCoat));
+p.part("handle-1", box(45, 75, 305.50, true).translate(-486.78, -385.40, 1210.25).scale(scale).color(stainlessSteel));
+p.part("front-panel-2", beveledPanel(351.12, 1692, 75, 21.07).translate(-199.50, -323.30, 329).scale(scale).color(powderCoat));
+p.part("handle-2", box(45, 75, 305.50, true).translate(-87.78, -385.40, 1210.25).scale(scale).color(stainlessSteel));
+p.part("front-panel-3", beveledPanel(351.12, 1692, 75, 21.07).translate(199.50, -323.30, 329).scale(scale).color(powderCoat));
+p.part("handle-3", box(45, 75, 305.50, true).translate(311.22, -385.40, 1210.25).scale(scale).color(stainlessSteel));
+p.part("front-panel-4", beveledPanel(351.12, 1692, 75, 21.07).translate(598.50, -323.30, 329).scale(scale).color(powderCoat));
+p.part("handle-4", box(45, 75, 305.50, true).translate(710.22, -385.40, 1210.25).scale(scale).color(stainlessSteel));
+p.part("cable-entry-plinth", box(874, 262.40, 150, true).translate(0, 135.30, 75).scale(scale).color(stainlessSteel));
+
+p.part("status-lamp-amber", cylinder(78, 34, 10).translate(627, -428, 1833).scale(scale).color(signalAmber));
 
 return p.model();

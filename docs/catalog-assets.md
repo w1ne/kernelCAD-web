@@ -148,8 +148,12 @@ workplace safety, or operational acceptance.
 The [grid substation kit](../catalog/kits/grid-substation/README.md) adds 80
 original low-poly props for line structures, primary switching equipment,
 transformer auxiliaries, protection and control, cable routes, grounding, and
-yard maintenance. Each source exposes scale and color controls and has an
-indexed preview. The [wave demo and verification bundle](../artifacts/catalog-demos/grid-substation-wave-20261103/README.md)
-records the source-to-preview workflow, local catalog checks, and inspected
-MP4. These are visualization props; checks do not establish equipment ratings,
-electrical safety, grid compliance, operating procedures, or field acceptance.
+yard maintenance. Every source now exposes scale plus two to four
+material-named color controls and `weathered` / `maintenance` finish presets;
+the indexed previews show the separated materials and object-specific forms.
+The [quality promotion handoff](../artifacts/catalog-demos/grid-substation-quality-promotion-20261104/README.md)
+records the full-kit source, preview, index, lint, integration, local-page, and
+inspected-video evidence. The [original wave bundle](../artifacts/catalog-demos/grid-substation-wave-20261103/README.md)
+retains the source-to-preview workflow. These are visualization props; checks
+do not establish equipment ratings, electrical safety, grid compliance,
+operating procedures, or field acceptance.

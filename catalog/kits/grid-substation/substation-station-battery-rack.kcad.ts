@@ -1,9 +1,9 @@
-// Original grid substation scene asset. Millimetres, Z up, base origin.
+// Station battery rack: Two-tier battery rack carrying a row of distinct battery cases. Low-poly visualization geometry in millimetres, Z up.
 meta({
   name: "substation-station-battery-rack",
   license: "CC0-1.0",
   title: "Station battery rack",
-  description: "Two-tier battery rack carrying a row of distinct battery cases. Editable overall scale and asset color.",
+  description: "Two-tier battery rack carrying a row of distinct battery cases. Material controls: galvanized steel, stainless steel, insulating polymer; finish presets: weathered and maintenance.",
   tags: ["grid substation", "electrical infrastructure", "utility yard", "low poly", "CC0", "protection and control"],
   kit: "grid-substation",
   category: "prop",
@@ -13,33 +13,39 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#73828b", { label: "Asset color" });
+const galvanizedSteel = param('galvanizedSteel', '#7f8c92', { label: 'Galvanized steel' });
+const stainlessSteel = param('stainlessSteel', '#b5c0c0', { label: 'Stainless steel' });
+const polymer = param('polymer', '#6f91a0', { label: 'Insulating polymer' });
+presets({
+  weathered: { galvanizedSteel: '#778080', stainlessSteel: '#9da4a0', polymer: '#6c838a' },
+  maintenance: { galvanizedSteel: '#e1b63d' },
+});
 const p = assembly("substation-station-battery-rack");
 
-const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(color));
-};
-const B = (name: string, size: [number, number, number], at: [number, number, number]) => {
-  place(name, box(size[0], size[1], size[2], true), [at[0], at[1], at[2] + size[2] / 2]);
-};
+const beveledPlate = (width: number, depth: number, thickness: number, cut: number) =>
+  path().moveTo(-width / 2 + cut, -depth / 2).lineTo(width / 2 - cut, -depth / 2)
+    .lineTo(width / 2, -depth / 2 + cut).lineTo(width / 2, depth / 2 - cut)
+    .lineTo(width / 2 - cut, depth / 2).lineTo(-width / 2 + cut, depth / 2)
+    .lineTo(-width / 2, depth / 2 - cut).lineTo(-width / 2, -depth / 2 + cut)
+    .close().extrude(thickness);
 
-B("rack-foot-left", [150, 900, 200], [-936, 0, 0]);
-B("rack-foot-right", [150, 900, 200], [936, 0, 0]);
-B("rack-post-left", [120, 120, 1650], [-936, 0, 200]);
-B("rack-post-right", [120, 120, 1650], [936, 0, 200]);
-B("shelf-1", [2400, 900, 110], [0, 0, 260]);
-B("battery-1-1", [312, 666, 499.50], [-984.00, 0, 370]);
-B("battery-1-2", [312, 666, 499.50], [-590.40, 0, 370]);
-B("battery-1-3", [312, 666, 499.50], [-196.80, 0, 370]);
-B("battery-1-4", [312, 666, 499.50], [196.80, 0, 370]);
-B("battery-1-5", [312, 666, 499.50], [590.40, 0, 370]);
-B("battery-1-6", [312, 666, 499.50], [984.00, 0, 370]);
-B("shelf-2", [2400, 900, 110], [0, 0, 1055.50]);
-B("battery-2-1", [312, 666, 499.50], [-984.00, 0, 1165.50]);
-B("battery-2-2", [312, 666, 499.50], [-590.40, 0, 1165.50]);
-B("battery-2-3", [312, 666, 499.50], [-196.80, 0, 1165.50]);
-B("battery-2-4", [312, 666, 499.50], [196.80, 0, 1165.50]);
-B("battery-2-5", [312, 666, 499.50], [590.40, 0, 1165.50]);
-B("battery-2-6", [312, 666, 499.50], [984.00, 0, 1165.50]);
+p.part("rack-foot-left", box(150, 900, 200, true).translate(-936, 0, 100).scale(scale).color(galvanizedSteel));
+p.part("rack-foot-right", box(150, 900, 200, true).translate(936, 0, 100).scale(scale).color(galvanizedSteel));
+p.part("rack-post-left", box(120, 120, 1650, true).translate(-936, 0, 1025).scale(scale).color(galvanizedSteel));
+p.part("rack-post-right", box(120, 120, 1650, true).translate(936, 0, 1025).scale(scale).color(galvanizedSteel));
+p.part("shelf-1", beveledPlate(2400, 900, 110, 54).translate(0, 0, 260).scale(scale).color(stainlessSteel));
+p.part("battery-1-1", box(312, 666, 499.50, true).translate(-984, 0, 619.75).scale(scale).color(polymer));
+p.part("battery-1-2", box(312, 666, 499.50, true).translate(-590.40, 0, 619.75).scale(scale).color(polymer));
+p.part("battery-1-3", box(312, 666, 499.50, true).translate(-196.80, 0, 619.75).scale(scale).color(polymer));
+p.part("battery-1-4", box(312, 666, 499.50, true).translate(196.80, 0, 619.75).scale(scale).color(polymer));
+p.part("battery-1-5", box(312, 666, 499.50, true).translate(590.40, 0, 619.75).scale(scale).color(polymer));
+p.part("battery-1-6", box(312, 666, 499.50, true).translate(984, 0, 619.75).scale(scale).color(polymer));
+p.part("shelf-2", beveledPlate(2400, 900, 110, 54).translate(0, 0, 1055.50).scale(scale).color(stainlessSteel));
+p.part("battery-2-1", box(312, 666, 499.50, true).translate(-984, 0, 1415.25).scale(scale).color(polymer));
+p.part("battery-2-2", box(312, 666, 499.50, true).translate(-590.40, 0, 1415.25).scale(scale).color(polymer));
+p.part("battery-2-3", box(312, 666, 499.50, true).translate(-196.80, 0, 1415.25).scale(scale).color(polymer));
+p.part("battery-2-4", box(312, 666, 499.50, true).translate(196.80, 0, 1415.25).scale(scale).color(polymer));
+p.part("battery-2-5", box(312, 666, 499.50, true).translate(590.40, 0, 1415.25).scale(scale).color(polymer));
+p.part("battery-2-6", box(312, 666, 499.50, true).translate(984, 0, 1415.25).scale(scale).color(polymer));
 
 return p.model();

@@ -1,9 +1,9 @@
-// Original grid substation scene asset. Millimetres, Z up, base origin.
+// Breaker service trolley: Low service trolley with hydraulic power pack, hose reel, and lifting handle. Low-poly visualization geometry in millimetres, Z up.
 meta({
   name: "substation-hydraulic-breaker-service-trolley",
   license: "CC0-1.0",
   title: "Breaker service trolley",
-  description: "Low service trolley with hydraulic power pack, hose reel, and lifting handle. Editable overall scale and asset color.",
+  description: "Low service trolley with hydraulic power pack, hose reel, and lifting handle. Material controls: powder-coated steel, rubber, stainless steel; finish presets: weathered and maintenance.",
   tags: ["grid substation", "electrical infrastructure", "utility yard", "low poly", "CC0", "maintenance and safety"],
   kit: "grid-substation",
   category: "prop",
@@ -13,33 +13,25 @@ meta({
 });
 
 const scale = param("scale", 1, { label: "Overall scale", min: 0.65, max: 1.35, step: 0.05 });
-const color = param("color", "#73828b", { label: "Asset color" });
+const powderCoat = param('powderCoat', '#526f68', { label: 'Powder-coated steel' });
+const rubber = param('rubber', '#293034', { label: 'Rubber' });
+const stainlessSteel = param('stainlessSteel', '#b5c0c0', { label: 'Stainless steel' });
+presets({
+  weathered: { powderCoat: '#586b63', rubber: '#3b3f3e', stainlessSteel: '#9da4a0' },
+  maintenance: { powderCoat: '#cf7736' },
+});
 const p = assembly("substation-hydraulic-breaker-service-trolley");
 
-const place = (name: string, shape: Shape, at: [number, number, number]) => {
-  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(color));
-};
-const B = (name: string, size: [number, number, number], at: [number, number, number]) => {
-  place(name, box(size[0], size[1], size[2], true), [at[0], at[1], at[2] + size[2] / 2]);
-};
-const C = (name: string, height: number, radius: number, at: [number, number, number]) => {
-  place(name, cylinder(height, radius, 10), at);
-};
-const CY = (name: string, length: number, radius: number, at: [number, number, number]) => {
-  const shape = cylinder(length, radius, 10).rotate([1, 0, 0], 90);
-  place(name, shape, [at[0], at[1] + length / 2, at[2] + radius]);
-};
-
-B("cart-chassis", [1900, 703, 220], [0, 0, 0]);
-CY("caster", 237.50, 150, [-684, -342, 0]);
-CY("caster-2", 237.50, 150, [-684, 342, 0]);
-CY("caster-3", 237.50, 150, [684, -342, 0]);
-CY("caster-4", 237.50, 150, [684, 342, 0]);
-B("hydraulic-unit", [1102, 532, 575], [0, 0, 220]);
-C("oil-reservoir", 483, 228, [323, 80.75, 220]);
-B("hose-reel", [380, 237.50, 483], [-332.50, 0, 220]);
-B("push-handle-left", [90, 100, 575], [-741, 142.50, 220]);
-B("push-handle-right", [90, 100, 575], [741, 142.50, 220]);
-B("handle-crossbar", [1368, 100, 100], [0, 142.50, 759]);
+p.part("cart-chassis", box(1900, 703, 220, true).translate(0, 0, 110).scale(scale).color(powderCoat));
+p.part("caster", cylinder(237.50, 150, 10).rotateX(90).translate(-684, -223.25, 150).scale(scale).color(rubber));
+p.part("caster-2", cylinder(237.50, 150, 10).rotateX(90).translate(-684, 460.75, 150).scale(scale).color(rubber));
+p.part("caster-3", cylinder(237.50, 150, 10).rotateX(90).translate(684, -223.25, 150).scale(scale).color(rubber));
+p.part("caster-4", cylinder(237.50, 150, 10).rotateX(90).translate(684, 460.75, 150).scale(scale).color(rubber));
+p.part("hydraulic-unit", box(1102, 532, 575, true).translate(0, 0, 507.50).scale(scale).color(powderCoat));
+p.part("oil-reservoir", cylinder(483, 228, 10).translate(323, 80.75, 220).scale(scale).color(powderCoat));
+p.part("hose-reel", box(380, 237.50, 483, true).translate(-332.50, 0, 461.50).scale(scale).color(powderCoat));
+p.part("push-handle-left", box(90, 100, 575, true).translate(-741, 142.50, 507.50).scale(scale).color(stainlessSteel));
+p.part("push-handle-right", box(90, 100, 575, true).translate(741, 142.50, 507.50).scale(scale).color(stainlessSteel));
+p.part("handle-crossbar", box(1368, 100, 100, true).translate(0, 142.50, 809).scale(scale).color(stainlessSteel));
 
 return p.model();

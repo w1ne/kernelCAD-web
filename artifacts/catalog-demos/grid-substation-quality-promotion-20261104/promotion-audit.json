@@ -1,0 +1,46 @@
+{
+  "kit": "grid-substation",
+  "assetsPromoted": 80,
+  "indexRows": 80,
+  "materialColorKnobs": 239,
+  "materialColorKnobsPerAsset": {
+    "min": 2,
+    "max": 4
+  },
+  "namedMaterialRoles": [
+    "brass",
+    "cableJacket",
+    "concrete",
+    "copper",
+    "galvanizedSteel",
+    "glass",
+    "hazardBlack",
+    "polymer",
+    "porcelain",
+    "powderCoat",
+    "rubber",
+    "safetyRed",
+    "safetyYellow",
+    "signalAmber",
+    "stainlessSteel",
+    "transformerEnamel"
+  ],
+  "presetVariants": 160,
+  "presetNamesPerAsset": [
+    "weathered",
+    "maintenance"
+  ],
+  "minimumShapeOperatorsPerAsset": 1,
+  "maximumShapeOperatorsPerAsset": 9,
+  "triangleRange": {
+    "min": 64,
+    "max": 1648
+  },
+  "indexRowsWithPreview": 80,
+  "previewsRendered": 80,
+  "sourceHashesMatch": true,
+  "noIdentifiersAddedOrRemoved": true,
+  "qualityGate": "passed",
+  "issues": [],
+  "promotionScriptAssets": 80
+}
