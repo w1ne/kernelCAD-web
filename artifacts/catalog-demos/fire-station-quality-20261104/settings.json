@@ -1,0 +1,37 @@
+{
+  "date": "2026-11-04",
+  "assetSource": "promote_fire_station_assets.py reuses the committed fire-station source definitions from fire-station-wave-20261103",
+  "assetsPromoted": 70,
+  "assetsAdded": 0,
+  "materialColorKnobsPerAsset": "2-4",
+  "presetsPerAsset": ["apparatus-red", "clean-zone"],
+  "triangleBudget": 1800,
+  "previewRenderer": "npx tsx scripts/renderCatalogPreviews.ts <70 fire-station asset ids>",
+  "previewCanvas": "512x512 catalog software render, 3/4 view",
+  "workflowCommands": {
+    "promoteSources": "python3 artifacts/catalog-demos/fire-station-quality-20261104/promote_fire_station_assets.py",
+    "renderPreviews": "artifacts/catalog-demos/fire-station-quality-20261104/render_fire_station_previews.sh",
+    "rebuildIndex": "npx tsx scripts/buildAssetCatalog.ts",
+    "qualityAudit": "npx tsx artifacts/catalog-demos/fire-station-quality-20261104/audit_fire_station_quality.ts",
+    "lint": "npx eslint catalog/kits/fire-station/",
+    "catalogTests": "npx vitest run tests/integration/catalog/",
+    "renderVariant": "npx tsx artifacts/catalog-demos/fire-station-quality-20261104/render_quality_variant.ts",
+    "captureDemo": "python3 artifacts/catalog-demos/fire-station-quality-20261104/capture_fire_station_quality.py"
+  },
+  "variant": {
+    "source": "station-alerting-control-console.kcad.ts",
+    "scale": 1.15,
+    "powderCoat": "#b83d34",
+    "stainlessSteel": "#c3c9cc"
+  },
+  "demo": {
+    "resolution": "1280x720",
+    "frameCount": 12,
+    "frameDurationSeconds": 3,
+    "codec": "H.264, yuv420p",
+    "frameRate": 24,
+    "provenance": "Local source, software-rendered previews, local validation and preset variant",
+    "deployedBehavior": "not verified",
+    "hardwareAcceptance": "not applicable"
+  }
+}

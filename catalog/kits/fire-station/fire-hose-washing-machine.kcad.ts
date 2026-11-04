@@ -1,9 +1,9 @@
-// Original fire-station scene asset. Millimetres, Z up, base origin.
+// Fire hose washing machine: Station hose washer with feed rollers, covered wash chamber and drain tray. Millimetres, Z up, base origin.
 meta({
   name: "fire-hose-washing-machine",
   license: 'CC0-1.0',
   title: "Fire hose washing machine",
-  description: "Station hose washer with feed rollers, covered wash chamber and drain tray." + ' Editable overall scale and asset color.',
+  description: "Station hose washer with feed rollers, covered wash chamber and drain tray. Editable scale and material colors; use the apparatus-red or clean-zone finish preset.",
   tags: ["fire", "station", "apparatus bay", "firefighter health", "low poly", "CC0", "hose", "washing", "machine"],
   kit: 'fire-station',
   category: 'prop',
@@ -13,30 +13,67 @@ meta({
 });
 
 const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
-const color = param('color', "#69817f", { label: 'Asset color' });
+const powderCoat = param("powderCoat", "#b94338", { label: "Powder coat" });
+const stainlessSteel = param("stainlessSteel", "#b4bec3", { label: "Stainless steel" });
+const elastomer = param("elastomer", "#303539", { label: "Elastomer" });
+
+presets({
+  'apparatus-red': {"powderCoat": "#b83d34", "stainlessSteel": "#c3c9cc", "elastomer": "#252a2d"},
+  'clean-zone': {"powderCoat": "#4e8c87", "stainlessSteel": "#d0d8db", "elastomer": "#30383b"},
+});
 const p = assembly("fire-hose-washing-machine");
 
-const b = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
-  let shape = box(size[0], size[1], size[2], true);
-  if (rotation?.[0]) shape = shape.rotate([1, 0, 0], rotation[0]);
-  if (rotation?.[1]) shape = shape.rotate([0, 1, 0], rotation[1]);
-  if (rotation?.[2]) shape = shape.rotate([0, 0, 1], rotation[2]);
-  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(color));
+const panelProfile = (w: number, d: number, corner: number) => {
+  const c = Math.max(0.5, Math.min(corner, w * 0.18, d * 0.18));
+  return path().moveTo(-w / 2 + c, -d / 2).lineTo(w / 2 - c, -d / 2)
+    .lineTo(w / 2, -d / 2 + c).lineTo(w / 2, d / 2 - c)
+    .lineTo(w / 2 - c, d / 2).lineTo(-w / 2 + c, d / 2)
+    .lineTo(-w / 2, d / 2 - c).lineTo(-w / 2, -d / 2 + c).close();
 };
-const c = (name: string, h: number, r: number, segments: number, at: [number, number, number], axis?: [number, number, number], degrees = 0) => {
-  let shape = cylinder(h, r, segments);
-  if (axis && degrees) shape = shape.rotate(axis, degrees);
-  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(color));
+const profiledBox = (w: number, d: number, h: number) => {
+  const corner = Math.min(w, d) * 0.08;
+  const inset = Math.min(w, d) * 0.025;
+  return panelProfile(w, d, corner)
+    .loft(panelProfile(w - inset * 2, d - inset * 2, corner * 0.9), { spacing: h, ruled: true })
+    .translate(0, 0, -h / 2);
 };
 
-b("base", [1000, 760, 180], [0, 0, 90]);
-b("wash-cabinet", [840, 580, 650], [0, 0, 505]);
-b("front-door", [650, 30, 420], [0, -306, 545]);
-c("feed-roller-0", 48, 82, 10, [-370, -335, 298], [1, 0, 0], 90);
-c("feed-roller-1", 48, 82, 10, [-140, -335, 298], [1, 0, 0], 90);
-c("feed-roller-2", 48, 82, 10, [90, -335, 298], [1, 0, 0], 90);
-c("feed-roller-3", 48, 82, 10, [320, -335, 298], [1, 0, 0], 90);
-b("top-control", [330, 28, 140], [280, -303, 870]);
-b("drip-tray", [980, 760, 32], [0, 0, 196]);
+
+const b = (size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
+  let shape = profiledBox(size[0], size[1], size[2]);
+  if (rotation?.[0]) shape = shape.rotateX(rotation[0]);
+  if (rotation?.[1]) shape = shape.rotateY(rotation[1]);
+  if (rotation?.[2]) shape = shape.rotateZ(rotation[2]);
+  return shape.translate(at[0], at[1], at[2]).scale(scale);
+};
+const ngon = (r: number, sides: number, rotation = 0) => {
+  let profile = path().moveTo(r * Math.cos(rotation), r * Math.sin(rotation));
+  for (let i = 1; i < sides; i++) {
+    const angle = rotation + 2 * Math.PI * i / sides;
+    profile = profile.lineTo(r * Math.cos(angle), r * Math.sin(angle));
+  }
+  return profile.close();
+};
+const profiledCylinder = (h: number, r: number, sides: number) =>
+  ngon(r, sides).loft(ngon(r * 0.95, sides, Math.PI / sides), { spacing: h, ruled: true });
+const c = (h: number, r: number, segments: number, at: [number, number, number], axis?: [number, number, number], degrees = 0) => {
+  let shape = profiledCylinder(h, r, segments);
+  if (axis && degrees) {
+    if (axis[0]) shape = shape.rotateX(degrees);
+    else if (axis[1]) shape = shape.rotateY(degrees);
+    else if (axis[2]) shape = shape.rotateZ(degrees);
+  }
+  return shape.translate(at[0], at[1], at[2]).scale(scale);
+};
+
+p.part("base", b([1000, 760, 180], [0, 0, 90]).color(powderCoat));
+p.part("wash-cabinet", b([840, 580, 650], [0, 0, 505]).color(powderCoat));
+p.part("front-door", b([650, 30, 420], [0, -306, 545]).color(powderCoat));
+p.part("feed-roller-0", c(48, 82, 10, [-370, -335, 298], [1, 0, 0], 90).color(elastomer));
+p.part("feed-roller-1", c(48, 82, 10, [-140, -335, 298], [1, 0, 0], 90).color(elastomer));
+p.part("feed-roller-2", c(48, 82, 10, [90, -335, 298], [1, 0, 0], 90).color(elastomer));
+p.part("feed-roller-3", c(48, 82, 10, [320, -335, 298], [1, 0, 0], 90).color(elastomer));
+p.part("top-control", b([330, 28, 140], [280, -303, 870]).color(powderCoat));
+p.part("drip-tray", b([980, 760, 32], [0, 0, 196]).color(stainlessSteel));
 
 return p.model();

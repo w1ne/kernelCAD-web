@@ -1,9 +1,9 @@
-// Original fire-station scene asset. Millimetres, Z up, base origin.
+// Decontamination shower stall: Open shower bay with a raised pan, three-sided splash screen and overhead spray. Millimetres, Z up, base origin.
 meta({
   name: "decon-shower-stall",
   license: 'CC0-1.0',
   title: "Decontamination shower stall",
-  description: "Open shower bay with a raised pan, three-sided splash screen and overhead spray." + ' Editable overall scale and asset color.',
+  description: "Open shower bay with a raised pan, three-sided splash screen and overhead spray. Editable scale and material colors; use the apparatus-red or clean-zone finish preset.",
   tags: ["fire", "station", "apparatus bay", "firefighter health", "low poly", "CC0", "decontamination", "shower", "stall"],
   kit: 'fire-station',
   category: 'prop',
@@ -13,28 +13,65 @@ meta({
 });
 
 const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
-const color = param('color', "#71817d", { label: 'Asset color' });
+const powderCoat = param("powderCoat", "#4b8984", { label: "Powder coat" });
+const stainlessSteel = param("stainlessSteel", "#b4bec3", { label: "Stainless steel" });
+const signalColor = param("signalColor", "#f0bf38", { label: "Safety color" });
+
+presets({
+  'apparatus-red': {"powderCoat": "#b83d34", "stainlessSteel": "#c3c9cc", "signalColor": "#f3c83d"},
+  'clean-zone': {"powderCoat": "#4e8c87", "stainlessSteel": "#d0d8db", "signalColor": "#f2c642"},
+});
 const p = assembly("decon-shower-stall");
 
-const b = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
-  let shape = box(size[0], size[1], size[2], true);
-  if (rotation?.[0]) shape = shape.rotate([1, 0, 0], rotation[0]);
-  if (rotation?.[1]) shape = shape.rotate([0, 1, 0], rotation[1]);
-  if (rotation?.[2]) shape = shape.rotate([0, 0, 1], rotation[2]);
-  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(color));
+const panelProfile = (w: number, d: number, corner: number) => {
+  const c = Math.max(0.5, Math.min(corner, w * 0.18, d * 0.18));
+  return path().moveTo(-w / 2 + c, -d / 2).lineTo(w / 2 - c, -d / 2)
+    .lineTo(w / 2, -d / 2 + c).lineTo(w / 2, d / 2 - c)
+    .lineTo(w / 2 - c, d / 2).lineTo(-w / 2 + c, d / 2)
+    .lineTo(-w / 2, d / 2 - c).lineTo(-w / 2, -d / 2 + c).close();
 };
-const c = (name: string, h: number, r: number, segments: number, at: [number, number, number], axis?: [number, number, number], degrees = 0) => {
-  let shape = cylinder(h, r, segments);
-  if (axis && degrees) shape = shape.rotate(axis, degrees);
-  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(color));
+const profiledBox = (w: number, d: number, h: number) => {
+  const corner = Math.min(w, d) * 0.08;
+  const inset = Math.min(w, d) * 0.025;
+  return panelProfile(w, d, corner)
+    .loft(panelProfile(w - inset * 2, d - inset * 2, corner * 0.9), { spacing: h, ruled: true })
+    .translate(0, 0, -h / 2);
 };
 
-b("shower-pan", [1100, 1000, 80], [0, 0, 40]);
-b("rear-screen", [1100, 50, 2100], [0, 475, 1130]);
-b("left-screen", [50, 950, 2100], [-525, 0, 1130]);
-b("right-screen", [50, 950, 2100], [525, 0, 1130]);
-c("shower-riser", 1720, 28, 10, [0, 350, 0]);
-c("shower-head", 56, 115, 10, [0, 350, 1700], [1, 0, 0], 90);
-b("grab-bar", [700, 44, 44], [0, 420, 920]);
+
+const b = (size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
+  let shape = profiledBox(size[0], size[1], size[2]);
+  if (rotation?.[0]) shape = shape.rotateX(rotation[0]);
+  if (rotation?.[1]) shape = shape.rotateY(rotation[1]);
+  if (rotation?.[2]) shape = shape.rotateZ(rotation[2]);
+  return shape.translate(at[0], at[1], at[2]).scale(scale);
+};
+const ngon = (r: number, sides: number, rotation = 0) => {
+  let profile = path().moveTo(r * Math.cos(rotation), r * Math.sin(rotation));
+  for (let i = 1; i < sides; i++) {
+    const angle = rotation + 2 * Math.PI * i / sides;
+    profile = profile.lineTo(r * Math.cos(angle), r * Math.sin(angle));
+  }
+  return profile.close();
+};
+const profiledCylinder = (h: number, r: number, sides: number) =>
+  ngon(r, sides).loft(ngon(r * 0.95, sides, Math.PI / sides), { spacing: h, ruled: true });
+const c = (h: number, r: number, segments: number, at: [number, number, number], axis?: [number, number, number], degrees = 0) => {
+  let shape = profiledCylinder(h, r, segments);
+  if (axis && degrees) {
+    if (axis[0]) shape = shape.rotateX(degrees);
+    else if (axis[1]) shape = shape.rotateY(degrees);
+    else if (axis[2]) shape = shape.rotateZ(degrees);
+  }
+  return shape.translate(at[0], at[1], at[2]).scale(scale);
+};
+
+p.part("shower-pan", b([1100, 1000, 80], [0, 0, 40]).color(powderCoat));
+p.part("rear-screen", b([1100, 50, 2100], [0, 475, 1130]).color(signalColor));
+p.part("left-screen", b([50, 950, 2100], [-525, 0, 1130]).color(signalColor));
+p.part("right-screen", b([50, 950, 2100], [525, 0, 1130]).color(signalColor));
+p.part("shower-riser", c(1720, 28, 10, [0, 350, 0]).color(powderCoat));
+p.part("shower-head", c(56, 115, 10, [0, 350, 1700], [1, 0, 0], 90).color(powderCoat));
+p.part("grab-bar", b([700, 44, 44], [0, 420, 920]).color(stainlessSteel));
 
 return p.model();

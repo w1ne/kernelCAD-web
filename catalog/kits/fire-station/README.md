@@ -4,9 +4,10 @@ Seventy original low-poly station fixtures for an apparatus bay and the
 equipment-return path through washing, decontamination, gear processing, clean
 storage and station readiness. Sources use millimetres and Z up. Floor-standing
 assets use a base origin; mounted and overhead fixtures declare wall or ceiling
-origins. Each asset exposes overall scale and asset color, uses one material,
-and declares a 1,800-triangle ceiling. All geometry is dedicated to the public
-domain under CC0 1.0.
+origins. Each asset has two to four material-specific color controls and named
+station finish presets. Path profiles, lofted forms and angled components give
+the fixtures faceted silhouettes within their 1,800-triangle ceilings. All
+geometry is dedicated to the public domain under CC0 1.0.
 
 ## Apparatus bay and wash operations
 
@@ -52,9 +53,11 @@ domain under CC0 1.0.
 
 ## Preview and verification
 
-The [fire-station wave bundle](../../../artifacts/catalog-demos/fire-station-wave-20261103/README.md)
-contains the generator, source and page audits, rendered previews, parameter
-variant, and inspected MP4 walkthrough.
+The [fire-station quality bundle](../../../artifacts/catalog-demos/fire-station-quality-20261104/README.md)
+contains the promotion source, invocation settings, color and preset audit,
+rendered previews, local page checks, parameter variant, and inspected MP4
+walkthrough. This quality pass promotes the existing 70 assets; it adds no
+catalog entries.
 
 These are generic visualization props, not building-code, fire-protection,
 ventilation, contamination-control, PPE, respiratory, or emergency-response

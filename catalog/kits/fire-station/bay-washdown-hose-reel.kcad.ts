@@ -1,9 +1,9 @@
-// Original fire-station scene asset. Millimetres, Z up, wall origin.
+// Bay washdown hose reel: Wall reel with a circular hose drum, swivel mount, spray hose and pistol grip. Millimetres, Z up, wall origin.
 meta({
   name: "bay-washdown-hose-reel",
   license: 'CC0-1.0',
   title: "Bay washdown hose reel",
-  description: "Wall reel with a circular hose drum, swivel mount, spray hose and pistol grip." + ' Editable overall scale and asset color.',
+  description: "Wall reel with a circular hose drum, swivel mount, spray hose and pistol grip. Editable scale and material colors; use the apparatus-red or clean-zone finish preset.",
   tags: ["fire", "station", "apparatus bay", "firefighter health", "low poly", "CC0", "bay", "washdown", "hose", "reel"],
   kit: 'fire-station',
   category: 'prop',
@@ -13,27 +13,64 @@ meta({
 });
 
 const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
-const color = param('color', "#668b88", { label: 'Asset color' });
+const powderCoat = param("powderCoat", "#637d83", { label: "Powder coat" });
+const stainlessSteel = param("stainlessSteel", "#b4bec3", { label: "Stainless steel" });
+const elastomer = param("elastomer", "#303539", { label: "Elastomer" });
+
+presets({
+  'apparatus-red': {"powderCoat": "#b83d34", "stainlessSteel": "#c3c9cc", "elastomer": "#252a2d"},
+  'clean-zone': {"powderCoat": "#4e8c87", "stainlessSteel": "#d0d8db", "elastomer": "#30383b"},
+});
 const p = assembly("bay-washdown-hose-reel");
 
-const b = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
-  let shape = box(size[0], size[1], size[2], true);
-  if (rotation?.[0]) shape = shape.rotate([1, 0, 0], rotation[0]);
-  if (rotation?.[1]) shape = shape.rotate([0, 1, 0], rotation[1]);
-  if (rotation?.[2]) shape = shape.rotate([0, 0, 1], rotation[2]);
-  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(color));
+const panelProfile = (w: number, d: number, corner: number) => {
+  const c = Math.max(0.5, Math.min(corner, w * 0.18, d * 0.18));
+  return path().moveTo(-w / 2 + c, -d / 2).lineTo(w / 2 - c, -d / 2)
+    .lineTo(w / 2, -d / 2 + c).lineTo(w / 2, d / 2 - c)
+    .lineTo(w / 2 - c, d / 2).lineTo(-w / 2 + c, d / 2)
+    .lineTo(-w / 2, d / 2 - c).lineTo(-w / 2, -d / 2 + c).close();
 };
-const c = (name: string, h: number, r: number, segments: number, at: [number, number, number], axis?: [number, number, number], degrees = 0) => {
-  let shape = cylinder(h, r, segments);
-  if (axis && degrees) shape = shape.rotate(axis, degrees);
-  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(color));
+const profiledBox = (w: number, d: number, h: number) => {
+  const corner = Math.min(w, d) * 0.08;
+  const inset = Math.min(w, d) * 0.025;
+  return panelProfile(w, d, corner)
+    .loft(panelProfile(w - inset * 2, d - inset * 2, corner * 0.9), { spacing: h, ruled: true })
+    .translate(0, 0, -h / 2);
 };
 
-b("mount-plate", [300, 75, 380], [0, 0, 1350]);
-c("drum", 110, 220, 12, [0, -55, 1350], [1, 0, 0], 90);
-c("hub", 90, 60, 10, [0, -105, 1350], [1, 0, 0], 90);
-c("hose", 720, 22, 10, [0, -90, 630]);
-b("spray-grip", [70, 60, 260], [0, -110, 590]);
-c("trigger", 80, 16, 8, [0, -150, 510]);
+
+const b = (size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
+  let shape = profiledBox(size[0], size[1], size[2]);
+  if (rotation?.[0]) shape = shape.rotateX(rotation[0]);
+  if (rotation?.[1]) shape = shape.rotateY(rotation[1]);
+  if (rotation?.[2]) shape = shape.rotateZ(rotation[2]);
+  return shape.translate(at[0], at[1], at[2]).scale(scale);
+};
+const ngon = (r: number, sides: number, rotation = 0) => {
+  let profile = path().moveTo(r * Math.cos(rotation), r * Math.sin(rotation));
+  for (let i = 1; i < sides; i++) {
+    const angle = rotation + 2 * Math.PI * i / sides;
+    profile = profile.lineTo(r * Math.cos(angle), r * Math.sin(angle));
+  }
+  return profile.close();
+};
+const profiledCylinder = (h: number, r: number, sides: number) =>
+  ngon(r, sides).loft(ngon(r * 0.95, sides, Math.PI / sides), { spacing: h, ruled: true });
+const c = (h: number, r: number, segments: number, at: [number, number, number], axis?: [number, number, number], degrees = 0) => {
+  let shape = profiledCylinder(h, r, segments);
+  if (axis && degrees) {
+    if (axis[0]) shape = shape.rotateX(degrees);
+    else if (axis[1]) shape = shape.rotateY(degrees);
+    else if (axis[2]) shape = shape.rotateZ(degrees);
+  }
+  return shape.translate(at[0], at[1], at[2]).scale(scale);
+};
+
+p.part("mount-plate", b([300, 75, 380], [0, 0, 1350]).color(stainlessSteel));
+p.part("drum", c(110, 220, 12, [0, -55, 1350], [1, 0, 0], 90).color(powderCoat));
+p.part("hub", c(90, 60, 10, [0, -105, 1350], [1, 0, 0], 90).color(powderCoat));
+p.part("hose", c(720, 22, 10, [0, -90, 630]).color(elastomer));
+p.part("spray-grip", b([70, 60, 260], [0, -110, 590]).color(elastomer));
+p.part("trigger", c(80, 16, 8, [0, -150, 510]).color(powderCoat));
 
 return p.model();

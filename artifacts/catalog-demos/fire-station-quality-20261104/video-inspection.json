@@ -1,0 +1,24 @@
+{
+  "file": "fire-station-quality.mp4",
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "pixelFormat": "yuv420p",
+  "frameRate": "24/1",
+  "encodedFrames": 864,
+  "durationSeconds": 36,
+  "presentationFrames": 12,
+  "slideDurationSeconds": 3,
+  "inspection": {
+    "contactSheet": "video-contact-sheet.png",
+    "fullSizeFramesReviewed": [
+      "frame-03.png: native source and console default preview",
+      "frame-04.png: blue default compared with apparatus-red variant",
+      "frame-12.png: local verification and unverified public status"
+    ],
+    "result": "All 12 extracted video frames are present. The source, variant, seven catalog contact sheets, and verification slide render cleanly; no missing or black frames were observed. Text and color detail remain legible at 1280x720.",
+    "extractionCommand": "ffmpeg -hide_banner -loglevel error -y -i artifacts/catalog-demos/fire-station-quality-20261104/fire-station-quality.mp4 -vf 'fps=1/3' -frames:v 12 /tmp/fire-station-quality-video-review/frame-%02d.png",
+    "extractedFramesRetained": "The extracted frames were reviewed; their 12-frame contact sheet is retained as video-contact-sheet.png."
+  },
+  "claimBoundary": "Local source, software renders and validation only; deployed behavior not verified; hardware acceptance not applicable."
+}
