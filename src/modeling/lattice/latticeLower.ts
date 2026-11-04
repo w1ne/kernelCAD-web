@@ -21,7 +21,7 @@ import type { BodyMesh } from '../../kernel/lattice/bodyDistance';
 import type { LatticeFrame } from '../../kernel/lattice/latticeField';
 import { sheetWallForFraction } from '../../kernel/lattice/tpms';
 import { classifyStress, DEFAULT_INFILL_BANDS } from '../../kernel/fea/infillBands';
-import type { InProcessStressField } from '../../kernel/fea/inProcess/runInProcessFea';
+import type { InProcessStressField } from '../../kernel/fea/inProcess/solveInProcessFea';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { LatticeMetadata, LatticeStressBand } from '../../shared/intent/latticeRecord';
 import { Transform } from '../../shared/runtime/se3';
@@ -178,28 +178,16 @@ async function feaGrade(input: LatticeLowerInput, md: LatticeMetadata, toParam: 
     ? studies.find((s) => s.metadata.name === wanted)
     : [...studies].reverse().find((s) => s.shapeId === baseId) ?? studies.at(-1);
   if (!found) throw new LatticeGradeError(wanted ? `no feaStudy named '${wanted}'` : 'no feaStudy is declared');
-  // Node-only (temp dir + the gmsh/solver driver). Loaded lazily so the
-  // browser runtime, which never takes the FEA grade, does not bundle them.
-  const [{ mkdtemp, rm }, { tmpdir }, { join }, { runInProcessFeaStudy }] = await Promise.all([
-    import('node:fs/promises'),
-    import('node:os'),
-    import('node:path'),
-    import('../../kernel/fea/inProcess/runInProcessFea'),
-  ]);
-  const outDir = await mkdtemp(join(tmpdir(), 'kcad-lattice-fea-'));
-  try {
-    const res = await runInProcessFeaStudy(input.base, found.metadata, input.record.id, input.records, { outDir, targetElements: 4000, solveTimeoutMs: 60_000 });
-    if (!res.ok || !res.field) {
-      const why = res.diagnostics.find((d) => d.severity === 'error')?.message ?? 'the solve did not finish';
-      throw new LatticeGradeError(`feaStudy '${found.metadata.name}' could not be solved in process: ${why}`);
-    }
-    const bands = md.grade?.bands ?? DEFAULT_INFILL_BANDS.map((b) => ({ ...b }));
-    const sample = stressSampler(res.field, bands, toParam);
-    const near = Math.min(...bands.map((b) => toParam(b.densityPercent / 100)));
-    return { kind: 'sampled', near, value: sample };
-  } finally {
-    await rm(outDir, { recursive: true, force: true });
+  const { solveInProcessFeaStudy } = await import('../../kernel/fea/inProcess/solveInProcessFea');
+  const res = solveInProcessFeaStudy(input.base, found.metadata, input.record.id, input.records, { targetElements: 4000, solveTimeoutMs: 60_000 });
+  if (!res.ok || !res.field) {
+    const why = res.diagnostics.find((d) => d.severity === 'error')?.message ?? 'the solve did not finish';
+    throw new LatticeGradeError(`feaStudy '${found.metadata.name}' could not be solved in process: ${why}`);
   }
+  const bands = md.grade?.bands ?? DEFAULT_INFILL_BANDS.map((b) => ({ ...b }));
+  const sample = stressSampler(res.field, bands, toParam);
+  const near = Math.min(...bands.map((b) => toParam(b.densityPercent / 100)));
+  return { kind: 'sampled', near, value: sample };
 }
 
 async function resolveGrade(
