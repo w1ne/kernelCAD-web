@@ -19,6 +19,8 @@ when_to_use: >-
 // Slot 10 +0.2/−0 and tab 9.8 +0/−0.1. analyze_tolerance_stack reads the
 // chain [{ id: 'slot', sense: '+' }, { id: 'tab', sense: '-' }] and reports
 // worst-case and RSS limits. A missing tol is refused.
+// Explicit contributors use { id, nominal_mm, upper_mm, lower_mm, sense }.
+// An optional requirement uses { kind, min_mm?, max_mm? }.
 return box(20, 10, 5)
   .dimension({
     id: 'slot',

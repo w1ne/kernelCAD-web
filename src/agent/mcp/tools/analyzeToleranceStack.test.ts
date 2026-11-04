@@ -11,8 +11,8 @@ function ok(result: StackResult) {
   return result;
 }
 
-const HOLE = { id: 'hole', nominalMm: 10, upperMm: 0.1, lowerMm: -0.1, sense: '+' as const };
-const SHAFT = { id: 'shaft', nominalMm: 9.8, upperMm: 0.05, lowerMm: -0.05, sense: '-' as const };
+const HOLE = { id: 'hole', nominal_mm: 10, upper_mm: 0.1, lower_mm: -0.1, sense: '+' as const };
+const SHAFT = { id: 'shaft', nominal_mm: 9.8, upper_mm: 0.05, lower_mm: -0.05, sense: '-' as const };
 
 describe('analyze_tolerance_stack', () => {
   beforeAll(async () => {
@@ -22,7 +22,7 @@ describe('analyze_tolerance_stack', () => {
   it('stacks an explicit gap and refuses a contributor with no tolerance', async () => {
     const result = ok(await analyzeToleranceStackTool({
       contributors: [HOLE, SHAFT],
-      requirement: { kind: 'gap', minMm: 0.07 },
+      requirement: { kind: 'gap', min_mm: 0.07 },
     }));
     expect(result.nominalMm).toBeCloseTo(0.2, 9);
     expect(result.worstCase.minMm).toBeCloseTo(0.05, 9);
@@ -32,18 +32,20 @@ describe('analyze_tolerance_stack', () => {
     expect(result.requirement).toMatchObject({ worstCase: 'fail', rss: 'pass', pass: false });
 
     const missing = await analyzeToleranceStackTool({
-      contributors: [{ id: 'hole', nominalMm: 10, sense: '+' }],
+      contributors: [{ id: 'hole', nominal_mm: 10, sense: '+' }],
     });
     expect(missing.ok).toBe(false);
     if (missing.ok) return;
     expect(missing.errorCode).toBe('cli.invalid-args');
+    expect(missing.error).toMatch(/upper_mm/);
+    expect(missing.error).toMatch(/lower_mm/);
     expect(missing.error).toMatch(/ISO 2768/);
   });
 
   it('passes a requirement both bands satisfy', async () => {
     const result = ok(await analyzeToleranceStackTool({
       contributors: [HOLE, SHAFT],
-      requirement: { kind: 'clearance', minMm: 0.04, maxMm: 0.4 },
+      requirement: { kind: 'clearance', min_mm: 0.04, max_mm: 0.4 },
     }));
     expect(result.requirement).toMatchObject({ worstCase: 'pass', rss: 'pass', pass: true });
   });

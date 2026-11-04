@@ -12644,7 +12644,7 @@
   },
   {
     "name": "analyze_tolerance_stack",
-    "description": "Use this when you need a labelled 1D tolerance stack to decide whether a gap, clearance, or length still holds at the tolerance limits. Pass contributors: [{ id, nominalMm, upperMm, lowerMm, sense: \"+\" | \"-\" }], or { file | code, chain } where chain names dimension ids or labels from shape.dimension. A chain entry is an id string (sense \"+\") or { id, sense?, tol? }. tol on the chain overrides a declared dimension tolerance. A number tol is bilateral ±mm. { upper, lower } are signed deviations. { plus, minus } are drawing magnitudes. A missing upper/lower is refused (cli.invalid-args); ISO 2768 is not applied. Returns nominalMm, worst-case min/max, an independent RSS band labelled ±3σ (each half-width (upper−lower)/2 is the ±3σ proxy), variance share per contributor, and pass/fail when requirement { kind: \"gap\" | \"clearance\" | \"length\", minMm?, maxMm? } is set. requirement.pass follows the worst case. This is a 1D arithmetic stack, not a full GD&T capability study. shape.tolerance frames and require() clearances are not consumed; measure those with verify({ check: \"requirements\" }).",
+    "description": "Use this when you need a labelled 1D tolerance stack to decide whether a gap, clearance, or length still holds at the tolerance limits. Pass contributors: [{ id, nominal_mm, upper_mm, lower_mm, sense: \"+\" | \"-\" }], or { file | code, chain } where chain names dimension ids or labels from shape.dimension. A chain entry is an id string (sense \"+\") or { id, sense?, tol? }. tol on the chain overrides a declared dimension tolerance. A number tol is bilateral ±mm. { upper, lower } are signed deviations. { plus, minus } are drawing magnitudes. A missing upper/lower is refused (cli.invalid-args); ISO 2768 is not applied. Returns nominalMm, worst-case min/max, an independent RSS band labelled ±3σ (each half-width (upper−lower)/2 is the ±3σ proxy), variance share per contributor, and pass/fail when requirement { kind: \"gap\" | \"clearance\" | \"length\", min_mm?, max_mm? } is set. requirement.pass follows the worst case. This is a 1D arithmetic stack, not a full GD&T capability study. shape.tolerance frames and require() clearances are not consumed; measure those with verify({ check: \"requirements\" }).",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -12657,14 +12657,14 @@
               "id": {
                 "type": "string"
               },
-              "nominalMm": {
+              "nominal_mm": {
                 "type": "number"
               },
-              "upperMm": {
+              "upper_mm": {
                 "type": "number",
                 "description": "Signed deviation from nominal, millimetres."
               },
-              "lowerMm": {
+              "lower_mm": {
                 "type": "number",
                 "description": "Signed deviation from nominal, millimetres."
               },
@@ -12678,9 +12678,9 @@
             },
             "required": [
               "id",
-              "nominalMm",
-              "upperMm",
-              "lowerMm",
+              "nominal_mm",
+              "upper_mm",
+              "lower_mm",
               "sense"
             ]
           }
@@ -12772,10 +12772,10 @@
                 "length"
               ]
             },
-            "minMm": {
+            "min_mm": {
               "type": "number"
             },
-            "maxMm": {
+            "max_mm": {
               "type": "number"
             }
           },

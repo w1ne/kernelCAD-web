@@ -185,36 +185,44 @@ function contributorId(raw: Record<string, unknown>, index: number): { id: strin
   return { id: raw.id };
 }
 
+/** Canonical MCP name wins. The camelCase alias stays for in-process callers. */
+function wireField(raw: Record<string, unknown>, snake: string, camel: string): unknown {
+  return raw[snake] !== undefined ? raw[snake] : raw[camel];
+}
+
 function contributorTol(
   raw: Record<string, unknown>,
   id: string,
 ): { upperMm: number; lowerMm: number } | { error: string } {
-  if (raw.upperMm === undefined || raw.lowerMm === undefined) {
+  const upper = wireField(raw, 'upper_mm', 'upperMm');
+  const lower = wireField(raw, 'lower_mm', 'lowerMm');
+  if (upper === undefined || lower === undefined) {
     return {
-      error: `${id} needs upperMm and lowerMm. A missing tolerance is refused; this tool does not apply ISO 2768 or any other general tolerance class.`,
+      error: `${id} needs upper_mm and lower_mm. A missing tolerance is refused; this tool does not apply ISO 2768 or any other general tolerance class.`,
     };
   }
-  if (!finiteNumber(raw.upperMm) || !finiteNumber(raw.lowerMm)) {
-    return { error: `${id} upperMm and lowerMm must be finite mm deviations` };
+  if (!finiteNumber(upper) || !finiteNumber(lower)) {
+    return { error: `${id} upper_mm and lower_mm must be finite mm deviations` };
   }
-  if (raw.upperMm < raw.lowerMm) {
-    return { error: `${id} upperMm must be greater than or equal to lowerMm` };
+  if (upper < lower) {
+    return { error: `${id} upper_mm must be greater than or equal to lower_mm` };
   }
-  return { upperMm: raw.upperMm, lowerMm: raw.lowerMm };
+  return { upperMm: upper, lowerMm: lower };
 }
 
 function readContributor(raw: unknown, index: number): { contributor: StackContributor } | { error: string } {
   if (!isRecord(raw)) return { error: `contributors[${index}] must be an object` };
   const named = contributorId(raw, index);
   if ('error' in named) return named;
-  if (!finiteNumber(raw.nominalMm)) return { error: `${named.id} nominalMm must be a finite number` };
+  const nominal = wireField(raw, 'nominal_mm', 'nominalMm');
+  if (!finiteNumber(nominal)) return { error: `${named.id} nominal_mm must be a finite number` };
   const tol = contributorTol(raw, named.id);
   if ('error' in tol) return tol;
   if (raw.sense !== '+' && raw.sense !== '-') return { error: `${named.id} sense must be '+' or '-'` };
   return {
     contributor: {
       id: named.id,
-      nominalMm: raw.nominalMm,
+      nominalMm: nominal,
       upperMm: tol.upperMm,
       lowerMm: tol.lowerMm,
       sense: raw.sense,
@@ -233,15 +241,17 @@ function readRequirement(raw: unknown): { requirement: StackRequirement } | { er
   if (!REQUIREMENT_KINDS.has(raw.kind as StackRequirement['kind'])) {
     return { error: "requirement.kind must be 'gap', 'clearance', or 'length'" };
   }
-  if (raw.minMm === undefined && raw.maxMm === undefined) {
-    return { error: 'requirement needs minMm or maxMm' };
+  const minRaw = wireField(raw, 'min_mm', 'minMm');
+  const maxRaw = wireField(raw, 'max_mm', 'maxMm');
+  if (minRaw === undefined && maxRaw === undefined) {
+    return { error: 'requirement needs min_mm or max_mm' };
   }
-  const min = optionalMm(raw.minMm, 'minMm');
+  const min = optionalMm(minRaw, 'min_mm');
   if ('error' in min) return min;
-  const max = optionalMm(raw.maxMm, 'maxMm');
+  const max = optionalMm(maxRaw, 'max_mm');
   if ('error' in max) return max;
   if (min.value !== undefined && max.value !== undefined && min.value > max.value) {
-    return { error: 'requirement.minMm must be less than or equal to maxMm' };
+    return { error: 'requirement.min_mm must be less than or equal to max_mm' };
   }
   return {
     requirement: {

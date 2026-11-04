@@ -12,11 +12,11 @@ export const toleranceStackToolEntries: ToolRegistryEntry[] = [
       name: 'analyze_tolerance_stack',
       description:
         'Use this when you need a labelled 1D tolerance stack to decide whether a gap, clearance, or length still holds at the tolerance limits. ' +
-        'Pass contributors: [{ id, nominalMm, upperMm, lowerMm, sense: "+" | "-" }], or { file | code, chain } where chain names dimension ids or labels from shape.dimension. ' +
+        'Pass contributors: [{ id, nominal_mm, upper_mm, lower_mm, sense: "+" | "-" }], or { file | code, chain } where chain names dimension ids or labels from shape.dimension. ' +
         'A chain entry is an id string (sense "+") or { id, sense?, tol? }. tol on the chain overrides a declared dimension tolerance. ' +
         'A number tol is bilateral ±mm. { upper, lower } are signed deviations. { plus, minus } are drawing magnitudes. ' +
         'A missing upper/lower is refused (cli.invalid-args); ISO 2768 is not applied. ' +
-        'Returns nominalMm, worst-case min/max, an independent RSS band labelled ±3σ (each half-width (upper−lower)/2 is the ±3σ proxy), variance share per contributor, and pass/fail when requirement { kind: "gap" | "clearance" | "length", minMm?, maxMm? } is set. ' +
+        'Returns nominalMm, worst-case min/max, an independent RSS band labelled ±3σ (each half-width (upper−lower)/2 is the ±3σ proxy), variance share per contributor, and pass/fail when requirement { kind: "gap" | "clearance" | "length", min_mm?, max_mm? } is set. ' +
         'requirement.pass follows the worst case. This is a 1D arithmetic stack, not a full GD&T capability study. shape.tolerance frames and require() clearances are not consumed; measure those with verify({ check: "requirements" }).',
       inputSchema: {
         type: 'object',
@@ -28,12 +28,12 @@ export const toleranceStackToolEntries: ToolRegistryEntry[] = [
               type: 'object',
               properties: {
                 id: { type: 'string' },
-                nominalMm: { type: 'number' },
-                upperMm: { type: 'number', description: 'Signed deviation from nominal, millimetres.' },
-                lowerMm: { type: 'number', description: 'Signed deviation from nominal, millimetres.' },
+                nominal_mm: { type: 'number' },
+                upper_mm: { type: 'number', description: 'Signed deviation from nominal, millimetres.' },
+                lower_mm: { type: 'number', description: 'Signed deviation from nominal, millimetres.' },
                 sense: { type: 'string', enum: ['+', '-'] },
               },
-              required: ['id', 'nominalMm', 'upperMm', 'lowerMm', 'sense'],
+              required: ['id', 'nominal_mm', 'upper_mm', 'lower_mm', 'sense'],
             },
           },
           chain: {
@@ -82,8 +82,8 @@ export const toleranceStackToolEntries: ToolRegistryEntry[] = [
             description: 'Optional fit window. pass follows the worst-case band.',
             properties: {
               kind: { type: 'string', enum: ['gap', 'clearance', 'length'] },
-              minMm: { type: 'number' },
-              maxMm: { type: 'number' },
+              min_mm: { type: 'number' },
+              max_mm: { type: 'number' },
             },
             required: ['kind'],
           },

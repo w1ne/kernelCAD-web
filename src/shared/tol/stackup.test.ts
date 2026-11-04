@@ -65,9 +65,32 @@ describe('analyzeToleranceStack', () => {
     if (result.ok) return;
     expect(result.errorCode).toBe('cli.invalid-args');
     expect(result.error).toMatch(/hole/);
-    expect(result.error).toMatch(/upperMm|lowerMm|tolerance/i);
+    expect(result.error).toMatch(/upper_mm/);
+    expect(result.error).toMatch(/lower_mm/);
     expect(result.error).toMatch(/ISO 2768/i);
     expect(result.disclaimer).toMatch(/not a full GD&T/i);
+  });
+
+  it('accepts snake_case wire fields and keeps camelCase aliases', () => {
+    const snake = ok(analyzeToleranceStack(
+      [{ id: 'hole', nominal_mm: 10, upper_mm: 0.1, lower_mm: -0.1, sense: '+' }, SHAFT],
+      { kind: 'gap', min_mm: 0.07 },
+    ));
+    expect(snake.nominalMm).toBeCloseTo(0.2, 9);
+    expect(snake.requirement?.minMm).toBe(0.07);
+
+    const mixed = ok(analyzeToleranceStack([{
+      id: 'len',
+      nominal_mm: 10,
+      nominalMm: 1,
+      upper_mm: 0.2,
+      upperMm: 9,
+      lower_mm: -0.2,
+      lowerMm: -9,
+      sense: '+',
+    }]));
+    expect(mixed.nominalMm).toBeCloseTo(10, 9);
+    expect(mixed.worstCase).toMatchObject({ minMm: 9.8, maxMm: 10.2 });
   });
 
   it('fails a requirement the worst case misses and passes one both bands satisfy', () => {
