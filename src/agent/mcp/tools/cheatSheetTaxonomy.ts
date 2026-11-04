@@ -157,7 +157,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   },
   {
     task: 'Measure & verify',
-    blurb: 'Ask the kernel what you actually built, and check it before shipping.',
+    blurb: 'Ask the kernel what you actually built, and check it before shipping. After dfm_review, dfm_fix_recheck applies one safe shell, fillet, or draft edit and runs that review again.',
     names: ['boundingBox', 'bbox', 'length', 'lower', 'kinematic', 'dfmSpec', 'feaStudy', 'cfdStudy', 'tube', 'tubeSpec',
       'require', 'clearance', 'distance', 'mass', 'volume', 'centerOfMass', 'count', 'innerLoops',
       'angle', 'concentric', 'coplanar'],

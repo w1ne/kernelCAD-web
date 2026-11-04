@@ -17,7 +17,7 @@ description of any entry, call `lookup_api(query)`.
 | [Place & transform](#place--transform) | Move a body into position, mirror it, or repeat it. |
 | [Assemble](#assemble) | Build a mechanism from parts: connectors, mates, joints, posed Scenes. |
 | [Curves & surfaces](#curves--surfaces) | NURBS curves and surfaces, plus the evaluators for measuring them before they become solids. |
-| [Measure & verify](#measure--verify) | Ask the kernel what you actually built, and check it before shipping. |
+| [Measure & verify](#measure--verify) | Ask the kernel what you actually built, and check it before shipping. After dfm_review, dfm_fix_recheck applies one safe shell, fillet, or draft edit and runs that review again. |
 | [Parametrize](#parametrize) | Declare editable dimensions and do arithmetic on them (JS operators throw on a ParamRef). |
 | [Import & export](#import--export) | Bring in vendor geometry, and write models back out. |
 | [Annotate & present](#annotate--present) | Present a model and declare drawing intent without changing its geometry: text, color, lighting, camera, motion, drawing GD&T, and review requirements. |
@@ -235,7 +235,7 @@ NURBS curves and surfaces, plus the evaluators for measuring them before they be
 
 ## Measure & verify
 
-Ask the kernel what you actually built, and check it before shipping.
+Ask the kernel what you actually built, and check it before shipping. After dfm_review, dfm_fix_recheck applies one safe shell, fillet, or draft edit and runs that review again.
 
 | Call | What it does |
 |---|---|

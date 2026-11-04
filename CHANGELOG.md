@@ -1,5 +1,9 @@
 # Unreleased
 
+- `dfm_fix_recheck` runs `dfm_review`, applies at most one safe edit (an
+  existing fillet radius, `shell()` thickness, or `draft()` angle), and
+  reviews the edited source. The caller persists `new_code`. Nothing is
+  written. Other findings come back as suggestions.
 - GLB `asset.extras.kernelcad.stats` and the `asset_manifest` tool now include
   `materials`, `drawCalls`, `parts`, `hasRig` and `hasIk` beside `triangles`,
   `sizeM` and `minUpM`.

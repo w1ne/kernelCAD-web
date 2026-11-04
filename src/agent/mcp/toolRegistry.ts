@@ -23,7 +23,7 @@ import {
 } from './registry/inspectionVerificationTools';
 import { printToolEntries } from './registry/printTools';
 import { importToolEntries } from './registry/importTools';
-import { manufacturingToolEntries } from './registry/manufacturingTools';
+import { manufacturingFixRecheckToolEntries, manufacturingToolEntries } from './registry/manufacturingTools';
 import { rayPickToolEntries } from './registry/rayPickTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
 import { surfaceBlendToolEntries } from './registry/surfaceBlendTools';
@@ -124,6 +124,9 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   // Appended at the tail: targeted assembly checks. Belongs to the inspection
   // family, but index order is a public contract so it does not shift earlier slices.
   ...inspectionVerificationAssemblyChecksToolEntries,
+  // Appended at the tail: one DFM parameter edit, then the same dfm_review.
+  // Stays out of manufacturingToolEntries so dfm_review keeps index 50.
+  ...manufacturingFixRecheckToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints
