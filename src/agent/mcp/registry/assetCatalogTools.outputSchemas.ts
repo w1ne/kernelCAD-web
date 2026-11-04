@@ -103,6 +103,7 @@ export const ASSET_CATALOG_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
         type: 'object',
         properties: {
           schemaVersion: { type: 'integer', const: 1 },
+          id: { type: 'string' },
           name: { type: 'string' },
           title: { type: 'string' },
           description: { type: 'string' },
