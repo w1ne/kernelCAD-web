@@ -133,6 +133,9 @@ Break edges, add draft, hollow out a wall or fill it with a lattice, fold sheet 
 | `Shape.moveFaces(faces: FaceSelector \| FaceSelector[], by: [number, number, number]) => Shape` | Move planar faces by `by` (mm). |
 | `Shape.bend(edgeRef: EdgeSelector \| string, angle: Editable<number>, radius: Editable<number>) => Shape` | Add a sheet-metal bend along a linear edge. |
 | `Shape.flattenPattern() => Region` | Return the unfolded 2D flat-pattern of this bent sheet-metal Shape as a Region (closed outer wire + holes + bend-line metadata + source plane). |
+| `Shape.edgeFlange(edgeRef: EdgeSelector \| string, opts: { length: Editable<number>; angle?: Editable<number>; radius?: Editable<number>; direction?: 'inside' \| 'outside' }) => Shape` | Sheet-metal edge flange sugar over bend: fold `edgeRef` by `angle` (default 90°) with inner `radius` and flange `length` mm along the blank. |
+| `Shape.hem(edgeRef: EdgeSelector \| string, opts: { type?: 'closed' \| 'open' \| 'tear-drop'; length: Editable<number>; radius?: Editable<number> }) => Shape` | Sheet-metal hem sugar over bend (~180°). |
+| `Shape.cornerRelief(opts: { type?: 'circular' \| 'square' \| 'obround'; size: Editable<number>; faces?: FaceSelector[] }) => Shape` | Record corner-relief intent on a sheet-metal blank (circular/square/obround of `size` mm). |
 
 ## Select geometry
 
