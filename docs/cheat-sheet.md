@@ -10,6 +10,9 @@ Offline fabrication cost is not a script call. Use the MCP tool `estimate_cost`
 for a labelled USD heuristic (3d-print, cnc, sheet-cut). It is not a supplier quote.
 A 1D fit check is `analyze_tolerance_stack`: worst case and RSS from explicit
 contributors or from `shape.dimension` tolerances. It is not a GD&T study.
+A scanned envelope is not a solid. `load_scan_reference` reads a PLY or XYZ
+cloud, and `fit_model_to_scan` compares a parametric bounding box. Booleans
+on the cloud are refused.
 
 | Task | What it covers |
 |---|---|

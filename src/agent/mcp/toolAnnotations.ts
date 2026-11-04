@@ -171,6 +171,8 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   // Evaluates the script and returns a labelled heuristic. Writes nothing and calls no supplier.
   estimate_cost: READ,
   analyze_tolerance_stack: READ,
+  load_scan_reference: READ,
+  fit_model_to_scan: READ,
   // Evaluates the script in-process and reports; writes nothing.
   dfm_review: READ,
   // Returns revised source for the caller to persist. Writes nothing.

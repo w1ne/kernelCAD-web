@@ -1,5 +1,10 @@
 # Unreleased
 
+- `load_scan_reference` reads an ASCII PLY, little-endian binary PLY, or XYZ
+  cloud as a non-solid reference (bbox and centroid in millimetres).
+  `fit_model_to_scan` compares a parametric model's bounding box and reports
+  translation, scale, and per-axis clearance. Booleans on the cloud are refused.
+  `lib.fromSTL` and `mesh_to_features` are unchanged.
 - `dfm_fix_recheck` runs `dfm_review`, applies at most one safe edit (an
   existing fillet radius, `shell()` thickness, or `draft()` angle), and
   reviews the edited source. The caller persists `new_code`. Nothing is
