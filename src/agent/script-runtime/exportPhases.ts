@@ -6,7 +6,7 @@ import { exportDxf, type DxfWriterOptions } from '../../kernel/backends/occt/exp
 import { exportSceneDxf, exportShapeDxfProfile } from './exportDxfProfiles';
 import { export3mfWithReportAsync, type Export3mfOptions } from '../../kernel/backends/occt/export3mf';
 import { exportGlbAsync, type ExportGlbOptions } from '../../kernel/backends/occt/exportGlb';
-import { exportMeshObj, exportMeshUsd, type NamedMesh } from '../../kernel/export/meshFormats';
+import { exportMeshObjZip, exportMeshUsd, type NamedMesh } from '../../kernel/export/meshFormats';
 import { exportScenePly, exportSinglePly, plyOptionsDiagnostic } from './exportPly';
 import { buildRigMetadata } from '../../kernel/export/rigHierarchy';
 import type { Assembly } from '../../modeling/capture/assembly';
@@ -438,8 +438,11 @@ export async function exportSceneBackend(
       const parts = worldParts.map(part => ({
         name: part.name,
         mesh: meshShapeForExport(part.shape.getReplicadShape()),
+        ...(part.material !== undefined ? { material: part.material } : {}),
+        ...(part.color !== undefined ? { color: part.color } : {}),
+        ...(part.colorParamName !== undefined ? { colorParamName: part.colorParamName } : {}),
       }));
-      return { bytes: format === 'obj' ? exportMeshObj(parts) : exportMeshUsd(parts), featureCount, diagnostics };
+      return { bytes: format === 'obj' ? exportMeshObjZip(parts) : exportMeshUsd(parts), featureCount, diagnostics };
     } finally {
       releaseWorldFrameParts(worldParts);
     }
@@ -793,9 +796,9 @@ export async function exportSingleShape(
     case 'glb':
       return exportSingleGlb(input, shape, targetId, scriptDir, run, diagnostics, featureCount);
     case 'obj':
-      return exportSingleMeshText(shape, 'obj', diagnostics, featureCount);
+      return exportSingleMeshText(shape, 'obj', targetId, run.records, diagnostics, featureCount);
     case 'usd':
-      return exportSingleMeshText(shape, 'usd', diagnostics, featureCount);
+      return exportSingleMeshText(shape, 'usd', targetId, run.records, diagnostics, featureCount);
     case 'ply':
       return exportSinglePly(input, shape, targetId, run.records, diagnostics, featureCount);
   }
@@ -807,11 +810,21 @@ export async function exportSingleShape(
 function exportSingleMeshText(
   shape: OcctBackend,
   format: 'obj' | 'usd',
+  targetId: string,
+  records: readonly FeatureRecord[],
   diagnostics: CompilerDiagnostic[],
   featureCount: number,
 ): ExportResult {
-  const parts: NamedMesh[] = [{ name: 'part', mesh: meshShapeForExport(shape.getReplicadShape()) }];
-  return { bytes: format === 'obj' ? exportMeshObj(parts) : exportMeshUsd(parts), featureCount, diagnostics };
+  const tail = records.find((rec) => rec.id === targetId);
+  const color = tail ? lookupColorFromLineage(tail, records) : undefined;
+  const material = tail ? lookupMaterialFromLineage(tail, records) : undefined;
+  const parts: NamedMesh[] = [{
+    name: 'part',
+    mesh: meshShapeForExport(shape.getReplicadShape()),
+    ...(color !== undefined ? { color } : {}),
+    ...(material !== undefined ? { material } : {}),
+  }];
+  return { bytes: format === 'obj' ? exportMeshObjZip(parts) : exportMeshUsd(parts), featureCount, diagnostics };
 }
 
 async function exportSingleStl(
