@@ -928,6 +928,7 @@ export class CaptureSession {
       connectors?: Record<string, AssemblyConnectorFrameStored>;
       placedBy?: AssemblyPartOpts['connect'];
       materialName?: string;
+      stock?: AssemblyPartOpts['stock'];
     } = {},
   ): FeatureRecord {
     return this.register(createAssemblyPartCaptureSpec(this.records, assemblyName, partName, shape.id, opts));

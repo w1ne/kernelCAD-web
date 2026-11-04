@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { FeatureId, Vec3, Vec3Param, EditableVec3 } from '../../shared/intent/types';
 import type { FabProcess } from '../../shared/fab';
+import type { StockSpec } from '../../shared/stock';
 import type { Connector, ConnectorOriginInput, ConnectorType, FluidPort } from '../mates/connector';
 import type { WrapGeomOptions, WrapGeomRecord } from '../mates/tendon';
 import type { Editable } from '../../shared/runtime/paramRef';
@@ -220,6 +221,9 @@ export interface AssemblyPartOpts {
   /** Declared manufacturing process; the order pack and BOM group by it.
    *  Omitted = inferred by the existing capture-graph heuristic. */
   process?: FabProcess;
+  /** Declared blank the part is made from. Dimensions are millimetres.
+   *  Omitted when the blank size is unknown. Read by the BOM. */
+  stock?: StockSpec;
   /** Known part mass in kg (catalog or datasheet, e.g. an SG90 is 0.009).
    *  Mass-based checks (`verify({ check: 'motion-load' })`) use it instead of
    *  volume x density; the centre of mass and inertia still come from the
@@ -425,6 +429,8 @@ export interface AssemblyPartStored extends AssemblyPartRef {
   readonly material?: string;
   /** Declared process, copied from `AssemblyPartOpts.process`. */
   readonly process?: FabProcess;
+  /** Declared blank, copied from `AssemblyPartOpts.stock`. */
+  readonly stock?: StockSpec;
   /** Declared part mass in kg, copied from `AssemblyPartOpts.massKg`. */
   readonly massKg?: number;
   /** Beam cross-section, copied from `AssemblyPartOpts.crossSection`. Read
