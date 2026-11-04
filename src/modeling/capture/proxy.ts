@@ -366,6 +366,10 @@ export class Shape {
    *                to: { edge: { ofCurveType: 'CIRCLE', near: [60, 25, 10] } }, label: 'hole spacing' });
    * return plate;
    * ```
+   *
+   * Optional `tol` is a bilateral ±mm number, `{ upper, lower }` signed
+   * deviations, or `{ plus, minus }` magnitudes. `analyze_tolerance_stack`
+   * reads it. A fit class such as `'H7'` is refused.
    */
   dimension(spec: DrawingDimensionSpec): Shape {
     this.session.addDrawingDimension(spec, { kind: 'feature', id: this.id });

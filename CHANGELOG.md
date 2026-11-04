@@ -7,6 +7,9 @@
 - `estimate_cost` returns a labelled offline USD heuristic for 3d-print, cnc,
   and sheet-cut from part volume, bounding box, and any declared material,
   FabProcess, or StockSpec. It is not a supplier quote.
+- `analyze_tolerance_stack` returns a labelled 1D worst-case and RSS stack from
+  explicit contributors or from `shape.dimension` tolerances. A missing
+  tolerance is refused. It is not a full GD&T capability study.
 - GLB `asset.extras.kernelcad.stats` and the `asset_manifest` tool now include
   `materials`, `drawCalls`, `parts`, `hasRig` and `hasIk` beside `triangles`,
   `sizeM` and `minUpM`.

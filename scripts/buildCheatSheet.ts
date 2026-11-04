@@ -27,6 +27,8 @@ const HEADER = [
   '',
   'Offline fabrication cost is not a script call. Use the MCP tool `estimate_cost`',
   'for a labelled USD heuristic (3d-print, cnc, sheet-cut). It is not a supplier quote.',
+  'A 1D fit check is `analyze_tolerance_stack`: worst case and RSS from explicit',
+  'contributors or from `shape.dimension` tolerances. It is not a GD&T study.',
   '',
 ];
 
