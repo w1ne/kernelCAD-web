@@ -14,6 +14,7 @@ const evaluateScriptToolEntry: ToolRegistryEntry = {
       'Hosted builds return viewerMode: hosted and viewerHint pointing to open_in_studio; they do not start a loopback viewer. ' +
       'Full evaluations return step evidence: build validity, volume and before/after local PNG paths in one shared iso frame. Snapshots require PW_CDP_URL for an existing browser; unavailable captures report an explicit error. ' +
       'Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics + sceneSummary (BREP validity, volume in mm³, face count, bounding size in mm). ' +
+      'When ok is false, refuse is the first error (refuse.code, refuse.message, refuse.try) so the next edit can target it. ' +
       'When the scene is assembly-built (assembly().part(...) → .model()/.solvedModel()), ' +
       'also returns a parts summary { count, names } AND runs the mechanism-truth gate by ' +
       'default: the `mechanism` field reports real/broken/unverified and a broken mechanism ' +
