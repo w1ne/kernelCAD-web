@@ -9,9 +9,10 @@
 // - draft(-1.5) flares the walls outward toward the opening (both skins), and
 //   a 1 mm concave fillet (half the wall) rounds the inside corners: PASS.
 const draftDeg = param('draftDeg', 1.5, { min: 1, max: 5 });
-const width = param('width', 80, { min: 70, max: 120 });
+const length = param('length', 80, { min: 70, max: 120 });
+const width = param('width', 50, { min: 45, max: 90 });
 const height = param('height', 25, { min: 20, max: 40 });
-const wall = 2;
+const wall = param('wall', 2, { min: 1.8, max: 2.5 });
 
 dfmSpec({
   process: 'moulding',
@@ -22,17 +23,22 @@ dfmSpec({
   minRadiusMm: 0.5,    // inside corners tighter than this concentrate stress
 });
 
-let base = box(width, 50, height);
+let base = box(length, width, height);
 for (const side of ['front', 'back', 'left', 'right']) {
   base = base.draft(draftDeg.negate(), { face: side, pullDir: [0, 0, 1] });
 }
-base = base.shell(wall, { face: 'top' }).fillet(wall / 2, { concave: true });
+base = base.shell(wall, { face: 'top' }).fillet(wall.divide(2), { concave: true });
 // Four cored posts for a board on a 40 × 20 mm pattern. Both inner and outer
 // walls taper toward the opening; these are not certified screw/insert pilots.
-for (const [x, y] of [[width.divide(4), 15], [width.multiply(3).divide(4), 15], [width.divide(4), 35], [width.multiply(3).divide(4), 35]] as const) {
+const cx = length.divide(2);
+const cy = width.divide(2);
+for (const [x, y] of [
+  [cx.subtract(20), cy.subtract(10)], [cx.add(20), cy.subtract(10)],
+  [cx.subtract(20), cy.add(10)], [cx.add(20), cy.add(10)],
+] as const) {
   const post = path().moveTo(1.4, 0).lineTo(4, 0).lineTo(3.79, 6)
     .lineTo(1.61, 6).close().revolve();
-  base = base.union(post.translate(x, y, 1.9));
+  base = base.union(post.translate(x, y, wall.subtract(0.1)));
 }
 // Add the board, ribs, retention, gate, ejectors and parting strategy with a toolmaker.
-return base.fillet(0.5, { concave: true });
+return base.fillet(wall.divide(4), { concave: true });

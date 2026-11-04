@@ -56,4 +56,36 @@ describe('laser-cut motor mounting plate', () => {
     const area = 100 * 80 - Math.PI * (4 * 2.75 ** 2 + 4 * 1.7 ** 2 + 11 ** 2);
     expect(result.sceneSummary?.volume).toBeCloseTo(area * 6, 1);
   }, 120_000);
+
+  it('moves frame holes with the plate edges and applies the edited motor interface dimensions', async () => {
+    const code = (await readFile('examples/manufacturing-showcase/cut-motor-plate.kcad.ts', 'utf8'))
+      .replace("param('length', 100", "param('length', 130")
+      .replace("param('width', 80", "param('width', 110")
+      .replace("param('motorPitch', 31", "param('motorPitch', 40")
+      .replace("param('pilotDiameter', 22", "param('pilotDiameter', 26")
+      .replace("param('mountDiameter', 5.5", "param('mountDiameter', 8");
+    const result = await runAndExport({ code, fileName: 'cut-motor-plate.kcad.ts', format: 'dxf' });
+    expect(result.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+    const parsed = new DxfParser().parseSync(new TextDecoder().decode(result.bytes))!;
+    expect(parsed.header?.$INSUNITS).toBe(4);
+    const circles = parsed.entities.filter(entity => entity.vertices?.length === 2);
+    const rows = circles.map(entity => {
+      const [a, b] = entity.vertices!;
+      return {
+        diameter: Math.hypot(a.x - b.x, a.y - b.y),
+        x: (a.x + b.x) / 2,
+        y: (a.y + b.y) / 2,
+      };
+    });
+    const frame = rows.filter(row => Math.abs(row.diameter - 8) < 0.01);
+    expect(frame).toHaveLength(4);
+    expect(frame.map(row => `${row.x.toFixed(1)},${row.y.toFixed(1)}`).sort())
+      .toEqual(['10.0,10.0', '10.0,100.0', '120.0,10.0', '120.0,100.0']);
+    const motor = rows.filter(row => Math.abs(row.diameter - 3.4) < 0.01);
+    expect(motor.map(row => `${row.x.toFixed(1)},${row.y.toFixed(1)}`).sort())
+      .toEqual(['45.0,35.0', '45.0,75.0', '85.0,35.0', '85.0,75.0']);
+    const pilot = rows.find(row => Math.abs(row.diameter - 26) < 0.01);
+    expect(pilot?.x).toBeCloseTo(65, 5);
+    expect(pilot?.y).toBeCloseTo(55, 5);
+  }, 120_000);
 });

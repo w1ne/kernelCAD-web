@@ -3,15 +3,19 @@
 // and shop. The 8.5 mm through bore leaves clearance for an 8 mm shaft.
 // A retaining plate or other axial retention is a separate design decision.
 const length = param('length', 80, { min: 70, max: 120 });
+const width = param('width', 50, { min: 45, max: 90 });
 const thickness = param('thickness', 18, { min: 14, max: 30 });
 const bearingSeat = param('seatDiameter', 22, { min: 21.8, max: 22.2 });
-let block = box(length, 50, thickness);
+const mountInset = param('mountInset', 10, { min: 8, max: 14 });
+const mountX = length.divide(2).subtract(mountInset);
+const mountY = width.divide(2).subtract(mountInset);
+let block = box(length, width, thickness);
 block = block.holes('top', {
   positions: [
-    {u: length.divide(2).subtract(10).negate(), v: -15},
-    {u: length.divide(2).subtract(10), v: -15},
-    {u: length.divide(2).subtract(10).negate(), v: 15},
-    {u: length.divide(2).subtract(10), v: 15},
+    {u: mountX.negate(), v: mountY.negate()},
+    {u: mountX, v: mountY.negate()},
+    {u: mountX.negate(), v: mountY},
+    {u: mountX, v: mountY},
   ],
   diameter: 5.5, depth: 'through', name: 'frameMounts',
 });

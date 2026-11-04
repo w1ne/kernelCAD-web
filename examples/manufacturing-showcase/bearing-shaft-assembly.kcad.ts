@@ -5,9 +5,10 @@
 // bearing supplier. A two-screw plate retains the bearing; screws are not modeled.
 const frame = (origin: [number, number, number]) => ({ type: 'frame' as const, origin: { kind: 'vec3' as const, value: origin }, axis: [0, 0, 1] as [number, number, number] });
 const axis = (origin: [number, number, number]) => ({ type: 'axis' as const, origin: { kind: 'vec3' as const, value: origin }, axis: [0, 0, 1] as [number, number, number] });
-const shaftLength = param('shaftLength', 30, { min: 24, max: 50 });
-const shaftDiameter = param('shaftDiameter', 7.9, { min: 7.7, max: 7.95 });
-const shoulderDiameter = param('shoulderDiameter', 12, { min: 10, max: 14 });
+const shaftLength = param('shaftLength', 30, { min: 26, max: 60 });
+const shaftDiameter = param('shaftDiameter', 7.9, { min: 7.7, max: 7.98 });
+const shoulderDiameter = param('shoulderDiameter', 12, { min: 10, max: 16 });
+const retainerThickness = param('retainerThickness', 2, { min: 1.5, max: 3 });
 const assemblyModel = assembly('bearing-shaft');
 let housingShape = box(80, 50, 18).holes('top', {
   positions: [{u: -30, v: -15}, {u: 30, v: -15}, {u: -30, v: 15}, {u: 30, v: 15}],
@@ -18,7 +19,7 @@ housingShape = housingShape.holes('top', {
   thread: {pitch: 0.5}, name: 'retainerTaps',
 });
 const bearingShape = (await lib.standard.bearing608()).translate(40, 25, 11);
-const retainerShape = box(34, 30, 2).holes('top', {
+const retainerShape = box(34, 30, retainerThickness).holes('top', {
   positions: [{u:-14,v:0}, {u:14,v:0}], diameter: 3.4, depth: 'through', name: 'retainerScrews',
 }).hole('top', {u:0, v:0, diameter:18, depth:'through'}).translate(23, 10, 18);
 // A shoulder locates the inner race axially. The 0.02 mm clearance is an

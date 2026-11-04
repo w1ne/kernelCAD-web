@@ -30,26 +30,44 @@ describe('moulded housing base', () => {
     const result = await paramsListTool({ file: 'examples/manufacturing-showcase/moulded-housing.kcad.ts' });
     const draft = result.params.find(param => param.name === 'draftDeg');
     expect(draft).toMatchObject({ min: 1, max: 5 });
-    expect(result.params.find(param => param.name === 'width')).toMatchObject({ min: 70, max: 120 });
+    expect(result.params.find(param => param.name === 'length')).toMatchObject({ min: 70, max: 120 });
+    expect(result.params.find(param => param.name === 'width')).toMatchObject({ min: 45, max: 90 });
     expect(result.params.find(param => param.name === 'height')).toMatchObject({ min: 20, max: 40 });
+    expect(result.params.find(param => param.name === 'wall')).toMatchObject({ min: 1.8, max: 2.5 });
   }, 120_000);
   it('passes the molding DFM gate at the combined minimum and maximum parameters', async () => {
     const code = await readFile('examples/manufacturing-showcase/moulded-housing.kcad.ts', 'utf8');
     const variants = [
-      { draftDeg: 1, width: 70, height: 20 },
-      { draftDeg: 5, width: 120, height: 40 },
+      { draftDeg: 1, length: 70, width: 45, height: 20, wall: 1.8 },
+      { draftDeg: 5, length: 120, width: 90, height: 40, wall: 2.5 },
     ];
     for (const variant of variants) {
       const candidate = code
         .replace("param('draftDeg', 1.5", `param('draftDeg', ${variant.draftDeg}`)
-        .replace("param('width', 80", `param('width', ${variant.width}`)
-        .replace("param('height', 25", `param('height', ${variant.height}`);
+        .replace("param('length', 80", `param('length', ${variant.length}`)
+        .replace("param('width', 50", `param('width', ${variant.width}`)
+        .replace("param('height', 25", `param('height', ${variant.height}`)
+        .replace("param('wall', 2", `param('wall', ${variant.wall}`);
       const model = await buildModel({ fileName: `moulded-housing-${variant.draftDeg}.kcad.ts`, code: candidate });
       expect(model.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
       const report = await runDfmChecksOnModel(model);
       expect(report?.moulding?.[0].result.verdict).toBe('pass');
     }
   }, 180_000);
+
+  it('changes wall stock while preserving the drafted outer envelope', async () => {
+    const code = await readFile('examples/manufacturing-showcase/moulded-housing.kcad.ts', 'utf8');
+    const volumes: number[] = [];
+    for (const wall of [1.8, 2.5]) {
+      const candidate = code.replace("param('wall', 2", `param('wall', ${wall}`);
+      const result = await evaluateScriptTool({ code: candidate, skipMechanismCheck: true });
+      expect(result.ok, JSON.stringify(result.diagnostics)).toBe(true);
+      expect(result.sceneSummary?.size[0]).toBeCloseTo(81.309, 2);
+      expect(result.sceneSummary?.size[1]).toBeCloseTo(51.309, 2);
+      volumes.push(result.sceneSummary!.volume);
+    }
+    expect(volumes[1]).toBeGreaterThan(volumes[0]!);
+  }, 120_000);
   it('rejects draft input below the declared minimum before geometry build', async () => {
     const code = await readFile('examples/manufacturing-showcase/moulded-housing.kcad.ts', 'utf8');
     const belowMinimum = code.replace("param('draftDeg', 1.5", "param('draftDeg', 0.5");

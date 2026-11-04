@@ -61,4 +61,17 @@ describe('bent mounting bracket', () => {
     ].sort());
     expect(result.checks.every(check => check.status === 'pass')).toBe(true);
   }, 120_000);
+
+  it('uses the edited blank length when recovering the flat-pattern outline', async () => {
+    const code = (await readFile('examples/manufacturing-showcase/bent-mounting-bracket.kcad.ts', 'utf8'))
+      .replace("param('length', 100", "param('length', 105");
+    const result = await flattenPatternTool({ code });
+    expect(result.ok, JSON.stringify(result.diagnostics)).toBe(true);
+    const xs = result.region!.outer.map(point => point[0]);
+    const ys = result.region!.outer.map(point => point[1]);
+    expect(Math.min(...xs)).toBeCloseTo(0, 5);
+    expect(Math.max(...xs)).toBeCloseTo(105, 5);
+    expect(Math.min(...ys)).toBeCloseTo(0, 5);
+    expect(Math.max(...ys)).toBeCloseTo(50, 5);
+  }, 120_000);
 });
