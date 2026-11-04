@@ -26,6 +26,8 @@ const retainerShape = box(34, 30, retainerThickness).holes('top', {
 // illustrative modeling gap, not a proven bearing fit or retention system.
 const shaftShape = cylinder(shaftLength, shaftDiameter.divide(2)).translate(40, 25, -4)
   .union(cylinder(2, shoulderDiameter.divide(2)).translate(40, 25, 18.02));
+// The solver grounds the first declared part, so the housing is the assembly
+// root. Its mounting holes do not model an external fixture or load path.
 assemblyModel.part('housing', housingShape, {material: 'aluminum-6061'})
   .connector('seat', frame([40,25,11])).connector('retainer', frame([26,25,18]));
 assemblyModel.part('bearing', bearingShape).connector('outer', frame([40,25,11])).connector('axis', axis([40,25,14.5]));

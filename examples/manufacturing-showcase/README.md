@@ -15,14 +15,16 @@ establish physical fit, strength or shop readiness.
 | Turning | [Shoulder spacer](shoulder-spacer.kcad.ts) | Default 8.5 mm through bore, 30 mm flange and 20 mm body | Length 8–60 mm, body diameter 16–26 mm, flange diameter 28–40 mm, bore 6–12 mm, flange thickness 2–5 mm; revolved profile, STEP round-trip, envelope and analytic volume | Tolerances, edge break and physical fit; no lathe toolpath is generated |
 | 3D printing | [Electronics enclosure](electronics-enclosure.kcad.ts) | Removable lid with locating lip, four lid screws, PCB posts and connector window | Two named parts; enclosure base passes the generic FDM gate upright and lid passes inverted; separate STL files reopen as watertight meshes; oriented 3MF plate layout fits the `prusa-mini-plus` profile; minimum footprint/maximum wall geometry check | Validate board and fastener fit, material and slicer settings; print and assemble |
 | Injection molding | [Drafted housing with cored posts](moulded-housing.kcad.ts) | Open housing, 2 mm nominal wall, four cored board posts | Length 70–120 mm, width 45–90 mm, height 20–40 mm, wall 1.8–2.5 mm, draft 1–5°; local moulding DFM passes nominal and combined range endpoints, while insufficient-draft and trapped-core controls fail | No ribs or board retention; ejection, gate, parting and tool design need a toolmaker; physical parts are untested |
-| Assembly | [Bearing and shaft](bearing-shaft-assembly.kcad.ts) | 608 bearing, housing, two-screw retainer and shouldered shaft | Shaft length 26–60 mm, diameter 7.7–7.98 mm, shoulder diameter 10–16 mm, retainer thickness 1.5–3 mm; four named parts and default motion review | Hardware geometry, fits, explicit base support, manufacturing and physical motion |
+| Assembly | [Bearing and shaft](bearing-shaft-assembly.kcad.ts) | 608 bearing, housing, two-screw retainer and shouldered shaft | Shaft length 26–60 mm, diameter 7.7–7.98 mm, shoulder diameter 10–16 mm, retainer thickness 1.5–3 mm; four named parts and default motion review | Supplier bearing geometry and specified fits; retainer screw hardware; external fixture/load path; manufacturing review and physical motion |
 
 The enclosure connector cutout has 45° shoulders and an 8 mm self-supporting
 crown so the default FDM bridge gate passes; it is still a starter profile, not
 a connector fit check. Its two pieces need separate print orientations. The
-bearing interfaces need supplier drawings and specified fits. The bearing
-assembly assumes a fixed housing and simplified annular catalog bearing; it has
-no modeled screws, rolling contact or load validation. The moulding DFM check
+bearing interfaces need supplier drawings and specified fits. The assembly
+solver grounds the first declared part (the housing); its four through-holes
+are mounting geometry, but the external fixture and load path are not modeled.
+The assembly uses a simplified annular bearing, with no modeled screws, rolling
+contact or load validation. The moulding DFM check
 measures draft, undercuts, walls and corners, but does not check ribs,
 gate/ejector placement, flow, parting strategy or tool design. Process DFM
 checks and neutral-file readbacks are geometry evidence, not a slicer result,
