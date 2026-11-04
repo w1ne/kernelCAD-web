@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: CC0-1.0
-// Original kernelCAD low-poly portable fire pump scene prop, modeled from scratch.
+// Compact portable pump with engine block, intake and discharge ports on a carrying frame. Material controls: steel and aluminum, safety marking, tool coating; weathered and highVisibility presets.
 meta({
   name: "portable-fire-pump",
   license: 'CC0-1.0',
   title: "Portable fire pump",
-  description: "Compact portable pump with engine block, intake and discharge ports on a carrying frame. Knobs: overall scale, body color and accent color.",
+  description: "Compact portable pump with engine block, intake and discharge ports on a carrying frame. Material controls: steel and aluminum, safety marking, tool coating; weathered and highVisibility presets.",
   tags: ['fire rescue', 'fire service', 'emergency scene', 'low poly', 'CC0'],
   kit: 'fire-rescue',
   category: 'prop',
@@ -14,17 +14,22 @@ meta({
 });
 
 const scale = param('scale', 1, { label: 'Overall scale', min: 0.7, max: 1.3, step: 0.05 });
-const body = param('body', '#78828a', { label: 'Body color' });
-const accent = param('accent', '#d74735', { label: 'Accent color' });
+const steelColor = param('steelColor', '#aab5b9', { label: 'Steel and aluminum' });
+const safetyMarkingColor = param('safetyMarkingColor', '#c83730', { label: 'Safety marking' });
+const toolCoatingColor = param('toolCoatingColor', '#d98727', { label: 'Tool coating' });
+presets({
+  weathered: { steelColor: '#858f92', safetyMarkingColor: '#874e49', toolCoatingColor: '#956438' },
+  highVisibility: { steelColor: '#c3c6b6', safetyMarkingColor: '#f0db56', toolCoatingColor: '#e8b331' },
+});
 const p = assembly("portable-fire-pump");
 const groundOffset = -85;
-const add = (name, shape, finish = body) => p.part(name, shape.translate(0, 0, groundOffset).scale(scale).color(finish));
-add("pump-frame", box(570, 390, 130, true).translate(0, 0, 150), body);
-add("engine-housing", box(300, 290, 230, true).translate(-40, 0, 330), accent);
-add("pump-volute", cylinder(125, 110, 10).rotate([0, 1, 0], 90).translate(180, 0, 290), body);
-add("hose-port--1", cylinder(130, 50, 10).rotate([0, 1, 0], 90).translate(200, -210, 200), accent);
-add("hose-port-1", cylinder(130, 50, 10).rotate([0, 1, 0], 90).translate(200, 210, 200), accent);
-add("carry-handle--1", box(42, 40, 150, true).translate(-230, -150, 295), accent);
-add("carry-handle-1", box(42, 40, 150, true).translate(-230, 150, 295), accent);
+const add = (name, shape, finish = toolCoatingColor) => p.part(name, shape.translate(0, 0, groundOffset).scale(scale).color(finish));
+add("pump-frame", box(570, 390, 130, true).translate(0, 0, 150), steelColor);
+add("engine-housing", box(300, 290, 230, true).translate(-40, 0, 330), safetyMarkingColor);
+add("pump-volute", cylinder(125, 110, 10).rotateY(90).translate(180, 0, 290), toolCoatingColor);
+add("hose-port--1", cylinder(130, 50, 10).rotateY(90).translate(200, -210, 200), safetyMarkingColor);
+add("hose-port-1", cylinder(130, 50, 10).rotateY(90).translate(200, 210, 200), safetyMarkingColor);
+add("carry-handle--1", box(42, 40, 150, true).translate(-230, -150, 295), steelColor);
+add("carry-handle-1", box(42, 40, 150, true).translate(-230, 150, 295), steelColor);
 
 return p.model();
