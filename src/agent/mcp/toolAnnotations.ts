@@ -167,7 +167,6 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   // inputs returns the stored run, but the first call writes files.
   run_cfd: WRITES_FILE,
   cfd_summary: READ,
-  assembly_checks: READ,
   // Evaluates the script and returns a labelled heuristic. Writes nothing and calls no supplier.
   estimate_cost: READ,
   analyze_tolerance_stack: READ,

@@ -18,7 +18,7 @@ import { geometryAuthoringToolEntries } from './registry/geometryAuthoringTools'
 import { feaToolEntries } from './registry/feaTools';
 import { drawingImportToolEntries } from './registry/drawingImportTools';
 import { geometryDiffToolEntries } from './registry/geometryDiffTools';
-import { inspectionVerificationAssemblyChecksToolEntries, inspectionVerificationPreludeToolEntries, inspectionVerificationQueryToolEntries, inspectionVerificationRepairToolEntries } from './registry/inspectionVerificationTools';
+import {, inspectionVerificationPreludeToolEntries, inspectionVerificationQueryToolEntries, inspectionVerificationRepairToolEntries } from './registry/inspectionVerificationTools';
 import { printToolEntries } from './registry/printTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
@@ -114,7 +114,6 @@ const EXPECTED_TOOL_NAMES = [
   'get_kit',
   'run_cfd',
   'cfd_summary',
-  'assembly_checks',
   'dfm_fix_recheck',
   'estimate_cost',
   'analyze_tolerance_stack',
@@ -439,7 +438,6 @@ describe('toolRegistry public contract', () => {
        'get_kit',
        'run_cfd',
        'cfd_summary',
-       'assembly_checks',
        'dfm_fix_recheck',
        'estimate_cost',
        'analyze_tolerance_stack',
@@ -447,7 +445,7 @@ describe('toolRegistry public contract', () => {
        'fit_model_to_scan',
        'resolve_metric_thread',
      ]);
-    expect(TOOL_REGISTRY).toHaveLength(74);
+    expect(TOOL_REGISTRY).toHaveLength(73);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
@@ -516,8 +514,8 @@ describe('toolRegistry public contract', () => {
 
   it('appends the read-only asset catalog family before the CFD tail', () => {
     expect(TOOL_REGISTRY.slice(
-      -assetCatalogToolEntries.length - cfdToolEntries.length - inspectionVerificationAssemblyChecksToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
-      -cfdToolEntries.length - inspectionVerificationAssemblyChecksToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
+      -assetCatalogToolEntries.length - cfdToolEntries.length -.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
+      -cfdToolEntries.length -.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
     )).toEqual(assetCatalogToolEntries);
     expect(assetCatalogToolEntries.map(entry => entry.definition.name)).toEqual([
       'search_assets', 'get_asset', 'find_matching', 'get_variant', 'list_kits', 'get_kit',
@@ -527,13 +525,13 @@ describe('toolRegistry public contract', () => {
   it('appends the CFD family (run_cfd, cfd_summary) before assembly checks', () => {
     expect(cfdToolEntries.map(entry => entry.definition.name)).toEqual(['run_cfd', 'cfd_summary']);
     expect(TOOL_REGISTRY.slice(
-      -cfdToolEntries.length - inspectionVerificationAssemblyChecksToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
-      -inspectionVerificationAssemblyChecksToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
+      -cfdToolEntries.length -.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
+      -.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
     )).toEqual(cfdToolEntries);
     expect(cfdToolEntries[0].definition.description).toMatch(/^Use this when /);
   });
 
-  it('appends dfm_fix_recheck after assembly_checks without moving dfm_review', () => {
+  it('appends dfm_fix_recheck without moving dfm_review', () => {
     expect(manufacturingFixRecheckToolEntries.map(entry => entry.definition.name)).toEqual(['dfm_fix_recheck']);
     expect(TOOL_REGISTRY.slice(
       -manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
@@ -543,16 +541,6 @@ describe('toolRegistry public contract', () => {
     expect(manufacturingFixRecheckToolEntries[0].definition.description).toMatch(/^Use this when /);
   });
 
-  it('appends assembly_checks before dfm_fix_recheck and estimate_cost', () => {
-    expect(inspectionVerificationAssemblyChecksToolEntries.map(entry => entry.definition.name)).toEqual(['assembly_checks']);
-    expect(TOOL_REGISTRY.slice(
-      -inspectionVerificationAssemblyChecksToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
-      -manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
-    )).toEqual(inspectionVerificationAssemblyChecksToolEntries);
-    expect(inspectionVerificationAssemblyChecksToolEntries[0].definition.description).toMatch(/^Use this when /);
-    expect(inspectionVerificationAssemblyChecksToolEntries[0].definition.description).toMatch(/verify\(\{ check: 'assembly' \}\)/);
-    expect(inspectionVerificationAssemblyChecksToolEntries[0].definition.description).toMatch(/review_cad/);
-  });
 
   it('appends estimate_cost immediately before the tolerance stack', () => {
     expect(costEstimateToolEntries.map(entry => entry.definition.name)).toEqual(['estimate_cost']);

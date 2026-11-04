@@ -42,7 +42,6 @@ export const MCP_SANDBOX_ARGS: Readonly<Record<string, readonly SandboxArgSpec[]
   diff_scripts: [['base_file', 'read'], ['file', 'read']],
   inspect: [['file', 'read']],
   verify: [['file', 'read'], ['urdf_path', 'read']],
-  assembly_checks: [['file', 'read']],
   estimate_cost: [['file', 'read']],
   analyze_tolerance_stack: [['file', 'read']],
   load_scan_reference: [['file', 'read']],

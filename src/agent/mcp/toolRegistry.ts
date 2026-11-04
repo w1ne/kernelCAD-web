@@ -16,7 +16,6 @@ import { geometryAuthoringToolEntries } from './registry/geometryAuthoringTools'
 import { drawingImportToolEntries } from './registry/drawingImportTools';
 import { geometryDiffToolEntries } from './registry/geometryDiffTools';
 import {
-  inspectionVerificationAssemblyChecksToolEntries,
   inspectionVerificationPreludeToolEntries,
   inspectionVerificationQueryToolEntries,
   inspectionVerificationRepairToolEntries,
