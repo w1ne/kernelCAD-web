@@ -6,7 +6,8 @@
 // `Shape.threadedHole`.
 //
 //   - ISO 261 pitch table (coarse + common fine pitches, M1–M64) and the
-//     `'M6'` / `'M6x0.75'` spec parser.
+//     `'M6'` / `'M6x0.75'` spec parser. `metricThreadFromDiameter` walks that
+//     same coarse table (and its D−P tap drills) in the other direction.
 //   - ISO 68-1 basic profile dimensions (H = √3/2·P, 60° flanks).
 //   - The TRANSVERSE cross-section of an external thread: the planar section
 //     perpendicular to the axis. Swept by pure screw motion (one turn per
@@ -127,6 +128,139 @@ export function isoThreadInfo(spec: unknown, api = 'isoThread(spec)'): IsoThread
     tapDrill: diameter - pitch,
     threadDepth: (5 / 8) * H_PER_P * pitch,
   };
+}
+
+/** Default |measured − nominal| window for {@link metricThreadFromDiameter}. */
+export const NOMINAL_DIAMETER_TOL_MM = 0.05;
+/** Default |measured − (D − P)| window. Wider than the nominal window because
+ *  shop tap-drill charts round (M8 → 6.8 vs 6.75, M12 → 10.2 vs 10.25). */
+export const TAP_DRILL_DIAMETER_TOL_MM = 0.1;
+
+export type MetricThreadMatchKind = 'nominal' | 'tap_drill' | 'auto';
+
+export interface MetricThreadFromDiameterOptions {
+  /** `nominal` (default) matches ISO 261 major diameters. `tap_drill` matches
+   *  D − P. `auto` tries nominal, then tap drill, and refuses rather than
+   *  guessing an ISO 273 clearance bore. */
+  kind?: MetricThreadMatchKind;
+  /** Replaces the default window. For `auto`, one value is used for both stages. */
+  toleranceMm?: number;
+}
+
+export interface MetricThreadMatch {
+  info: IsoThreadInfo;
+  kindMatched: 'nominal' | 'tap_drill';
+  /** Absolute millimetres between the query and the matched column. */
+  deltaMm: number;
+}
+
+const DIAMETER_EXAMPLE = "metricThreadFromDiameter(12)  // coarse M12; metricThreadFromDiameter(5, { kind: 'tap_drill' })  // M6";
+
+let coarseCache: readonly IsoThreadInfo[] | undefined;
+
+function coarseInfos(): readonly IsoThreadInfo[] {
+  coarseCache ??= Object.keys(COARSE).map((diameter) => isoThreadInfo(`M${diameter}`));
+  return coarseCache;
+}
+
+function diameterArg(path: string, got: unknown, requires: string): never {
+  return invalidArgs({
+    api: 'metricThreadFromDiameter(diameterMm)',
+    path,
+    got,
+    showType: typeof got !== 'number',
+    requires,
+    unit: path === 'diameterMm' || path === 'toleranceMm' ? 'mm' : undefined,
+    example: DIAMETER_EXAMPLE,
+    featureId: 'metricThreadFromDiameter',
+  });
+}
+
+function readDiameter(diameterMm: unknown): number {
+  if (typeof diameterMm === 'number' && Number.isFinite(diameterMm) && diameterMm > 0) return diameterMm;
+  return diameterArg('diameterMm', diameterMm, 'a finite number > 0 — the nominal major diameter, or a tap drill when kind is tap_drill');
+}
+
+function readKind(kind: unknown): MetricThreadMatchKind {
+  if (kind === undefined) return 'nominal';
+  if (kind === 'nominal' || kind === 'tap_drill' || kind === 'auto') return kind;
+  return diameterArg('opts.kind', kind, "'nominal', 'tap_drill', or 'auto'");
+}
+
+function readTolerance(toleranceMm: unknown): number | undefined {
+  if (toleranceMm === undefined) return undefined;
+  if (typeof toleranceMm === 'number' && Number.isFinite(toleranceMm) && toleranceMm >= 0) return toleranceMm;
+  return diameterArg('opts.toleranceMm', toleranceMm, 'a finite number ≥ 0 (mm); omit it for 0.05 mm nominal / 0.1 mm tap drill');
+}
+
+interface ScoredThread { info: IsoThreadInfo; deltaMm: number }
+
+function columnMm(info: IsoThreadInfo, kind: 'nominal' | 'tap_drill'): number {
+  return kind === 'nominal' ? info.diameter : info.tapDrill;
+}
+
+function searchColumn(diameterMm: number, kind: 'nominal' | 'tap_drill', toleranceMm: number): ScoredThread | 'none' {
+  const rows = coarseInfos()
+    .map((info) => ({ info, deltaMm: Math.abs(columnMm(info, kind) - diameterMm) }))
+    .filter((row) => row.deltaMm <= toleranceMm + 1e-9);
+  if (rows.length === 0) return 'none';
+  const best = rows.reduce((a, b) => (b.deltaMm < a.deltaMm - 1e-9 ? b : a));
+  const tied = rows.filter((row) => Math.abs(row.deltaMm - best.deltaMm) <= 1e-9);
+  if (tied.length > 1) {
+    diameterArg(
+      'diameterMm',
+      diameterMm,
+      `one ISO 261 coarse size. ${diameterMm} mm is equidistant from ${tied.map((row) => row.info.spec).join(', ')} — pass an explicit spec or a tighter toleranceMm`,
+    );
+  }
+  return best;
+}
+
+function refuseDiameter(diameterMm: number, kind: MetricThreadMatchKind, nominalTol: number, tapTol: number): never {
+  const stage = kind === 'tap_drill'
+    ? `a tap drill D − P within ${tapTol} mm of an ISO 261 coarse size`
+    : kind === 'auto'
+      ? `an ISO 261 coarse nominal within ${nominalTol} mm, or a tap drill D − P within ${tapTol} mm`
+      : `an ISO 261 coarse nominal diameter (M1–M64) within ${nominalTol} mm`;
+  return diameterArg(
+    'diameterMm',
+    diameterMm,
+    `${stage}. A clearance bore is not a tap — use clearanceFitForHoleDiameter or threadForHoleDiameter for ISO 273`,
+  );
+}
+
+/**
+ * ISO 261 coarse thread for a diameter in mm. `12` → M12×1.75 (`M12x1.75`).
+ * Tap drills are the same `D − P` column `isoThread` already returns — not a
+ * second table. `lib.insert`'s `TAP_DRILL_MM` chart is only the stocked-size
+ * pilot warning and is not consulted here.
+ */
+export function matchMetricThreadFromDiameter(
+  diameterMm: number,
+  opts?: MetricThreadFromDiameterOptions,
+): MetricThreadMatch {
+  const diameter = readDiameter(diameterMm);
+  const kind = readKind(opts?.kind);
+  const toleranceMm = readTolerance(opts?.toleranceMm);
+  const nominalTol = toleranceMm ?? NOMINAL_DIAMETER_TOL_MM;
+  const tapTol = toleranceMm ?? TAP_DRILL_DIAMETER_TOL_MM;
+  if (kind !== 'tap_drill') {
+    const nominal = searchColumn(diameter, 'nominal', nominalTol);
+    if (nominal !== 'none') return { ...nominal, kindMatched: 'nominal' };
+  }
+  if (kind !== 'nominal') {
+    const tap = searchColumn(diameter, 'tap_drill', tapTol);
+    if (tap !== 'none') return { ...tap, kindMatched: 'tap_drill' };
+  }
+  return refuseDiameter(diameter, kind, nominalTol, tapTol);
+}
+
+/** {@link matchMetricThreadFromDiameter} as an {@link IsoThreadInfo}. */
+export function metricThreadFromDiameter(
+  diameterMm: number,
+  opts?: MetricThreadFromDiameterOptions,
+): IsoThreadInfo {
+  return matchMetricThreadFromDiameter(diameterMm, opts).info;
 }
 
 /**

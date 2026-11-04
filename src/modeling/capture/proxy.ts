@@ -17,7 +17,6 @@ import type { Query, EdgeMarker } from '../../kernel/naming/query';
 import {
   validateHoleOpts, validateHolesOpts, serializeHoleParams, serializeHolesParams,
   resolveHoleOpts, resolveHolesOpts,
-  type EditableHoleOpts, type EditableHolesOpts,
 } from '../validation/holeValidation';
 import { attachHolesConnectors, attachSingleHoleConnectors } from './emitHoleConnectors';
 import {
@@ -90,6 +89,7 @@ import {
 } from './proxyMaterial';
 import { sectionSketchOf, faceSketchOf, silhouetteOf } from './proxyDerivedSketch';
 import { threadedHoleToHoleOpts, type ThreadedHoleOpts } from './threadedHole';
+import { applyHoleThreadSugar, type HoleCallOpts, type HolesCallOpts } from '../validation/holeThreadSugar';
 import {
   validateGridPatternAxis,
   validateLinearPatternOpts,
@@ -1064,14 +1064,18 @@ export class Shape {
    *   `counterbore-wall` / `counterbore-floor` (with cb),
    *   `countersink-cone` (with csk).
    */
-  hole(face: FaceSelector | CanonicalFace | string, opts: EditableHoleOpts): Shape {
+  hole(face: FaceSelector | CanonicalFace | string, opts: HoleCallOpts, carriedSpec: string | undefined = undefined): Shape {
     // Slice-3: validate against the resolved-at-capture-time numeric view, but
     // serialize from the original Editable opts so symbolic ParamRefs survive
     // into the FeatureRecord for later edit-after-build.
-    const resolved = resolveHoleOpts(opts, this.session.paramTable);
+    // `thread: true` fills the coarse pitch first; an explicit pitch is kept.
+    const prepared = applyHoleThreadSugar(opts, this.session.paramTable, 'hole');
+    const resolved = resolveHoleOpts(prepared.opts, this.session.paramTable);
     validateHoleOpts(resolved, this.id);
     const faceSel = normalizeFaceSelector(face);
-    const { params, metadata } = serializeHoleParams(faceSel, opts);
+    const { params, metadata } = serializeHoleParams(faceSel, prepared.opts);
+    const threadSpec = prepared.spec ?? carriedSpec;
+    if (threadSpec !== undefined) metadata.threadSpec = threadSpec;
     if (opts.name !== undefined) {
       assertFeatureNameUniqueOnChain(this.session.getRecords(), this.id, opts.name);
     } else {
@@ -1100,7 +1104,8 @@ export class Shape {
    * in phase when the entry face sits at a whole number of pitches).
    */
   threadedHole(face: FaceSelector | CanonicalFace | string, opts: ThreadedHoleOpts): Shape {
-    return this.hole(face, threadedHoleToHoleOpts(opts));
+    const prepared = threadedHoleToHoleOpts(opts, this.session.paramTable);
+    return this.hole(face, prepared.opts, prepared.spec);
   }
 
   /**
@@ -1114,11 +1119,13 @@ export class Shape {
    * collectively — `.fillet(0.2, { face: 'wall' })` rounds every lip in one
    * call. Indexed access (e.g. `holes[0].wall`) is slice-2.
    */
-  holes(face: FaceSelector | CanonicalFace | string, opts: EditableHolesOpts): Shape {
-    const resolved = resolveHolesOpts(opts, this.session.paramTable);
+  holes(face: FaceSelector | CanonicalFace | string, opts: HolesCallOpts): Shape {
+    const prepared = applyHoleThreadSugar(opts, this.session.paramTable, 'holes');
+    const resolved = resolveHolesOpts(prepared.opts, this.session.paramTable);
     validateHolesOpts(resolved, this.id);
     const faceSel = normalizeFaceSelector(face);
-    const { params, metadata } = serializeHolesParams(faceSel, opts);
+    const { params, metadata } = serializeHolesParams(faceSel, prepared.opts);
+    if (prepared.spec !== undefined) metadata.threadSpec = prepared.spec;
     if (opts.name !== undefined) {
       assertFeatureNameUniqueOnChain(this.session.getRecords(), this.id, opts.name);
     } else {

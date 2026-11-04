@@ -34,6 +34,9 @@ const HEADER = [
   'on the cloud are refused.',
   'A 2.5D mill plan is `plan_cnc_toolpaths`: facing, profile, pocket, and drill',
   'from a bounding box plus stock. Its G-code is not the FDM slicer export.',
+  'A bare nominal diameter becomes a coarse ISO thread with',
+  '`hole({ diameter, thread: true })` or the MCP tool `resolve_metric_thread`.',
+  'Clearance bores stay on `clearanceFitForHoleDiameter`.',
   '',
 ];
 

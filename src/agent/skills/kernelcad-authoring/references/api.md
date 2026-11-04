@@ -88,6 +88,11 @@ helix({ radius, pitch, turns, axis?, pointsPerTurn?, startAngle? }): [number, nu
 // ISO metric threads (see "Threads" below). isoThread('M6') -> { spec: 'M6x1',
 // diameter, pitch, minorDiameter, tapDrill, ... }; 'M6x0.75' / 'M70x4' set the pitch.
 isoThread(spec: string): IsoThreadInfo;
+// The other direction: a diameter in mm -> the coarse designation.
+// 12 -> M12x1.75. kind 'tap_drill' matches D-P (5 -> M6). kind 'auto' tries
+// nominal within 0.05 mm, then tap drill within 0.1 mm, and refuses a
+// clearance bore. hole({ diameter: 12, thread: true }) records the same pitch.
+metricThreadFromDiameter(diameterMm: number, opts?: { kind?: 'nominal' | 'tap_drill' | 'auto', toleranceMm?: number }): IsoThreadInfo;
 // Real external thread along +Z, z = 0..length, ONE sweep (M6 x 20 ~2-3 s).
 threadedRod({ spec, length, chamfer?: boolean | number, cosmetic?: boolean, clearance? }): Shape;
 // 3D Bezier curve (3 points = quadratic, 4 = cubic) -> Curve3D.
@@ -644,9 +649,9 @@ Entity and selection recovery:
 
 ISO metric threads.
 
-- Designations: `'M6'` = coarse pitch from the ISO 261 table (M1–M64); `'M6x0.75'` sets the pitch and works for any size (`'M70x4'` jar neck). `isoThread(spec)` returns the numbers (pitch, minor/pitch diameter, tap drill) for callouts and clearance holes.
+- Designations: `'M6'` = coarse pitch from the ISO 261 table (M1–M64); `'M6x0.75'` sets the pitch and works for any size (`'M70x4'` jar neck). `isoThread(spec)` returns the numbers (pitch, minor/pitch diameter, tap drill) for callouts and clearance holes. `metricThreadFromDiameter(12)` goes the other way (nominal diameter → `M12x1.75`). `kind: 'tap_drill'` matches D − P (`5` → M6). `kind: 'auto'` tries nominal within 0.05 mm, then tap drill within 0.1 mm. An unknown or equidistant diameter throws `feature.invalid-args`. A clearance bore is not a tap — `clearanceFitForHoleDiameter` / `threadForHoleDiameter` stay the ISO 273 path. MCP: `resolve_metric_thread`.
 - External thread: `threadedRod({ spec, length })` — real 60° profile along +Z from z = 0, one helical sweep, valid solid, STEP-exportable. `chamfer: true` for 45° ends (one more boolean), `cosmetic: true` for an instant major-diameter cylinder with the spec in metadata, `clearance` (≤ pitch/10) for printed fits. Union a head for a bolt; union onto a body for a neck.
-- Internal thread: `body.threadedHole(face, { u, v, spec, depth })` — same frame and refs as `hole`. Default cosmetic (minor-diameter bore + recorded thread, fast); `modeled: true` cuts the real thread (seconds), with `clearance` (≤ pitch/8) of play.
+- Internal thread: `body.hole(face, { u, v, diameter: 12, depth, thread: true })` fills the coarse pitch from that nominal diameter and records `metadata.threadSpec`. `{ fromDiameter: true }` is the same with `modeled` / `clearance`. An explicit `{ pitch }` is unchanged, and a pitch that disagrees with `fromDiameter` is refused. `body.threadedHole(face, { u, v, spec, depth })` still names the designation; `diameter: 12` is the alias, and both together must agree within 0.05 mm. Default cosmetic (minor-diameter bore + recorded thread, fast); `modeled: true` cuts the real thread (seconds), with `clearance` (≤ pitch/8) of play.
 - Mating in phase: the rod's ridge crosses +X at every z = k·pitch and a modelled hole's groove crosses its face u-axis at the entry face, so put the hole's entry face on a whole pitch of the rod (e.g. lift the nut by k·P). Verify with `verify({ check: 'dfm' })` / interference — a cosmetic hole on a modelled rod reports interfering, as it should.
 - Example: `examples/threads/threaded-jar-and-lid.kcad.ts` (M64 × 4 neck + tapped lid).
 
