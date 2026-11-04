@@ -14787,7 +14787,7 @@
       "id": "apiary-gate",
       "kit": "apiary",
       "title": "Apiary gate",
-      "description": "Simple yard gate with two posts, cross rails and a hinged-looking framed panel. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Simple yard gate with two posts, cross rails and a hinged-looking framed panel. Knobs: overall scale, timber, hardware and panel paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -14807,7 +14807,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/apiary-gate.kcad.ts",
       "preview": "/assets/apiary-apiary-gate.png",
-      "sourceSha256": "dfa583da87ecc8e969b0cf6884c52f273a01f57ad17c5cc140f2c53b0cc2c218",
+      "sourceSha256": "6b47b4d0b3b498c937828db6d7a07861857f46e94ce580d9f4920c60ade80106",
       "triangleBudget": 1800,
       "params": [
         {
@@ -14820,15 +14820,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
           "default": "#7e765f",
-          "label": "Asset color"
+          "label": "Timber"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#4a4a4e",
+          "label": "Hardware"
+        },
+        {
+          "name": "panel",
+          "type": "color",
+          "default": "#8a9a7a",
+          "label": "Panel paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "timber": "#6f6852",
+          "hardware": "#5a544c",
+          "panel": "#7d8a6c"
+        },
+        "creosoted": {
+          "timber": "#4f4a3c",
+          "hardware": "#3a3a3e",
+          "panel": "#5f6b54"
+        }
+      },
       "stats": {
-        "triangles": 108,
+        "triangles": 156,
         "sizeM": [
           1.11,
           1.155,
@@ -14839,7 +14862,7 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "timber",
           "color": "#7e765f",
           "parts": [
             "post-left",
@@ -14848,11 +14871,29 @@
             "gate-bottom",
             "gate-rail-a",
             "gate-rail-b",
-            "gate-brace",
-            "post-cap-left",
-            "post-cap-right"
+            "gate-brace"
           ],
-          "param": "color"
+          "param": "timber"
+        },
+        {
+          "name": "panel",
+          "color": "#8a9a7a",
+          "parts": [
+            "panel"
+          ],
+          "param": "panel"
+        },
+        {
+          "name": "hardware",
+          "color": "#4a4a4e",
+          "parts": [
+            "post-cap-left",
+            "post-cap-right",
+            "hinge-lower",
+            "hinge-upper",
+            "latch"
+          ],
+          "param": "hardware"
         }
       ]
     },
