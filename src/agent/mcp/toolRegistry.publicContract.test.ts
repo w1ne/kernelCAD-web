@@ -28,7 +28,7 @@ import { mechanismSimToolEntries } from './registry/mechanismSimTools';
 import { meshReconstructToolEntries } from './registry/meshReconstructTools';
 import { cookbookExecutionToolEntries } from './registry/cookbookExecutionTools';
 import { importToolEntries } from './registry/importTools';
-import { manufacturingToolEntries } from './registry/manufacturingTools';
+import { manufacturingFixRecheckToolEntries, manufacturingToolEntries } from './registry/manufacturingTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
 import { rayPickToolEntries } from './registry/rayPickTools';
 import { surfaceBlendToolEntries } from './registry/surfaceBlendTools';
@@ -111,6 +111,7 @@ const EXPECTED_TOOL_NAMES = [
   'run_cfd',
   'cfd_summary',
   'assembly_checks',
+  'dfm_fix_recheck',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -430,8 +431,9 @@ describe('toolRegistry public contract', () => {
        'run_cfd',
        'cfd_summary',
        'assembly_checks',
+       'dfm_fix_recheck',
      ]);
-    expect(TOOL_REGISTRY).toHaveLength(68);
+    expect(TOOL_REGISTRY).toHaveLength(69);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
@@ -489,19 +491,19 @@ describe('toolRegistry public contract', () => {
 
   it('appends the generic blockout assembly generator at the registry tail', () => {
     expect(blockoutToolEntries.map(entry => entry.definition.name)).toEqual(['blockout_assembly']);
-    expect(TOOL_REGISTRY.slice(-11, -10)).toEqual(blockoutToolEntries);
+    expect(TOOL_REGISTRY.slice(-12, -11)).toEqual(blockoutToolEntries);
     expect(blockoutToolEntries[0].definition.description).toMatch(/^Use this when /);
   });
 
   it('appends the read-only asset manifest tool after the historical blockout tail', () => {
     expect(assetManifestToolEntries.map(entry => entry.definition.name)).toEqual(['asset_manifest']);
-    expect(TOOL_REGISTRY.slice(-10, -9)).toEqual(assetManifestToolEntries);
+    expect(TOOL_REGISTRY.slice(-11, -10)).toEqual(assetManifestToolEntries);
   });
 
   it('appends the read-only asset catalog family before the CFD tail', () => {
     expect(TOOL_REGISTRY.slice(
-      -assetCatalogToolEntries.length - cfdToolEntries.length - inspectionVerificationAssemblyChecksToolEntries.length,
-      -cfdToolEntries.length - inspectionVerificationAssemblyChecksToolEntries.length,
+      -assetCatalogToolEntries.length - cfdToolEntries.length - inspectionVerificationAssemblyChecksToolEntries.length - manufacturingFixRecheckToolEntries.length,
+      -cfdToolEntries.length - inspectionVerificationAssemblyChecksToolEntries.length - manufacturingFixRecheckToolEntries.length,
     )).toEqual(assetCatalogToolEntries);
     expect(assetCatalogToolEntries.map(entry => entry.definition.name)).toEqual([
       'search_assets', 'get_asset', 'find_matching', 'get_variant', 'list_kits', 'get_kit',
@@ -511,15 +513,25 @@ describe('toolRegistry public contract', () => {
   it('appends the CFD family (run_cfd, cfd_summary) before assembly checks', () => {
     expect(cfdToolEntries.map(entry => entry.definition.name)).toEqual(['run_cfd', 'cfd_summary']);
     expect(TOOL_REGISTRY.slice(
-      -cfdToolEntries.length - inspectionVerificationAssemblyChecksToolEntries.length,
-      -inspectionVerificationAssemblyChecksToolEntries.length,
+      -cfdToolEntries.length - inspectionVerificationAssemblyChecksToolEntries.length - manufacturingFixRecheckToolEntries.length,
+      -inspectionVerificationAssemblyChecksToolEntries.length - manufacturingFixRecheckToolEntries.length,
     )).toEqual(cfdToolEntries);
     expect(cfdToolEntries[0].definition.description).toMatch(/^Use this when /);
   });
 
+  it('appends dfm_fix_recheck after assembly_checks without moving dfm_review', () => {
+    expect(manufacturingFixRecheckToolEntries.map(entry => entry.definition.name)).toEqual(['dfm_fix_recheck']);
+    expect(TOOL_REGISTRY.slice(-manufacturingFixRecheckToolEntries.length)).toEqual(manufacturingFixRecheckToolEntries);
+    expect(TOOL_REGISTRY[50]?.definition.name).toBe('dfm_review');
+    expect(manufacturingFixRecheckToolEntries[0].definition.description).toMatch(/^Use this when /);
+  });
+
   it('appends assembly_checks at the registry tail', () => {
     expect(inspectionVerificationAssemblyChecksToolEntries.map(entry => entry.definition.name)).toEqual(['assembly_checks']);
-    expect(TOOL_REGISTRY.slice(-inspectionVerificationAssemblyChecksToolEntries.length)).toEqual(inspectionVerificationAssemblyChecksToolEntries);
+    expect(TOOL_REGISTRY.slice(
+      -inspectionVerificationAssemblyChecksToolEntries.length - manufacturingFixRecheckToolEntries.length,
+      -manufacturingFixRecheckToolEntries.length,
+    )).toEqual(inspectionVerificationAssemblyChecksToolEntries);
     expect(inspectionVerificationAssemblyChecksToolEntries[0].definition.description).toMatch(/^Use this when /);
     expect(inspectionVerificationAssemblyChecksToolEntries[0].definition.description).toMatch(/verify\(\{ check: 'assembly' \}\)/);
     expect(inspectionVerificationAssemblyChecksToolEntries[0].definition.description).toMatch(/review_cad/);

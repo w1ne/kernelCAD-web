@@ -12235,5 +12235,292 @@
       ],
       "additionalProperties": true
     }
+  },
+  {
+    "name": "dfm_fix_recheck",
+    "description": "Use this when a dfm_review finding should get one safe parameter edit and the same review again. Pass { file | code } and the same process options as dfm_review, or a single process (not both process and processes). Runs dfm_review, applies at most one edit, then reviews the edited source. The only edits are: an existing fillet or filletIntersection radius raised to the check limit; a shell() thickness raised to the minimum wall plus 0.01 mm; a draft() angle raised to the minimum draft. A sharp corner, a thin solid that is not a shell(), an undrafted face, a param()-driven value, and every other finding are not edited. Optional finding_id is a check id such as 'fdm.min-wall'. Optional diagnostic_code is a dfm.* code or that same check id. When either is set, a finding that is not safe does not fall through to a different check. material is copied onto the report and does not change the numeric gates. Returns { ok, applied, status: 'applied'|'no-safe-fix'|'invalid', processes, material?, before, after?, cleared, remaining, suggestions, change?, new_code?, refusal?, diagnostics, bounds: { maxApplies: 1, appliedCount } }. new_code is present only when applied is true. The caller persists it. Nothing is written.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "string",
+          "description": "Path to a .kcad.ts script file."
+        },
+        "code": {
+          "type": "string",
+          "description": "Inline kernelCAD script source."
+        },
+        "processes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "fdm",
+              "cnc",
+              "sheet-metal",
+              "injection-molding"
+            ]
+          },
+          "description": "Processes to review. Default ['fdm', 'cnc']."
+        },
+        "nozzle_mm": {
+          "type": "number",
+          "description": "FDM nozzle diameter, mm. Default 0.4."
+        },
+        "max_overhang_deg": {
+          "type": "number",
+          "description": "FDM steepest printable overhang, degrees from vertical (0 = wall, 90 = flat ceiling). Default 45."
+        },
+        "max_bridge_mm": {
+          "type": "number",
+          "description": "FDM longest unsupported bridge, mm. Default 10."
+        },
+        "printer": {
+          "type": "string",
+          "enum": [
+            "generic-fdm",
+            "bambu-a1-mini",
+            "bambu-a1",
+            "bambu-p1s",
+            "bambu-p1p",
+            "bambu-x1c",
+            "bambu-x1e",
+            "bambu-h2d",
+            "bambu-h2s",
+            "prusa-mini-plus",
+            "prusa-mk4s",
+            "prusa-core-one",
+            "prusa-xl",
+            "creality-ender-3-v3",
+            "creality-k1",
+            "creality-k1-max",
+            "creality-k2-plus",
+            "elegoo-neptune-4-pro",
+            "anycubic-kobra-3",
+            "voron-2.4-250",
+            "voron-2.4-300",
+            "voron-2.4-350",
+            "ultimaker-s5"
+          ],
+          "description": "FDM printer profile id for the bed-fit check. Default 'generic-fdm'."
+        },
+        "build_direction": {
+          "type": "string",
+          "enum": [
+            "+x",
+            "-x",
+            "+y",
+            "-y",
+            "+z",
+            "-z"
+          ],
+          "description": "FDM part-local axis pointing up from the bed. Default '+z'."
+        },
+        "tool_diameter_mm": {
+          "type": "number",
+          "description": "CNC end-mill diameter, mm. Default 6."
+        },
+        "approach_axes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "+x",
+              "-x",
+              "+y",
+              "-y",
+              "+z",
+              "-z"
+            ]
+          },
+          "description": "CNC tool approach directions, one per setup (the tool comes from that side). Default ['+z']."
+        },
+        "max_undercut_area_mm2": {
+          "type": "number",
+          "description": "CNC unreachable area tolerated before cnc.undercuts fails, mm². Default 1."
+        },
+        "min_bend_radius_ratio": {
+          "type": "number",
+          "description": "Sheet metal: inner bend radius must be ≥ this × thickness. Default 1."
+        },
+        "hole_to_bend_thicknesses": {
+          "type": "number",
+          "description": "Sheet metal: hole edge to bend line must be ≥ this × thickness + bend radius. Default 2.5."
+        },
+        "hole_to_edge_thicknesses": {
+          "type": "number",
+          "description": "Sheet metal: hole edge to blank edge must be ≥ this × thickness. Default 2."
+        },
+        "min_flange_thicknesses": {
+          "type": "number",
+          "description": "Sheet metal: flange length from the outside of the bend must be ≥ this × thickness. Default 4."
+        },
+        "pull_direction": {
+          "type": "string",
+          "enum": [
+            "+x",
+            "-x",
+            "+y",
+            "-y",
+            "+z",
+            "-z"
+          ],
+          "description": "Injection molding: part-local mold-opening axis (the two halves separate along ±this). Default '+z'."
+        },
+        "min_draft_deg": {
+          "type": "number",
+          "description": "Injection molding: minimum draft angle to the pull direction, degrees. Default 1."
+        },
+        "min_wall_mm": {
+          "type": "number",
+          "description": "Injection molding: thinnest allowed wall, mm. Default 1."
+        },
+        "max_wall_mm": {
+          "type": "number",
+          "description": "Injection molding: thickest allowed section, mm. Default 4."
+        },
+        "max_wall_ratio": {
+          "type": "number",
+          "description": "Injection molding: thickest / thinnest wall above this warns (non-uniform walls warp and sink). Default 2.5."
+        },
+        "min_radius_mm": {
+          "type": "number",
+          "description": "Injection molding: smallest internal corner radius before mold.sharp-internal-corners warns, mm. Default 0.5."
+        },
+        "process": {
+          "type": "string",
+          "enum": [
+            "fdm",
+            "cnc",
+            "sheet-metal",
+            "injection-molding"
+          ],
+          "description": "One process. Use processes for several. Not both."
+        },
+        "material": {
+          "type": "string",
+          "description": "Recorded on the report. Does not change the numeric gates."
+        },
+        "finding_id": {
+          "type": "string",
+          "description": "dfm_review check id to fix, for example 'fdm.min-wall'. Omit to take the first safe finding."
+        },
+        "diagnostic_code": {
+          "type": "string",
+          "description": "A dfm.* diagnostic code, or the same check id as finding_id."
+        }
+      }
+    },
+    "title": "Fix and Recheck DFM",
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "idempotentHint": true,
+      "title": "Fix and Recheck DFM"
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "applied": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "applied",
+            "no-safe-fix",
+            "invalid"
+          ]
+        },
+        "processes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "material": {
+          "type": "string",
+          "description": "Echo of the call material. Recorded only; it does not change the gates."
+        },
+        "before": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "{ verdict: 'pass'|'fail', findings: [{ id, process, part, status: 'fail'|'warn', summary, value?, limit? }] }."
+        },
+        "after": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Same shape as before. Present only when a fix was applied and the second review ran."
+        },
+        "cleared": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "Findings present before and absent after: { id, part, was: 'fail'|'warn' }."
+        },
+        "remaining": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "Open fail and warn findings after the edit, or the before findings when nothing was applied."
+        },
+        "suggestions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "Guidance for open findings. These are not applied."
+        },
+        "change": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "The one edit: kind, checkId, part, feature, param, before, after, namedLimit, unit, summary, changedParams, and the source line when an edit landed."
+        },
+        "new_code": {
+          "type": "string",
+          "description": "Revised source. Present only when applied is true. The caller persists it."
+        },
+        "refusal": {
+          "type": "string"
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "error": {
+          "type": "string"
+        },
+        "bounds": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "{ maxApplies: 1, appliedCount: 0|1 }."
+        }
+      },
+      "required": [
+        "ok",
+        "applied",
+        "status",
+        "processes",
+        "before",
+        "cleared",
+        "remaining",
+        "suggestions",
+        "diagnostics",
+        "bounds"
+      ],
+      "additionalProperties": true
+    }
   }
 ]

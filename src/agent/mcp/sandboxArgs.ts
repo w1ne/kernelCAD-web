@@ -77,6 +77,7 @@ export const MCP_SANDBOX_ARGS: Readonly<Record<string, readonly SandboxArgSpec[]
   ray_pick: [['file', 'read'], ['studio_url', 'url']],
   import_step: [['url', 'url'], ['upload.download_url', 'url'], ['output_dir', 'write']],
   dfm_review: [['file', 'read']],
+  dfm_fix_recheck: [['file', 'read']],
   inspect_nurbs: [['file', 'read']],
   mesh_boolean: [['a.file', 'read'], ['b.file', 'read']],
 };

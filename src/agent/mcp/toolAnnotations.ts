@@ -170,6 +170,8 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   assembly_checks: READ,
   // Evaluates the script in-process and reports; writes nothing.
   dfm_review: READ,
+  // Returns revised source for the caller to persist. Writes nothing.
+  dfm_fix_recheck: AUTHOR,
   ray_pick: READ,
   // Evaluates supplied script/file input to capture authored NURBS data; the
   // script may load referenced assets but does not replace the active session.

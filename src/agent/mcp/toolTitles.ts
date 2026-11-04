@@ -62,6 +62,7 @@ export const TOOL_TITLES: Record<string, string> = {
   set_selection: 'Set Selection',
   import_step: 'Import STEP',
   dfm_review: 'Review Manufacturability',
+  dfm_fix_recheck: 'Fix and Recheck DFM',
   ray_pick: 'Pick Point by Ray',
   inspect_nurbs: 'Inspect NURBS Curve',
   fit_plane: 'Fit Plane to Points',
