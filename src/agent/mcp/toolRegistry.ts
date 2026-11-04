@@ -42,6 +42,7 @@ import { cookbookExecutionToolEntries } from './registry/cookbookExecutionTools'
 import { cfdToolEntries } from './registry/cfdTools';
 import { costEstimateToolEntries } from './registry/costTools';
 import { toleranceStackToolEntries } from './registry/toleranceTools';
+import { scanReferenceToolEntries } from './registry/scanReferenceTools';
 import type { McpToolDefinition, ToolRegistryEntry } from './registry/types';
 import { guardMcpToolArgs } from './sandboxArgs';
 import { foldMcpInputAliases } from './snakeCaseArgs';
@@ -133,6 +134,8 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...costEstimateToolEntries,
   // Appended after estimate_cost: 1D worst-case and RSS tolerance stack.
   ...toleranceStackToolEntries,
+  // Appended after the tolerance stack: PLY/XYZ scan references. Not solids.
+  ...scanReferenceToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints

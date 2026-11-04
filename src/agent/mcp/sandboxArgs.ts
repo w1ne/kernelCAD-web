@@ -45,6 +45,8 @@ export const MCP_SANDBOX_ARGS: Readonly<Record<string, readonly SandboxArgSpec[]
   assembly_checks: [['file', 'read']],
   estimate_cost: [['file', 'read']],
   analyze_tolerance_stack: [['file', 'read']],
+  load_scan_reference: [['file', 'read']],
+  fit_model_to_scan: [['file', 'read'], ['scan_file', 'read']],
   why_did_this_fail: [['file', 'read']],
   trace_from_image: [['image_url', 'path-or-url']],
   add_text: [['font', 'font'], ['font_family', 'font']],
