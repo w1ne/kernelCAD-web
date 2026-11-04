@@ -168,6 +168,8 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   run_cfd: WRITES_FILE,
   cfd_summary: READ,
   assembly_checks: READ,
+  // Evaluates the script and returns a labelled heuristic. Writes nothing and calls no supplier.
+  estimate_cost: READ,
   // Evaluates the script in-process and reports; writes nothing.
   dfm_review: READ,
   // Returns revised source for the caller to persist. Writes nothing.

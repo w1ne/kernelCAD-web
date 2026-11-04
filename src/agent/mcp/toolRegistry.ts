@@ -40,6 +40,7 @@ import { assetCatalogToolEntries } from './registry/assetCatalogTools';
 import { meshBooleanToolEntries } from './registry/meshBooleanTools';
 import { cookbookExecutionToolEntries } from './registry/cookbookExecutionTools';
 import { cfdToolEntries } from './registry/cfdTools';
+import { costEstimateToolEntries } from './registry/costTools';
 import type { McpToolDefinition, ToolRegistryEntry } from './registry/types';
 import { guardMcpToolArgs } from './sandboxArgs';
 import { foldMcpInputAliases } from './snakeCaseArgs';
@@ -127,6 +128,8 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   // Appended at the tail: one DFM parameter edit, then the same dfm_review.
   // Stays out of manufacturingToolEntries so dfm_review keeps index 50.
   ...manufacturingFixRecheckToolEntries,
+  // Appended after dfm_fix_recheck: offline fabrication cost heuristic.
+  ...costEstimateToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints

@@ -25,6 +25,9 @@ const HEADER = [
   'call it on. Rows come from `src/agent/mcp/tools/listApi.ts`; for the full',
   'description of any entry, call `lookup_api(query)`.',
   '',
+  'Offline fabrication cost is not a script call. Use the MCP tool `estimate_cost`',
+  'for a labelled USD heuristic (3d-print, cnc, sheet-cut). It is not a supplier quote.',
+  '',
 ];
 
 /** First sentence of a description — the table needs one line, not a paragraph. */
