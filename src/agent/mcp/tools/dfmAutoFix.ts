@@ -368,6 +368,45 @@ function orderedOpen(checks: readonly DfmReviewCheck[], status: 'fail' | 'warn')
  * the same check id. A target that is not safe does not fall through to a
  * different finding.
  */
+function planTargeted(
+  checkId: string,
+  checks: readonly DfmReviewCheck[],
+  records: readonly DfmFixFeature[],
+  suggestions: DfmFixSuggestion[],
+): DfmAutoFixSelection {
+  const group = checks.filter(c => c.id === checkId);
+  const open = group.filter(c => c.status !== 'pass');
+  if (group.length === 0) return { suggestions, refusal: `No check '${checkId}' in this review.` };
+  if (open.length === 0) return { suggestions, refusal: `Check '${checkId}' already passes.` };
+  if (open.length > 1) {
+    return { suggestions, refusal: `No safe auto-fix for ${checkId}: more than one part has this check.` };
+  }
+  const attempt = attemptKnown(open[0], records);
+  if (attempt === undefined) return { suggestions, refusal: `No safe auto-fix for ${checkId}.` };
+  if ('reason' in attempt) return { suggestions, refusal: attempt.reason };
+  return { plan: attempt.plan, suggestions };
+}
+
+function planFirstOpen(
+  checks: readonly DfmReviewCheck[],
+  records: readonly DfmFixFeature[],
+  suggestions: DfmFixSuggestion[],
+): DfmAutoFixSelection {
+  if (suggestions.length === 0) return { suggestions, refusal: 'DFM review passed; nothing to fix.' };
+  const considered: string[] = [];
+  for (const check of [...orderedOpen(checks, 'fail'), ...orderedOpen(checks, 'warn')]) {
+    if (checks.filter(c => c.id === check.id && c.status === check.status).length > 1) continue;
+    const attempt = attemptKnown(check, records);
+    if (attempt !== undefined && 'plan' in attempt) return { plan: attempt.plan, suggestions };
+    if (attempt !== undefined && 'reason' in attempt) considered.push(attempt.reason);
+  }
+  if (suggestions.length === 1 && considered.length === 1) return { suggestions, refusal: considered[0] };
+  return {
+    suggestions,
+    refusal: 'No safe auto-fix for this review. Suggested fixes are listed and were not applied.',
+  };
+}
+
 export function planDfmAutoFix(input: {
   checks: readonly DfmReviewCheck[];
   records: readonly DfmFixFeature[];
@@ -377,34 +416,6 @@ export function planDfmAutoFix(input: {
   const suggestions = suggestionsFor(input.checks);
   const target = resolveTarget(input.findingId, input.diagnosticCode);
   if (target.refusal !== undefined) return { suggestions, refusal: target.refusal };
-
-  if (target.id !== undefined) {
-    const group = input.checks.filter(c => c.id === target.id);
-    const open = group.filter(c => c.status !== 'pass');
-    if (group.length === 0) return { suggestions, refusal: `No check '${target.id}' in this review.` };
-    if (open.length === 0) return { suggestions, refusal: `Check '${target.id}' already passes.` };
-    if (open.length > 1) {
-      return { suggestions, refusal: `No safe auto-fix for ${target.id}: more than one part has this check.` };
-    }
-    const attempt = attemptKnown(open[0], input.records);
-    if (attempt === undefined) return { suggestions, refusal: `No safe auto-fix for ${target.id}.` };
-    if ('reason' in attempt) return { suggestions, refusal: attempt.reason };
-    return { plan: attempt.plan, suggestions };
-  }
-
-  if (suggestions.length === 0) return { suggestions, refusal: 'DFM review passed; nothing to fix.' };
-
-  const considered: string[] = [];
-  for (const check of [...orderedOpen(input.checks, 'fail'), ...orderedOpen(input.checks, 'warn')]) {
-    if (input.checks.filter(c => c.id === check.id && c.status === check.status).length > 1) continue;
-    const attempt = attemptKnown(check, input.records);
-    if (attempt !== undefined && 'plan' in attempt) return { plan: attempt.plan, suggestions };
-    if (attempt !== undefined && 'reason' in attempt) considered.push(attempt.reason);
-  }
-  // One finding we know how to judge: say why that one was refused.
-  if (suggestions.length === 1 && considered.length === 1) return { suggestions, refusal: considered[0] };
-  return {
-    suggestions,
-    refusal: 'No safe auto-fix for this review. Suggested fixes are listed and were not applied.',
-  };
+  if (target.id !== undefined) return planTargeted(target.id, input.checks, input.records, suggestions);
+  return planFirstOpen(input.checks, input.records, suggestions);
 }

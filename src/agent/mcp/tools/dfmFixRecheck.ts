@@ -16,6 +16,7 @@ import {
   type DfmFixSuggestion,
 } from './dfmAutoFix';
 import { dfmReviewTool, type DfmReviewInput, type DfmReviewOutput } from './dfmReview';
+import { invalidArgsText } from '../../../shared/intent/invalidArgs';
 import type { DfmProcess } from './dfmReviewChecks';
 
 export interface DfmFixRecheckInput extends DfmReviewInput {
@@ -111,7 +112,18 @@ function clearedOf(before: readonly DfmFinding[], after: readonly DfmFinding[]):
     .map(f => ({ id: f.id, part: f.part, was: f.status }));
 }
 
+const INVALID_API = 'dfm_fix_recheck({ ... })';
+const INVALID_EXAMPLE = "dfm_fix_recheck({ code, processes: ['fdm'], finding_id: 'fdm.min-wall' })";
+
 function invalid(message: string, processes: string[] = []): DfmFixRecheckOutput {
+  const { message: formatted, hint } = invalidArgsText({
+    api: INVALID_API,
+    path: '',
+    gotText: message,
+    requires: 'a script (code or file) plus optional DFM review gates and at most one finding_id/diagnostic_code',
+    example: INVALID_EXAMPLE,
+    code: 'cli.invalid-args',
+  });
   return {
     ok: false,
     applied: false,
@@ -125,11 +137,11 @@ function invalid(message: string, processes: string[] = []): DfmFixRecheckOutput
       target: 'export-occt',
       code: 'cli.invalid-args',
       severity: 'error',
-      message,
-      hint: message,
+      message: formatted,
+      hint,
     }],
-    error: message,
-    refusal: message,
+    error: formatted,
+    refusal: formatted,
     bounds: bounds(0),
   };
 }
@@ -148,30 +160,24 @@ function validate(input: DfmFixRecheckInput): string | undefined {
   return undefined;
 }
 
+/** DFM review gates copied from dfm_fix_recheck onto the inner dfm_review call. */
+const REVIEW_GATE_KEYS = [
+  'nozzle_mm', 'max_overhang_deg', 'max_bridge_mm', 'printer', 'build_direction',
+  'tool_diameter_mm', 'approach_axes', 'max_undercut_area_mm2',
+  'min_bend_radius_ratio', 'hole_to_bend_thicknesses', 'hole_to_edge_thicknesses',
+  'min_flange_thicknesses', 'pull_direction', 'min_draft_deg',
+  'min_wall_mm', 'max_wall_mm', 'max_wall_ratio', 'min_radius_mm',
+] as const satisfies ReadonlyArray<keyof DfmReviewInput>;
+
 function reviewInput(input: DfmFixRecheckInput, code: string): DfmReviewInput {
   const processes = input.process !== undefined ? [input.process] : input.processes;
-  return {
-    code,
-    ...(processes !== undefined ? { processes } : {}),
-    ...(input.nozzle_mm !== undefined ? { nozzle_mm: input.nozzle_mm } : {}),
-    ...(input.max_overhang_deg !== undefined ? { max_overhang_deg: input.max_overhang_deg } : {}),
-    ...(input.max_bridge_mm !== undefined ? { max_bridge_mm: input.max_bridge_mm } : {}),
-    ...(input.printer !== undefined ? { printer: input.printer } : {}),
-    ...(input.build_direction !== undefined ? { build_direction: input.build_direction } : {}),
-    ...(input.tool_diameter_mm !== undefined ? { tool_diameter_mm: input.tool_diameter_mm } : {}),
-    ...(input.approach_axes !== undefined ? { approach_axes: input.approach_axes } : {}),
-    ...(input.max_undercut_area_mm2 !== undefined ? { max_undercut_area_mm2: input.max_undercut_area_mm2 } : {}),
-    ...(input.min_bend_radius_ratio !== undefined ? { min_bend_radius_ratio: input.min_bend_radius_ratio } : {}),
-    ...(input.hole_to_bend_thicknesses !== undefined ? { hole_to_bend_thicknesses: input.hole_to_bend_thicknesses } : {}),
-    ...(input.hole_to_edge_thicknesses !== undefined ? { hole_to_edge_thicknesses: input.hole_to_edge_thicknesses } : {}),
-    ...(input.min_flange_thicknesses !== undefined ? { min_flange_thicknesses: input.min_flange_thicknesses } : {}),
-    ...(input.pull_direction !== undefined ? { pull_direction: input.pull_direction } : {}),
-    ...(input.min_draft_deg !== undefined ? { min_draft_deg: input.min_draft_deg } : {}),
-    ...(input.min_wall_mm !== undefined ? { min_wall_mm: input.min_wall_mm } : {}),
-    ...(input.max_wall_mm !== undefined ? { max_wall_mm: input.max_wall_mm } : {}),
-    ...(input.max_wall_ratio !== undefined ? { max_wall_ratio: input.max_wall_ratio } : {}),
-    ...(input.min_radius_mm !== undefined ? { min_radius_mm: input.min_radius_mm } : {}),
-  };
+  const out: DfmReviewInput = { code };
+  if (processes !== undefined) out.processes = processes;
+  for (const key of REVIEW_GATE_KEYS) {
+    const value = input[key];
+    if (value !== undefined) Object.assign(out, { [key]: value });
+  }
+  return out;
 }
 
 function withMaterial(input: DfmFixRecheckInput, out: DfmFixRecheckOutput): DfmFixRecheckOutput {
