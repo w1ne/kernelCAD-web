@@ -6,7 +6,7 @@
   "repo": "w1ne/kernelCAD-web",
   "versionFrom": "package.json",
   "description": "Create and edit dimensioned parametric CAD parts and assemblies from natural-language instructions. Design enclosures, brackets, gears and motor mounts; change dimensions, inspect an interactive 3D model, and run supported geometry and manufacturability checks. Export CAD and manufacturing files in STEP, STL or 3MF, and drawings in DXF or PDF. Check results describe the supported checks performed; manufacturing requirements still depend on the chosen process and material.",
-  "shortDescription": "Parametric CAD and drawings",
+  "shortDescription": "Design and edit 3D CAD parts",
   "author": {
     "name": "kernelCAD",
     "url": "https://kernelcad.com"
