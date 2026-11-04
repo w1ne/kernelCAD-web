@@ -436,7 +436,7 @@ describe('toolRegistry public contract', () => {
        'dfm_fix_recheck',
        'estimate_cost',
      ]);
-    expect(TOOL_REGISTRY).toHaveLength(69);
+    expect(TOOL_REGISTRY).toHaveLength(70);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
@@ -494,13 +494,13 @@ describe('toolRegistry public contract', () => {
 
   it('appends the generic blockout assembly generator at the registry tail', () => {
     expect(blockoutToolEntries.map(entry => entry.definition.name)).toEqual(['blockout_assembly']);
-    expect(TOOL_REGISTRY.slice(-12, -11)).toEqual(blockoutToolEntries);
+    expect(TOOL_REGISTRY.slice(-13, -12)).toEqual(blockoutToolEntries);
     expect(blockoutToolEntries[0].definition.description).toMatch(/^Use this when /);
   });
 
   it('appends the read-only asset manifest tool after the historical blockout tail', () => {
     expect(assetManifestToolEntries.map(entry => entry.definition.name)).toEqual(['asset_manifest']);
-    expect(TOOL_REGISTRY.slice(-11, -10)).toEqual(assetManifestToolEntries);
+    expect(TOOL_REGISTRY.slice(-12, -11)).toEqual(assetManifestToolEntries);
   });
 
   it('appends the read-only asset catalog family before the CFD tail', () => {
