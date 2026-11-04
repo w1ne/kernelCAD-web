@@ -1,0 +1,79 @@
+{
+  "ok": true,
+  "origin": "stock_corner",
+  "part_in_stock_mm": {
+    "min_mm": [
+      5,
+      5,
+      0
+    ],
+    "max_mm": [
+      45,
+      35,
+      10
+    ]
+  },
+  "stock_size_mm": [
+    50,
+    40,
+    15
+  ],
+  "tool": {
+    "diameter_mm": 6
+  },
+  "feeds": {
+    "spindle_rpm": 10000,
+    "feed_mm_min": 600,
+    "plunge_mm_min": 300,
+    "rapid_mm_min": 5000,
+    "stepdown_mm": 5,
+    "stepover": 0.5,
+    "safe_z_mm": 20,
+    "heuristic": true,
+    "label": "Heuristic feeds for a small carbide end mill. They are not a material model."
+  },
+  "ops": [
+    {
+      "kind": "facing",
+      "segment_count": 28,
+      "time_s": 62.72,
+      "removed_volume_mm3": 10000
+    },
+    {
+      "kind": "profile",
+      "segment_count": 21,
+      "time_s": 58.74,
+      "removed_volume_mm3": 14760
+    }
+  ],
+  "time_s": 121.46,
+  "removed_volume_mm3": 24760,
+  "warnings": [
+    "Profile finishes at the stock bottom (Z=0). No tabs are added.",
+    "Profile cutter extends outside the stock. The path is the part outline, not a stock-bounded cut.",
+    "removed_volume_mm3 is a per-op proxy and can double-count stock that more than one op would cut."
+  ],
+  "disclaimer": "bbox 2.5D heuristic; not collision-checked; not a machine-ready post for every controller.",
+  "gcode_head": [
+    "; kernelCAD mill toolpath",
+    "; bbox 2.5D heuristic; not collision-checked; not a machine-ready post for every controller.",
+    "; origin: stock minimum corner, Z up from the stock bottom, millimetres, absolute",
+    "; feeds and speeds are heuristics",
+    "G21",
+    "G90",
+    "G17",
+    "G94",
+    "M3 S10000",
+    "G0 Z20.000",
+    "; facing",
+    "G0 X3.000 Y3.000",
+    "G1 Z10.000 F300",
+    "G1 X47.000 Y3.000 F600",
+    "G1 X47.000 Y6.000",
+    "G1 X3.000 Y6.000",
+    "G1 X3.000 Y9.000",
+    "G1 X47.000 Y9.000",
+    "G1 X47.000 Y12.000",
+    "G1 X3.000 Y12.000"
+  ]
+}
