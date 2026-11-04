@@ -34,11 +34,9 @@ import { NURBS_OUTPUT_SCHEMAS } from './registry/nurbsTools.outputSchemas';
 import { EXPLODE_VIEW_OUTPUT_SCHEMAS } from './registry/explodeViewTools.outputSchemas';
 import { SURFACE_BLEND_OUTPUT_SCHEMAS } from './registry/surfaceBlendTools.outputSchemas';
 import { ASSET_CATALOG_OUTPUT_SCHEMAS } from './registry/assetCatalogTools.outputSchemas';
-import { INSPECTION_VERIFICATION_OUTPUT_SCHEMAS } from './registry/inspectionVerificationTools.outputSchemas';
 import { COST_ESTIMATE_OUTPUT_SCHEMAS } from './registry/costTools.outputSchemas';
 import { TOLERANCE_STACK_OUTPUT_SCHEMAS } from './registry/toleranceTools.outputSchemas';
 import { SCAN_REFERENCE_OUTPUT_SCHEMAS } from './registry/scanReferenceTools.outputSchemas';
-import { CNC_CAM_OUTPUT_SCHEMAS } from './registry/cncCamTools.outputSchemas';
 import { METRIC_THREAD_OUTPUT_SCHEMAS } from './registry/metricThreadTools.outputSchemas';
 import { SDF_EXPORT_PREVIEW_OUTPUT_SCHEMAS } from './registry/sdfExportPreviewTools.outputSchemas';
 
@@ -727,7 +725,6 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   ...SDF_EXPORT_PREVIEW_OUTPUT_SCHEMAS,
   ...FEA_OUTPUT_SCHEMAS,
   ...CFD_OUTPUT_SCHEMAS,
-  ...INSPECTION_VERIFICATION_OUTPUT_SCHEMAS,
   fit_plane: {
     type: 'object',
     properties: {
@@ -760,6 +757,5 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   ...COST_ESTIMATE_OUTPUT_SCHEMAS,
   ...TOLERANCE_STACK_OUTPUT_SCHEMAS,
   ...SCAN_REFERENCE_OUTPUT_SCHEMAS,
-  ...CNC_CAM_OUTPUT_SCHEMAS,
   ...METRIC_THREAD_OUTPUT_SCHEMAS,
 };

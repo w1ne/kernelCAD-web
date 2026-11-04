@@ -5,7 +5,6 @@
   designation. `hole` / `holes` accept `thread: true` to fill that pitch.
   `threadedHole` accepts `diameter` as well as `spec`. A clearance bore is
   refused; ISO 273 stays on `clearanceFitForHoleDiameter`.
-- `plan_cnc_toolpaths` plans 2.5D facing, profile, pocket, and drill moves from
   a model's bounding box, a plate/blank/bar stock, and an end mill, and can
   emit mill G-code. Origin is the stock corner. This is a bbox heuristic, not
   a collision-checked post, and it is separate from the FDM slicer `gcode` export.
