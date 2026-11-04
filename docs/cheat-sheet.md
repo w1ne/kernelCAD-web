@@ -15,6 +15,9 @@ cloud, and `fit_model_to_scan` compares a parametric bounding box. Booleans
 on the cloud are refused.
 A 2.5D mill plan is `plan_cnc_toolpaths`: facing, profile, pocket, and drill
 from a bounding box plus stock. Its G-code is not the FDM slicer export.
+A bare nominal diameter becomes a coarse ISO thread with
+`hole({ diameter, thread: true })` or the MCP tool `resolve_metric_thread`.
+Clearance bores stay on `clearanceFitForHoleDiameter`.
 
 | Task | What it covers |
 |---|---|
@@ -45,6 +48,7 @@ The first call in any model: a solid primitive, or a 2D profile to extrude.
 | `spring({ length, coilRadius, wireRadius, turns, axis?, pointsPerTurn?, endStyle?, segments? }) => Shape` | Build a helical spring as a circular wire profile swept along a smooth B-spline helix spine, producing one continuous watertight solid. |
 | `threadedRod({ spec: string, length: number, chamfer?: boolean \| number, cosmetic?: boolean, clearance?: number }) => Shape` | A real ISO metric EXTERNAL thread (60° basic profile, right-hand) along +Z from z = 0 to `length`; the ridge centre crosses +X at every z = k·pitch, so a modelled `threadedHole` whose entry face is on a whole pitch mates in phase. |
 | `isoThread(spec: string) => { spec, diameter, pitch, coarse, standard, pitchDiameter, minorDiameter, rootDiameter, tapDrill, threadDepth }` | Resolve an ISO metric thread designation. |
+| `metricThreadFromDiameter(diameterMm: number, opts?: { kind?: 'nominal' \| 'tap_drill' \| 'auto', toleranceMm?: number }) => IsoThreadInfo` | Resolve the ISO 261 coarse metric thread for a diameter in millimetres. |
 | `spurGear({ module, teeth, faceWidth, pressureAngle?, bore?, backlash? }) => Shape` | Build an involute spur gear as ONE manifold solid. |
 | `internalSpurGear({ module, teeth, faceWidth, pressureAngle?, backlash?, rimThickness?, profileShift? }) => Shape` | Build an involute INTERNAL / ring gear as ONE manifold solid: outer rim minus a bore whose flanks are the external spur profile mirrored through the pitch circle. |
 | `ringGear({ module, teeth, faceWidth, pressureAngle?, backlash?, rimThickness?, profileShift? }) => Shape` | Alias of internalSpurGear — involute internal / ring gear. |
@@ -109,9 +113,9 @@ Cut into a solid: bolt holes, pockets, slots, plain subtraction.
 |---|---|
 | `Shape.subtract(...others) => Shape` | Boolean difference (this minus others). |
 | `ParamRef.subtract(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value equals this ParamRef minus `other`. |
-| `Shape.hole(face: FaceSelector \| string, opts: { u, v, diameter, depth?: number \| "through", at?: Vec3 \| { angleDeg, z }, axis?: Vec3, upToFace?: FaceRef, counterbore?: { diameter, depth }, countersink?: { diameter, angleDeg? }, thread?: { pitch, modeled?: boolean, clearance? } }) => Shape` | Drill a single hole. |
-| `Shape.holes(face: FaceSelector \| string, opts: { positions: Array<{u,v}>, diameter, depth?, upToFace?, counterbore?, countersink?, thread? }) => Shape` | Drill N holes in one feature record. |
-| `Shape.threadedHole(face: FaceSelector \| string, opts: { u, v, spec: string, depth: number \| 'through', modeled?: boolean, clearance?, name? }) => Shape` | ISO metric tapped hole by designation (`spec: 'M6'` coarse, or `'M6x0.75'`). |
+| `Shape.hole(face: FaceSelector \| string, opts: { u, v, diameter, depth?: number \| "through", at?: Vec3 \| { angleDeg, z }, axis?: Vec3, upToFace?: FaceRef, counterbore?: { diameter, depth }, countersink?: { diameter, angleDeg? }, thread?: true \| { pitch?, fromDiameter?: boolean, modeled?: boolean, clearance? } }) => Shape` | Drill a single hole. |
+| `Shape.holes(face: FaceSelector \| string, opts: { positions: Array<{u,v}>, diameter, depth?, upToFace?, counterbore?, countersink?, thread?: true \| { pitch?, fromDiameter?: boolean, modeled?, clearance? } }) => Shape` | Drill N holes in one feature record. |
+| `Shape.threadedHole(face: FaceSelector \| string, opts: { u, v, spec?: string, diameter?: number, depth: number \| 'through', modeled?: boolean, clearance?, name? }) => Shape` | ISO metric tapped hole by designation (`spec: 'M6'` coarse, or `'M6x0.75'`) or by nominal diameter (`diameter: 12` → M12×1.75). |
 | `Shape.cutout(profile: PathBuilder \| Sketch, opts: { face: FaceSelector \| string, depth?: number \| "through", upToFace?: FaceRef, depthMode?: "blind" \| "symmetric" }) => Shape` | Sketch-driven subtractive extrude for irregular shapes hole() can't express (slots, D-shapes, keyhole pockets). |
 
 ## Combine shapes

@@ -2,7 +2,8 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/apiThreadMethods.ts
 //
-// Script globals for ISO metric threads (`isoThread`, `threadedRod`) and the
+// Script globals for ISO metric threads (`isoThread`, `metricThreadFromDiameter`,
+// `threadedRod`) and the
 // 3D Bézier convenience (`bezier`).
 //
 // A modelled `threadedRod` is ONE helical sweep of the thread's transverse
@@ -22,6 +23,7 @@ import {
   externalThreadSection,
   isoThreadInfo,
   maxRodClearance,
+  metricThreadFromDiameter as threadFromDiameter,
   type IsoThreadInfo,
   type SectionStep,
 } from './threads';
@@ -149,10 +151,13 @@ function cosmeticRod(session: CaptureSession, r: ResolvedRod): Shape {
 export function makeThreadMethods(
   session: CaptureSession,
   self: () => KernelCadApi,
-): Pick<KernelCadApi, 'isoThread' | 'threadedRod' | 'bezier'> {
+): Pick<KernelCadApi, 'isoThread' | 'metricThreadFromDiameter' | 'threadedRod' | 'bezier'> {
   return {
     isoThread(spec) {
       return isoThreadInfo(spec);
+    },
+    metricThreadFromDiameter(diameterMm, opts) {
+      return threadFromDiameter(diameterMm, opts);
     },
     threadedRod(opts) {
       const r = resolveRod(opts);

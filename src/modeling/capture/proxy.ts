@@ -15,12 +15,6 @@ import { captureMoveFaces, captureOffsetFaces, type CanonicalFace, type FaceEdit
 import type { EdgeQuery, FaceQuery, EdgeSegment } from '../../kernel/backends/occt/edgeQueries';
 import type { Query, EdgeMarker } from '../../kernel/naming/query';
 import {
-  validateHoleOpts, validateHolesOpts, serializeHoleParams, serializeHolesParams,
-  resolveHoleOpts, resolveHolesOpts,
-  type EditableHoleOpts, type EditableHolesOpts,
-} from '../validation/holeValidation';
-import { attachHolesConnectors, attachSingleHoleConnectors } from './emitHoleConnectors';
-import {
   validateCutoutOpts, validateCutoutProfile, serializeCutoutParams,
   resolveCutoutOpts,
   type EditableCutoutOpts,
@@ -89,7 +83,9 @@ import {
   assignMaterialMetadata,
 } from './proxyMaterial';
 import { sectionSketchOf, faceSketchOf, silhouetteOf } from './proxyDerivedSketch';
-import { threadedHoleToHoleOpts, type ThreadedHoleOpts } from './threadedHole';
+import type { ThreadedHoleOpts } from './threadedHole';
+import type { HoleCallOpts, HolesCallOpts } from '../validation/holeThreadSugar';
+import { captureHole, captureHoles, captureThreadedHole } from './proxyHoleMethods';
 import {
   validateGridPatternAxis,
   validateLinearPatternOpts,
@@ -1064,31 +1060,8 @@ export class Shape {
    *   `counterbore-wall` / `counterbore-floor` (with cb),
    *   `countersink-cone` (with csk).
    */
-  hole(face: FaceSelector | CanonicalFace | string, opts: EditableHoleOpts): Shape {
-    // Slice-3: validate against the resolved-at-capture-time numeric view, but
-    // serialize from the original Editable opts so symbolic ParamRefs survive
-    // into the FeatureRecord for later edit-after-build.
-    const resolved = resolveHoleOpts(opts, this.session.paramTable);
-    validateHoleOpts(resolved, this.id);
-    const faceSel = normalizeFaceSelector(face);
-    const { params, metadata } = serializeHoleParams(faceSel, opts);
-    if (opts.name !== undefined) {
-      assertFeatureNameUniqueOnChain(this.session.getRecords(), this.id, opts.name);
-    } else {
-      metadata.ordinal = nextOrdinalForKindOnChain(this.session.getRecords(), this.id, 'hole');
-    }
-    const inputs: Record<string, FeatureRef> = {
-      target: { kind: 'feature', id: this.id },
-      face: buildFaceInputRef(this.id, faceSel),
-    };
-    const holeShape = this.session.createShape({
-      kind: 'hole',
-      inputs,
-      params,
-      metadata,
-    });
-    attachSingleHoleConnectors(this.session, holeShape.id, metadata, resolved);
-    return holeShape;
+  hole(face: FaceSelector | CanonicalFace | string, opts: HoleCallOpts, carriedSpec: string | undefined = undefined): Shape {
+    return captureHole(this.session, this.id, face, opts, carriedSpec);
   }
 
   /**
@@ -1100,7 +1073,7 @@ export class Shape {
    * in phase when the entry face sits at a whole number of pitches).
    */
   threadedHole(face: FaceSelector | CanonicalFace | string, opts: ThreadedHoleOpts): Shape {
-    return this.hole(face, threadedHoleToHoleOpts(opts));
+    return captureThreadedHole(this.session, this.id, face, opts);
   }
 
   /**
@@ -1114,28 +1087,8 @@ export class Shape {
    * collectively — `.fillet(0.2, { face: 'wall' })` rounds every lip in one
    * call. Indexed access (e.g. `holes[0].wall`) is slice-2.
    */
-  holes(face: FaceSelector | CanonicalFace | string, opts: EditableHolesOpts): Shape {
-    const resolved = resolveHolesOpts(opts, this.session.paramTable);
-    validateHolesOpts(resolved, this.id);
-    const faceSel = normalizeFaceSelector(face);
-    const { params, metadata } = serializeHolesParams(faceSel, opts);
-    if (opts.name !== undefined) {
-      assertFeatureNameUniqueOnChain(this.session.getRecords(), this.id, opts.name);
-    } else {
-      metadata.ordinal = nextOrdinalForKindOnChain(this.session.getRecords(), this.id, 'holes');
-    }
-    const inputs: Record<string, FeatureRef> = {
-      target: { kind: 'feature', id: this.id },
-      face: buildFaceInputRef(this.id, faceSel),
-    };
-    const holesShape = this.session.createShape({
-      kind: 'holes',
-      inputs,
-      params,
-      metadata,
-    });
-    attachHolesConnectors(this.session, holesShape.id, metadata, resolved);
-    return holesShape;
+  holes(face: FaceSelector | CanonicalFace | string, opts: HolesCallOpts): Shape {
+    return captureHoles(this.session, this.id, face, opts);
   }
 
   /**
