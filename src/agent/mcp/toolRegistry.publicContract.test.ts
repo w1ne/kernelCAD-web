@@ -217,9 +217,15 @@ describe('toolRegistry public contract', () => {
   it('wires the moved core runtime handlers through the public dispatcher', async () => {
     const evalResult = await callMcpTool('evaluate_script', {
       code: 'return box(10, 10, 10);',
-      dryRun: true,
+      dry_run: true,
     });
     expect(evalResult).toMatchObject({ ok: true, dryRun: true, featureCount: 1 });
+
+    const aliasResult = await callMcpTool('evaluate_script', {
+      code: 'return box(10, 10, 10);',
+      dryRun: true,
+    });
+    expect(aliasResult).toMatchObject({ ok: true, dryRun: true, featureCount: 1 });
 
     const diffResult = await callMcpTool('diff_scripts', {});
     expect(diffResult).toMatchObject({

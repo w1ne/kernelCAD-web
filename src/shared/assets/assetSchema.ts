@@ -43,6 +43,8 @@ const slug = z.string().trim().min(1).max(64).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
 const AssetMetadataFields = {
   schemaVersion: z.literal(1).default(1),
+  /** Kebab-case file stem for an `asset-pack` download. */
+  id: slug.optional(),
   name: z.string().trim().min(1).max(128).optional(),
   title: z.string().trim().min(1).max(128).optional(),
   description: z.string().trim().max(4000).optional(),
@@ -96,6 +98,31 @@ export const AssetRigEntrySchema = z.object({
 
 export const AssetRigSchema = z.record(z.string().trim().min(1), AssetRigEntrySchema);
 
+/** Mesh stats shared with GLB `asset.extras.kernelcad.stats`. */
+export const AssetStatsSchema = z.object({
+  triangles: z.number().int().nonnegative(),
+  /** Bounding-box size in metres, in the file's own axes (x, y, z). */
+  sizeM: z.tuple([z.number().finite(), z.number().finite(), z.number().finite()]),
+  /** Lowest point on the up axis, in metres. 0 means the model stands on its origin. */
+  minUpM: z.number().finite(),
+  materials: z.number().int().nonnegative(),
+  drawCalls: z.number().int().nonnegative(),
+  parts: z.number().int().nonnegative(),
+  hasRig: z.boolean(),
+  hasIk: z.boolean(),
+}).strict();
+
+const emptyAssetStats = (): z.input<typeof AssetStatsSchema> => ({
+  triangles: 0,
+  sizeM: [0, 0, 0],
+  minUpM: 0,
+  materials: 0,
+  drawCalls: 0,
+  parts: 0,
+  hasRig: false,
+  hasIk: false,
+});
+
 /** Public read-only asset payload; nested records carry their schema versions. */
 export const AssetManifestSchema = z.object({
   meta: AssetMetadataSchema,
@@ -103,6 +130,7 @@ export const AssetManifestSchema = z.object({
   presets: z.array(AssetPresetSchema),
   rig: AssetRigSchema.optional(),
   rigWarnings: z.array(z.string()).optional(),
+  stats: AssetStatsSchema.default(emptyAssetStats),
 }).strict();
 
 export type AssetCategory = (typeof ASSET_CATEGORIES)[number];
@@ -114,4 +142,5 @@ export type AssetPreset = z.output<typeof AssetPresetSchema>;
 export type AssetPresets = z.output<typeof AssetPresetsSchema>;
 export type AssetRig = z.output<typeof AssetRigSchema>;
 export type AssetRigEntry = z.output<typeof AssetRigEntrySchema>;
+export type AssetStats = z.output<typeof AssetStatsSchema>;
 export type AssetManifest = z.output<typeof AssetManifestSchema>;

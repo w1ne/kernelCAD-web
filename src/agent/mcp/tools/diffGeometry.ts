@@ -217,7 +217,7 @@ function validateDiffGeometrySides(
     return {
       ok: false,
       side: 'base',
-      error: 'diff_geometry: must provide either { baseFile } or { baseCode } for the baseline script.',
+      error: 'diff_geometry: must provide either { base_file } or { base_code } for the baseline script.',
       errorCode: 'cli.invalid-args',
     };
   }

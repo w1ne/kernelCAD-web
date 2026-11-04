@@ -105,7 +105,7 @@ describe('body.lattice()', () => {
     expect((model.match(/<triangle /g) ?? []).length).toBe(stl.latticeReport!.triangles);
 
     const obj = await runAndExport({ code: CUBE, fileName: 'c.kcad.ts', format: 'obj' });
-    expect((new TextDecoder().decode(obj.bytes).match(/^f /gm) ?? []).length).toBe(stl.latticeReport!.triangles);
+    expect((strFromU8(unzipSync(obj.bytes)['model.obj']!).match(/^f /gm) ?? []).length).toBe(stl.latticeReport!.triangles);
 
     const step = await runAndExport({ code: CUBE, fileName: 'c.kcad.ts', format: 'step' });
     expect(step.bytes.length).toBe(0);

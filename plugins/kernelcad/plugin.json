@@ -2,7 +2,7 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "kernelcad",
   "version": "0.17.4",
-  "description": "Agent-first CAD over the hosted kernelCAD MCP: editable .kcad.ts source, design_loop review, cookbooks, Studio viewer and STEP/STL/3MF export. No local OpenCASCADE install.",
+  "description": "Create and edit dimensioned parametric CAD parts and assemblies from natural-language instructions. Design enclosures, brackets, gears and motor mounts; change dimensions, inspect an interactive 3D model, and run supported geometry and manufacturability checks. Export CAD and manufacturing files in STEP, STL or 3MF, and drawings in DXF or PDF. Check results describe the supported checks performed; manufacturing requirements still depend on the chosen process and material.",
   "author": {
     "name": "kernelCAD",
     "url": "https://kernelcad.com"
@@ -12,19 +12,32 @@
   "license": "MIT",
   "keywords": [
     "cad",
-    "mcp",
+    "parametric",
+    "mechanical-design",
+    "parts",
+    "assemblies",
+    "enclosures",
+    "brackets",
+    "gears",
+    "motor-mounts",
+    "3d-printing",
+    "cnc",
+    "manufacturing",
+    "drawings",
     "step",
     "stl",
     "3mf",
-    "opencascade",
+    "dxf",
+    "pdf",
+    "mcp",
     "skills"
   ],
   "extensions": {
     "com.openai": {
       "interface": {
         "displayName": "kernelCAD",
-        "shortDescription": "CAD parts, STEP and drawings",
-        "longDescription": "Agent-first CAD over the hosted kernelCAD MCP: editable .kcad.ts source, design_loop review, cookbooks, Studio viewer and STEP/STL/3MF export. No local OpenCASCADE install.",
+        "shortDescription": "Parametric CAD and drawings",
+        "longDescription": "Create and edit dimensioned parametric CAD parts and assemblies from natural-language instructions. Design enclosures, brackets, gears and motor mounts; change dimensions, inspect an interactive 3D model, and run supported geometry and manufacturability checks. Export CAD and manufacturing files in STEP, STL or 3MF, and drawings in DXF or PDF. Check results describe the supported checks performed; manufacturing requirements still depend on the chosen process and material.",
         "developerName": "kernelCAD",
         "category": "Creativity",
         "capabilities": [
@@ -34,9 +47,9 @@
         "websiteURL": "https://kernelcad.com",
         "supportURL": "https://github.com/w1ne/kernelCAD-web/issues/new",
         "defaultPrompt": [
-          "Design a 3D-printable phone stand with kernelCAD and open it in Studio.",
-          "Find a kernelCAD cookbook for a NEMA 17 motor plate and build it.",
-          "Export my bracket as STEP and 3MF."
+          "Create an editable 60 × 40 × 5 mm mounting plate with four M4 clearance holes, and show it in 3D.",
+          "Design a 3D-printable electronics enclosure with adjustable dimensions, and check its wall thickness.",
+          "Export this bracket as STEP and 3MF, with a dimensioned PDF drawing."
         ],
         "brandColor": "#2563EB",
         "privacyPolicyURL": "https://kernelcad.com/privacy",
@@ -101,7 +114,7 @@
         "demo_recording_url": "https://kernelcad.com/demos/chatgpt-walkthrough.mp4"
       },
       "publication": {
-        "release_notes": "Hosted kernelCAD MCP: editable .kcad.ts models, design review, DFM checks, and STEP/STL/3MF/GLB/DXF/PDF export."
+        "release_notes": "Updates discovery descriptions, keywords and starter prompts for parametric mechanical parts, assemblies, design checks and CAD or drawing exports."
       }
     }
   }

@@ -26,9 +26,19 @@ export interface LowPolyGlbOptions {
 export interface GlbStats {
   readonly triangles: number;
   /** Bounding-box size in metres, in the file's own axes (x, y, z). */
-  readonly sizeM: readonly [number, number, number];
+  readonly sizeM: [number, number, number];
   /** Lowest point on the file's up axis, in metres (0 = stands on its origin). */
   readonly minUpM: number;
+  /** Distinct glTF materials the parts resolve to. */
+  readonly materials: number;
+  /** Mesh primitives. One part is one draw call; shared materials do not merge meshes. */
+  readonly drawCalls: number;
+  /** Part count, including parts that contributed no triangles. */
+  readonly parts: number;
+  /** True when rig metadata lists at least one joint. */
+  readonly hasRig: boolean;
+  /** True when that rig metadata marks an inverse-kinematics target. */
+  readonly hasIk: boolean;
 }
 
 export interface PaletteZone {
@@ -126,11 +136,14 @@ export function measureMeshes(
       }
     }
   }
-  if (!Number.isFinite(min[0])) return { triangles, sizeM: [0, 0, 0], minUpM: 0 };
+  const parts = meshes.length;
+  const drawCalls = meshes.reduce((count, mesh) => count + (Math.floor(mesh.triangles.length / 3) > 0 ? 1 : 0), 0);
+  const counts = { materials: drawCalls, drawCalls, parts, hasRig: false, hasIk: false };
+  if (!Number.isFinite(min[0])) return { triangles, sizeM: [0, 0, 0], minUpM: 0, ...counts, materials: 0 };
   const size = [0, 1, 2].map((k) => round6((max[k]! - min[k]!) * 0.001)) as [number, number, number];
   // The y-up root rotation maps CAD (x, y, z) to file (x, z, -y).
   const sizeM: [number, number, number] = axis === 'y-up' ? [size[0], size[2], size[1]] : size;
-  return { triangles, sizeM, minUpM: round6(min[2]! * 0.001) };
+  return { triangles, sizeM, minUpM: round6(min[2]! * 0.001), ...counts };
 }
 
 function round6(value: number): number {

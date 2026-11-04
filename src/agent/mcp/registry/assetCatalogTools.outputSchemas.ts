@@ -103,6 +103,7 @@ export const ASSET_CATALOG_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
         type: 'object',
         properties: {
           schemaVersion: { type: 'integer', const: 1 },
+          id: { type: 'string' },
           name: { type: 'string' },
           title: { type: 'string' },
           description: { type: 'string' },
@@ -135,8 +136,23 @@ export const ASSET_CATALOG_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
           additionalProperties: false,
         },
       },
+      stats: {
+        type: 'object',
+        properties: {
+          triangles: { type: 'integer' },
+          sizeM: { type: 'array', items: { type: 'number' } },
+          minUpM: { type: 'number' },
+          materials: { type: 'integer' },
+          drawCalls: { type: 'integer' },
+          parts: { type: 'integer' },
+          hasRig: { type: 'boolean' },
+          hasIk: { type: 'boolean' },
+        },
+        required: ['triangles', 'sizeM', 'minUpM', 'materials', 'drawCalls', 'parts', 'hasRig', 'hasIk'],
+        additionalProperties: false,
+      },
     },
-    required: ['meta', 'params', 'presets'],
+    required: ['meta', 'params', 'presets', 'stats'],
     additionalProperties: false,
   },
 };

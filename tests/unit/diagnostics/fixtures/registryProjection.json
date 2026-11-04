@@ -648,7 +648,7 @@
       }
     },
     "export.dxf.non-planar": {
-      "template": "DXF needs a flat part (plate, panel, extruded profile). For any other part use `options.section: { axis, at }` for a cross-section, `flatten_pattern` for sheet metal, or STEP/STL for 3D.",
+      "template": "This is a 3D part, not a flat plate or panel. Use `options.section: { axis, at }` for a cross-section, `flatten_pattern` for sheet metal, or STEP/STL for the solid.",
       "nextAction": {
         "kind": "fix-arg",
         "field": "options.section"

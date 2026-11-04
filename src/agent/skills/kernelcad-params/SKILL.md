@@ -153,7 +153,9 @@ presets({ Compact: { width: 60, depth: 30 }, Wide: { width: 120, depth: 50 } });
 ```
 
 After `evaluate_script`, call the read-only `asset_manifest` MCP tool to receive
-`{ meta, params, presets }`. `params` is deterministic JSON derived from the
+`{ meta, params, presets, stats }`. `stats` matches GLB `asset.extras.kernelcad.stats`:
+triangles, `sizeM` (metres, Y up), `minUpM`, materials, draw calls, parts, `hasRig`
+and `hasIk`. `params` is deterministic JSON derived from the
 evaluated entries (with each declared default used when no current value is
 available); preset names and knob keys are emitted in stable sorted order.
 Without a prior evaluation the tool returns an empty manifest with the default
