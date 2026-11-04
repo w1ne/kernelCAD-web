@@ -167,6 +167,7 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   // inputs returns the stored run, but the first call writes files.
   run_cfd: WRITES_FILE,
   cfd_summary: READ,
+  assembly_checks: READ,
   // Evaluates the script in-process and reports; writes nothing.
   dfm_review: READ,
   ray_pick: READ,
