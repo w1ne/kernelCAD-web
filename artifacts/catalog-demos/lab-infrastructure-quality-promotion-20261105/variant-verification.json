@@ -1,0 +1,15 @@
+{
+  "source": "catalog/kits/lab-infrastructure/laboratory-fume-hood.kcad.ts",
+  "sourceSha256": "cf0b2eae18777dc1bc597dda13a00ccbec370bc6ada825e9363c75d1d2bd4d96",
+  "preset": "highVisibility",
+  "appliedOverrides": {
+    "enamel": "#f0f2e8",
+    "glass": "#44d3e2",
+    "polymer": "#ffe000",
+    "stainless": "#6f8488"
+  },
+  "triangles": 156,
+  "triangleBudget": 1800,
+  "output": "variants/laboratory-fume-hood-highVisibility.png",
+  "workflow": "evaluate authored preset, export low-poly GLB, and software-render the resolved mesh"
+}

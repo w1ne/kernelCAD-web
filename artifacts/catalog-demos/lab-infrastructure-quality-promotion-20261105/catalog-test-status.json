@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "command": "NODE_OPTIONS=--max-old-space-size=8192 npx vitest run tests/integration/catalog/ --maxWorkers=1 --no-file-parallelism",
+  "exitCode": 0,
+  "testFilesPassed": 4,
+  "testsPassed": 15,
+  "durationSeconds": 405.81,
+  "outputFile": "catalog-test-output.txt"
+}
