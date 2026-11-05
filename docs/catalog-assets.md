@@ -6,10 +6,10 @@ from those sources and must be rebuilt in the same change.
 
 ## Catalog quality snapshot (2026-11-05)
 
-The catalog quality gate reports **2,003/2,390 assets passing (83.81%)** and
-387 thin assets (16.19%) in nine fully thin kits and additional mixed kits.
-This round promoted 49 existing apiary assets from the 1,954/2,390 checkpoint;
-no IDs were added.
+The catalog quality gate reports **2,051/2,390 assets passing (85.82%)** and
+339 thin assets (14.18%) in eight fully thin kits and additional mixed kits.
+The latest round promoted 48 existing retail-store assets from the
+2,003/2,390 checkpoint; no IDs were added.
 See the [Apiary quality handoff](../artifacts/catalog-demos/apiary-quality-promotion-20261105/README.md),
 [Alpine expedition quality handoff](../artifacts/catalog-demos/alpine-expedition-quality-promotion-20261105/README.md),
 [archaeology fieldwork quality handoff](../artifacts/catalog-demos/archaeology-fieldwork-quality-promotion-20261105/README.md),
@@ -21,6 +21,18 @@ See the [Apiary quality handoff](../artifacts/catalog-demos/apiary-quality-promo
 and [space exploration handoff](../artifacts/catalog-demos/space-exploration-quality-promotion-20261105/README.md)
 for source, preview, index, and verification evidence. These are local catalog
 checks and do not represent deployed behavior.
+
+## Retail store assets
+
+The [retail-store kit](../catalog/kits/retail-store/README.md) retains its 48
+checkout, shopping, display, chilled-food and stock-handling fixtures. This
+round adds 144 material-named color controls and 96 named preset entries while
+keeping all existing IDs. Every asset now passes the material-and-preset gate;
+the kit passes 48/48 (100%). All 48 previews were refreshed and indexed. The [quality promotion
+handoff](../artifacts/catalog-demos/retail-store-quality-promotion-20261105/README.md)
+contains before/after views, source-driven preset renders, local checks and an
+inspected MP4. The public asset-library page was checked before this branch's
+update; no deployed behavior is claimed.
 
 ## Beverage bottling line assets
 

@@ -201572,7 +201572,7 @@
       "id": "aisle-sign",
       "kit": "retail-store",
       "title": "Aisle sign",
-      "description": "Single aisle marker with a broad hanging panel, two ceiling rods and compact end caps. Knobs: overall scale and asset color.",
+      "description": "Single aisle marker with a broad hanging panel, two ceiling rods and compact end caps. Knobs: overall scale and aluminium, acrylic, vinyl color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -201592,7 +201592,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/aisle-sign.kcad.ts",
       "preview": "/assets/retail-store-aisle-sign.png",
-      "sourceSha256": "dec98d1f4202dc1acb3db3fbe4bb492a670f84aa4d0b7d32685a237131c640fc",
+      "sourceSha256": "40087ae6b0387cc31bb0c8b09dc4d02bf93e644284fc69a3c0b33b3d299fbf55",
       "triangleBudget": 1800,
       "params": [
         {
@@ -201605,13 +201605,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminium",
           "type": "color",
-          "default": "#dfaa40",
-          "label": "Asset color"
+          "default": "#77858b",
+          "label": "Aluminium color"
+        },
+        {
+          "name": "acrylic",
+          "type": "color",
+          "default": "#e6d6ab",
+          "label": "Acrylic color"
+        },
+        {
+          "name": "vinyl",
+          "type": "color",
+          "default": "#c65b3e",
+          "label": "Vinyl color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "aluminium": "#c4cdd0",
+          "acrylic": "#a1d1dc",
+          "vinyl": "#dce9dc"
+        },
+        "nightRestock": {
+          "aluminium": "#6b7a80",
+          "acrylic": "#486b80",
+          "vinyl": "#d2a536"
+        }
+      },
       "stats": {
         "triangles": 168,
         "sizeM": [
@@ -201624,17 +201647,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#dfaa40",
+          "name": "acrylic",
+          "color": "#e6d6ab",
           "parts": [
-            "sign-panel",
+            "sign-panel"
+          ],
+          "param": "acrylic"
+        },
+        {
+          "name": "vinyl",
+          "color": "#c65b3e",
+          "parts": [
             "top-border",
-            "bottom-border",
+            "bottom-border"
+          ],
+          "param": "vinyl"
+        },
+        {
+          "name": "aluminium",
+          "color": "#77858b",
+          "parts": [
             "rod-left",
             "rod-right",
             "cap"
           ],
-          "param": "color"
+          "param": "aluminium"
         }
       ]
     },
@@ -201642,7 +201679,7 @@
       "id": "assisted-checkout-till",
       "kit": "retail-store",
       "title": "Assisted checkout till",
-      "description": "Cashier station with a register housing, customer-facing display, receipt printer and till top. Knobs: overall scale and asset color.",
+      "description": "Cashier station with a register housing, customer-facing display, receipt printer and till top. Knobs: overall scale and abs plastic, glass, paper color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -201662,7 +201699,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/assisted-checkout-till.kcad.ts",
       "preview": "/assets/retail-store-assisted-checkout-till.png",
-      "sourceSha256": "1472745fd90772a52019fa7b9c3de4021229f73803b54bb5b262b56568ea2012",
+      "sourceSha256": "d1390cc951476e9834346175b6f401b88635013a3bdbd6f9ead593bf8edf44ba",
       "triangleBudget": 1800,
       "params": [
         {
@@ -201675,13 +201712,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "abs",
           "type": "color",
-          "default": "#596776",
-          "label": "Asset color"
+          "default": "#56656d",
+          "label": "ABS plastic color"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#8dc8d2",
+          "label": "Glass color"
+        },
+        {
+          "name": "paper",
+          "type": "color",
+          "default": "#f0e3c3",
+          "label": "Paper color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "abs": "#e5e9e9",
+          "glass": "#9ccfd6",
+          "paper": "#f0e5c9"
+        },
+        "nightRestock": {
+          "abs": "#364a55",
+          "glass": "#3e6677",
+          "paper": "#c9b27e"
+        }
+      },
       "stats": {
         "triangles": 104,
         "sizeM": [
@@ -201694,17 +201754,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#596776",
+          "name": "abs",
+          "color": "#56656d",
           "parts": [
             "register-base",
             "register-body",
             "keypad-deck",
-            "customer-display",
-            "display-screen",
+            "customer-display"
+          ],
+          "param": "abs"
+        },
+        {
+          "name": "glass",
+          "color": "#8dc8d2",
+          "parts": [
+            "display-screen"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "paper",
+          "color": "#f0e3c3",
+          "parts": [
             "receipt-roll"
           ],
-          "param": "color"
+          "param": "paper"
         }
       ]
     },
@@ -201712,7 +201786,7 @@
       "id": "bakery-display-case",
       "kit": "retail-store",
       "title": "Bakery display case",
-      "description": "Counter-height bakery case with lower cabinet, display plinth, glass-frame posts and canopy. Knobs: overall scale and asset color.",
+      "description": "Counter-height bakery case with lower cabinet, display plinth, glass-frame posts and canopy. Knobs: overall scale and laminate, tempered glass, stainless steel color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -201732,7 +201806,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/bakery-display-case.kcad.ts",
       "preview": "/assets/retail-store-bakery-display-case.png",
-      "sourceSha256": "75b2736694cbdbac5999bc6aec48d275ee27cb4b631d76e3c952a892520b091c",
+      "sourceSha256": "3ca4733584ba4deae5922cfa13f4dcd143a9d767f34f1c3ed62537d2af7e9451",
       "triangleBudget": 1800,
       "params": [
         {
@@ -201745,15 +201819,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "laminate",
           "type": "color",
-          "default": "#8b7158",
-          "label": "Asset color"
+          "default": "#876f58",
+          "label": "Laminate color"
+        },
+        {
+          "name": "temperedGlass",
+          "type": "color",
+          "default": "#9acfd4",
+          "label": "Tempered glass color"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#aeb8ba",
+          "label": "Stainless steel color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "laminate": "#d5c3a5",
+          "temperedGlass": "#a7d4d9",
+          "stainless": "#bfc8cb"
+        },
+        "nightRestock": {
+          "laminate": "#685744",
+          "temperedGlass": "#476d78",
+          "stainless": "#66747a"
+        }
+      },
       "stats": {
-        "triangles": 140,
+        "triangles": 164,
         "sizeM": [
           1.54,
           1.5,
@@ -201764,20 +201861,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8b7158",
+          "name": "laminate",
+          "color": "#876f58",
           "parts": [
             "cabinet",
-            "display-deck",
+            "display-deck"
+          ],
+          "param": "laminate"
+        },
+        {
+          "name": "temperedGlass",
+          "color": "#9acfd4",
+          "parts": [
             "canopy",
+            "glass-side-left",
+            "glass-side-right",
             "post--710--275",
             "post--710-275",
             "post-710--275",
-            "post-710-275",
+            "post-710-275"
+          ],
+          "param": "temperedGlass"
+        },
+        {
+          "name": "stainless",
+          "color": "#aeb8ba",
+          "parts": [
             "front-rail",
             "corner-trim"
           ],
-          "param": "color"
+          "param": "stainless"
         }
       ]
     },
@@ -201785,7 +201898,7 @@
       "id": "barcode-scanner",
       "kit": "retail-store",
       "title": "Barcode scanner",
-      "description": "Countertop barcode scanner with a sloped reading window, raised side housing and low base. Knobs: overall scale and asset color.",
+      "description": "Countertop barcode scanner with an angled reading head, glass windows and a low weighted base. Knobs: overall scale and abs plastic, glass, polycarbonate color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -201805,7 +201918,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/barcode-scanner.kcad.ts",
       "preview": "/assets/retail-store-barcode-scanner.png",
-      "sourceSha256": "f54c072b5c4fc0d44d4650e3d834e91dad443d4737c050833b9533e96cd9dd75",
+      "sourceSha256": "746d67ee75ec02e943e9c98f34c6356a765ce7f6a28eec3a80fd060426c808d6",
       "triangleBudget": 1800,
       "params": [
         {
@@ -201818,13 +201931,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "abs",
           "type": "color",
-          "default": "#3e4a51",
-          "label": "Asset color"
+          "default": "#38474e",
+          "label": "ABS plastic color"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#75c5d4",
+          "label": "Glass color"
+        },
+        {
+          "name": "polycarbonate",
+          "type": "color",
+          "default": "#e0a735",
+          "label": "Polycarbonate color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "abs": "#e5e9e9",
+          "glass": "#9ccfd6",
+          "polycarbonate": "#a2d1d7"
+        },
+        "nightRestock": {
+          "abs": "#364a55",
+          "glass": "#3e6677",
+          "polycarbonate": "#486b7b"
+        }
+      },
       "stats": {
         "triangles": 92,
         "sizeM": [
@@ -201837,16 +201973,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#3e4a51",
+          "name": "abs",
+          "color": "#38474e",
           "parts": [
             "base",
-            "scanner-head",
+            "scanner-head"
+          ],
+          "param": "abs"
+        },
+        {
+          "name": "glass",
+          "color": "#75c5d4",
+          "parts": [
             "front-window",
-            "side-window",
+            "side-window"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "polycarbonate",
+          "color": "#e0a735",
+          "parts": [
             "status-light"
           ],
-          "param": "color"
+          "param": "polycarbonate"
         }
       ]
     },
@@ -201854,7 +202004,7 @@
       "id": "bottle-return-kiosk",
       "kit": "retail-store",
       "title": "Bottle return kiosk",
-      "description": "Bottle return fixture with tapered-looking intake hood, bin body, status panel and service door. Knobs: overall scale and asset color.",
+      "description": "Bottle return fixture with tapered-looking intake hood, bin body, status panel and service door. Knobs: overall scale and powder-coated steel, stainless steel, polycarbonate color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -201874,7 +202024,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/bottle-return-kiosk.kcad.ts",
       "preview": "/assets/retail-store-bottle-return-kiosk.png",
-      "sourceSha256": "853c5896c35ce831fe7dd154fb5b789449b356950914a9d35e36305a8bcee695",
+      "sourceSha256": "6d2e4321c6551425b75e1cd87939e45909c2086cf3720a10e5aee6e7a6028664",
       "triangleBudget": 1800,
       "params": [
         {
@@ -201887,13 +202037,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#5a786b",
-          "label": "Asset color"
+          "default": "#4e665d",
+          "label": "Powder-coated steel color"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#aab4b5",
+          "label": "Stainless steel color"
+        },
+        {
+          "name": "polycarbonate",
+          "type": "color",
+          "default": "#8bc9b0",
+          "label": "Polycarbonate color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "powderCoat": "#e5ebed",
+          "stainless": "#bfc8cb",
+          "polycarbonate": "#a2d1d7"
+        },
+        "nightRestock": {
+          "powderCoat": "#354750",
+          "stainless": "#66747a",
+          "polycarbonate": "#486b7b"
+        }
+      },
       "stats": {
         "triangles": 104,
         "sizeM": [
@@ -201906,17 +202079,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#5a786b",
+          "name": "powderCoat",
+          "color": "#4e665d",
           "parts": [
             "bin",
+            "opening"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "polycarbonate",
+          "color": "#8bc9b0",
+          "parts": [
             "intake-hood",
-            "opening",
             "control-panel",
-            "service-door",
             "status-light"
           ],
-          "param": "color"
+          "param": "polycarbonate"
+        },
+        {
+          "name": "stainless",
+          "color": "#aab4b5",
+          "parts": [
+            "service-door"
+          ],
+          "param": "stainless"
         }
       ]
     },
@@ -201924,7 +202111,7 @@
       "id": "bulk-food-bin",
       "kit": "retail-store",
       "title": "Bulk goods bin",
-      "description": "Open-top bulk dispenser with tapered-look stand, front scoop tray and a shallow lid lip. Knobs: overall scale and asset color.",
+      "description": "Open-top bulk dispenser with tapered-look stand, front scoop tray and a shallow lid lip. Knobs: overall scale and timber, acrylic, stainless steel color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -201944,7 +202131,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/bulk-food-bin.kcad.ts",
       "preview": "/assets/retail-store-bulk-food-bin.png",
-      "sourceSha256": "1c11afa284032dd024e15428e7c3a8b1eadc5b8ebbd5a207bae12dacbf079e31",
+      "sourceSha256": "53541d373363a0170a2e942c65e1b2154368cb9ee9955e4f7ed9faf202d9098b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -201957,13 +202144,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#7f705a",
-          "label": "Asset color"
+          "default": "#877355",
+          "label": "Timber color"
+        },
+        {
+          "name": "acrylic",
+          "type": "color",
+          "default": "#b5d4ce",
+          "label": "Acrylic color"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#a9b1b2",
+          "label": "Stainless steel color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "timber": "#b9915c",
+          "acrylic": "#a1d1dc",
+          "stainless": "#bfc8cb"
+        },
+        "nightRestock": {
+          "timber": "#6e5133",
+          "acrylic": "#486b80",
+          "stainless": "#66747a"
+        }
+      },
       "stats": {
         "triangles": 104,
         "sizeM": [
@@ -201976,17 +202186,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7f705a",
+          "name": "timber",
+          "color": "#877355",
           "parts": [
-            "base",
-            "hopper",
+            "base"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "acrylic",
+          "color": "#b5d4ce",
+          "parts": [
+            "hopper"
+          ],
+          "param": "acrylic"
+        },
+        {
+          "name": "stainless",
+          "color": "#a9b1b2",
+          "parts": [
             "top-rim",
             "scoop-tray",
             "scoop-lip",
             "dispense-knob"
           ],
-          "param": "color"
+          "param": "stainless"
         }
       ]
     },
@@ -201994,7 +202218,7 @@
       "id": "cash-drawer",
       "kit": "retail-store",
       "title": "Cash drawer",
-      "description": "Retail till drawer with broad faceplate, recessed pull and compact lock cylinder. Knobs: overall scale and asset color.",
+      "description": "Retail till drawer with broad faceplate, recessed pull and compact lock cylinder. Knobs: overall scale and stainless steel, abs plastic, brass color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -202014,7 +202238,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/cash-drawer.kcad.ts",
       "preview": "/assets/retail-store-cash-drawer.png",
-      "sourceSha256": "78faa4419742004f0885c843bb8883a128ad2a1339f55b66a5b2de12ccd56050",
+      "sourceSha256": "1f21255f1d1adbc6a6bc42b1dde94ddd56bc795878da4b29ec613c78a0d37990",
       "triangleBudget": 1800,
       "params": [
         {
@@ -202027,13 +202251,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainless",
           "type": "color",
-          "default": "#60676c",
-          "label": "Asset color"
+          "default": "#69767c",
+          "label": "Stainless steel color"
+        },
+        {
+          "name": "abs",
+          "type": "color",
+          "default": "#373f44",
+          "label": "ABS plastic color"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#c19740",
+          "label": "Brass color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "stainless": "#bfc8cb",
+          "abs": "#e5e9e9",
+          "brass": "#c29a4c"
+        },
+        "nightRestock": {
+          "stainless": "#66747a",
+          "abs": "#364a55",
+          "brass": "#8f682c"
+        }
+      },
       "stats": {
         "triangles": 80,
         "sizeM": [
@@ -202046,15 +202293,29 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#60676c",
+          "name": "stainless",
+          "color": "#69767c",
           "parts": [
             "drawer-box",
-            "faceplate",
-            "pull",
+            "faceplate"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "abs",
+          "color": "#373f44",
+          "parts": [
+            "pull"
+          ],
+          "param": "abs"
+        },
+        {
+          "name": "brass",
+          "color": "#c19740",
+          "parts": [
             "lock"
           ],
-          "param": "color"
+          "param": "brass"
         }
       ]
     },
@@ -202062,7 +202323,7 @@
       "id": "checkout-bagging-stand",
       "kit": "retail-store",
       "title": "Bagging stand",
-      "description": "Freestanding bagging station with broad work surface, four legs and lower storage brace. Knobs: overall scale and asset color.",
+      "description": "Freestanding bagging station with broad work surface, four legs and lower storage brace. Knobs: overall scale and stainless steel, laminate, polypropylene color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -202082,7 +202343,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/checkout-bagging-stand.kcad.ts",
       "preview": "/assets/retail-store-checkout-bagging-stand.png",
-      "sourceSha256": "5ac87e34f6101614e62f7efa259ac983f5cbd65422cb0f45742278ce34fdca18",
+      "sourceSha256": "7b2db0488ff4bb5eabe90d469a34a2f7edc92c15f5223cc43af65103f3861290",
       "triangleBudget": 1800,
       "params": [
         {
@@ -202095,13 +202356,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainless",
           "type": "color",
-          "default": "#806a50",
-          "label": "Asset color"
+          "default": "#879397",
+          "label": "Stainless steel color"
+        },
+        {
+          "name": "laminate",
+          "type": "color",
+          "default": "#b99b70",
+          "label": "Laminate color"
+        },
+        {
+          "name": "polypropylene",
+          "type": "color",
+          "default": "#4e6861",
+          "label": "Polypropylene color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "stainless": "#bfc8cb",
+          "laminate": "#d5c3a5",
+          "polypropylene": "#d6e0d5"
+        },
+        "nightRestock": {
+          "stainless": "#66747a",
+          "laminate": "#685744",
+          "polypropylene": "#45614e"
+        }
+      },
       "stats": {
         "triangles": 116,
         "sizeM": [
@@ -202114,18 +202398,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#806a50",
+          "name": "laminate",
+          "color": "#b99b70",
           "parts": [
-            "top",
+            "top"
+          ],
+          "param": "laminate"
+        },
+        {
+          "name": "stainless",
+          "color": "#879397",
+          "parts": [
             "lower-brace",
             "leg--370--245",
             "leg--370-245",
             "leg-370--245",
-            "leg-370-245",
+            "leg-370-245"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "polypropylene",
+          "color": "#4e6861",
+          "parts": [
             "bag-holder"
           ],
-          "param": "color"
+          "param": "polypropylene"
         }
       ]
     },
@@ -202133,7 +202431,7 @@
       "id": "checkout-conveyor",
       "kit": "retail-store",
       "title": "Checkout conveyor lane",
-      "description": "Short checkout belt with side rails, cashier end, scanner deck and a bagging platform. Knobs: overall scale and asset color.",
+      "description": "Short checkout belt with side rails, cashier end, scanner deck and a bagging platform. Knobs: overall scale and powder-coated steel, rubber, glass color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -202153,7 +202451,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/checkout-conveyor.kcad.ts",
       "preview": "/assets/retail-store-checkout-conveyor.png",
-      "sourceSha256": "8ecb91dc397440854d0cd9ac5ed1f8e992dfd2b863b48d1fd09128b12af9734a",
+      "sourceSha256": "313e6bf74f5d1408f273bc1280b553b3b481832b0cf904a01232bbcb1497d5c8",
       "triangleBudget": 1800,
       "params": [
         {
@@ -202166,13 +202464,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#46545e",
-          "label": "Asset color"
+          "default": "#46545d",
+          "label": "Powder-coated steel color"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#252a2d",
+          "label": "Rubber color"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#72b8c5",
+          "label": "Glass color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "powderCoat": "#e5ebed",
+          "rubber": "#40474b",
+          "glass": "#9ccfd6"
+        },
+        "nightRestock": {
+          "powderCoat": "#354750",
+          "rubber": "#262b2e",
+          "glass": "#3e6677"
+        }
+      },
       "stats": {
         "triangles": 116,
         "sizeM": [
@@ -202185,18 +202506,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#46545e",
+          "name": "rubber",
+          "color": "#252a2d",
           "parts": [
             "belt-base",
-            "belt-surface",
+            "belt-surface"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#46545d",
+          "parts": [
             "rail-left",
             "rail-right",
             "cashier-end",
-            "bagging-deck",
+            "bagging-deck"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "glass",
+          "color": "#72b8c5",
+          "parts": [
             "scanner"
           ],
-          "param": "color"
+          "param": "glass"
         }
       ]
     },
@@ -202204,7 +202539,7 @@
       "id": "checkout-counter",
       "kit": "retail-store",
       "title": "Checkout counter",
-      "description": "Retail checkout counter with customer ledge, cashier worktop, front kick panel and bagging return. Knobs: overall scale and asset color.",
+      "description": "Retail checkout counter with customer ledge, cashier worktop, front kick panel and bagging return. Knobs: overall scale and powder-coated steel, laminate, glass color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -202224,7 +202559,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/checkout-counter.kcad.ts",
       "preview": "/assets/retail-store-checkout-counter.png",
-      "sourceSha256": "9fc30efc604e5659e038e9febd50fbf7f42b7d091785be175b1413a5e8ad0475",
+      "sourceSha256": "5238a02dc519409846e8845cace021bc20177df2901566a88a2e8cefa80c794a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -202237,36 +202572,80 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#53697a",
-          "label": "Asset color"
+          "default": "#4c616d",
+          "label": "Powder-coated steel color"
+        },
+        {
+          "name": "laminate",
+          "type": "color",
+          "default": "#c1a77e",
+          "label": "Laminate color"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#83c8d2",
+          "label": "Glass color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "powderCoat": "#e5ebed",
+          "laminate": "#d5c3a5",
+          "glass": "#9ccfd6"
+        },
+        "nightRestock": {
+          "powderCoat": "#354750",
+          "laminate": "#685744",
+          "glass": "#3e6677"
+        }
+      },
       "stats": {
-        "triangles": 104,
+        "triangles": 188,
         "sizeM": [
           2.11,
-          0.548,
-          0.843
+          0.81,
+          0.845
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#53697a",
+          "name": "powderCoat",
+          "color": "#4c616d",
           "parts": [
             "base",
+            "fascia-end-left",
+            "fascia-end-right",
+            "toe-kick",
+            "cashier-display-post",
+            "cashier-display",
+            "cash-drawer"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "laminate",
+          "color": "#c1a77e",
+          "parts": [
             "customer-ledge",
             "worktop",
             "bagging-return",
-            "scanner-window",
-            "front-panel"
+            "front-fascia"
           ],
-          "param": "color"
+          "param": "laminate"
+        },
+        {
+          "name": "glass",
+          "color": "#83c8d2",
+          "parts": [
+            "scanner-window",
+            "cashier-screen"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -202274,7 +202653,7 @@
       "id": "checkout-divider",
       "kit": "retail-store",
       "title": "Checkout divider",
-      "description": "Low polygon checkout divider with long body, raised grip fin and beveled-looking end blocks. Knobs: overall scale and asset color.",
+      "description": "Low polygon checkout divider with long body, raised grip fin and beveled-looking end blocks. Knobs: overall scale and polypropylene, rubber, abs plastic color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -202294,7 +202673,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/checkout-divider.kcad.ts",
       "preview": "/assets/retail-store-checkout-divider.png",
-      "sourceSha256": "f5650fb5b853a5502256e073747d79d01e71d8b198f866c860d6590bc7ff04a0",
+      "sourceSha256": "cef6a5c6840f74d3b8776a1b3d0143f786351b6bc50395909064d87b22851bd5",
       "triangleBudget": 1800,
       "params": [
         {
@@ -202307,13 +202686,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polypropylene",
           "type": "color",
-          "default": "#df973e",
-          "label": "Asset color"
+          "default": "#df8f38",
+          "label": "Polypropylene color"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#41484d",
+          "label": "Rubber color"
+        },
+        {
+          "name": "abs",
+          "type": "color",
+          "default": "#f0b747",
+          "label": "ABS plastic color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "polypropylene": "#d6e0d5",
+          "rubber": "#40474b",
+          "abs": "#e5e9e9"
+        },
+        "nightRestock": {
+          "polypropylene": "#45614e",
+          "rubber": "#262b2e",
+          "abs": "#364a55"
+        }
+      },
       "stats": {
         "triangles": 92,
         "sizeM": [
@@ -202326,16 +202728,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#df973e",
+          "name": "polypropylene",
+          "color": "#df8f38",
           "parts": [
-            "body",
+            "body"
+          ],
+          "param": "polypropylene"
+        },
+        {
+          "name": "rubber",
+          "color": "#41484d",
+          "parts": [
             "grip-fin",
             "end-left",
-            "end-right",
+            "end-right"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "abs",
+          "color": "#f0b747",
+          "parts": [
             "top-button"
           ],
-          "param": "color"
+          "param": "abs"
         }
       ]
     },
@@ -202343,7 +202759,7 @@
       "id": "chest-freezer",
       "kit": "retail-store",
       "title": "Chest freezer",
-      "description": "Lidded chest freezer with raised sliding cover rails, insulated tub and recessed foot plinth. Knobs: overall scale and asset color.",
+      "description": "Lidded chest freezer with raised sliding cover rails, insulated tub and recessed foot plinth. Knobs: overall scale and powder-coated steel, stainless steel, abs plastic color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -202363,7 +202779,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/chest-freezer.kcad.ts",
       "preview": "/assets/retail-store-chest-freezer.png",
-      "sourceSha256": "c5f010c67118a86b9b15a74496fd1ab166a5451368416c472e11d587d167cb2c",
+      "sourceSha256": "075739c835356312229ed12d8280aaf96f1499d146a2325e389af0207f588d9e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -202376,13 +202792,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#cad2d2",
-          "label": "Asset color"
+          "default": "#cbd5d5",
+          "label": "Powder-coated steel color"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#8b999d",
+          "label": "Stainless steel color"
+        },
+        {
+          "name": "abs",
+          "type": "color",
+          "default": "#4d6975",
+          "label": "ABS plastic color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "powderCoat": "#e5ebed",
+          "stainless": "#bfc8cb",
+          "abs": "#e5e9e9"
+        },
+        "nightRestock": {
+          "powderCoat": "#354750",
+          "stainless": "#66747a",
+          "abs": "#364a55"
+        }
+      },
       "stats": {
         "triangles": 104,
         "sizeM": [
@@ -202395,17 +202834,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#cad2d2",
+          "name": "powderCoat",
+          "color": "#cbd5d5",
           "parts": [
             "plinth",
-            "tub",
+            "tub"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainless",
+          "color": "#8b999d",
+          "parts": [
             "lid-left",
             "lid-right",
-            "handle",
+            "handle"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "abs",
+          "color": "#4d6975",
+          "parts": [
             "thermostat"
           ],
-          "param": "color"
+          "param": "abs"
         }
       ]
     },
@@ -202413,7 +202866,7 @@
       "id": "clothing-rail",
       "kit": "retail-store",
       "title": "Clothing rail",
-      "description": "Retail garment rail with straight hanging bar, four corner posts and stabilizing feet. Knobs: overall scale and asset color.",
+      "description": "Retail garment rail with straight hanging bar, four corner posts and stabilizing feet. Knobs: overall scale and stainless steel, rubber, abs plastic color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -202433,7 +202886,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/clothing-rail.kcad.ts",
       "preview": "/assets/retail-store-clothing-rail.png",
-      "sourceSha256": "778cadcaf44a6a9501f2c188bdda8e8689f800e7eedfd02cb10c1690ade80d99",
+      "sourceSha256": "6e061e716156febfe606c0e10e7c5db784c615ee2470d11be66a97a3ed8d6eb6",
       "triangleBudget": 1800,
       "params": [
         {
@@ -202446,13 +202899,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainless",
           "type": "color",
-          "default": "#5c6264",
-          "label": "Asset color"
+          "default": "#727f84",
+          "label": "Stainless steel color"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#363c40",
+          "label": "Rubber color"
+        },
+        {
+          "name": "abs",
+          "type": "color",
+          "default": "#d8dedf",
+          "label": "ABS plastic color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "stainless": "#bfc8cb",
+          "rubber": "#40474b",
+          "abs": "#e5e9e9"
+        },
+        "nightRestock": {
+          "stainless": "#66747a",
+          "rubber": "#262b2e",
+          "abs": "#364a55"
+        }
+      },
       "stats": {
         "triangles": 128,
         "sizeM": [
@@ -202465,19 +202941,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#5c6264",
+          "name": "stainless",
+          "color": "#727f84",
           "parts": [
             "top-rail",
             "post--700--205",
             "post--700-205",
             "post-700--205",
-            "post-700-205",
+            "post-700-205"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "rubber",
+          "color": "#363c40",
+          "parts": [
             "foot--700",
-            "foot-700",
+            "foot-700"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "abs",
+          "color": "#d8dedf",
+          "parts": [
             "end-cap"
           ],
-          "param": "color"
+          "param": "abs"
         }
       ]
     },
@@ -202485,7 +202975,7 @@
       "id": "customer-service-desk",
       "kit": "retail-store",
       "title": "Customer service desk",
-      "description": "Store service counter with lowered accessible return ledge, raised worktop and back display panel. Knobs: overall scale and asset color.",
+      "description": "Store service counter with lowered accessible return ledge, raised worktop and back display panel. Knobs: overall scale and laminate, powder-coated steel, glass, polycarbonate color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -202505,7 +202995,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/customer-service-desk.kcad.ts",
       "preview": "/assets/retail-store-customer-service-desk.png",
-      "sourceSha256": "fc023da7f0be65bf3b6db5349fe7c25399818393ae286b236101c26fd31bb3d3",
+      "sourceSha256": "f20eb68e5c399b11859ecca0c1d4cad03afd0629ed7f7e0d87f0b2fc5745048b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -202518,13 +203008,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "laminate",
           "type": "color",
-          "default": "#81705d",
-          "label": "Asset color"
+          "default": "#87745d",
+          "label": "Laminate color"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#59666d",
+          "label": "Powder-coated steel color"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#86c6d0",
+          "label": "Glass color"
+        },
+        {
+          "name": "polycarbonate",
+          "type": "color",
+          "default": "#dd9c37",
+          "label": "Polycarbonate color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "laminate": "#d5c3a5",
+          "powderCoat": "#e5ebed",
+          "glass": "#9ccfd6",
+          "polycarbonate": "#a2d1d7"
+        },
+        "nightRestock": {
+          "laminate": "#685744",
+          "powderCoat": "#354750",
+          "glass": "#3e6677",
+          "polycarbonate": "#486b7b"
+        }
+      },
       "stats": {
         "triangles": 104,
         "sizeM": [
@@ -202537,17 +203058,38 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#81705d",
+          "name": "laminate",
+          "color": "#87745d",
           "parts": [
             "main-counter",
             "customer-ledge",
-            "accessible-return",
-            "back-display",
-            "screen",
+            "accessible-return"
+          ],
+          "param": "laminate"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#59666d",
+          "parts": [
+            "back-display"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "glass",
+          "color": "#86c6d0",
+          "parts": [
+            "screen"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "polycarbonate",
+          "color": "#dd9c37",
+          "parts": [
             "call-button"
           ],
-          "param": "color"
+          "param": "polycarbonate"
         }
       ]
     },
@@ -202555,7 +203097,7 @@
       "id": "deli-service-case",
       "kit": "retail-store",
       "title": "Deli service case",
-      "description": "Customer-facing deli counter with raised display deck, sneeze-guard frame and base cabinet. Knobs: overall scale and asset color.",
+      "description": "Customer-facing deli counter with raised display deck, sneeze-guard frame and base cabinet. Knobs: overall scale and stainless steel, tempered glass, laminate color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -202575,7 +203117,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/deli-service-case.kcad.ts",
       "preview": "/assets/retail-store-deli-service-case.png",
-      "sourceSha256": "ced7c78163ddc2e4f99aa47460e5ce934d776c196e6f62df00af4e2ee26e7d6f",
+      "sourceSha256": "f17e7142d09890658d704f77166c6f509bf93d3d72fcf2707eacf2e484114090",
       "triangleBudget": 1800,
       "params": [
         {
@@ -202588,15 +203130,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainless",
           "type": "color",
-          "default": "#858074",
-          "label": "Asset color"
+          "default": "#9ba6a8",
+          "label": "Stainless steel color"
+        },
+        {
+          "name": "temperedGlass",
+          "type": "color",
+          "default": "#9ed0d4",
+          "label": "Tempered glass color"
+        },
+        {
+          "name": "laminate",
+          "type": "color",
+          "default": "#b18c5e",
+          "label": "Laminate color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "stainless": "#bfc8cb",
+          "temperedGlass": "#a7d4d9",
+          "laminate": "#d5c3a5"
+        },
+        "nightRestock": {
+          "stainless": "#66747a",
+          "temperedGlass": "#476d78",
+          "laminate": "#685744"
+        }
+      },
       "stats": {
-        "triangles": 128,
+        "triangles": 152,
         "sizeM": [
           1.76,
           1.59,
@@ -202607,19 +203172,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#858074",
+          "name": "stainless",
+          "color": "#9ba6a8",
           "parts": [
             "base",
-            "display-deck",
-            "canopy",
-            "glass-post--800",
-            "glass-post-0",
-            "glass-post-800",
             "customer-rail",
             "scale-platform"
           ],
-          "param": "color"
+          "param": "stainless"
+        },
+        {
+          "name": "laminate",
+          "color": "#b18c5e",
+          "parts": [
+            "display-deck"
+          ],
+          "param": "laminate"
+        },
+        {
+          "name": "temperedGlass",
+          "color": "#9ed0d4",
+          "parts": [
+            "canopy",
+            "glass-side-left",
+            "glass-side-right",
+            "glass-post--800",
+            "glass-post-0",
+            "glass-post-800"
+          ],
+          "param": "temperedGlass"
         }
       ]
     },
@@ -202627,7 +203208,7 @@
       "id": "entry-security-gate",
       "kit": "retail-store",
       "title": "Entry security gate",
-      "description": "One retail entrance security pedestal with sensing tower, status light and floor anchor plate. Knobs: overall scale and asset color.",
+      "description": "One retail entrance security pedestal with sensing tower, status light and floor anchor plate. Knobs: overall scale and powder-coated steel, glass, polycarbonate color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -202647,7 +203228,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/entry-security-gate.kcad.ts",
       "preview": "/assets/retail-store-entry-security-gate.png",
-      "sourceSha256": "fcdffed7725a9792dd577513c1347819fbd87850484808af89cf4bffbce65715",
+      "sourceSha256": "ae629a8ecc8a919e7e5c3158966020544afe501eed6a6ff7c112b87d779fc100",
       "triangleBudget": 1800,
       "params": [
         {
@@ -202660,13 +203241,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#59646a",
-          "label": "Asset color"
+          "default": "#555f64",
+          "label": "Powder-coated steel color"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#83c8d1",
+          "label": "Glass color"
+        },
+        {
+          "name": "polycarbonate",
+          "type": "color",
+          "default": "#e3ad2b",
+          "label": "Polycarbonate color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "powderCoat": "#e5ebed",
+          "glass": "#9ccfd6",
+          "polycarbonate": "#a2d1d7"
+        },
+        "nightRestock": {
+          "powderCoat": "#354750",
+          "glass": "#3e6677",
+          "polycarbonate": "#486b7b"
+        }
+      },
       "stats": {
         "triangles": 128,
         "sizeM": [
@@ -202679,19 +203283,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#59646a",
+          "name": "powderCoat",
+          "color": "#555f64",
           "parts": [
             "base",
             "pedestal",
-            "sensor-face",
-            "status-light",
             "anchor--130--90",
             "anchor--130-90",
             "anchor-130--90",
             "anchor-130-90"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "glass",
+          "color": "#83c8d1",
+          "parts": [
+            "sensor-face"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "polycarbonate",
+          "color": "#e3ad2b",
+          "parts": [
+            "status-light"
+          ],
+          "param": "polycarbonate"
         }
       ]
     },
@@ -202699,7 +203317,7 @@
       "id": "flatbed-stock-trolley",
       "kit": "retail-store",
       "title": "Flatbed stock trolley",
-      "description": "Warehouse-style retail flatbed trolley with deck, raised end handle and four swivel wheels. Knobs: overall scale and asset color.",
+      "description": "Warehouse-style retail flatbed trolley with deck, raised end handle and four swivel wheels. Knobs: overall scale and powder-coated steel, stainless steel, rubber color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -202719,7 +203337,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/flatbed-stock-trolley.kcad.ts",
       "preview": "/assets/retail-store-flatbed-stock-trolley.png",
-      "sourceSha256": "d17853a8cfb1a002f73dc0c93dd47bc23e40ffbf09bcbcb0450adb2f392588bb",
+      "sourceSha256": "c7753848d8f8a95015cb5267a12df51cecc2561742beb2178cae61f9788e655a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -202732,13 +203350,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#59666b",
-          "label": "Asset color"
+          "default": "#4e5e66",
+          "label": "Powder-coated steel color"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#a9b3b5",
+          "label": "Stainless steel color"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292e31",
+          "label": "Rubber color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "powderCoat": "#e5ebed",
+          "stainless": "#bfc8cb",
+          "rubber": "#40474b"
+        },
+        "nightRestock": {
+          "powderCoat": "#354750",
+          "stainless": "#66747a",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
         "triangles": 448,
         "sizeM": [
@@ -202751,27 +203392,41 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#59666b",
+          "name": "stainless",
+          "color": "#a9b3b5",
           "parts": [
             "deck",
-            "handle-upright",
-            "handle-grip",
             "toe-plate",
+            "caster-mount--440--260",
+            "caster-mount--440-260",
+            "caster-mount-440--260",
+            "caster-mount-440-260"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#4e5e66",
+          "parts": [
+            "handle-upright"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "rubber",
+          "color": "#292e31",
+          "parts": [
+            "handle-grip",
             "caster--440--260",
             "caster--440-260",
             "caster-440--260",
             "caster-440-260",
-            "caster-mount--440--260",
-            "caster-mount--440-260",
-            "caster-mount-440--260",
-            "caster-mount-440-260",
             "corner-bumper--480--280",
             "corner-bumper--480-280",
             "corner-bumper-480--280",
             "corner-bumper-480-280"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -202779,7 +203434,7 @@
       "id": "floor-display-stand",
       "kit": "retail-store",
       "title": "Floor display stand",
-      "description": "Compact promotional floor stand with tiered shelves, side cheeks and broad header panel. Knobs: overall scale and asset color.",
+      "description": "Compact promotional floor stand with tiered shelves, side cheeks and broad header panel. Knobs: overall scale and plywood, stainless steel, paper color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -202799,7 +203454,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/floor-display-stand.kcad.ts",
       "preview": "/assets/retail-store-floor-display-stand.png",
-      "sourceSha256": "0efe42215e7d2c5d0a6368359245cef03eb8d2552a7ff8f5daa3274db56c40b9",
+      "sourceSha256": "23f5737ae7e57548bad780d2ce22469b82323c6a13b0bbedd2a7ad12664dfdb9",
       "triangleBudget": 1800,
       "params": [
         {
@@ -202812,13 +203467,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "plywood",
           "type": "color",
-          "default": "#b67942",
-          "label": "Asset color"
+          "default": "#97724d",
+          "label": "Plywood color"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#8d999c",
+          "label": "Stainless steel color"
+        },
+        {
+          "name": "paper",
+          "type": "color",
+          "default": "#f0e1bf",
+          "label": "Paper color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "plywood": "#c9ad7b",
+          "stainless": "#bfc8cb",
+          "paper": "#f0e5c9"
+        },
+        "nightRestock": {
+          "plywood": "#6d5839",
+          "stainless": "#66747a",
+          "paper": "#c9b27e"
+        }
+      },
       "stats": {
         "triangles": 128,
         "sizeM": [
@@ -202831,19 +203509,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b67942",
+          "name": "stainless",
+          "color": "#8d999c",
           "parts": [
             "foot",
+            "top-bolt"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "plywood",
+          "color": "#97724d",
+          "parts": [
             "back",
             "shelf-0",
             "shelf-1",
             "shelf-2",
-            "shelf-3",
-            "header",
-            "top-bolt"
+            "shelf-3"
           ],
-          "param": "color"
+          "param": "plywood"
+        },
+        {
+          "name": "paper",
+          "color": "#f0e1bf",
+          "parts": [
+            "header"
+          ],
+          "param": "paper"
         }
       ]
     },
@@ -202851,7 +203543,7 @@
       "id": "gondola-shelf",
       "kit": "retail-store",
       "title": "Gondola shelf",
-      "description": "Double-sided supermarket gondola with perforated-look back panel, six shelves and stabilizing feet. Knobs: overall scale and asset color.",
+      "description": "Double-sided supermarket gondola with perforated-look back panel, six shelves and stabilizing feet. Knobs: overall scale and powder-coated steel, stainless steel, polypropylene color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -202871,7 +203563,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/gondola-shelf.kcad.ts",
       "preview": "/assets/retail-store-gondola-shelf.png",
-      "sourceSha256": "168c7b0c4230caad2eede1826d2849935bedcdd888f0e89280685ce95c2f7e7c",
+      "sourceSha256": "c505e8622d156a021614c496753fe7b9d8838333734668f26f04c5c93af51603",
       "triangleBudget": 1800,
       "params": [
         {
@@ -202884,13 +203576,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#59707a",
-          "label": "Asset color"
+          "default": "#536971",
+          "label": "Powder-coated steel color"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#c0c9ca",
+          "label": "Stainless steel color"
+        },
+        {
+          "name": "polypropylene",
+          "type": "color",
+          "default": "#3d484b",
+          "label": "Polypropylene color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "powderCoat": "#e5ebed",
+          "stainless": "#bfc8cb",
+          "polypropylene": "#d6e0d5"
+        },
+        "nightRestock": {
+          "powderCoat": "#354750",
+          "stainless": "#66747a",
+          "polypropylene": "#45614e"
+        }
+      },
       "stats": {
         "triangles": 132,
         "sizeM": [
@@ -202903,22 +203618,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#59707a",
+          "name": "powderCoat",
+          "color": "#536971",
           "parts": [
             "back-panel",
-            "shelf-0",
-            "shelf-1",
-            "shelf-2",
-            "shelf-0",
-            "shelf-1",
-            "shelf-2",
             "upright--840",
-            "upright-840",
+            "upright-840"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainless",
+          "color": "#c0c9ca",
+          "parts": [
+            "shelf-0",
+            "shelf-1",
+            "shelf-2",
+            "shelf-0",
+            "shelf-1",
+            "shelf-2"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "polypropylene",
+          "color": "#3d484b",
+          "parts": [
             "foot--730",
             "foot-730"
           ],
-          "param": "color"
+          "param": "polypropylene"
         }
       ]
     },
@@ -202926,7 +203655,7 @@
       "id": "handbasket",
       "kit": "retail-store",
       "title": "Hand basket",
-      "description": "Compact hand basket with open-frame sides, reinforced rim and raised swing handle. Knobs: overall scale and asset color.",
+      "description": "Compact hand basket with open-frame sides, reinforced rim and raised swing handle. Knobs: overall scale and polypropylene, rubber, stainless steel color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -202946,7 +203675,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/handbasket.kcad.ts",
       "preview": "/assets/retail-store-handbasket.png",
-      "sourceSha256": "9fa2e79a816f22b3ab01134d57308975b70f95928aa28d88a90cc209b8a62d56",
+      "sourceSha256": "dc1d2d4d102b4aa56b408b2b9fb938887ed6fda84ae1ebd21454896aa98f3e4f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -202959,13 +203688,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polypropylene",
           "type": "color",
           "default": "#d18c42",
-          "label": "Asset color"
+          "label": "Polypropylene color"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#52463b",
+          "label": "Rubber color"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#8a969a",
+          "label": "Stainless steel color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "polypropylene": "#d6e0d5",
+          "rubber": "#40474b",
+          "stainless": "#bfc8cb"
+        },
+        "nightRestock": {
+          "polypropylene": "#45614e",
+          "rubber": "#262b2e",
+          "stainless": "#66747a"
+        }
+      },
       "stats": {
         "triangles": 248,
         "sizeM": [
@@ -202978,7 +203730,7 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "polypropylene",
           "color": "#d18c42",
           "parts": [
             "basket-base",
@@ -202996,11 +203748,25 @@
             "side-rib-y-3",
             "side-rib-y-4",
             "handle-side--220",
-            "handle-side-220",
-            "handle-grip",
+            "handle-side-220"
+          ],
+          "param": "polypropylene"
+        },
+        {
+          "name": "rubber",
+          "color": "#52463b",
+          "parts": [
+            "handle-grip"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "stainless",
+          "color": "#8a969a",
+          "parts": [
             "pivot-cap"
           ],
-          "param": "color"
+          "param": "stainless"
         }
       ]
     },
@@ -203008,7 +203774,7 @@
       "id": "hanging-wayfinding-sign",
       "kit": "retail-store",
       "title": "Hanging wayfinding sign",
-      "description": "Double-sided overhead store direction sign with a long panel and two ceiling suspension rods. Knobs: overall scale and asset color.",
+      "description": "Double-sided overhead store direction sign with a long panel and two ceiling suspension rods. Knobs: overall scale and aluminium, acrylic, vinyl color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -203028,7 +203794,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/hanging-wayfinding-sign.kcad.ts",
       "preview": "/assets/retail-store-hanging-wayfinding-sign.png",
-      "sourceSha256": "4522e8cb769b9b38c6c91c4e9756b9849e8ff75238f6afd8c9a94ac7e7ee79ad",
+      "sourceSha256": "dc45cda71229a43db0ae14879822a27cc6ab7bcf2966cbb2f4e71ebab0b4e771",
       "triangleBudget": 1800,
       "params": [
         {
@@ -203041,13 +203807,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminium",
           "type": "color",
-          "default": "#54707a",
-          "label": "Asset color"
+          "default": "#727f84",
+          "label": "Aluminium color"
+        },
+        {
+          "name": "acrylic",
+          "type": "color",
+          "default": "#e8e1c8",
+          "label": "Acrylic color"
+        },
+        {
+          "name": "vinyl",
+          "type": "color",
+          "default": "#397c99",
+          "label": "Vinyl color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "aluminium": "#c4cdd0",
+          "acrylic": "#a1d1dc",
+          "vinyl": "#dce9dc"
+        },
+        "nightRestock": {
+          "aluminium": "#6b7a80",
+          "acrylic": "#486b80",
+          "vinyl": "#d2a536"
+        }
+      },
       "stats": {
         "triangles": 124,
         "sizeM": [
@@ -203060,16 +203849,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#54707a",
+          "name": "acrylic",
+          "color": "#e8e1c8",
           "parts": [
-            "panel",
+            "panel"
+          ],
+          "param": "acrylic"
+        },
+        {
+          "name": "aluminium",
+          "color": "#727f84",
+          "parts": [
             "top-edge",
             "hanger-left",
-            "hanger-right",
+            "hanger-right"
+          ],
+          "param": "aluminium"
+        },
+        {
+          "name": "vinyl",
+          "color": "#397c99",
+          "parts": [
             "arrow-block"
           ],
-          "param": "color"
+          "param": "vinyl"
         }
       ]
     },
@@ -203077,7 +203880,7 @@
       "id": "impulse-merchandiser",
       "kit": "retail-store",
       "title": "Impulse merchandiser",
-      "description": "Narrow checkout-side impulse display with four shallow trays and a signboard mast. Knobs: overall scale and asset color.",
+      "description": "Narrow checkout-side impulse display with four shallow trays and a signboard mast. Knobs: overall scale and powder-coated steel, paper, aluminium color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -203097,7 +203900,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/impulse-merchandiser.kcad.ts",
       "preview": "/assets/retail-store-impulse-merchandiser.png",
-      "sourceSha256": "cbee4eccd6b8335f6ef39cd6a7358005d3b55192664f6fff39852fbf02c068e1",
+      "sourceSha256": "633a5b2ba459fc359f6d9ef605b58d2e379b85e4b7a19195d4fead29d06aa325",
       "triangleBudget": 1800,
       "params": [
         {
@@ -203110,13 +203913,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#bc7d3d",
-          "label": "Asset color"
+          "default": "#b87a3d",
+          "label": "Powder-coated steel color"
+        },
+        {
+          "name": "paper",
+          "type": "color",
+          "default": "#efe0bc",
+          "label": "Paper color"
+        },
+        {
+          "name": "aluminium",
+          "type": "color",
+          "default": "#aab5b6",
+          "label": "Aluminium color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "powderCoat": "#e5ebed",
+          "paper": "#f0e5c9",
+          "aluminium": "#c4cdd0"
+        },
+        "nightRestock": {
+          "powderCoat": "#354750",
+          "paper": "#c9b27e",
+          "aluminium": "#6b7a80"
+        }
+      },
       "stats": {
         "triangles": 128,
         "sizeM": [
@@ -203129,19 +203955,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#bc7d3d",
+          "name": "powderCoat",
+          "color": "#b87a3d",
           "parts": [
             "base",
             "backboard",
             "tray-0",
             "tray-1",
             "tray-2",
-            "tray-3",
-            "header",
+            "tray-3"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "paper",
+          "color": "#efe0bc",
+          "parts": [
+            "header"
+          ],
+          "param": "paper"
+        },
+        {
+          "name": "aluminium",
+          "color": "#aab5b6",
+          "parts": [
             "mast-cap"
           ],
-          "param": "color"
+          "param": "aluminium"
         }
       ]
     },
@@ -203149,7 +203989,7 @@
       "id": "magazine-rack",
       "kit": "retail-store",
       "title": "Magazine rack",
-      "description": "Angled multi-pocket magazine stand with four front lips, tall backboard and side supports. Knobs: overall scale and asset color.",
+      "description": "Angled multi-pocket magazine stand with four front lips, tall backboard and side supports. Knobs: overall scale and powder-coated steel, acrylic, rubber color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -203169,7 +204009,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/magazine-rack.kcad.ts",
       "preview": "/assets/retail-store-magazine-rack.png",
-      "sourceSha256": "c120704298406605fc619b4588471ef7580a2a57657bf1e44f34026844f3e6b0",
+      "sourceSha256": "6850ea1fedb68658333db02d6332e9b8e2c09e3087304e34160cec8ae13a72d7",
       "triangleBudget": 1800,
       "params": [
         {
@@ -203182,13 +204022,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#6c5e50",
-          "label": "Asset color"
+          "default": "#64594c",
+          "label": "Powder-coated steel color"
+        },
+        {
+          "name": "acrylic",
+          "type": "color",
+          "default": "#c0d0cf",
+          "label": "Acrylic color"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#373b3d",
+          "label": "Rubber color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "powderCoat": "#e5ebed",
+          "acrylic": "#a1d1dc",
+          "rubber": "#40474b"
+        },
+        "nightRestock": {
+          "powderCoat": "#354750",
+          "acrylic": "#486b80",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
         "triangles": 128,
         "sizeM": [
@@ -203201,19 +204064,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6c5e50",
+          "name": "powderCoat",
+          "color": "#64594c",
           "parts": [
             "backboard",
+            "side--350",
+            "side-350"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "acrylic",
+          "color": "#c0d0cf",
+          "parts": [
             "pocket-0",
             "pocket-1",
             "pocket-2",
-            "pocket-3",
-            "side--350",
-            "side-350",
+            "pocket-3"
+          ],
+          "param": "acrylic"
+        },
+        {
+          "name": "rubber",
+          "color": "#373b3d",
+          "parts": [
             "floor-foot"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -203221,7 +204098,7 @@
       "id": "pallet-display",
       "kit": "retail-store",
       "title": "Promotional pallet display",
-      "description": "Low promotional island with a pallet base, stacked riser blocks and a tall branded sign panel. Knobs: overall scale and asset color.",
+      "description": "Low promotional island with a pallet base, stacked riser blocks and a tall branded sign panel. Knobs: overall scale and timber, steel, vinyl color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -203241,7 +204118,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/pallet-display.kcad.ts",
       "preview": "/assets/retail-store-pallet-display.png",
-      "sourceSha256": "fa16e5db04c320a6aece7c2bf4d349826bb0318ee1d135a0cc1abccb04468722",
+      "sourceSha256": "796f11717659f4c7671cd423a115dd460ec41f8b01727c5d03f61e1a30b07277",
       "triangleBudget": 1800,
       "params": [
         {
@@ -203254,13 +204131,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#8c704c",
-          "label": "Asset color"
+          "default": "#94754e",
+          "label": "Timber color"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#66757a",
+          "label": "Steel color"
+        },
+        {
+          "name": "vinyl",
+          "type": "color",
+          "default": "#d9b64d",
+          "label": "Vinyl color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "timber": "#b9915c",
+          "steel": "#9ca8ab",
+          "vinyl": "#dce9dc"
+        },
+        "nightRestock": {
+          "timber": "#6e5133",
+          "steel": "#4a585d",
+          "vinyl": "#d2a536"
+        }
+      },
       "stats": {
         "triangles": 128,
         "sizeM": [
@@ -203273,19 +204173,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8c704c",
+          "name": "timber",
+          "color": "#94754e",
           "parts": [
             "pallet-deck",
             "runner--440",
             "runner-0",
             "runner-440",
-            "display-base",
+            "display-base"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "steel",
+          "color": "#66757a",
+          "parts": [
             "sign-mast",
-            "sign-panel",
             "mast-cap"
           ],
-          "param": "color"
+          "param": "steel"
+        },
+        {
+          "name": "vinyl",
+          "color": "#d9b64d",
+          "parts": [
+            "sign-panel"
+          ],
+          "param": "vinyl"
         }
       ]
     },
@@ -203293,7 +204207,7 @@
       "id": "parcel-locker-bank",
       "kit": "retail-store",
       "title": "Parcel locker bank",
-      "description": "Self-service parcel locker bank with mixed-size door bays, keypad column and top sign panel. Knobs: overall scale and asset color.",
+      "description": "Self-service parcel locker bank with mixed-size door bays, keypad column and top sign panel. Knobs: overall scale and powder-coated steel, brass, polycarbonate color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -203313,7 +204227,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/parcel-locker-bank.kcad.ts",
       "preview": "/assets/retail-store-parcel-locker-bank.png",
-      "sourceSha256": "50f056fc1b8ffdcf614aeaa9f675acd40d35d5a053e7b2898c15ffcb768b7e28",
+      "sourceSha256": "03fd38471aafbd1670535ccd94ed1ebdf28ab58626100a1a83c9a1ddf2f7ae81",
       "triangleBudget": 1800,
       "params": [
         {
@@ -203326,13 +204240,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#6e7d84",
-          "label": "Asset color"
+          "default": "#62737a",
+          "label": "Powder-coated steel color"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#c39b46",
+          "label": "Brass color"
+        },
+        {
+          "name": "polycarbonate",
+          "type": "color",
+          "default": "#81bdc7",
+          "label": "Polycarbonate color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "powderCoat": "#e5ebed",
+          "brass": "#c29a4c",
+          "polycarbonate": "#a2d1d7"
+        },
+        "nightRestock": {
+          "powderCoat": "#354750",
+          "brass": "#8f682c",
+          "polycarbonate": "#486b7b"
+        }
+      },
       "stats": {
         "triangles": 708,
         "sizeM": [
@@ -203345,10 +204282,18 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6e7d84",
+          "name": "powderCoat",
+          "color": "#62737a",
           "parts": [
             "back",
+            "header"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "brass",
+          "color": "#c39b46",
+          "parts": [
             "locker-0-0",
             "locker-0-1",
             "locker-0-2",
@@ -203361,8 +204306,6 @@
             "locker-2-1",
             "locker-2-2",
             "locker-2-3",
-            "keypad-panel",
-            "header",
             "lock-0-0",
             "lock-0-1",
             "lock-0-2",
@@ -203376,7 +204319,15 @@
             "lock-2-2",
             "lock-2-3"
           ],
-          "param": "color"
+          "param": "brass"
+        },
+        {
+          "name": "polycarbonate",
+          "color": "#81bdc7",
+          "parts": [
+            "keypad-panel"
+          ],
+          "param": "polycarbonate"
         }
       ]
     },
@@ -203384,7 +204335,7 @@
       "id": "payment-terminal",
       "kit": "retail-store",
       "title": "Payment terminal",
-      "description": "Handheld payment pin pad with angled display, keypad block, contactless area and stand. Knobs: overall scale and asset color.",
+      "description": "Handheld payment pin pad with angled display, keypad block, contactless area and stand. Knobs: overall scale and abs plastic, glass, rubber color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -203404,7 +204355,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/payment-terminal.kcad.ts",
       "preview": "/assets/retail-store-payment-terminal.png",
-      "sourceSha256": "ee2d9aed663e0b77ea0d6177b3784316693545af39d1327f98444fe7d0b07293",
+      "sourceSha256": "6762cc7ed65a2d37ea794636f5e6ad10ae2ba19bf909616f16ca920d2745fbb2",
       "triangleBudget": 1800,
       "params": [
         {
@@ -203417,18 +204368,41 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "abs",
           "type": "color",
-          "default": "#42515d",
-          "label": "Asset color"
+          "default": "#364751",
+          "label": "ABS plastic color"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#79c3ce",
+          "label": "Glass color"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#343638",
+          "label": "Rubber color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "abs": "#e5e9e9",
+          "glass": "#9ccfd6",
+          "rubber": "#40474b"
+        },
+        "nightRestock": {
+          "abs": "#364a55",
+          "glass": "#3e6677",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
         "triangles": 92,
         "sizeM": [
           0.21,
-          0.1925,
+          0.193038,
           0.19
         ],
         "minUpM": 0,
@@ -203436,16 +204410,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#42515d",
+          "name": "abs",
+          "color": "#364751",
           "parts": [
             "base",
-            "housing",
+            "housing"
+          ],
+          "param": "abs"
+        },
+        {
+          "name": "glass",
+          "color": "#79c3ce",
+          "parts": [
             "screen",
-            "keypad",
             "contactless-mark"
           ],
-          "param": "color"
+          "param": "glass"
+        },
+        {
+          "name": "rubber",
+          "color": "#343638",
+          "parts": [
+            "keypad"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -203453,7 +204441,7 @@
       "id": "price-check-scale",
       "kit": "retail-store",
       "title": "Price-check scale",
-      "description": "Countertop produce scale with broad platform, raised readout head and four-key control pad. Knobs: overall scale and asset color.",
+      "description": "Countertop produce scale with broad platform, raised readout head and four-key control pad. Knobs: overall scale and abs plastic, stainless steel, glass, polycarbonate color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -203473,7 +204461,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/price-check-scale.kcad.ts",
       "preview": "/assets/retail-store-price-check-scale.png",
-      "sourceSha256": "89cfe1858008c258abe3d79d5d1ae29afbeeb414776cbb081282cc6e40a38afb",
+      "sourceSha256": "132b240b8832f5ea8b54e743cc31d97411bf3baf3e0713dbdde37efff3afbc34",
       "triangleBudget": 1800,
       "params": [
         {
@@ -203486,13 +204474,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "abs",
           "type": "color",
-          "default": "#6f777b",
-          "label": "Asset color"
+          "default": "#5a6870",
+          "label": "ABS plastic color"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#b8c1c2",
+          "label": "Stainless steel color"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#75bdc9",
+          "label": "Glass color"
+        },
+        {
+          "name": "polycarbonate",
+          "type": "color",
+          "default": "#d59d32",
+          "label": "Polycarbonate color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "abs": "#e5e9e9",
+          "stainless": "#bfc8cb",
+          "glass": "#9ccfd6",
+          "polycarbonate": "#a2d1d7"
+        },
+        "nightRestock": {
+          "abs": "#364a55",
+          "stainless": "#66747a",
+          "glass": "#3e6677",
+          "polycarbonate": "#486b7b"
+        }
+      },
       "stats": {
         "triangles": 236,
         "sizeM": [
@@ -203505,20 +204524,41 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6f777b",
+          "name": "abs",
+          "color": "#5a6870",
           "parts": [
             "base",
-            "weigh-platform",
-            "post",
+            "post"
+          ],
+          "param": "abs"
+        },
+        {
+          "name": "stainless",
+          "color": "#b8c1c2",
+          "parts": [
+            "weigh-platform"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "polycarbonate",
+          "color": "#d59d32",
+          "parts": [
             "display",
-            "screen",
             "key-0",
             "key-1",
             "key-2",
             "key-3"
           ],
-          "param": "color"
+          "param": "polycarbonate"
+        },
+        {
+          "name": "glass",
+          "color": "#75bdc9",
+          "parts": [
+            "screen"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -203526,7 +204566,7 @@
       "id": "produce-crate-stack",
       "kit": "retail-store",
       "title": "Produce crate stack",
-      "description": "Stack of four ventilated produce crates with hand slots and reinforced corner posts. Knobs: overall scale and asset color.",
+      "description": "Stable two-by-two stack of four ventilated produce crates with open rail sides and corner clips. Knobs: overall scale and polypropylene, stainless steel, paper color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -203546,7 +204586,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/produce-crate-stack.kcad.ts",
       "preview": "/assets/retail-store-produce-crate-stack.png",
-      "sourceSha256": "9a0cacea1af7e4698bd1042a5a87b132d5077c55262c1fbbefe044168421dc4c",
+      "sourceSha256": "d0a783ade417ad597c26c8f52d723be8fdbe6f87a470827cd519e8c13c09d49e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -203559,39 +204599,143 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polypropylene",
           "type": "color",
-          "default": "#71945a",
-          "label": "Asset color"
+          "default": "#6d9453",
+          "label": "Polypropylene color"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#919da0",
+          "label": "Stainless steel color"
+        },
+        {
+          "name": "paper",
+          "type": "color",
+          "default": "#eee3c7",
+          "label": "Paper color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "polypropylene": "#d6e0d5",
+          "stainless": "#bfc8cb",
+          "paper": "#f0e5c9"
+        },
+        "nightRestock": {
+          "polypropylene": "#45614e",
+          "stainless": "#66747a",
+          "paper": "#c9b27e"
+        }
+      },
       "stats": {
-        "triangles": 140,
+        "triangles": 1040,
         "sizeM": [
-          1.26,
-          1.398,
-          1.059
+          1.226,
+          0.692,
+          0.514
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#71945a",
+          "name": "polypropylene",
+          "color": "#6d9453",
           "parts": [
-            "crate-0",
-            "crate-1",
-            "crate-2",
-            "crate-3",
-            "vent-0",
-            "vent-1",
-            "vent-2",
-            "vent-3",
-            "stack-pin"
+            "crate-lower-left-floor",
+            "crate-lower-left-corner--1--1",
+            "crate-lower-left-corner--1-1",
+            "crate-lower-left-corner-1--1",
+            "crate-lower-left-corner-1-1",
+            "crate-lower-left-front-rail-0",
+            "crate-lower-left-back-rail-0",
+            "crate-lower-left-left-rail-0",
+            "crate-lower-left-right-rail-0",
+            "crate-lower-left-front-rail-1",
+            "crate-lower-left-back-rail-1",
+            "crate-lower-left-left-rail-1",
+            "crate-lower-left-right-rail-1",
+            "crate-lower-left-front-rail-2",
+            "crate-lower-left-back-rail-2",
+            "crate-lower-left-left-rail-2",
+            "crate-lower-left-right-rail-2",
+            "crate-lower-right-floor",
+            "crate-lower-right-corner--1--1",
+            "crate-lower-right-corner--1-1",
+            "crate-lower-right-corner-1--1",
+            "crate-lower-right-corner-1-1",
+            "crate-lower-right-front-rail-0",
+            "crate-lower-right-back-rail-0",
+            "crate-lower-right-left-rail-0",
+            "crate-lower-right-right-rail-0",
+            "crate-lower-right-front-rail-1",
+            "crate-lower-right-back-rail-1",
+            "crate-lower-right-left-rail-1",
+            "crate-lower-right-right-rail-1",
+            "crate-lower-right-front-rail-2",
+            "crate-lower-right-back-rail-2",
+            "crate-lower-right-left-rail-2",
+            "crate-lower-right-right-rail-2",
+            "crate-upper-left-floor",
+            "crate-upper-left-corner--1--1",
+            "crate-upper-left-corner--1-1",
+            "crate-upper-left-corner-1--1",
+            "crate-upper-left-corner-1-1",
+            "crate-upper-left-front-rail-0",
+            "crate-upper-left-back-rail-0",
+            "crate-upper-left-left-rail-0",
+            "crate-upper-left-right-rail-0",
+            "crate-upper-left-front-rail-1",
+            "crate-upper-left-back-rail-1",
+            "crate-upper-left-left-rail-1",
+            "crate-upper-left-right-rail-1",
+            "crate-upper-left-front-rail-2",
+            "crate-upper-left-back-rail-2",
+            "crate-upper-left-left-rail-2",
+            "crate-upper-left-right-rail-2",
+            "crate-upper-right-floor",
+            "crate-upper-right-corner--1--1",
+            "crate-upper-right-corner--1-1",
+            "crate-upper-right-corner-1--1",
+            "crate-upper-right-corner-1-1",
+            "crate-upper-right-front-rail-0",
+            "crate-upper-right-back-rail-0",
+            "crate-upper-right-left-rail-0",
+            "crate-upper-right-right-rail-0",
+            "crate-upper-right-front-rail-1",
+            "crate-upper-right-back-rail-1",
+            "crate-upper-right-left-rail-1",
+            "crate-upper-right-right-rail-1",
+            "crate-upper-right-front-rail-2",
+            "crate-upper-right-back-rail-2",
+            "crate-upper-right-left-rail-2",
+            "crate-upper-right-right-rail-2"
           ],
-          "param": "color"
+          "param": "polypropylene"
+        },
+        {
+          "name": "paper",
+          "color": "#eee3c7",
+          "parts": [
+            "crate-lower-left-label",
+            "crate-lower-right-label",
+            "crate-upper-left-label",
+            "crate-upper-right-label"
+          ],
+          "param": "paper"
+        },
+        {
+          "name": "stainless",
+          "color": "#919da0",
+          "parts": [
+            "stack-clip-left-front",
+            "stack-clip-left-back",
+            "stack-clip-right-front",
+            "stack-clip-right-back"
+          ],
+          "param": "stainless"
         }
       ]
     },
@@ -203599,7 +204743,7 @@
       "id": "produce-display-table",
       "kit": "retail-store",
       "title": "Produce display table",
-      "description": "Tiered produce island with three broad sloped-look display decks and a stout lower frame. Knobs: overall scale and asset color.",
+      "description": "Tiered produce island with three broad sloped-look display decks and a stout lower frame. Knobs: overall scale and powder-coated steel, timber, stainless steel color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -203619,7 +204763,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/produce-display-table.kcad.ts",
       "preview": "/assets/retail-store-produce-display-table.png",
-      "sourceSha256": "4ad1b7abbd391a0cc180b11160e3d8db26fd69b250c23bf843de40bbf789201e",
+      "sourceSha256": "3e80e94347c2ca94d9b6815d9c5e14acf18bedf4a501ca37e301bd781acca9a1",
       "triangleBudget": 1800,
       "params": [
         {
@@ -203632,13 +204776,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#6c7954",
-          "label": "Asset color"
+          "default": "#57694d",
+          "label": "Powder-coated steel color"
+        },
+        {
+          "name": "timber",
+          "type": "color",
+          "default": "#b08a58",
+          "label": "Timber color"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#aeb8b8",
+          "label": "Stainless steel color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "powderCoat": "#e5ebed",
+          "timber": "#b9915c",
+          "stainless": "#bfc8cb"
+        },
+        "nightRestock": {
+          "powderCoat": "#354750",
+          "timber": "#6e5133",
+          "stainless": "#66747a"
+        }
+      },
       "stats": {
         "triangles": 140,
         "sizeM": [
@@ -203651,20 +204818,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6c7954",
+          "name": "timber",
+          "color": "#b08a58",
           "parts": [
             "lower-deck",
             "middle-deck",
-            "upper-deck",
-            "front-apron",
+            "upper-deck"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#57694d",
+          "parts": [
+            "front-apron"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainless",
+          "color": "#aeb8b8",
+          "parts": [
             "leg--820--350",
             "leg--820-350",
             "leg-820--350",
             "leg-820-350",
             "corner-cap"
           ],
-          "param": "color"
+          "param": "stainless"
         }
       ]
     },
@@ -203672,7 +204853,7 @@
       "id": "queue-barrier",
       "kit": "retail-store",
       "title": "Queue barrier",
-      "description": "Short retractable queue barrier with square weighted feet, posts and a taut cross strap. Knobs: overall scale and asset color.",
+      "description": "Short retractable queue barrier with square weighted feet, posts and a taut cross strap. Knobs: overall scale and stainless steel, fabric, rubber color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -203692,7 +204873,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/queue-barrier.kcad.ts",
       "preview": "/assets/retail-store-queue-barrier.png",
-      "sourceSha256": "092505a3152ed3c95113343afc20b2f9ae56c018993f93c1eef289fefe956a3a",
+      "sourceSha256": "a772e410e49760beedaabec505f1704ffb0068d31710bf2290b4821267bb0732",
       "triangleBudget": 1800,
       "params": [
         {
@@ -203705,13 +204886,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainless",
           "type": "color",
-          "default": "#55595d",
-          "label": "Asset color"
+          "default": "#78868a",
+          "label": "Stainless steel color"
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#bd4d43",
+          "label": "Fabric color"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#33393c",
+          "label": "Rubber color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "stainless": "#bfc8cb",
+          "fabric": "#be5548",
+          "rubber": "#40474b"
+        },
+        "nightRestock": {
+          "stainless": "#66747a",
+          "fabric": "#d5a833",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
         "triangles": 212,
         "sizeM": [
@@ -203724,18 +204928,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#55595d",
+          "name": "rubber",
+          "color": "#33393c",
           "parts": [
             "foot-left",
-            "foot-right",
+            "foot-right"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "stainless",
+          "color": "#78868a",
+          "parts": [
             "post-left",
             "post-right",
-            "strap",
             "cap-left",
             "cap-right"
           ],
-          "param": "color"
+          "param": "stainless"
+        },
+        {
+          "name": "fabric",
+          "color": "#bd4d43",
+          "parts": [
+            "strap"
+          ],
+          "param": "fabric"
         }
       ]
     },
@@ -203743,7 +204961,7 @@
       "id": "queue-stanchion",
       "kit": "retail-store",
       "title": "Queue stanchion",
-      "description": "Single retail queue post with a broad weighted base, slender pole and four-way strap cap. Knobs: overall scale and asset color.",
+      "description": "Single retail queue post with a broad weighted base, slender pole and four-way strap cap. Knobs: overall scale and stainless steel, polypropylene color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -203763,7 +204981,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/queue-stanchion.kcad.ts",
       "preview": "/assets/retail-store-queue-stanchion.png",
-      "sourceSha256": "8ea4e1446ee4f21cfe467d99fb4554f793854508634b40624033ff44828b0ac1",
+      "sourceSha256": "c1e35e990b8a1276512d435395d1a680b45fe1ff2e916752c395146716ab13e6",
       "triangleBudget": 1800,
       "params": [
         {
@@ -203776,13 +204994,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainless",
           "type": "color",
-          "default": "#5a5b58",
-          "label": "Asset color"
+          "default": "#727f83",
+          "label": "Stainless steel color"
+        },
+        {
+          "name": "polypropylene",
+          "type": "color",
+          "default": "#bf5949",
+          "label": "Polypropylene color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "stainless": "#bfc8cb",
+          "polypropylene": "#d6e0d5"
+        },
+        "nightRestock": {
+          "stainless": "#66747a",
+          "polypropylene": "#45614e"
+        }
+      },
       "stats": {
         "triangles": 144,
         "sizeM": [
@@ -203795,15 +205028,22 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#5a5b58",
+          "name": "stainless",
+          "color": "#727f83",
           "parts": [
             "base",
             "pole",
-            "top-cap",
+            "top-cap"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "polypropylene",
+          "color": "#bf5949",
+          "parts": [
             "strap-slot"
           ],
-          "param": "color"
+          "param": "polypropylene"
         }
       ]
     },
@@ -203811,7 +205051,7 @@
       "id": "receipt-printer",
       "kit": "retail-store",
       "title": "Receipt printer",
-      "description": "Small point-of-sale receipt printer with paper slot, lid seam and roll cover. Knobs: overall scale and asset color.",
+      "description": "Small point-of-sale receipt printer with paper slot, lid seam and roll cover. Knobs: overall scale and abs plastic, rubber, polycarbonate color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -203831,7 +205071,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/receipt-printer.kcad.ts",
       "preview": "/assets/retail-store-receipt-printer.png",
-      "sourceSha256": "5f85aa7a9433fd7fde20b56eae88aa484f808cbe7e890cecac1f31ee10f5ae17",
+      "sourceSha256": "735dd2f196586f47c1e092b41ce6479b0883e16ea415a4087523690771aaec4e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -203844,13 +205084,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "abs",
           "type": "color",
-          "default": "#596167",
-          "label": "Asset color"
+          "default": "#59636a",
+          "label": "ABS plastic color"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292d30",
+          "label": "Rubber color"
+        },
+        {
+          "name": "polycarbonate",
+          "type": "color",
+          "default": "#d6a53c",
+          "label": "Polycarbonate color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "abs": "#e5e9e9",
+          "rubber": "#40474b",
+          "polycarbonate": "#a2d1d7"
+        },
+        "nightRestock": {
+          "abs": "#364a55",
+          "rubber": "#262b2e",
+          "polycarbonate": "#486b7b"
+        }
+      },
       "stats": {
         "triangles": 80,
         "sizeM": [
@@ -203863,15 +205126,29 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#596167",
+          "name": "abs",
+          "color": "#59636a",
           "parts": [
             "base",
-            "cover",
-            "paper-slot",
+            "cover"
+          ],
+          "param": "abs"
+        },
+        {
+          "name": "rubber",
+          "color": "#292d30",
+          "parts": [
+            "paper-slot"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "polycarbonate",
+          "color": "#d6a53c",
+          "parts": [
             "status-button"
           ],
-          "param": "color"
+          "param": "polycarbonate"
         }
       ]
     },
@@ -203879,7 +205156,7 @@
       "id": "recycling-station",
       "kit": "retail-store",
       "title": "Retail recycling station",
-      "description": "Three-stream recycling station with separate openings, top dividers and a shared removable base. Knobs: overall scale and asset color.",
+      "description": "Three-stream recycling station with separate openings, top dividers and a shared removable base. Knobs: overall scale and polypropylene, stainless steel, polycarbonate color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -203899,7 +205176,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/recycling-station.kcad.ts",
       "preview": "/assets/retail-store-recycling-station.png",
-      "sourceSha256": "40ae8c0e9c7cc94800a536d8ff7731fa53992c9cc348208a19ae999ae76c0437",
+      "sourceSha256": "08fd8825c651d055e7b44d2dada2dcb850f21c6c40a91052460b22bd529d2091",
       "triangleBudget": 1800,
       "params": [
         {
@@ -203912,13 +205189,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polypropylene",
           "type": "color",
-          "default": "#527a65",
-          "label": "Asset color"
+          "default": "#507b62",
+          "label": "Polypropylene color"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#9ca7a8",
+          "label": "Stainless steel color"
+        },
+        {
+          "name": "polycarbonate",
+          "type": "color",
+          "default": "#273b3d",
+          "label": "Polycarbonate color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "polypropylene": "#d6e0d5",
+          "stainless": "#bfc8cb",
+          "polycarbonate": "#a2d1d7"
+        },
+        "nightRestock": {
+          "polypropylene": "#45614e",
+          "stainless": "#66747a",
+          "polycarbonate": "#486b7b"
+        }
+      },
       "stats": {
         "triangles": 228,
         "sizeM": [
@@ -203931,22 +205231,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#527a65",
+          "name": "polypropylene",
+          "color": "#507b62",
           "parts": [
             "bin-0",
             "bin-1",
             "bin-2",
-            "opening-0",
-            "opening-1",
-            "opening-2",
-            "shared-top",
-            "base-plinth",
             "corner-foot-0",
             "corner-foot-1",
             "corner-foot-2"
           ],
-          "param": "color"
+          "param": "polypropylene"
+        },
+        {
+          "name": "polycarbonate",
+          "color": "#273b3d",
+          "parts": [
+            "opening-0",
+            "opening-1",
+            "opening-2"
+          ],
+          "param": "polycarbonate"
+        },
+        {
+          "name": "stainless",
+          "color": "#9ca7a8",
+          "parts": [
+            "shared-top",
+            "base-plinth"
+          ],
+          "param": "stainless"
         }
       ]
     },
@@ -203954,7 +205268,7 @@
       "id": "refrigerated-display-case",
       "kit": "retail-store",
       "title": "Refrigerated display case",
-      "description": "Open-front chilled display with insulated base, three shelf decks and a raised top canopy. Knobs: overall scale and asset color.",
+      "description": "Open-front chilled display with framed glass sides, three stainless shelves and an insulated base. Knobs: overall scale and powder-coated steel, stainless steel, glass color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -203974,7 +205288,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/refrigerated-display-case.kcad.ts",
       "preview": "/assets/retail-store-refrigerated-display-case.png",
-      "sourceSha256": "c7393232eb8409b37ce72b5e88c7850b1b33338ab84a095ca478ee69e274dd56",
+      "sourceSha256": "0712eb9ad553d615b8d65e51fa5b6285c5b27b723dd3f3ebaf06a2937749f66f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -203987,15 +205301,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#687a7c",
-          "label": "Asset color"
+          "default": "#526a71",
+          "label": "Powder-coated steel color"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#aab5b7",
+          "label": "Stainless steel color"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#91cbd2",
+          "label": "Glass color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "powderCoat": "#e5ebed",
+          "stainless": "#bfc8cb",
+          "glass": "#9ccfd6"
+        },
+        "nightRestock": {
+          "powderCoat": "#354750",
+          "stainless": "#66747a",
+          "glass": "#3e6677"
+        }
+      },
       "stats": {
-        "triangles": 140,
+        "triangles": 164,
         "sizeM": [
           1.88,
           1.845,
@@ -204006,20 +205343,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#687a7c",
+          "name": "powderCoat",
+          "color": "#526a71",
           "parts": [
             "base-cabinet",
+            "canopy",
+            "front-upright--840",
+            "front-upright-840"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainless",
+          "color": "#aab5b7",
+          "parts": [
             "bottom-deck",
             "shelf-0",
             "shelf-1",
             "shelf-2",
-            "canopy",
-            "front-upright--840",
-            "front-upright-840",
             "temperature-dial"
           ],
-          "param": "color"
+          "param": "stainless"
+        },
+        {
+          "name": "glass",
+          "color": "#91cbd2",
+          "parts": [
+            "side-glass-left",
+            "side-glass-right"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -204027,7 +205380,7 @@
       "id": "returns-drop-bin",
       "kit": "retail-store",
       "title": "Returns drop bin",
-      "description": "Store returns collection bin with hinged-look lid, front deposit slot and lower label plate. Knobs: overall scale and asset color.",
+      "description": "Store returns collection bin with hinged-look lid, front deposit slot and lower label plate. Knobs: overall scale and polypropylene, stainless steel, paper color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -204047,7 +205400,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/returns-drop-bin.kcad.ts",
       "preview": "/assets/retail-store-returns-drop-bin.png",
-      "sourceSha256": "09206fa41ae795a4548a9f8341f920f04e4308016f5832b47c7c09786abab6fb",
+      "sourceSha256": "a1082821dd3aa1b552c2a1249c0eb468dc971630b5b9e7edeeae512b07e89d82",
       "triangleBudget": 1800,
       "params": [
         {
@@ -204060,13 +205413,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polypropylene",
           "type": "color",
-          "default": "#47736e",
-          "label": "Asset color"
+          "default": "#365c54",
+          "label": "Polypropylene color"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#9da8aa",
+          "label": "Stainless steel color"
+        },
+        {
+          "name": "paper",
+          "type": "color",
+          "default": "#e8dfc4",
+          "label": "Paper color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "polypropylene": "#d6e0d5",
+          "stainless": "#bfc8cb",
+          "paper": "#f0e5c9"
+        },
+        "nightRestock": {
+          "polypropylene": "#45614e",
+          "stainless": "#66747a",
+          "paper": "#c9b27e"
+        }
+      },
       "stats": {
         "triangles": 136,
         "sizeM": [
@@ -204079,17 +205455,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#47736e",
+          "name": "polypropylene",
+          "color": "#365c54",
           "parts": [
             "bin",
             "lid",
-            "deposit-slot",
-            "label-panel",
+            "deposit-slot"
+          ],
+          "param": "polypropylene"
+        },
+        {
+          "name": "paper",
+          "color": "#e8dfc4",
+          "parts": [
+            "label-panel"
+          ],
+          "param": "paper"
+        },
+        {
+          "name": "stainless",
+          "color": "#9da8aa",
+          "parts": [
             "lid-hinge-left",
             "lid-hinge-right"
           ],
-          "param": "color"
+          "param": "stainless"
         }
       ]
     },
@@ -204097,7 +205487,7 @@
       "id": "roll-cage-trolley",
       "kit": "retail-store",
       "title": "Roll cage trolley",
-      "description": "Four-wheel roll cage with raised side grid, loading deck, swing door and pull handle. Knobs: overall scale and asset color.",
+      "description": "Four-wheel roll cage with raised side grid, loading deck, swing door and pull handle. Knobs: overall scale and galvanized steel, rubber, polypropylene color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -204117,7 +205507,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/roll-cage-trolley.kcad.ts",
       "preview": "/assets/retail-store-roll-cage-trolley.png",
-      "sourceSha256": "b7bab0a17a7584b97e2d0d3e58a59cc5fcd40844252881bc7ac77a3fb8ba7a4d",
+      "sourceSha256": "0e2ea942cfa23672d9d8ddd01b26a87b8957154d2939b6694d561a8903c11d2f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -204130,13 +205520,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#626c70",
-          "label": "Asset color"
+          "default": "#7d898c",
+          "label": "Galvanized steel color"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292d30",
+          "label": "Rubber color"
+        },
+        {
+          "name": "polypropylene",
+          "type": "color",
+          "default": "#d7a33e",
+          "label": "Polypropylene color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "galvanizedSteel": "#afbabb",
+          "rubber": "#40474b",
+          "polypropylene": "#d6e0d5"
+        },
+        "nightRestock": {
+          "galvanizedSteel": "#566468",
+          "rubber": "#262b2e",
+          "polypropylene": "#45614e"
+        }
+      },
       "stats": {
         "triangles": 380,
         "sizeM": [
@@ -204149,8 +205562,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#626c70",
+          "name": "galvanizedSteel",
+          "color": "#7d898c",
           "parts": [
             "base-deck",
             "post--420--330",
@@ -204164,17 +205577,31 @@
             "crossbar-4",
             "crossbar-5",
             "door-bar",
-            "pull-handle",
-            "caster--370--390",
-            "caster--370-390",
-            "caster-370--390",
-            "caster-370-390",
             "caster-mount--370--350",
             "caster-mount--370-350",
             "caster-mount-370--350",
             "caster-mount-370-350"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "polypropylene",
+          "color": "#d7a33e",
+          "parts": [
+            "pull-handle"
+          ],
+          "param": "polypropylene"
+        },
+        {
+          "name": "rubber",
+          "color": "#292d30",
+          "parts": [
+            "caster--370--390",
+            "caster--370-390",
+            "caster-370--390",
+            "caster-370-390"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -204182,7 +205609,7 @@
       "id": "self-checkout-kiosk",
       "kit": "retail-store",
       "title": "Self-checkout kiosk",
-      "description": "Compact self-checkout pedestal with tilted display housing, scanner deck, bag hook and payment shelf. Knobs: overall scale and asset color.",
+      "description": "Compact self-checkout pedestal with tilted display housing, scanner deck, bag hook and payment shelf. Knobs: overall scale and abs plastic, glass, stainless steel color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -204202,7 +205629,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/self-checkout-kiosk.kcad.ts",
       "preview": "/assets/retail-store-self-checkout-kiosk.png",
-      "sourceSha256": "d1b37ccb952b90de1ebb89f2f0d979e2fc67a1b6449c2833dc3159ac94dda677",
+      "sourceSha256": "121f62624de9f74402e845439dad4f4869220624d13ac071d3fc6e983783f9f3",
       "triangleBudget": 1800,
       "params": [
         {
@@ -204215,18 +205642,41 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "abs",
           "type": "color",
-          "default": "#556b73",
-          "label": "Asset color"
+          "default": "#536a73",
+          "label": "ABS plastic color"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#7fc5d0",
+          "label": "Glass color"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#aeb7b8",
+          "label": "Stainless steel color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "abs": "#e5e9e9",
+          "glass": "#9ccfd6",
+          "stainless": "#bfc8cb"
+        },
+        "nightRestock": {
+          "abs": "#364a55",
+          "glass": "#3e6677",
+          "stainless": "#66747a"
+        }
+      },
       "stats": {
         "triangles": 116,
         "sizeM": [
           0.605,
-          1.05,
+          1.056404,
           0.555
         ],
         "minUpM": 0,
@@ -204234,18 +205684,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#556b73",
+          "name": "abs",
+          "color": "#536a73",
           "parts": [
             "foot",
             "pedestal",
             "scanner-deck",
-            "display",
+            "display"
+          ],
+          "param": "abs"
+        },
+        {
+          "name": "glass",
+          "color": "#7fc5d0",
+          "parts": [
             "screen",
-            "scanner-window",
+            "scanner-window"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "stainless",
+          "color": "#aeb7b8",
+          "parts": [
             "bag-hook"
           ],
-          "param": "color"
+          "param": "stainless"
         }
       ]
     },
@@ -204253,7 +205717,7 @@
       "id": "shelf-endcap",
       "kit": "retail-store",
       "title": "Shelf endcap display",
-      "description": "Gondola endcap with stepped product decks, tall rear board and sign panel. Knobs: overall scale and asset color.",
+      "description": "Gondola endcap with stepped product decks, tall rear board and sign panel. Knobs: overall scale and powder-coated steel, stainless steel, vinyl color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -204273,7 +205737,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/shelf-endcap.kcad.ts",
       "preview": "/assets/retail-store-shelf-endcap.png",
-      "sourceSha256": "3bc2c35dd3f98482a20d742d6accf6bba1d8b6d3783cff10af0b4c00252dc393",
+      "sourceSha256": "d8b6c5ef9cba5c32d30dde596d05d8274fa3ecfbb33d3d077b1b8a6c1bb86e2e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -204286,13 +205750,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#64747a",
-          "label": "Asset color"
+          "default": "#65777b",
+          "label": "Powder-coated steel color"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#b1bbbc",
+          "label": "Stainless steel color"
+        },
+        {
+          "name": "vinyl",
+          "type": "color",
+          "default": "#dba83d",
+          "label": "Vinyl color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "powderCoat": "#e5ebed",
+          "stainless": "#bfc8cb",
+          "vinyl": "#dce9dc"
+        },
+        "nightRestock": {
+          "powderCoat": "#354750",
+          "stainless": "#66747a",
+          "vinyl": "#d2a536"
+        }
+      },
       "stats": {
         "triangles": 140,
         "sizeM": [
@@ -204305,20 +205792,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#64747a",
+          "name": "powderCoat",
+          "color": "#65777b",
           "parts": [
             "rear-board",
+            "leg--405",
+            "leg-405"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainless",
+          "color": "#b1bbbc",
+          "parts": [
             "deck-0",
             "deck-1",
             "deck-2",
             "deck-3",
-            "header",
-            "leg--405",
-            "leg-405",
             "base-cap"
           ],
-          "param": "color"
+          "param": "stainless"
+        },
+        {
+          "name": "vinyl",
+          "color": "#dba83d",
+          "parts": [
+            "header"
+          ],
+          "param": "vinyl"
         }
       ]
     },
@@ -204326,7 +205827,7 @@
       "id": "shopping-bag-dispenser",
       "kit": "retail-store",
       "title": "Shopping bag dispenser",
-      "description": "Wall-mounted bag dispenser with cover hood, stack cavity and lower pull slot. Knobs: overall scale and asset color.",
+      "description": "Wall-mounted bag dispenser with cover hood, stack cavity and lower pull slot. Knobs: overall scale and powder-coated steel, polypropylene, stainless steel color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -204346,7 +205847,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/shopping-bag-dispenser.kcad.ts",
       "preview": "/assets/retail-store-shopping-bag-dispenser.png",
-      "sourceSha256": "4feb4f82f89febbe6a64d8235e7f0ecf01c2f315a1511f659b640799894eec4d",
+      "sourceSha256": "e6eca76676883bb3ab12e13c6f3ba96580a9ea68350a73d0d7f1bce9e89fc2a4",
       "triangleBudget": 1800,
       "params": [
         {
@@ -204359,13 +205860,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#7c776c",
-          "label": "Asset color"
+          "default": "#64736f",
+          "label": "Powder-coated steel color"
+        },
+        {
+          "name": "polypropylene",
+          "type": "color",
+          "default": "#e2d7bb",
+          "label": "Polypropylene color"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#9da8aa",
+          "label": "Stainless steel color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "powderCoat": "#e5ebed",
+          "polypropylene": "#d6e0d5",
+          "stainless": "#bfc8cb"
+        },
+        "nightRestock": {
+          "powderCoat": "#354750",
+          "polypropylene": "#45614e",
+          "stainless": "#66747a"
+        }
+      },
       "stats": {
         "triangles": 136,
         "sizeM": [
@@ -204378,17 +205902,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7c776c",
+          "name": "powderCoat",
+          "color": "#64736f",
           "parts": [
             "backplate",
             "hood",
-            "bag-stack",
-            "pull-slot",
+            "pull-slot"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "polypropylene",
+          "color": "#e2d7bb",
+          "parts": [
+            "bag-stack"
+          ],
+          "param": "polypropylene"
+        },
+        {
+          "name": "stainless",
+          "color": "#9da8aa",
+          "parts": [
             "mount-left",
             "mount-right"
           ],
-          "param": "color"
+          "param": "stainless"
         }
       ]
     },
@@ -204396,7 +205934,7 @@
       "id": "shopping-basket",
       "kit": "retail-store",
       "title": "Shopping basket",
-      "description": "Rigid shopping basket with deep molded body, broad top rim and two short swing handles. Knobs: overall scale and asset color.",
+      "description": "Open-frame shopping basket with a slatted polypropylene body, reinforced rim and a raised carry handle. Knobs: overall scale and polypropylene, rubber, stainless steel color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -204416,7 +205954,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/shopping-basket.kcad.ts",
       "preview": "/assets/retail-store-shopping-basket.png",
-      "sourceSha256": "6a99377e955f069b170872647e500c581acde3d9cf7d71e8509a56e9bfccf6ff",
+      "sourceSha256": "a3591b11bb943394da87ac5ac14d98fbd366e31f905a84f426ec0b5177fc3993",
       "triangleBudget": 1800,
       "params": [
         {
@@ -204429,37 +205967,93 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polypropylene",
           "type": "color",
           "default": "#b56c3b",
-          "label": "Asset color"
+          "label": "Polypropylene color"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#4a4140",
+          "label": "Rubber color"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#7e8b90",
+          "label": "Stainless steel color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "polypropylene": "#d6e0d5",
+          "rubber": "#40474b",
+          "stainless": "#bfc8cb"
+        },
+        "nightRestock": {
+          "polypropylene": "#45614e",
+          "rubber": "#262b2e",
+          "stainless": "#66747a"
+        }
+      },
       "stats": {
-        "triangles": 148,
+        "triangles": 376,
         "sizeM": [
           0.6,
-          0.63,
-          0.43
+          0.635,
+          0.404
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
+          "name": "polypropylene",
           "color": "#b56c3b",
           "parts": [
-            "body",
-            "rim",
+            "basket-floor",
+            "rim-front",
+            "rim-back",
+            "rim-left",
+            "rim-right",
+            "corner--258--168",
+            "corner--258-168",
+            "corner-258--168",
+            "corner-258-168",
+            "front-rail-0",
+            "back-rail-0",
+            "left-rail-0",
+            "right-rail-0",
+            "front-rail-1",
+            "back-rail-1",
+            "left-rail-1",
+            "right-rail-1",
+            "front-rail-2",
+            "back-rail-2",
+            "left-rail-2",
+            "right-rail-2",
             "handle-left",
-            "handle-right",
-            "grip",
+            "handle-right"
+          ],
+          "param": "polypropylene"
+        },
+        {
+          "name": "rubber",
+          "color": "#4a4140",
+          "parts": [
+            "grip"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "stainless",
+          "color": "#7e8b90",
+          "parts": [
             "pivot-left",
             "pivot-right"
           ],
-          "param": "color"
+          "param": "stainless"
         }
       ]
     },
@@ -204467,7 +206061,7 @@
       "id": "shopping-cart",
       "kit": "retail-store",
       "title": "Shopping cart",
-      "description": "Low-poly wire basket cart with tubular frame, child seat panel, lower rack and four casters. Knobs: overall scale and asset color.",
+      "description": "Retail cart with an open wire-grid basket, child-seat rail, lower rack and four rubber casters. Knobs: overall scale and stainless steel, polypropylene, rubber color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -204487,7 +206081,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/shopping-cart.kcad.ts",
       "preview": "/assets/retail-store-shopping-cart.png",
-      "sourceSha256": "694e69971e0ac717ea1c4848a80ddd60cf8498cb927cb54ee4b1c9d9a920500f",
+      "sourceSha256": "d4367c2177981731a755aebfac8c6ed5085e5c2a4c4bf7fdc9abb60c6982eda2",
       "triangleBudget": 1800,
       "params": [
         {
@@ -204500,15 +206094,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainless",
           "type": "color",
-          "default": "#627178",
-          "label": "Asset color"
+          "default": "#77868a",
+          "label": "Stainless steel color"
+        },
+        {
+          "name": "polypropylene",
+          "type": "color",
+          "default": "#b63d35",
+          "label": "Polypropylene color"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292d30",
+          "label": "Rubber color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "stainless": "#bfc8cb",
+          "polypropylene": "#d6e0d5",
+          "rubber": "#40474b"
+        },
+        "nightRestock": {
+          "stainless": "#66747a",
+          "polypropylene": "#45614e",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
-        "triangles": 356,
+        "triangles": 908,
         "sizeM": [
           0.84,
           1.08,
@@ -204519,22 +206136,61 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#627178",
+          "name": "stainless",
+          "color": "#77868a",
           "parts": [
             "basket-floor",
-            "basket-front",
-            "basket-back",
-            "basket-side--400",
-            "basket-side-400",
-            "handlebar",
-            "handle-post--300",
-            "handle-post-300",
+            "front-wire-0",
+            "back-wire-0",
+            "left-wire-0",
+            "right-wire-0",
+            "front-wire-1",
+            "back-wire-1",
+            "left-wire-1",
+            "right-wire-1",
+            "front-wire-2",
+            "back-wire-2",
+            "left-wire-2",
+            "right-wire-2",
+            "front-wire-3",
+            "back-wire-3",
+            "left-wire-3",
+            "right-wire-3",
+            "front-wire-4",
+            "back-wire-4",
+            "left-wire-4",
+            "right-wire-4",
+            "front-upright-0",
+            "back-upright-0",
+            "front-upright-1",
+            "back-upright-1",
+            "front-upright-2",
+            "back-upright-2",
+            "front-upright-3",
+            "back-upright-3",
+            "front-upright-4",
+            "back-upright-4",
+            "front-upright-5",
+            "back-upright-5",
+            "front-upright-6",
+            "back-upright-6",
+            "front-upright-7",
+            "back-upright-7",
+            "front-upright-8",
+            "back-upright-8",
+            "left-upright-0",
+            "right-upright-0",
+            "left-upright-1",
+            "right-upright-1",
+            "left-upright-2",
+            "right-upright-2",
+            "left-upright-3",
+            "right-upright-3",
+            "left-upright-4",
+            "right-upright-4",
+            "left-upright-5",
+            "right-upright-5",
             "lower-rack",
-            "wheel--390--250",
-            "wheel--390-250",
-            "wheel-390--250",
-            "wheel-390-250",
             "wheel-mount--390--250",
             "wheel-mount--390-250",
             "wheel-mount-390--250",
@@ -204542,7 +206198,28 @@
             "frame--400",
             "frame-400"
           ],
-          "param": "color"
+          "param": "stainless"
+        },
+        {
+          "name": "polypropylene",
+          "color": "#b63d35",
+          "parts": [
+            "handlebar",
+            "handle-post--300",
+            "handle-post-300"
+          ],
+          "param": "polypropylene"
+        },
+        {
+          "name": "rubber",
+          "color": "#292d30",
+          "parts": [
+            "wheel--390--250",
+            "wheel--390-250",
+            "wheel-390--250",
+            "wheel-390-250"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -204550,7 +206227,7 @@
       "id": "stock-hand-truck",
       "kit": "retail-store",
       "title": "Stock hand truck",
-      "description": "Two-wheel stock hand truck with toe plate, tall spine, upper grip and chunky tires. Knobs: overall scale and asset color.",
+      "description": "Two-wheel stock hand truck with toe plate, tall spine, upper grip and chunky tires. Knobs: overall scale and aluminium, rubber, stainless steel color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -204570,7 +206247,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/stock-hand-truck.kcad.ts",
       "preview": "/assets/retail-store-stock-hand-truck.png",
-      "sourceSha256": "bc9fc6985e98caa371925a85d67051c1212cb12a9c52f2dd9d5778cf348ad76c",
+      "sourceSha256": "8a3a9e62954645466e8468d1b069454ea44d4c73edbe440d9a285f7723fdc487",
       "triangleBudget": 1800,
       "params": [
         {
@@ -204583,13 +206260,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminium",
           "type": "color",
-          "default": "#5f6870",
-          "label": "Asset color"
+          "default": "#78868a",
+          "label": "Aluminium color"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292d30",
+          "label": "Rubber color"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#b3bec0",
+          "label": "Stainless steel color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "aluminium": "#c4cdd0",
+          "rubber": "#40474b",
+          "stainless": "#bfc8cb"
+        },
+        "nightRestock": {
+          "aluminium": "#6b7a80",
+          "rubber": "#262b2e",
+          "stainless": "#66747a"
+        }
+      },
       "stats": {
         "triangles": 148,
         "sizeM": [
@@ -204602,18 +206302,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#5f6870",
+          "name": "aluminium",
+          "color": "#78868a",
           "parts": [
             "spine",
-            "toe-plate",
+            "toe-plate"
+          ],
+          "param": "aluminium"
+        },
+        {
+          "name": "rubber",
+          "color": "#292d30",
+          "parts": [
             "top-grip",
             "wheel--235",
-            "wheel-235",
+            "wheel-235"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "stainless",
+          "color": "#b3bec0",
+          "parts": [
             "wheel-guard--180",
             "wheel-guard-180"
           ],
-          "param": "color"
+          "param": "stainless"
         }
       ]
     },
@@ -204621,7 +206335,7 @@
       "id": "stock-ladder",
       "kit": "retail-store",
       "title": "Stock ladder",
-      "description": "Compact rolling stock ladder with three broad treads, side rails, top platform and caster feet. Knobs: overall scale and asset color.",
+      "description": "Compact rolling stock ladder with three broad treads, side rails, top platform and caster feet. Knobs: overall scale and aluminium, rubber, powder-coated steel color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -204641,7 +206355,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/stock-ladder.kcad.ts",
       "preview": "/assets/retail-store-stock-ladder.png",
-      "sourceSha256": "5569dcea3a48623c8327cc43285026c65821016b7049222a2c29d00b57fcc027",
+      "sourceSha256": "4e3c9776281c454f8727848f40af5fd6594b4a12aa15278dff383ee5f23099f3",
       "triangleBudget": 1800,
       "params": [
         {
@@ -204654,13 +206368,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminium",
           "type": "color",
-          "default": "#606d75",
-          "label": "Asset color"
+          "default": "#c2cbcc",
+          "label": "Aluminium color"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#2e3336",
+          "label": "Rubber color"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#d9a02d",
+          "label": "Powder-coated steel color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "aluminium": "#c4cdd0",
+          "rubber": "#40474b",
+          "powderCoat": "#e5ebed"
+        },
+        "nightRestock": {
+          "aluminium": "#6b7a80",
+          "rubber": "#262b2e",
+          "powderCoat": "#354750"
+        }
+      },
       "stats": {
         "triangles": 160,
         "sizeM": [
@@ -204673,19 +206410,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#606d75",
+          "name": "powderCoat",
+          "color": "#d9a02d",
           "parts": [
             "top-platform",
             "tread-0",
             "tread-1",
-            "tread-2",
+            "tread-2"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "aluminium",
+          "color": "#c2cbcc",
+          "parts": [
             "rail--300",
-            "rail-300",
+            "rail-300"
+          ],
+          "param": "aluminium"
+        },
+        {
+          "name": "rubber",
+          "color": "#2e3336",
+          "parts": [
             "caster--280",
             "caster-280"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -204693,7 +206444,7 @@
       "id": "trolley-corral",
       "kit": "retail-store",
       "title": "Trolley corral",
-      "description": "Low cart-return bay with parallel divider rails, end stop and corner guard posts. Knobs: overall scale and asset color.",
+      "description": "Low cart-return bay with parallel divider rails, end stop and corner guard posts. Knobs: overall scale and galvanized steel, powder-coated steel, rubber color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -204713,7 +206464,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/trolley-corral.kcad.ts",
       "preview": "/assets/retail-store-trolley-corral.png",
-      "sourceSha256": "04f147d9326b936b49e13e4a76ba1458fe22715427828a5915b2f6f4b2771c0b",
+      "sourceSha256": "b56925b47b209b702101cd9266486bbff19cc4a662d85ffdfbc2ae21ee63aa74",
       "triangleBudget": 1800,
       "params": [
         {
@@ -204726,13 +206477,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#5d6b70",
-          "label": "Asset color"
+          "default": "#778488",
+          "label": "Galvanized steel color"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#d8a53b",
+          "label": "Powder-coated steel color"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#343a3c",
+          "label": "Rubber color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "galvanizedSteel": "#afbabb",
+          "powderCoat": "#e5ebed",
+          "rubber": "#40474b"
+        },
+        "nightRestock": {
+          "galvanizedSteel": "#566468",
+          "powderCoat": "#354750",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
         "triangles": 196,
         "sizeM": [
@@ -204745,22 +206519,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#5d6b70",
+          "name": "galvanizedSteel",
+          "color": "#778488",
           "parts": [
             "floor-rail-left",
             "floor-rail-right",
-            "end-stop",
-            "front-gate",
             "divider-0",
             "divider-1",
             "divider-2",
             "divider-3",
-            "divider-4",
+            "divider-4"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#343a3c",
+          "parts": [
+            "end-stop"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#d8a53b",
+          "parts": [
+            "front-gate",
             "post-cap--850",
             "post-cap-850"
           ],
-          "param": "color"
+          "param": "powderCoat"
         }
       ]
     },
@@ -204768,7 +206556,7 @@
       "id": "upright-drink-cooler",
       "kit": "retail-store",
       "title": "Upright drink cooler",
-      "description": "Tall single-door beverage cooler with framed door, handle, compressor plinth and top header. Knobs: overall scale and asset color.",
+      "description": "Single-door beverage cooler with a framed glass door, six bottles on visible shelves, a pull handle, and lower compressor grille. Knobs: overall scale and powder-coated steel, glass, stainless steel color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -204788,7 +206576,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/upright-drink-cooler.kcad.ts",
       "preview": "/assets/retail-store-upright-drink-cooler.png",
-      "sourceSha256": "a269b5eb923ca47f111d30605078f83c26e08f7971b7cde42593b78f8f64cf8b",
+      "sourceSha256": "a40cd410a0840a8964e46690353299f80e5e7b7a7b5b6d98ba0253cd9e6cade9",
       "triangleBudget": 1800,
       "params": [
         {
@@ -204801,40 +206589,103 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
           "default": "#536d78",
-          "label": "Asset color"
+          "label": "Powder-coated steel color"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#92cbd3",
+          "label": "Glass color"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#aeb8ba",
+          "label": "Stainless steel color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "powderCoat": "#e5ebed",
+          "glass": "#9ccfd6",
+          "stainless": "#bfc8cb"
+        },
+        "nightRestock": {
+          "powderCoat": "#354750",
+          "glass": "#3e6677",
+          "stainless": "#66747a"
+        }
+      },
       "stats": {
-        "triangles": 152,
+        "triangles": 816,
         "sizeM": [
           0.78,
           2,
-          0.885
+          0.778
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
+          "name": "powderCoat",
           "color": "#536d78",
           "parts": [
-            "cabinet",
-            "door-frame",
-            "door-window",
+            "cabinet-left-side",
+            "cabinet-right-side",
+            "cabinet-back",
+            "cabinet-top",
+            "cabinet-base",
+            "door-frame-left",
+            "door-frame-right",
+            "door-frame-top",
+            "door-frame-bottom",
+            "top-header",
+            "compressor-slat-0",
+            "compressor-slat-1",
+            "compressor-slat-2",
+            "compressor-slat-3"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "glass",
+          "color": "#92cbd3",
+          "parts": [
+            "door-glass-left",
+            "door-glass-right",
+            "door-glass-top",
+            "door-glass-bottom",
+            "beverage-bottle-554--175",
+            "beverage-bottle-554-0",
+            "beverage-bottle-554-175",
+            "beverage-bottle-874--175",
+            "beverage-bottle-874-0",
+            "beverage-bottle-874-175"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "stainless",
+          "color": "#aeb8ba",
+          "parts": [
             "handle",
             "inner-shelf-0",
             "inner-shelf-1",
             "inner-shelf-2",
             "inner-shelf-3",
-            "top-header",
+            "bottle-cap-554--175",
+            "bottle-cap-554-0",
+            "bottle-cap-554-175",
+            "bottle-cap-874--175",
+            "bottle-cap-874-0",
+            "bottle-cap-874-175",
             "compressor-grille"
           ],
-          "param": "color"
+          "param": "stainless"
         }
       ]
     },
@@ -204842,7 +206693,7 @@
       "id": "wall-shelf-unit",
       "kit": "retail-store",
       "title": "Wall shelf unit",
-      "description": "Single-sided wall shelving with four adjustable decks, side uprights and a header board. Knobs: overall scale and asset color.",
+      "description": "Single-sided wall shelving with four adjustable decks, side uprights and a header board. Knobs: overall scale and powder-coated steel, stainless steel, rubber color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -204862,7 +206713,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/wall-shelf-unit.kcad.ts",
       "preview": "/assets/retail-store-wall-shelf-unit.png",
-      "sourceSha256": "239dcbf3b482e849cff493d151cefdbc1f5ded37ce41f5ab3317b18d0a81ee5f",
+      "sourceSha256": "efba0936de4654772f5841f3ede0ca22452945b3e921432fa18500ad928d7051",
       "triangleBudget": 1800,
       "params": [
         {
@@ -204875,13 +206726,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#806e5b",
-          "label": "Asset color"
+          "default": "#7d6d5a",
+          "label": "Powder-coated steel color"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#c1c9ca",
+          "label": "Stainless steel color"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#353a3d",
+          "label": "Rubber color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "powderCoat": "#e5ebed",
+          "stainless": "#bfc8cb",
+          "rubber": "#40474b"
+        },
+        "nightRestock": {
+          "powderCoat": "#354750",
+          "stainless": "#66747a",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
         "triangles": 140,
         "sizeM": [
@@ -204894,20 +206768,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#806e5b",
+          "name": "powderCoat",
+          "color": "#7d6d5a",
           "parts": [
             "back",
+            "side--674",
+            "side-674",
+            "header"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainless",
+          "color": "#c1c9ca",
+          "parts": [
             "deck-0",
             "deck-1",
             "deck-2",
-            "deck-3",
-            "side--674",
-            "side-674",
-            "header",
+            "deck-3"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "rubber",
+          "color": "#353a3d",
+          "parts": [
             "foot"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -204915,7 +206803,7 @@
       "id": "wire-grid-display",
       "kit": "retail-store",
       "title": "Wire grid display",
-      "description": "Freestanding wire-grid merchandise panel with side feet, cross rails and hanging peg bars. Knobs: overall scale and asset color.",
+      "description": "Freestanding wire-grid merchandise panel with side feet, cross rails and hanging peg bars. Knobs: overall scale and stainless steel, rubber, polypropylene color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -204935,7 +206823,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/wire-grid-display.kcad.ts",
       "preview": "/assets/retail-store-wire-grid-display.png",
-      "sourceSha256": "ef908b175f308756e5287eadf3bcc1f005520b6693d5050f2480f065d8ba7d6b",
+      "sourceSha256": "c86fee2c426e99f56abf0132869e00afb84f1008994cce12cd48f3ec6befc5da",
       "triangleBudget": 1800,
       "params": [
         {
@@ -204948,13 +206836,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainless",
           "type": "color",
-          "default": "#60686a",
-          "label": "Asset color"
+          "default": "#657175",
+          "label": "Stainless steel color"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#353a3d",
+          "label": "Rubber color"
+        },
+        {
+          "name": "polypropylene",
+          "type": "color",
+          "default": "#d29c37",
+          "label": "Polypropylene color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "stainless": "#bfc8cb",
+          "rubber": "#40474b",
+          "polypropylene": "#d6e0d5"
+        },
+        "nightRestock": {
+          "stainless": "#66747a",
+          "rubber": "#262b2e",
+          "polypropylene": "#45614e"
+        }
+      },
       "stats": {
         "triangles": 236,
         "sizeM": [
@@ -204967,8 +206878,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#60686a",
+          "name": "stainless",
+          "color": "#657175",
           "parts": [
             "grid-frame",
             "vertical-0",
@@ -204983,12 +206894,26 @@
             "horizontal-3",
             "horizontal-4",
             "horizontal-5",
-            "horizontal-6",
+            "horizontal-6"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "rubber",
+          "color": "#353a3d",
+          "parts": [
             "foot--430",
-            "foot-430",
+            "foot-430"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "polypropylene",
+          "color": "#d29c37",
+          "parts": [
             "hook-mount"
           ],
-          "param": "color"
+          "param": "polypropylene"
         }
       ]
     },
@@ -204996,7 +206921,7 @@
       "id": "wooden-pallet",
       "kit": "retail-store",
       "title": "Wooden pallet",
-      "description": "Reusable three-runner pallet with spaced top boards and open forklift entry gaps. Knobs: overall scale and asset color.",
+      "description": "Reusable three-runner pallet with spaced top boards and open forklift entry gaps. Knobs: overall scale and timber, steel color controls. Presets: cleanStore and nightRestock.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -205016,7 +206941,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/wooden-pallet.kcad.ts",
       "preview": "/assets/retail-store-wooden-pallet.png",
-      "sourceSha256": "5dab0141bfbcfacdd9bad5e404b0d6645689b93973ea01891564001cd6b8acb0",
+      "sourceSha256": "7be5fa677abaa0ba20ff6e8fdb4d9f0f46493855032aab6d8de7d1a8981b0d4c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -205029,13 +206954,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#96774f",
-          "label": "Asset color"
+          "default": "#a3865c",
+          "label": "Timber color"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#78868a",
+          "label": "Steel color"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cleanStore": {
+          "timber": "#b9915c",
+          "steel": "#9ca8ab"
+        },
+        "nightRestock": {
+          "timber": "#6e5133",
+          "steel": "#4a585d"
+        }
+      },
       "stats": {
         "triangles": 212,
         "sizeM": [
@@ -205048,8 +206988,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#96774f",
+          "name": "timber",
+          "color": "#a3865c",
           "parts": [
             "top-board-0",
             "top-board-1",
@@ -205064,10 +207004,17 @@
             "block-0--335",
             "block-0-335",
             "block-440--335",
-            "block-440-335",
+            "block-440-335"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "steel",
+          "color": "#78868a",
+          "parts": [
             "nail-head"
           ],
-          "param": "color"
+          "param": "steel"
         }
       ]
     },
