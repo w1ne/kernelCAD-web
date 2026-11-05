@@ -11,6 +11,7 @@ meta({
   triangleBudget: 300,
 });
 
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const stone = param('stone', '#999482', { label: 'Stone base' });
 const dial = param('dial', '#c1ae7f', { label: 'Dial plate' });
 const gnomon = param('gnomon', '#545b59', { label: 'Gnomon' });
@@ -20,7 +21,7 @@ const partNames = new Map<string, number>();
 const addPart = (name: string, shape: ReturnType<typeof box>) => {
   const count = partNames.get(name) ?? 0;
   partNames.set(name, count + 1);
-  a.part(count === 0 ? name : `${name}-${count + 1}`, shape);
+  a.part(count === 0 ? name : `${name}-${count + 1}`, shape.scale(overallScale));
 };
 
 addPart('foot', cylinder(100, 260).color(stone));

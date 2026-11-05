@@ -16,6 +16,7 @@ meta({
   triangleBudget: 320,
 });
 
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const body = param('body', '#eceeef', { label: 'Body' });
 const light = param('light', '#2fbf5a', { label: 'Light strips' });
 const screen = param('screen', '#1d2024', { label: 'Screen, cable and plug' });
@@ -35,21 +36,21 @@ const bar = (x0: number, z0: number, x1: number, z1: number, t: number, y = 0) =
 };
 
 const ev = assembly('ev-charger');
-ev.part('base', blk(-240, -180, 0, 240, 180, 40).color(screen));
-ev.part('post', blk(-170, -110, 35, 170, 110, 1500).color(body));
-ev.part('cap', blk(-185, -125, 1500, 185, 125, 1540).color(light));
-ev.part('screen', blk(-120, -118, 1150, 120, -109, 1360).color(screen));
+ev.part('base', blk(-240, -180, 0, 240, 180, 40).color(screen).scale(overallScale));
+ev.part('post', blk(-170, -110, 35, 170, 110, 1500).color(body).scale(overallScale));
+ev.part('cap', blk(-185, -125, 1500, 185, 125, 1540).color(light).scale(overallScale));
+ev.part('screen', blk(-120, -118, 1150, 120, -109, 1360).color(screen).scale(overallScale));
 for (const side of [-1, 1]) {
-  ev.part(`strip-${side < 0 ? 'l' : 'r'}`, blk(side * 170 - 12, -118, 200, side * 170 + 12, -100, 1450).color(light));
+  ev.part(`strip-${side < 0 ? 'l' : 'r'}`, blk(side * 170 - 12, -118, 200, side * 170 + 12, -100, 1450).color(light).scale(overallScale));
 }
-ev.part('holster', blk(165, -70, 950, 260, 70, 1100).color(screen));
-ev.part('plug', blk(240, -40, 1060, 300, 40, 1180).color(screen));
+ev.part('holster', blk(165, -70, 950, 260, 70, 1100).color(screen).scale(overallScale));
+ev.part('plug', blk(240, -40, 1060, 300, 40, 1180).color(screen).scale(overallScale));
 // Cable loop from the low side of the post round to the plug.
 const pts: [number, number][] = [[160, 700], [300, 520], [440, 470], [520, 620], [470, 900], [300, 1130]];
 for (let i = 0; i < pts.length - 1; i++) {
   const [x0, z0] = pts[i]!;
   const [x1, z1] = pts[i + 1]!;
-  ev.part(`cable-${i + 1}`, bar(x0, z0, x1, z1, 36, 0).color(screen));
+  ev.part(`cable-${i + 1}`, bar(x0, z0, x1, z1, 36, 0).color(screen).scale(overallScale));
 }
 
 return ev.model();

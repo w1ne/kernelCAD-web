@@ -23,6 +23,7 @@ meta({
   "triangleBudget": 220
 });
 
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const shell = param('shell', '#8a6748', { label: 'Shell' });
 const accent = param('accent', '#2a555d', { label: 'Accent' });
 presets({
@@ -33,9 +34,9 @@ const p = assembly('walking-cane');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
 const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
 
-p.part('shaft', c(0, 0, 0, 790, 12, 8).color(shell));
-p.part('handle-stem', c(0, 0, 775, 44, 11, 8).color(accent));
-p.part('crook', b(-18, 0, 815, 52, 18, 16).color(accent));
-p.part('foot', c(0, 0, 0, 34, 17, 8).color(accent));
+p.part('shaft', c(0, 0, 0, 790, 12, 8).color(shell).scale(overallScale));
+p.part('handle-stem', c(0, 0, 775, 44, 11, 8).color(accent).scale(overallScale));
+p.part('crook', b(-18, 0, 815, 52, 18, 16).color(accent).scale(overallScale));
+p.part('foot', c(0, 0, 0, 34, 17, 8).color(accent).scale(overallScale));
 
 return p.model();

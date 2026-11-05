@@ -11,6 +11,7 @@ meta({
   triangleBudget: 260,
 });
 
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const body = param('body', '#58634b', { label: 'Body' });
 const arm = param('arm', '#8c9b8d', { label: 'Spray arms' });
 const nozzle = param('nozzle', '#b28f3e', { label: 'Nozzles' });
@@ -20,7 +21,7 @@ const partNames = new Map<string, number>();
 const addPart = (name: string, shape: ReturnType<typeof box>) => {
   const count = partNames.get(name) ?? 0;
   partNames.set(name, count + 1);
-  a.part(count === 0 ? name : `${name}-${count + 1}`, shape);
+  a.part(count === 0 ? name : `${name}-${count + 1}`, shape.scale(overallScale));
 };
 
 addPart('base', box(260, 260, 75, true).translate(0, 0, 37.5).color(body));

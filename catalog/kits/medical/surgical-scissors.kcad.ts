@@ -23,6 +23,7 @@ meta({
   "triangleBudget": 350
 });
 
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const shell = param('shell', '#99a4a8', { label: 'Shell' });
 const accent = param('accent', '#58656a', { label: 'Accent' });
 presets({
@@ -34,10 +35,10 @@ const c = (x: number, y: number, z: number, h: number, r: number, segments = 10)
 const poly = (points: [number, number][], z: number, depth: number) => extrudePolygon(points, depth).translate(0, 0, z);
 
 const ring = (x: number) => cylinder(7, 15, 10).subtract(cylinder(9, 8, 10).translate(0, 0, -1)).translate(x, 0, 0);
-p.part('finger-loop-left', ring(-20).color(shell));
-p.part('finger-loop-right', ring(20).color(shell));
-p.part('blade-left', poly([[-16, 9], [-8, 14], [-3, 80], [-8, 105], [-14, 84]], 7, 6).color(accent));
-p.part('blade-right', poly([[16, 9], [8, 14], [3, 80], [8, 105], [14, 84]], 7, 6).color(accent));
-p.part('pivot', c(0, 0, 0, 14, 7, 8).color(accent));
+p.part('finger-loop-left', ring(-20).color(shell).scale(overallScale));
+p.part('finger-loop-right', ring(20).color(shell).scale(overallScale));
+p.part('blade-left', poly([[-16, 9], [-8, 14], [-3, 80], [-8, 105], [-14, 84]], 7, 6).color(accent).scale(overallScale));
+p.part('blade-right', poly([[16, 9], [8, 14], [3, 80], [8, 105], [14, 84]], 7, 6).color(accent).scale(overallScale));
+p.part('pivot', c(0, 0, 0, 14, 7, 8).color(accent).scale(overallScale));
 
 return p.model();
