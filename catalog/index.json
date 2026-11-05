@@ -245086,7 +245086,7 @@
       "id": "access-ladder-cage",
       "kit": "wind-energy",
       "title": "Tower access ladder cage",
-      "description": "Vertical tower ladder section with side rails, four rungs and a half-hoop safety cage. Knobs: overall scale and asset color.",
+      "description": "Vertical tower ladder section with side rails, four rungs and a half-hoop safety cage. Controls: scale and galvanized steel, safety paint; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -245105,8 +245105,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/access-ladder-cage.kcad.ts",
       "preview": "/assets/wind-energy-access-ladder-cage.png",
-      "sourceSha256": "9bb1b5d74d47ab18626b995106647a03cd84618928220b1cdd04c5450cd9a661",
-      "triangleBudget": 2200,
+      "sourceSha256": "2d78d89181645fa7b2046b49ba9d0b517b8cf6d1102ab96381334681016c8a7a",
+      "triangleBudget": 550,
       "params": [
         {
           "name": "scale",
@@ -245118,13 +245118,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#626d6b",
-          "label": "Asset color"
+          "default": "#8b9c9e",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#efb532",
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#6c7a7b",
+          "safetyPaint": "#ffc336"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f7c331",
+          "galvanizedSteel": "#7a898b"
+        }
+      },
       "stats": {
         "triangles": 260,
         "sizeM": [
@@ -245137,22 +245152,29 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#626d6b",
+          "name": "galvanizedSteel",
+          "color": "#8b9c9e",
           "parts": [
             "rail-left",
             "rail-right",
-            "rung-0",
-            "rung-1",
-            "rung-2",
-            "rung-3",
-            "rung-4",
             "hoop-0",
             "hoop-1",
             "hoop-2",
             "hoop-3"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#efb532",
+          "parts": [
+            "rung-0",
+            "rung-1",
+            "rung-2",
+            "rung-3",
+            "rung-4"
+          ],
+          "param": "safetyPaint"
         }
       ]
     },
@@ -245160,7 +245182,7 @@
       "id": "access-platform-ring",
       "kit": "wind-energy",
       "title": "Tower access platform ring",
-      "description": "Circular service platform with four guard posts, a curved-look deck and ladder opening. Knobs: overall scale and asset color.",
+      "description": "Circular service platform with four guard posts, a curved-look deck and ladder opening. Controls: scale and galvanized steel, safety paint; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -245179,8 +245201,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/access-platform-ring.kcad.ts",
       "preview": "/assets/wind-energy-access-platform-ring.png",
-      "sourceSha256": "e4a292a35f323c78f3d1835a54150d55b477563cedfbc65a00bf83cfbe63cdd6",
-      "triangleBudget": 2200,
+      "sourceSha256": "26fe7022c151e7ba8b03a22e798bb137ca3d25f3c60d6e0e5285f065895dbf7d",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -245192,13 +245214,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#777f7f",
-          "label": "Asset color"
+          "default": "#8b9c9e",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#efb532",
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#6c7a7b",
+          "safetyPaint": "#ffc336"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f7c331",
+          "galvanizedSteel": "#7a898b"
+        }
+      },
       "stats": {
         "triangles": 128,
         "sizeM": [
@@ -245211,8 +245248,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#777f7f",
+          "name": "galvanizedSteel",
+          "color": "#8b9c9e",
           "parts": [
             "deck",
             "post-0",
@@ -245220,10 +245257,17 @@
             "post-2",
             "post-3",
             "rail-front",
-            "rail-back",
+            "rail-back"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#efb532",
+          "parts": [
             "opening-bridge"
           ],
-          "param": "color"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -245231,7 +245275,7 @@
       "id": "aviation-light",
       "kit": "wind-energy",
       "title": "Turbine aviation light",
-      "description": "Low polygon aviation beacon with a square bracket, cylindrical lamp and cap. Knobs: overall scale and asset color.",
+      "description": "Low polygon aviation beacon with a square bracket, cylindrical lamp and cap. Controls: scale and powder-coated steel, polycarbonate; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -245250,8 +245294,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/aviation-light.kcad.ts",
       "preview": "/assets/wind-energy-aviation-light.png",
-      "sourceSha256": "c96833946aa2a285f2bdaa6196c9a786a1629ec5e797f365bd56e68bc68b326d",
-      "triangleBudget": 2200,
+      "sourceSha256": "d1ddf63f1a9678c44a39f50e451e0d6fbb0d4afadca07de5726770986eea47a9",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -245263,13 +245307,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#b34d42",
-          "label": "Asset color"
+          "default": "#287082",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "polycarbonate",
+          "type": "color",
+          "default": "#d8b546",
+          "label": "Polycarbonate"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#1f5765",
+          "polycarbonate": "#e9c34c"
+        },
+        "highVisibility": {
+          "polycarbonate": "#f2b92e"
+        }
+      },
       "stats": {
         "triangles": 144,
         "sizeM": [
@@ -245282,15 +245340,22 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b34d42",
+          "name": "powderCoatedSteel",
+          "color": "#287082",
           "parts": [
             "mount",
             "stem",
-            "lamp",
             "cap"
           ],
-          "param": "color"
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "polycarbonate",
+          "color": "#d8b546",
+          "parts": [
+            "lamp"
+          ],
+          "param": "polycarbonate"
         }
       ]
     },
@@ -245298,7 +245363,7 @@
       "id": "blade-root-lifting-yoke",
       "kit": "wind-energy",
       "title": "Blade root lifting yoke",
-      "description": "Lifting yoke frame with a broad crossbar, paired sling lugs and central hook eye. Knobs: overall scale and asset color.",
+      "description": "Lifting yoke frame with a broad crossbar, paired sling lugs and central hook eye. Controls: scale and structural steel, stainless steel; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -245317,8 +245382,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/blade-root-lifting-yoke.kcad.ts",
       "preview": "/assets/wind-energy-blade-root-lifting-yoke.png",
-      "sourceSha256": "00c16a6441a2e43f88740fcf28ebcf06842f5e0b0452b09454b8ce7e4e918ea7",
-      "triangleBudget": 2200,
+      "sourceSha256": "81632d500e849a38ef81e901a962255f816396604b2f60906c5d133e96aaefd1",
+      "triangleBudget": 350,
       "params": [
         {
           "name": "scale",
@@ -245330,13 +245395,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "structuralSteel",
           "type": "color",
-          "default": "#727976",
-          "label": "Asset color"
+          "default": "#556971",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b8c2c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "structuralSteel": "#425258",
+          "stainlessSteel": "#c7d2d5"
+        },
+        "highVisibility": {
+          "structuralSteel": "#d8a62b"
+        }
+      },
       "stats": {
         "triangles": 168,
         "sizeM": [
@@ -245349,17 +245428,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#727976",
+          "name": "structuralSteel",
+          "color": "#556971",
           "parts": [
             "beam",
             "leg-left",
-            "leg-right",
+            "leg-right"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b8c2c5",
+          "parts": [
             "eye-left",
             "eye-right",
             "hook-eye"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -245367,7 +245453,7 @@
       "id": "blade-root-protector",
       "kit": "wind-energy",
       "title": "Blade root protector",
-      "description": "Protective cover around a turbine blade root with flanged ring and short securing tabs. Knobs: overall scale and asset color.",
+      "description": "Protective cover around a turbine blade root with flanged ring and short securing tabs. Controls: scale and fiberglass composite, stainless steel; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -245386,8 +245472,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/blade-root-protector.kcad.ts",
       "preview": "/assets/wind-energy-blade-root-protector.png",
-      "sourceSha256": "bd3666464695e563a882d5f796af5cf2704be2593cecc4deda2e06f999175662",
-      "triangleBudget": 2200,
+      "sourceSha256": "34b0d44d7ebaeac28e0d50a870ec664c6db34d897a7eeae590edca3bf147cc00",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -245399,13 +245485,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "fiberglassComposite",
           "type": "color",
-          "default": "#c8c8bd",
-          "label": "Asset color"
+          "default": "#e7ebe1",
+          "label": "Fiberglass composite"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b8c2c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "fiberglassComposite": "#b4b7b0",
+          "stainlessSteel": "#c7d2d5"
+        },
+        "highVisibility": {
+          "fiberglassComposite": "#e48d35"
+        }
+      },
       "stats": {
         "triangles": 136,
         "sizeM": [
@@ -245418,17 +245518,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#c8c8bd",
+          "name": "stainlessSteel",
+          "color": "#b8c2c5",
           "parts": [
             "ring",
-            "sleeve",
             "tab-0",
             "tab-1",
             "tab-2",
             "tab-3"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "fiberglassComposite",
+          "color": "#e7ebe1",
+          "parts": [
+            "sleeve"
+          ],
+          "param": "fiberglassComposite"
         }
       ]
     },
@@ -245436,7 +245543,7 @@
       "id": "blade-transport-saddle",
       "kit": "wind-energy",
       "title": "Wind blade transport saddle",
-      "description": "Padded transport saddle with two curved-look support blocks and a broad trailer base. Knobs: overall scale and asset color.",
+      "description": "Padded transport saddle with two curved-look support blocks and a broad trailer base. Controls: scale and structural steel, elastomer; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -245455,8 +245562,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/blade-transport-saddle.kcad.ts",
       "preview": "/assets/wind-energy-blade-transport-saddle.png",
-      "sourceSha256": "e7532c59439fc2a1383889371b3592ffd7fd4c631a35f8881ecbf240b5e889e3",
-      "triangleBudget": 2200,
+      "sourceSha256": "41f08924a148abae82759a91db693099bc61a222d9487c4b44b4dd44561e9216",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -245468,13 +245575,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "structuralSteel",
           "type": "color",
-          "default": "#81766a",
-          "label": "Asset color"
+          "default": "#556971",
+          "label": "Structural steel"
+        },
+        {
+          "name": "elastomer",
+          "type": "color",
+          "default": "#30383a",
+          "label": "Elastomer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "structuralSteel": "#425258",
+          "elastomer": "#343c3f"
+        },
+        "highVisibility": {
+          "structuralSteel": "#d8a62b"
+        }
+      },
       "stats": {
         "triangles": 72,
         "sizeM": [
@@ -245487,17 +245608,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#81766a",
+          "name": "structuralSteel",
+          "color": "#556971",
           "parts": [
             "base",
-            "saddle-left",
-            "saddle-right",
             "strap-bar",
             "foot--420",
             "foot-420"
           ],
-          "param": "color"
+          "param": "structuralSteel"
+        },
+        {
+          "name": "elastomer",
+          "color": "#30383a",
+          "parts": [
+            "saddle-left",
+            "saddle-right"
+          ],
+          "param": "elastomer"
         }
       ]
     },
@@ -245505,7 +245633,7 @@
       "id": "cable-entry-boot",
       "kit": "wind-energy",
       "title": "Cable entry boot",
-      "description": "Flexible-looking cable entry boot with base plate, raised collar and short conduit riser. Knobs: overall scale and asset color.",
+      "description": "Flexible-looking cable entry boot with base plate, raised collar and short conduit riser. Controls: scale and galvanized steel, insulating polymer; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -245524,8 +245652,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/cable-entry-boot.kcad.ts",
       "preview": "/assets/wind-energy-cable-entry-boot.png",
-      "sourceSha256": "0861d3ac1aa8180b705ac478ec896d89219882a2be87bc72535f27546c67d2cb",
-      "triangleBudget": 2200,
+      "sourceSha256": "f2cf5d1c59bdea28058c7e692e96c779aa75c17f61907b039e4c4dd21e896142",
+      "triangleBudget": 400,
       "params": [
         {
           "name": "scale",
@@ -245537,13 +245665,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#575f5d",
-          "label": "Asset color"
+          "default": "#8b9c9e",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "insulatingPolymer",
+          "type": "color",
+          "default": "#263e47",
+          "label": "Insulating polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#6c7a7b",
+          "insulatingPolymer": "#29434d"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#d8a62b"
+        }
+      },
       "stats": {
         "triangles": 188,
         "sizeM": [
@@ -245556,16 +245698,23 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#575f5d",
+          "name": "galvanizedSteel",
+          "color": "#8b9c9e",
           "parts": [
             "plate",
-            "boot",
             "collar",
             "conduit",
             "cap"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "insulatingPolymer",
+          "color": "#263e47",
+          "parts": [
+            "boot"
+          ],
+          "param": "insulatingPolymer"
         }
       ]
     },
@@ -245573,7 +245722,7 @@
       "id": "cable-reel-stand",
       "kit": "wind-energy",
       "title": "Power cable reel stand",
-      "description": "Freestanding cable drum stand with two side supports, bottom tie and central axle. Knobs: overall scale and asset color.",
+      "description": "Freestanding cable drum stand with two side supports, bottom tie and central axle. Controls: scale and structural steel, stainless steel, safety paint; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -245592,8 +245741,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/cable-reel-stand.kcad.ts",
       "preview": "/assets/wind-energy-cable-reel-stand.png",
-      "sourceSha256": "19aae09f666d7f3855a5678f988b4628b9c6ddd95d3124c64a3688e722fc9f79",
-      "triangleBudget": 2200,
+      "sourceSha256": "17a6ddda9e6f286742e98d32a8856755b304d93dc1d0df400ca67989aac03c37",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -245605,13 +245754,34 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "structuralSteel",
           "type": "color",
-          "default": "#727976",
-          "label": "Asset color"
+          "default": "#556971",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b8c2c5",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#efb532",
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "structuralSteel": "#425258",
+          "stainlessSteel": "#c7d2d5"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f7c331",
+          "structuralSteel": "#4b5c63"
+        }
+      },
       "stats": {
         "triangles": 148,
         "sizeM": [
@@ -245624,18 +245794,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#727976",
+          "name": "structuralSteel",
+          "color": "#556971",
           "parts": [
             "foot-left",
             "foot-right",
             "upright-left",
             "upright-right",
-            "axle",
-            "reel",
+            "reel"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b8c2c5",
+          "parts": [
+            "axle"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#efb532",
+          "parts": [
             "crossbar"
           ],
-          "param": "color"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -245643,7 +245827,7 @@
       "id": "cable-trench-cover",
       "kit": "wind-energy",
       "title": "Cable trench cover",
-      "description": "Rectangular cable trench lid with reinforced cross ribs and lift slots. Knobs: overall scale and asset color.",
+      "description": "Rectangular cable trench lid with reinforced cross ribs and lift slots. Controls: scale and galvanized steel, safety paint; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -245662,8 +245846,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/cable-trench-cover.kcad.ts",
       "preview": "/assets/wind-energy-cable-trench-cover.png",
-      "sourceSha256": "439ec32990b1ffe4bce375f5e6e70c35b1e84735158dc8b2dad5b566906f85cb",
-      "triangleBudget": 2200,
+      "sourceSha256": "39d9be34cfaee33e67e20d3e09cd560dca9d3379f77e8ec5b6d1896a9c238800",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -245675,13 +245859,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#727976",
-          "label": "Asset color"
+          "default": "#8b9c9e",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#efb532",
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#6c7a7b",
+          "safetyPaint": "#ffc336"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f7c331",
+          "galvanizedSteel": "#7a898b"
+        }
+      },
       "stats": {
         "triangles": 84,
         "sizeM": [
@@ -245694,18 +245893,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#727976",
+          "name": "galvanizedSteel",
+          "color": "#8b9c9e",
           "parts": [
             "lid",
             "rib-0",
             "rib-1",
             "rib-2",
-            "rib-3",
+            "rib-3"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#efb532",
+          "parts": [
             "slot-left",
             "slot-right"
           ],
-          "param": "color"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -245713,7 +245919,7 @@
       "id": "converter-cabinet",
       "kit": "wind-energy",
       "title": "Power converter cabinet",
-      "description": "Tall converter cabinet with top lip, twin front panels and side cooling louvres. Knobs: overall scale and asset color.",
+      "description": "Tall converter cabinet with top lip, twin front panels and side cooling louvres. Controls: scale and powder-coated steel, safety paint; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -245732,8 +245938,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/converter-cabinet.kcad.ts",
       "preview": "/assets/wind-energy-converter-cabinet.png",
-      "sourceSha256": "ce596a1aa369263665b4086bedb114c45ee7e9086c6f8ea7ed4fc02a2a4d94fb",
-      "triangleBudget": 2200,
+      "sourceSha256": "353df22af8287331d448ffe102eae4c56d57daeed79af1f00f211883cf69022f",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -245745,13 +245951,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#707a76",
-          "label": "Asset color"
+          "default": "#287082",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#efb532",
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#1f5765",
+          "safetyPaint": "#ffc336"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f7c331",
+          "powderCoatedSteel": "#236372"
+        }
+      },
       "stats": {
         "triangles": 108,
         "sizeM": [
@@ -245764,20 +245985,27 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#707a76",
+          "name": "powderCoatedSteel",
+          "color": "#287082",
           "parts": [
             "body",
             "top",
-            "panel-left",
-            "panel-right",
             "louver-0",
             "louver-1",
             "louver-2",
             "louver-3",
             "louver-4"
           ],
-          "param": "color"
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#efb532",
+          "parts": [
+            "panel-left",
+            "panel-right"
+          ],
+          "param": "safetyPaint"
         }
       ]
     },
@@ -245785,7 +246013,7 @@
       "id": "crane-outrigger-pad",
       "kit": "wind-energy",
       "title": "Crane outrigger pad",
-      "description": "Square equipment pad with a shallow top plate, underside ribs and four corner chamfers. Knobs: overall scale and asset color.",
+      "description": "Square equipment pad with a shallow top plate, underside ribs and four corner chamfers. Controls: scale and recycled polymer, structural steel; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -245804,8 +246032,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/crane-outrigger-pad.kcad.ts",
       "preview": "/assets/wind-energy-crane-outrigger-pad.png",
-      "sourceSha256": "31a99ecedd01d55cd85c8d9cc0b96e7aef1f34679a40a91b30dcb2305969f611",
-      "triangleBudget": 2200,
+      "sourceSha256": "78fb85cb4af7b2e8a01a6fb0c92ac4c6d315e33f8738e321870210e8a4246a03",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -245817,13 +246045,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "recycledPolymer",
           "type": "color",
-          "default": "#555b59",
-          "label": "Asset color"
+          "default": "#416457",
+          "label": "Recycled polymer"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#556971",
+          "label": "Structural steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "recycledPolymer": "#334e44",
+          "structuralSteel": "#5c717a"
+        },
+        "highVisibility": {
+          "recycledPolymer": "#d8a62b"
+        }
+      },
       "stats": {
         "triangles": 72,
         "sizeM": [
@@ -245836,17 +246078,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#555b59",
+          "name": "recycledPolymer",
+          "color": "#416457",
           "parts": [
             "pad",
             "rib-0",
             "rib-1",
             "rib-2",
-            "rib-3",
+            "rib-3"
+          ],
+          "param": "recycledPolymer"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#556971",
+          "parts": [
             "top-plate"
           ],
-          "param": "color"
+          "param": "structuralSteel"
         }
       ]
     },
@@ -245854,7 +246103,7 @@
       "id": "foundation-anchor-cage",
       "kit": "wind-energy",
       "title": "Foundation anchor cage",
-      "description": "Circular anchor cage ring with eight vertical bolts and a central tower socket. Knobs: overall scale and asset color.",
+      "description": "Circular anchor cage ring with eight vertical bolts and a central tower socket. Controls: scale and structural steel, stainless steel; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -245873,8 +246122,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/foundation-anchor-cage.kcad.ts",
       "preview": "/assets/wind-energy-foundation-anchor-cage.png",
-      "sourceSha256": "c6f2950b447acd911281917762ca924b0595dd326ca5f4f94446e348890f8a8f",
-      "triangleBudget": 2200,
+      "sourceSha256": "1d56dc7ea0c0765a624bed242a0a6c0f7f74b43364ccf425f814384132220ff7",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -245886,13 +246135,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "structuralSteel",
           "type": "color",
-          "default": "#7a8180",
-          "label": "Asset color"
+          "default": "#556971",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b8c2c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "structuralSteel": "#425258",
+          "stainlessSteel": "#c7d2d5"
+        },
+        "highVisibility": {
+          "structuralSteel": "#d8a62b"
+        }
+      },
       "stats": {
         "triangles": 440,
         "sizeM": [
@@ -245905,11 +246168,10 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7a8180",
+          "name": "stainlessSteel",
+          "color": "#b8c2c5",
           "parts": [
             "ring",
-            "socket",
             "bolt-0",
             "bolt-1",
             "bolt-2",
@@ -245919,7 +246181,15 @@
             "bolt-6",
             "bolt-7"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#556971",
+          "parts": [
+            "socket"
+          ],
+          "param": "structuralSteel"
         }
       ]
     },
@@ -245927,7 +246197,7 @@
       "id": "foundation-inspection-hatch",
       "kit": "wind-energy",
       "title": "Foundation inspection hatch",
-      "description": "Circular foundation access hatch with raised rim, inset lid and twin lift tabs. Knobs: overall scale and asset color.",
+      "description": "Circular foundation access hatch with raised rim, inset lid and twin lift tabs. Controls: scale and structural steel, stainless steel; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -245946,8 +246216,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/foundation-inspection-hatch.kcad.ts",
       "preview": "/assets/wind-energy-foundation-inspection-hatch.png",
-      "sourceSha256": "947d6c58935d3aed1bc2cfa5ff53d9b8e4c7d90ff14f33d6ca2efd2f7a859866",
-      "triangleBudget": 2200,
+      "sourceSha256": "3bd6a612e3ed8448c51dcfa4809e8180418dad23e69e51d9da2462c094b6934a",
+      "triangleBudget": 400,
       "params": [
         {
           "name": "scale",
@@ -245959,13 +246229,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "structuralSteel",
           "type": "color",
-          "default": "#737a77",
-          "label": "Asset color"
+          "default": "#556971",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b8c2c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "structuralSteel": "#425258",
+          "stainlessSteel": "#c7d2d5"
+        },
+        "highVisibility": {
+          "structuralSteel": "#d8a62b"
+        }
+      },
       "stats": {
         "triangles": 200,
         "sizeM": [
@@ -245978,17 +246262,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#737a77",
+          "name": "structuralSteel",
+          "color": "#556971",
           "parts": [
             "rim",
-            "lid",
+            "lid"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b8c2c5",
+          "parts": [
             "tab-left",
             "tab-right",
             "bolt-a",
             "bolt-b"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -245996,7 +246287,7 @@
       "id": "gearbox-enclosure",
       "kit": "wind-energy",
       "title": "Gearbox assembly housing",
-      "description": "Compact gearbox housing with raised cover, mounting feet and two stepped side bosses. Knobs: overall scale and asset color.",
+      "description": "Compact gearbox housing with raised cover, mounting feet and two stepped side bosses. Controls: scale and painted steel, cast steel, stainless steel; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -246015,8 +246306,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/gearbox-enclosure.kcad.ts",
       "preview": "/assets/wind-energy-gearbox-enclosure.png",
-      "sourceSha256": "bddfab9525314453969ddcab970e92b5d99f9be95185b41471e15cb99865aa5b",
-      "triangleBudget": 2200,
+      "sourceSha256": "f592ac9086d96c8e36a72c1fb6bf5a5bdf87ff4d92524ba438710bd8db924fa9",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -246028,13 +246319,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
-          "default": "#747b77",
-          "label": "Asset color"
+          "default": "#53727c",
+          "label": "Painted steel"
+        },
+        {
+          "name": "castSteel",
+          "type": "color",
+          "default": "#59666b",
+          "label": "Cast steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b8c2c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#415961",
+          "castSteel": "#606e74"
+        },
+        "highVisibility": {
+          "paintedSteel": "#d8a62b"
+        }
+      },
       "stats": {
         "triangles": 136,
         "sizeM": [
@@ -246047,17 +246358,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#747b77",
+          "name": "castSteel",
+          "color": "#59666b",
           "parts": [
-            "housing",
+            "housing"
+          ],
+          "param": "castSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#53727c",
+          "parts": [
             "cover",
-            "shaft-left",
-            "shaft-right",
             "foot--260",
             "foot-260"
           ],
-          "param": "color"
+          "param": "paintedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b8c2c5",
+          "parts": [
+            "shaft-left",
+            "shaft-right"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -246065,7 +246390,7 @@
       "id": "generator-cover",
       "kit": "wind-energy",
       "title": "Generator housing cover",
-      "description": "Generator cover with cylindrical end caps, central rectangular body and mounting rails. Knobs: overall scale and asset color.",
+      "description": "Generator cover with cylindrical end caps, central rectangular body and mounting rails. Controls: scale and painted steel, cast steel; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -246084,8 +246409,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/generator-cover.kcad.ts",
       "preview": "/assets/wind-energy-generator-cover.png",
-      "sourceSha256": "e5815f00a22c5452bdf8492b15bf1315847606ddc7e4931b10f5073614bc8b0e",
-      "triangleBudget": 2200,
+      "sourceSha256": "0547cf084f38ece39d931140bff7f4b86ef586b4a7dbb1f83be40dc23360db0a",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -246097,13 +246422,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
-          "default": "#717975",
-          "label": "Asset color"
+          "default": "#53727c",
+          "label": "Painted steel"
+        },
+        {
+          "name": "castSteel",
+          "type": "color",
+          "default": "#59666b",
+          "label": "Cast steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#415961",
+          "castSteel": "#606e74"
+        },
+        "highVisibility": {
+          "paintedSteel": "#d8a62b"
+        }
+      },
       "stats": {
         "triangles": 136,
         "sizeM": [
@@ -246116,17 +246455,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#717975",
+          "name": "paintedSteel",
+          "color": "#53727c",
           "parts": [
             "body",
             "end-left",
             "end-right",
             "rail-left",
-            "rail-right",
+            "rail-right"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "castSteel",
+          "color": "#59666b",
+          "parts": [
             "top"
           ],
-          "param": "color"
+          "param": "castSteel"
         }
       ]
     },
@@ -246134,7 +246480,7 @@
       "id": "grounding-busbar",
       "kit": "wind-energy",
       "title": "Turbine grounding busbar",
-      "description": "Grounding bar with six terminal studs, two insulators and a broad mounting rail. Knobs: overall scale and asset color.",
+      "description": "Grounding bar with six terminal studs, two insulators and a broad mounting rail. Controls: scale and copper, electrical ceramic, stainless steel; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -246153,8 +246499,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/grounding-busbar.kcad.ts",
       "preview": "/assets/wind-energy-grounding-busbar.png",
-      "sourceSha256": "9860872c2762aa8552c86c3e3c33c521b01fe88e4dac015d51f06bda0e7404b0",
-      "triangleBudget": 2200,
+      "sourceSha256": "f3ec500dca0f2f2f828ccce3492f698c3e5b0cd2a781a07ecbd0d2d97492fadc",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -246166,13 +246512,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "copper",
           "type": "color",
-          "default": "#a47945",
-          "label": "Asset color"
+          "default": "#b7734e",
+          "label": "Copper"
+        },
+        {
+          "name": "ceramic",
+          "type": "color",
+          "default": "#eee2ca",
+          "label": "Electrical ceramic"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b8c2c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "copper": "#8f5a3d",
+          "ceramic": "#fff4da"
+        },
+        "highVisibility": {
+          "copper": "#d8a62b"
+        }
+      },
       "stats": {
         "triangles": 300,
         "sizeM": [
@@ -246185,12 +246551,26 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a47945",
+          "name": "copper",
+          "color": "#b7734e",
           "parts": [
-            "rail",
+            "rail"
+          ],
+          "param": "copper"
+        },
+        {
+          "name": "ceramic",
+          "color": "#eee2ca",
+          "parts": [
             "insulator-left",
-            "insulator-right",
+            "insulator-right"
+          ],
+          "param": "ceramic"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b8c2c5",
+          "parts": [
             "stud-0",
             "stud-1",
             "stud-2",
@@ -246198,7 +246578,7 @@
             "stud-4",
             "stud-5"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -246206,7 +246586,7 @@
       "id": "horizontal-axis-wind-turbine",
       "kit": "wind-energy",
       "title": "Horizontal-axis wind turbine",
-      "description": "Onshore turbine silhouette with tower, box nacelle, hub, three broad blades and foundation. Knobs: overall scale and asset color.",
+      "description": "Onshore turbine silhouette with tower, box nacelle, hub, three broad blades and foundation. Controls: scale and painted steel, fiberglass composite, stainless steel; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -246225,8 +246605,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/horizontal-axis-wind-turbine.kcad.ts",
       "preview": "/assets/wind-energy-horizontal-axis-wind-turbine.png",
-      "sourceSha256": "ad3b3f40e335c540d96202546712bf7f07b13b9dc5c4cd87e81bad3af0244e1a",
-      "triangleBudget": 2200,
+      "sourceSha256": "b3b17037696a21f23e462eeb399755d8e10fd82600459d89e91058e290f0bafa",
+      "triangleBudget": 550,
       "params": [
         {
           "name": "scale",
@@ -246238,37 +246618,71 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
-          "default": "#d8d8d1",
-          "label": "Asset color"
+          "default": "#53727c",
+          "label": "Painted steel"
+        },
+        {
+          "name": "fiberglassComposite",
+          "type": "color",
+          "default": "#e7ebe1",
+          "label": "Fiberglass composite"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b8c2c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#415961",
+          "fiberglassComposite": "#f9fef3"
+        },
+        "highVisibility": {
+          "fiberglassComposite": "#e48d35"
+        }
+      },
       "stats": {
-        "triangles": 180,
+        "triangles": 216,
         "sizeM": [
-          1.99,
-          3.65,
-          0.41
+          2.06282,
+          3.78,
+          0.43
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d8d8d1",
+          "name": "paintedSteel",
+          "color": "#53727c",
           "parts": [
             "tower",
             "nacelle",
-            "hub",
-            "blade-up",
-            "blade-left",
-            "blade-right",
             "base-flange"
           ],
-          "param": "color"
+          "param": "paintedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b8c2c5",
+          "parts": [
+            "hub"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "fiberglassComposite",
+          "color": "#e7ebe1",
+          "parts": [
+            "blade-up",
+            "blade-left",
+            "blade-right"
+          ],
+          "param": "fiberglassComposite"
         }
       ]
     },
@@ -246276,7 +246690,7 @@
       "id": "maintenance-tool-cart",
       "kit": "wind-energy",
       "title": "Turbine maintenance tool cart",
-      "description": "Compact maintenance cart with two shelves, push handle and four low polygon casters. Knobs: overall scale and asset color.",
+      "description": "Compact maintenance cart with two shelves, push handle and four low polygon casters. Controls: scale and powder-coated steel, elastomer, stainless steel; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -246295,8 +246709,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/maintenance-tool-cart.kcad.ts",
       "preview": "/assets/wind-energy-maintenance-tool-cart.png",
-      "sourceSha256": "9b7d248668ce1e89b45985c72bd2f540c501bd18d4845d069c04ee495b659308",
-      "triangleBudget": 2200,
+      "sourceSha256": "9028c39fff48b4e17fe8009528c358c52c06a954b91fd9c0444496d1b7e20d2b",
+      "triangleBudget": 550,
       "params": [
         {
           "name": "scale",
@@ -246308,41 +246722,77 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#737a77",
-          "label": "Asset color"
+          "default": "#287082",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "elastomer",
+          "type": "color",
+          "default": "#30383a",
+          "label": "Elastomer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b8c2c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#1f5765",
+          "elastomer": "#343c3f"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#d8a62b"
+        }
+      },
       "stats": {
-        "triangles": 260,
+        "triangles": 284,
         "sizeM": [
           0.85,
-          0.805,
-          0.57
+          0.63,
+          0.5425
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#737a77",
+          "name": "powderCoatedSteel",
+          "color": "#287082",
           "parts": [
             "lower",
             "upper",
             "post--360--210",
             "post--360-210",
             "post-360--210",
-            "post-360-210",
-            "handle",
+            "post-360-210"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b8c2c5",
+          "parts": [
+            "handle-post-left",
+            "handle-post-right",
+            "handle"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "elastomer",
+          "color": "#30383a",
+          "parts": [
             "wheel--330--210",
             "wheel--330-210",
             "wheel-330--210",
             "wheel-330-210"
           ],
-          "param": "color"
+          "param": "elastomer"
         }
       ]
     },
@@ -246350,7 +246800,7 @@
       "id": "monopile-foundation",
       "kit": "wind-energy",
       "title": "Monopile foundation",
-      "description": "Short offshore monopile foundation with top rim, four fender blocks and a flat seabed shoe. Knobs: overall scale and asset color.",
+      "description": "Short offshore monopile foundation with top rim, four fender blocks and a flat seabed shoe. Controls: scale and marine steel, elastomer, safety paint; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -246369,8 +246819,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/monopile-foundation.kcad.ts",
       "preview": "/assets/wind-energy-monopile-foundation.png",
-      "sourceSha256": "cfc1ed4cdebc35e0c0c3ffa0d6b7dc490dfada666ec98da715f87e216904fa48",
-      "triangleBudget": 2200,
+      "sourceSha256": "874055a2d11a77ef21328f2eba6116d617c55c931974f10d2648668e89212ecd",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -246382,13 +246832,34 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "marineSteel",
           "type": "color",
-          "default": "#777d7a",
-          "label": "Asset color"
+          "default": "#335868",
+          "label": "Marine steel"
+        },
+        {
+          "name": "elastomer",
+          "type": "color",
+          "default": "#30383a",
+          "label": "Elastomer"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#efb532",
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "marineSteel": "#284551",
+          "elastomer": "#343c3f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f7c331",
+          "marineSteel": "#2d4d5c"
+        }
+      },
       "stats": {
         "triangles": 148,
         "sizeM": [
@@ -246401,18 +246872,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#777d7a",
+          "name": "marineSteel",
+          "color": "#335868",
           "parts": [
             "pile",
-            "rim",
-            "shoe",
+            "rim"
+          ],
+          "param": "marineSteel"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#efb532",
+          "parts": [
+            "shoe"
+          ],
+          "param": "safetyPaint"
+        },
+        {
+          "name": "elastomer",
+          "color": "#30383a",
+          "parts": [
             "fender-0",
             "fender-1",
             "fender-2",
             "fender-3"
           ],
-          "param": "color"
+          "param": "elastomer"
         }
       ]
     },
@@ -246420,7 +246905,7 @@
       "id": "nacelle-service-platform",
       "kit": "wind-energy",
       "title": "Nacelle service platform",
-      "description": "Narrow service walkway with guard rails, mounting brackets and an access ladder stub. Knobs: overall scale and asset color.",
+      "description": "Narrow service walkway with guard rails, mounting brackets and an access ladder stub. Controls: scale and galvanized steel, safety paint; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -246439,8 +246924,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/nacelle-service-platform.kcad.ts",
       "preview": "/assets/wind-energy-nacelle-service-platform.png",
-      "sourceSha256": "326b2672bd80dde86357767ff72e9237017310bd00fcf62b76befe46487ed215",
-      "triangleBudget": 2200,
+      "sourceSha256": "0647f63ecf20716806940418184a8da701ccb43f1cd8b7fdc70f42098d4954ab",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -246452,13 +246937,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#737c79",
-          "label": "Asset color"
+          "default": "#8b9c9e",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#efb532",
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#6c7a7b",
+          "safetyPaint": "#ffc336"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f7c331",
+          "galvanizedSteel": "#7a898b"
+        }
+      },
       "stats": {
         "triangles": 72,
         "sizeM": [
@@ -246471,17 +246971,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#737c79",
+          "name": "galvanizedSteel",
+          "color": "#8b9c9e",
           "parts": [
             "deck",
             "rail-left",
             "rail-right",
             "post--440",
-            "post-440",
+            "post-440"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#efb532",
+          "parts": [
             "ladder"
           ],
-          "param": "color"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -246489,7 +246996,7 @@
       "id": "nacelle-transport-frame",
       "kit": "wind-energy",
       "title": "Nacelle transport frame",
-      "description": "Open transport frame with corner posts, support deck and two lifting crossbars. Knobs: overall scale and asset color.",
+      "description": "Open transport frame with corner posts, support deck and two lifting crossbars. Controls: scale and structural steel, safety paint; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -246508,8 +247015,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/nacelle-transport-frame.kcad.ts",
       "preview": "/assets/wind-energy-nacelle-transport-frame.png",
-      "sourceSha256": "25af0c45b328ce63dd815872f9d58ad16ddae1af33acf0c445eb1ab557db7812",
-      "triangleBudget": 2200,
+      "sourceSha256": "35dcf47532acb8cbf3739c4d09e63d668378a1aa33e4d01f16e0f73feb60567b",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -246521,13 +247028,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "structuralSteel",
           "type": "color",
-          "default": "#747b78",
-          "label": "Asset color"
+          "default": "#556971",
+          "label": "Structural steel"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#efb532",
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "structuralSteel": "#425258",
+          "safetyPaint": "#ffc336"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f7c331",
+          "structuralSteel": "#4b5c63"
+        }
+      },
       "stats": {
         "triangles": 84,
         "sizeM": [
@@ -246540,18 +247062,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#747b78",
+          "name": "structuralSteel",
+          "color": "#556971",
           "parts": [
             "deck",
             "post--560--380",
             "post--560-380",
             "post-560--380",
-            "post-560-380",
+            "post-560-380"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#efb532",
+          "parts": [
             "cross-a",
             "cross-b"
           ],
-          "param": "color"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -246559,7 +247088,7 @@
       "id": "offshore-wind-turbine",
       "kit": "wind-energy",
       "title": "Offshore wind turbine",
-      "description": "Offshore turbine scene prop with monopile, transition collar, tower, nacelle and rotor. Knobs: overall scale and asset color.",
+      "description": "Offshore turbine scene prop with monopile, transition collar, tower, nacelle and rotor. Controls: scale and painted steel, fiberglass composite, marine steel; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -246578,8 +247107,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/offshore-wind-turbine.kcad.ts",
       "preview": "/assets/wind-energy-offshore-wind-turbine.png",
-      "sourceSha256": "ea69532f50f36766b9129ea65dae0f812a774b3d172c883b1461dcb1e40e971e",
-      "triangleBudget": 2200,
+      "sourceSha256": "1032484515f245b8785cb69749b130da5f3690455a0d87f811de8e8dd5e9e80d",
+      "triangleBudget": 650,
       "params": [
         {
           "name": "scale",
@@ -246591,38 +247120,72 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
-          "default": "#c9d1d0",
-          "label": "Asset color"
+          "default": "#53727c",
+          "label": "Painted steel"
+        },
+        {
+          "name": "fiberglassComposite",
+          "type": "color",
+          "default": "#e7ebe1",
+          "label": "Fiberglass composite"
+        },
+        {
+          "name": "marineSteel",
+          "type": "color",
+          "default": "#335868",
+          "label": "Marine steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#415961",
+          "fiberglassComposite": "#f9fef3"
+        },
+        "highVisibility": {
+          "fiberglassComposite": "#e48d35"
+        }
+      },
       "stats": {
-        "triangles": 224,
+        "triangles": 260,
         "sizeM": [
-          2.25,
-          4.68,
-          0.505
+          2.75764,
+          5.09,
+          0.53
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#c9d1d0",
+          "name": "marineSteel",
+          "color": "#335868",
           "parts": [
             "monopile",
-            "transition",
+            "transition"
+          ],
+          "param": "marineSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#53727c",
+          "parts": [
             "tower",
             "nacelle",
-            "hub",
+            "hub"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "fiberglassComposite",
+          "color": "#e7ebe1",
+          "parts": [
             "blade-up",
             "blade-left",
             "blade-right"
           ],
-          "param": "color"
+          "param": "fiberglassComposite"
         }
       ]
     },
@@ -246630,7 +247193,7 @@
       "id": "oil-cooler-module",
       "kit": "wind-energy",
       "title": "Cooling module",
-      "description": "Cooling module with radiator core, two side fans and upper pipe headers. Knobs: overall scale and asset color.",
+      "description": "Cooling module with radiator core, two side fans and upper pipe headers. Controls: scale and powder-coated steel, aluminium; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -246649,8 +247212,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/oil-cooler-module.kcad.ts",
       "preview": "/assets/wind-energy-oil-cooler-module.png",
-      "sourceSha256": "5a15608dc2867a9b90f65f654193c7f80ddf3fa98351bfa7970f408743a0d1de",
-      "triangleBudget": 2200,
+      "sourceSha256": "e8a0d079df4b9180d8cc9f315eff34265e68cd175bc707f9462f32b24fbd8e9e",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -246662,13 +247225,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#707976",
-          "label": "Asset color"
+          "default": "#287082",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "aluminium",
+          "type": "color",
+          "default": "#aab7bb",
+          "label": "Aluminium"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#1f5765",
+          "aluminium": "#b8c6ca"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#d8a62b"
+        }
+      },
       "stats": {
         "triangles": 148,
         "sizeM": [
@@ -246681,18 +247258,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#707976",
+          "name": "powderCoatedSteel",
+          "color": "#287082",
           "parts": [
             "core",
-            "fan-0",
-            "fan-1",
-            "header-top",
-            "header-bottom",
             "foot--260",
             "foot-260"
           ],
-          "param": "color"
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "aluminium",
+          "color": "#aab7bb",
+          "parts": [
+            "fan-0",
+            "fan-1",
+            "header-top",
+            "header-bottom"
+          ],
+          "param": "aluminium"
         }
       ]
     },
@@ -246700,7 +247284,7 @@
       "id": "rooftop-wind-turbine",
       "kit": "wind-energy",
       "title": "Rooftop wind turbine",
-      "description": "Compact roof turbine on a tripod mast with short nacelle and three stub blades. Knobs: overall scale and asset color.",
+      "description": "Compact roof turbine on a tripod mast with short nacelle and three stub blades. Controls: scale and painted steel, fiberglass composite, stainless steel; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -246719,8 +247303,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/rooftop-wind-turbine.kcad.ts",
       "preview": "/assets/wind-energy-rooftop-wind-turbine.png",
-      "sourceSha256": "e00e77ef2f77d6336b86affadfade60715fa8531ed391237eb388c3b59e2e7c0",
-      "triangleBudget": 2200,
+      "sourceSha256": "d074bc91ac6963b0b67ed4044d3523ca0c52c074cc41f36304aba8778dc0bd95",
+      "triangleBudget": 550,
       "params": [
         {
           "name": "scale",
@@ -246732,18 +247316,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
-          "default": "#7e8a88",
-          "label": "Asset color"
+          "default": "#53727c",
+          "label": "Painted steel"
+        },
+        {
+          "name": "fiberglassComposite",
+          "type": "color",
+          "default": "#e7ebe1",
+          "label": "Fiberglass composite"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b8c2c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#415961",
+          "fiberglassComposite": "#f9fef3"
+        },
+        "highVisibility": {
+          "fiberglassComposite": "#e48d35"
+        }
+      },
       "stats": {
-        "triangles": 184,
+        "triangles": 196,
         "sizeM": [
-          0.87,
-          1.34,
+          0.791423,
+          1.352,
           0.52
         ],
         "minUpM": 0,
@@ -246751,21 +247355,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7e8a88",
+          "name": "paintedSteel",
+          "color": "#53727c",
           "parts": [
             "roof-plate",
             "mast",
             "nacelle",
-            "hub",
-            "blade-up",
-            "blade-left",
-            "blade-right",
             "leg--180--180",
             "leg-180--180",
             "leg-0-180"
           ],
-          "param": "color"
+          "param": "paintedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b8c2c5",
+          "parts": [
+            "hub"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "fiberglassComposite",
+          "color": "#e7ebe1",
+          "parts": [
+            "blade-up",
+            "blade-left",
+            "blade-right"
+          ],
+          "param": "fiberglassComposite"
         }
       ]
     },
@@ -246773,7 +247391,7 @@
       "id": "service-lift-cage",
       "kit": "wind-energy",
       "title": "Turbine service lift cage",
-      "description": "Rectangular service cage with platform floor, four uprights and overhead rail. Knobs: overall scale and asset color.",
+      "description": "Rectangular service cage with platform floor, four uprights and overhead rail. Controls: scale and galvanized steel, safety paint; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -246792,8 +247410,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/service-lift-cage.kcad.ts",
       "preview": "/assets/wind-energy-service-lift-cage.png",
-      "sourceSha256": "4f024a199226d69792575181c7eea06b60d0a0643628cc04b6d996c7b52ccf51",
-      "triangleBudget": 2200,
+      "sourceSha256": "0a798256d5aaa168e32905230007633fadffbfd092c5579f8cccd3ccfc3a0acd",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -246805,13 +247423,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#787e7b",
-          "label": "Asset color"
+          "default": "#8b9c9e",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#efb532",
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#6c7a7b",
+          "safetyPaint": "#ffc336"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f7c331",
+          "galvanizedSteel": "#7a898b"
+        }
+      },
       "stats": {
         "triangles": 96,
         "sizeM": [
@@ -246824,8 +247457,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#787e7b",
+          "name": "galvanizedSteel",
+          "color": "#8b9c9e",
           "parts": [
             "floor",
             "post--280--260",
@@ -246833,10 +247466,17 @@
             "post-280--260",
             "post-280-260",
             "top-rail",
-            "back-rail",
+            "back-rail"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#efb532",
+          "parts": [
             "gate"
           ],
-          "param": "color"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -246844,7 +247484,7 @@
       "id": "service-shelter",
       "kit": "wind-energy",
       "title": "Wind farm service shelter",
-      "description": "Small field shelter with double doors, corner feet, a roof lip and vent block. Knobs: overall scale and asset color.",
+      "description": "Small field shelter with double doors, corner feet, a roof lip and vent block. Controls: scale and powder-coated steel, concrete, safety paint; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -246863,8 +247503,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/service-shelter.kcad.ts",
       "preview": "/assets/wind-energy-service-shelter.png",
-      "sourceSha256": "7e34e68b3b8075b526df2c0b3ae7c981b988932cee2127351bb34314b7806437",
-      "triangleBudget": 2200,
+      "sourceSha256": "b792a3ae25dfbf2716601b183fde6304c68bcea60fb91d96e5937c4c497171b7",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -246876,13 +247516,34 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#86857a",
-          "label": "Asset color"
+          "default": "#287082",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#8b8c84",
+          "label": "Concrete"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#efb532",
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#1f5765",
+          "concrete": "#96978f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f7c331",
+          "powderCoatedSteel": "#236372"
+        }
+      },
       "stats": {
         "triangles": 72,
         "sizeM": [
@@ -246895,17 +247556,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#86857a",
+          "name": "concrete",
+          "color": "#8b8c84",
           "parts": [
-            "base",
+            "base"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "powderCoatedSteel",
+          "color": "#287082",
+          "parts": [
             "body",
             "roof",
-            "door-left",
-            "door-right",
             "vent"
           ],
-          "param": "color"
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#efb532",
+          "parts": [
+            "door-left",
+            "door-right"
+          ],
+          "param": "safetyPaint"
         }
       ]
     },
@@ -246913,7 +247588,7 @@
       "id": "small-farm-wind-turbine",
       "kit": "wind-energy",
       "title": "Small farm wind turbine",
-      "description": "Small three-blade farm turbine with narrow tower, tail vane and square ground base. Knobs: overall scale and asset color.",
+      "description": "Small three-blade farm turbine with narrow tower, tail vane and square ground base. Controls: scale and painted steel, fiberglass composite; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -246932,8 +247607,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/small-farm-wind-turbine.kcad.ts",
       "preview": "/assets/wind-energy-small-farm-wind-turbine.png",
-      "sourceSha256": "84e42ee00668d0edfb791ab8dabcc0ac236270dc3da5e01ce3bfb4a7cda4af39",
-      "triangleBudget": 2200,
+      "sourceSha256": "1fb5046efe96808faecbd367641f1d2f34304f3e9ef3caf25f8a82a7995850ab",
+      "triangleBudget": 450,
       "params": [
         {
           "name": "scale",
@@ -246945,38 +247620,59 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
-          "default": "#b9bdab",
-          "label": "Asset color"
+          "default": "#53727c",
+          "label": "Painted steel"
+        },
+        {
+          "name": "fiberglassComposite",
+          "type": "color",
+          "default": "#e7ebe1",
+          "label": "Fiberglass composite"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#415961",
+          "fiberglassComposite": "#f9fef3"
+        },
+        "highVisibility": {
+          "fiberglassComposite": "#e48d35"
+        }
+      },
       "stats": {
-        "triangles": 160,
+        "triangles": 190,
         "sizeM": [
-          1.14,
-          1.99,
-          0.29
+          1.086372,
+          2.018,
+          0.296
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b9bdab",
+          "name": "paintedSteel",
+          "color": "#53727c",
           "parts": [
             "tower",
             "nacelle",
             "hub",
+            "base"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "fiberglassComposite",
+          "color": "#e7ebe1",
+          "parts": [
             "blade-up",
             "blade-left",
             "blade-right",
-            "tail",
-            "base"
+            "tail"
           ],
-          "param": "color"
+          "param": "fiberglassComposite"
         }
       ]
     },
@@ -246984,7 +247680,7 @@
       "id": "substation-switchgear-kiosk",
       "kit": "wind-energy",
       "title": "Substation switchgear kiosk",
-      "description": "Low switchgear kiosk with paired doors, roof cap, service step and cable plinth. Knobs: overall scale and asset color.",
+      "description": "Low switchgear kiosk with paired doors, roof cap, service step and cable plinth. Controls: scale and powder-coated steel, concrete; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -247003,8 +247699,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/substation-switchgear-kiosk.kcad.ts",
       "preview": "/assets/wind-energy-substation-switchgear-kiosk.png",
-      "sourceSha256": "5b68774520272171af5da59832c5f8df878d5a31d88ee3bbbfe9c534cc6c9877",
-      "triangleBudget": 2200,
+      "sourceSha256": "4ee87d3e47b880713ba4db5cd7d0daf3d43bb5be4ceb7fc35b43ab5e5aabb36d",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -247016,13 +247712,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#758078",
-          "label": "Asset color"
+          "default": "#287082",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#8b8c84",
+          "label": "Concrete"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#1f5765",
+          "concrete": "#96978f"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#d8a62b"
+        }
+      },
       "stats": {
         "triangles": 72,
         "sizeM": [
@@ -247035,17 +247745,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#758078",
+          "name": "concrete",
+          "color": "#8b8c84",
           "parts": [
             "base",
+            "step"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "powderCoatedSteel",
+          "color": "#287082",
+          "parts": [
             "body",
             "roof",
             "door-left",
-            "door-right",
-            "step"
+            "door-right"
           ],
-          "param": "color"
+          "param": "powderCoatedSteel"
         }
       ]
     },
@@ -247053,7 +247770,7 @@
       "id": "torque-tool-case",
       "kit": "wind-energy",
       "title": "Torque tool case",
-      "description": "Rugged torque tool case with lid seam, front latches and side handles. Knobs: overall scale and asset color.",
+      "description": "Rugged torque tool case with lid seam, front latches and side handles. Controls: scale and recycled polymer, stainless steel; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -247072,8 +247789,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/torque-tool-case.kcad.ts",
       "preview": "/assets/wind-energy-torque-tool-case.png",
-      "sourceSha256": "b72ef6d631c8349a66bee57bd4f2f58a0534c2a25d837dc625eec875bfa15d82",
-      "triangleBudget": 2200,
+      "sourceSha256": "66aa1c8bf861d89070e3028a79788643da3fb6680d3e646149fe353424868b44",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -247085,13 +247802,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "recycledPolymer",
           "type": "color",
-          "default": "#6f746f",
-          "label": "Asset color"
+          "default": "#416457",
+          "label": "Recycled polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b8c2c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "recycledPolymer": "#334e44",
+          "stainlessSteel": "#c7d2d5"
+        },
+        "highVisibility": {
+          "recycledPolymer": "#d8a62b"
+        }
+      },
       "stats": {
         "triangles": 72,
         "sizeM": [
@@ -247104,17 +247835,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6f746f",
+          "name": "recycledPolymer",
+          "color": "#416457",
           "parts": [
             "body",
-            "lid",
+            "lid"
+          ],
+          "param": "recycledPolymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b8c2c5",
+          "parts": [
             "latch--220",
             "latch-220",
             "handle-left",
             "handle-right"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -247122,7 +247860,7 @@
       "id": "tower-base-flange",
       "kit": "wind-energy",
       "title": "Tower base flange",
-      "description": "Circular tower base flange with raised center sleeve and eight anchor bosses. Knobs: overall scale and asset color.",
+      "description": "Circular tower base flange with raised center sleeve and eight anchor bosses. Controls: scale and structural steel, stainless steel; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -247141,8 +247879,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/tower-base-flange.kcad.ts",
       "preview": "/assets/wind-energy-tower-base-flange.png",
-      "sourceSha256": "7f0aedeecfbfc73392831a45ffa6973ef0dd51fbcdc40eaabd72175950d26e81",
-      "triangleBudget": 2200,
+      "sourceSha256": "24f909a3410721c9843b2c59b7437e408ff41aad0aec4e001170d927d6b0a3e2",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -247154,13 +247892,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "structuralSteel",
           "type": "color",
-          "default": "#747c7d",
-          "label": "Asset color"
+          "default": "#556971",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b8c2c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "structuralSteel": "#425258",
+          "stainlessSteel": "#c7d2d5"
+        },
+        "highVisibility": {
+          "structuralSteel": "#d8a62b"
+        }
+      },
       "stats": {
         "triangles": 440,
         "sizeM": [
@@ -247173,11 +247925,18 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#747c7d",
+          "name": "structuralSteel",
+          "color": "#556971",
           "parts": [
             "flange",
-            "sleeve",
+            "sleeve"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b8c2c5",
+          "parts": [
             "anchor-0",
             "anchor-1",
             "anchor-2",
@@ -247187,7 +247946,7 @@
             "anchor-6",
             "anchor-7"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -247195,7 +247954,7 @@
       "id": "tower-ladder-section",
       "kit": "wind-energy",
       "title": "Tower ladder section",
-      "description": "Straight internal ladder segment with side rails, rungs and two wall mounts. Knobs: overall scale and asset color.",
+      "description": "Straight internal ladder segment with side rails, rungs and two wall mounts. Controls: scale and galvanized steel, safety paint; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -247214,8 +247973,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/tower-ladder-section.kcad.ts",
       "preview": "/assets/wind-energy-tower-ladder-section.png",
-      "sourceSha256": "f0b68abf5c8cddfc2a0b1cfa25438ff433e3fef0055a7e38c2246415d835c094",
-      "triangleBudget": 2200,
+      "sourceSha256": "cd49837b753138187df74a9b499288bcf6d48b4c2242a66667b815ea16e0ca4e",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -247227,13 +247986,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#666f70",
-          "label": "Asset color"
+          "default": "#8b9c9e",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#efb532",
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#6c7a7b",
+          "safetyPaint": "#ffc336"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f7c331",
+          "galvanizedSteel": "#7a898b"
+        }
+      },
       "stats": {
         "triangles": 144,
         "sizeM": [
@@ -247246,11 +248020,20 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#666f70",
+          "name": "galvanizedSteel",
+          "color": "#8b9c9e",
           "parts": [
             "rail-left",
             "rail-right",
+            "mount-low",
+            "mount-high"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#efb532",
+          "parts": [
             "rung-0",
             "rung-1",
             "rung-2",
@@ -247258,11 +248041,9 @@
             "rung-4",
             "rung-5",
             "rung-6",
-            "rung-7",
-            "mount-low",
-            "mount-high"
+            "rung-7"
           ],
-          "param": "color"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -247270,7 +248051,7 @@
       "id": "tower-section",
       "kit": "wind-energy",
       "title": "Tapered tower section",
-      "description": "Single steel tower segment with a flared lower collar and upper joint band. Knobs: overall scale and asset color.",
+      "description": "Single steel tower segment with a flared lower collar and upper joint band. Controls: scale and painted steel, stainless steel; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -247289,8 +248070,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/tower-section.kcad.ts",
       "preview": "/assets/wind-energy-tower-section.png",
-      "sourceSha256": "e5dd096733504676310e993f8ab4ec1b54fab9a4e7f3be38ed741ccf5755a1a7",
-      "triangleBudget": 2200,
+      "sourceSha256": "af8e0476ffd4889602dde2b081e59147b13ab6f4f2e58caafe75bdd0ea425890",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -247302,13 +248083,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
-          "default": "#909796",
-          "label": "Asset color"
+          "default": "#53727c",
+          "label": "Painted steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b8c2c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#415961",
+          "stainlessSteel": "#c7d2d5"
+        },
+        "highVisibility": {
+          "paintedSteel": "#d8a62b"
+        }
+      },
       "stats": {
         "triangles": 144,
         "sizeM": [
@@ -247321,15 +248116,22 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#909796",
+          "name": "stainlessSteel",
+          "color": "#b8c2c5",
           "parts": [
             "shaft",
             "lower-collar",
-            "upper-band",
+            "upper-band"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#53727c",
+          "parts": [
             "access-panel"
           ],
-          "param": "color"
+          "param": "paintedSteel"
         }
       ]
     },
@@ -247337,7 +248139,7 @@
       "id": "tower-transport-saddle",
       "kit": "wind-energy",
       "title": "Tower section transport saddle",
-      "description": "Low transport cradle with V-shaped-looking supports, tie-down posts and skid rails. Knobs: overall scale and asset color.",
+      "description": "Low transport cradle with V-shaped-looking supports, tie-down posts and skid rails. Controls: scale and structural steel, elastomer; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -247356,8 +248158,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/tower-transport-saddle.kcad.ts",
       "preview": "/assets/wind-energy-tower-transport-saddle.png",
-      "sourceSha256": "1682ea501e4f2b5b326637ac539cec3801df3e9896375bcbdc6543505b3ca882",
-      "triangleBudget": 2200,
+      "sourceSha256": "533c38625220c24d4251704afdbb255ca5e2ae30d6c4f8b1ef455904b287e2f4",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -247369,13 +248171,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "structuralSteel",
           "type": "color",
-          "default": "#786f62",
-          "label": "Asset color"
+          "default": "#556971",
+          "label": "Structural steel"
+        },
+        {
+          "name": "elastomer",
+          "type": "color",
+          "default": "#30383a",
+          "label": "Elastomer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "structuralSteel": "#425258",
+          "elastomer": "#343c3f"
+        },
+        "highVisibility": {
+          "structuralSteel": "#d8a62b"
+        }
+      },
       "stats": {
         "triangles": 136,
         "sizeM": [
@@ -247388,17 +248204,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#786f62",
+          "name": "structuralSteel",
+          "color": "#556971",
           "parts": [
             "rail-left",
             "rail-right",
-            "support-left",
-            "support-right",
             "tie--500",
             "tie-500"
           ],
-          "param": "color"
+          "param": "structuralSteel"
+        },
+        {
+          "name": "elastomer",
+          "color": "#30383a",
+          "parts": [
+            "support-left",
+            "support-right"
+          ],
+          "param": "elastomer"
         }
       ]
     },
@@ -247406,7 +248229,7 @@
       "id": "transition-piece",
       "kit": "wind-energy",
       "title": "Offshore transition piece",
-      "description": "Offshore tower transition collar with a broad flange, inspection door and two boat-landing rails. Knobs: overall scale and asset color.",
+      "description": "Offshore tower transition collar with a broad flange, inspection door and two boat-landing rails. Controls: scale and marine steel, galvanized steel, safety paint; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -247425,8 +248248,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/transition-piece.kcad.ts",
       "preview": "/assets/wind-energy-transition-piece.png",
-      "sourceSha256": "88b5d24de717fd2a8ec776dba9819a22d9b8be5c335ee58856a29af8fd5ad798",
-      "triangleBudget": 2200,
+      "sourceSha256": "374b30565f84f160d26a5dff31787bb157ca5e86e7d2219fad1ef0f6caa60cc3",
+      "triangleBudget": 350,
       "params": [
         {
           "name": "scale",
@@ -247438,13 +248261,34 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "marineSteel",
           "type": "color",
-          "default": "#797f7c",
-          "label": "Asset color"
+          "default": "#335868",
+          "label": "Marine steel"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#8b9c9e",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#efb532",
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "marineSteel": "#284551",
+          "galvanizedSteel": "#96a8ab"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f7c331",
+          "marineSteel": "#2d4d5c"
+        }
+      },
       "stats": {
         "triangles": 168,
         "sizeM": [
@@ -247457,17 +248301,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#797f7c",
+          "name": "galvanizedSteel",
+          "color": "#8b9c9e",
           "parts": [
             "lower-flange",
-            "body",
             "top-flange",
-            "door",
             "boat-rail-left",
             "boat-rail-right"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "marineSteel",
+          "color": "#335868",
+          "parts": [
+            "body"
+          ],
+          "param": "marineSteel"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#efb532",
+          "parts": [
+            "door"
+          ],
+          "param": "safetyPaint"
         }
       ]
     },
@@ -247475,7 +248333,7 @@
       "id": "turbine-base-skirt",
       "kit": "wind-energy",
       "title": "Tower base skirt",
-      "description": "Low polygon tower base fairing with a circular foot, raised skirt and access cutout panel. Knobs: overall scale and asset color.",
+      "description": "Low polygon tower base fairing with a circular foot, raised skirt and access cutout panel. Controls: scale and structural steel, concrete, safety paint; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -247494,8 +248352,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/turbine-base-skirt.kcad.ts",
       "preview": "/assets/wind-energy-turbine-base-skirt.png",
-      "sourceSha256": "9957965710707b93acc59dd7a2455159c963aeba928d1d2a4c095d178d8495f9",
-      "triangleBudget": 2200,
+      "sourceSha256": "97c09702d61d89b7eb942e98062d54eb38884da4ada53977f69ded9afc290478",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -247507,13 +248365,34 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "structuralSteel",
           "type": "color",
-          "default": "#858a88",
-          "label": "Asset color"
+          "default": "#556971",
+          "label": "Structural steel"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#8b8c84",
+          "label": "Concrete"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#efb532",
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "structuralSteel": "#425258",
+          "concrete": "#96978f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f7c331",
+          "structuralSteel": "#4b5c63"
+        }
+      },
       "stats": {
         "triangles": 144,
         "sizeM": [
@@ -247526,15 +248405,29 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#858a88",
+          "name": "concrete",
+          "color": "#8b8c84",
           "parts": [
-            "foot",
+            "foot"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#556971",
+          "parts": [
             "skirt",
-            "access-panel",
             "rim"
           ],
-          "param": "color"
+          "param": "structuralSteel"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#efb532",
+          "parts": [
+            "access-panel"
+          ],
+          "param": "safetyPaint"
         }
       ]
     },
@@ -247542,7 +248435,7 @@
       "id": "turbine-base-steps",
       "kit": "wind-energy",
       "title": "Tower base access steps",
-      "description": "Three-step access stair with side stringers and a short top landing. Knobs: overall scale and asset color.",
+      "description": "Three-step access stair with side stringers and a short top landing. Controls: scale and galvanized steel, safety paint; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -247561,8 +248454,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/turbine-base-steps.kcad.ts",
       "preview": "/assets/wind-energy-turbine-base-steps.png",
-      "sourceSha256": "f43e4dc31a4f6edead843959ecd60eb8a43c3b2baeadd89b2997aee60da12871",
-      "triangleBudget": 2200,
+      "sourceSha256": "d601c383deaae014714e7094b4d0753f8507e8879ff3e7301e5a508243aae6cd",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -247574,13 +248467,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#747b78",
-          "label": "Asset color"
+          "default": "#8b9c9e",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#efb532",
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#6c7a7b",
+          "safetyPaint": "#ffc336"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f7c331",
+          "galvanizedSteel": "#7a898b"
+        }
+      },
       "stats": {
         "triangles": 72,
         "sizeM": [
@@ -247593,17 +248501,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#747b78",
+          "name": "safetyPaint",
+          "color": "#efb532",
           "parts": [
             "step-1",
             "step-2",
-            "step-3",
+            "step-3"
+          ],
+          "param": "safetyPaint"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#8b9c9e",
+          "parts": [
             "landing",
             "side-left",
             "side-right"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -247611,7 +248526,7 @@
       "id": "turbine-blade-root-sleeve",
       "kit": "wind-energy",
       "title": "Blade root sleeve",
-      "description": "Short blade-root sleeve with a broad flange, inner collar and four attachment lugs. Knobs: overall scale and asset color.",
+      "description": "Short blade-root sleeve with a broad flange, inner collar and four attachment lugs. Controls: scale and fiberglass composite, stainless steel; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -247630,8 +248545,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/turbine-blade-root-sleeve.kcad.ts",
       "preview": "/assets/wind-energy-turbine-blade-root-sleeve.png",
-      "sourceSha256": "3af1dcbf49e7b533f079c0737c832f8633581eef48141537506dbd8901b89ed2",
-      "triangleBudget": 2200,
+      "sourceSha256": "08e01f1e9e4051530a32f75f7244fc1304d1d92c6d7aed3093cacb354e9e2774",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -247643,13 +248558,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "fiberglassComposite",
           "type": "color",
-          "default": "#8d9189",
-          "label": "Asset color"
+          "default": "#e7ebe1",
+          "label": "Fiberglass composite"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b8c2c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "fiberglassComposite": "#b4b7b0",
+          "stainlessSteel": "#c7d2d5"
+        },
+        "highVisibility": {
+          "fiberglassComposite": "#e48d35"
+        }
+      },
       "stats": {
         "triangles": 136,
         "sizeM": [
@@ -247662,17 +248591,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8d9189",
+          "name": "fiberglassComposite",
+          "color": "#e7ebe1",
           "parts": [
             "flange",
-            "sleeve",
+            "sleeve"
+          ],
+          "param": "fiberglassComposite"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b8c2c5",
+          "parts": [
             "lug-0",
             "lug-1",
             "lug-2",
             "lug-3"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -247680,7 +248616,7 @@
       "id": "turbine-control-cabinet",
       "kit": "wind-energy",
       "title": "Turbine control cabinet",
-      "description": "Ground control cabinet with double doors, shallow rain hood and bottom vent bank. Knobs: overall scale and asset color.",
+      "description": "Ground control cabinet with double doors, shallow rain hood and bottom vent bank. Controls: scale and powder-coated steel, safety paint; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -247699,8 +248635,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/turbine-control-cabinet.kcad.ts",
       "preview": "/assets/wind-energy-turbine-control-cabinet.png",
-      "sourceSha256": "5002ecdd4e20c32589a22a2c87fec296781ecbc2202815cca5ac882154246a2f",
-      "triangleBudget": 2200,
+      "sourceSha256": "a4ea54452384551537bc35bc90858c2334ffa88a6944b10a94f6e9a43318ad67",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -247712,13 +248648,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#687572",
-          "label": "Asset color"
+          "default": "#287082",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#efb532",
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#1f5765",
+          "safetyPaint": "#ffc336"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f7c331",
+          "powderCoatedSteel": "#236372"
+        }
+      },
       "stats": {
         "triangles": 84,
         "sizeM": [
@@ -247731,18 +248682,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#687572",
+          "name": "powderCoatedSteel",
+          "color": "#287082",
           "parts": [
             "body",
             "hood",
-            "door-left",
-            "door-right",
             "vent",
             "foot--250",
             "foot-250"
           ],
-          "param": "color"
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#efb532",
+          "parts": [
+            "door-left",
+            "door-right"
+          ],
+          "param": "safetyPaint"
         }
       ]
     },
@@ -247750,7 +248708,7 @@
       "id": "turbine-door-frame",
       "kit": "wind-energy",
       "title": "Tower access door frame",
-      "description": "Access door frame prop with rectangular jambs, header and a threshold plate. Knobs: overall scale and asset color.",
+      "description": "Access door frame prop with rectangular jambs, header and a threshold plate. Controls: scale and galvanized steel, stainless steel; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -247769,8 +248727,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/turbine-door-frame.kcad.ts",
       "preview": "/assets/wind-energy-turbine-door-frame.png",
-      "sourceSha256": "8b920ef95c5f95f55f9ab6aa49bf8b72c89cffee2d3b5bb792ec8245de93f4cf",
-      "triangleBudget": 2200,
+      "sourceSha256": "0658ea78f5f4ad375163bcc4aa4b22cc62cea0d7efffe16f44b2002214208eb0",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -247782,13 +248740,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#727976",
-          "label": "Asset color"
+          "default": "#8b9c9e",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b8c2c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#6c7a7b",
+          "stainlessSteel": "#c7d2d5"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#d8a62b"
+        }
+      },
       "stats": {
         "triangles": 72,
         "sizeM": [
@@ -247801,17 +248773,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#727976",
+          "name": "galvanizedSteel",
+          "color": "#8b9c9e",
           "parts": [
             "jamb-left",
             "jamb-right",
             "header",
             "threshold",
-            "door",
+            "door"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b8c2c5",
+          "parts": [
             "handle"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -247819,7 +248798,7 @@
       "id": "turbine-junction-box",
       "kit": "wind-energy",
       "title": "Turbine junction box",
-      "description": "Compact sealed junction box with four cable glands, lid lip and mounting feet. Knobs: overall scale and asset color.",
+      "description": "Compact sealed junction box with four cable glands, lid lip and mounting feet. Controls: scale and powder-coated steel, insulating polymer; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -247838,8 +248817,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/turbine-junction-box.kcad.ts",
       "preview": "/assets/wind-energy-turbine-junction-box.png",
-      "sourceSha256": "88d94664559f3e2780b55108e28263a327dd954e053e63116b1a7dc18e928757",
-      "triangleBudget": 2200,
+      "sourceSha256": "7dbb665590b2974c7249d65437ef380ea1a9ee3f112296931a447f9e024aaef8",
+      "triangleBudget": 450,
       "params": [
         {
           "name": "scale",
@@ -247851,13 +248830,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#767d74",
-          "label": "Asset color"
+          "default": "#287082",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "insulatingPolymer",
+          "type": "color",
+          "default": "#263e47",
+          "label": "Insulating polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#1f5765",
+          "insulatingPolymer": "#29434d"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#d8a62b"
+        }
+      },
       "stats": {
         "triangles": 224,
         "sizeM": [
@@ -247870,19 +248863,26 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#767d74",
+          "name": "powderCoatedSteel",
+          "color": "#287082",
           "parts": [
             "case",
             "lid",
-            "gland-0",
-            "gland-1",
-            "gland-2",
-            "gland-3",
             "foot--160",
             "foot-160"
           ],
-          "param": "color"
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "insulatingPolymer",
+          "color": "#263e47",
+          "parts": [
+            "gland-0",
+            "gland-1",
+            "gland-2",
+            "gland-3"
+          ],
+          "param": "insulatingPolymer"
         }
       ]
     },
@@ -247890,7 +248890,7 @@
       "id": "turbine-nacelle-shell",
       "kit": "wind-energy",
       "title": "Turbine nacelle shell",
-      "description": "Long nacelle housing with raised roof, nose cap, rear service panel and support saddle. Knobs: overall scale and asset color.",
+      "description": "Long nacelle housing with raised roof, nose cap, rear service panel and support saddle. Controls: scale and painted steel, cast steel; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -247909,8 +248909,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/turbine-nacelle-shell.kcad.ts",
       "preview": "/assets/wind-energy-turbine-nacelle-shell.png",
-      "sourceSha256": "2615be5ce9d7e4a6d3013a430b72c195b8a528e9348a445102b237334d68e88a",
-      "triangleBudget": 2200,
+      "sourceSha256": "372e8719abb7f1bb9d682a9d6317dc4f4164db560f6382f63c64b973d386ee57",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -247922,13 +248922,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
-          "default": "#d8d9d2",
-          "label": "Asset color"
+          "default": "#53727c",
+          "label": "Painted steel"
+        },
+        {
+          "name": "castSteel",
+          "type": "color",
+          "default": "#59666b",
+          "label": "Cast steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#415961",
+          "castSteel": "#606e74"
+        },
+        "highVisibility": {
+          "paintedSteel": "#d8a62b"
+        }
+      },
       "stats": {
         "triangles": 92,
         "sizeM": [
@@ -247941,16 +248955,23 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d8d9d2",
+          "name": "paintedSteel",
+          "color": "#53727c",
           "parts": [
             "shell",
             "roof",
             "nose",
-            "rear-panel",
+            "rear-panel"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "castSteel",
+          "color": "#59666b",
+          "parts": [
             "saddle"
           ],
-          "param": "color"
+          "param": "castSteel"
         }
       ]
     },
@@ -247958,7 +248979,7 @@
       "id": "turbine-number-placard",
       "kit": "wind-energy",
       "title": "Turbine number placard",
-      "description": "Small numbered turbine ID plate on a short post with a broad mounting foot. Knobs: overall scale and asset color.",
+      "description": "Small numbered turbine ID plate on a short post with a broad mounting foot. Controls: scale and safety paint, galvanized steel, concrete; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -247977,8 +248998,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/turbine-number-placard.kcad.ts",
       "preview": "/assets/wind-energy-turbine-number-placard.png",
-      "sourceSha256": "893e38ee6e6a2ba3696a3d9c32eee306bb1fd67c9d51228efb39cbf904d38711",
-      "triangleBudget": 2200,
+      "sourceSha256": "cf67f7f082f1179e6874e6e4ed028d3a2f3dea5e1c87d301654a9729c57242a5",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -247990,13 +249011,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "safetyPaint",
           "type": "color",
-          "default": "#c3c6be",
-          "label": "Asset color"
+          "default": "#efb532",
+          "label": "Safety paint"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#8b9c9e",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#8b8c84",
+          "label": "Concrete"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "safetyPaint": "#ba8d27",
+          "galvanizedSteel": "#96a8ab"
+        },
+        "highVisibility": {
+          "safetyPaint": "#d29f2c"
+        }
+      },
       "stats": {
         "triangles": 80,
         "sizeM": [
@@ -248009,15 +249050,29 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#c3c6be",
+          "name": "safetyPaint",
+          "color": "#efb532",
           "parts": [
             "plate",
-            "post",
-            "foot",
             "border"
           ],
-          "param": "color"
+          "param": "safetyPaint"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#8b9c9e",
+          "parts": [
+            "post"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "concrete",
+          "color": "#8b8c84",
+          "parts": [
+            "foot"
+          ],
+          "param": "concrete"
         }
       ]
     },
@@ -248025,7 +249080,7 @@
       "id": "turbine-rotor-hub",
       "kit": "wind-energy",
       "title": "Turbine rotor hub",
-      "description": "Three-arm rotor hub with central barrel, front cap and three blade-root sockets. Knobs: overall scale and asset color.",
+      "description": "Three-arm rotor hub with central barrel, front cap and three blade-root sockets. Controls: scale and painted steel, cast steel; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -248044,8 +249099,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/turbine-rotor-hub.kcad.ts",
       "preview": "/assets/wind-energy-turbine-rotor-hub.png",
-      "sourceSha256": "77e74743a9d1d07a27cd1c6556f697d7d40318e8fc59938307ac141f3dfc1f5d",
-      "triangleBudget": 2200,
+      "sourceSha256": "4b9d581e7e01c1277f32610c30a5a84ec540f3efc1c78b2104c8c8264b33176c",
+      "triangleBudget": 550,
       "params": [
         {
           "name": "scale",
@@ -248057,13 +249112,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
-          "default": "#737a78",
-          "label": "Asset color"
+          "default": "#53727c",
+          "label": "Painted steel"
+        },
+        {
+          "name": "castSteel",
+          "type": "color",
+          "default": "#59666b",
+          "label": "Cast steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#415961",
+          "castSteel": "#606e74"
+        },
+        "highVisibility": {
+          "paintedSteel": "#d8a62b"
+        }
+      },
       "stats": {
         "triangles": 256,
         "sizeM": [
@@ -248076,19 +249145,26 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#737a78",
+          "name": "castSteel",
+          "color": "#59666b",
           "parts": [
             "hub",
-            "nose",
-            "arm-up",
-            "arm-left",
-            "arm-right",
             "root-0",
             "root-1",
             "root-2"
           ],
-          "param": "color"
+          "param": "castSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#53727c",
+          "parts": [
+            "nose",
+            "arm-up",
+            "arm-left",
+            "arm-right"
+          ],
+          "param": "paintedSteel"
         }
       ]
     },
@@ -248096,7 +249172,7 @@
       "id": "vertical-axis-wind-turbine",
       "kit": "wind-energy",
       "title": "Vertical-axis wind turbine",
-      "description": "Vertical-axis rotor with central shaft, two curved-look blade panels and base bearings. Knobs: overall scale and asset color.",
+      "description": "Three-blade vertical-axis rotor with an open frame, central shaft, and radial supports. Controls: scale and galvanized steel, fiberglass composite, stainless steel; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -248115,8 +249191,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/vertical-axis-wind-turbine.kcad.ts",
       "preview": "/assets/wind-energy-vertical-axis-wind-turbine.png",
-      "sourceSha256": "1536aed9225cd290453cbba76c2e3f972aa6f9828267593ce9aa77c53bea8f8c",
-      "triangleBudget": 2200,
+      "sourceSha256": "1c749358a480c3b1fc490c42a48b45b2dd9b9c3c7d4e4d94610b524165bdbf98",
+      "triangleBudget": 550,
       "params": [
         {
           "name": "scale",
@@ -248128,38 +249204,77 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#7e8582",
-          "label": "Asset color"
+          "default": "#52727c",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "fiberglassComposite",
+          "type": "color",
+          "default": "#e7ebe1",
+          "label": "Fiberglass composite"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b8c2c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#415961",
+          "fiberglassComposite": "#f9fef3"
+        },
+        "highVisibility": {
+          "fiberglassComposite": "#e48d35"
+        }
+      },
       "stats": {
-        "triangles": 192,
+        "triangles": 288,
         "sizeM": [
           0.68,
-          1.055,
-          0.6
+          1.04,
+          0.542275
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7e8582",
+          "name": "stainlessSteel",
+          "color": "#b8c2c5",
           "parts": [
             "shaft",
+            "lower-bearing",
+            "upper-bearing"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "fiberglassComposite",
+          "color": "#e7ebe1",
+          "parts": [
             "blade-a",
             "blade-b",
-            "cross-top",
-            "cross-bottom",
-            "bearing-top",
-            "bearing-low",
+            "blade-c"
+          ],
+          "param": "fiberglassComposite"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#52727c",
+          "parts": [
+            "lower-arm-a",
+            "lower-arm-b",
+            "lower-arm-c",
+            "upper-arm-a",
+            "upper-arm-b",
+            "upper-arm-c",
             "base"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -248167,7 +249282,7 @@
       "id": "wind-farm-access-gate",
       "kit": "wind-energy",
       "title": "Wind farm access gate",
-      "description": "Two-post service gate with a framed swing panel and two weighted post shoes. Knobs: overall scale and asset color.",
+      "description": "Two-post service gate with a framed swing panel and two weighted post shoes. Controls: scale and galvanized steel, safety paint; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -248186,8 +249301,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/wind-farm-access-gate.kcad.ts",
       "preview": "/assets/wind-energy-wind-farm-access-gate.png",
-      "sourceSha256": "9907acc688e4d5c1bd4ce23d79855c61268035864099666119822262742cacff",
-      "triangleBudget": 2200,
+      "sourceSha256": "fd7db955afb411d4b6a30a1a9559926de66429848ae57f4775aaa692f53f2a12",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -248199,13 +249314,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#747b78",
-          "label": "Asset color"
+          "default": "#8b9c9e",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#efb532",
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#6c7a7b",
+          "safetyPaint": "#ffc336"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f7c331",
+          "galvanizedSteel": "#7a898b"
+        }
+      },
       "stats": {
         "triangles": 108,
         "sizeM": [
@@ -248218,8 +249348,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#747b78",
+          "name": "galvanizedSteel",
+          "color": "#8b9c9e",
           "parts": [
             "post-left",
             "post-right",
@@ -248227,11 +249357,18 @@
             "bottom",
             "bar-a",
             "bar-b",
-            "bar-c",
+            "bar-c"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#efb532",
+          "parts": [
             "shoe--700",
             "shoe-700"
           ],
-          "param": "color"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -248239,7 +249376,7 @@
       "id": "wind-farm-meter-pedestal",
       "kit": "wind-energy",
       "title": "Wind farm meter pedestal",
-      "description": "Short metering pedestal with a cabinet head, status light and broad footplate. Knobs: overall scale and asset color.",
+      "description": "Short metering pedestal with a cabinet head, status light and broad footplate. Controls: scale and powder-coated steel, polycarbonate; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -248258,8 +249395,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/wind-farm-meter-pedestal.kcad.ts",
       "preview": "/assets/wind-energy-wind-farm-meter-pedestal.png",
-      "sourceSha256": "13108747590b394344d08f321fa36b9c8c8818986977a31c82611e010e00a702",
-      "triangleBudget": 2200,
+      "sourceSha256": "2fe75eb81ba6e5d1e6a256cb719ff9a74ca1527e2adb1e2e32c1bf3f62acbd82",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -248271,13 +249408,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#75817b",
-          "label": "Asset color"
+          "default": "#287082",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "polycarbonate",
+          "type": "color",
+          "default": "#d8b546",
+          "label": "Polycarbonate"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#1f5765",
+          "polycarbonate": "#e9c34c"
+        },
+        "highVisibility": {
+          "polycarbonate": "#f2b92e"
+        }
+      },
       "stats": {
         "triangles": 136,
         "sizeM": [
@@ -248290,17 +249441,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#75817b",
+          "name": "powderCoatedSteel",
+          "color": "#287082",
           "parts": [
             "foot",
             "post",
             "head",
-            "screen",
-            "light",
             "hood"
           ],
-          "param": "color"
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "polycarbonate",
+          "color": "#d8b546",
+          "parts": [
+            "screen",
+            "light"
+          ],
+          "param": "polycarbonate"
         }
       ]
     },
@@ -248308,7 +249466,7 @@
       "id": "wind-farm-pad-mount-transformer",
       "kit": "wind-energy",
       "title": "Wind-farm pad-mount transformer",
-      "description": "Outdoor transformer box with two side cooling banks, top bushings and concrete pad. Knobs: overall scale and asset color.",
+      "description": "Outdoor transformer box with two side cooling banks, top bushings and concrete pad. Controls: scale and powder-coated steel, concrete, electrical ceramic, aluminium; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -248327,8 +249485,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/wind-farm-pad-mount-transformer.kcad.ts",
       "preview": "/assets/wind-energy-wind-farm-pad-mount-transformer.png",
-      "sourceSha256": "8d8abece90584fbc057cf70e6ddfe15695adf8bfd694c0da30c075623547daa4",
-      "triangleBudget": 2200,
+      "sourceSha256": "4f8392c4c8ed3357ab2c4d6d519811aa6e6f242342349269fe47aff6bf925e79",
+      "triangleBudget": 500,
       "params": [
         {
           "name": "scale",
@@ -248340,18 +249498,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#758078",
-          "label": "Asset color"
+          "default": "#287082",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#8b8c84",
+          "label": "Concrete"
+        },
+        {
+          "name": "ceramic",
+          "type": "color",
+          "default": "#eee2ca",
+          "label": "Electrical ceramic"
+        },
+        {
+          "name": "aluminium",
+          "type": "color",
+          "default": "#aab7bb",
+          "label": "Aluminium"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#1f5765",
+          "concrete": "#96978f"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#d8a62b"
+        }
+      },
       "stats": {
-        "triangles": 228,
+        "triangles": 360,
         "sizeM": [
           0.9,
-          1.015,
+          0.973,
           0.7
         ],
         "minUpM": 0,
@@ -248359,22 +249543,46 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#758078",
+          "name": "concrete",
+          "color": "#8b8c84",
           "parts": [
-            "pad",
+            "pad"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "powderCoatedSteel",
+          "color": "#287082",
+          "parts": [
             "tank",
-            "lid",
+            "lid"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "aluminium",
+          "color": "#aab7bb",
+          "parts": [
             "fin-0",
             "fin-1",
             "fin-2",
             "fin-3",
-            "fin-4",
+            "fin-4"
+          ],
+          "param": "aluminium"
+        },
+        {
+          "name": "ceramic",
+          "color": "#eee2ca",
+          "parts": [
+            "bushing-base-0",
+            "bushing-base-1",
+            "bushing-base-2",
             "bushing-0",
             "bushing-1",
             "bushing-2"
           ],
-          "param": "color"
+          "param": "ceramic"
         }
       ]
     },
@@ -248382,7 +249590,7 @@
       "id": "wind-farm-warning-sign",
       "kit": "wind-energy",
       "title": "Wind farm warning sign",
-      "description": "Field warning placard with two posts, reinforced top edge and weighted feet. Knobs: overall scale and asset color.",
+      "description": "Field warning placard with two posts, reinforced top edge and weighted feet. Controls: scale and safety paint, galvanized steel, concrete; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -248401,8 +249609,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/wind-farm-warning-sign.kcad.ts",
       "preview": "/assets/wind-energy-wind-farm-warning-sign.png",
-      "sourceSha256": "0795ce1407ea3e8406ceaaaaca4a60f2bad3bea9eef597da1ac7712c09cdc41c",
-      "triangleBudget": 2200,
+      "sourceSha256": "59f379b5122935433e013aca90d54154f635d4525f00e98c3b804cde0c7c760d",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -248414,13 +249622,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "safetyPaint",
           "type": "color",
-          "default": "#d1a644",
-          "label": "Asset color"
+          "default": "#efb532",
+          "label": "Safety paint"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#8b9c9e",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#8b8c84",
+          "label": "Concrete"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "safetyPaint": "#ba8d27",
+          "galvanizedSteel": "#96a8ab"
+        },
+        "highVisibility": {
+          "safetyPaint": "#d29f2c"
+        }
+      },
       "stats": {
         "triangles": 72,
         "sizeM": [
@@ -248433,17 +249661,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d1a644",
+          "name": "safetyPaint",
+          "color": "#efb532",
           "parts": [
             "panel",
-            "top-edge",
+            "top-edge"
+          ],
+          "param": "safetyPaint"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#8b9c9e",
+          "parts": [
             "post--300",
-            "post-300",
+            "post-300"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "concrete",
+          "color": "#8b8c84",
+          "parts": [
             "foot--300",
             "foot-300"
           ],
-          "param": "color"
+          "param": "concrete"
         }
       ]
     },
@@ -248451,7 +249693,7 @@
       "id": "wind-site-bollard",
       "kit": "wind-energy",
       "title": "Wind site bollard",
-      "description": "Low site bollard with a rounded cap, square foot and two raised reflector bands. Knobs: overall scale and asset color.",
+      "description": "Low site bollard with a rounded cap, square foot and two raised reflector bands. Controls: scale and safety paint, stainless steel, concrete; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -248470,8 +249712,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/wind-site-bollard.kcad.ts",
       "preview": "/assets/wind-energy-wind-site-bollard.png",
-      "sourceSha256": "ca87161224be001c4dfdba3f7590f41d1694d83c9ff4f08d5b10d0f57afd472e",
-      "triangleBudget": 2200,
+      "sourceSha256": "d35b5df53b9f2ab07a5d321a9efd8c8c2735bc88ca7f299dc124457c1a401984",
+      "triangleBudget": 400,
       "params": [
         {
           "name": "scale",
@@ -248483,13 +249725,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "safetyPaint",
           "type": "color",
-          "default": "#747a76",
-          "label": "Asset color"
+          "default": "#efb532",
+          "label": "Safety paint"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b8c2c5",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#8b8c84",
+          "label": "Concrete"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "safetyPaint": "#ba8d27",
+          "stainlessSteel": "#c7d2d5"
+        },
+        "highVisibility": {
+          "safetyPaint": "#d29f2c"
+        }
+      },
       "stats": {
         "triangles": 188,
         "sizeM": [
@@ -248502,16 +249764,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#747a76",
+          "name": "concrete",
+          "color": "#8b8c84",
           "parts": [
-            "foot",
+            "foot"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#efb532",
+          "parts": [
             "post",
-            "band-low",
-            "band-high",
             "cap"
           ],
-          "param": "color"
+          "param": "safetyPaint"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b8c2c5",
+          "parts": [
+            "band-low",
+            "band-high"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -248519,7 +249795,7 @@
       "id": "wind-turbine-blade",
       "kit": "wind-energy",
       "title": "Wind turbine blade",
-      "description": "Tapered-look turbine blade with a broad root block and slender tip section. Knobs: overall scale and asset color.",
+      "description": "Tapered-look turbine blade with a broad root block and slender tip section. Controls: scale and fiberglass composite, stainless steel; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -248538,8 +249814,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/wind-turbine-blade.kcad.ts",
       "preview": "/assets/wind-energy-wind-turbine-blade.png",
-      "sourceSha256": "ee754ca30fdc3534727a2e1327982d48bf763dcf9f2ee8cb8463ab5c40a91ba6",
-      "triangleBudget": 2200,
+      "sourceSha256": "33a229df0d44858a8df70ece25e0c44261a8a7f580cd12ff712430429ba51693",
+      "triangleBudget": 300,
       "params": [
         {
           "name": "scale",
@@ -248551,18 +249827,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "fiberglassComposite",
           "type": "color",
-          "default": "#e2e3dc",
-          "label": "Asset color"
+          "default": "#e7ebe1",
+          "label": "Fiberglass composite"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b8c2c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "fiberglassComposite": "#b4b7b0",
+          "stainlessSteel": "#c7d2d5"
+        },
+        "highVisibility": {
+          "fiberglassComposite": "#e48d35"
+        }
+      },
       "stats": {
-        "triangles": 60,
+        "triangles": 40,
         "sizeM": [
-          0.28,
-          2.01,
+          0.3,
+          2.06,
           0.205
         ],
         "minUpM": 0,
@@ -248570,16 +249860,20 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#e2e3dc",
+          "name": "fiberglassComposite",
+          "color": "#e7ebe1",
           "parts": [
-            "root",
-            "inner",
-            "mid",
-            "tip",
+            "blade"
+          ],
+          "param": "fiberglassComposite"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b8c2c5",
+          "parts": [
             "root-ring"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     }
