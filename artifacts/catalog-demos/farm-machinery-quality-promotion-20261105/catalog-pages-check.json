@@ -1,0 +1,912 @@
+{
+  "scope": "local generated pages only; not production deployment",
+  "kit": "farm-machinery",
+  "indexedAssets": 60,
+  "pagesVerified": 60,
+  "hubEntryPresent": true,
+  "allSourceSha256Match": true,
+  "allPreviewsIndexedAndCopied": true,
+  "failures": [],
+  "assets": [
+    {
+      "id": "articulated-4wd-tractor",
+      "materialControls": 4,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "bale-accumulator",
+      "materialControls": 2,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "bale-spear-attachment",
+      "materialControls": 2,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "bale-wrapper",
+      "materialControls": 3,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "center-pivot-irrigation-span",
+      "materialControls": 3,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "chisel-plow",
+      "materialControls": 2,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "combine-harvester",
+      "materialControls": 3,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "compact-utility-tractor",
+      "materialControls": 3,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "corn-header",
+      "materialControls": 2,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "cotton-picker",
+      "materialControls": 3,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "drip-irrigation-filter-unit",
+      "materialControls": 2,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "farm-grain-auger",
+      "materialControls": 4,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "fertilizer-spreader",
+      "materialControls": 2,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "field-cultivator",
+      "materialControls": 3,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "flail-mower-implement",
+      "materialControls": 2,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "forage-harvester",
+      "materialControls": 3,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "forage-wagon",
+      "materialControls": 3,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "front-end-loader-frame",
+      "materialControls": 2,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "general-purpose-loader-bucket",
+      "materialControls": 2,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "grain-bin-aeration-fan",
+      "materialControls": 2,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "grain-cart",
+      "materialControls": 3,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "grain-dryer",
+      "materialControls": 2,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "grain-header",
+      "materialControls": 2,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "high-clearance-sprayer-tractor",
+      "materialControls": 4,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "irrigation-hose-reel",
+      "materialControls": 3,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "land-leveling-scraper",
+      "materialControls": 2,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "manure-spreader",
+      "materialControls": 3,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "moldboard-plow",
+      "materialControls": 2,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "no-till-seeder",
+      "materialControls": 3,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "offset-disc-harrow",
+      "materialControls": 3,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "orchard-air-blast-sprayer",
+      "materialControls": 4,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "orchard-tractor",
+      "materialControls": 4,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "pallet-fork-attachment",
+      "materialControls": 2,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "portable-grain-conveyor",
+      "materialControls": 4,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "potato-harvester",
+      "materialControls": 3,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "precision-planter",
+      "materialControls": 3,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "pto-shaft-guard",
+      "materialControls": 2,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "rear-landscape-rake",
+      "materialControls": 2,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "root-grapple-attachment",
+      "materialControls": 2,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "rotary-mower-implement",
+      "materialControls": 2,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "rotary-tedder",
+      "materialControls": 2,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "round-baler",
+      "materialControls": 3,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "row-crop-cultivator",
+      "materialControls": 3,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "row-crop-planter",
+      "materialControls": 3,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "row-crop-tractor",
+      "materialControls": 4,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "seed-drill",
+      "materialControls": 3,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "self-propelled-field-sprayer",
+      "materialControls": 4,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "sicklebar-mower",
+      "materialControls": 2,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "square-baler",
+      "materialControls": 3,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "stone-picker-implement",
+      "materialControls": 3,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "subsoiler-implement",
+      "materialControls": 2,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "sugar-beet-harvester",
+      "materialControls": 3,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "three-point-hitch-frame",
+      "materialControls": 2,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "tracked-field-tractor",
+      "materialControls": 4,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "tractor-ballast-weight",
+      "materialControls": 2,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "tractor-box-blade",
+      "materialControls": 2,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "tractor-drawbar-hitch",
+      "materialControls": 2,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "trailed-field-sprayer",
+      "materialControls": 3,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "traveling-sprinkler-cart",
+      "materialControls": 3,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    },
+    {
+      "id": "wheel-hay-rake",
+      "materialControls": 3,
+      "presets": 2,
+      "checks": {
+        "source_sha_matches": true,
+        "preview_indexed": true,
+        "preview_source_exists": true,
+        "page_exists": true,
+        "page_preview_exists": true,
+        "material_controls_2_to_4": true,
+        "preset_exists": true,
+        "page_canonical_matches": true
+      }
+    }
+  ]
+}

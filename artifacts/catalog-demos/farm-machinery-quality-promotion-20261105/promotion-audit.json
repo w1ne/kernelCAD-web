@@ -1,0 +1,55 @@
+{
+  "round": "farm-machinery quality promotion",
+  "date": "2026-11-05",
+  "kit": "farm-machinery",
+  "existingAssets": 60,
+  "assetsPromoted": 60,
+  "newAssets": 0,
+  "renamedOrDuplicatedAssets": 0,
+  "materialColorControlsPerAsset": {
+    "2": 26,
+    "3": 25,
+    "4": 9
+  },
+  "materialColorControlsTotal": 163,
+  "additionalControlsOverOneColorEach": 103,
+  "presetNames": [
+    "weathered",
+    "highVisibility"
+  ],
+  "presetAssets": 60,
+  "presetVariantsPerAsset": {
+    "2": 60
+  },
+  "namedPresetEntries": 120,
+  "previewsRendered": 60,
+  "readablePreviewPngs": 60,
+  "indexedRowsWithPreview": 60,
+  "sourceShaMatches": 60,
+  "assetsInsideTriangleBudget": 60,
+  "triangleBudgetMaximum": 2200,
+  "qualityGate": "60/60 assets pass",
+  "overallCatalog": {
+    "pass": 1120,
+    "total": 2390,
+    "passPercentRounded": 47,
+    "thin": 1270,
+    "thinPercentRounded": 53,
+    "briefBaselinePass": 1010,
+    "netPassChangeSinceBriefBaseline": 110
+  },
+  "geometryWork": {
+    "slopedProfileShapes": 35,
+    "customGrainAugerAndConveyorAssemblies": 2,
+    "repairedTractorFrontWeights": 6,
+    "attachedTractorRearHitches": 6,
+    "loweredFieldToolStandards": 30,
+    "groundingRegressionsCorrected": [
+      "moldboard-plow standards",
+      "portable-grain-conveyor transport wheels and support legs"
+    ]
+  },
+  "indexAndPreviewAudit": "pass",
+  "kitQualityAudit": "pass",
+  "scope": "local source, render, index and page checks; this branch is not deployed"
+}
