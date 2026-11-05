@@ -6,11 +6,12 @@ from those sources and must be rebuilt in the same change.
 
 ## Catalog quality snapshot (2026-11-05)
 
-The catalog quality gate reports **1,400/2,390 assets passing (58.58%)** and
-990 thin assets (41.42%). This round began at 1,348/2,390 (56.40%) and promoted
-52 existing theatre-production assets; no IDs were added. The earlier 5 Nov
+The catalog quality gate reports **1,504/2,390 assets passing (62.93%)** and
+886 thin assets (37.07%). This round began at 1,452/2,390 (60.92%) and promoted
+52 existing space-exploration assets; no IDs were added. The earlier 5 Nov
 checkpoint was 1,010/2,390 (42.26%). The full-catalog audit still identifies
-thin assets in other kits; see the [theatre production quality handoff](../artifacts/catalog-demos/theatre-production-quality-promotion-20261105/README.md)
+thin assets in other kits; see the [space exploration quality handoff](../artifacts/catalog-demos/space-exploration-quality-promotion-20261105/README.md)
+and [theatre production quality handoff](../artifacts/catalog-demos/theatre-production-quality-promotion-20261105/README.md)
 for source, preview, index, and verification evidence. These are local catalog
 checks and do not represent deployed behavior.
 
@@ -81,6 +82,20 @@ records the source-to-preview workflow, full-catalog integration checks, local
 pages, package boundary audit, and inspected MP4. The kit is for visualization;
 catalog checks do not establish crop performance, equipment ratings, chemical
 compatibility, sensor calibration, or physical acceptance.
+
+## Space exploration assets
+
+The [space exploration kit](../catalog/kits/space-exploration/README.md) contains
+52 original low-poly props for lunar habitats, rover mobility, spacecraft support
+and field science. Each existing ID retains its scale control and now has two to
+four material-named color controls, `lunarDust` / `highVisibility` presets and an
+indexed preview. The rover has six oriented wheels, a raised equipment bay and
+visible suspension; communication dishes use a distinct reflector surface and
+support arm. The [quality promotion handoff](../artifacts/catalog-demos/space-exploration-quality-promotion-20261105/README.md)
+records the sources, refreshed previews, index, local checks and inspected MP4.
+These remain visualization props; checks do not establish flight readiness,
+pressure-vessel or radiation performance, thermal-vacuum qualification, mission
+fit, engineering suitability or hardware acceptance.
 
 ## Theatre production assets
 

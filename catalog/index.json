@@ -2225,7 +2225,7 @@
     {
       "id": "space-exploration",
       "title": "Space exploration",
-      "description": "Original low-poly lunar surface, spacecraft support and field science props with editable scale and color controls.",
+      "description": "Stylized lunar habitat, rover, spacecraft support and field science props with editable scale, material-specific colors and named appearance presets.",
       "assets": [
         "airlock-hatch",
         "cargo-airlock-pod",
@@ -204897,7 +204897,7 @@
       "id": "airlock-hatch",
       "kit": "space-exploration",
       "title": "Airlock hatch",
-      "description": "Circular pressure-door prop with an outer rim, central disk, handle and locking lugs. Knobs: overall scale and asset color.",
+      "description": "Circular pressure-door prop with an outer rim, central disk, handle and locking lugs. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -204916,8 +204916,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/airlock-hatch.kcad.ts",
       "preview": "/assets/space-exploration-airlock-hatch.png",
-      "sourceSha256": "f0aa265f617448af601882741238a69f6581bad141798a74c7b20d1b542d1d14",
-      "triangleBudget": 2200,
+      "sourceSha256": "0693a303e171e618967598e165f5a89bda86ecf4a1b266dc19036b264a369170",
+      "triangleBudget": 1150,
       "params": [
         {
           "name": "scale",
@@ -204929,15 +204929,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#737c7d",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 452,
+        "triangles": 724,
         "sizeM": [
           0.748,
           0.137,
@@ -204948,11 +204963,10 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#737c7d",
+          "name": "aluminum",
+          "color": "#b6bdbe",
           "parts": [
             "rim",
-            "door",
             "handle",
             "lug-0",
             "lug-1",
@@ -204963,7 +204977,15 @@
             "lug-6",
             "lug-7"
           ],
-          "param": "color"
+          "param": "aluminum"
+        },
+        {
+          "name": "paint",
+          "color": "#737c7d",
+          "parts": [
+            "door"
+          ],
+          "param": "paint"
         }
       ]
     },
@@ -204971,7 +204993,7 @@
       "id": "cargo-airlock-pod",
       "kit": "space-exploration",
       "title": "Cargo airlock pod",
-      "description": "Small cargo transfer pod with rounded-looking shell, wide hatch and side grab rails. Knobs: overall scale and asset color.",
+      "description": "Small cargo transfer pod with rounded-looking shell, wide hatch and side grab rails. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -204990,8 +205012,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/cargo-airlock-pod.kcad.ts",
       "preview": "/assets/space-exploration-cargo-airlock-pod.png",
-      "sourceSha256": "70ada8fcfff3096243887f35ec5e19b39d12898bb9fd841f80c5af6c6564a887",
-      "triangleBudget": 2200,
+      "sourceSha256": "51cff32d0b2962c2d56005ea12e33e201b79a0d9d43a7dd9f8d9702645b2c644",
+      "triangleBudget": 556,
       "params": [
         {
           "name": "scale",
@@ -205003,35 +205025,57 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#b5aa8e",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 124,
+        "triangles": 332,
         "sizeM": [
           0.58,
           0.715,
-          0.6525
+          0.638306
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#b5aa8e",
           "parts": [
-            "pod",
+            "pod"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
             "cap",
             "hatch",
             "rail-left",
             "rail-right"
           ],
-          "param": "color"
+          "param": "aluminum"
         }
       ]
     },
@@ -205039,7 +205083,7 @@
       "id": "core-sampler",
       "kit": "space-exploration",
       "title": "Core sampler tool",
-      "description": "Long core sampler with a pointed-looking barrel, top grip and lower cutting collar. Knobs: overall scale and asset color.",
+      "description": "Long core sampler with a pointed-looking barrel, top grip and lower cutting collar. Material controls: paint, aluminum, rubber; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -205058,8 +205102,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/core-sampler.kcad.ts",
       "preview": "/assets/space-exploration-core-sampler.png",
-      "sourceSha256": "cc89c35f13441cdd30af301aefd37ed7cf9bb5df15d31bf80e024d68743fc880",
-      "triangleBudget": 2200,
+      "sourceSha256": "3489b80ef04ff245eb712a957a701b0c7b7e0043e479a47f545a13f18a9211f1",
+      "triangleBudget": 601,
       "params": [
         {
           "name": "scale",
@@ -205071,15 +205115,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#8d8b7d",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#34383a",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3",
+          "rubber": "#514d44"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255",
+          "rubber": "#34383a"
+        }
+      },
       "stats": {
-        "triangles": 168,
+        "triangles": 360,
         "sizeM": [
           0.3,
           0.87,
@@ -205090,17 +205157,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8d8b7d",
+          "name": "aluminum",
+          "color": "#b6bdbe",
           "parts": [
             "barrel",
             "collar",
-            "tip",
-            "grip-left",
-            "grip-right",
             "cross-handle"
           ],
-          "param": "color"
+          "param": "aluminum"
+        },
+        {
+          "name": "paint",
+          "color": "#8d8b7d",
+          "parts": [
+            "tip"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "rubber",
+          "color": "#34383a",
+          "parts": [
+            "grip-left",
+            "grip-right"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -205108,7 +205189,7 @@
       "id": "drill-core-tube-rack",
       "kit": "space-exploration",
       "title": "Core tube rack",
-      "description": "Portable core-tube rack with four parallel channels and broad end plates. Knobs: overall scale and asset color.",
+      "description": "Portable core-tube rack with four parallel channels and broad end plates. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -205127,8 +205208,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/drill-core-tube-rack.kcad.ts",
       "preview": "/assets/space-exploration-drill-core-tube-rack.png",
-      "sourceSha256": "fb2b976df68c04c23b2ea3759338d7997ee78e7bf5d3b5613a0904ed44a08c58",
-      "triangleBudget": 2200,
+      "sourceSha256": "a5a4a36d689dcc4119faf1fc849224996962dc3a9a5339a32f8c911c9e807806",
+      "triangleBudget": 691,
       "params": [
         {
           "name": "scale",
@@ -205140,15 +205221,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#8f8a7a",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 212,
+        "triangles": 420,
         "sizeM": [
           0.82,
           0.65,
@@ -205159,18 +205255,25 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#8f8a7a",
           "parts": [
             "base",
-            "tube-0",
-            "tube-1",
-            "tube-2",
-            "tube-3",
             "end-left",
             "end-right"
           ],
-          "param": "color"
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
+            "tube-0",
+            "tube-1",
+            "tube-2",
+            "tube-3"
+          ],
+          "param": "aluminum"
         }
       ]
     },
@@ -205178,7 +205281,7 @@
       "id": "dust-protection-screen",
       "kit": "space-exploration",
       "title": "Dust protection screen",
-      "description": "Portable low dust screen with three panels, side rails and broad floor skids. Knobs: overall scale and asset color.",
+      "description": "Portable low dust screen with three panels, side rails and broad floor skids. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -205197,8 +205300,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/dust-protection-screen.kcad.ts",
       "preview": "/assets/space-exploration-dust-protection-screen.png",
-      "sourceSha256": "886855f89716e818ad60eb5cfab41f7514b51a62ea5199b3bdc0ae26e0cffd6a",
-      "triangleBudget": 2200,
+      "sourceSha256": "f31a07ff4ab105169fa7d6617ada6c26958c77f3931c2ea2907461a671f36675",
+      "triangleBudget": 668,
       "params": [
         {
           "name": "scale",
@@ -205210,18 +205313,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#89877e",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 84,
+        "triangles": 420,
         "sizeM": [
-          1.08,
-          1.17,
+          1.132015,
+          1.186263,
           0.5
         ],
         "minUpM": 0,
@@ -205229,18 +205347,25 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#89877e",
           "parts": [
             "panel-0",
             "panel-1",
-            "panel-2",
+            "panel-2"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
             "top-rail",
             "bottom-rail",
             "skid-left",
             "skid-right"
           ],
-          "param": "color"
+          "param": "aluminum"
         }
       ]
     },
@@ -205248,7 +205373,7 @@
       "id": "emergency-shelter-pod",
       "kit": "space-exploration",
       "title": "Emergency shelter pod",
-      "description": "Low emergency shelter capsule with raised end caps, foot pads and a top handle rail. Knobs: overall scale and asset color.",
+      "description": "Low emergency shelter capsule with raised end caps, foot pads and a top handle rail. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -205267,8 +205392,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/emergency-shelter-pod.kcad.ts",
       "preview": "/assets/space-exploration-emergency-shelter-pod.png",
-      "sourceSha256": "2b218052587386a48fb64660a24afd53023cf7fa195c6524a9dcac3d45a41af6",
-      "triangleBudget": 2200,
+      "sourceSha256": "1103e2b2b2c94e3db774eb5b33082a54521cf5a9a94f1a34224207c600283466",
+      "triangleBudget": 680,
       "params": [
         {
           "name": "scale",
@@ -205280,15 +205405,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#c98c52",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 148,
+        "triangles": 420,
         "sizeM": [
           1.43,
           0.98,
@@ -205299,18 +205439,25 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#c98c52",
           "parts": [
             "shell",
             "top",
             "end-a",
-            "end-b",
+            "end-b"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
             "handle",
             "foot--350",
             "foot-350"
           ],
-          "param": "color"
+          "param": "aluminum"
         }
       ]
     },
@@ -205318,7 +205465,7 @@
       "id": "equipment-locker",
       "kit": "space-exploration",
       "title": "Field equipment locker",
-      "description": "Tall equipment locker with double doors, top lip and four compact feet. Knobs: overall scale and asset color.",
+      "description": "Tall equipment locker with double doors, top lip and four compact feet. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -205337,8 +205484,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/equipment-locker.kcad.ts",
       "preview": "/assets/space-exploration-equipment-locker.png",
-      "sourceSha256": "ca31ebbcccb91e13bc8de6677f8f8ea0e0db88f224621dc3fe60ab2b3c92a622",
-      "triangleBudget": 2200,
+      "sourceSha256": "bb1a1873f8a29eb7265378516ffd24148555421b8f30064f39f46469372e4c02",
+      "triangleBudget": 584,
       "params": [
         {
           "name": "scale",
@@ -205350,15 +205497,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#8c887a",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 72,
+        "triangles": 360,
         "sizeM": [
           0.86,
           1.62,
@@ -205369,17 +205531,24 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#8c887a",
           "parts": [
             "body",
             "top",
             "door-left",
-            "door-right",
+            "door-right"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
             "foot--300",
             "foot-300"
           ],
-          "param": "color"
+          "param": "aluminum"
         }
       ]
     },
@@ -205387,7 +205556,7 @@
       "id": "equipment-stanchion",
       "kit": "space-exploration",
       "title": "Equipment stanchion",
-      "description": "Short equipment stanchion with a weighted foot, post and rectangular mounting head. Knobs: overall scale and asset color.",
+      "description": "Short equipment stanchion with a weighted foot, post and rectangular mounting head. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -205406,8 +205575,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/equipment-stanchion.kcad.ts",
       "preview": "/assets/space-exploration-equipment-stanchion.png",
-      "sourceSha256": "3d8a547238c15ba85f1ab9c56b3073881de6c5a5e498c45913f7f4e99f41cb82",
-      "triangleBudget": 2200,
+      "sourceSha256": "8066fcc84b4ada9d3dee3cab5e311e680d74d408d540b010c6f6fc0073f09f4a",
+      "triangleBudget": 422,
       "params": [
         {
           "name": "scale",
@@ -205419,15 +205588,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#727875",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 80,
+        "triangles": 240,
         "sizeM": [
           0.3,
           0.92,
@@ -205438,15 +205622,22 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#727875",
+          "name": "aluminum",
+          "color": "#b6bdbe",
           "parts": [
             "foot",
             "post",
-            "head",
             "cap"
           ],
-          "param": "color"
+          "param": "aluminum"
+        },
+        {
+          "name": "paint",
+          "color": "#727875",
+          "parts": [
+            "head"
+          ],
+          "param": "paint"
         }
       ]
     },
@@ -205454,7 +205645,7 @@
       "id": "field-lamp",
       "kit": "space-exploration",
       "title": "Portable field lamp",
-      "description": "Compact field lamp with a square base, upright stem and broad rectangular lamp head. Knobs: overall scale and asset color.",
+      "description": "Compact field lamp with a square base, upright stem and broad rectangular lamp head. Material controls: paint, glass; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -205473,8 +205664,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/field-lamp.kcad.ts",
       "preview": "/assets/space-exploration-field-lamp.png",
-      "sourceSha256": "73cfbcc4404f30b9433109de7ce7501ada3e7e9d29453302ccabd2ecb5474267",
-      "triangleBudget": 2200,
+      "sourceSha256": "7eaf403b205f36f6ca828c22fcd5c3c4d8a875af6b3507c9cea7ab6af3b7d1a0",
+      "triangleBudget": 506,
       "params": [
         {
           "name": "scale",
@@ -205486,15 +205677,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#c0a56c",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#548b9a",
+          "label": "Optical glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "glass": "#7b9ba0"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "glass": "#63a9b8"
+        }
+      },
       "stats": {
-        "triangles": 92,
+        "triangles": 300,
         "sizeM": [
           0.32,
           0.865,
@@ -205505,16 +205711,23 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#c0a56c",
           "parts": [
             "base",
             "stem",
             "neck",
-            "head",
+            "head"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "glass",
+          "color": "#548b9a",
+          "parts": [
             "lens"
           ],
-          "param": "color"
+          "param": "glass"
         }
       ]
     },
@@ -205522,7 +205735,7 @@
       "id": "field-tool-chest",
       "kit": "space-exploration",
       "title": "Field tool chest",
-      "description": "Low tool chest with a hinged-looking lid, front drawer line and side grab handles. Knobs: overall scale and asset color.",
+      "description": "Low tool chest with a hinged-looking lid, front drawer line and side grab handles. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -205541,8 +205754,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/field-tool-chest.kcad.ts",
       "preview": "/assets/space-exploration-field-tool-chest.png",
-      "sourceSha256": "2d9fdcf7c7a2e9fad024ead168a8a9b1378d52c9815259a57420a3a7ccb66ae8",
-      "triangleBudget": 2200,
+      "sourceSha256": "c3c3f8c15351b2a2bf0f85c005c0352ccfa853a63eaa2716348a9770134a6ca8",
+      "triangleBudget": 584,
       "params": [
         {
           "name": "scale",
@@ -205554,36 +205767,58 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#716c5e",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 72,
+        "triangles": 360,
         "sizeM": [
           0.945,
-          0.35,
-          0.565
+          0.367862,
+          0.569867
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#716c5e",
           "parts": [
             "base",
             "lid",
-            "drawer",
+            "drawer"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
             "handle-left",
             "handle-right",
             "latch"
           ],
-          "param": "color"
+          "param": "aluminum"
         }
       ]
     },
@@ -205591,7 +205826,7 @@
       "id": "geological-hammer",
       "kit": "space-exploration",
       "title": "Geological sampling hammer",
-      "description": "Compact geology hammer with a broad head, tapered handle and pommel block. Knobs: overall scale and asset color.",
+      "description": "Compact geology hammer with a broad head, tapered handle and pommel block. Material controls: paint, aluminum, rubber; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -205610,8 +205845,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/geological-hammer.kcad.ts",
       "preview": "/assets/space-exploration-geological-hammer.png",
-      "sourceSha256": "82e53074dfaf2ed62c92336a5f5cbbd0988055b4a249946501b9c29a6333f88c",
-      "triangleBudget": 2200,
+      "sourceSha256": "095e2b079051baf04c5ba1bd958478518a5c5aa12501293e70d7b5b81f2f628b",
+      "triangleBudget": 500,
       "params": [
         {
           "name": "scale",
@@ -205623,18 +205858,41 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#777a77",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#34383a",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3",
+          "rubber": "#514d44"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255",
+          "rubber": "#34383a"
+        }
+      },
       "stats": {
-        "triangles": 60,
+        "triangles": 300,
         "sizeM": [
-          0.49,
-          0.78,
+          0.494417,
+          0.783009,
           0.14
         ],
         "minUpM": 0,
@@ -205642,16 +205900,30 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#777a77",
           "parts": [
             "head",
-            "pick",
-            "handle",
-            "grip",
             "pommel"
           ],
-          "param": "color"
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
+            "pick",
+            "handle"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "rubber",
+          "color": "#34383a",
+          "parts": [
+            "grip"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -205659,7 +205931,7 @@
       "id": "habitat-corridor-section",
       "kit": "space-exploration",
       "title": "Habitat corridor section",
-      "description": "Short cylindrical pressure corridor with two raised seam rings and floor skids. Knobs: overall scale and asset color.",
+      "description": "Short cylindrical pressure corridor with two raised seam rings and floor skids. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -205678,8 +205950,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/habitat-corridor-section.kcad.ts",
       "preview": "/assets/space-exploration-habitat-corridor-section.png",
-      "sourceSha256": "4abc4e29a5fe714cf27f7e0208ec1dc6810c69ceacd3efcd1ce24a97e1de7e55",
-      "triangleBudget": 2200,
+      "sourceSha256": "35ee6a7be990f975c3bd3d611720fb4bfa9b5cd04908496cd899d72601ea91ac",
+      "triangleBudget": 584,
       "params": [
         {
           "name": "scale",
@@ -205691,35 +205963,57 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#9d9a8d",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 156,
+        "triangles": 348,
         "sizeM": [
           0.66,
           0.66,
-          0.66
+          0.627697
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#9d9a8d",
           "parts": [
-            "tube",
+            "tube"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
             "ring-a",
             "ring-b",
             "skid-left",
             "skid-right"
           ],
-          "param": "color"
+          "param": "aluminum"
         }
       ]
     },
@@ -205727,7 +206021,7 @@
       "id": "habitat-spares-crate",
       "kit": "space-exploration",
       "title": "Habitat spares crate",
-      "description": "Stackable spares crate with reinforced corner rails, lid seam and side hand slots. Knobs: overall scale and asset color.",
+      "description": "Stackable spares crate with reinforced corner rails, lid seam and side hand slots. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -205746,8 +206040,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/habitat-spares-crate.kcad.ts",
       "preview": "/assets/space-exploration-habitat-spares-crate.png",
-      "sourceSha256": "d519a091d0e8b12413ed1ed8a5a9fbae1b73dc198f6004a262e8670f3070ec2d",
-      "triangleBudget": 2200,
+      "sourceSha256": "3fcff2d4c11d53a8ee6846d2eb879b510f3dc4e99262320af20f5ac3ddc47410",
+      "triangleBudget": 752,
       "params": [
         {
           "name": "scale",
@@ -205759,15 +206053,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#9a8a68",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 96,
+        "triangles": 480,
         "sizeM": [
           0.84,
           0.61,
@@ -205778,10 +206087,17 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
+            "body"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "paint",
           "color": "#9a8a68",
           "parts": [
-            "body",
             "lid",
             "corner--340--265",
             "corner--340-265",
@@ -205790,7 +206106,7 @@
             "slot-left",
             "slot-right"
           ],
-          "param": "color"
+          "param": "paint"
         }
       ]
     },
@@ -205798,7 +206114,7 @@
       "id": "inflatable-habitat-frame",
       "kit": "space-exploration",
       "title": "Inflatable habitat frame",
-      "description": "Inflatable habitat shell represented by a broad drum, end collars and an external rib frame. Knobs: overall scale and asset color.",
+      "description": "Inflatable habitat shell represented by a broad drum, end collars and an external rib frame. Material controls: paint, aluminum, fabric; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -205817,8 +206133,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/inflatable-habitat-frame.kcad.ts",
       "preview": "/assets/space-exploration-inflatable-habitat-frame.png",
-      "sourceSha256": "8a204a93a5d52d1f35bff1dbff3366318e070ea7d84d0b03d56e6a1fa1ad658e",
-      "triangleBudget": 2200,
+      "sourceSha256": "cab1bf3f39e7820aa4da625df54b0b0954f82ca3cb68cff00d729e8046db4743",
+      "triangleBudget": 752,
       "params": [
         {
           "name": "scale",
@@ -205830,37 +206146,74 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#a7a59a",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#b4aa8c",
+          "label": "Insulating fabric"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3",
+          "fabric": "#d0c7a9"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255",
+          "fabric": "#d7c98f"
+        }
+      },
       "stats": {
-        "triangles": 180,
+        "triangles": 468,
         "sizeM": [
           0.9,
           0.96,
-          0.9
+          0.855951
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
+          "name": "fabric",
+          "color": "#b4aa8c",
+          "parts": [
+            "shell"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
+            "collar-a",
+            "collar-b"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "paint",
           "color": "#a7a59a",
           "parts": [
-            "shell",
-            "collar-a",
-            "collar-b",
             "rib-0",
             "rib-1",
             "rib-2",
             "rib-3"
           ],
-          "param": "color"
+          "param": "paint"
         }
       ]
     },
@@ -205868,7 +206221,7 @@
       "id": "landing-gear-pod",
       "kit": "space-exploration",
       "title": "Landing gear pod",
-      "description": "Landing leg pod with a tapered-looking strut, broad footplate and two brace arms. Knobs: overall scale and asset color.",
+      "description": "Landing leg pod with a tapered-looking strut, broad footplate and two brace arms. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -205887,8 +206240,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/landing-gear-pod.kcad.ts",
       "preview": "/assets/space-exploration-landing-gear-pod.png",
-      "sourceSha256": "285efa93adaa867cd07e95bca9a13a84079274934924c657ed978e029dd36232",
-      "triangleBudget": 2200,
+      "sourceSha256": "d076c7ea278f6a7919bc90d17468f16a38144c6c019a5fed27223695ed71b540",
+      "triangleBudget": 512,
       "params": [
         {
           "name": "scale",
@@ -205900,15 +206253,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#777b78",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 124,
+        "triangles": 300,
         "sizeM": [
           0.44,
           0.795,
@@ -205919,16 +206287,23 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#777b78",
           "parts": [
-            "strut",
+            "strut"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
             "foot",
             "brace-left",
             "brace-right",
             "collar"
           ],
-          "param": "color"
+          "param": "aluminum"
         }
       ]
     },
@@ -205936,7 +206311,7 @@
       "id": "landing-pad-marker",
       "kit": "space-exploration",
       "title": "Landing zone marker",
-      "description": "Low landing-zone marker with a broad base plate and raised guide posts at each corner. Knobs: overall scale and asset color.",
+      "description": "Low landing-zone marker with a broad base plate and raised guide posts at each corner. Material controls: paint, aluminum, warningAmber; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -205955,8 +206330,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/landing-pad-marker.kcad.ts",
       "preview": "/assets/space-exploration-landing-pad-marker.png",
-      "sourceSha256": "a19ff5ce831d2877c22068ae21d0d1993ddf3bea6fc3cfa7dc0d4d0402b8054c",
-      "triangleBudget": 2200,
+      "sourceSha256": "5c0ca263d77a1a2b641434b410c06701d6fc4b88f2045c99329175ac381438b7",
+      "triangleBudget": 584,
       "params": [
         {
           "name": "scale",
@@ -205968,15 +206343,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#bd9750",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
+        },
+        {
+          "name": "warningAmber",
+          "type": "color",
+          "default": "#d9aa36",
+          "label": "Warning amber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3",
+          "warningAmber": "#d3bd82"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255",
+          "warningAmber": "#f0b72f"
+        }
+      },
       "stats": {
-        "triangles": 72,
+        "triangles": 360,
         "sizeM": [
           1.2,
           0.395,
@@ -205987,17 +206385,31 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#bd9750",
           "parts": [
-            "plate",
+            "plate"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
             "post--460--460",
             "post--460-460",
             "post-460--460",
-            "post-460-460",
+            "post-460-460"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "warningAmber",
+          "color": "#d9aa36",
+          "parts": [
             "center"
           ],
-          "param": "color"
+          "param": "warningAmber"
         }
       ]
     },
@@ -206005,7 +206417,7 @@
       "id": "lunar-habitat-module",
       "kit": "space-exploration",
       "title": "Lunar habitat module",
-      "description": "Compact surface habitat with domed cap, four corner supports and a framed entry hatch. Knobs: overall scale and asset color.",
+      "description": "Compact cylindrical surface habitat with a domed cap, four corner supports, a framed entry hatch and a forward porthole. Material controls: paint, aluminum, glass; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -206024,8 +206436,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/lunar-habitat-module.kcad.ts",
       "preview": "/assets/space-exploration-lunar-habitat-module.png",
-      "sourceSha256": "362f07707825d0920daeaea6a9dd238a84482db93e5ccd25bb374008fc2d99f2",
-      "triangleBudget": 2200,
+      "sourceSha256": "b83e254f0aea4d76c1c3a5fadfe30bc5b8fe0a839f7d5cfce68edeb1e36ce786",
+      "triangleBudget": 808,
       "params": [
         {
           "name": "scale",
@@ -206037,37 +206449,75 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
-          "default": "#b7b1a2",
-          "label": "Asset color"
+          "default": "#d97835",
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#548b9a",
+          "label": "Optical glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3",
+          "glass": "#7b9ba0"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255",
+          "glass": "#63a9b8"
+        }
+      },
       "stats": {
-        "triangles": 148,
+        "triangles": 512,
         "sizeM": [
           0.78,
           1,
-          0.78
+          0.759912
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b7b1a2",
+          "name": "paint",
+          "color": "#d97835",
           "parts": [
             "body",
-            "roof",
+            "roof"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
             "hatch",
             "leg--250--250",
             "leg--250-250",
             "leg-250--250",
             "leg-250-250"
           ],
-          "param": "color"
+          "param": "aluminum"
+        },
+        {
+          "name": "glass",
+          "color": "#548b9a",
+          "parts": [
+            "viewport"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -206075,7 +206525,7 @@
       "id": "lunar-rover-chassis",
       "kit": "space-exploration",
       "title": "Lunar rover chassis",
-      "description": "Open rover frame with four wheel mounts, central deck, front bumper and rear cargo rail. Knobs: overall scale and asset color.",
+      "description": "Six-wheel lunar rover with a raised equipment bay, paired rocker links, exposed suspension and a forward navigation camera. Material controls: paint, aluminum, rubber, glass; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -206094,8 +206544,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/lunar-rover-chassis.kcad.ts",
       "preview": "/assets/space-exploration-lunar-rover-chassis.png",
-      "sourceSha256": "026092df079f26d0a255f492cb75d58eb1cd2db836ec5c9103c06b17a1b0b6e6",
-      "triangleBudget": 2200,
+      "sourceSha256": "6ce6a61aaa8b94924ac3329071a945fc0e31f2434398ee143e81a82e9e1c3983",
+      "triangleBudget": 2152,
       "params": [
         {
           "name": "scale",
@@ -206107,37 +206557,103 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
-          "default": "#9c8e6d",
-          "label": "Asset color"
+          "default": "#e87832",
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#34383a",
+          "label": "Rubber"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#548b9a",
+          "label": "Optical glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3",
+          "rubber": "#514d44",
+          "glass": "#7b9ba0"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255",
+          "rubber": "#34383a",
+          "glass": "#63a9b8"
+        }
+      },
       "stats": {
-        "triangles": 84,
+        "triangles": 1452,
         "sizeM": [
-          1.25,
-          0.43,
-          0.87
+          1.43,
+          1.004,
+          0.8825
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#9c8e6d",
+          "name": "paint",
+          "color": "#e87832",
           "parts": [
             "deck",
-            "front-bumper",
-            "rear-rail",
-            "wheel-mount--460--360",
-            "wheel-mount--460-360",
-            "wheel-mount-460--360",
-            "wheel-mount-460-360"
+            "equipment-bay",
+            "front-bumper"
           ],
-          "param": "color"
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
+            "instrument-cover",
+            "rear-rail",
+            "rocker--1",
+            "rocker-1",
+            "suspension--1--250",
+            "suspension--1-0",
+            "suspension--1-250",
+            "suspension-1--250",
+            "suspension-1-0",
+            "suspension-1-250"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "glass",
+          "color": "#548b9a",
+          "parts": [
+            "camera-mast",
+            "navigation-camera"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "rubber",
+          "color": "#34383a",
+          "parts": [
+            "wheel--1--250",
+            "wheel--1-0",
+            "wheel--1-250",
+            "wheel-1--250",
+            "wheel-1-0",
+            "wheel-1-250"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -206145,7 +206661,7 @@
       "id": "orbital-communication-dish",
       "kit": "space-exploration",
       "title": "Orbital communication dish",
-      "description": "Compact orbital dish on a box bus with a feed arm and two solar-panel wings. Knobs: overall scale and asset color.",
+      "description": "Compact satellite with a forward-tilted reflector, projecting feed horn, support arm and two solar-panel wings. Material controls: paint, aluminum, solarCell, reflector; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -206164,8 +206680,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/orbital-communication-dish.kcad.ts",
       "preview": "/assets/space-exploration-orbital-communication-dish.png",
-      "sourceSha256": "1a40758d1d7a643b7c4f9d0f4533d5abf043a4931268e9a519a6483bb56a0869",
-      "triangleBudget": 2200,
+      "sourceSha256": "62b5a4be7a9f1f9e164430fadd9ed9f0ea769a8efde242dbb68f491ca41387be",
+      "triangleBudget": 663,
       "params": [
         {
           "name": "scale",
@@ -206177,36 +206693,88 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
-          "default": "#c1c6c1",
-          "label": "Asset color"
+          "default": "#d97835",
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
+        },
+        {
+          "name": "solarCell",
+          "type": "color",
+          "default": "#304d70",
+          "label": "Solar cells"
+        },
+        {
+          "name": "reflector",
+          "type": "color",
+          "default": "#eef1f1",
+          "label": "Reflective aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3",
+          "solarCell": "#52647b",
+          "reflector": "#f5f6f4"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255",
+          "solarCell": "#244267",
+          "reflector": "#dce9ee"
+        }
+      },
       "stats": {
-        "triangles": 136,
+        "triangles": 408,
         "sizeM": [
           1.6,
-          0.44,
-          0.87
+          0.726543,
+          1.045651
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#c1c6c1",
+          "name": "paint",
+          "color": "#d97835",
           "parts": [
-            "bus",
-            "dish",
+            "bus"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "reflector",
+          "color": "#eef1f1",
+          "parts": [
+            "dish"
+          ],
+          "param": "reflector"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
             "arm",
-            "feed",
+            "feed"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "solarCell",
+          "color": "#304d70",
+          "parts": [
             "panel-left",
             "panel-right"
           ],
-          "param": "color"
+          "param": "solarCell"
         }
       ]
     },
@@ -206214,7 +206782,7 @@
       "id": "oxygen-cylinder-rack",
       "kit": "space-exploration",
       "title": "Oxygen cylinder rack",
-      "description": "Two-cylinder service rack with retaining hoops, bottom tray and lifting bar. Knobs: overall scale and asset color.",
+      "description": "Two-cylinder service rack with retaining hoops, bottom tray and lifting bar. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -206233,8 +206801,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/oxygen-cylinder-rack.kcad.ts",
       "preview": "/assets/space-exploration-oxygen-cylinder-rack.png",
-      "sourceSha256": "0ccd27be58976a0c13dc26dba6b94607aea62142468a2304e4bcabccd265986a",
-      "triangleBudget": 2200,
+      "sourceSha256": "eadfc7f61cd9686e028db3c95da87344a868a5a5686836f353c5031ff0b43864",
+      "triangleBudget": 680,
       "params": [
         {
           "name": "scale",
@@ -206246,15 +206814,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#8c9b99",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 148,
+        "triangles": 420,
         "sizeM": [
           0.65,
           1.26,
@@ -206265,18 +206848,25 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#8c9b99",
           "parts": [
             "tray",
             "cylinder-0",
             "cylinder-1",
+            "back"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
             "top-bar",
-            "back",
             "foot--270",
             "foot-270"
           ],
-          "param": "color"
+          "param": "aluminum"
         }
       ]
     },
@@ -206284,7 +206874,7 @@
       "id": "payload-container",
       "kit": "space-exploration",
       "title": "Instrument payload container",
-      "description": "Square instrument payload canister with lid rim, corner rails and a recessed front panel. Knobs: overall scale and asset color.",
+      "description": "Square instrument payload canister with lid rim, corner rails and a recessed front panel. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -206303,8 +206893,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/payload-container.kcad.ts",
       "preview": "/assets/space-exploration-payload-container.png",
-      "sourceSha256": "7978516a9ba6df5ef3a8556f7c8c89103238790b838cb501b7601b20662e3c53",
-      "triangleBudget": 2200,
+      "sourceSha256": "90be2a408b5f6bd36cb049e91e4b9e82130912832ec1812d2ae4dfed5951bfc2",
+      "triangleBudget": 668,
       "params": [
         {
           "name": "scale",
@@ -206316,15 +206906,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#8b8067",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 84,
+        "triangles": 420,
         "sizeM": [
           0.82,
           1,
@@ -206335,10 +206940,17 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
+            "body"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "paint",
           "color": "#8b8067",
           "parts": [
-            "body",
             "lid",
             "corner--330--330",
             "corner--330-330",
@@ -206346,7 +206958,7 @@
             "corner-330-330",
             "panel"
           ],
-          "param": "color"
+          "param": "paint"
         }
       ]
     },
@@ -206354,7 +206966,7 @@
       "id": "portable-science-console",
       "kit": "space-exploration",
       "title": "Portable science console",
-      "description": "Field console with tilted-looking display housing, top rail and four low mounting feet. Knobs: overall scale and asset color.",
+      "description": "Field console with tilted-looking display housing, top rail and four low mounting feet. Material controls: paint, aluminum, glass; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -206373,8 +206985,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/portable-science-console.kcad.ts",
       "preview": "/assets/space-exploration-portable-science-console.png",
-      "sourceSha256": "74f9782d6f4b63bc99b7286cc99ae55e60214ca98f71fdcd3c829b0f8837a431",
-      "triangleBudget": 2200,
+      "sourceSha256": "006281a602a9bd50345127101255a5f6da937f06e12bd77331ac84164f65fca0",
+      "triangleBudget": 752,
       "params": [
         {
           "name": "scale",
@@ -206386,18 +206998,41 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#66716e",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#548b9a",
+          "label": "Optical glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3",
+          "glass": "#7b9ba0"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255",
+          "glass": "#63a9b8"
+        }
+      },
       "stats": {
-        "triangles": 96,
+        "triangles": 480,
         "sizeM": [
           0.65,
-          0.7,
+          0.699571,
           0.5
         ],
         "minUpM": 0,
@@ -206405,19 +207040,33 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#66716e",
           "parts": [
             "base",
             "body",
-            "screen",
-            "hood",
+            "hood"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "glass",
+          "color": "#548b9a",
+          "parts": [
+            "screen"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
             "foot--250--180",
             "foot--250-180",
             "foot-250--180",
             "foot-250-180"
           ],
-          "param": "color"
+          "param": "aluminum"
         }
       ]
     },
@@ -206425,7 +207074,7 @@
       "id": "power-distribution-unit",
       "kit": "space-exploration",
       "title": "Surface power distribution unit",
-      "description": "Field power distribution box with two outlet panels, cable entries and raised roof. Knobs: overall scale and asset color.",
+      "description": "Field power distribution box with two outlet panels, cable entries and raised roof. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -206444,8 +207093,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/power-distribution-unit.kcad.ts",
       "preview": "/assets/space-exploration-power-distribution-unit.png",
-      "sourceSha256": "bcf6150c24a3156e136e99dbde74bdce37662818e0759685a0c0599c0fa5e6f7",
-      "triangleBudget": 2200,
+      "sourceSha256": "2ad1109c6147ac208daea88bb2f0639cc07b1856c5b976d7ceee97aaccd5fed4",
+      "triangleBudget": 685,
       "params": [
         {
           "name": "scale",
@@ -206457,15 +207106,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#7a8179",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 180,
+        "triangles": 420,
         "sizeM": [
           0.7,
           0.45,
@@ -206476,18 +207140,25 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#7a8179",
           "parts": [
             "body",
             "roof",
             "panel-left",
-            "panel-right",
+            "panel-right"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
             "gland-0",
             "gland-1",
             "gland-2"
           ],
-          "param": "color"
+          "param": "aluminum"
         }
       ]
     },
@@ -206495,7 +207166,7 @@
       "id": "pressurized-tunnel-collar",
       "kit": "space-exploration",
       "title": "Pressurized tunnel collar",
-      "description": "Circular tunnel connection ring with broad flange, inner lip and four bolt bosses. Knobs: overall scale and asset color.",
+      "description": "Circular tunnel connection ring with broad flange, inner lip and four bolt bosses. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -206514,8 +207185,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/pressurized-tunnel-collar.kcad.ts",
       "preview": "/assets/space-exploration-pressurized-tunnel-collar.png",
-      "sourceSha256": "197b19bf8c156d98714a1ebab29d5939dfb6b2d94e3223ea7102e29a869a7d64",
-      "triangleBudget": 2200,
+      "sourceSha256": "1c72469c17997d0a7471654b4485e18143a399bfa2871c5ed68a0ab85b373d13",
+      "triangleBudget": 708,
       "params": [
         {
           "name": "scale",
@@ -206527,15 +207198,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#7c8585",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 264,
+        "triangles": 424,
         "sizeM": [
           0.82,
           0.13,
@@ -206546,17 +207232,24 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#7c8585",
           "parts": [
             "flange",
-            "inner-lip",
+            "inner-lip"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
             "bolt-0",
             "bolt-1",
             "bolt-2",
             "bolt-3"
           ],
-          "param": "color"
+          "param": "aluminum"
         }
       ]
     },
@@ -206564,7 +207257,7 @@
       "id": "regolith-sieve",
       "kit": "space-exploration",
       "title": "Regolith sieve tray",
-      "description": "Shallow field sieve tray with raised rim, crossed support legs and a central mesh panel. Knobs: overall scale and asset color.",
+      "description": "Shallow field sieve tray with raised rim, crossed support legs and a central mesh panel. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -206583,8 +207276,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/regolith-sieve.kcad.ts",
       "preview": "/assets/space-exploration-regolith-sieve.png",
-      "sourceSha256": "cd2ffd2a12bab10a99d3d799705b6e71e3d8bc99b4aaa3ca43e8866b15268cf7",
-      "triangleBudget": 2200,
+      "sourceSha256": "d37d36ea4573030b5c1ddd4a13d4ba55cd2c72e50083277d444c429baa98bd45",
+      "triangleBudget": 836,
       "params": [
         {
           "name": "scale",
@@ -206596,18 +207289,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#a69878",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 108,
+        "triangles": 540,
         "sizeM": [
           0.64,
-          0.5,
+          0.500808,
           0.5
         ],
         "minUpM": 0,
@@ -206615,10 +207323,17 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#a69878",
           "parts": [
-            "mesh",
+            "mesh"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
             "rim-0",
             "rim-1",
             "rim-2",
@@ -206628,7 +207343,7 @@
             "leg--220",
             "leg-220"
           ],
-          "param": "color"
+          "param": "aluminum"
         }
       ]
     },
@@ -206636,7 +207351,7 @@
       "id": "relay-beacon",
       "kit": "space-exploration",
       "title": "Relay beacon",
-      "description": "Standalone relay beacon with a capped post, indicator box and four low anchor tabs. Knobs: overall scale and asset color.",
+      "description": "Standalone relay beacon with a capped post, indicator box and four low anchor tabs. Material controls: paint, aluminum, glass; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -206655,8 +207370,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/relay-beacon.kcad.ts",
       "preview": "/assets/space-exploration-relay-beacon.png",
-      "sourceSha256": "f5e12c07195caba8cc5829a8b55e452f6ce8de37d8dd438fca490ceab537d454",
-      "triangleBudget": 2200,
+      "sourceSha256": "d7d84d3e53811db6421d171fc1f3ba9167079ae881fd92af123786bd36de56b2",
+      "triangleBudget": 758,
       "params": [
         {
           "name": "scale",
@@ -206668,15 +207383,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#dfb84d",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#548b9a",
+          "label": "Optical glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3",
+          "glass": "#7b9ba0"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255",
+          "glass": "#63a9b8"
+        }
+      },
       "stats": {
-        "triangles": 128,
+        "triangles": 480,
         "sizeM": [
           0.32,
           1.03,
@@ -206687,19 +207425,33 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#dfb84d",
           "parts": [
             "base",
-            "post",
-            "beacon",
-            "cap",
             "anchor-0",
             "anchor-1",
             "anchor-2",
             "anchor-3"
           ],
-          "param": "color"
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
+            "post",
+            "cap"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "glass",
+          "color": "#548b9a",
+          "parts": [
+            "beacon"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -206707,7 +207459,7 @@
       "id": "robotic-arm-pedestal",
       "kit": "space-exploration",
       "title": "Instrument arm pedestal",
-      "description": "Static instrument-arm pedestal with a broad base, two block links and a tool-end mount. Knobs: overall scale and asset color.",
+      "description": "Static instrument-arm pedestal with a broad base, two block links and a tool-end mount. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -206726,8 +207478,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/robotic-arm-pedestal.kcad.ts",
       "preview": "/assets/space-exploration-robotic-arm-pedestal.png",
-      "sourceSha256": "bf0b1e2c3e17af437d66a914d761d5e44630f888e5f4937291b7c01f1c6b98d5",
-      "triangleBudget": 2200,
+      "sourceSha256": "690a28dadbaaa63962e15b8e703932aa24fc5aae92805738c64c0680ce90162b",
+      "triangleBudget": 596,
       "params": [
         {
           "name": "scale",
@@ -206739,15 +207491,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#797e79",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 136,
+        "triangles": 360,
         "sizeM": [
           0.86,
           0.845,
@@ -206758,17 +207525,24 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#797e79",
           "parts": [
             "base",
             "turntable",
             "lower-link",
-            "upper-link",
+            "upper-link"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
             "joint",
             "tool-mount"
           ],
-          "param": "color"
+          "param": "aluminum"
         }
       ]
     },
@@ -206776,7 +207550,7 @@
       "id": "rover-charging-dock",
       "kit": "space-exploration",
       "title": "Rover charging dock",
-      "description": "Low charging dock with guide rails, raised connector post and two anchor pads. Knobs: overall scale and asset color.",
+      "description": "Low charging dock with guide rails, raised connector post and two anchor pads. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -206795,8 +207569,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/rover-charging-dock.kcad.ts",
       "preview": "/assets/space-exploration-rover-charging-dock.png",
-      "sourceSha256": "987704b720ce85c88ccc12796029fd2d52d3addf253db9468f0a61e671f06fc9",
-      "triangleBudget": 2200,
+      "sourceSha256": "a3889974299ca36ef1987bbd93b6cdd913e1367842aca11264f88224697ec952",
+      "triangleBudget": 674,
       "params": [
         {
           "name": "scale",
@@ -206808,15 +207582,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#58676b",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 116,
+        "triangles": 420,
         "sizeM": [
           1.15,
           0.77,
@@ -206827,18 +207616,25 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#58676b",
           "parts": [
             "base",
             "guide-left",
             "guide-right",
-            "post",
-            "connector",
             "anchor--460",
             "anchor-460"
           ],
-          "param": "color"
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
+            "post",
+            "connector"
+          ],
+          "param": "aluminum"
         }
       ]
     },
@@ -206846,7 +207642,7 @@
       "id": "rover-dust-shield",
       "kit": "space-exploration",
       "title": "Rover dust shield",
-      "description": "Pair of broad rover wheel shields with short mounting struts and protective edge lips. Knobs: overall scale and asset color.",
+      "description": "Pair of broad rover wheel shields with short mounting struts and protective edge lips. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -206865,8 +207661,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/rover-dust-shield.kcad.ts",
       "preview": "/assets/space-exploration-rover-dust-shield.png",
-      "sourceSha256": "6d539fdfd0a786de695ab3e1c40be2971c1979f04e2b53efeca3572f757ff32d",
-      "triangleBudget": 2200,
+      "sourceSha256": "6bdc39632a517d6223b23ea306c869605c6ec6462c94bafca141b9823cae13bd",
+      "triangleBudget": 752,
       "params": [
         {
           "name": "scale",
@@ -206878,15 +207674,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#a69c83",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 96,
+        "triangles": 480,
         "sizeM": [
           1.2,
           0.94,
@@ -206897,19 +207708,26 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#a69c83",
           "parts": [
             "shield-left",
             "shield-right",
-            "strut--380--80",
-            "strut--380-80",
-            "strut-380--80",
-            "strut-380-80",
             "lip-left",
             "lip-right"
           ],
-          "param": "color"
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
+            "strut--380--80",
+            "strut--380-80",
+            "strut-380--80",
+            "strut-380-80"
+          ],
+          "param": "aluminum"
         }
       ]
     },
@@ -206917,7 +207735,7 @@
       "id": "rover-seat",
       "kit": "space-exploration",
       "title": "Rover operator seat",
-      "description": "Simple rover seat with bucket base, raised back, arm rests and central pedestal. Knobs: overall scale and asset color.",
+      "description": "Simple rover seat with bucket base, raised back, arm rests and central pedestal. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -206936,8 +207754,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/rover-seat.kcad.ts",
       "preview": "/assets/space-exploration-rover-seat.png",
-      "sourceSha256": "4db822d479676e74b518a173fc4b23135d9df0c1392e2fca7ba8938ba35cbbc2",
-      "triangleBudget": 2200,
+      "sourceSha256": "ff404e31f4f2851c88b173fff57d243111cd02fbd52ca6da193130eb0fc8d82d",
+      "triangleBudget": 590,
       "params": [
         {
           "name": "scale",
@@ -206949,15 +207767,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#6c716e",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 104,
+        "triangles": 360,
         "sizeM": [
           0.56,
           1.29,
@@ -206968,17 +207801,24 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#6c716e",
           "parts": [
             "cushion",
-            "back",
+            "back"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
             "arm-left",
             "arm-right",
             "pedestal",
             "foot"
           ],
-          "param": "color"
+          "param": "aluminum"
         }
       ]
     },
@@ -206986,7 +207826,7 @@
       "id": "rover-tool-rack",
       "kit": "space-exploration",
       "title": "Rover tool rack",
-      "description": "Open rack with three long tool channels, end stops and four mounting feet. Knobs: overall scale and asset color.",
+      "description": "Open rack with three long tool channels, end stops and four mounting feet. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -207005,8 +207845,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/rover-tool-rack.kcad.ts",
       "preview": "/assets/space-exploration-rover-tool-rack.png",
-      "sourceSha256": "6656a6e465b99bee8310ac89f716789fae5d997c35ca3fb2156b86af27fd3b16",
-      "triangleBudget": 2200,
+      "sourceSha256": "2373e79eb28f7e341ca9b3a11cf3311a24c5bebbbc8ac95955b348f201a201e1",
+      "triangleBudget": 752,
       "params": [
         {
           "name": "scale",
@@ -207018,15 +207858,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#6c7475",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 96,
+        "triangles": 480,
         "sizeM": [
           0.88,
           0.47,
@@ -207037,7 +207892,7 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#6c7475",
           "parts": [
             "base",
@@ -207045,11 +207900,18 @@
             "channel-1",
             "channel-2",
             "end-left",
-            "end-right",
+            "end-right"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
             "foot--340",
             "foot-340"
           ],
-          "param": "color"
+          "param": "aluminum"
         }
       ]
     },
@@ -207057,7 +207919,7 @@
       "id": "rover-wheel-assembly",
       "kit": "space-exploration",
       "title": "Rover wheel assembly",
-      "description": "Oversized low-pressure rover wheel with thick tire, hub and six raised tread bars. Knobs: overall scale and asset color.",
+      "description": "Oversized low-pressure rover wheel with a broad tire, inset hub and twelve separated traction bars around the circumference. Material controls: aluminum, rubber; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -207076,8 +207938,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/rover-wheel-assembly.kcad.ts",
       "preview": "/assets/space-exploration-rover-wheel-assembly.png",
-      "sourceSha256": "fcdd936ebda2c5515dca822d3a24db3b33b8e5fbefd11573a8fde44e9fcd2167",
-      "triangleBudget": 2200,
+      "sourceSha256": "f8392f719ce4d0f3c32a7cea564cc032db17cb764b109d3762e3bd51dddea3f5",
+      "triangleBudget": 1335,
       "params": [
         {
           "name": "scale",
@@ -207089,38 +207951,66 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminum",
           "type": "color",
-          "default": "#55595b",
-          "label": "Asset color"
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#34383a",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "aluminum": "#c3c5c3",
+          "rubber": "#514d44"
+        },
+        "highVisibility": {
+          "aluminum": "#d8b255",
+          "rubber": "#34383a"
+        }
+      },
       "stats": {
-        "triangles": 160,
+        "triangles": 888,
         "sizeM": [
-          0.6,
-          0.24,
-          0.6
+          0.668,
+          0.668,
+          0.17
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#55595b",
+          "name": "rubber",
+          "color": "#34383a",
           "parts": [
             "tire",
-            "hub",
             "tread-0",
             "tread-1",
             "tread-2",
             "tread-3",
             "tread-4",
-            "tread-5"
+            "tread-5",
+            "tread-6",
+            "tread-7",
+            "tread-8",
+            "tread-9",
+            "tread-10",
+            "tread-11"
           ],
-          "param": "color"
+          "param": "rubber"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
+            "hub"
+          ],
+          "param": "aluminum"
         }
       ]
     },
@@ -207128,7 +208018,7 @@
       "id": "sample-canister",
       "kit": "space-exploration",
       "title": "Regolith sample canister",
-      "description": "Sealed cylindrical sample canister with lid band, side grip and a flat foot ring. Knobs: overall scale and asset color.",
+      "description": "Sealed cylindrical sample canister with lid band, side grip and a flat foot ring. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -207147,8 +208037,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/sample-canister.kcad.ts",
       "preview": "/assets/space-exploration-sample-canister.png",
-      "sourceSha256": "308400388f3a8b26fa51cfc7cc398afc9bdcfba42707de5c97f96cea0e34e272",
-      "triangleBudget": 2200,
+      "sourceSha256": "4ab87d7f3c51c29fba495167524002c90cfe468e3d15d94920c24532b6c2cded",
+      "triangleBudget": 433,
       "params": [
         {
           "name": "scale",
@@ -207160,15 +208050,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#b39b70",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 144,
+        "triangles": 240,
         "sizeM": [
           0.39,
           0.495,
@@ -207179,15 +208084,22 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#b39b70",
           "parts": [
             "body",
-            "lid",
+            "lid"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
             "rim",
             "handle"
           ],
-          "param": "color"
+          "param": "aluminum"
         }
       ]
     },
@@ -207195,7 +208107,7 @@
       "id": "sample-cassette",
       "kit": "space-exploration",
       "title": "Sample cassette carrier",
-      "description": "Stackable sample cassette with four open cell blocks and a raised handle ridge. Knobs: overall scale and asset color.",
+      "description": "Stackable sample cassette with four open cell blocks and a raised handle ridge. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -207214,8 +208126,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/sample-cassette.kcad.ts",
       "preview": "/assets/space-exploration-sample-cassette.png",
-      "sourceSha256": "d41301002db54c42c3a8cde77646ccc1b6f9798a7c83552d50346d55e6feb1cb",
-      "triangleBudget": 2200,
+      "sourceSha256": "ad03f98ab7ed97efbde737a7aeae957c1d68cba9761fc6d6a53d81ba94596fa1",
+      "triangleBudget": 752,
       "params": [
         {
           "name": "scale",
@@ -207227,15 +208139,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#9b9078",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 96,
+        "triangles": 480,
         "sizeM": [
           0.74,
           0.19,
@@ -207246,7 +208173,7 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#9b9078",
           "parts": [
             "base",
@@ -207254,11 +208181,18 @@
             "cell-1",
             "cell-2",
             "cell-3",
-            "handle",
             "end-left",
             "end-right"
           ],
-          "param": "color"
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
+            "handle"
+          ],
+          "param": "aluminum"
         }
       ]
     },
@@ -207266,7 +208200,7 @@
       "id": "sample-drill-head",
       "kit": "space-exploration",
       "title": "Rock sample drill head",
-      "description": "Compact drill head with a stepped barrel, mounting collar and rectangular drive block. Knobs: overall scale and asset color.",
+      "description": "Compact drill head with a stepped barrel, mounting collar and rectangular drive block. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -207285,8 +208219,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/sample-drill-head.kcad.ts",
       "preview": "/assets/space-exploration-sample-drill-head.png",
-      "sourceSha256": "50911230c08ed8bf73106b086bf960593cc8fab716effc2668fca684ca978bd4",
-      "triangleBudget": 2200,
+      "sourceSha256": "a9b2bab3c002136d9017512069f1def53ed138a50966763b944650aba3a48b5e",
+      "triangleBudget": 517,
       "params": [
         {
           "name": "scale",
@@ -207298,15 +208232,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#777e7a",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 156,
+        "triangles": 300,
         "sizeM": [
           0.43,
           0.81,
@@ -207317,16 +208266,23 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#777e7a",
+          "name": "aluminum",
+          "color": "#b6bdbe",
           "parts": [
             "barrel",
             "collar",
-            "bit",
-            "drive",
             "mount"
           ],
-          "param": "color"
+          "param": "aluminum"
+        },
+        {
+          "name": "paint",
+          "color": "#777e7a",
+          "parts": [
+            "bit",
+            "drive"
+          ],
+          "param": "paint"
         }
       ]
     },
@@ -207334,7 +208290,7 @@
       "id": "sample-trailer-cart",
       "kit": "space-exploration",
       "title": "Sample trailer cart",
-      "description": "Low two-wheel sample trailer with cargo bed, drawbar and raised side rails. Knobs: overall scale and asset color.",
+      "description": "Low two-wheel sample trailer with a raised cargo bed, drawbar, retaining rails and wheels on a shared axle. Material controls: paint, aluminum, rubber; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -207353,8 +208309,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/sample-trailer-cart.kcad.ts",
       "preview": "/assets/space-exploration-sample-trailer-cart.png",
-      "sourceSha256": "3990aac20f386f65d5091aff0d1b6bfa9d5ae19044d9221b0dabda1da55b21a2",
-      "triangleBudget": 2200,
+      "sourceSha256": "2dcb924113242aadd8ccfe9504f8958d3ab0a7e54f1f2683bee99b10e4948f5e",
+      "triangleBudget": 937,
       "params": [
         {
           "name": "scale",
@@ -207366,39 +208322,76 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#8d8064",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#34383a",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3",
+          "rubber": "#514d44"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255",
+          "rubber": "#34383a"
+        }
+      },
       "stats": {
-        "triangles": 172,
+        "triangles": 604,
         "sizeM": [
-          1.2,
-          0.37,
-          1.14
+          0.95,
+          0.49,
+          1.23
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#8d8064",
           "parts": [
-            "bed",
+            "bed"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
             "rail-0",
             "rail-1",
             "rail-2",
             "rail-3",
             "rail-4",
-            "drawbar",
-            "wheel--390",
-            "wheel-390"
+            "drawbar"
           ],
-          "param": "color"
+          "param": "aluminum"
+        },
+        {
+          "name": "rubber",
+          "color": "#34383a",
+          "parts": [
+            "wheel--1",
+            "wheel-1"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -207406,7 +208399,7 @@
       "id": "satellite-bus",
       "kit": "space-exploration",
       "title": "Satellite bus",
-      "description": "Rectangular satellite bus with corner rails, top sensor block and two side panel mounts. Knobs: overall scale and asset color.",
+      "description": "Rectangular satellite bus with corner rails, top sensor block and two side panel mounts. Material controls: paint, aluminum, glass; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -207425,8 +208418,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/satellite-bus.kcad.ts",
       "preview": "/assets/space-exploration-satellite-bus.png",
-      "sourceSha256": "95144685ca145430f8a42eeff8f02a43eb94f196f694dca2e372c30942ef7d48",
-      "triangleBudget": 2200,
+      "sourceSha256": "479e661d3c667ef60fc8f031afd482d2ae7b5dc20460fe2dfd5f5b94f8be1d3b",
+      "triangleBudget": 752,
       "params": [
         {
           "name": "scale",
@@ -207438,15 +208431,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#aaa99c",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#548b9a",
+          "label": "Optical glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3",
+          "glass": "#7b9ba0"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255",
+          "glass": "#63a9b8"
+        }
+      },
       "stats": {
-        "triangles": 96,
+        "triangles": 480,
         "sizeM": [
           1.04,
           0.66,
@@ -207457,19 +208473,33 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#aaa99c",
           "parts": [
             "bus",
-            "top-sensor",
             "corner--320--270",
             "corner--320-270",
             "corner-320--270",
-            "corner-320-270",
+            "corner-320-270"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "glass",
+          "color": "#548b9a",
+          "parts": [
+            "top-sensor"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
             "panel-mount-left",
             "panel-mount-right"
           ],
-          "param": "color"
+          "param": "aluminum"
         }
       ]
     },
@@ -207477,7 +208507,7 @@
       "id": "satellite-solar-wing",
       "kit": "space-exploration",
       "title": "Satellite solar wing",
-      "description": "Deployable satellite panel wing with a central spine and three framed panel sections. Knobs: overall scale and asset color.",
+      "description": "Deployable satellite panel wing with a central spine and three framed panel sections. Material controls: paint, aluminum, solarCell; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -207496,8 +208526,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/satellite-solar-wing.kcad.ts",
       "preview": "/assets/space-exploration-satellite-solar-wing.png",
-      "sourceSha256": "e3b2c9f82b9437d7f723387b643fc62ee3ad552c23978952cdd52068950a7336",
-      "triangleBudget": 2200,
+      "sourceSha256": "dfee5cddaf24aa8d5438c8ebaf98f55439abfd813fda310af12e3f3e36367a52",
+      "triangleBudget": 752,
       "params": [
         {
           "name": "scale",
@@ -207509,15 +208539,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#46556a",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
+        },
+        {
+          "name": "solarCell",
+          "type": "color",
+          "default": "#304d70",
+          "label": "Solar cells"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3",
+          "solarCell": "#52647b"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255",
+          "solarCell": "#244267"
+        }
+      },
       "stats": {
-        "triangles": 96,
+        "triangles": 480,
         "sizeM": [
           0.65,
           0.093,
@@ -207528,19 +208581,33 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#46556a",
           "parts": [
-            "spine",
+            "spine"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "solarCell",
+          "color": "#304d70",
+          "parts": [
             "panel-0",
             "panel-1",
-            "panel-2",
+            "panel-2"
+          ],
+          "param": "solarCell"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
             "crossbar-0",
             "crossbar-1",
             "crossbar-2",
             "crossbar-3"
           ],
-          "param": "color"
+          "param": "aluminum"
         }
       ]
     },
@@ -207548,7 +208615,7 @@
       "id": "science-instrument-tripod",
       "kit": "space-exploration",
       "title": "Science instrument tripod",
-      "description": "Field instrument tripod with a short mast, mounting head and three splayed legs. Knobs: overall scale and asset color.",
+      "description": "Field instrument tripod with a short mast, mounting head and three splayed legs. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -207567,8 +208634,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/science-instrument-tripod.kcad.ts",
       "preview": "/assets/space-exploration-science-instrument-tripod.png",
-      "sourceSha256": "879789f3aff034be16e7f2905a6d50f28ebc707d89db7604236966ca8182a20a",
-      "triangleBudget": 2200,
+      "sourceSha256": "71bc98c8001b33758f1978711a8e78171c73cc7a406d0fe6d4532ac9c6b7a1e8",
+      "triangleBudget": 596,
       "params": [
         {
           "name": "scale",
@@ -207580,15 +208647,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#85887f",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 136,
+        "triangles": 360,
         "sizeM": [
           0.3,
           0.75,
@@ -207599,17 +208681,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#85887f",
+          "name": "aluminum",
+          "color": "#b6bdbe",
           "parts": [
             "mast",
-            "head",
             "leg-0",
             "leg-1",
             "leg-2",
             "mount"
           ],
-          "param": "color"
+          "param": "aluminum"
+        },
+        {
+          "name": "paint",
+          "color": "#85887f",
+          "parts": [
+            "head"
+          ],
+          "param": "paint"
         }
       ]
     },
@@ -207617,7 +208706,7 @@
       "id": "science-worktable",
       "kit": "space-exploration",
       "title": "Field science worktable",
-      "description": "Compact science worktable with a broad deck, four legs, lower shelf and instrument rail. Knobs: overall scale and asset color.",
+      "description": "Compact science worktable with a broad deck, four legs, lower shelf and instrument rail. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -207636,8 +208725,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/science-worktable.kcad.ts",
       "preview": "/assets/space-exploration-science-worktable.png",
-      "sourceSha256": "0922d64895458c96f471644f0b3f1331e1c9b5e04dc38f48539cc34aefb99104",
-      "triangleBudget": 2200,
+      "sourceSha256": "a6e60655cbce82489e3e8300d447fe321a739a2c3333114fd47e403bcdb8a6d9",
+      "triangleBudget": 668,
       "params": [
         {
           "name": "scale",
@@ -207649,15 +208738,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#817663",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 84,
+        "triangles": 420,
         "sizeM": [
           1.1,
           0.96,
@@ -207668,18 +208772,25 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#817663",
           "parts": [
             "top",
-            "shelf",
+            "shelf"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
             "leg--470--270",
             "leg--470-270",
             "leg-470--270",
             "leg-470-270",
             "rail"
           ],
-          "param": "color"
+          "param": "aluminum"
         }
       ]
     },
@@ -207687,7 +208798,7 @@
       "id": "seismic-sensor",
       "kit": "space-exploration",
       "title": "Surface seismic sensor",
-      "description": "Low seismic sensor puck with a raised cover, three feet and cable connector. Knobs: overall scale and asset color.",
+      "description": "Low seismic sensor puck with a raised cover, three feet and cable connector. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -207706,8 +208817,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/seismic-sensor.kcad.ts",
       "preview": "/assets/space-exploration-seismic-sensor.png",
-      "sourceSha256": "62609d67a7485963865ab54fb36d7f896250139e0986b880ad487459f06e25d1",
-      "triangleBudget": 2200,
+      "sourceSha256": "1e1481a5622d0144fe9a30222653c1974f867da24d3dc4838de74f7a32e9c91a",
+      "triangleBudget": 691,
       "params": [
         {
           "name": "scale",
@@ -207719,15 +208830,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#7c8178",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 212,
+        "triangles": 420,
         "sizeM": [
           0.34,
           0.29,
@@ -207738,18 +208864,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7c8178",
+          "name": "aluminum",
+          "color": "#b6bdbe",
           "parts": [
             "foot",
-            "body",
             "cap",
             "foot-0",
             "foot-1",
-            "foot-2",
+            "foot-2"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "paint",
+          "color": "#7c8178",
+          "parts": [
+            "body",
             "port"
           ],
-          "param": "color"
+          "param": "paint"
         }
       ]
     },
@@ -207757,7 +208890,7 @@
       "id": "specimen-tray",
       "kit": "space-exploration",
       "title": "Geology specimen tray",
-      "description": "Shallow specimen tray divided into six sample cells with reinforced corner blocks. Knobs: overall scale and asset color.",
+      "description": "Shallow specimen tray divided into six sample cells with reinforced corner blocks. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -207776,8 +208909,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/specimen-tray.kcad.ts",
       "preview": "/assets/space-exploration-specimen-tray.png",
-      "sourceSha256": "9f40bc421db404231d6f620e65eece80b352131291d846249e265031059fad18",
-      "triangleBudget": 2200,
+      "sourceSha256": "fc7ae923a8f96bd217491f6ae4002ecaa1c6574092d7ffbd626a9f0bea144f46",
+      "triangleBudget": 920,
       "params": [
         {
           "name": "scale",
@@ -207789,15 +208922,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#aa9d7d",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 120,
+        "triangles": 600,
         "sizeM": [
           0.78,
           0.18,
@@ -207808,10 +208956,17 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
+            "base"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "paint",
           "color": "#aa9d7d",
           "parts": [
-            "base",
             "divider-x-0",
             "divider-x-1",
             "divider-x-2",
@@ -207822,7 +208977,7 @@
             "corner-2",
             "corner-3"
           ],
-          "param": "color"
+          "param": "paint"
         }
       ]
     },
@@ -207830,7 +208985,7 @@
       "id": "spectrometer-case",
       "kit": "space-exploration",
       "title": "Field spectrometer case",
-      "description": "Rugged instrument case with lid seam, carry handle and two front latches. Knobs: overall scale and asset color.",
+      "description": "Rugged instrument case with lid seam, carry handle and two front latches. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -207849,8 +209004,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/spectrometer-case.kcad.ts",
       "preview": "/assets/space-exploration-spectrometer-case.png",
-      "sourceSha256": "c2bbab74070dc9c70549ddfbd46c1a04c35418cfc6b4bbda2ccbf0719dcefe61",
-      "triangleBudget": 2200,
+      "sourceSha256": "873e4128656c037209d872f15da229489a3b0db7b0f565c9e1708fd77302c19a",
+      "triangleBudget": 584,
       "params": [
         {
           "name": "scale",
@@ -207862,18 +209017,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#68746e",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 72,
+        "triangles": 360,
         "sizeM": [
           0.76,
-          0.46,
+          0.470505,
           0.55
         ],
         "minUpM": 0,
@@ -207881,17 +209051,24 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#68746e",
           "parts": [
             "case",
-            "lid",
+            "lid"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
             "handle",
             "latch--210",
             "latch-210",
             "foot"
           ],
-          "param": "color"
+          "param": "aluminum"
         }
       ]
     },
@@ -207899,7 +209076,7 @@
       "id": "surface-antenna-mast",
       "kit": "space-exploration",
       "title": "Surface antenna mast",
-      "description": "Short surface mast with tripod feet, a crossbar and two small vertical aerials. Knobs: overall scale and asset color.",
+      "description": "Short surface mast with tripod feet, a crossbar and two small vertical aerials. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -207918,8 +209095,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/surface-antenna-mast.kcad.ts",
       "preview": "/assets/space-exploration-surface-antenna-mast.png",
-      "sourceSha256": "671c27c6e6d1d4df4eeb9efc36f8b4214f729838f04a2fbb58b6ab9ea3a1fe17",
-      "triangleBudget": 2200,
+      "sourceSha256": "c0ed72793ab361094dae9d2befdea11bab109fa647b4ba5c6fa4fc66f4b65111",
+      "triangleBudget": 685,
       "params": [
         {
           "name": "scale",
@@ -207931,15 +209108,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#747c7b",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 180,
+        "triangles": 420,
         "sizeM": [
           0.65,
           1.505,
@@ -207950,18 +209142,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#747c7b",
+          "name": "aluminum",
+          "color": "#b6bdbe",
           "parts": [
             "mast",
             "crossbar",
-            "aerial-0",
-            "aerial-1",
             "foot-0",
             "foot-1",
             "foot-2"
           ],
-          "param": "color"
+          "param": "aluminum"
+        },
+        {
+          "name": "paint",
+          "color": "#747c7b",
+          "parts": [
+            "aerial-0",
+            "aerial-1"
+          ],
+          "param": "paint"
         }
       ]
     },
@@ -207969,7 +209168,7 @@
       "id": "surface-battery-bank",
       "kit": "space-exploration",
       "title": "Surface battery bank",
-      "description": "Four-cell battery bank on a skid frame with vent caps and lifting rails. Knobs: overall scale and asset color.",
+      "description": "Four-cell battery bank on a skid frame with vent caps and lifting rails. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -207988,8 +209187,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/surface-battery-bank.kcad.ts",
       "preview": "/assets/space-exploration-surface-battery-bank.png",
-      "sourceSha256": "39f29f9d4f43572455e95f9770ba965bfec913bf3777ed5f791c3d4a46bb3e28",
-      "triangleBudget": 2200,
+      "sourceSha256": "4a8f0adedeb0a88539700d67a8ad5fa207aba20feed4c6de7c872344f0a62122",
+      "triangleBudget": 943,
       "params": [
         {
           "name": "scale",
@@ -208001,15 +209200,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#777c76",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 248,
+        "triangles": 600,
         "sizeM": [
           1.08,
           0.671,
@@ -208020,21 +209234,28 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#777c76",
+          "name": "aluminum",
+          "color": "#b6bdbe",
           "parts": [
             "skid-left",
             "skid-right",
-            "cell-0",
-            "cell-1",
-            "cell-2",
-            "cell-3",
             "cap-0",
             "cap-1",
             "cap-2",
             "cap-3"
           ],
-          "param": "color"
+          "param": "aluminum"
+        },
+        {
+          "name": "paint",
+          "color": "#777c76",
+          "parts": [
+            "cell-0",
+            "cell-1",
+            "cell-2",
+            "cell-3"
+          ],
+          "param": "paint"
         }
       ]
     },
@@ -208042,7 +209263,7 @@
       "id": "surface-cable-bridge",
       "kit": "space-exploration",
       "title": "Surface cable bridge",
-      "description": "Low protective cable bridge with paired ramps, central cover and side guard lips. Knobs: overall scale and asset color.",
+      "description": "Low protective cable bridge with paired ramps, central cover and side guard lips. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -208061,8 +209282,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/surface-cable-bridge.kcad.ts",
       "preview": "/assets/space-exploration-surface-cable-bridge.png",
-      "sourceSha256": "19ea7e80d29befa570e33efe8291db54a3e8b219d9f25cb0be2b2c050fb45095",
-      "triangleBudget": 2200,
+      "sourceSha256": "4f8b6a0f747d63a4573bfd70dbcda43347d658d00680d0b4f369b9172f7640aa",
+      "triangleBudget": 500,
       "params": [
         {
           "name": "scale",
@@ -208074,18 +209295,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#817d6e",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 60,
+        "triangles": 300,
         "sizeM": [
-          1.34,
-          0.185,
+          1.341416,
+          0.237612,
           0.46
         ],
         "minUpM": 0,
@@ -208093,16 +209329,23 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
+            "cover"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "paint",
           "color": "#817d6e",
           "parts": [
-            "cover",
             "ramp-left",
             "ramp-right",
             "lip-left",
             "lip-right"
           ],
-          "param": "color"
+          "param": "paint"
         }
       ]
     },
@@ -208110,7 +209353,7 @@
       "id": "surface-sensor-post",
       "kit": "space-exploration",
       "title": "Surface sensor post",
-      "description": "Short instrument post with twin sensor boxes, a crossbar and three support feet. Knobs: overall scale and asset color.",
+      "description": "Short instrument post with twin sensor boxes, a crossbar and three support feet. Material controls: aluminum, glass; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -208129,8 +209372,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/surface-sensor-post.kcad.ts",
       "preview": "/assets/space-exploration-surface-sensor-post.png",
-      "sourceSha256": "b9633a40a7ac1e07983509593ce28f9ce93319b9075aaf01fc225e5d4cf7ddca",
-      "triangleBudget": 2200,
+      "sourceSha256": "81967f2a1e706074c7e25a05e7fcf48283aaa637de9ad5018081ac7ffd6418aa",
+      "triangleBudget": 674,
       "params": [
         {
           "name": "scale",
@@ -208142,15 +209385,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminum",
           "type": "color",
-          "default": "#7b8079",
-          "label": "Asset color"
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#548b9a",
+          "label": "Optical glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "aluminum": "#c3c5c3",
+          "glass": "#7b9ba0"
+        },
+        "highVisibility": {
+          "aluminum": "#d8b255",
+          "glass": "#63a9b8"
+        }
+      },
       "stats": {
-        "triangles": 116,
+        "triangles": 420,
         "sizeM": [
           0.5,
           1,
@@ -208161,18 +209419,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7b8079",
+          "name": "aluminum",
+          "color": "#b6bdbe",
           "parts": [
             "mast",
-            "sensor-a",
-            "sensor-b",
             "crossbar",
             "foot-0",
             "foot-1",
             "foot-2"
           ],
-          "param": "color"
+          "param": "aluminum"
+        },
+        {
+          "name": "glass",
+          "color": "#548b9a",
+          "parts": [
+            "sensor-a",
+            "sensor-b"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -208180,7 +209445,7 @@
       "id": "surface-storage-shed",
       "kit": "space-exploration",
       "title": "Surface storage shed",
-      "description": "Boxy field storage module with double doors, roof lip and raised corner feet. Knobs: overall scale and asset color.",
+      "description": "Boxy field storage module with double doors, roof lip and raised corner feet. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -208199,8 +209464,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/surface-storage-shed.kcad.ts",
       "preview": "/assets/space-exploration-surface-storage-shed.png",
-      "sourceSha256": "8f182c53b16e326aa51281d79e5a4b338d6100f83e851888f3f021763315898e",
-      "triangleBudget": 2200,
+      "sourceSha256": "5d1953ab2467b51c064fa3266e09e57612e86a5a7748d178813b723ed1b0c126",
+      "triangleBudget": 752,
       "params": [
         {
           "name": "scale",
@@ -208212,18 +209477,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#8b8174",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 96,
+        "triangles": 480,
         "sizeM": [
-          1.3,
-          1.68,
+          1.301665,
+          1.702493,
           1
         ],
         "minUpM": 0,
@@ -208231,19 +209511,26 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#8b8174",
           "parts": [
             "body",
             "roof",
             "door-left",
-            "door-right",
+            "door-right"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
             "foot--500--350",
             "foot--500-350",
             "foot-500--350",
             "foot-500-350"
           ],
-          "param": "color"
+          "param": "aluminum"
         }
       ]
     },
@@ -208251,7 +209538,7 @@
       "id": "surface-utility-cart",
       "kit": "space-exploration",
       "title": "Surface utility cart",
-      "description": "Small utility cart with a flat deck, raised push handle and four low polygon wheels. Knobs: overall scale and asset color.",
+      "description": "Small four-wheel utility cart with a raised deck, push handle and low-profile tires outside the frame. Material controls: paint, aluminum, rubber; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -208270,8 +209557,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/surface-utility-cart.kcad.ts",
       "preview": "/assets/space-exploration-surface-utility-cart.png",
-      "sourceSha256": "46e5aa683b6a51d416fb520e423db26213fcefd88e66fbd8dc36987709461113",
-      "triangleBudget": 2200,
+      "sourceSha256": "51890212fafe35a1aca2e1db7000fc900d2a3cdf420530fbcb6b66df4c46c472",
+      "triangleBudget": 864,
       "params": [
         {
           "name": "scale",
@@ -208283,38 +209570,75 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#89806b",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#34383a",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3",
+          "rubber": "#514d44"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255",
+          "rubber": "#34383a"
+        }
+      },
       "stats": {
-        "triangles": 224,
+        "triangles": 544,
         "sizeM": [
           0.9,
-          1.05,
-          0.85
+          0.90535,
+          0.75
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#89806b",
           "parts": [
-            "deck",
+            "deck"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
             "handle",
             "handle-post--330",
-            "handle-post-330",
+            "handle-post-330"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "rubber",
+          "color": "#34383a",
+          "parts": [
             "wheel--330--330",
             "wheel--330-330",
             "wheel-330--330",
             "wheel-330-330"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -208322,7 +209646,7 @@
       "id": "survey-flag",
       "kit": "space-exploration",
       "title": "Survey flag marker",
-      "description": "Survey marker pole with a triangular flag panel, pointed cap and round base plate. Knobs: overall scale and asset color.",
+      "description": "Survey marker pole with a triangular flag panel, pointed cap and round base plate. Material controls: paint, aluminum, fabric; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -208341,8 +209665,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/survey-flag.kcad.ts",
       "preview": "/assets/space-exploration-survey-flag.png",
-      "sourceSha256": "13f9183d35919852519b5850fe47cbdc1ed7eada2e66a6bde496f16fd8eb9558",
-      "triangleBudget": 2200,
+      "sourceSha256": "173c9a5673a78a0d2f26b7871b22469756b686892d671634f36ccd48a9bdbf7c",
+      "triangleBudget": 433,
       "params": [
         {
           "name": "scale",
@@ -208354,15 +209678,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#d1b648",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#b4aa8c",
+          "label": "Insulating fabric"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3",
+          "fabric": "#d0c7a9"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255",
+          "fabric": "#d7c98f"
+        }
+      },
       "stats": {
-        "triangles": 144,
+        "triangles": 240,
         "sizeM": [
           0.3,
           1.13,
@@ -208373,15 +209720,29 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#d1b648",
           "parts": [
-            "base",
+            "base"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
             "pole",
-            "flag",
             "cap"
           ],
-          "param": "color"
+          "param": "aluminum"
+        },
+        {
+          "name": "fabric",
+          "color": "#b4aa8c",
+          "parts": [
+            "flag"
+          ],
+          "param": "fabric"
         }
       ]
     },
@@ -208389,7 +209750,7 @@
       "id": "tracking-antenna-dish",
       "kit": "space-exploration",
       "title": "Tracking antenna dish",
-      "description": "Small tracking dish with a pedestal, offset feed arm and rotating-looking azimuth plate. Knobs: overall scale and asset color.",
+      "description": "Small tracking dish with a pedestal, offset feed arm and rotating-looking azimuth plate. Material controls: paint, aluminum, reflector; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -208408,8 +209769,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/tracking-antenna-dish.kcad.ts",
       "preview": "/assets/space-exploration-tracking-antenna-dish.png",
-      "sourceSha256": "de669cba4ae1a3549b3965c5aac7ace45e07d96c5a3767880ce52efee7e80415",
-      "triangleBudget": 2200,
+      "sourceSha256": "1ef564234bd1fbcbfad44202ba197b56e3c600f85faec4c96aab48df10812eeb",
+      "triangleBudget": 612,
       "params": [
         {
           "name": "scale",
@@ -208421,36 +209782,73 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#b4b8b3",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
+        },
+        {
+          "name": "reflector",
+          "type": "color",
+          "default": "#eef1f1",
+          "label": "Reflective aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3",
+          "reflector": "#f5f6f4"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255",
+          "reflector": "#dce9ee"
+        }
+      },
       "stats": {
-        "triangles": 232,
+        "triangles": 360,
         "sizeM": [
           0.52,
-          0.705,
-          0.66
+          0.894526,
+          0.65
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paint",
           "color": "#b4b8b3",
           "parts": [
             "base",
+            "turntable"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b6bdbe",
+          "parts": [
             "pedestal",
-            "turntable",
-            "dish",
             "arm",
             "feed"
           ],
-          "param": "color"
+          "param": "aluminum"
+        },
+        {
+          "name": "reflector",
+          "color": "#eef1f1",
+          "parts": [
+            "dish"
+          ],
+          "param": "reflector"
         }
       ]
     },
@@ -208458,7 +209856,7 @@
       "id": "transport-sled",
       "kit": "space-exploration",
       "title": "Surface cargo sled",
-      "description": "Low cargo sled with twin runners, cross braces and a raised tow loop. Knobs: overall scale and asset color.",
+      "description": "Low cargo sled with twin runners, cross braces and a raised tow loop. Material controls: paint, aluminum; named lunarDust and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -208477,8 +209875,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/space-exploration/transport-sled.kcad.ts",
       "preview": "/assets/space-exploration-transport-sled.png",
-      "sourceSha256": "2ef90b46650bf8f15a1beefba709703a6eddb14fba6b984832ecead4f05b0acf",
-      "triangleBudget": 2200,
+      "sourceSha256": "7d5371e972217bffca37861baadb7ce34a30346a797ab6542bbe70a68137bd9b",
+      "triangleBudget": 758,
       "params": [
         {
           "name": "scale",
@@ -208490,15 +209888,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
           "default": "#8b7a5e",
-          "label": "Asset color"
+          "label": "Painted shell"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b6bdbe",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "lunarDust": {
+          "paint": "#c9c3b5",
+          "aluminum": "#c3c5c3"
+        },
+        "highVisibility": {
+          "paint": "#d86e35",
+          "aluminum": "#d8b255"
+        }
+      },
       "stats": {
-        "triangles": 128,
+        "triangles": 480,
         "sizeM": [
           1.25,
           0.165,
@@ -208509,19 +209922,26 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8b7a5e",
+          "name": "aluminum",
+          "color": "#b6bdbe",
           "parts": [
             "runner-left",
             "runner-right",
             "cross-0",
             "cross-1",
             "cross-2",
-            "cross-3",
+            "cross-3"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "paint",
+          "color": "#8b7a5e",
+          "parts": [
             "deck",
             "tow-loop"
           ],
-          "param": "color"
+          "param": "paint"
         }
       ]
     },
