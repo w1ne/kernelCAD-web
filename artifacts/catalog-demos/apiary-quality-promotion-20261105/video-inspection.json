@@ -1,0 +1,22 @@
+{
+  "video": "apiary-quality-promotion.mp4",
+  "probe": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "r_frame_rate": "24/1",
+        "nb_frames": "491"
+      }
+    ],
+    "format": {
+      "duration": "20.458333"
+    }
+  },
+  "decodedFrames": 6,
+  "contactSheet": "video-review/contact-sheet.png",
+  "visuallyReviewed": true,
+  "reviewNotes": "Decoded six-frame contact sheet and full-resolution material-control and preset frames. Text, previews, preset contrast, verification figures, and local-only acceptance caption are legible and match the sources."
+}

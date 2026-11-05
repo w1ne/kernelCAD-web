@@ -6,10 +6,12 @@ from those sources and must be rebuilt in the same change.
 
 ## Catalog quality snapshot (2026-11-05)
 
-The catalog quality gate reports **1,954/2,390 assets passing (81.76%)** and
-436 thin assets (18.24%) across nine thin kits. This round promoted 50 existing
-alpine-expedition assets from the 1,904/2,390 checkpoint; no IDs were added.
-See the [Alpine expedition quality handoff](../artifacts/catalog-demos/alpine-expedition-quality-promotion-20261105/README.md),
+The catalog quality gate reports **2,003/2,390 assets passing (83.81%)** and
+387 thin assets (16.19%) in nine fully thin kits and additional mixed kits.
+This round promoted 49 existing apiary assets from the 1,954/2,390 checkpoint;
+no IDs were added.
+See the [Apiary quality handoff](../artifacts/catalog-demos/apiary-quality-promotion-20261105/README.md),
+[Alpine expedition quality handoff](../artifacts/catalog-demos/alpine-expedition-quality-promotion-20261105/README.md),
 [archaeology fieldwork quality handoff](../artifacts/catalog-demos/archaeology-fieldwork-quality-promotion-20261105/README.md),
 [EV charging infrastructure handoff](../artifacts/catalog-demos/ev-charging-infrastructure-quality-promotion-20261105/README.md),
 [beverage bottling line handoff](../artifacts/catalog-demos/beverage-bottling-line-quality-promotion-20261105/README.md),
@@ -107,13 +109,22 @@ historical fidelity, deployed behavior, or field acceptance.
 
 ## Apiary assets
 
-The [apiary kit](../catalog/kits/apiary/README.md) adds 50 original low-poly
+The [apiary kit](../catalog/kits/apiary/README.md) contains 50 original low-poly
 scene props for hive structures, beekeeping tools, feeding, yard fixtures, and
-honey handling. Every source exposes scale and color controls and has an
-indexed preview path. The [wave demo and verification bundle](../artifacts/catalog-demos/apiary-wave-20261103/README.md)
-records the source-to-preview workflow and local checks. These are generic
-scene assets; mesh and catalog checks do not establish husbandry suitability,
-food-contact suitability, equipment ratings, or physical acceptance.
+honey handling. All 50 existing IDs now pass the material and preset quality
+gate. The 49 promoted sources add 121 material-named controls and 98 named
+preset entries; the existing apiary gate retains its three material controls
+and two presets. Each ID has two coordinated looks and an indexed preview. The
+shade canopy now has a fabric roof and steel corner brackets, hive frames show
+a separate wax foundation, and honey handling props distinguish tinted glass,
+honey, stainless steel, brass, paper, and polymer. The [quality promotion
+handoff](../artifacts/catalog-demos/apiary-quality-promotion-20261105/README.md)
+records the material mapping, source changes, preview review, regenerated
+index, lint, integration, local-page and package-boundary checks, and inspected
+MP4. The [original wave demo and verification bundle](../artifacts/catalog-demos/apiary-wave-20261103/README.md)
+preserves initial kit evidence. These are generic visualization props, not
+manufacturing drawings or beekeeping guidance. The branch has not been
+deployed, so promoted previews are not yet live on the public site.
 
 ## Hydroponics assets
 

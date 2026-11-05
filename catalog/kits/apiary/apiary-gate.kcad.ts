@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: CC0-1.0
-// Original low-poly apiary scene prop, millimetres, Z up, base at z = 0.
+// Apiary gate: timber posts, framed rails, diagonal brace, panel, hinges, and latch. Millimetres, Z up.
 
 meta({
   name: "apiary-gate",

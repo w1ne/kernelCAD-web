@@ -19114,7 +19114,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/apiary-gate.kcad.ts",
       "preview": "/assets/apiary-apiary-gate.png",
-      "sourceSha256": "6b47b4d0b3b498c937828db6d7a07861857f46e94ce580d9f4920c60ade80106",
+      "sourceSha256": "388fb650f1f202bcc790fa5294e10e5455566e00a5a83ebc4b1c5e70cd640017",
       "triangleBudget": 1800,
       "params": [
         {
@@ -19208,7 +19208,7 @@
       "id": "apiary-shade-canopy",
       "kit": "apiary",
       "title": "Apiary shade canopy",
-      "description": "Open four-post shade shelter with top frame, roof slats and cross braces. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Open four-post shade shelter with top frame, roof slats and cross braces. Material controls: timber, fabric, steel. Presets: summerCanopy and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -19228,7 +19228,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/apiary-shade-canopy.kcad.ts",
       "preview": "/assets/apiary-apiary-shade-canopy.png",
-      "sourceSha256": "31f2a01734d418df76db937039dbe275f3884dc35d02c343c1f9bfff731e9239",
+      "sourceSha256": "f3a3212b497c4f22b8760b9d33ef13d0de1a94ea0bc1f84e0e79d05cb20baab6",
       "triangleBudget": 1800,
       "params": [
         {
@@ -19241,18 +19241,41 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#8e856b",
-          "label": "Asset color"
+          "default": "#b8874a",
+          "label": "Hive timber"
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#c8b78f",
+          "label": "Canvas and protective fabric"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#647176",
+          "label": "Galvanized steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "summerCanopy": {
+          "timber": "#d4a462",
+          "fabric": "#e7dfc9",
+          "steel": "#b7c0be"
+        },
+        "weatheredYard": {
+          "timber": "#68543d",
+          "fabric": "#78664a",
+          "steel": "#716d63"
+        }
+      },
       "stats": {
-        "triangles": 156,
+        "triangles": 216,
         "sizeM": [
           0.86,
-          1.135,
+          1.149,
           0.66
         ],
         "minUpM": 0,
@@ -19260,8 +19283,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8e856b",
+          "name": "timber",
+          "color": "#b8874a",
           "parts": [
             "post--400--300",
             "post--400-300",
@@ -19277,7 +19300,26 @@
             "roof-slat-3",
             "roof-slat-4"
           ],
-          "param": "color"
+          "param": "timber"
+        },
+        {
+          "name": "fabric",
+          "color": "#c8b78f",
+          "parts": [
+            "shade-cloth"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "steel",
+          "color": "#647176",
+          "parts": [
+            "corner-bracket-front-left",
+            "corner-bracket-front-right",
+            "corner-bracket-back-left",
+            "corner-bracket-back-right"
+          ],
+          "param": "steel"
         }
       ]
     },
@@ -19285,7 +19327,7 @@
       "id": "apiary-sign",
       "kit": "apiary",
       "title": "Apiary sign",
-      "description": "Outdoor apiary marker with framed sign panel, two posts and weighted feet. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Outdoor apiary marker with framed sign panel, two posts and weighted feet. Material controls: timber, enamel, steel. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -19305,7 +19347,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/apiary-sign.kcad.ts",
       "preview": "/assets/apiary-apiary-sign.png",
-      "sourceSha256": "1a328ba77cd929d37778b546b426d9552baa91ca156bc0ed83261c2277ae1ad6",
+      "sourceSha256": "138f6c26950212e987715229a6fbe518fd768aa79e0e09ebdee95116328a8865",
       "triangleBudget": 1800,
       "params": [
         {
@@ -19318,13 +19360,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#987a4f",
-          "label": "Asset color"
+          "default": "#b8874a",
+          "label": "Hive timber"
+        },
+        {
+          "name": "enamel",
+          "type": "color",
+          "default": "#647b59",
+          "label": "Painted enamel"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#647176",
+          "label": "Galvanized steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "timber": "#d4a462",
+          "enamel": "#91a66b",
+          "steel": "#b7c0be"
+        },
+        "weatheredYard": {
+          "timber": "#68543d",
+          "enamel": "#4b5f48",
+          "steel": "#716d63"
+        }
+      },
       "stats": {
         "triangles": 72,
         "sizeM": [
@@ -19337,17 +19402,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#987a4f",
+          "name": "enamel",
+          "color": "#647b59",
           "parts": [
-            "panel",
+            "panel"
+          ],
+          "param": "enamel"
+        },
+        {
+          "name": "timber",
+          "color": "#b8874a",
+          "parts": [
             "top-frame",
             "post-left",
-            "post-right",
+            "post-right"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "steel",
+          "color": "#647176",
+          "parts": [
             "foot-left",
             "foot-right"
           ],
-          "param": "color"
+          "param": "steel"
         }
       ]
     },
@@ -19355,7 +19434,7 @@
       "id": "apiary-waterer",
       "kit": "apiary",
       "title": "Apiary waterer",
-      "description": "Shallow water tray with raised reservoir, support ring and landing rim. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Shallow water tray with raised reservoir, support ring and landing rim. Material controls: polymer, glass, stainless. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -19375,7 +19454,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/apiary-waterer.kcad.ts",
       "preview": "/assets/apiary-apiary-waterer.png",
-      "sourceSha256": "df957378934f523bb98ae7676f0d39a7767f588f8eb0f68ce334a22a614996e0",
+      "sourceSha256": "1dd2b4cf50f8d92b70b6c9f4132b9f3354ea88ecf83a97be549fc74b89c4fd06",
       "triangleBudget": 1800,
       "params": [
         {
@@ -19388,15 +19467,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#899084",
-          "label": "Asset color"
+          "default": "#67877b",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#9ac1bd",
+          "label": "Tinted glass"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#aeb9b7",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "polymer": "#d7e2d8",
+          "glass": "#c9dfd8",
+          "stainless": "#d9dfdc"
+        },
+        "weatheredYard": {
+          "polymer": "#3f5d54",
+          "glass": "#6e9392",
+          "stainless": "#788482"
+        }
+      },
       "stats": {
-        "triangles": 200,
+        "triangles": 224,
         "sizeM": [
           0.42,
           0.425,
@@ -19407,17 +19509,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#899084",
+          "name": "polymer",
+          "color": "#67877b",
           "parts": [
             "tray",
-            "reservoir",
             "neck",
             "cap",
             "landing-front",
             "landing-back"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "glass",
+          "color": "#9ac1bd",
+          "parts": [
+            "reservoir"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "stainless",
+          "color": "#aeb9b7",
+          "parts": [
+            "mount-left",
+            "mount-right"
+          ],
+          "param": "stainless"
         }
       ]
     },
@@ -19425,7 +19543,7 @@
       "id": "bee-brush",
       "kit": "apiary",
       "title": "Bee brush",
-      "description": "Long-handled frame brush with a broad ferrule and a compact bristle block. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Long-handled frame brush with a broad ferrule and a compact bristle block. Material controls: timber, brass, fiber. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -19445,7 +19563,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/bee-brush.kcad.ts",
       "preview": "/assets/apiary-bee-brush.png",
-      "sourceSha256": "f1d3ea60ea8ee5a8da113a30f324934d94bc8399b80e409f18950df37a9dd305",
+      "sourceSha256": "0f9605d2f7eabb4833073a7441d13d30a5d9dacc80469efcd27cfe6ca9da7233",
       "triangleBudget": 1800,
       "params": [
         {
@@ -19458,13 +19576,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#9b815c",
-          "label": "Asset color"
+          "default": "#b8874a",
+          "label": "Hive timber"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#a97932",
+          "label": "Brass hardware"
+        },
+        {
+          "name": "fiber",
+          "type": "color",
+          "default": "#d7c394",
+          "label": "Brush fiber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "timber": "#d4a462",
+          "brass": "#c49a50",
+          "fiber": "#ede0b7"
+        },
+        "weatheredYard": {
+          "timber": "#68543d",
+          "brass": "#725225",
+          "fiber": "#92794b"
+        }
+      },
       "stats": {
         "triangles": 108,
         "sizeM": [
@@ -19477,11 +19618,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#9b815c",
+          "name": "timber",
+          "color": "#b8874a",
           "parts": [
-            "handle",
-            "ferrule",
+            "handle"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "brass",
+          "color": "#a97932",
+          "parts": [
+            "ferrule"
+          ],
+          "param": "brass"
+        },
+        {
+          "name": "fiber",
+          "color": "#d7c394",
+          "parts": [
             "bristles",
             "bristle-0",
             "bristle-1",
@@ -19490,7 +19645,7 @@
             "bristle-4",
             "bristle-5"
           ],
-          "param": "color"
+          "param": "fiber"
         }
       ]
     },
@@ -19498,7 +19653,7 @@
       "id": "bee-escape-board",
       "kit": "apiary",
       "title": "Bee escape board",
-      "description": "Flat escape-board frame with a center panel and four raised tunnel blocks. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Flat escape-board frame with a center panel and four raised tunnel blocks. Material controls: timber, polymer. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -19518,7 +19673,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/bee-escape-board.kcad.ts",
       "preview": "/assets/apiary-bee-escape-board.png",
-      "sourceSha256": "122216ddc1b9f765be43564bee19dce9086be46aa389c76f62c6efef843d67ac",
+      "sourceSha256": "811f027178e048be8228b5488d081551a66b0e24b3c485da34bdb5061f297ec2",
       "triangleBudget": 1800,
       "params": [
         {
@@ -19531,13 +19686,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#918064",
-          "label": "Asset color"
+          "default": "#b8874a",
+          "label": "Hive timber"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#67877b",
+          "label": "Molded polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "timber": "#d4a462",
+          "polymer": "#d7e2d8"
+        },
+        "weatheredYard": {
+          "timber": "#68543d",
+          "polymer": "#3f5d54"
+        }
+      },
       "stats": {
         "triangles": 108,
         "sizeM": [
@@ -19550,20 +19720,27 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#918064",
+          "name": "timber",
+          "color": "#b8874a",
           "parts": [
             "board",
             "rim-front",
             "rim-back",
             "rim-left",
-            "rim-right",
+            "rim-right"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "polymer",
+          "color": "#67877b",
+          "parts": [
             "escape-tunnel-0",
             "escape-tunnel-1",
             "escape-tunnel-2",
             "escape-tunnel-3"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -19571,7 +19748,7 @@
       "id": "bee-smoker",
       "kit": "apiary",
       "title": "Bee smoker",
-      "description": "Low-poly smoker with fire pot, perforated-look cap, spout and bellows body. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Low-poly smoker with fire pot, perforated-look cap, spout and bellows body. Material controls: stainless, leather, timber. Presets: fieldReady and sunWorn.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -19591,7 +19768,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/bee-smoker.kcad.ts",
       "preview": "/assets/apiary-bee-smoker.png",
-      "sourceSha256": "b527f0f3ee007d3babb32fe8039746c879fce866f00d0ee4186030423b25cc45",
+      "sourceSha256": "53db68cfe83ec0e6073e20576947c71244e188c69f1462c7dddcf24d909b7bbc",
       "triangleBudget": 1800,
       "params": [
         {
@@ -19604,38 +19781,75 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainless",
           "type": "color",
-          "default": "#777a79",
-          "label": "Asset color"
+          "default": "#aeb9b7",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "leather",
+          "type": "color",
+          "default": "#805b3c",
+          "label": "Leather"
+        },
+        {
+          "name": "timber",
+          "type": "color",
+          "default": "#b8874a",
+          "label": "Hive timber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "stainless": "#d9dfdc",
+          "leather": "#a67a50",
+          "timber": "#d4a462"
+        },
+        "sunWorn": {
+          "stainless": "#788482",
+          "leather": "#503a2c",
+          "timber": "#68543d"
+        }
+      },
       "stats": {
-        "triangles": 192,
+        "triangles": 284,
         "sizeM": [
           0.4025,
           0.52,
-          0.5
+          0.539
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#777a79",
+          "name": "stainless",
+          "color": "#aeb9b7",
           "parts": [
             "fire-pot",
             "base-ring",
             "cap",
             "spout",
-            "spout-tip",
+            "spout-tip"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "leather",
+          "color": "#805b3c",
+          "parts": [
             "bellows-back",
-            "bellows-front",
+            "bellows-front"
+          ],
+          "param": "leather"
+        },
+        {
+          "name": "timber",
+          "color": "#b8874a",
+          "parts": [
             "handle"
           ],
-          "param": "color"
+          "param": "timber"
         }
       ]
     },
@@ -19643,7 +19857,7 @@
       "id": "beekeeper-gloves",
       "kit": "apiary",
       "title": "Beekeeper gloves",
-      "description": "Pair of gauntlet gloves with broad cuffs and separated low-poly fingers. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Pair of gauntlet gloves with broad cuffs and separated low-poly fingers. Material controls: fabric, leather. Presets: fieldReady and sunWorn.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -19663,7 +19877,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/beekeeper-gloves.kcad.ts",
       "preview": "/assets/apiary-beekeeper-gloves.png",
-      "sourceSha256": "aad287f7dba956375950ab4edc3176e2cd3936c8017a67ba3bcd71b46fa78f46",
+      "sourceSha256": "9b622c3cc482961c20dc4d77ab035b21aea2917e67711dd73d194512e6877176",
       "triangleBudget": 1800,
       "params": [
         {
@@ -19676,13 +19890,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "fabric",
           "type": "color",
-          "default": "#d8d0b8",
-          "label": "Asset color"
+          "default": "#c8b78f",
+          "label": "Canvas and protective fabric"
+        },
+        {
+          "name": "leather",
+          "type": "color",
+          "default": "#805b3c",
+          "label": "Leather"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "fabric": "#e7dfc9",
+          "leather": "#a67a50"
+        },
+        "sunWorn": {
+          "fabric": "#78664a",
+          "leather": "#503a2c"
+        }
+      },
       "stats": {
         "triangles": 144,
         "sizeM": [
@@ -19695,11 +19924,18 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d8d0b8",
+          "name": "leather",
+          "color": "#805b3c",
           "parts": [
             "palm-left",
-            "palm-right",
+            "palm-right"
+          ],
+          "param": "leather"
+        },
+        {
+          "name": "fabric",
+          "color": "#c8b78f",
+          "parts": [
             "finger-left-0",
             "finger-left-1",
             "finger-left-2",
@@ -19711,7 +19947,7 @@
             "cuff-left",
             "cuff-right"
           ],
-          "param": "color"
+          "param": "fabric"
         }
       ]
     },
@@ -19719,7 +19955,7 @@
       "id": "beekeeper-jacket",
       "kit": "apiary",
       "title": "Beekeeper jacket",
-      "description": "Protective jacket form with torso, sleeves, collar and integrated hood ring. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Protective jacket form with torso, sleeves, collar and integrated hood ring. Material controls: fabric, mesh, leather. Presets: fieldReady and sunWorn.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -19739,7 +19975,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/beekeeper-jacket.kcad.ts",
       "preview": "/assets/apiary-beekeeper-jacket.png",
-      "sourceSha256": "470a63dd72653dc45c6bd223146f9c08473cf7ea808437bdbf481428d811319e",
+      "sourceSha256": "eadfb219f0a96f65267fd72aedf397e3c314129fb4aa38f8e1d62201ded64b22",
       "triangleBudget": 1800,
       "params": [
         {
@@ -19752,13 +19988,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "fabric",
           "type": "color",
-          "default": "#d7d1be",
-          "label": "Asset color"
+          "default": "#c8b78f",
+          "label": "Canvas and protective fabric"
+        },
+        {
+          "name": "mesh",
+          "type": "color",
+          "default": "#4a5e55",
+          "label": "Woven veil mesh"
+        },
+        {
+          "name": "leather",
+          "type": "color",
+          "default": "#805b3c",
+          "label": "Leather"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "fabric": "#e7dfc9",
+          "mesh": "#6c8075",
+          "leather": "#a67a50"
+        },
+        "sunWorn": {
+          "fabric": "#78664a",
+          "mesh": "#303d38",
+          "leather": "#503a2c"
+        }
+      },
       "stats": {
         "triangles": 116,
         "sizeM": [
@@ -19771,18 +20030,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d7d1be",
+          "name": "fabric",
+          "color": "#c8b78f",
           "parts": [
             "torso",
             "sleeve-left",
             "sleeve-right",
             "cuff-left",
-            "cuff-right",
-            "collar",
+            "cuff-right"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "leather",
+          "color": "#805b3c",
+          "parts": [
+            "collar"
+          ],
+          "param": "leather"
+        },
+        {
+          "name": "mesh",
+          "color": "#4a5e55",
+          "parts": [
             "hood-rim"
           ],
-          "param": "color"
+          "param": "mesh"
         }
       ]
     },
@@ -19790,7 +20063,7 @@
       "id": "beekeeper-veil-hood",
       "kit": "apiary",
       "title": "Beekeeper veil hood",
-      "description": "Hat brim and crown framed by a squared mesh veil and lower neck band. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Hat brim and crown framed by a squared mesh veil and lower neck band. Material controls: fabric, mesh, leather. Presets: fieldReady and sunWorn.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -19810,7 +20083,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/beekeeper-veil-hood.kcad.ts",
       "preview": "/assets/apiary-beekeeper-veil-hood.png",
-      "sourceSha256": "78a38b732154130b78599e4a6faa5b42ba6d623e59c7615a36a6b214aa9eaef3",
+      "sourceSha256": "b62aaf9715527a33c96369709ad770f1163220d9f1fe5e935024474e56c3ae43",
       "triangleBudget": 1800,
       "params": [
         {
@@ -19823,13 +20096,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "fabric",
           "type": "color",
-          "default": "#d1cbb4",
-          "label": "Asset color"
+          "default": "#c8b78f",
+          "label": "Canvas and protective fabric"
+        },
+        {
+          "name": "mesh",
+          "type": "color",
+          "default": "#4a5e55",
+          "label": "Woven veil mesh"
+        },
+        {
+          "name": "leather",
+          "type": "color",
+          "default": "#805b3c",
+          "label": "Leather"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "fabric": "#e7dfc9",
+          "mesh": "#6c8075",
+          "leather": "#a67a50"
+        },
+        "sunWorn": {
+          "fabric": "#78664a",
+          "mesh": "#303d38",
+          "leather": "#503a2c"
+        }
+      },
       "stats": {
         "triangles": 84,
         "sizeM": [
@@ -19842,18 +20138,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d1cbb4",
+          "name": "leather",
+          "color": "#805b3c",
           "parts": [
-            "brim",
+            "brim"
+          ],
+          "param": "leather"
+        },
+        {
+          "name": "fabric",
+          "color": "#c8b78f",
+          "parts": [
             "crown",
+            "neck-band"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "mesh",
+          "color": "#4a5e55",
+          "parts": [
             "veil-front",
             "veil-back",
             "veil-left",
-            "veil-right",
-            "neck-band"
+            "veil-right"
           ],
-          "param": "color"
+          "param": "mesh"
         }
       ]
     },
@@ -19861,7 +20171,7 @@
       "id": "beeswax-block",
       "kit": "apiary",
       "title": "Beeswax block",
-      "description": "Rectangular low-poly beeswax cake with shallow mold ribs and end tabs. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Rectangular low-poly beeswax cake with shallow mold ribs and end tabs. Material controls: wax, paper. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -19881,7 +20191,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/beeswax-block.kcad.ts",
       "preview": "/assets/apiary-beeswax-block.png",
-      "sourceSha256": "0741a01ae8813f4be5adc0d2db55f80ecb3e3e233f076dde55c1d867601050b4",
+      "sourceSha256": "63469685c9aee7954d55cb7278b80ccc141eaf8845733317affa5da3f6c8b9f8",
       "triangleBudget": 1800,
       "params": [
         {
@@ -19894,13 +20204,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "wax",
           "type": "color",
-          "default": "#d2a64f",
-          "label": "Asset color"
+          "default": "#e3c978",
+          "label": "Beeswax and foundation"
+        },
+        {
+          "name": "paper",
+          "type": "color",
+          "default": "#e7dfc8",
+          "label": "Label paper"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "wax": "#f1df9d",
+          "paper": "#f6f0df"
+        },
+        "weatheredYard": {
+          "wax": "#bc9344",
+          "paper": "#c6b893"
+        }
+      },
       "stats": {
         "triangles": 72,
         "sizeM": [
@@ -19913,17 +20238,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d2a64f",
+          "name": "wax",
+          "color": "#e3c978",
           "parts": [
             "block",
             "top",
             "rib-left",
-            "rib-right",
+            "rib-right"
+          ],
+          "param": "wax"
+        },
+        {
+          "name": "paper",
+          "color": "#e7dfc8",
+          "parts": [
             "tab-front",
             "tab-back"
           ],
-          "param": "color"
+          "param": "paper"
         }
       ]
     },
@@ -19931,7 +20263,7 @@
       "id": "bottling-stand",
       "kit": "apiary",
       "title": "Honey bottling stand",
-      "description": "Small bottling platform with raised support rails, bottle seat and valve clearance. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Small bottling platform with raised support rails, bottle seat and valve clearance. Material controls: timber, stainless, rubber. Presets: brightStainless and warmHarvest.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -19951,7 +20283,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/bottling-stand.kcad.ts",
       "preview": "/assets/apiary-bottling-stand.png",
-      "sourceSha256": "bdad4d497bfa75a564e578447f2db8ec8cd1821d2ed571a72a0160bdfa09e40f",
+      "sourceSha256": "b02c2119adb3c4cd6eb4465b20d15dc2bd5879573188a29c4a5ec4857de69266",
       "triangleBudget": 1800,
       "params": [
         {
@@ -19964,13 +20296,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#927c55",
-          "label": "Asset color"
+          "default": "#b8874a",
+          "label": "Hive timber"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#aeb9b7",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#333a3b",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "brightStainless": {
+          "timber": "#d4a462",
+          "stainless": "#d9dfdc",
+          "rubber": "#485152"
+        },
+        "warmHarvest": {
+          "timber": "#68543d",
+          "stainless": "#788482",
+          "rubber": "#252b2c"
+        }
+      },
       "stats": {
         "triangles": 84,
         "sizeM": [
@@ -19983,18 +20338,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#927c55",
+          "name": "timber",
+          "color": "#b8874a",
           "parts": [
             "base",
             "back-post",
             "top-rail",
+            "bottle-stop"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "stainless",
+          "color": "#aeb9b7",
+          "parts": [
             "left-guide",
-            "right-guide",
-            "bottle-stop",
+            "right-guide"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "rubber",
+          "color": "#333a3b",
+          "parts": [
             "front-feet"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -20002,7 +20371,7 @@
       "id": "comb-section-box",
       "kit": "apiary",
       "title": "Comb section box",
-      "description": "Small presentation box frame with top rim, lower tray and open-look center panel. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Small presentation box frame with top rim, lower tray and open-look center panel. Material controls: timber, wax, stainless. Presets: brightStainless and warmHarvest.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -20022,7 +20391,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/comb-section-box.kcad.ts",
       "preview": "/assets/apiary-comb-section-box.png",
-      "sourceSha256": "0ca7568dd9550d8913c346dd57001d8f8c676e4dfc82f349ad4d1f2a8a7111a8",
+      "sourceSha256": "78ba9999a77c299f447f55ecb26675083c2c79038f92b8eede4e23009536f66c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -20035,13 +20404,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#b29054",
-          "label": "Asset color"
+          "default": "#b8874a",
+          "label": "Hive timber"
+        },
+        {
+          "name": "wax",
+          "type": "color",
+          "default": "#e3c978",
+          "label": "Beeswax and foundation"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#aeb9b7",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "brightStainless": {
+          "timber": "#d4a462",
+          "wax": "#f1df9d",
+          "stainless": "#d9dfdc"
+        },
+        "warmHarvest": {
+          "timber": "#68543d",
+          "wax": "#bc9344",
+          "stainless": "#788482"
+        }
+      },
       "stats": {
         "triangles": 84,
         "sizeM": [
@@ -20054,18 +20446,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b29054",
+          "name": "timber",
+          "color": "#b8874a",
           "parts": [
             "base",
             "left",
             "right",
             "front",
-            "back",
-            "top-rim",
+            "back"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "stainless",
+          "color": "#aeb9b7",
+          "parts": [
+            "top-rim"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "wax",
+          "color": "#e3c978",
+          "parts": [
             "comb-panel"
           ],
-          "param": "color"
+          "param": "wax"
         }
       ]
     },
@@ -20073,7 +20479,7 @@
       "id": "entrance-feeder",
       "kit": "apiary",
       "title": "Hive entrance feeder",
-      "description": "Small front-mounted feeder tray with clear-look reservoir and landing ledge. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Small front-mounted feeder tray with clear-look reservoir and landing ledge. Material controls: polymer, glass, stainless. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -20093,7 +20499,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/entrance-feeder.kcad.ts",
       "preview": "/assets/apiary-entrance-feeder.png",
-      "sourceSha256": "58e5e664fecea8e2b60f335c18277b504848015a407aa087fecd1b57d81a7be3",
+      "sourceSha256": "58a0b6215f4ba3a4aa1e093282a2a2c5fd168311770649350ee298a9fc349455",
       "triangleBudget": 1800,
       "params": [
         {
@@ -20106,13 +20512,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#a48a5f",
-          "label": "Asset color"
+          "default": "#67877b",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#9ac1bd",
+          "label": "Tinted glass"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#aeb9b7",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "polymer": "#d7e2d8",
+          "glass": "#c9dfd8",
+          "stainless": "#d9dfdc"
+        },
+        "weatheredYard": {
+          "polymer": "#3f5d54",
+          "glass": "#6e9392",
+          "stainless": "#788482"
+        }
+      },
       "stats": {
         "triangles": 136,
         "sizeM": [
@@ -20125,17 +20554,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a48a5f",
+          "name": "polymer",
+          "color": "#67877b",
           "parts": [
             "tray",
             "front-lip",
-            "reservoir",
-            "reservoir-cap",
+            "reservoir-cap"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "glass",
+          "color": "#9ac1bd",
+          "parts": [
+            "reservoir"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "stainless",
+          "color": "#aeb9b7",
+          "parts": [
             "mount-left",
             "mount-right"
           ],
-          "param": "color"
+          "param": "stainless"
         }
       ]
     },
@@ -20143,7 +20586,7 @@
       "id": "entrance-reducer",
       "kit": "apiary",
       "title": "Hive entrance reducer",
-      "description": "Removable entrance strip with two opening blocks and a broad center bar. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Removable entrance strip with two opening blocks and a broad center bar. Material controls: timber, polymer, stainless. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -20163,7 +20606,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/entrance-reducer.kcad.ts",
       "preview": "/assets/apiary-entrance-reducer.png",
-      "sourceSha256": "0d32157142359fe1248e212a47d31b41e708e187fdadc8e7b65ae8f09c808152",
+      "sourceSha256": "5ac6804f6245399a68f2ec92a2137d9ec048aafcf0b6f5bab8ed41c730c5dc6f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -20176,13 +20619,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#89765a",
-          "label": "Asset color"
+          "default": "#b8874a",
+          "label": "Hive timber"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#67877b",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#aeb9b7",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "timber": "#d4a462",
+          "polymer": "#d7e2d8",
+          "stainless": "#d9dfdc"
+        },
+        "weatheredYard": {
+          "timber": "#68543d",
+          "polymer": "#3f5d54",
+          "stainless": "#788482"
+        }
+      },
       "stats": {
         "triangles": 72,
         "sizeM": [
@@ -20195,17 +20661,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#89765a",
+          "name": "timber",
+          "color": "#b8874a",
           "parts": [
             "strip",
+            "center-bar"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "polymer",
+          "color": "#67877b",
+          "parts": [
             "left-block",
-            "right-block",
-            "center-bar",
+            "right-block"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "stainless",
+          "color": "#aeb9b7",
+          "parts": [
             "lift-tab-left",
             "lift-tab-right"
           ],
-          "param": "color"
+          "param": "stainless"
         }
       ]
     },
@@ -20213,7 +20693,7 @@
       "id": "foundation-frame",
       "kit": "apiary",
       "title": "Foundation frame",
-      "description": "Hive frame holding a thin foundation sheet between its rails. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Hive frame holding a thin foundation sheet between its rails. Material controls: timber, wax. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -20233,7 +20713,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/foundation-frame.kcad.ts",
       "preview": "/assets/apiary-foundation-frame.png",
-      "sourceSha256": "24377123ab2a250d533d6a476a70a90fd750a727adbbc44029192fa3d4d6a4ef",
+      "sourceSha256": "0d7492f1e14e307d3a82c4f19d3991f871ca98fff5139b4842ec15b3f7f3825c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -20246,13 +20726,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#b0915b",
-          "label": "Asset color"
+          "default": "#b8874a",
+          "label": "Hive timber"
+        },
+        {
+          "name": "wax",
+          "type": "color",
+          "default": "#e3c978",
+          "label": "Beeswax and foundation"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "timber": "#d4a462",
+          "wax": "#f1df9d"
+        },
+        "weatheredYard": {
+          "timber": "#68543d",
+          "wax": "#bc9344"
+        }
+      },
       "stats": {
         "triangles": 84,
         "sizeM": [
@@ -20265,18 +20760,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b0915b",
+          "name": "timber",
+          "color": "#b8874a",
           "parts": [
             "top-bar",
             "ear-left",
             "ear-right",
             "side-left",
             "side-right",
-            "foundation",
             "bottom-bar"
           ],
-          "param": "color"
+          "param": "timber"
+        },
+        {
+          "name": "wax",
+          "color": "#e3c978",
+          "parts": [
+            "foundation"
+          ],
+          "param": "wax"
         }
       ]
     },
@@ -20284,7 +20786,7 @@
       "id": "frame-carrier",
       "kit": "apiary",
       "title": "Hive frame carrier",
-      "description": "Portable frame rack with paired side rails, end handles and protective crossbars. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Portable frame rack with paired side rails, end handles and protective crossbars. Material controls: timber, stainless. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -20304,7 +20806,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/frame-carrier.kcad.ts",
       "preview": "/assets/apiary-frame-carrier.png",
-      "sourceSha256": "904cd0443f7662ffaaa0c1b6b1a4454015ed1c30690b3f68f6d8cd94acbe6cb9",
+      "sourceSha256": "5eff109af350beec31502f274e9d47025882ab5b209a375ac7b3d59f2a3e11ff",
       "triangleBudget": 1800,
       "params": [
         {
@@ -20317,13 +20819,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#8f7952",
-          "label": "Asset color"
+          "default": "#b8874a",
+          "label": "Hive timber"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#aeb9b7",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "timber": "#d4a462",
+          "stainless": "#d9dfdc"
+        },
+        "weatheredYard": {
+          "timber": "#68543d",
+          "stainless": "#788482"
+        }
+      },
       "stats": {
         "triangles": 84,
         "sizeM": [
@@ -20336,18 +20853,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8f7952",
+          "name": "timber",
+          "color": "#b8874a",
           "parts": [
             "bottom",
             "side-left",
             "side-right",
-            "handle-left",
-            "handle-right",
             "cross-front",
             "cross-back"
           ],
-          "param": "color"
+          "param": "timber"
+        },
+        {
+          "name": "stainless",
+          "color": "#aeb9b7",
+          "parts": [
+            "handle-left",
+            "handle-right"
+          ],
+          "param": "stainless"
         }
       ]
     },
@@ -20355,7 +20879,7 @@
       "id": "frame-grip",
       "kit": "apiary",
       "title": "Frame grip",
-      "description": "Hand tool with paired clamping jaws, pivot block and long grip handles. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Hand tool with paired clamping jaws, pivot block and long grip handles. Material controls: stainless, rubber. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -20375,7 +20899,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/frame-grip.kcad.ts",
       "preview": "/assets/apiary-frame-grip.png",
-      "sourceSha256": "a6b85a9b052ec9a3c18e1f48f669366dd93c8bc5c12dee864064e4e5298f5a2b",
+      "sourceSha256": "5ef03ee9698f9c79ee4d3342e7069022590416311e22cdfa649094b0accef96c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -20388,13 +20912,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainless",
           "type": "color",
-          "default": "#7e7060",
-          "label": "Asset color"
+          "default": "#aeb9b7",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#333a3b",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "stainless": "#d9dfdc",
+          "rubber": "#485152"
+        },
+        "weatheredYard": {
+          "stainless": "#788482",
+          "rubber": "#252b2c"
+        }
+      },
       "stats": {
         "triangles": 116,
         "sizeM": [
@@ -20407,18 +20946,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7e7060",
+          "name": "stainless",
+          "color": "#aeb9b7",
           "parts": [
             "jaw-left",
             "jaw-right",
             "pivot",
             "handle-left",
-            "handle-right",
+            "handle-right"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "rubber",
+          "color": "#333a3b",
+          "parts": [
             "grip-left",
             "grip-right"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -20426,7 +20972,7 @@
       "id": "frame-rest",
       "kit": "apiary",
       "title": "Hive frame rest",
-      "description": "Crossbar accessory with two raised ledges that hold removed hive frames. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Crossbar accessory with two raised ledges that hold removed hive frames. Material controls: timber, stainless. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -20446,7 +20992,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/frame-rest.kcad.ts",
       "preview": "/assets/apiary-frame-rest.png",
-      "sourceSha256": "60592d25a0dca764bd8d582768e48579cc73865a5368985952ff1a298348989a",
+      "sourceSha256": "a83b0bb8d08f5c65e5c0294b0ad71952828ed8ad9bf6a1762886458224dad2af",
       "triangleBudget": 1800,
       "params": [
         {
@@ -20459,13 +21005,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#98784c",
-          "label": "Asset color"
+          "default": "#b8874a",
+          "label": "Hive timber"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#aeb9b7",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "timber": "#d4a462",
+          "stainless": "#d9dfdc"
+        },
+        "weatheredYard": {
+          "timber": "#68543d",
+          "stainless": "#788482"
+        }
+      },
       "stats": {
         "triangles": 72,
         "sizeM": [
@@ -20478,17 +21039,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#98784c",
+          "name": "timber",
+          "color": "#b8874a",
           "parts": [
             "beam",
             "left-ledge",
             "right-ledge",
-            "center-stop",
             "left-foot",
             "right-foot"
           ],
-          "param": "color"
+          "param": "timber"
+        },
+        {
+          "name": "stainless",
+          "color": "#aeb9b7",
+          "parts": [
+            "center-stop"
+          ],
+          "param": "stainless"
         }
       ]
     },
@@ -20496,7 +21064,7 @@
       "id": "hive-frame",
       "kit": "apiary",
       "title": "Hive frame",
-      "description": "Wooden beehive frame with top bar, side rails, bottom bar and hanging ears. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Wooden beehive frame with top bar, side rails, bottom bar and hanging ears. Material controls: timber, wax. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -20516,7 +21084,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/hive-frame.kcad.ts",
       "preview": "/assets/apiary-hive-frame.png",
-      "sourceSha256": "2b0e801d9365ee7f9ea673a7a8345c5f8c8ca159daafd37b10ca6ff40ebd4d7e",
+      "sourceSha256": "b08a08f88fbe255c1b91b0bcb4fd9483aeb58432983aac0ef66778ef900878c4",
       "triangleBudget": 1800,
       "params": [
         {
@@ -20529,15 +21097,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#b08c54",
-          "label": "Asset color"
+          "default": "#b8874a",
+          "label": "Hive timber"
+        },
+        {
+          "name": "wax",
+          "type": "color",
+          "default": "#e3c978",
+          "label": "Beeswax and foundation"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "timber": "#d4a462",
+          "wax": "#f1df9d"
+        },
+        "weatheredYard": {
+          "timber": "#68543d",
+          "wax": "#bc9344"
+        }
+      },
       "stats": {
-        "triangles": 72,
+        "triangles": 84,
         "sizeM": [
           0.625,
           0.737,
@@ -20548,8 +21131,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b08c54",
+          "name": "timber",
+          "color": "#b8874a",
           "parts": [
             "top-bar",
             "ear-left",
@@ -20558,7 +21141,15 @@
             "side-right",
             "bottom-bar"
           ],
-          "param": "color"
+          "param": "timber"
+        },
+        {
+          "name": "wax",
+          "color": "#e3c978",
+          "parts": [
+            "wax-foundation"
+          ],
+          "param": "wax"
         }
       ]
     },
@@ -20566,7 +21157,7 @@
       "id": "hive-inspection-mirror",
       "kit": "apiary",
       "title": "Hive inspection mirror",
-      "description": "Hand inspection mirror with grip, neck joint and framed rectangular viewing plate. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Hand inspection mirror with grip, neck joint and framed rectangular viewing plate. Material controls: timber, glass, rubber. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -20586,7 +21177,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/hive-inspection-mirror.kcad.ts",
       "preview": "/assets/apiary-hive-inspection-mirror.png",
-      "sourceSha256": "3ba63c68b59f1138b695b890d4bad7c99eb5a84cc7f12f963d80647f3ab9563c",
+      "sourceSha256": "52219995936bcbd20d70773ed14aaf2b6abe5dd371900711040a778266a98252",
       "triangleBudget": 1800,
       "params": [
         {
@@ -20599,13 +21190,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#7d837f",
-          "label": "Asset color"
+          "default": "#b8874a",
+          "label": "Hive timber"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#9ac1bd",
+          "label": "Tinted glass"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#333a3b",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "timber": "#d4a462",
+          "glass": "#c9dfd8",
+          "rubber": "#485152"
+        },
+        "weatheredYard": {
+          "timber": "#68543d",
+          "glass": "#6e9392",
+          "rubber": "#252b2c"
+        }
+      },
       "stats": {
         "triangles": 84,
         "sizeM": [
@@ -20618,18 +21232,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7d837f",
+          "name": "timber",
+          "color": "#b8874a",
           "parts": [
             "handle",
-            "grip-cap",
             "neck",
             "back-plate",
-            "mirror-face",
             "frame-top",
             "frame-bottom"
           ],
-          "param": "color"
+          "param": "timber"
+        },
+        {
+          "name": "rubber",
+          "color": "#333a3b",
+          "parts": [
+            "grip-cap"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "glass",
+          "color": "#9ac1bd",
+          "parts": [
+            "mirror-face"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -20637,7 +21265,7 @@
       "id": "hive-scale",
       "kit": "apiary",
       "title": "Apiary hive scale",
-      "description": "Low platform scale with four feet, support deck and compact readout pedestal. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Low platform scale with four feet, support deck and compact readout pedestal. Material controls: stainless, polymer, glass. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -20657,7 +21285,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/hive-scale.kcad.ts",
       "preview": "/assets/apiary-hive-scale.png",
-      "sourceSha256": "802ceffb05c3906a7a29e7bb1b4bd4527772870c7a3348c6f4bb0a9663503ff1",
+      "sourceSha256": "5b82895d1178220c09395d91d43837c36dce108fe0c4f2b83a3a37aa36d376e5",
       "triangleBudget": 1800,
       "params": [
         {
@@ -20670,13 +21298,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainless",
           "type": "color",
-          "default": "#6f7775",
-          "label": "Asset color"
+          "default": "#aeb9b7",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#67877b",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#9ac1bd",
+          "label": "Tinted glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "stainless": "#d9dfdc",
+          "polymer": "#d7e2d8",
+          "glass": "#c9dfd8"
+        },
+        "weatheredYard": {
+          "stainless": "#788482",
+          "polymer": "#3f5d54",
+          "glass": "#6e9392"
+        }
+      },
       "stats": {
         "triangles": 96,
         "sizeM": [
@@ -20689,19 +21340,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6f7775",
+          "name": "stainless",
+          "color": "#aeb9b7",
           "parts": [
             "platform",
             "foot--230--190",
             "foot--230-190",
             "foot-230--190",
-            "foot-230-190",
+            "foot-230-190"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "glass",
+          "color": "#9ac1bd",
+          "parts": [
             "readout-post",
-            "readout",
             "screen"
           ],
-          "param": "color"
+          "param": "glass"
+        },
+        {
+          "name": "polymer",
+          "color": "#67877b",
+          "parts": [
+            "readout"
+          ],
+          "param": "polymer"
         }
       ]
     },
@@ -20709,7 +21374,7 @@
       "id": "hive-stand",
       "kit": "apiary",
       "title": "Hive stand",
-      "description": "Raised hive support with four feet, paired rails and a broad landing deck. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Raised hive support with four feet, paired rails and a broad landing deck. Material controls: timber, steel. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -20729,7 +21394,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/hive-stand.kcad.ts",
       "preview": "/assets/apiary-hive-stand.png",
-      "sourceSha256": "29e1bc5e8556fe10e3fc5da75ea5e3450a54a20a49bf77c1d2f732d4c057f686",
+      "sourceSha256": "f3f14462dbb1919c7b0deffe81e53f086349acab548f303f6a945999f6285802",
       "triangleBudget": 1800,
       "params": [
         {
@@ -20742,15 +21407,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#77705f",
-          "label": "Asset color"
+          "default": "#b8874a",
+          "label": "Hive timber"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#647176",
+          "label": "Galvanized steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "timber": "#d4a462",
+          "steel": "#b7c0be"
+        },
+        "weatheredYard": {
+          "timber": "#68543d",
+          "steel": "#716d63"
+        }
+      },
       "stats": {
-        "triangles": 108,
+        "triangles": 156,
         "sizeM": [
           0.7,
           0.375,
@@ -20761,8 +21441,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#77705f",
+          "name": "timber",
+          "color": "#b8874a",
           "parts": [
             "leg--250--180",
             "leg--250-180",
@@ -20774,7 +21454,18 @@
             "cross-rail-right",
             "deck"
           ],
-          "param": "color"
+          "param": "timber"
+        },
+        {
+          "name": "steel",
+          "color": "#647176",
+          "parts": [
+            "shoe-front-left",
+            "shoe-front-right",
+            "shoe-back-left",
+            "shoe-back-right"
+          ],
+          "param": "steel"
         }
       ]
     },
@@ -20782,7 +21473,7 @@
       "id": "hive-tool",
       "kit": "apiary",
       "title": "Hive tool",
-      "description": "Compact flat hive tool with a broad scraper end and raised pry hook. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Compact flat hive tool with a broad scraper end and raised pry hook. Material controls: stainless, rubber. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -20802,7 +21493,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/hive-tool.kcad.ts",
       "preview": "/assets/apiary-hive-tool.png",
-      "sourceSha256": "9f5615a06cfca9a3be64cc2dde98a7a243238ab16aa58b7bbfc9b68f86022cae",
+      "sourceSha256": "26447740088c542e5aeccb62c2e300ebf46d1dd88707c59071f7be389a924aa7",
       "triangleBudget": 1800,
       "params": [
         {
@@ -20815,13 +21506,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainless",
           "type": "color",
-          "default": "#777b7d",
-          "label": "Asset color"
+          "default": "#aeb9b7",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#333a3b",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "stainless": "#d9dfdc",
+          "rubber": "#485152"
+        },
+        "weatheredYard": {
+          "stainless": "#788482",
+          "rubber": "#252b2c"
+        }
+      },
       "stats": {
         "triangles": 72,
         "sizeM": [
@@ -20834,17 +21540,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#777b7d",
+          "name": "stainless",
+          "color": "#aeb9b7",
           "parts": [
             "shaft",
             "scraper",
             "hook-base",
-            "hook-tip",
+            "hook-tip"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "rubber",
+          "color": "#333a3b",
+          "parts": [
             "grip-rib-a",
             "grip-rib-b"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -20852,7 +21565,7 @@
       "id": "honey-bucket",
       "kit": "apiary",
       "title": "Honey pail",
-      "description": "Straight sided honey pail with lid, rim, bail handle and small bottom feet. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Straight sided honey pail with lid, rim, bail handle and small bottom feet. Material controls: polymer, stainless. Presets: brightStainless and warmHarvest.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -20872,7 +21585,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/honey-bucket.kcad.ts",
       "preview": "/assets/apiary-honey-bucket.png",
-      "sourceSha256": "19970685d596cc82d54ee6f7ed7358b8fb0be7f540fbb13f2bdbadfa5a78a546",
+      "sourceSha256": "73f4fa23ac6bbfea1a09dc84c0092131542e05d5bbee5549ffb6f3b37922d812",
       "triangleBudget": 1800,
       "params": [
         {
@@ -20885,13 +21598,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#a28d5e",
-          "label": "Asset color"
+          "default": "#67877b",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#aeb9b7",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "brightStainless": {
+          "polymer": "#d7e2d8",
+          "stainless": "#d9dfdc"
+        },
+        "warmHarvest": {
+          "polymer": "#3f5d54",
+          "stainless": "#788482"
+        }
+      },
       "stats": {
         "triangles": 236,
         "sizeM": [
@@ -20904,20 +21632,27 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a28d5e",
+          "name": "polymer",
+          "color": "#67877b",
           "parts": [
             "pail",
             "bottom",
             "lid",
             "lid-knob",
-            "bail",
             "foot-0",
             "foot-1",
             "foot-2",
             "foot-3"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "stainless",
+          "color": "#aeb9b7",
+          "parts": [
+            "bail"
+          ],
+          "param": "stainless"
         }
       ]
     },
@@ -20925,7 +21660,7 @@
       "id": "honey-extractor",
       "kit": "apiary",
       "title": "Manual honey extractor",
-      "description": "Low-poly radial extractor drum with lid, center spindle, legs and hand crank. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Low-poly radial extractor drum with lid, center spindle, legs and hand crank. Material controls: stainless, enamel, rubber. Presets: brightStainless and warmHarvest.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -20945,7 +21680,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/honey-extractor.kcad.ts",
       "preview": "/assets/apiary-honey-extractor.png",
-      "sourceSha256": "f86878a8678afe57487776c0d52081b4e785579bccaf31caf8eb7e3c4890454c",
+      "sourceSha256": "3f97987fc2976b912f7da735309ba94f6544358fb19d34b3746b4bdb99091bae",
       "triangleBudget": 1800,
       "params": [
         {
@@ -20958,13 +21693,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainless",
           "type": "color",
-          "default": "#858b8a",
-          "label": "Asset color"
+          "default": "#aeb9b7",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "enamel",
+          "type": "color",
+          "default": "#647b59",
+          "label": "Painted enamel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#333a3b",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "brightStainless": {
+          "stainless": "#d9dfdc",
+          "enamel": "#91a66b",
+          "rubber": "#485152"
+        },
+        "warmHarvest": {
+          "stainless": "#788482",
+          "enamel": "#4b5f48",
+          "rubber": "#252b2c"
+        }
+      },
       "stats": {
         "triangles": 280,
         "sizeM": [
@@ -20977,21 +21735,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#858b8a",
+          "name": "stainless",
+          "color": "#aeb9b7",
           "parts": [
             "drum",
             "base-ring",
             "lid",
             "spindle",
             "crank-arm",
-            "crank-grip",
-            "leg-0",
-            "leg-1",
-            "leg-2",
             "drain-spout"
           ],
-          "param": "color"
+          "param": "stainless"
+        },
+        {
+          "name": "rubber",
+          "color": "#333a3b",
+          "parts": [
+            "crank-grip"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "enamel",
+          "color": "#647b59",
+          "parts": [
+            "leg-0",
+            "leg-1",
+            "leg-2"
+          ],
+          "param": "enamel"
         }
       ]
     },
@@ -20999,7 +21771,7 @@
       "id": "honey-jar",
       "kit": "apiary",
       "title": "Honey jar",
-      "description": "Simple straight sided jar with a shoulder rim, screw lid and small label panel. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Simple straight sided jar with a shoulder rim, screw lid and small label panel. Material controls: honey, brass, paper. Presets: goldenHarvest and paleSpring.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -21019,7 +21791,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/honey-jar.kcad.ts",
       "preview": "/assets/apiary-honey-jar.png",
-      "sourceSha256": "dde3bab0f3b394e51a5e1721f5177221c886ee6c695ec684beaafb157574b4fe",
+      "sourceSha256": "add338fa9885cee1a7cda86ccb4741d8f532319c1e218ab83b38ed3220f01a83",
       "triangleBudget": 1800,
       "params": [
         {
@@ -21032,13 +21804,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "honey",
           "type": "color",
-          "default": "#ab945b",
-          "label": "Asset color"
+          "default": "#d18a23",
+          "label": "Honey"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#a97932",
+          "label": "Brass hardware"
+        },
+        {
+          "name": "paper",
+          "type": "color",
+          "default": "#e7dfc8",
+          "label": "Label paper"
         }
       ],
-      "presets": {},
+      "presets": {
+        "goldenHarvest": {
+          "honey": "#e9aa35",
+          "brass": "#c49a50",
+          "paper": "#f6f0df"
+        },
+        "paleSpring": {
+          "honey": "#f3d184",
+          "brass": "#bcaa77",
+          "paper": "#fbf8ed"
+        }
+      },
       "stats": {
         "triangles": 188,
         "sizeM": [
@@ -21051,16 +21846,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#ab945b",
+          "name": "honey",
+          "color": "#d18a23",
           "parts": [
             "jar-body",
-            "shoulder",
-            "neck",
-            "lid",
+            "shoulder"
+          ],
+          "param": "honey"
+        },
+        {
+          "name": "neck",
+          "color": "#9ac1bd",
+          "parts": [
+            "neck"
+          ]
+        },
+        {
+          "name": "brass",
+          "color": "#a97932",
+          "parts": [
+            "lid"
+          ],
+          "param": "brass"
+        },
+        {
+          "name": "paper",
+          "color": "#e7dfc8",
+          "parts": [
             "label"
           ],
-          "param": "color"
+          "param": "paper"
         }
       ]
     },
@@ -21068,7 +21883,7 @@
       "id": "honey-settling-tank",
       "kit": "apiary",
       "title": "Honey settling tank",
-      "description": "Tall settling vessel with domed-look lid, support feet and a lower drain valve. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Tall settling vessel with domed-look lid, support feet and a lower drain valve. Material controls: stainless, glass, rubber. Presets: brightStainless and warmHarvest.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -21088,7 +21903,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/honey-settling-tank.kcad.ts",
       "preview": "/assets/apiary-honey-settling-tank.png",
-      "sourceSha256": "060e38dbe85e5ff7bb77c347950bfa55351ca99f3c0dcda7adfc290abff265f6",
+      "sourceSha256": "582686580e21ebd6b7ced86d6f17e5661a1597180d2e9a392804a5490fe99698",
       "triangleBudget": 1800,
       "params": [
         {
@@ -21101,15 +21916,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainless",
           "type": "color",
-          "default": "#9d8e67",
-          "label": "Asset color"
+          "default": "#aeb9b7",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#9ac1bd",
+          "label": "Tinted glass"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#333a3b",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "brightStainless": {
+          "stainless": "#d9dfdc",
+          "glass": "#c9dfd8",
+          "rubber": "#485152"
+        },
+        "warmHarvest": {
+          "stainless": "#788482",
+          "glass": "#6e9392",
+          "rubber": "#252b2c"
+        }
+      },
       "stats": {
-        "triangles": 280,
+        "triangles": 324,
         "sizeM": [
           0.46,
           0.71,
@@ -21120,21 +21958,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#9d8e67",
+          "name": "stainless",
+          "color": "#aeb9b7",
           "parts": [
             "vessel",
             "base-ring",
             "lid",
             "lid-handle",
             "valve-body",
-            "valve-handle",
+            "valve-handle"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "rubber",
+          "color": "#333a3b",
+          "parts": [
             "foot-0",
             "foot-1",
             "foot-2",
             "foot-3"
           ],
-          "param": "color"
+          "param": "rubber"
+        },
+        {
+          "name": "glass",
+          "color": "#9ac1bd",
+          "parts": [
+            "sight-glass"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -21142,7 +21995,7 @@
       "id": "honey-squeeze-bottle",
       "kit": "apiary",
       "title": "Honey squeeze bottle",
-      "description": "Soft sided bottle form with tapered shoulder, narrow nozzle and cap. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Soft sided bottle form with tapered shoulder, narrow nozzle and cap. Material controls: honey, polymer, paper. Presets: goldenHarvest and paleSpring.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -21162,7 +22015,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/honey-squeeze-bottle.kcad.ts",
       "preview": "/assets/apiary-honey-squeeze-bottle.png",
-      "sourceSha256": "4724afa66ccac1d487a5c94059bd12abf503919f96522262c1216a3f8297515e",
+      "sourceSha256": "bc7e06e600b0c7d8b6f7531a5d379fdbc83139f4624587b3875a254086be1338",
       "triangleBudget": 1800,
       "params": [
         {
@@ -21175,13 +22028,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "honey",
           "type": "color",
-          "default": "#b2934e",
-          "label": "Asset color"
+          "default": "#d18a23",
+          "label": "Honey"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#67877b",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "paper",
+          "type": "color",
+          "default": "#e7dfc8",
+          "label": "Label paper"
         }
       ],
-      "presets": {},
+      "presets": {
+        "goldenHarvest": {
+          "honey": "#e9aa35",
+          "polymer": "#d7e2d8",
+          "paper": "#f6f0df"
+        },
+        "paleSpring": {
+          "honey": "#a55f17",
+          "polymer": "#3f5d54",
+          "paper": "#c6b893"
+        }
+      },
       "stats": {
         "triangles": 232,
         "sizeM": [
@@ -21194,17 +22070,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b2934e",
+          "name": "honey",
+          "color": "#d18a23",
           "parts": [
             "body",
-            "shoulder",
+            "shoulder"
+          ],
+          "param": "honey"
+        },
+        {
+          "name": "polymer",
+          "color": "#67877b",
+          "parts": [
             "neck",
             "nozzle",
-            "cap",
+            "cap"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "paper",
+          "color": "#e7dfc8",
+          "parts": [
             "label"
           ],
-          "param": "color"
+          "param": "paper"
         }
       ]
     },
@@ -21212,7 +22102,7 @@
       "id": "honey-strainer",
       "kit": "apiary",
       "title": "Honey strainer",
-      "description": "Stacking filter basket with broad rim, lower tapered-look body and support tabs. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Stacking filter basket with broad rim, lower tapered-look body and support tabs. Material controls: stainless, mesh. Presets: brightStainless and warmHarvest.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -21232,7 +22122,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/honey-strainer.kcad.ts",
       "preview": "/assets/apiary-honey-strainer.png",
-      "sourceSha256": "7f8307eabe0e7004b064caf80c550a276dd7253c7579f19e823d9c294483be3e",
+      "sourceSha256": "b8176eeb1d53b2792571e3919e3116d405ede9a5d2af3be6db099b0a785f82a8",
       "triangleBudget": 1800,
       "params": [
         {
@@ -21245,13 +22135,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainless",
           "type": "color",
-          "default": "#858d8b",
-          "label": "Asset color"
+          "default": "#aeb9b7",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "mesh",
+          "type": "color",
+          "default": "#4a5e55",
+          "label": "Woven veil mesh"
         }
       ],
-      "presets": {},
+      "presets": {
+        "brightStainless": {
+          "stainless": "#d9dfdc",
+          "mesh": "#6c8075"
+        },
+        "warmHarvest": {
+          "stainless": "#788482",
+          "mesh": "#303d38"
+        }
+      },
       "stats": {
         "triangles": 196,
         "sizeM": [
@@ -21264,22 +22169,29 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#858d8b",
+          "name": "stainless",
+          "color": "#aeb9b7",
           "parts": [
             "basket",
             "rim",
+            "tab-left",
+            "tab-right"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "mesh",
+          "color": "#4a5e55",
+          "parts": [
             "screen-bar-0",
             "screen-bar-1",
             "screen-bar-2",
             "screen-bar-3",
             "screen-bar-4",
             "screen-bar-5",
-            "screen-bar-6",
-            "tab-left",
-            "tab-right"
+            "screen-bar-6"
           ],
-          "param": "color"
+          "param": "mesh"
         }
       ]
     },
@@ -21287,7 +22199,7 @@
       "id": "inner-hive-cover",
       "kit": "apiary",
       "title": "Inner hive cover",
-      "description": "Thin inner cover board with raised perimeter rim and central ventilation collar. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Thin inner cover board with raised perimeter rim and central ventilation collar. Material controls: timber, stainless. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -21307,7 +22219,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/inner-hive-cover.kcad.ts",
       "preview": "/assets/apiary-inner-hive-cover.png",
-      "sourceSha256": "2196f09650bc5161b0f26d4f0c3563135e6286fb0c18aaf0578988c47e142cb0",
+      "sourceSha256": "9b645dc58e578a73ff34c93ff952267df19ae081dfc1c1603df1ec34b15cd590",
       "triangleBudget": 1800,
       "params": [
         {
@@ -21320,13 +22232,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#9b835d",
-          "label": "Asset color"
+          "default": "#b8874a",
+          "label": "Hive timber"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#aeb9b7",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "timber": "#d4a462",
+          "stainless": "#d9dfdc"
+        },
+        "weatheredYard": {
+          "timber": "#68543d",
+          "stainless": "#788482"
+        }
+      },
       "stats": {
         "triangles": 116,
         "sizeM": [
@@ -21339,18 +22266,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#9b835d",
+          "name": "timber",
+          "color": "#b8874a",
           "parts": [
             "board",
             "rim-front",
             "rim-back",
             "rim-left",
-            "rim-right",
+            "rim-right"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "stainless",
+          "color": "#aeb9b7",
+          "parts": [
             "vent-collar",
             "grip"
           ],
-          "param": "color"
+          "param": "stainless"
         }
       ]
     },
@@ -21358,7 +22292,7 @@
       "id": "langstroth-hive",
       "kit": "apiary",
       "title": "Langstroth hive",
-      "description": "Stacked hive body, honey super, cover, entrance and raised stand. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Stacked hive body, honey super, cover, entrance and raised stand. Material controls: timber, stainless, enamel. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -21378,7 +22312,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/langstroth-hive.kcad.ts",
       "preview": "/assets/apiary-langstroth-hive.png",
-      "sourceSha256": "9b4a1afe9aebb2009200063cc083f0f8735a90e55f91a0bf2c6b6da147052403",
+      "sourceSha256": "9781a328c2d103dc733e49c8a391d454e12d2ec740eb5e38f44252988964ba2b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -21391,37 +22325,75 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#b89358",
-          "label": "Asset color"
+          "default": "#b8874a",
+          "label": "Hive timber"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#aeb9b7",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "enamel",
+          "type": "color",
+          "default": "#647b59",
+          "label": "Painted enamel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "timber": "#d4a462",
+          "stainless": "#d9dfdc",
+          "enamel": "#91a66b"
+        },
+        "weatheredYard": {
+          "timber": "#68543d",
+          "stainless": "#788482",
+          "enamel": "#4b5f48"
+        }
+      },
       "stats": {
-        "triangles": 84,
+        "triangles": 96,
         "sizeM": [
-          0.66,
-          0.96,
-          0.56
+          0.69,
+          0.973,
+          0.59
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b89358",
+          "name": "timber",
+          "color": "#b8874a",
           "parts": [
             "stand-left",
             "stand-right",
             "bottom-board",
             "brood-box",
             "honey-super",
-            "telescoping-cover",
+            "telescoping-cover"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "enamel",
+          "color": "#647b59",
+          "parts": [
             "entrance-strip"
           ],
-          "param": "color"
+          "param": "enamel"
+        },
+        {
+          "name": "stainless",
+          "color": "#aeb9b7",
+          "parts": [
+            "roof-sheet"
+          ],
+          "param": "stainless"
         }
       ]
     },
@@ -21429,7 +22401,7 @@
       "id": "migratory-hive-cover",
       "kit": "apiary",
       "title": "Migratory hive cover",
-      "description": "Flat transport cover with overhanging rim, center ribs and lift tabs. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Flat transport cover with overhanging rim, center ribs and lift tabs. Material controls: timber, steel. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -21449,7 +22421,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/migratory-hive-cover.kcad.ts",
       "preview": "/assets/apiary-migratory-hive-cover.png",
-      "sourceSha256": "88e9b568d18b19c4c0b98637f54a21b1ff8620247295f12b324a384ea7057b63",
+      "sourceSha256": "710ffed538f1d6d448ac6e64e08887eb1cd0cce4df4bf7b13cd711879266e03b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -21462,15 +22434,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#8c7b60",
-          "label": "Asset color"
+          "default": "#b8874a",
+          "label": "Hive timber"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#647176",
+          "label": "Galvanized steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "timber": "#d4a462",
+          "steel": "#b7c0be"
+        },
+        "weatheredYard": {
+          "timber": "#68543d",
+          "steel": "#716d63"
+        }
+      },
       "stats": {
-        "triangles": 108,
+        "triangles": 120,
         "sizeM": [
           0.76,
           0.145,
@@ -21481,8 +22468,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8c7b60",
+          "name": "timber",
+          "color": "#b8874a",
           "parts": [
             "cover-panel",
             "front-rim",
@@ -21494,7 +22481,15 @@
             "handle-left",
             "handle-right"
           ],
-          "param": "color"
+          "param": "timber"
+        },
+        {
+          "name": "steel",
+          "color": "#647176",
+          "parts": [
+            "metal-skin"
+          ],
+          "param": "steel"
         }
       ]
     },
@@ -21502,7 +22497,7 @@
       "id": "mouse-guard",
       "kit": "apiary",
       "title": "Hive mouse guard",
-      "description": "Narrow hive entrance guard plate with a row of evenly spaced vertical bars. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Narrow hive entrance guard plate with a row of evenly spaced vertical bars. Material controls: timber, stainless. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -21522,7 +22517,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/mouse-guard.kcad.ts",
       "preview": "/assets/apiary-mouse-guard.png",
-      "sourceSha256": "37b45c0dd5fe71090eb1d62528c90ee021b568496349747e39bd0cc755dffc25",
+      "sourceSha256": "dad7b5751e8f181598fd684caadc3ad89283117412676fceecbdf9664fc11d51",
       "triangleBudget": 1800,
       "params": [
         {
@@ -21535,13 +22530,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#7d817e",
-          "label": "Asset color"
+          "default": "#b8874a",
+          "label": "Hive timber"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#aeb9b7",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "timber": "#d4a462",
+          "stainless": "#d9dfdc"
+        },
+        "weatheredYard": {
+          "timber": "#68543d",
+          "stainless": "#788482"
+        }
+      },
       "stats": {
         "triangles": 156,
         "sizeM": [
@@ -21554,12 +22564,19 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7d817e",
+          "name": "timber",
+          "color": "#b8874a",
           "parts": [
             "plate",
             "top-rail",
-            "bottom-rail",
+            "bottom-rail"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "stainless",
+          "color": "#aeb9b7",
+          "parts": [
             "guard-bar-0",
             "guard-bar-1",
             "guard-bar-2",
@@ -21571,7 +22588,7 @@
             "guard-bar-8",
             "guard-bar-9"
           ],
-          "param": "color"
+          "param": "stainless"
         }
       ]
     },
@@ -21579,7 +22596,7 @@
       "id": "nuc-carrier",
       "kit": "apiary",
       "title": "Nucleus hive carrier",
-      "description": "Compact carrier frame with side handles, bottom slats and corner uprights. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Compact carrier frame with side handles, bottom slats and corner uprights. Material controls: timber, stainless. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -21599,7 +22616,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/nuc-carrier.kcad.ts",
       "preview": "/assets/apiary-nuc-carrier.png",
-      "sourceSha256": "749e70baea86f152edcda4d4b9422599294aede2181f34f27e28214d6fc576b4",
+      "sourceSha256": "e77a56dc281f4625aeb329a109c4f5587e23f9420657e76fb7faf85b9f3369dd",
       "triangleBudget": 1800,
       "params": [
         {
@@ -21612,13 +22629,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#88765a",
-          "label": "Asset color"
+          "default": "#b8874a",
+          "label": "Hive timber"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#aeb9b7",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "timber": "#d4a462",
+          "stainless": "#d9dfdc"
+        },
+        "weatheredYard": {
+          "timber": "#68543d",
+          "stainless": "#788482"
+        }
+      },
       "stats": {
         "triangles": 84,
         "sizeM": [
@@ -21631,18 +22663,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#88765a",
+          "name": "timber",
+          "color": "#b8874a",
           "parts": [
             "base",
             "rail-left",
             "rail-right",
-            "handle-left",
-            "handle-right",
             "cross-front",
             "cross-back"
           ],
-          "param": "color"
+          "param": "timber"
+        },
+        {
+          "name": "stainless",
+          "color": "#aeb9b7",
+          "parts": [
+            "handle-left",
+            "handle-right"
+          ],
+          "param": "stainless"
         }
       ]
     },
@@ -21650,7 +22689,7 @@
       "id": "nuc-hive-box",
       "kit": "apiary",
       "title": "Nucleus hive box",
-      "description": "Compact nucleus colony box with lid, handholds, entrance and bottom board. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Compact nucleus colony box with lid, handholds, entrance and bottom board. Material controls: timber, steel, polymer. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -21670,7 +22709,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/nuc-hive-box.kcad.ts",
       "preview": "/assets/apiary-nuc-hive-box.png",
-      "sourceSha256": "7174e14e6375fd75a43551375f4ddef29ff62c0876de89070de747b4a13805a2",
+      "sourceSha256": "d29aa881a5e5d8fc967aab08b0253c11ac4641b9fc2a9d9891161c9e0ac577c4",
       "triangleBudget": 1800,
       "params": [
         {
@@ -21683,13 +22722,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#9f8156",
-          "label": "Asset color"
+          "default": "#b8874a",
+          "label": "Hive timber"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#647176",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#67877b",
+          "label": "Molded polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "timber": "#d4a462",
+          "steel": "#b7c0be",
+          "polymer": "#d7e2d8"
+        },
+        "weatheredYard": {
+          "timber": "#68543d",
+          "steel": "#716d63",
+          "polymer": "#3f5d54"
+        }
+      },
       "stats": {
         "triangles": 84,
         "sizeM": [
@@ -21702,18 +22764,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#9f8156",
+          "name": "timber",
+          "color": "#b8874a",
           "parts": [
             "base",
             "body",
             "rim",
-            "lid",
+            "lid"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "steel",
+          "color": "#647176",
+          "parts": [
             "handle-left",
-            "handle-right",
+            "handle-right"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "polymer",
+          "color": "#67877b",
+          "parts": [
             "entrance"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -21721,7 +22797,7 @@
       "id": "observation-hive",
       "kit": "apiary",
       "title": "Observation hive",
-      "description": "Framed vertical viewing hive with stacked inspection panels, base and carry handle. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Framed vertical viewing hive with stacked inspection panels, base and carry handle. Material controls: timber, glass. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -21741,7 +22817,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/observation-hive.kcad.ts",
       "preview": "/assets/apiary-observation-hive.png",
-      "sourceSha256": "f8b4bf1e7d62465b8bd8329d0cc4e937aac32b780d67a86082e9e8b4845cdcf0",
+      "sourceSha256": "11268151431795f7102529ed4f21d5f98710bee4aad27eb47e68d080564a049c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -21754,13 +22830,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#8a7652",
-          "label": "Asset color"
+          "default": "#b8874a",
+          "label": "Hive timber"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#9ac1bd",
+          "label": "Tinted glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "timber": "#d4a462",
+          "glass": "#c9dfd8"
+        },
+        "weatheredYard": {
+          "timber": "#68543d",
+          "glass": "#6e9392"
+        }
+      },
       "stats": {
         "triangles": 108,
         "sizeM": [
@@ -21773,20 +22864,27 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8a7652",
+          "name": "timber",
+          "color": "#b8874a",
           "parts": [
             "base",
             "left-rail",
             "right-rail",
             "back",
-            "lower-panel",
-            "middle-panel",
-            "upper-panel",
             "top",
             "carry-handle"
           ],
-          "param": "color"
+          "param": "timber"
+        },
+        {
+          "name": "glass",
+          "color": "#9ac1bd",
+          "parts": [
+            "lower-panel",
+            "middle-panel",
+            "upper-panel"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -21794,7 +22892,7 @@
       "id": "pollen-trap",
       "kit": "apiary",
       "title": "Hive pollen trap",
-      "description": "Entrance trap box with a removable drawer, comb grid and front landing board. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Entrance trap box with a removable drawer, comb grid and front landing board. Material controls: timber, stainless, polymer. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -21814,7 +22912,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/pollen-trap.kcad.ts",
       "preview": "/assets/apiary-pollen-trap.png",
-      "sourceSha256": "c8571c9ef4ea8c2dff0913182e865262c974455425453bb0b7cb4138091fe86c",
+      "sourceSha256": "28c1a1721ed2c8b9bdb18a17e10be69947540830c3861f59f3b20b693c3c5795",
       "triangleBudget": 1800,
       "params": [
         {
@@ -21827,13 +22925,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#8a795d",
-          "label": "Asset color"
+          "default": "#b8874a",
+          "label": "Hive timber"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#aeb9b7",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#67877b",
+          "label": "Molded polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "timber": "#d4a462",
+          "stainless": "#d9dfdc",
+          "polymer": "#d7e2d8"
+        },
+        "weatheredYard": {
+          "timber": "#68543d",
+          "stainless": "#788482",
+          "polymer": "#3f5d54"
+        }
+      },
       "stats": {
         "triangles": 144,
         "sizeM": [
@@ -21846,11 +22967,19 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8a795d",
+          "name": "timber",
+          "color": "#b8874a",
           "parts": [
             "trap-body",
             "base",
+            "drawer"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "stainless",
+          "color": "#aeb9b7",
+          "parts": [
             "grid",
             "grid-bar-0",
             "grid-bar-1",
@@ -21858,11 +22987,17 @@
             "grid-bar-3",
             "grid-bar-4",
             "grid-bar-5",
-            "grid-bar-6",
-            "drawer",
+            "grid-bar-6"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "polymer",
+          "color": "#67877b",
+          "parts": [
             "landing"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -21870,7 +23005,7 @@
       "id": "queen-cage",
       "kit": "apiary",
       "title": "Queen introduction cage",
-      "description": "Small ventilated queen cage with end plugs, hanging loop and cross bars. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Small ventilated queen cage with end plugs, hanging loop and cross bars. Material controls: polymer, stainless. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -21890,7 +23025,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/queen-cage.kcad.ts",
       "preview": "/assets/apiary-queen-cage.png",
-      "sourceSha256": "fc328fe80574e0fa15be403576b55b0f849d537516d7595aa559072d0a939a12",
+      "sourceSha256": "9c5134dada4e93b28069e62d90b29ff429161868f594239b63c38b0831ef62ca",
       "triangleBudget": 1800,
       "params": [
         {
@@ -21903,13 +23038,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#b79b68",
-          "label": "Asset color"
+          "default": "#67877b",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#aeb9b7",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "polymer": "#d7e2d8",
+          "stainless": "#d9dfdc"
+        },
+        "weatheredYard": {
+          "polymer": "#3f5d54",
+          "stainless": "#788482"
+        }
+      },
       "stats": {
         "triangles": 96,
         "sizeM": [
@@ -21922,8 +23072,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b79b68",
+          "name": "polymer",
+          "color": "#67877b",
           "parts": [
             "cage-body",
             "end-low",
@@ -21931,10 +23081,17 @@
             "vent-0",
             "vent-1",
             "vent-2",
-            "vent-3",
+            "vent-3"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "stainless",
+          "color": "#aeb9b7",
+          "parts": [
             "hanging-loop"
           ],
-          "param": "color"
+          "param": "stainless"
         }
       ]
     },
@@ -21942,7 +23099,7 @@
       "id": "queen-catching-clip",
       "kit": "apiary",
       "title": "Queen catching clip",
-      "description": "Lightweight queen-catching clip with two long arms, hinge and rounded tips. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Lightweight queen-catching clip with two long arms, hinge and rounded tips. Material controls: stainless, rubber. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -21962,7 +23119,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/queen-catching-clip.kcad.ts",
       "preview": "/assets/apiary-queen-catching-clip.png",
-      "sourceSha256": "3d92cfc7ca8108300d10f71564ac3ba7226a5e51825b23f51ae173652e981b52",
+      "sourceSha256": "5893c10fa9b6f5771a9ee8124de21a545c26f34418549a6045ef4b68b7c9e7ac",
       "triangleBudget": 1800,
       "params": [
         {
@@ -21975,13 +23132,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainless",
           "type": "color",
-          "default": "#9d916f",
-          "label": "Asset color"
+          "default": "#aeb9b7",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#333a3b",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "stainless": "#d9dfdc",
+          "rubber": "#485152"
+        },
+        "weatheredYard": {
+          "stainless": "#788482",
+          "rubber": "#252b2c"
+        }
+      },
       "stats": {
         "triangles": 116,
         "sizeM": [
@@ -21994,18 +23166,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#9d916f",
+          "name": "stainless",
+          "color": "#aeb9b7",
           "parts": [
             "arm-left",
             "arm-right",
             "hinge",
-            "handle-left",
-            "handle-right",
             "tip-left",
             "tip-right"
           ],
-          "param": "color"
+          "param": "stainless"
+        },
+        {
+          "name": "rubber",
+          "color": "#333a3b",
+          "parts": [
+            "handle-left",
+            "handle-right"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -22013,7 +23192,7 @@
       "id": "queen-excluder",
       "kit": "apiary",
       "title": "Queen excluder",
-      "description": "Flat framed excluder grid with a dense array of narrow parallel bars. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Flat framed excluder grid with a dense array of narrow parallel bars. Material controls: timber, stainless. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -22033,7 +23212,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/queen-excluder.kcad.ts",
       "preview": "/assets/apiary-queen-excluder.png",
-      "sourceSha256": "2df976746005f5a71612a3c73270c3641b382a57ac50e7ddacc7ead334dc82a4",
+      "sourceSha256": "79a0f3229f4172bd7a9dfabc2d42e208988c4623f56a3ddaea4301e95ef60cfc",
       "triangleBudget": 1800,
       "params": [
         {
@@ -22046,13 +23225,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#8f846d",
-          "label": "Asset color"
+          "default": "#b8874a",
+          "label": "Hive timber"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#aeb9b7",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "timber": "#d4a462",
+          "stainless": "#d9dfdc"
+        },
+        "weatheredYard": {
+          "timber": "#68543d",
+          "stainless": "#788482"
+        }
+      },
       "stats": {
         "triangles": 180,
         "sizeM": [
@@ -22065,13 +23259,20 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8f846d",
+          "name": "timber",
+          "color": "#b8874a",
           "parts": [
             "frame-front",
             "frame-back",
             "frame-left",
-            "frame-right",
+            "frame-right"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "stainless",
+          "color": "#aeb9b7",
+          "parts": [
             "grid-0",
             "grid-1",
             "grid-2",
@@ -22084,7 +23285,7 @@
             "grid-9",
             "grid-10"
           ],
-          "param": "color"
+          "param": "stainless"
         }
       ]
     },
@@ -22092,7 +23293,7 @@
       "id": "queen-marking-tube",
       "kit": "apiary",
       "title": "Queen marking tube",
-      "description": "Vertical queen-marking tube with padded base cup and sliding plunger handle. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Vertical queen-marking tube with padded base cup and sliding plunger handle. Material controls: glass, polymer, rubber. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -22112,7 +23313,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/queen-marking-tube.kcad.ts",
       "preview": "/assets/apiary-queen-marking-tube.png",
-      "sourceSha256": "c67bb4617855c09d3e493f85edac5b75540d2700b11965e2920c4151ffb745c4",
+      "sourceSha256": "ed1d3263348f2b9b000334e4fc9987addb83e685ed894ef6825a0998703b7495",
       "triangleBudget": 1800,
       "params": [
         {
@@ -22125,13 +23326,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "glass",
           "type": "color",
-          "default": "#9b8865",
-          "label": "Asset color"
+          "default": "#9ac1bd",
+          "label": "Tinted glass"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#67877b",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#333a3b",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "glass": "#c9dfd8",
+          "polymer": "#d7e2d8",
+          "rubber": "#485152"
+        },
+        "weatheredYard": {
+          "glass": "#6e9392",
+          "polymer": "#3f5d54",
+          "rubber": "#252b2c"
+        }
+      },
       "stats": {
         "triangles": 156,
         "sizeM": [
@@ -22144,16 +23368,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#9b8865",
+          "name": "glass",
+          "color": "#9ac1bd",
           "parts": [
             "tube",
-            "base-cup",
-            "plunger-rod",
-            "plunger-handle",
             "top-rim"
           ],
-          "param": "color"
+          "param": "glass"
+        },
+        {
+          "name": "polymer",
+          "color": "#67877b",
+          "parts": [
+            "base-cup",
+            "plunger-rod"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "rubber",
+          "color": "#333a3b",
+          "parts": [
+            "plunger-handle"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -22161,7 +23399,7 @@
       "id": "screened-bottom-board",
       "kit": "apiary",
       "title": "Screened bottom board",
-      "description": "Hive floor assembly with screen grid, side rails and front entrance ledge. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Hive floor assembly with screen grid, side rails and front entrance ledge. Material controls: timber, stainless. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -22181,7 +23419,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/screened-bottom-board.kcad.ts",
       "preview": "/assets/apiary-screened-bottom-board.png",
-      "sourceSha256": "dcfafe940d4e10508b64fa6aece6d0c09c294651a3bf2bbe23fad04a9cdd02c5",
+      "sourceSha256": "4851656e4050fa1374d48122d194c9758730b2d6c2d86a250687a74f4a6b288c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -22194,13 +23432,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#77786d",
-          "label": "Asset color"
+          "default": "#b8874a",
+          "label": "Hive timber"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#aeb9b7",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "timber": "#d4a462",
+          "stainless": "#d9dfdc"
+        },
+        "weatheredYard": {
+          "timber": "#68543d",
+          "stainless": "#788482"
+        }
+      },
       "stats": {
         "triangles": 108,
         "sizeM": [
@@ -22213,20 +23466,27 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#77786d",
+          "name": "timber",
+          "color": "#b8874a",
           "parts": [
             "floor",
             "rail-left",
             "rail-right",
+            "entrance-ledge"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "stainless",
+          "color": "#aeb9b7",
+          "parts": [
             "screen-bar-a",
             "screen-bar-b",
             "screen-bar-c",
             "screen-bar-d",
-            "screen-bar-e",
-            "entrance-ledge"
+            "screen-bar-e"
           ],
-          "param": "color"
+          "param": "stainless"
         }
       ]
     },
@@ -22234,7 +23494,7 @@
       "id": "solar-wax-melter",
       "kit": "apiary",
       "title": "Solar wax melter",
-      "description": "Angled-look insulated solar melter box with hinged lid frame, tray and support feet. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Angled-look insulated solar melter box with hinged lid frame, tray and support feet. Material controls: timber, glass, wax. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -22254,7 +23514,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/solar-wax-melter.kcad.ts",
       "preview": "/assets/apiary-solar-wax-melter.png",
-      "sourceSha256": "64b2c8885e6c7238cc4458d019ad1f0799bd79906080f4ce43c3bfabde9c62cb",
+      "sourceSha256": "452ed356c7e870b70eaaf148f578e839350b0ecb04b36e790d3b6c141fa9894e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -22267,13 +23527,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#8e7c57",
-          "label": "Asset color"
+          "default": "#b8874a",
+          "label": "Hive timber"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#9ac1bd",
+          "label": "Tinted glass"
+        },
+        {
+          "name": "wax",
+          "type": "color",
+          "default": "#e3c978",
+          "label": "Beeswax and foundation"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "timber": "#d4a462",
+          "glass": "#c9dfd8",
+          "wax": "#f1df9d"
+        },
+        "weatheredYard": {
+          "timber": "#68543d",
+          "glass": "#6e9392",
+          "wax": "#bc9344"
+        }
+      },
       "stats": {
         "triangles": 108,
         "sizeM": [
@@ -22286,20 +23569,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8e7c57",
+          "name": "timber",
+          "color": "#b8874a",
           "parts": [
             "body",
             "lid-frame",
-            "lid-panel",
-            "tray",
             "front-support-left",
             "front-support-right",
             "rear-support-left",
-            "rear-support-right",
+            "rear-support-right"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "glass",
+          "color": "#9ac1bd",
+          "parts": [
+            "lid-panel"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "wax",
+          "color": "#e3c978",
+          "parts": [
+            "tray",
             "wax-drain"
           ],
-          "param": "color"
+          "param": "wax"
         }
       ]
     },
@@ -22307,7 +23604,7 @@
       "id": "swarm-trap",
       "kit": "apiary",
       "title": "Swarm trap box",
-      "description": "Tall bait-hive box with rain cover, entrance landing and hanging brackets. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Tall bait-hive box with rain cover, entrance landing and hanging brackets. Material controls: timber, steel. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -22327,7 +23624,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/swarm-trap.kcad.ts",
       "preview": "/assets/apiary-swarm-trap.png",
-      "sourceSha256": "72aa47ed89f38f24b7d4cc37c795a586105ec2c7ace0babc2b69a0b6eec30ffd",
+      "sourceSha256": "95af1de4e82b07e3e18603ec5b91dd2bda4578a68689514f7339f658da5e3d5b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -22340,13 +23637,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#9c8155",
-          "label": "Asset color"
+          "default": "#b8874a",
+          "label": "Hive timber"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#647176",
+          "label": "Galvanized steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "timber": "#d4a462",
+          "steel": "#b7c0be"
+        },
+        "weatheredYard": {
+          "timber": "#68543d",
+          "steel": "#716d63"
+        }
+      },
       "stats": {
         "triangles": 84,
         "sizeM": [
@@ -22359,18 +23671,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#9c8155",
+          "name": "timber",
+          "color": "#b8874a",
           "parts": [
             "body",
             "base",
             "roof",
             "entrance",
-            "landing",
+            "landing"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "steel",
+          "color": "#647176",
+          "parts": [
             "hanger-left",
             "hanger-right"
           ],
-          "param": "color"
+          "param": "steel"
         }
       ]
     },
@@ -22378,7 +23697,7 @@
       "id": "top-bar-hive",
       "kit": "apiary",
       "title": "Top-bar hive",
-      "description": "Long low hive body with parallel top bars, end supports and a removable roof. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Long low hive body with parallel top bars, end supports and a removable roof. Material controls: timber and stainless. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -22398,7 +23717,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/top-bar-hive.kcad.ts",
       "preview": "/assets/apiary-top-bar-hive.png",
-      "sourceSha256": "5a0f3676fbbd61226575a866bf99fa2cbc638904925d869b9f40b7602d52ad2b",
+      "sourceSha256": "1b71fe8b355aab2786e4b5ab3d07f746ae966a79485635e9ae909fc63578bb81",
       "triangleBudget": 1800,
       "params": [
         {
@@ -22411,27 +23730,42 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#9a7949",
-          "label": "Asset color"
+          "default": "#b8874a",
+          "label": "Hive timber"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#aeb9b7",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "timber": "#d4a462",
+          "stainless": "#d9dfdc"
+        },
+        "weatheredYard": {
+          "timber": "#68543d",
+          "stainless": "#788482"
+        }
+      },
       "stats": {
-        "triangles": 216,
+        "triangles": 228,
         "sizeM": [
-          1.14,
-          0.86,
-          0.555
+          1.16,
+          0.865,
+          0.565
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#9a7949",
+          "name": "timber",
+          "color": "#b8874a",
           "parts": [
             "leg-left",
             "leg-right",
@@ -22452,7 +23786,15 @@
             "top-bar-12",
             "roof"
           ],
-          "param": "color"
+          "param": "timber"
+        },
+        {
+          "name": "stainless",
+          "color": "#aeb9b7",
+          "parts": [
+            "roof-sheet"
+          ],
+          "param": "stainless"
         }
       ]
     },
@@ -22460,7 +23802,7 @@
       "id": "top-feeder",
       "kit": "apiary",
       "title": "Hive top feeder",
-      "description": "Shallow top feeder with outer rim, central access well and removable cover. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Shallow top feeder with outer rim, central access well and removable cover. Material controls: polymer, glass. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -22480,7 +23822,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/top-feeder.kcad.ts",
       "preview": "/assets/apiary-top-feeder.png",
-      "sourceSha256": "6afdf99dee806b4c9a994ee51d71837978741427f37d4c79cba101c63edd8ce2",
+      "sourceSha256": "7b90560015804c4a60b0299b033cbfb718e04acd95619732db68720c9f5a0d7e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -22493,13 +23835,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#8b7855",
-          "label": "Asset color"
+          "default": "#67877b",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#9ac1bd",
+          "label": "Tinted glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "polymer": "#d7e2d8",
+          "glass": "#c9dfd8"
+        },
+        "weatheredYard": {
+          "polymer": "#3f5d54",
+          "glass": "#6e9392"
+        }
+      },
       "stats": {
         "triangles": 84,
         "sizeM": [
@@ -22512,18 +23869,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8b7855",
+          "name": "polymer",
+          "color": "#67877b",
           "parts": [
             "pan",
             "rim-front",
             "rim-back",
             "rim-left",
             "rim-right",
-            "access-well",
             "cover"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "glass",
+          "color": "#9ac1bd",
+          "parts": [
+            "access-well"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -22531,7 +23895,7 @@
       "id": "uncapping-fork",
       "kit": "apiary",
       "title": "Uncapping fork",
-      "description": "Hand uncapping fork with a grip, narrow neck and row of short tines. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Hand uncapping fork with a grip, narrow neck and row of short tines. Material controls: stainless, timber. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -22551,7 +23915,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/uncapping-fork.kcad.ts",
       "preview": "/assets/apiary-uncapping-fork.png",
-      "sourceSha256": "84a5a1395c1aecd801b318fc92e891eccf2ca9258142218cda605bb591f2339b",
+      "sourceSha256": "f656ea38c138812a70d49795c5cbfdd65e5b805cb4cecbec22de548608be90e0",
       "triangleBudget": 1800,
       "params": [
         {
@@ -22564,13 +23928,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainless",
           "type": "color",
-          "default": "#9b8b70",
-          "label": "Asset color"
+          "default": "#aeb9b7",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "timber",
+          "type": "color",
+          "default": "#b8874a",
+          "label": "Hive timber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "stainless": "#d9dfdc",
+          "timber": "#d4a462"
+        },
+        "weatheredYard": {
+          "stainless": "#788482",
+          "timber": "#68543d"
+        }
+      },
       "stats": {
         "triangles": 144,
         "sizeM": [
@@ -22583,10 +23962,17 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#9b8b70",
+          "name": "timber",
+          "color": "#b8874a",
           "parts": [
-            "handle",
+            "handle"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "stainless",
+          "color": "#aeb9b7",
+          "parts": [
             "neck",
             "head",
             "tine-0",
@@ -22599,7 +23985,7 @@
             "tine-7",
             "tine-8"
           ],
-          "param": "color"
+          "param": "stainless"
         }
       ]
     },
@@ -22607,7 +23993,7 @@
       "id": "uncapping-knife",
       "kit": "apiary",
       "title": "Uncapping knife",
-      "description": "Long straight uncapping blade with broad handle and a small guard collar. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Long straight uncapping blade with broad handle and a small guard collar. Material controls: stainless, timber, rubber. Presets: freshApiary and weatheredYard.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -22627,7 +24013,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/uncapping-knife.kcad.ts",
       "preview": "/assets/apiary-uncapping-knife.png",
-      "sourceSha256": "84f7925efc746e1da9c5deea9ec26be792001af53662749c25c00b2712b2d4a1",
+      "sourceSha256": "5890140f6f2a5e66d48a6f6fdc72912df07e53329504dc003c1c7cfc4987fcca",
       "triangleBudget": 1800,
       "params": [
         {
@@ -22640,13 +24026,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainless",
           "type": "color",
-          "default": "#85898a",
-          "label": "Asset color"
+          "default": "#aeb9b7",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "timber",
+          "type": "color",
+          "default": "#b8874a",
+          "label": "Hive timber"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#333a3b",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "freshApiary": {
+          "stainless": "#d9dfdc",
+          "timber": "#d4a462",
+          "rubber": "#485152"
+        },
+        "weatheredYard": {
+          "stainless": "#788482",
+          "timber": "#68543d",
+          "rubber": "#252b2c"
+        }
+      },
       "stats": {
         "triangles": 60,
         "sizeM": [
@@ -22659,16 +24068,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#85898a",
+          "name": "stainless",
+          "color": "#aeb9b7",
           "parts": [
             "blade",
             "blade-tip",
-            "guard",
-            "handle",
             "pommel"
           ],
-          "param": "color"
+          "param": "stainless"
+        },
+        {
+          "name": "rubber",
+          "color": "#333a3b",
+          "parts": [
+            "guard"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "timber",
+          "color": "#b8874a",
+          "parts": [
+            "handle"
+          ],
+          "param": "timber"
         }
       ]
     },
@@ -22676,7 +24099,7 @@
       "id": "uncapping-tank",
       "kit": "apiary",
       "title": "Uncapping tank",
-      "description": "Open rectangular uncapping tank with rim, ledge and elevated collection legs. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Open rectangular uncapping tank with rim, ledge and elevated collection legs. Material controls: stainless, polymer. Presets: brightStainless and warmHarvest.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -22696,7 +24119,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/uncapping-tank.kcad.ts",
       "preview": "/assets/apiary-uncapping-tank.png",
-      "sourceSha256": "8dc35bc8f0144428d8286b294ab13dfc216397b357386e3f53123d73847ebe52",
+      "sourceSha256": "e81eeb608b4902bc4b208be654a1fb6b66c6b88e01fa075c8cee3e7d172e3fd3",
       "triangleBudget": 1800,
       "params": [
         {
@@ -22709,13 +24132,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainless",
           "type": "color",
-          "default": "#8e8e84",
-          "label": "Asset color"
+          "default": "#aeb9b7",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#67877b",
+          "label": "Molded polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "brightStainless": {
+          "stainless": "#d9dfdc",
+          "polymer": "#d7e2d8"
+        },
+        "warmHarvest": {
+          "stainless": "#788482",
+          "polymer": "#3f5d54"
+        }
+      },
       "stats": {
         "triangles": 108,
         "sizeM": [
@@ -22728,20 +24166,27 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8e8e84",
+          "name": "stainless",
+          "color": "#aeb9b7",
           "parts": [
             "tank",
             "rim-front",
             "rim-back",
             "rim-left",
             "rim-right",
-            "frame-ledge-left",
-            "frame-ledge-right",
             "leg--240",
             "leg-240"
           ],
-          "param": "color"
+          "param": "stainless"
+        },
+        {
+          "name": "polymer",
+          "color": "#67877b",
+          "parts": [
+            "frame-ledge-left",
+            "frame-ledge-right"
+          ],
+          "param": "polymer"
         }
       ]
     },

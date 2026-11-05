@@ -1,0 +1,69 @@
+{
+  "targets": [
+    "langstroth-hive",
+    "bee-smoker",
+    "honey-jar"
+  ],
+  "results": [
+    {
+      "asset": "langstroth-hive",
+      "preset": "freshApiary",
+      "triangles": 96,
+      "colors": {
+        "timber": "#d4a462",
+        "stainless": "#d9dfdc",
+        "enamel": "#91a66b"
+      }
+    },
+    {
+      "asset": "langstroth-hive",
+      "preset": "weatheredYard",
+      "triangles": 96,
+      "colors": {
+        "timber": "#68543d",
+        "stainless": "#788482",
+        "enamel": "#4b5f48"
+      }
+    },
+    {
+      "asset": "bee-smoker",
+      "preset": "fieldReady",
+      "triangles": 284,
+      "colors": {
+        "stainless": "#d9dfdc",
+        "leather": "#a67a50",
+        "timber": "#d4a462"
+      }
+    },
+    {
+      "asset": "bee-smoker",
+      "preset": "sunWorn",
+      "triangles": 284,
+      "colors": {
+        "stainless": "#788482",
+        "leather": "#503a2c",
+        "timber": "#68543d"
+      }
+    },
+    {
+      "asset": "honey-jar",
+      "preset": "goldenHarvest",
+      "triangles": 188,
+      "colors": {
+        "honey": "#e9aa35",
+        "brass": "#c49a50",
+        "paper": "#f6f0df"
+      }
+    },
+    {
+      "asset": "honey-jar",
+      "preset": "paleSpring",
+      "triangles": 188,
+      "colors": {
+        "honey": "#f3d184",
+        "brass": "#bcaa77",
+        "paper": "#fbf8ed"
+      }
+    }
+  ]
+}

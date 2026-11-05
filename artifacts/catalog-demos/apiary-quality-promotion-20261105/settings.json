@@ -1,0 +1,25 @@
+{
+  "date": "2026-11-05",
+  "kit": "apiary",
+  "storyboard": {
+    "frames": 6,
+    "frameDurationSeconds": 3.4,
+    "resolution": [1280, 720],
+    "videoCodec": "libx264",
+    "crf": 22,
+    "pixelFormat": "yuv420p",
+    "captions": "Local source-to-preview and quality-check workflow; no field, physical, or hardware acceptance claim."
+  },
+  "previewRender": {
+    "renderer": "scripts/renderCatalogPreviews.ts",
+    "targets": 50,
+    "view": "catalog software-rendered 3/4 view",
+    "parameters": "source defaults"
+  },
+  "presetReplay": {
+    "renderer": "render_apiary_presets.ts",
+    "assets": ["langstroth-hive", "bee-smoker", "honey-jar"],
+    "values": "read directly from each source presets() block and replayed as parameter defaults"
+  },
+  "verificationScope": "Local source evaluation, preview generation, quality gate, lint, integration suite, generated pages, and package-boundary audit. No deployment or hardware acceptance."
+}
