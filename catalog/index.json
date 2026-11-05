@@ -5814,7 +5814,7 @@
       "id": "alpine-dry-bag",
       "kit": "alpine-expedition",
       "title": "Alpine dry bag",
-      "description": "Waterproof roll-top dry bag with a tapered fabric body, folded closure and buckle tabs. Knobs: overall scale and asset color.",
+      "description": "Waterproof roll-top dry bag with a tapered fabric body, folded closure and buckle tabs. Knobs: overall scale plus nylon, webbing and polymer material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -5835,7 +5835,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/alpine-dry-bag.kcad.ts",
       "preview": "/assets/alpine-expedition-alpine-dry-bag.png",
-      "sourceSha256": "3c3a87bf50d9e8cdad2dca38aa0ce8e8e5850bac1d59dfbe8757f2aae625f4fa",
+      "sourceSha256": "5477d83ecdd8b486430143e11a1da4daacfb68b32ad247c8ab1c497038c11876",
       "triangleBudget": 2400,
       "params": [
         {
@@ -5848,13 +5848,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "nylon",
           "type": "color",
-          "default": "#36818a",
-          "label": "Asset color"
+          "default": "#4c7063",
+          "label": "Nylon fabric"
+        },
+        {
+          "name": "webbing",
+          "type": "color",
+          "default": "#d7a43e",
+          "label": "Polyamide webbing"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#53676b",
+          "label": "Engineering polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "nylon": "#3b574d",
+          "webbing": "#a88030",
+          "polymer": "#415053"
+        },
+        "highVisibility": {
+          "nylon": "#e79135",
+          "webbing": "#f1c64e"
+        }
+      },
       "stats": {
         "triangles": 168,
         "sizeM": [
@@ -5867,17 +5889,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#36818a",
+          "name": "nylon",
+          "color": "#4c7063",
           "parts": [
             "bag-body",
             "rolled-top",
-            "fold-over-closure",
-            "buckle-tab-0",
+            "fold-over-closure"
+          ],
+          "param": "nylon"
+        },
+        {
+          "name": "webbing",
+          "color": "#d7a43e",
+          "parts": [
+            "buckle-tab-0"
+          ],
+          "param": "webbing"
+        },
+        {
+          "name": "polymer",
+          "color": "#53676b",
+          "parts": [
             "buckle-tab-1",
             "carry-handle"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -5885,7 +5921,7 @@
       "id": "alpine-helmet",
       "kit": "alpine-expedition",
       "title": "Alpine climbing helmet",
-      "description": "Lightweight climbing helmet with a faceted shell, short brim, crown ribs and chin strap. Knobs: overall scale and asset color.",
+      "description": "Faceted climbing helmet with a rounded dome, short visor, padded rim and visible chin straps. Knobs: overall scale plus polycarbonate, foam and webbing material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -5906,7 +5942,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/alpine-helmet.kcad.ts",
       "preview": "/assets/alpine-expedition-alpine-helmet.png",
-      "sourceSha256": "8947d4b3558868f3ce099db87762ee8846602beec243458ad87834d8c21271a3",
+      "sourceSha256": "b673c8129be0d0c8b8e4b48953d0205ea938f63fff72469046f5f239476e65ff",
       "triangleBudget": 2400,
       "params": [
         {
@@ -5919,38 +5955,73 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polycarbonate",
           "type": "color",
-          "default": "#e2b735",
-          "label": "Asset color"
+          "default": "#d47b3e",
+          "label": "Polycarbonate"
+        },
+        {
+          "name": "foam",
+          "type": "color",
+          "default": "#d1c1a3",
+          "label": "Foam"
+        },
+        {
+          "name": "webbing",
+          "type": "color",
+          "default": "#d7a43e",
+          "label": "Polyamide webbing"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "polycarbonate": "#a56030",
+          "foam": "#a3977f",
+          "webbing": "#a88030"
+        },
+        "highVisibility": {
+          "webbing": "#f1c64e"
+        }
+      },
       "stats": {
-        "triangles": 160,
+        "triangles": 326,
         "sizeM": [
-          0.35,
-          0.263,
-          0.365
+          0.348,
+          0.23,
+          0.348
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#e2b735",
+          "name": "polycarbonate",
+          "color": "#d47b3e",
           "parts": [
             "helmet-shell",
+            "ear-pad-left",
+            "ear-pad-right",
             "front-brim",
-            "crown-rib-0",
-            "crown-rib-1",
-            "crown-rib-2",
-            "chin-strap-0",
-            "chin-strap-1",
             "chin-buckle"
           ],
-          "param": "color"
+          "param": "polycarbonate"
+        },
+        {
+          "name": "foam",
+          "color": "#d1c1a3",
+          "parts": [
+            "helmet-liner"
+          ],
+          "param": "foam"
+        },
+        {
+          "name": "webbing",
+          "color": "#d7a43e",
+          "parts": [
+            "chin-strap-0",
+            "chin-strap-1"
+          ],
+          "param": "webbing"
         }
       ]
     },
@@ -5958,7 +6029,7 @@
       "id": "alpine-pack-cover",
       "kit": "alpine-expedition",
       "title": "Alpine pack cover",
-      "description": "Draped rain cover for a tall expedition pack with a rolled hem and side tension straps. Knobs: overall scale and asset color.",
+      "description": "Draped rain cover for a tall expedition pack with a rolled hem and side tension straps. Knobs: overall scale plus nylon, polyester and webbing material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -5979,7 +6050,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/alpine-pack-cover.kcad.ts",
       "preview": "/assets/alpine-expedition-alpine-pack-cover.png",
-      "sourceSha256": "8647608075e593b83108217807e22c22de0b71e5a2306beae40b77fb0a255998",
+      "sourceSha256": "85c2df5bb6702c8cfca1432c33eb054ed6b6f013f7a29738646ff9de11e7d439",
       "triangleBudget": 2400,
       "params": [
         {
@@ -5992,13 +6063,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "nylon",
           "type": "color",
-          "default": "#cf6337",
-          "label": "Asset color"
+          "default": "#4c7063",
+          "label": "Nylon fabric"
+        },
+        {
+          "name": "polyester",
+          "type": "color",
+          "default": "#bd7547",
+          "label": "Polyester fabric"
+        },
+        {
+          "name": "webbing",
+          "type": "color",
+          "default": "#d7a43e",
+          "label": "Polyamide webbing"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "nylon": "#3b574d",
+          "polyester": "#935b37",
+          "webbing": "#a88030"
+        },
+        "highVisibility": {
+          "nylon": "#e79135",
+          "polyester": "#f1c64e"
+        }
+      },
       "stats": {
         "triangles": 104,
         "sizeM": [
@@ -6011,17 +6104,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#cf6337",
+          "name": "nylon",
+          "color": "#4c7063",
           "parts": [
-            "cover-dome",
-            "front-apron",
+            "cover-dome"
+          ],
+          "param": "nylon"
+        },
+        {
+          "name": "polyester",
+          "color": "#bd7547",
+          "parts": [
+            "front-apron"
+          ],
+          "param": "polyester"
+        },
+        {
+          "name": "webbing",
+          "color": "#d7a43e",
+          "parts": [
             "side-strap-0",
             "side-strap-1",
             "hem-band",
             "cord-lock"
           ],
-          "param": "color"
+          "param": "webbing"
         }
       ]
     },
@@ -6029,7 +6136,7 @@
       "id": "alpine-rescue-stretcher",
       "kit": "alpine-expedition",
       "title": "Alpine rescue stretcher",
-      "description": "Basket stretcher with a deep bed, perimeter rails, cross straps and carry handles. Knobs: overall scale and asset color.",
+      "description": "Basket stretcher with a deep bed, perimeter rails, cross straps and carry handles. Knobs: overall scale plus nylon, aluminium and webbing material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -6050,7 +6157,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/alpine-rescue-stretcher.kcad.ts",
       "preview": "/assets/alpine-expedition-alpine-rescue-stretcher.png",
-      "sourceSha256": "34d2f0ca8fdba8c97a3b0d7b9fe9e09400f34019e05e70b59ea98723c45d7c6a",
+      "sourceSha256": "71e8c60956025ab90925ede6aee3154583efcf92e034ee345cf431183dc607f2",
       "triangleBudget": 2400,
       "params": [
         {
@@ -6063,13 +6170,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "nylon",
           "type": "color",
-          "default": "#d0a641",
-          "label": "Asset color"
+          "default": "#4c7063",
+          "label": "Nylon fabric"
+        },
+        {
+          "name": "aluminium",
+          "type": "color",
+          "default": "#b6c0c2",
+          "label": "Aluminium"
+        },
+        {
+          "name": "webbing",
+          "type": "color",
+          "default": "#d7a43e",
+          "label": "Polyamide webbing"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "nylon": "#3b574d",
+          "aluminium": "#8e9697",
+          "webbing": "#a88030"
+        },
+        "highVisibility": {
+          "nylon": "#e79135",
+          "aluminium": "#b6c0c2"
+        }
+      },
       "stats": {
         "triangles": 388,
         "sizeM": [
@@ -6082,22 +6211,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d0a641",
+          "name": "nylon",
+          "color": "#4c7063",
           "parts": [
             "stretcher-bed",
-            "perimeter-rail-0",
-            "perimeter-rail-1",
-            "cross-strap-0",
-            "cross-strap-1",
-            "cross-strap-2",
-            "cross-strap-3",
-            "carry-handle-0",
-            "carry-handle-1",
             "end-wall-0",
             "end-wall-1"
           ],
-          "param": "color"
+          "param": "nylon"
+        },
+        {
+          "name": "aluminium",
+          "color": "#b6c0c2",
+          "parts": [
+            "perimeter-rail-0",
+            "perimeter-rail-1",
+            "carry-handle-0",
+            "carry-handle-1"
+          ],
+          "param": "aluminium"
+        },
+        {
+          "name": "webbing",
+          "color": "#d7a43e",
+          "parts": [
+            "cross-strap-0",
+            "cross-strap-1",
+            "cross-strap-2",
+            "cross-strap-3"
+          ],
+          "param": "webbing"
         }
       ]
     },
@@ -6105,7 +6248,7 @@
       "id": "avalanche-probe",
       "kit": "alpine-expedition",
       "title": "Avalanche probe",
-      "description": "Collapsible avalanche probe with joined tube segments, a grip cap and tapered tip. Knobs: overall scale and asset color.",
+      "description": "Collapsible avalanche probe with joined tube segments, a grip cap and tapered tip. Knobs: overall scale plus aluminium, steel and webbing material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -6126,7 +6269,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/avalanche-probe.kcad.ts",
       "preview": "/assets/alpine-expedition-avalanche-probe.png",
-      "sourceSha256": "4e2bf7ebf8b798e418f36a95b4278759b810a527ca013d0ddc484bd85fc6cc93",
+      "sourceSha256": "da5b6549af11dc6cc1ca4e7fe1e53a99f2a14ad989654e2460a46c6fe4827aea",
       "triangleBudget": 2400,
       "params": [
         {
@@ -6139,13 +6282,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminium",
           "type": "color",
-          "default": "#d45736",
-          "label": "Asset color"
+          "default": "#b6c0c2",
+          "label": "Aluminium"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#69747a",
+          "label": "Steel"
+        },
+        {
+          "name": "webbing",
+          "type": "color",
+          "default": "#d7a43e",
+          "label": "Polyamide webbing"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "aluminium": "#8e9697",
+          "steel": "#525a5f",
+          "webbing": "#a88030"
+        },
+        "highVisibility": {
+          "webbing": "#f1c64e",
+          "aluminium": "#b6c0c2"
+        }
+      },
       "stats": {
         "triangles": 216,
         "sizeM": [
@@ -6158,21 +6323,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d45736",
+          "name": "aluminium",
+          "color": "#b6c0c2",
           "parts": [
             "probe-shaft",
             "handle-cap",
-            "probe-tip",
             "segment-collar-0",
             "segment-collar-1",
             "segment-collar-2",
             "segment-collar-3",
             "segment-collar-4",
-            "segment-collar-5",
+            "segment-collar-5"
+          ],
+          "param": "aluminium"
+        },
+        {
+          "name": "steel",
+          "color": "#69747a",
+          "parts": [
+            "probe-tip"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "webbing",
+          "color": "#d7a43e",
+          "parts": [
             "depth-mark-band"
           ],
-          "param": "color"
+          "param": "webbing"
         }
       ]
     },
@@ -6180,7 +6359,7 @@
       "id": "avalanche-shovel",
       "kit": "alpine-expedition",
       "title": "Avalanche shovel",
-      "description": "Collapsible avalanche shovel with a deep blade, reinforced socket and T-grip handle. Knobs: overall scale and asset color.",
+      "description": "Collapsible avalanche shovel with a deep blade, reinforced socket and T-grip handle. Knobs: overall scale plus aluminium, steel and rubber material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -6201,7 +6380,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/avalanche-shovel.kcad.ts",
       "preview": "/assets/alpine-expedition-avalanche-shovel.png",
-      "sourceSha256": "ccfe4a3b7333cb4519ee749b3565d08ff2044ed066f0a81ca91c07967a41f40c",
+      "sourceSha256": "f17c141cbcc57902a9588b7f0260822073661475990a34c45018fb9548d30a98",
       "triangleBudget": 2400,
       "params": [
         {
@@ -6214,13 +6393,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminium",
           "type": "color",
-          "default": "#d66336",
-          "label": "Asset color"
+          "default": "#b6c0c2",
+          "label": "Aluminium"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#69747a",
+          "label": "Steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30383d",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "aluminium": "#8e9697",
+          "steel": "#525a5f",
+          "rubber": "#252c30"
+        },
+        "highVisibility": {
+          "aluminium": "#8e9697",
+          "steel": "#69747a"
+        }
+      },
       "stats": {
         "triangles": 136,
         "sizeM": [
@@ -6233,17 +6434,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d66336",
+          "name": "steel",
+          "color": "#69747a",
           "parts": [
             "shovel-blade",
             "blade-side-left",
-            "blade-side-right",
+            "blade-side-right"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "aluminium",
+          "color": "#b6c0c2",
+          "parts": [
             "shaft",
-            "socket",
+            "socket"
+          ],
+          "param": "aluminium"
+        },
+        {
+          "name": "rubber",
+          "color": "#30383d",
+          "parts": [
             "t-grip"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -6251,7 +6466,7 @@
       "id": "avalanche-transceiver",
       "kit": "alpine-expedition",
       "title": "Avalanche transceiver",
-      "description": "Handheld avalanche beacon with a sloped display face, toggle control and carry clip. Knobs: overall scale and asset color.",
+      "description": "Handheld avalanche beacon with a chamfered case, raised screen, three controls, speaker grille and belt clip. Knobs: overall scale plus polymer, glass and rubber material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -6272,7 +6487,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/avalanche-transceiver.kcad.ts",
       "preview": "/assets/alpine-expedition-avalanche-transceiver.png",
-      "sourceSha256": "0a9fefe3c7ac3b75319d311d42976b5f16ed10aa4db9f43743db818f830e1fed",
+      "sourceSha256": "5253ed67950ec2e6aa53594eb7df5173892f2be044289df98de6f0530b40a5fc",
       "triangleBudget": 2400,
       "params": [
         {
@@ -6285,37 +6500,79 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#e0ad34",
-          "label": "Asset color"
+          "default": "#53676b",
+          "label": "Engineering polymer"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#5c9eaa",
+          "label": "Glass"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30383d",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "polymer": "#415053",
+          "glass": "#487b85",
+          "rubber": "#252c30"
+        },
+        "highVisibility": {
+          "polymer": "#e79135",
+          "glass": "#5c9eaa"
+        }
+      },
       "stats": {
-        "triangles": 212,
+        "triangles": 268,
         "sizeM": [
           0.17,
-          0.125,
-          0.37
+          0.073,
+          0.315
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#e0ad34",
+          "name": "polymer",
+          "color": "#53676b",
           "parts": [
             "beacon-body",
+            "belt-clip"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "glass",
+          "color": "#5c9eaa",
+          "parts": [
             "display-panel",
+            "screen"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "rubber",
+          "color": "#30383d",
+          "parts": [
             "control-0",
             "control-1",
             "control-2",
-            "belt-clip",
-            "speaker-grille"
+            "speaker-grille",
+            "speaker-slot-0",
+            "speaker-slot-1",
+            "speaker-slot-2",
+            "speaker-slot-3",
+            "speaker-slot-4"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -6323,7 +6580,7 @@
       "id": "basecamp-dome-tent",
       "kit": "alpine-expedition",
       "title": "Basecamp dome tent",
-      "description": "Large expedition shelter with a raised floor, paired sloping fly panels, vestibule and crossed poles. Knobs: overall scale and asset color.",
+      "description": "Spacious expedition dome with a raised groundsheet, faceted arched shell, vestibule and crossed support poles. Knobs: overall scale plus nylon, polyester and aluminium material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -6344,7 +6601,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/basecamp-dome-tent.kcad.ts",
       "preview": "/assets/alpine-expedition-basecamp-dome-tent.png",
-      "sourceSha256": "7787b638480809fa46fbda783bfb5755437cff46366753e90d6eeade85982c1d",
+      "sourceSha256": "5de8a5ffb6b119d4e0b47683292aa786462d100b565d5ace8f4b914cfb6783c5",
       "triangleBudget": 2400,
       "params": [
         {
@@ -6357,36 +6614,71 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "nylon",
           "type": "color",
-          "default": "#a64f37",
-          "label": "Asset color"
+          "default": "#4c7063",
+          "label": "Nylon fabric"
+        },
+        {
+          "name": "polyester",
+          "type": "color",
+          "default": "#bd7547",
+          "label": "Polyester fabric"
+        },
+        {
+          "name": "aluminium",
+          "type": "color",
+          "default": "#b6c0c2",
+          "label": "Aluminium"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "nylon": "#3b574d",
+          "polyester": "#935b37",
+          "aluminium": "#8e9697"
+        },
+        "highVisibility": {
+          "nylon": "#e79135",
+          "polyester": "#f1c64e"
+        }
+      },
       "stats": {
-        "triangles": 104,
+        "triangles": 236,
         "sizeM": [
-          1.9,
-          1.18,
-          2.735
+          1.6,
+          1.22,
+          2.21
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a64f37",
+          "name": "polyester",
+          "color": "#bd7547",
           "parts": [
             "groundsheet",
-            "inner-tent",
-            "left-fly-panel",
-            "right-fly-panel",
-            "vestibule",
-            "crossed-pole-left"
+            "vestibule"
           ],
-          "param": "color"
+          "param": "polyester"
+        },
+        {
+          "name": "nylon",
+          "color": "#4c7063",
+          "parts": [
+            "inner-tent"
+          ],
+          "param": "nylon"
+        },
+        {
+          "name": "aluminium",
+          "color": "#b6c0c2",
+          "parts": [
+            "crossed-pole-left",
+            "crossed-pole-right"
+          ],
+          "param": "aluminium"
         }
       ]
     },
@@ -6394,7 +6686,7 @@
       "id": "bear-canister",
       "kit": "alpine-expedition",
       "title": "Bear-resistant food canister",
-      "description": "Wide screw-top food canister with a ribbed body, locking lid and side hand grips. Knobs: overall scale and asset color.",
+      "description": "Wide screw-top food canister with a ribbed body, locking lid and side hand grips. Knobs: overall scale plus polymer, stainlessSteel and rubber material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -6415,7 +6707,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/bear-canister.kcad.ts",
       "preview": "/assets/alpine-expedition-bear-canister.png",
-      "sourceSha256": "63c8a40983cf6121d8146c2f699d7ab20eb5720b6a78a670d5e3df2eb2778973",
+      "sourceSha256": "3519025d90f2c66aed1e64ae0a5b7ca51df0bb109f6a89cd6514d501265e7ffd",
       "triangleBudget": 2400,
       "params": [
         {
@@ -6428,13 +6720,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#cfbf58",
-          "label": "Asset color"
+          "default": "#53676b",
+          "label": "Engineering polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#c0c7c7",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30383d",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "polymer": "#415053",
+          "stainlessSteel": "#969b9b",
+          "rubber": "#252c30"
+        },
+        "highVisibility": {
+          "polymer": "#e79135",
+          "stainlessSteel": "#c0c7c7"
+        }
+      },
       "stats": {
         "triangles": 172,
         "sizeM": [
@@ -6447,20 +6761,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#cfbf58",
+          "name": "polymer",
+          "color": "#53676b",
           "parts": [
             "canister-body",
-            "locking-lid",
+            "locking-lid"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#c0c7c7",
+          "parts": [
             "rib-0",
             "rib-1",
             "rib-2",
             "rib-3",
-            "hand-grip-0",
-            "hand-grip-1",
             "lid-tab"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#30383d",
+          "parts": [
+            "hand-grip-0",
+            "hand-grip-1"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -6468,7 +6796,7 @@
       "id": "belay-device",
       "kit": "alpine-expedition",
       "title": "Belay device",
-      "description": "Tube-style belay device with twin rope slots, guide ears and a central attachment eye. Knobs: overall scale and asset color.",
+      "description": "Tube-style belay device with twin rope slots, guide ears and a central attachment eye. Knobs: overall scale plus aluminium and steel material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -6489,7 +6817,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/belay-device.kcad.ts",
       "preview": "/assets/alpine-expedition-belay-device.png",
-      "sourceSha256": "b5dda067ef17c59f1524436945707e5f24db7ad5d5e6a09b4bf6abb4b2ee9f01",
+      "sourceSha256": "722b4452305823d4d7c0411507a444847437188fe52d270fa4aa90a3c3bdeb14",
       "triangleBudget": 2400,
       "params": [
         {
@@ -6502,13 +6830,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminium",
           "type": "color",
-          "default": "#858c8c",
-          "label": "Asset color"
+          "default": "#b6c0c2",
+          "label": "Aluminium"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#69747a",
+          "label": "Steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "aluminium": "#8e9697",
+          "steel": "#525a5f"
+        },
+        "highVisibility": {
+          "aluminium": "#8e9697",
+          "steel": "#69747a"
+        }
+      },
       "stats": {
         "triangles": 324,
         "sizeM": [
@@ -6521,17 +6864,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#858c8c",
+          "name": "aluminium",
+          "color": "#b6c0c2",
           "parts": [
             "device-body",
             "rope-slot-rim-0",
             "rope-slot-rim-1",
-            "attachment-eye",
             "guide-ear-left",
             "guide-ear-right"
           ],
-          "param": "color"
+          "param": "aluminium"
+        },
+        {
+          "name": "steel",
+          "color": "#69747a",
+          "parts": [
+            "attachment-eye"
+          ],
+          "param": "steel"
         }
       ]
     },
@@ -6539,7 +6889,7 @@
       "id": "camp-cot",
       "kit": "alpine-expedition",
       "title": "Backcountry camp cot",
-      "description": "Portable sleeping cot with a fabric deck, folding end frames, feet and side rails. Knobs: overall scale and asset color.",
+      "description": "Portable sleeping cot with a fabric deck, folding end frames, feet and side rails. Knobs: overall scale plus polyester and aluminium material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -6560,7 +6910,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/camp-cot.kcad.ts",
       "preview": "/assets/alpine-expedition-camp-cot.png",
-      "sourceSha256": "23a4fcfe8c12b5b04d6cf9fac93e518d5860a0b760a1f4a6c0296c8aa1322cee",
+      "sourceSha256": "7522e22cd6cc34257cb6aeee68b5e67f2ca162433965da78301be43014beba20",
       "triangleBudget": 2400,
       "params": [
         {
@@ -6573,13 +6923,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polyester",
           "type": "color",
-          "default": "#68764e",
-          "label": "Asset color"
+          "default": "#bd7547",
+          "label": "Polyester fabric"
+        },
+        {
+          "name": "aluminium",
+          "type": "color",
+          "default": "#b6c0c2",
+          "label": "Aluminium"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "polyester": "#935b37",
+          "aluminium": "#8e9697"
+        },
+        "highVisibility": {
+          "polyester": "#e79135",
+          "aluminium": "#b6c0c2"
+        }
+      },
       "stats": {
         "triangles": 236,
         "sizeM": [
@@ -6592,20 +6957,27 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#68764e",
+          "name": "polyester",
+          "color": "#bd7547",
           "parts": [
             "cot-deck",
-            "left-side-rail",
-            "right-side-rail",
             "leg-0",
             "leg-1",
             "leg-2",
-            "leg-3",
+            "leg-3"
+          ],
+          "param": "polyester"
+        },
+        {
+          "name": "aluminium",
+          "color": "#b6c0c2",
+          "parts": [
+            "left-side-rail",
+            "right-side-rail",
             "end-crossbar-0",
             "end-crossbar-1"
           ],
-          "param": "color"
+          "param": "aluminium"
         }
       ]
     },
@@ -6613,7 +6985,7 @@
       "id": "climbing-cam",
       "kit": "alpine-expedition",
       "title": "Spring-loaded climbing cam",
-      "description": "Four-lobe protection device with a center axle, trigger bar, stem and attachment sling. Knobs: overall scale and asset color.",
+      "description": "Four-lobe protection device with a center axle, trigger bar, stem and attachment sling. Knobs: overall scale plus aluminium, steel and nylon material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -6634,7 +7006,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/climbing-cam.kcad.ts",
       "preview": "/assets/alpine-expedition-climbing-cam.png",
-      "sourceSha256": "0036a3ba8997b0c273cc6a1d5a2916188d15fb945ad2672665c9e9ec5e11b996",
+      "sourceSha256": "2930fa28ffe238ee3c8a29ebe5749125e8357e554a614d6ed15d1c924f4a9c0f",
       "triangleBudget": 2400,
       "params": [
         {
@@ -6647,13 +7019,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminium",
           "type": "color",
-          "default": "#b35c39",
-          "label": "Asset color"
+          "default": "#b6c0c2",
+          "label": "Aluminium"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#69747a",
+          "label": "Steel"
+        },
+        {
+          "name": "nylon",
+          "type": "color",
+          "default": "#4c7063",
+          "label": "Nylon fabric"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "aluminium": "#8e9697",
+          "steel": "#525a5f",
+          "nylon": "#3b574d"
+        },
+        "highVisibility": {
+          "nylon": "#e79135",
+          "aluminium": "#b6c0c2"
+        }
+      },
       "stats": {
         "triangles": 372,
         "sizeM": [
@@ -6666,19 +7060,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b35c39",
+          "name": "steel",
+          "color": "#69747a",
           "parts": [
             "cam-lobe-0",
             "cam-lobe-1",
             "cam-lobe-2",
             "cam-lobe-3",
-            "axle",
+            "axle"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "aluminium",
+          "color": "#b6c0c2",
+          "parts": [
             "stem",
-            "trigger-bar",
+            "trigger-bar"
+          ],
+          "param": "aluminium"
+        },
+        {
+          "name": "nylon",
+          "color": "#4c7063",
+          "parts": [
             "attachment-loop"
           ],
-          "param": "color"
+          "param": "nylon"
         }
       ]
     },
@@ -6686,7 +7094,7 @@
       "id": "climbing-chalk-bag",
       "kit": "alpine-expedition",
       "title": "Climbing chalk bag",
-      "description": "Waist-mounted chalk pouch with a wide rim, drawcord collar and belt loop. Knobs: overall scale and asset color.",
+      "description": "Waist-mounted chalk pouch with a wide rim, drawcord collar and belt loop. Knobs: overall scale plus nylon, polyester and webbing material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -6707,7 +7115,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/climbing-chalk-bag.kcad.ts",
       "preview": "/assets/alpine-expedition-climbing-chalk-bag.png",
-      "sourceSha256": "b913a2842d5ee0b3f5000415d6d85c1dee68addb136512f8a8740894caac82e8",
+      "sourceSha256": "7bbdeca55e2b44d9fba61c4778be9aa5bdeeb20b076bb34ce3f4569b99e0c44c",
       "triangleBudget": 2400,
       "params": [
         {
@@ -6720,13 +7128,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "nylon",
           "type": "color",
-          "default": "#63704d",
-          "label": "Asset color"
+          "default": "#4c7063",
+          "label": "Nylon fabric"
+        },
+        {
+          "name": "polyester",
+          "type": "color",
+          "default": "#bd7547",
+          "label": "Polyester fabric"
+        },
+        {
+          "name": "webbing",
+          "type": "color",
+          "default": "#d7a43e",
+          "label": "Polyamide webbing"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "nylon": "#3b574d",
+          "polyester": "#935b37",
+          "webbing": "#a88030"
+        },
+        "highVisibility": {
+          "nylon": "#e79135",
+          "polyester": "#f1c64e"
+        }
+      },
       "stats": {
         "triangles": 124,
         "sizeM": [
@@ -6739,16 +7169,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#63704d",
+          "name": "nylon",
+          "color": "#4c7063",
           "parts": [
             "pouch-body",
-            "rolled-rim",
-            "drawcord-tab",
-            "belt-loop",
             "front-pocket"
           ],
-          "param": "color"
+          "param": "nylon"
+        },
+        {
+          "name": "polyester",
+          "color": "#bd7547",
+          "parts": [
+            "rolled-rim"
+          ],
+          "param": "polyester"
+        },
+        {
+          "name": "webbing",
+          "color": "#d7a43e",
+          "parts": [
+            "drawcord-tab",
+            "belt-loop"
+          ],
+          "param": "webbing"
         }
       ]
     },
@@ -6756,7 +7200,7 @@
       "id": "climbing-harness",
       "kit": "alpine-expedition",
       "title": "Climbing harness",
-      "description": "Sit harness with a padded waist belt, two leg loops, tie-in points and gear loops. Knobs: overall scale and asset color.",
+      "description": "Sit harness with a padded waist belt, two leg loops, tie-in points and gear loops. Knobs: overall scale plus nylon, webbing and aluminium material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -6777,7 +7221,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/climbing-harness.kcad.ts",
       "preview": "/assets/alpine-expedition-climbing-harness.png",
-      "sourceSha256": "c8a9dfb0359011a311a6a24a3c64d27f5ea8e37f98d4a6191664eb36f0fb06f9",
+      "sourceSha256": "99c2755d08f918608db501dd7c63e4b38d7d59231c3c9067337fe6a56a187c95",
       "triangleBudget": 2400,
       "params": [
         {
@@ -6790,13 +7234,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "nylon",
           "type": "color",
-          "default": "#c15439",
-          "label": "Asset color"
+          "default": "#4c7063",
+          "label": "Nylon fabric"
+        },
+        {
+          "name": "webbing",
+          "type": "color",
+          "default": "#d7a43e",
+          "label": "Polyamide webbing"
+        },
+        {
+          "name": "aluminium",
+          "type": "color",
+          "default": "#b6c0c2",
+          "label": "Aluminium"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "nylon": "#3b574d",
+          "webbing": "#a88030",
+          "aluminium": "#8e9697"
+        },
+        "highVisibility": {
+          "nylon": "#e79135",
+          "webbing": "#f1c64e"
+        }
+      },
       "stats": {
         "triangles": 328,
         "sizeM": [
@@ -6809,19 +7275,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#c15439",
+          "name": "nylon",
+          "color": "#4c7063",
           "parts": [
             "waist-belt",
-            "leg-loop-0",
-            "leg-loop-1",
-            "tie-in-bridge",
-            "gear-loop-0",
-            "gear-loop-1",
             "adjuster-0",
             "adjuster-1"
           ],
-          "param": "color"
+          "param": "nylon"
+        },
+        {
+          "name": "webbing",
+          "color": "#d7a43e",
+          "parts": [
+            "leg-loop-0",
+            "leg-loop-1",
+            "gear-loop-0",
+            "gear-loop-1"
+          ],
+          "param": "webbing"
+        },
+        {
+          "name": "aluminium",
+          "color": "#b6c0c2",
+          "parts": [
+            "tie-in-bridge"
+          ],
+          "param": "aluminium"
         }
       ]
     },
@@ -6829,7 +7309,7 @@
       "id": "climbing-quickdraw",
       "kit": "alpine-expedition",
       "title": "Climbing quickdraw",
-      "description": "Quickdraw sling with two opposed carabiners and a stitched center webbing strap. Knobs: overall scale and asset color.",
+      "description": "Quickdraw sling with two opposed carabiners and a stitched center webbing strap. Knobs: overall scale plus aluminium, steel and nylon material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -6850,7 +7330,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/climbing-quickdraw.kcad.ts",
       "preview": "/assets/alpine-expedition-climbing-quickdraw.png",
-      "sourceSha256": "2159d4d7b1b8fe9d2b8e4b2dc8b4c92eb3e575dc6d7308f1202064fc2395b269",
+      "sourceSha256": "7404f5d27bb382292f518cff19ec5184e82d85d345332907101db9ae8699147b",
       "triangleBudget": 2400,
       "params": [
         {
@@ -6863,13 +7343,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminium",
           "type": "color",
-          "default": "#d3ac45",
-          "label": "Asset color"
+          "default": "#b6c0c2",
+          "label": "Aluminium"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#69747a",
+          "label": "Steel"
+        },
+        {
+          "name": "nylon",
+          "type": "color",
+          "default": "#4c7063",
+          "label": "Nylon fabric"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "aluminium": "#8e9697",
+          "steel": "#525a5f",
+          "nylon": "#3b574d"
+        },
+        "highVisibility": {
+          "nylon": "#e79135",
+          "aluminium": "#b6c0c2"
+        }
+      },
       "stats": {
         "triangles": 228,
         "sizeM": [
@@ -6882,16 +7384,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d3ac45",
+          "name": "aluminium",
+          "color": "#b6c0c2",
           "parts": [
             "upper-carabiner",
-            "lower-carabiner",
-            "webbing-sling",
+            "lower-carabiner"
+          ],
+          "param": "aluminium"
+        },
+        {
+          "name": "nylon",
+          "color": "#4c7063",
+          "parts": [
+            "webbing-sling"
+          ],
+          "param": "nylon"
+        },
+        {
+          "name": "steel",
+          "color": "#69747a",
+          "parts": [
             "upper-gate",
             "lower-gate"
           ],
-          "param": "color"
+          "param": "steel"
         }
       ]
     },
@@ -6899,7 +7415,7 @@
       "id": "climbing-rope-coil",
       "kit": "alpine-expedition",
       "title": "Climbing rope coil",
-      "description": "Compact stack of dynamic climbing rope loops with two loose ends and a keeper strap. Knobs: overall scale and asset color.",
+      "description": "Compact stack of dynamic climbing rope loops with two loose ends and a keeper strap. Knobs: overall scale plus nylon, polyester and webbing material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -6920,7 +7436,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/climbing-rope-coil.kcad.ts",
       "preview": "/assets/alpine-expedition-climbing-rope-coil.png",
-      "sourceSha256": "d85d61213d4feba4bb1f0e8f6693db1ff1e1827a6cdabfcf05358257211500a5",
+      "sourceSha256": "8112a6536d34721eedd00e6481603831dc01a699d1d95a3e761b1a8e6506deae",
       "triangleBudget": 2400,
       "params": [
         {
@@ -6933,13 +7449,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "nylon",
           "type": "color",
-          "default": "#d2b34c",
-          "label": "Asset color"
+          "default": "#4c7063",
+          "label": "Nylon fabric"
+        },
+        {
+          "name": "polyester",
+          "type": "color",
+          "default": "#bd7547",
+          "label": "Polyester fabric"
+        },
+        {
+          "name": "webbing",
+          "type": "color",
+          "default": "#d7a43e",
+          "label": "Polyamide webbing"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "nylon": "#3b574d",
+          "polyester": "#935b37",
+          "webbing": "#a88030"
+        },
+        "highVisibility": {
+          "nylon": "#e79135",
+          "polyester": "#f1c64e"
+        }
+      },
       "stats": {
         "triangles": 580,
         "sizeM": [
@@ -6952,19 +7490,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d2b34c",
+          "name": "nylon",
+          "color": "#4c7063",
           "parts": [
             "rope-loop-0",
             "rope-loop-1",
             "rope-loop-2",
             "rope-loop-3",
             "rope-loop-4",
-            "keeper-strap",
-            "rope-end-one",
+            "rope-end-one"
+          ],
+          "param": "nylon"
+        },
+        {
+          "name": "webbing",
+          "color": "#d7a43e",
+          "parts": [
+            "keeper-strap"
+          ],
+          "param": "webbing"
+        },
+        {
+          "name": "polyester",
+          "color": "#bd7547",
+          "parts": [
             "rope-end-two"
           ],
-          "param": "color"
+          "param": "polyester"
         }
       ]
     },
@@ -6972,7 +7524,7 @@
       "id": "crampons",
       "kit": "alpine-expedition",
       "title": "Mountaineering crampons",
-      "description": "Pair of boot crampons with broad foot plates, binding bars and forward-facing points. Knobs: overall scale and asset color.",
+      "description": "Pair of boot crampons with broad foot plates, binding bars and forward-facing points. Knobs: overall scale plus steel and aluminium material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -6993,7 +7545,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/crampons.kcad.ts",
       "preview": "/assets/alpine-expedition-crampons.png",
-      "sourceSha256": "874b97ebe030e0eeffc0b2a6076772798e8888d95940bea60f3cc224866b6de7",
+      "sourceSha256": "6108cced616b2da19a158e50bed1d62c5acee11bf8d40e1c8718147e505a2e93",
       "triangleBudget": 2400,
       "params": [
         {
@@ -7006,13 +7558,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "steel",
           "type": "color",
-          "default": "#828987",
-          "label": "Asset color"
+          "default": "#69747a",
+          "label": "Steel"
+        },
+        {
+          "name": "aluminium",
+          "type": "color",
+          "default": "#b6c0c2",
+          "label": "Aluminium"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "steel": "#525a5f",
+          "aluminium": "#8e9697"
+        },
+        "highVisibility": {
+          "steel": "#525a5f",
+          "aluminium": "#b6c0c2"
+        }
+      },
       "stats": {
         "triangles": 232,
         "sizeM": [
@@ -7025,11 +7592,20 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#828987",
+          "name": "aluminium",
+          "color": "#b6c0c2",
           "parts": [
             "foot-plate-0",
             "foot-plate-1",
+            "binding-bar-0",
+            "binding-bar-1"
+          ],
+          "param": "aluminium"
+        },
+        {
+          "name": "steel",
+          "color": "#69747a",
+          "parts": [
             "front-point-0",
             "front-point-1",
             "front-point-2",
@@ -7039,11 +7615,9 @@
             "rear-point-0",
             "rear-point-1",
             "rear-point-2",
-            "rear-point-3",
-            "binding-bar-0",
-            "binding-bar-1"
+            "rear-point-3"
           ],
-          "param": "color"
+          "param": "steel"
         }
       ]
     },
@@ -7051,7 +7625,7 @@
       "id": "expedition-duffel",
       "kit": "alpine-expedition",
       "title": "Expedition duffel bag",
-      "description": "Rugged haul duffel with end caps, top grab handles and paired carry straps. Knobs: overall scale and asset color.",
+      "description": "Rugged haul duffel with end caps, top grab handles and paired carry straps. Knobs: overall scale plus nylon, polyester and webbing material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -7072,7 +7646,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/expedition-duffel.kcad.ts",
       "preview": "/assets/alpine-expedition-expedition-duffel.png",
-      "sourceSha256": "5afa9289cafecbf723733a8fc158f1578edad3ae11afb6f8d410512ba5ee65c1",
+      "sourceSha256": "7d7aafc80a09dd61f0ee8cbe55a695d43c8d1621e84118dbe7795142aa06c9d9",
       "triangleBudget": 2400,
       "params": [
         {
@@ -7085,13 +7659,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "nylon",
           "type": "color",
-          "default": "#596b54",
-          "label": "Asset color"
+          "default": "#4c7063",
+          "label": "Nylon fabric"
+        },
+        {
+          "name": "polyester",
+          "type": "color",
+          "default": "#bd7547",
+          "label": "Polyester fabric"
+        },
+        {
+          "name": "webbing",
+          "type": "color",
+          "default": "#d7a43e",
+          "label": "Polyamide webbing"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "nylon": "#3b574d",
+          "polyester": "#935b37",
+          "webbing": "#a88030"
+        },
+        "highVisibility": {
+          "nylon": "#e79135",
+          "polyester": "#f1c64e"
+        }
+      },
       "stats": {
         "triangles": 148,
         "sizeM": [
@@ -7104,18 +7700,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#596b54",
+          "name": "polyester",
+          "color": "#bd7547",
           "parts": [
-            "bag-body",
+            "bag-body"
+          ],
+          "param": "polyester"
+        },
+        {
+          "name": "nylon",
+          "color": "#4c7063",
+          "parts": [
             "left-end-cap",
             "right-end-cap",
             "carry-handle-0",
-            "carry-handle-1",
+            "carry-handle-1"
+          ],
+          "param": "nylon"
+        },
+        {
+          "name": "webbing",
+          "color": "#d7a43e",
+          "parts": [
             "compression-strap-0",
             "compression-strap-1"
           ],
-          "param": "color"
+          "param": "webbing"
         }
       ]
     },
@@ -7123,7 +7733,7 @@
       "id": "expedition-headlamp",
       "kit": "alpine-expedition",
       "title": "Expedition headlamp",
-      "description": "Wide-beam headlamp with an adjustable elastic band, central lamp housing and side buckles. Knobs: overall scale and asset color.",
+      "description": "Wide-beam headlamp with an adjustable elastic band, central lamp housing and side buckles. Knobs: overall scale plus polymer, glass and nylon material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -7144,7 +7754,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/expedition-headlamp.kcad.ts",
       "preview": "/assets/alpine-expedition-expedition-headlamp.png",
-      "sourceSha256": "0a5b7a1965b3c906003a1331de1b381a9204716c1a66146e8dbc960204e5ba98",
+      "sourceSha256": "6ab8ea5728e62098c71d8c1bf38d622617792a3cd8e244f3e91c62e506d3cbec",
       "triangleBudget": 2400,
       "params": [
         {
@@ -7157,13 +7767,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#d4ad3e",
-          "label": "Asset color"
+          "default": "#53676b",
+          "label": "Engineering polymer"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#5c9eaa",
+          "label": "Glass"
+        },
+        {
+          "name": "nylon",
+          "type": "color",
+          "default": "#4c7063",
+          "label": "Nylon fabric"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "polymer": "#415053",
+          "glass": "#487b85",
+          "nylon": "#3b574d"
+        },
+        "highVisibility": {
+          "nylon": "#e79135",
+          "glass": "#5c9eaa"
+        }
+      },
       "stats": {
         "triangles": 116,
         "sizeM": [
@@ -7176,18 +7808,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d4ad3e",
+          "name": "polymer",
+          "color": "#53676b",
           "parts": [
             "lamp-housing",
-            "lamp-lens",
+            "top-adjuster"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "glass",
+          "color": "#5c9eaa",
+          "parts": [
+            "lamp-lens"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "nylon",
+          "color": "#4c7063",
+          "parts": [
             "headband-0",
             "headband-1",
             "band-buckle-0",
-            "band-buckle-1",
-            "top-adjuster"
+            "band-buckle-1"
           ],
-          "param": "color"
+          "param": "nylon"
         }
       ]
     },
@@ -7195,7 +7841,7 @@
       "id": "expedition-power-bank",
       "kit": "alpine-expedition",
       "title": "Expedition power bank",
-      "description": "Weather-resistant battery bank with a raised port panel, corner guards and tether eye. Knobs: overall scale and asset color.",
+      "description": "Weather-resistant battery bank with a raised port panel, corner guards and tether eye. Knobs: overall scale plus polymer, aluminium and rubber material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -7216,7 +7862,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/expedition-power-bank.kcad.ts",
       "preview": "/assets/alpine-expedition-expedition-power-bank.png",
-      "sourceSha256": "0fb16f2a34ecedb44a20bc9d010135a1c1fbe21a1914eace978b90da1a5e0a3b",
+      "sourceSha256": "bdaf8e3d2ebc5b002c0b3b4f4163ceab05618be3754dd73740e708bfda177b1a",
       "triangleBudget": 2400,
       "params": [
         {
@@ -7229,13 +7875,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#4f6470",
-          "label": "Asset color"
+          "default": "#53676b",
+          "label": "Engineering polymer"
+        },
+        {
+          "name": "aluminium",
+          "type": "color",
+          "default": "#b6c0c2",
+          "label": "Aluminium"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30383d",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "polymer": "#415053",
+          "aluminium": "#8e9697",
+          "rubber": "#252c30"
+        },
+        "highVisibility": {
+          "polymer": "#e79135",
+          "aluminium": "#b6c0c2"
+        }
+      },
       "stats": {
         "triangles": 300,
         "sizeM": [
@@ -7248,21 +7916,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#4f6470",
+          "name": "polymer",
+          "color": "#53676b",
           "parts": [
             "battery-case",
             "port-panel",
             "port-0",
             "port-1",
-            "port-2",
+            "port-2"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "rubber",
+          "color": "#30383d",
+          "parts": [
             "corner-guard-0",
             "corner-guard-1",
             "corner-guard-2",
-            "corner-guard-3",
+            "corner-guard-3"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "aluminium",
+          "color": "#b6c0c2",
+          "parts": [
             "tether-eye"
           ],
-          "param": "color"
+          "param": "aluminium"
         }
       ]
     },
@@ -7270,7 +7952,7 @@
       "id": "expedition-radio",
       "kit": "alpine-expedition",
       "title": "Expedition field radio",
-      "description": "Rugged handheld VHF-style field radio with antenna, channel knob, speaker and push-to-talk key. Knobs: overall scale and asset color.",
+      "description": "Rugged handheld VHF-style field radio with antenna, channel knob, speaker and push-to-talk key. Knobs: overall scale plus polymer, glass and rubber material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -7291,7 +7973,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/expedition-radio.kcad.ts",
       "preview": "/assets/alpine-expedition-expedition-radio.png",
-      "sourceSha256": "bf9e482f083be56f2e218ce1db42b10601b683fff49ee2a5ad8080347988dbae",
+      "sourceSha256": "045493794d3a943ff270fc5663f65601c8001b4d23cb42d3e8bd24fabbbcaf68",
       "triangleBudget": 2400,
       "params": [
         {
@@ -7304,13 +7986,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#657353",
-          "label": "Asset color"
+          "default": "#53676b",
+          "label": "Engineering polymer"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#5c9eaa",
+          "label": "Glass"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30383d",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "polymer": "#415053",
+          "glass": "#487b85",
+          "rubber": "#252c30"
+        },
+        "highVisibility": {
+          "polymer": "#e79135",
+          "glass": "#5c9eaa"
+        }
+      },
       "stats": {
         "triangles": 136,
         "sizeM": [
@@ -7323,17 +8027,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#657353",
+          "name": "polymer",
+          "color": "#53676b",
           "parts": [
             "radio-body",
-            "front-face",
             "antenna",
+            "speaker-grid"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "glass",
+          "color": "#5c9eaa",
+          "parts": [
+            "front-face"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "rubber",
+          "color": "#30383d",
+          "parts": [
             "channel-knob",
-            "speaker-grid",
             "push-to-talk"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -7341,7 +8059,7 @@
       "id": "expedition-solar-panel",
       "kit": "alpine-expedition",
       "title": "Folding expedition solar panel",
-      "description": "Portable two-leaf solar charger with a hinge spine, raised kickstand and panel grid. Knobs: overall scale and asset color.",
+      "description": "Portable two-leaf solar charger with a hinge spine, raised kickstand and panel grid. Knobs: overall scale plus polymer, silicon and aluminium material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -7362,7 +8080,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/expedition-solar-panel.kcad.ts",
       "preview": "/assets/alpine-expedition-expedition-solar-panel.png",
-      "sourceSha256": "1149407e45279c1b9f51751400fa7849ffd6f1e57f6f3431168f8ba5352e2443",
+      "sourceSha256": "7a6b0b71201115943496d5309bceaf7af4e5a2efd144d0d2cdccc001129120e2",
       "triangleBudget": 2400,
       "params": [
         {
@@ -7375,13 +8093,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#536d78",
-          "label": "Asset color"
+          "default": "#53676b",
+          "label": "Engineering polymer"
+        },
+        {
+          "name": "silicon",
+          "type": "color",
+          "default": "#315778",
+          "label": "Silicon cells"
+        },
+        {
+          "name": "aluminium",
+          "type": "color",
+          "default": "#b6c0c2",
+          "label": "Aluminium"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "polymer": "#415053",
+          "silicon": "#26445e",
+          "aluminium": "#8e9697"
+        },
+        "highVisibility": {
+          "polymer": "#e79135",
+          "aluminium": "#b6c0c2"
+        }
+      },
       "stats": {
         "triangles": 144,
         "sizeM": [
@@ -7394,12 +8134,27 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#536d78",
+          "name": "polymer",
+          "color": "#53676b",
           "parts": [
             "panel-leaf-0",
             "panel-leaf-1",
-            "hinge-spine",
+            "kickstand"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "aluminium",
+          "color": "#b6c0c2",
+          "parts": [
+            "hinge-spine"
+          ],
+          "param": "aluminium"
+        },
+        {
+          "name": "silicon",
+          "color": "#315778",
+          "parts": [
             "cell-row-0",
             "cell-row-1",
             "cell-row-2",
@@ -7407,10 +8162,9 @@
             "cell-column-0",
             "cell-column-1",
             "cell-column-2",
-            "cell-column-3",
-            "kickstand"
+            "cell-column-3"
           ],
-          "param": "color"
+          "param": "silicon"
         }
       ]
     },
@@ -7418,7 +8172,7 @@
       "id": "expedition-tarp",
       "kit": "alpine-expedition",
       "title": "Expedition tarp shelter",
-      "description": "Ridgeline tarp with two adjustable support masts, broad roof panels and ground anchors. Knobs: overall scale and asset color.",
+      "description": "Ridgeline tarp with two adjustable support masts, broad roof panels and ground anchors. Knobs: overall scale plus nylon, polyester and aluminium material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -7439,7 +8193,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/expedition-tarp.kcad.ts",
       "preview": "/assets/alpine-expedition-expedition-tarp.png",
-      "sourceSha256": "769b0a9eb32348be744131c1effbca1fe934bb3e7d7114cd061367c148ef8e87",
+      "sourceSha256": "bdd304c70420389a1da5ac5014b1560d708f29466f9d185f21895bc432ece542",
       "triangleBudget": 2400,
       "params": [
         {
@@ -7452,13 +8206,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "nylon",
           "type": "color",
-          "default": "#78804f",
-          "label": "Asset color"
+          "default": "#4c7063",
+          "label": "Nylon fabric"
+        },
+        {
+          "name": "polyester",
+          "type": "color",
+          "default": "#bd7547",
+          "label": "Polyester fabric"
+        },
+        {
+          "name": "aluminium",
+          "type": "color",
+          "default": "#b6c0c2",
+          "label": "Aluminium"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "nylon": "#3b574d",
+          "polyester": "#935b37",
+          "aluminium": "#8e9697"
+        },
+        "highVisibility": {
+          "nylon": "#e79135",
+          "polyester": "#f1c64e"
+        }
+      },
       "stats": {
         "triangles": 332,
         "sizeM": [
@@ -7471,11 +8247,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#78804f",
+          "name": "polyester",
+          "color": "#bd7547",
           "parts": [
-            "left-roof-panel",
-            "right-roof-panel",
+            "left-roof-panel"
+          ],
+          "param": "polyester"
+        },
+        {
+          "name": "nylon",
+          "color": "#4c7063",
+          "parts": [
+            "right-roof-panel"
+          ],
+          "param": "nylon"
+        },
+        {
+          "name": "aluminium",
+          "color": "#b6c0c2",
+          "parts": [
             "support-mast-left",
             "support-mast-right",
             "ridgeline",
@@ -7484,7 +8274,7 @@
             "ground-anchor-2",
             "ground-anchor-3"
           ],
-          "param": "color"
+          "param": "aluminium"
         }
       ]
     },
@@ -7492,7 +8282,7 @@
       "id": "expedition-water-filter",
       "kit": "alpine-expedition",
       "title": "Expedition squeeze water filter",
-      "description": "Inline squeeze filter with a bottle-thread cap, protective end collars and short hose connector. Knobs: overall scale and asset color.",
+      "description": "Inline squeeze filter with a bottle-thread cap, protective end collars and short hose connector. Knobs: overall scale plus polymer, silicone and rubber material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -7513,7 +8303,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/expedition-water-filter.kcad.ts",
       "preview": "/assets/alpine-expedition-expedition-water-filter.png",
-      "sourceSha256": "0fd1ed4a3f2d51c2324db3861df29ce8d01a68e49dc7a8e71b132ce747e4c2d9",
+      "sourceSha256": "5b303c38c3888c6c780eb63254b191fd51a87a48405d62c1dec7f4202a5f881f",
       "triangleBudget": 2400,
       "params": [
         {
@@ -7526,13 +8316,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#566f62",
-          "label": "Asset color"
+          "default": "#53676b",
+          "label": "Engineering polymer"
+        },
+        {
+          "name": "silicone",
+          "type": "color",
+          "default": "#465860",
+          "label": "Silicone"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30383d",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "polymer": "#415053",
+          "silicone": "#37454b",
+          "rubber": "#252c30"
+        },
+        "highVisibility": {
+          "polymer": "#e79135",
+          "rubber": "#30383d"
+        }
+      },
       "stats": {
         "triangles": 188,
         "sizeM": [
@@ -7545,16 +8357,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#566f62",
+          "name": "polymer",
+          "color": "#53676b",
           "parts": [
             "filter-body",
-            "top-cap",
-            "bottom-cap",
-            "hose-connector",
             "flow-arrow-panel"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "silicone",
+          "color": "#465860",
+          "parts": [
+            "top-cap",
+            "bottom-cap"
+          ],
+          "param": "silicone"
+        },
+        {
+          "name": "rubber",
+          "color": "#30383d",
+          "parts": [
+            "hose-connector"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -7562,7 +8388,7 @@
       "id": "four-season-tent",
       "kit": "alpine-expedition",
       "title": "Four-season mountain tent",
-      "description": "Compact storm shelter with a low profile, reinforced fly, front entrance and corner stakes. Knobs: overall scale and asset color.",
+      "description": "Compact storm shelter with a low profile, reinforced fly, front entrance and corner stakes. Knobs: overall scale plus nylon, polyester and aluminium material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -7583,7 +8409,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/four-season-tent.kcad.ts",
       "preview": "/assets/alpine-expedition-four-season-tent.png",
-      "sourceSha256": "81e15887ffcda5f4764e31e3e82b9dd4106e0ce21452697b33bb8be7b9df296b",
+      "sourceSha256": "0c7782f7b1f04111aa56b007f9259e0b84c23fd780f843ff01fef46969e8ecd2",
       "triangleBudget": 2400,
       "params": [
         {
@@ -7596,18 +8422,40 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "nylon",
           "type": "color",
-          "default": "#c05836",
-          "label": "Asset color"
+          "default": "#4c7063",
+          "label": "Nylon fabric"
+        },
+        {
+          "name": "polyester",
+          "type": "color",
+          "default": "#bd7547",
+          "label": "Polyester fabric"
+        },
+        {
+          "name": "aluminium",
+          "type": "color",
+          "default": "#b6c0c2",
+          "label": "Aluminium"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "nylon": "#3b574d",
+          "polyester": "#935b37",
+          "aluminium": "#8e9697"
+        },
+        "highVisibility": {
+          "nylon": "#e79135",
+          "polyester": "#f1c64e"
+        }
+      },
       "stats": {
-        "triangles": 236,
+        "triangles": 256,
         "sizeM": [
           1.672,
-          0.700173,
+          0.801354,
           1.892
         ],
         "minUpM": 0,
@@ -7615,20 +8463,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#c05836",
+          "name": "polyester",
+          "color": "#bd7547",
           "parts": [
             "tent-floor",
-            "inner-body",
             "left-fly",
             "right-fly",
-            "door-flap",
+            "door-flap"
+          ],
+          "param": "polyester"
+        },
+        {
+          "name": "nylon",
+          "color": "#4c7063",
+          "parts": [
+            "inner-body"
+          ],
+          "param": "nylon"
+        },
+        {
+          "name": "aluminium",
+          "color": "#b6c0c2",
+          "parts": [
+            "pole-left",
+            "pole-right",
             "corner-stake-0",
             "corner-stake-1",
             "corner-stake-2",
             "corner-stake-3"
           ],
-          "param": "color"
+          "param": "aluminium"
         }
       ]
     },
@@ -7636,7 +8500,7 @@
       "id": "glacier-goggles",
       "kit": "alpine-expedition",
       "title": "Glacier goggles",
-      "description": "Wraparound glacier eyewear with a wide shield frame, nose bridge and adjustable head strap. Knobs: overall scale and asset color.",
+      "description": "Wraparound glacier eyewear with a wide shield frame, nose bridge and adjustable head strap. Knobs: overall scale plus polycarbonate, glass and nylon material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -7657,7 +8521,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/glacier-goggles.kcad.ts",
       "preview": "/assets/alpine-expedition-glacier-goggles.png",
-      "sourceSha256": "d42b5b1f8a57feb9ab70581364fef1f0ce4c7c2e325e57ac873f2ce559ee2b8e",
+      "sourceSha256": "d42ede48316125e5564b71b146e8f136a3e720d903b8cc26cc4c2ead20e08136",
       "triangleBudget": 2400,
       "params": [
         {
@@ -7670,15 +8534,37 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polycarbonate",
           "type": "color",
-          "default": "#4c6572",
-          "label": "Asset color"
+          "default": "#d47b3e",
+          "label": "Polycarbonate"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#5c9eaa",
+          "label": "Glass"
+        },
+        {
+          "name": "nylon",
+          "type": "color",
+          "default": "#4c7063",
+          "label": "Nylon fabric"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "polycarbonate": "#a56030",
+          "glass": "#487b85",
+          "nylon": "#3b574d"
+        },
+        "highVisibility": {
+          "nylon": "#e79135",
+          "glass": "#5c9eaa"
+        }
+      },
       "stats": {
-        "triangles": 272,
+        "triangles": 296,
         "sizeM": [
           0.69,
           0.252,
@@ -7689,17 +8575,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#4c6572",
+          "name": "glass",
+          "color": "#5c9eaa",
+          "parts": [
+            "left-lens",
+            "right-lens"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "polycarbonate",
+          "color": "#d47b3e",
           "parts": [
             "left-lens-frame",
             "right-lens-frame",
             "nose-bridge",
-            "head-strap",
             "side-temple-0",
             "side-temple-1"
           ],
-          "param": "color"
+          "param": "polycarbonate"
+        },
+        {
+          "name": "nylon",
+          "color": "#4c7063",
+          "parts": [
+            "head-strap"
+          ],
+          "param": "nylon"
         }
       ]
     },
@@ -7707,7 +8609,7 @@
       "id": "glacier-picket",
       "kit": "alpine-expedition",
       "title": "Glacier snow picket",
-      "description": "Long snow picket with a tapered tip, attachment holes and a top sling eye. Knobs: overall scale and asset color.",
+      "description": "Long snow picket with a tapered tip, attachment holes and a top sling eye. Knobs: overall scale plus steel and aluminium material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -7728,7 +8630,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/glacier-picket.kcad.ts",
       "preview": "/assets/alpine-expedition-glacier-picket.png",
-      "sourceSha256": "88feaf77edf6fa9e99db84e431c14ea76a25278b69a10553f9f050b6bb2124ac",
+      "sourceSha256": "53ccbd232abe6703f8919a26da89f6eda25905dbe1c536e265e633111bd95a57",
       "triangleBudget": 2400,
       "params": [
         {
@@ -7741,13 +8643,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "steel",
           "type": "color",
-          "default": "#7c8785",
-          "label": "Asset color"
+          "default": "#69747a",
+          "label": "Steel"
+        },
+        {
+          "name": "aluminium",
+          "type": "color",
+          "default": "#b6c0c2",
+          "label": "Aluminium"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "steel": "#525a5f",
+          "aluminium": "#8e9697"
+        },
+        "highVisibility": {
+          "steel": "#525a5f",
+          "aluminium": "#b6c0c2"
+        }
+      },
       "stats": {
         "triangles": 516,
         "sizeM": [
@@ -7760,8 +8677,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7c8785",
+          "name": "steel",
+          "color": "#69747a",
           "parts": [
             "picket-web",
             "reinforced-head",
@@ -7769,10 +8686,17 @@
             "attachment-hole-rim-1",
             "attachment-hole-rim-2",
             "attachment-hole-rim-3",
-            "top-eye",
             "lower-tip"
           ],
-          "param": "color"
+          "param": "steel"
+        },
+        {
+          "name": "aluminium",
+          "color": "#b6c0c2",
+          "parts": [
+            "top-eye"
+          ],
+          "param": "aluminium"
         }
       ]
     },
@@ -7780,7 +8704,7 @@
       "id": "handheld-gps",
       "kit": "alpine-expedition",
       "title": "Handheld GPS receiver",
-      "description": "Outdoor GPS receiver with a raised screen, directional keypad, side keys and top antenna. Knobs: overall scale and asset color.",
+      "description": "Outdoor GPS receiver with a raised screen, directional keypad, side keys and top antenna. Knobs: overall scale plus polymer, glass and rubber material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -7801,7 +8725,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/handheld-gps.kcad.ts",
       "preview": "/assets/alpine-expedition-handheld-gps.png",
-      "sourceSha256": "5b8fa16d609cf1ddae099ca1562537cf93f8ebd800e9fd49b535a3b9864ffe39",
+      "sourceSha256": "0f6cf461ee5e8a2c3cb8b0ef3777e7a75e94e49bf5eed5d04104911a85fa7abe",
       "triangleBudget": 2400,
       "params": [
         {
@@ -7814,13 +8738,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#c35b36",
-          "label": "Asset color"
+          "default": "#53676b",
+          "label": "Engineering polymer"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#5c9eaa",
+          "label": "Glass"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30383d",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "polymer": "#415053",
+          "glass": "#487b85",
+          "rubber": "#252c30"
+        },
+        "highVisibility": {
+          "polymer": "#e79135",
+          "glass": "#5c9eaa"
+        }
+      },
       "stats": {
         "triangles": 236,
         "sizeM": [
@@ -7833,20 +8779,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#c35b36",
+          "name": "polymer",
+          "color": "#53676b",
           "parts": [
             "receiver-body",
+            "top-antenna"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "glass",
+          "color": "#5c9eaa",
+          "parts": [
             "screen-bezel",
-            "screen",
+            "screen"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "rubber",
+          "color": "#30383d",
+          "parts": [
             "key-0",
             "key-1",
             "key-2",
-            "top-antenna",
             "side-key-0",
             "side-key-1"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -7854,7 +8814,7 @@
       "id": "hydration-reservoir",
       "kit": "alpine-expedition",
       "title": "Hydration reservoir",
-      "description": "Flat hydration bladder with a wide fill cap, hose port, drinking tube and bite valve. Knobs: overall scale and asset color.",
+      "description": "Flat hydration bladder with a wide fill cap, hose port, drinking tube and bite valve. Knobs: overall scale plus nylon, silicone and rubber material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -7875,7 +8835,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/hydration-reservoir.kcad.ts",
       "preview": "/assets/alpine-expedition-hydration-reservoir.png",
-      "sourceSha256": "41ac990580e5125f201437257a999d17c4e35f11b901a023c7a51a4613a71db2",
+      "sourceSha256": "c319cc3f6f7391b08ac85722dd63c3c1a20649ab34622ea189c81c2b70a652d8",
       "triangleBudget": 2400,
       "params": [
         {
@@ -7888,13 +8848,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "nylon",
           "type": "color",
-          "default": "#4f7e87",
-          "label": "Asset color"
+          "default": "#4c7063",
+          "label": "Nylon fabric"
+        },
+        {
+          "name": "silicone",
+          "type": "color",
+          "default": "#465860",
+          "label": "Silicone"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30383d",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "nylon": "#3b574d",
+          "silicone": "#37454b",
+          "rubber": "#252c30"
+        },
+        "highVisibility": {
+          "nylon": "#e79135",
+          "rubber": "#30383d"
+        }
+      },
       "stats": {
         "triangles": 168,
         "sizeM": [
@@ -7907,17 +8889,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#4f7e87",
+          "name": "nylon",
+          "color": "#4c7063",
           "parts": [
             "bladder-body",
             "top-seam",
-            "fill-cap",
-            "drink-tube",
-            "bite-valve",
             "hose-clip"
           ],
-          "param": "color"
+          "param": "nylon"
+        },
+        {
+          "name": "silicone",
+          "color": "#465860",
+          "parts": [
+            "fill-cap",
+            "drink-tube"
+          ],
+          "param": "silicone"
+        },
+        {
+          "name": "rubber",
+          "color": "#30383d",
+          "parts": [
+            "bite-valve"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -7925,7 +8921,7 @@
       "id": "ice-axe",
       "kit": "alpine-expedition",
       "title": "Mountaineering ice axe",
-      "description": "Classic alpine axe with a long shaft, curved pick, adze and pointed lower spike. Knobs: overall scale and asset color.",
+      "description": "Classic alpine axe with a long shaft, curved pick, adze and pointed lower spike. Knobs: overall scale plus aluminium, steel, rubber and webbing material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -7946,7 +8942,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/ice-axe.kcad.ts",
       "preview": "/assets/alpine-expedition-ice-axe.png",
-      "sourceSha256": "b0c23e4008edcb2e1eaa1fad54698c99ea80c82a44c8b0539a17c6861a129056",
+      "sourceSha256": "6e51b4b822f00294e2fe3de1a8a1fb67d8e312d8ab25222fdfc7ddfc885c0149",
       "triangleBudget": 2400,
       "params": [
         {
@@ -7959,36 +8955,90 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminium",
           "type": "color",
-          "default": "#727b7b",
-          "label": "Asset color"
+          "default": "#b6c0c2",
+          "label": "Aluminium"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#69747a",
+          "label": "Steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30383d",
+          "label": "Rubber"
+        },
+        {
+          "name": "webbing",
+          "type": "color",
+          "default": "#d7a43e",
+          "label": "Polyamide webbing"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "aluminium": "#8e9697",
+          "steel": "#525a5f",
+          "rubber": "#252c30",
+          "webbing": "#a88030"
+        },
+        "highVisibility": {
+          "webbing": "#f1c64e",
+          "aluminium": "#b6c0c2"
+        }
+      },
       "stats": {
-        "triangles": 168,
+        "triangles": 236,
         "sizeM": [
-          0.541158,
-          0.860773,
-          0.17
+          0.471,
+          0.832,
+          0.139
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#727b7b",
+          "name": "aluminium",
+          "color": "#b6c0c2",
           "parts": [
-            "shaft",
+            "shaft"
+          ],
+          "param": "aluminium"
+        },
+        {
+          "name": "steel",
+          "color": "#69747a",
+          "parts": [
             "pick",
             "pick-tip",
             "adze",
-            "lower-spike",
-            "leash-strap"
+            "lower-spike"
           ],
-          "param": "color"
+          "param": "steel"
+        },
+        {
+          "name": "rubber",
+          "color": "#30383d",
+          "parts": [
+            "rubber-grip"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "webbing",
+          "color": "#d7a43e",
+          "parts": [
+            "leash-strap-side-left",
+            "leash-strap-side-right",
+            "leash-strap-top",
+            "leash-strap-bottom"
+          ],
+          "param": "webbing"
         }
       ]
     },
@@ -7996,7 +9046,7 @@
       "id": "ice-screw",
       "kit": "alpine-expedition",
       "title": "Ice screw",
-      "description": "Tubular ice screw with a threaded body, hanger eye and folding crank handle. Knobs: overall scale and asset color.",
+      "description": "Tubular ice screw with a threaded body, hanger eye and folding crank handle. Knobs: overall scale plus steel and aluminium material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -8017,7 +9067,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/ice-screw.kcad.ts",
       "preview": "/assets/alpine-expedition-ice-screw.png",
-      "sourceSha256": "6679df58bbd2057143c56dbc9aff212774b1ffa60b34489e8c6675953e986362",
+      "sourceSha256": "5b84a2f4dd12b4a146550a0a65f74a6f182238465ce16fb495419f731da9377a",
       "triangleBudget": 2400,
       "params": [
         {
@@ -8030,13 +9080,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "steel",
           "type": "color",
-          "default": "#89918e",
-          "label": "Asset color"
+          "default": "#69747a",
+          "label": "Steel"
+        },
+        {
+          "name": "aluminium",
+          "type": "color",
+          "default": "#b6c0c2",
+          "label": "Aluminium"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "steel": "#525a5f",
+          "aluminium": "#8e9697"
+        },
+        "highVisibility": {
+          "steel": "#525a5f",
+          "aluminium": "#b6c0c2"
+        }
+      },
       "stats": {
         "triangles": 300,
         "sizeM": [
@@ -8049,13 +9114,11 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#89918e",
+          "name": "steel",
+          "color": "#69747a",
           "parts": [
             "screw-tube",
             "cutting-tip",
-            "hanger-eye",
-            "folding-crank",
             "thread-rib-0",
             "thread-rib-1",
             "thread-rib-2",
@@ -8063,7 +9126,16 @@
             "thread-rib-4",
             "thread-rib-5"
           ],
-          "param": "color"
+          "param": "steel"
+        },
+        {
+          "name": "aluminium",
+          "color": "#b6c0c2",
+          "parts": [
+            "hanger-eye",
+            "folding-crank"
+          ],
+          "param": "aluminium"
         }
       ]
     },
@@ -8071,7 +9143,7 @@
       "id": "insulated-flask",
       "kit": "alpine-expedition",
       "title": "Insulated mountain flask",
-      "description": "Double-wall flask with a shoulder, screw cap, protective base and carry loop. Knobs: overall scale and asset color.",
+      "description": "Double-wall flask with a shoulder, screw cap, protective base and carry loop. Knobs: overall scale plus stainlessSteel, polymer and silicone material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -8092,7 +9164,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/insulated-flask.kcad.ts",
       "preview": "/assets/alpine-expedition-insulated-flask.png",
-      "sourceSha256": "ff70014d0349d3ae1eea29c303a6dc43e8227b6c02da05eef9e1cc07d40eabdf",
+      "sourceSha256": "67f14884882acacc58c3855d334946436bbef9288edc0750967a71403a4e8965",
       "triangleBudget": 2400,
       "params": [
         {
@@ -8105,13 +9177,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#7a8582",
-          "label": "Asset color"
+          "default": "#c0c7c7",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#53676b",
+          "label": "Engineering polymer"
+        },
+        {
+          "name": "silicone",
+          "type": "color",
+          "default": "#465860",
+          "label": "Silicone"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "stainlessSteel": "#969b9b",
+          "polymer": "#415053",
+          "silicone": "#37454b"
+        },
+        "highVisibility": {
+          "polymer": "#e79135",
+          "stainlessSteel": "#c0c7c7"
+        }
+      },
       "stats": {
         "triangles": 272,
         "sizeM": [
@@ -8124,16 +9218,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7a8582",
+          "name": "stainlessSteel",
+          "color": "#c0c7c7",
           "parts": [
             "flask-body",
-            "neck",
+            "neck"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#53676b",
+          "parts": [
             "screw-cap",
-            "base-guard",
             "carry-loop"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "silicone",
+          "color": "#465860",
+          "parts": [
+            "base-guard"
+          ],
+          "param": "silicone"
         }
       ]
     },
@@ -8141,7 +9249,7 @@
       "id": "insulated-sleeping-pad",
       "kit": "alpine-expedition",
       "title": "Insulated sleeping pad",
-      "description": "Low-profile inflatable pad with raised side rails and repeated transverse baffles. Knobs: overall scale and asset color.",
+      "description": "Low-profile inflatable pad with raised side rails and repeated transverse baffles. Knobs: overall scale plus nylon, foam and silicone material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -8162,7 +9270,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/insulated-sleeping-pad.kcad.ts",
       "preview": "/assets/alpine-expedition-insulated-sleeping-pad.png",
-      "sourceSha256": "ba7eb316f3d4c93fe0faa80a1aa84e6574309667245376eac1585e2e7ed00e29",
+      "sourceSha256": "242a8cfcca1415e75a892898eac99aa87e7f86267c02ba4472ebb374ac86d0fa",
       "triangleBudget": 2400,
       "params": [
         {
@@ -8175,13 +9283,34 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "nylon",
           "type": "color",
-          "default": "#a64b36",
-          "label": "Asset color"
+          "default": "#4c7063",
+          "label": "Nylon fabric"
+        },
+        {
+          "name": "foam",
+          "type": "color",
+          "default": "#d1c1a3",
+          "label": "Foam"
+        },
+        {
+          "name": "silicone",
+          "type": "color",
+          "default": "#465860",
+          "label": "Silicone"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "nylon": "#3b574d",
+          "foam": "#a3977f",
+          "silicone": "#37454b"
+        },
+        "highVisibility": {
+          "nylon": "#e79135"
+        }
+      },
       "stats": {
         "triangles": 164,
         "sizeM": [
@@ -8194,10 +9323,17 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a64b36",
+          "name": "foam",
+          "color": "#d1c1a3",
           "parts": [
-            "pad-body",
+            "pad-body"
+          ],
+          "param": "foam"
+        },
+        {
+          "name": "nylon",
+          "color": "#4c7063",
+          "parts": [
             "baffle-0",
             "baffle-1",
             "baffle-2",
@@ -8206,10 +9342,17 @@
             "baffle-5",
             "baffle-6",
             "baffle-7",
-            "head-pillow-zone",
+            "head-pillow-zone"
+          ],
+          "param": "nylon"
+        },
+        {
+          "name": "silicone",
+          "color": "#465860",
+          "parts": [
             "inflation-valve"
           ],
-          "param": "color"
+          "param": "silicone"
         }
       ]
     },
@@ -8217,7 +9360,7 @@
       "id": "locking-carabiner",
       "kit": "alpine-expedition",
       "title": "Locking carabiner",
-      "description": "Oval locking carabiner with a thick spine, gate bar and threaded sleeve. Knobs: overall scale and asset color.",
+      "description": "Oval locking carabiner with a thick spine, gate bar and threaded sleeve. Knobs: overall scale plus aluminium and steel material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -8238,7 +9381,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/locking-carabiner.kcad.ts",
       "preview": "/assets/alpine-expedition-locking-carabiner.png",
-      "sourceSha256": "b1a1f922102b539a1e0a5c0f1e445568b67c6c0cdb5e91102c94a40b535c0ba6",
+      "sourceSha256": "59a1ef658fd47ca4e6f000b3815d5ba7587c43feee50569f81f8ce6aa460733e",
       "triangleBudget": 2400,
       "params": [
         {
@@ -8251,13 +9394,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminium",
           "type": "color",
-          "default": "#7c8588",
-          "label": "Asset color"
+          "default": "#b6c0c2",
+          "label": "Aluminium"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#69747a",
+          "label": "Steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "aluminium": "#8e9697",
+          "steel": "#525a5f"
+        },
+        "highVisibility": {
+          "aluminium": "#8e9697",
+          "steel": "#69747a"
+        }
+      },
       "stats": {
         "triangles": 164,
         "sizeM": [
@@ -8270,15 +9428,22 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7c8588",
+          "name": "aluminium",
+          "color": "#b6c0c2",
           "parts": [
             "carabiner-frame",
+            "locking-sleeve"
+          ],
+          "param": "aluminium"
+        },
+        {
+          "name": "steel",
+          "color": "#69747a",
+          "parts": [
             "gate-bar",
-            "locking-sleeve",
             "spine-reinforcement"
           ],
-          "param": "color"
+          "param": "steel"
         }
       ]
     },
@@ -8286,7 +9451,7 @@
       "id": "mountain-weather-meter",
       "kit": "alpine-expedition",
       "title": "Mountain weather meter",
-      "description": "Portable wind and weather meter with a compact base, mast, wind cups and direction vane. Knobs: overall scale and asset color.",
+      "description": "Portable wind and weather meter with a compact base, mast, wind cups and direction vane. Knobs: overall scale plus polymer, aluminium and polycarbonate material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -8307,7 +9472,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/mountain-weather-meter.kcad.ts",
       "preview": "/assets/alpine-expedition-mountain-weather-meter.png",
-      "sourceSha256": "45dad10515b669fe3d31ad9613e397571cae203b9f5c5ac44a07cd3c3a504200",
+      "sourceSha256": "81f2a316dfb2a88aa22fb2e5dc4c4a5042a1c538427e0f926e316d36160097a8",
       "triangleBudget": 2400,
       "params": [
         {
@@ -8320,13 +9485,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#75827a",
-          "label": "Asset color"
+          "default": "#53676b",
+          "label": "Engineering polymer"
+        },
+        {
+          "name": "aluminium",
+          "type": "color",
+          "default": "#b6c0c2",
+          "label": "Aluminium"
+        },
+        {
+          "name": "polycarbonate",
+          "type": "color",
+          "default": "#d47b3e",
+          "label": "Polycarbonate"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "polymer": "#415053",
+          "aluminium": "#8e9697",
+          "polycarbonate": "#a56030"
+        },
+        "highVisibility": {
+          "polymer": "#e79135",
+          "aluminium": "#b6c0c2"
+        }
+      },
       "stats": {
         "triangles": 420,
         "sizeM": [
@@ -8339,22 +9526,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#75827a",
+          "name": "polymer",
+          "color": "#53676b",
           "parts": [
             "base-foot",
-            "mast",
             "sensor-hub",
             "wind-arm-0",
             "wind-arm-1",
-            "wind-arm-2",
+            "wind-arm-2"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "aluminium",
+          "color": "#b6c0c2",
+          "parts": [
+            "mast"
+          ],
+          "param": "aluminium"
+        },
+        {
+          "name": "polycarbonate",
+          "color": "#d47b3e",
+          "parts": [
             "wind-cup-0",
             "wind-cup-1",
             "wind-cup-2",
             "direction-vane",
             "vane-fin"
           ],
-          "param": "color"
+          "param": "polycarbonate"
         }
       ]
     },
@@ -8362,7 +9563,7 @@
       "id": "mountaineering-bivy",
       "kit": "alpine-expedition",
       "title": "Mountaineering bivy sack",
-      "description": "Single-person storm bivy with a raised head hood, tapered foot end and short support arch. Knobs: overall scale and asset color.",
+      "description": "Single-person storm bivy with a raised head hood, tapered foot end and short support arch. Knobs: overall scale plus nylon, polyester and aluminium material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -8383,7 +9584,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/mountaineering-bivy.kcad.ts",
       "preview": "/assets/alpine-expedition-mountaineering-bivy.png",
-      "sourceSha256": "71c70a4155800177411e658c50588f18820fef7c5e8dcef9bf1be003290bcfe0",
+      "sourceSha256": "b000e32e3f7e3767dd27aadec83784c6163c41fa61982a19f50ccc58a8f65464",
       "triangleBudget": 2400,
       "params": [
         {
@@ -8396,13 +9597,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "nylon",
           "type": "color",
-          "default": "#65764c",
-          "label": "Asset color"
+          "default": "#4c7063",
+          "label": "Nylon fabric"
+        },
+        {
+          "name": "polyester",
+          "type": "color",
+          "default": "#bd7547",
+          "label": "Polyester fabric"
+        },
+        {
+          "name": "aluminium",
+          "type": "color",
+          "default": "#b6c0c2",
+          "label": "Aluminium"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "nylon": "#3b574d",
+          "polyester": "#935b37",
+          "aluminium": "#8e9697"
+        },
+        "highVisibility": {
+          "nylon": "#e79135",
+          "polyester": "#f1c64e"
+        }
+      },
       "stats": {
         "triangles": 92,
         "sizeM": [
@@ -8415,16 +9638,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#65764c",
+          "name": "polyester",
+          "color": "#bd7547",
           "parts": [
-            "sleeping-bag-body",
+            "sleeping-bag-body"
+          ],
+          "param": "polyester"
+        },
+        {
+          "name": "nylon",
+          "color": "#4c7063",
+          "parts": [
             "head-hood",
             "foot-panel",
-            "hood-ridge",
             "zipper-flap"
           ],
-          "param": "color"
+          "param": "nylon"
+        },
+        {
+          "name": "aluminium",
+          "color": "#b6c0c2",
+          "parts": [
+            "hood-ridge"
+          ],
+          "param": "aluminium"
         }
       ]
     },
@@ -8432,7 +9669,7 @@
       "id": "nut-tool",
       "kit": "alpine-expedition",
       "title": "Climbing nut tool",
-      "description": "Long tapered nut-removal pick with a finger opening, grip scales and a narrow hook tip. Knobs: overall scale and asset color.",
+      "description": "Long tapered nut-removal pick with a finger opening, grip scales and a narrow hook tip. Knobs: overall scale plus steel, aluminium and rubber material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -8453,7 +9690,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/nut-tool.kcad.ts",
       "preview": "/assets/alpine-expedition-nut-tool.png",
-      "sourceSha256": "5cf77677c0ed005d04bac41818399be1218271c2875bd098d1e456cfbe554b62",
+      "sourceSha256": "f987e61e9bc22d93209e696f2c1884c4dbfb2c5117afeb51066d8ebeebcbea26",
       "triangleBudget": 2400,
       "params": [
         {
@@ -8466,13 +9703,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "steel",
           "type": "color",
-          "default": "#858b85",
-          "label": "Asset color"
+          "default": "#69747a",
+          "label": "Steel"
+        },
+        {
+          "name": "aluminium",
+          "type": "color",
+          "default": "#b6c0c2",
+          "label": "Aluminium"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30383d",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "steel": "#525a5f",
+          "aluminium": "#8e9697",
+          "rubber": "#252c30"
+        },
+        "highVisibility": {
+          "steel": "#525a5f",
+          "aluminium": "#b6c0c2"
+        }
+      },
       "stats": {
         "triangles": 144,
         "sizeM": [
@@ -8485,16 +9744,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#858b85",
+          "name": "aluminium",
+          "color": "#b6c0c2",
           "parts": [
-            "tool-shaft",
+            "tool-shaft"
+          ],
+          "param": "aluminium"
+        },
+        {
+          "name": "steel",
+          "color": "#69747a",
+          "parts": [
             "hook-tip",
-            "finger-loop",
+            "finger-loop"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "rubber",
+          "color": "#30383d",
+          "parts": [
             "grip-scale-0",
             "grip-scale-1"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -8502,7 +9775,7 @@
       "id": "rescue-bivy",
       "kit": "alpine-expedition",
       "title": "Emergency rescue bivy",
-      "description": "Bright emergency bivy sack with a sealed foot, raised head hood and reflective-look side bands. Knobs: overall scale and asset color.",
+      "description": "Bright emergency bivy sack with a sealed foot, raised head hood and reflective-look side bands. Knobs: overall scale plus nylon, polyester and webbing material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -8523,7 +9796,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/rescue-bivy.kcad.ts",
       "preview": "/assets/alpine-expedition-rescue-bivy.png",
-      "sourceSha256": "fb423ef9f4cb8b8dd4889998250505ff2fe56a847e0d0d1738a2a7d7cb507713",
+      "sourceSha256": "920a0d9a32638aaea85d87bdcbbad2dc4542e0e71a72d15467e2948e7bf418b9",
       "triangleBudget": 2400,
       "params": [
         {
@@ -8536,13 +9809,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "nylon",
           "type": "color",
-          "default": "#d34d36",
-          "label": "Asset color"
+          "default": "#4c7063",
+          "label": "Nylon fabric"
+        },
+        {
+          "name": "polyester",
+          "type": "color",
+          "default": "#bd7547",
+          "label": "Polyester fabric"
+        },
+        {
+          "name": "webbing",
+          "type": "color",
+          "default": "#d7a43e",
+          "label": "Polyamide webbing"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "nylon": "#3b574d",
+          "polyester": "#935b37",
+          "webbing": "#a88030"
+        },
+        "highVisibility": {
+          "nylon": "#e79135",
+          "polyester": "#f1c64e"
+        }
+      },
       "stats": {
         "triangles": 72,
         "sizeM": [
@@ -8555,17 +9850,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d34d36",
+          "name": "nylon",
+          "color": "#4c7063",
           "parts": [
             "bivy-shell",
-            "hood",
             "foot-seal",
-            "side-band-0",
-            "side-band-1",
             "entry-flap"
           ],
-          "param": "color"
+          "param": "nylon"
+        },
+        {
+          "name": "polyester",
+          "color": "#bd7547",
+          "parts": [
+            "hood"
+          ],
+          "param": "polyester"
+        },
+        {
+          "name": "webbing",
+          "color": "#d7a43e",
+          "parts": [
+            "side-band-0",
+            "side-band-1"
+          ],
+          "param": "webbing"
         }
       ]
     },
@@ -8573,7 +9882,7 @@
       "id": "rescue-pulley",
       "kit": "alpine-expedition",
       "title": "Alpine rescue pulley",
-      "description": "Compact rescue pulley with a side plate, large sheave, axle pin and rope attachment eye. Knobs: overall scale and asset color.",
+      "description": "Compact rescue pulley with a side plate, large sheave, axle pin and rope attachment eye. Knobs: overall scale plus aluminium and steel material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -8594,7 +9903,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/rescue-pulley.kcad.ts",
       "preview": "/assets/alpine-expedition-rescue-pulley.png",
-      "sourceSha256": "536b992d88d2968730eaaa56e3933fce6fb199a8d92245f24083f4b94922d6e5",
+      "sourceSha256": "7e5328cb3f32cb55d16488e19710a714e9e76b150f7694563ab55f19dc63ceb9",
       "triangleBudget": 2400,
       "params": [
         {
@@ -8607,13 +9916,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminium",
           "type": "color",
-          "default": "#c45938",
-          "label": "Asset color"
+          "default": "#b6c0c2",
+          "label": "Aluminium"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#69747a",
+          "label": "Steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "aluminium": "#8e9697",
+          "steel": "#525a5f"
+        },
+        "highVisibility": {
+          "aluminium": "#8e9697",
+          "steel": "#69747a"
+        }
+      },
       "stats": {
         "triangles": 356,
         "sizeM": [
@@ -8626,17 +9950,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#c45938",
+          "name": "steel",
+          "color": "#69747a",
           "parts": [
             "sheave",
+            "axle-pin"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "aluminium",
+          "color": "#b6c0c2",
+          "parts": [
             "side-plate-front",
             "side-plate-rear",
-            "axle-pin",
             "attachment-eye-top",
             "attachment-eye-bottom"
           ],
-          "param": "color"
+          "param": "aluminium"
         }
       ]
     },
@@ -8644,7 +9975,7 @@
       "id": "rope-haul-bag",
       "kit": "alpine-expedition",
       "title": "Rope haul bag",
-      "description": "Tall haul bag with a reinforced base, closure collar, shoulder straps and attachment loops. Knobs: overall scale and asset color.",
+      "description": "Tall haul bag with a reinforced base, closure collar, shoulder straps and attachment loops. Knobs: overall scale plus nylon, polyester and webbing material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -8665,7 +9996,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/rope-haul-bag.kcad.ts",
       "preview": "/assets/alpine-expedition-rope-haul-bag.png",
-      "sourceSha256": "4e78b00d4fcfd451b7ad43cf92ef32f3590cd6eae7b22f258849b6b183e0582f",
+      "sourceSha256": "773b3f7e2e726c9ec2e68f11ce0d8330dde3f0624d6db958852656745af04592",
       "triangleBudget": 2400,
       "params": [
         {
@@ -8678,13 +10009,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "nylon",
           "type": "color",
-          "default": "#5d6b58",
-          "label": "Asset color"
+          "default": "#4c7063",
+          "label": "Nylon fabric"
+        },
+        {
+          "name": "polyester",
+          "type": "color",
+          "default": "#bd7547",
+          "label": "Polyester fabric"
+        },
+        {
+          "name": "webbing",
+          "type": "color",
+          "default": "#d7a43e",
+          "label": "Polyamide webbing"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "nylon": "#3b574d",
+          "polyester": "#935b37",
+          "webbing": "#a88030"
+        },
+        "highVisibility": {
+          "nylon": "#e79135",
+          "polyester": "#f1c64e"
+        }
+      },
       "stats": {
         "triangles": 316,
         "sizeM": [
@@ -8697,18 +10050,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#5d6b58",
+          "name": "polyester",
+          "color": "#bd7547",
           "parts": [
-            "bag-body",
+            "bag-body"
+          ],
+          "param": "polyester"
+        },
+        {
+          "name": "nylon",
+          "color": "#4c7063",
+          "parts": [
             "closure-collar",
-            "top-flap",
+            "top-flap"
+          ],
+          "param": "nylon"
+        },
+        {
+          "name": "webbing",
+          "color": "#d7a43e",
+          "parts": [
             "shoulder-strap-0",
             "shoulder-strap-1",
             "haul-loop-0",
             "haul-loop-1"
           ],
-          "param": "color"
+          "param": "webbing"
         }
       ]
     },
@@ -8716,7 +10083,7 @@
       "id": "satellite-messenger",
       "kit": "alpine-expedition",
       "title": "Satellite messenger",
-      "description": "Compact satellite messenger with a textured face, status screen, call button and lanyard loop. Knobs: overall scale and asset color.",
+      "description": "Compact satellite messenger with a textured face, status screen, call button and lanyard loop. Knobs: overall scale plus polymer, glass and rubber material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -8737,7 +10104,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/satellite-messenger.kcad.ts",
       "preview": "/assets/alpine-expedition-satellite-messenger.png",
-      "sourceSha256": "6b81b98500150fa9c601780ff2325fb59a82bb8768bd490ba6a7d9976cae4ffa",
+      "sourceSha256": "453d3166e8f0cef56837068b239b8fba92c9093e7a28690fe19c890379b22da8",
       "triangleBudget": 2400,
       "params": [
         {
@@ -8750,13 +10117,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#e0b23a",
-          "label": "Asset color"
+          "default": "#53676b",
+          "label": "Engineering polymer"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#5c9eaa",
+          "label": "Glass"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30383d",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "polymer": "#415053",
+          "glass": "#487b85",
+          "rubber": "#252c30"
+        },
+        "highVisibility": {
+          "polymer": "#e79135",
+          "glass": "#5c9eaa"
+        }
+      },
       "stats": {
         "triangles": 220,
         "sizeM": [
@@ -8769,17 +10158,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#e0b23a",
+          "name": "polymer",
+          "color": "#53676b",
           "parts": [
             "messenger-body",
-            "status-window",
-            "check-in-button",
-            "sos-button",
             "lanyard-eye",
             "antenna-panel"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "glass",
+          "color": "#5c9eaa",
+          "parts": [
+            "status-window"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "rubber",
+          "color": "#30383d",
+          "parts": [
+            "check-in-button",
+            "sos-button"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -8787,7 +10190,7 @@
       "id": "ski-touring-skins",
       "kit": "alpine-expedition",
       "title": "Ski touring skins",
-      "description": "Pair of climbing skins with tapered tails, tip loops and adjustable tail clips. Knobs: overall scale and asset color.",
+      "description": "Pair of climbing skins with tapered tails, tip loops and adjustable tail clips. Knobs: overall scale plus nylon, rubber and aluminium material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -8808,7 +10211,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/ski-touring-skins.kcad.ts",
       "preview": "/assets/alpine-expedition-ski-touring-skins.png",
-      "sourceSha256": "2da650439b5a5476c57d447a1ae55cc406a3d2ea4bcef5013a4803620ea3b640",
+      "sourceSha256": "c9d1c59fea7e1b88379b95b0dd809cba222903ee0d2b58dd8f708101a05a259b",
       "triangleBudget": 2400,
       "params": [
         {
@@ -8821,13 +10224,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "nylon",
           "type": "color",
-          "default": "#596d58",
-          "label": "Asset color"
+          "default": "#4c7063",
+          "label": "Nylon fabric"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30383d",
+          "label": "Rubber"
+        },
+        {
+          "name": "aluminium",
+          "type": "color",
+          "default": "#b6c0c2",
+          "label": "Aluminium"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "nylon": "#3b574d",
+          "rubber": "#252c30",
+          "aluminium": "#8e9697"
+        },
+        "highVisibility": {
+          "nylon": "#e79135",
+          "rubber": "#30383d"
+        }
+      },
       "stats": {
         "triangles": 264,
         "sizeM": [
@@ -8840,19 +10265,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#596d58",
+          "name": "nylon",
+          "color": "#4c7063",
           "parts": [
             "skin-strip-0",
             "skin-strip-1",
             "tip-loop-0",
-            "tip-loop-1",
+            "tip-loop-1"
+          ],
+          "param": "nylon"
+        },
+        {
+          "name": "aluminium",
+          "color": "#b6c0c2",
+          "parts": [
             "tail-clip-0",
-            "tail-clip-1",
+            "tail-clip-1"
+          ],
+          "param": "aluminium"
+        },
+        {
+          "name": "rubber",
+          "color": "#30383d",
+          "parts": [
             "backing-tab-0",
             "backing-tab-1"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -8860,7 +10299,7 @@
       "id": "snow-anchor",
       "kit": "alpine-expedition",
       "title": "Snow deadman anchor",
-      "description": "Buried deadman anchor plate with a central cable eye and raised orientation rib. Knobs: overall scale and asset color.",
+      "description": "Buried deadman anchor plate with a central cable eye and raised orientation rib. Knobs: overall scale plus aluminium and steel material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -8881,7 +10320,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/snow-anchor.kcad.ts",
       "preview": "/assets/alpine-expedition-snow-anchor.png",
-      "sourceSha256": "8c2fcdaacb15156e58fdfae0c39d51b88627f8b732ce801922939e0014ee6acf",
+      "sourceSha256": "5387d0d2e31ce4db1dff3ae1a29f42a9ed8cedf4ed3861091f93549fb763d697",
       "triangleBudget": 2400,
       "params": [
         {
@@ -8894,13 +10333,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminium",
           "type": "color",
-          "default": "#82908b",
-          "label": "Asset color"
+          "default": "#b6c0c2",
+          "label": "Aluminium"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#69747a",
+          "label": "Steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "aluminium": "#8e9697",
+          "steel": "#525a5f"
+        },
+        "highVisibility": {
+          "aluminium": "#8e9697",
+          "steel": "#69747a"
+        }
+      },
       "stats": {
         "triangles": 188,
         "sizeM": [
@@ -8913,17 +10367,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#82908b",
+          "name": "aluminium",
+          "color": "#b6c0c2",
           "parts": [
             "anchor-plate",
             "center-rib",
             "cable-eye",
-            "anchor-cable",
             "edge-lip-0",
             "edge-lip-1"
           ],
-          "param": "color"
+          "param": "aluminium"
+        },
+        {
+          "name": "steel",
+          "color": "#69747a",
+          "parts": [
+            "anchor-cable"
+          ],
+          "param": "steel"
         }
       ]
     },
@@ -8931,7 +10392,7 @@
       "id": "snow-saw",
       "kit": "alpine-expedition",
       "title": "Snow pit saw",
-      "description": "Long snow saw blade with a tooth row, stiffening spine and molded grip handle. Knobs: overall scale and asset color.",
+      "description": "Long snow saw blade with a tooth row, stiffening spine and molded grip handle. Knobs: overall scale plus aluminium, steel and rubber material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -8952,7 +10413,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/snow-saw.kcad.ts",
       "preview": "/assets/alpine-expedition-snow-saw.png",
-      "sourceSha256": "4b6b2bee4d7e11f5c8228ab8d6242358cdeed5e9b60dbb9a73b308318aaf9117",
+      "sourceSha256": "044029f92d630e5bb34f2785b75eb68cfebe0a11f9f038d16b95b687b266c312",
       "triangleBudget": 2400,
       "params": [
         {
@@ -8965,13 +10426,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminium",
           "type": "color",
-          "default": "#767e7c",
-          "label": "Asset color"
+          "default": "#b6c0c2",
+          "label": "Aluminium"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#69747a",
+          "label": "Steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30383d",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "aluminium": "#8e9697",
+          "steel": "#525a5f",
+          "rubber": "#252c30"
+        },
+        "highVisibility": {
+          "aluminium": "#8e9697",
+          "steel": "#69747a"
+        }
+      },
       "stats": {
         "triangles": 372,
         "sizeM": [
@@ -8984,8 +10467,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#767e7c",
+          "name": "steel",
+          "color": "#69747a",
           "parts": [
             "saw-blade",
             "saw-tooth-0",
@@ -9007,12 +10490,26 @@
             "saw-tooth-16",
             "saw-tooth-17",
             "saw-tooth-18",
-            "saw-tooth-19",
-            "blade-spine",
+            "saw-tooth-19"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "aluminium",
+          "color": "#b6c0c2",
+          "parts": [
+            "blade-spine"
+          ],
+          "param": "aluminium"
+        },
+        {
+          "name": "rubber",
+          "color": "#30383d",
+          "parts": [
             "handle",
             "handle-loop"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -9020,7 +10517,7 @@
       "id": "snow-wall-shovel",
       "kit": "alpine-expedition",
       "title": "Snow wall shovel",
-      "description": "Compact snow shovel with a broad blade, angled shaft and transverse hand grip. Knobs: overall scale and asset color.",
+      "description": "Compact snow shovel with a broad blade, angled shaft and transverse hand grip. Knobs: overall scale plus aluminium, steel and rubber material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -9041,7 +10538,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/snow-wall-shovel.kcad.ts",
       "preview": "/assets/alpine-expedition-snow-wall-shovel.png",
-      "sourceSha256": "eb9acee216093e027f1864856cf2c44584120c438c385666b5d9f73383d8834f",
+      "sourceSha256": "dfe0e427f34cae8ce371dca8cc25506153b03be124f39687029886ad54a9817f",
       "triangleBudget": 2400,
       "params": [
         {
@@ -9054,13 +10551,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminium",
           "type": "color",
-          "default": "#b35a32",
-          "label": "Asset color"
+          "default": "#b6c0c2",
+          "label": "Aluminium"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#69747a",
+          "label": "Steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30383d",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "aluminium": "#8e9697",
+          "steel": "#525a5f",
+          "rubber": "#252c30"
+        },
+        "highVisibility": {
+          "aluminium": "#8e9697",
+          "steel": "#69747a"
+        }
+      },
       "stats": {
         "triangles": 156,
         "sizeM": [
@@ -9073,16 +10592,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b35a32",
+          "name": "steel",
+          "color": "#69747a",
           "parts": [
             "shovel-blade",
-            "shaft",
-            "blade-rib",
+            "blade-rib"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "aluminium",
+          "color": "#b6c0c2",
+          "parts": [
+            "shaft"
+          ],
+          "param": "aluminium"
+        },
+        {
+          "name": "rubber",
+          "color": "#30383d",
+          "parts": [
             "grip",
             "grip-center"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -9090,7 +10623,7 @@
       "id": "snowshoes",
       "kit": "alpine-expedition",
       "title": "Alpine snowshoes",
-      "description": "Pair of framed snowshoes with bindings, crossbars and raised toe loops. Knobs: overall scale and asset color.",
+      "description": "Pair of framed snowshoes with bindings, crossbars and raised toe loops. Knobs: overall scale plus aluminium, nylon and rubber material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -9111,7 +10644,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/snowshoes.kcad.ts",
       "preview": "/assets/alpine-expedition-snowshoes.png",
-      "sourceSha256": "4f446cef8d795752c02051564e05fd9770d5ef0f8a9d63007fdf377159b33361",
+      "sourceSha256": "75c1e737d697c33b1fd49238f7073aa6f60a7051bf13d706c9a9bb78fe7aa30d",
       "triangleBudget": 2400,
       "params": [
         {
@@ -9124,13 +10657,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminium",
           "type": "color",
-          "default": "#7f8a84",
-          "label": "Asset color"
+          "default": "#b6c0c2",
+          "label": "Aluminium"
+        },
+        {
+          "name": "nylon",
+          "type": "color",
+          "default": "#4c7063",
+          "label": "Nylon fabric"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30383d",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "aluminium": "#8e9697",
+          "nylon": "#3b574d",
+          "rubber": "#252c30"
+        },
+        "highVisibility": {
+          "nylon": "#e79135",
+          "aluminium": "#b6c0c2"
+        }
+      },
       "stats": {
         "triangles": 496,
         "sizeM": [
@@ -9143,19 +10698,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7f8a84",
+          "name": "aluminium",
+          "color": "#b6c0c2",
           "parts": [
             "shoe-frame-0",
             "shoe-frame-1",
-            "deck-binding-0",
-            "deck-binding-1",
             "crossbar-0",
-            "crossbar-1",
+            "crossbar-1"
+          ],
+          "param": "aluminium"
+        },
+        {
+          "name": "rubber",
+          "color": "#30383d",
+          "parts": [
+            "deck-binding-0",
+            "deck-binding-1"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "nylon",
+          "color": "#4c7063",
+          "parts": [
             "toe-loop-0",
             "toe-loop-1"
           ],
-          "param": "color"
+          "param": "nylon"
         }
       ]
     },
@@ -9163,7 +10732,7 @@
       "id": "summit-marker-post",
       "kit": "alpine-expedition",
       "title": "Summit marker post",
-      "description": "Trail summit marker with a broad base, upright post, direction plaque and small cap. Knobs: overall scale and asset color.",
+      "description": "Trail summit marker with a broad base, upright post, direction plaque and small cap. Knobs: overall scale plus steel, aluminium and polyester material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -9184,7 +10753,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/summit-marker-post.kcad.ts",
       "preview": "/assets/alpine-expedition-summit-marker-post.png",
-      "sourceSha256": "7c5d2cf82eadcfca1dfa5c3db187b2e74031648281491acb42a60081855081f3",
+      "sourceSha256": "10e9204295cf8dd145a61e63a17165bac11b42e53b4553176f55c22c17e1ddeb",
       "triangleBudget": 2400,
       "params": [
         {
@@ -9197,13 +10766,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "steel",
           "type": "color",
-          "default": "#b95237",
-          "label": "Asset color"
+          "default": "#69747a",
+          "label": "Steel"
+        },
+        {
+          "name": "aluminium",
+          "type": "color",
+          "default": "#b6c0c2",
+          "label": "Aluminium"
+        },
+        {
+          "name": "polyester",
+          "type": "color",
+          "default": "#bd7547",
+          "label": "Polyester fabric"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "steel": "#525a5f",
+          "aluminium": "#8e9697",
+          "polyester": "#935b37"
+        },
+        "highVisibility": {
+          "polyester": "#e79135",
+          "steel": "#69747a"
+        }
+      },
       "stats": {
         "triangles": 124,
         "sizeM": [
@@ -9216,16 +10807,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b95237",
+          "name": "aluminium",
+          "color": "#b6c0c2",
           "parts": [
-            "base-plate",
+            "base-plate"
+          ],
+          "param": "aluminium"
+        },
+        {
+          "name": "steel",
+          "color": "#69747a",
+          "parts": [
             "marker-post",
-            "direction-plaque",
-            "arrow-board",
             "post-cap"
           ],
-          "param": "color"
+          "param": "steel"
+        },
+        {
+          "name": "polyester",
+          "color": "#bd7547",
+          "parts": [
+            "direction-plaque",
+            "arrow-board"
+          ],
+          "param": "polyester"
         }
       ]
     },
@@ -9233,7 +10838,7 @@
       "id": "tent-footprint",
       "kit": "alpine-expedition",
       "title": "Tent footprint sheet",
-      "description": "Rectangular groundsheet with reinforced corners and low edge loops for a mountain tent. Knobs: overall scale and asset color.",
+      "description": "Rectangular groundsheet with reinforced corners and low edge loops for a mountain tent. Knobs: overall scale plus polyester, nylon and webbing material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -9254,7 +10859,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/tent-footprint.kcad.ts",
       "preview": "/assets/alpine-expedition-tent-footprint.png",
-      "sourceSha256": "3343e4d4bafde982596110f2abecc11a039cc90498c66aaf3b52cc7b74c01c78",
+      "sourceSha256": "0cce63ab01f03f56b88239df1f82318946f7fca607606ae6182da724f25b5198",
       "triangleBudget": 2400,
       "params": [
         {
@@ -9267,13 +10872,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polyester",
           "type": "color",
-          "default": "#666f68",
-          "label": "Asset color"
+          "default": "#bd7547",
+          "label": "Polyester fabric"
+        },
+        {
+          "name": "nylon",
+          "type": "color",
+          "default": "#4c7063",
+          "label": "Nylon fabric"
+        },
+        {
+          "name": "webbing",
+          "type": "color",
+          "default": "#d7a43e",
+          "label": "Polyamide webbing"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "polyester": "#935b37",
+          "nylon": "#3b574d",
+          "webbing": "#a88030"
+        },
+        "highVisibility": {
+          "nylon": "#e79135",
+          "polyester": "#f1c64e"
+        }
+      },
       "stats": {
         "triangles": 408,
         "sizeM": [
@@ -9286,17 +10913,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#666f68",
+          "name": "polyester",
+          "color": "#bd7547",
           "parts": [
-            "sheet",
+            "sheet"
+          ],
+          "param": "polyester"
+        },
+        {
+          "name": "webbing",
+          "color": "#d7a43e",
+          "parts": [
             "corner-loop-0",
             "corner-loop-1",
             "corner-loop-2",
-            "corner-loop-3",
+            "corner-loop-3"
+          ],
+          "param": "webbing"
+        },
+        {
+          "name": "nylon",
+          "color": "#4c7063",
+          "parts": [
             "center-seam"
           ],
-          "param": "color"
+          "param": "nylon"
         }
       ]
     },
@@ -9304,7 +10945,7 @@
       "id": "tent-pole-bundle",
       "kit": "alpine-expedition",
       "title": "Tent pole bundle",
-      "description": "Grouped segmented tent poles with end ferrules and a compact elastic keeper strap. Knobs: overall scale and asset color.",
+      "description": "Grouped segmented tent poles with end ferrules and a compact elastic keeper strap. Knobs: overall scale plus aluminium, nylon and steel material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -9325,7 +10966,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/tent-pole-bundle.kcad.ts",
       "preview": "/assets/alpine-expedition-tent-pole-bundle.png",
-      "sourceSha256": "7575ba6bac09c8c9447439adfb7214f4527f0dbe8b3e71555e3cbec72a1943f2",
+      "sourceSha256": "424a7dd8bd08a2084f1f7c2bbac8c24bea4b52c9e7ad8a377af6ddffdd0ee6a4",
       "triangleBudget": 2400,
       "params": [
         {
@@ -9338,13 +10979,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminium",
           "type": "color",
-          "default": "#a7a7a0",
-          "label": "Asset color"
+          "default": "#b6c0c2",
+          "label": "Aluminium"
+        },
+        {
+          "name": "nylon",
+          "type": "color",
+          "default": "#4c7063",
+          "label": "Nylon fabric"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#69747a",
+          "label": "Steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "aluminium": "#8e9697",
+          "nylon": "#3b574d",
+          "steel": "#525a5f"
+        },
+        "highVisibility": {
+          "nylon": "#e79135",
+          "aluminium": "#b6c0c2"
+        }
+      },
       "stats": {
         "triangles": 376,
         "sizeM": [
@@ -9357,21 +11020,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a7a7a0",
+          "name": "aluminium",
+          "color": "#b6c0c2",
           "parts": [
             "pole-0",
             "pole-1",
             "pole-2",
-            "pole-3",
+            "pole-3"
+          ],
+          "param": "aluminium"
+        },
+        {
+          "name": "nylon",
+          "color": "#4c7063",
+          "parts": [
             "keeper-strap-front",
-            "keeper-strap-rear",
+            "keeper-strap-rear"
+          ],
+          "param": "nylon"
+        },
+        {
+          "name": "steel",
+          "color": "#69747a",
+          "parts": [
             "end-ferrule-0",
             "end-ferrule-1",
             "end-ferrule-2",
             "end-ferrule-3"
           ],
-          "param": "color"
+          "param": "steel"
         }
       ]
     },
@@ -9379,7 +11056,7 @@
       "id": "trail-gaiters",
       "kit": "alpine-expedition",
       "title": "Trail gaiters",
-      "description": "Pair of ankle gaiters with front hooks, instep straps and upper closure tabs. Knobs: overall scale and asset color.",
+      "description": "Pair of ankle gaiters with front hooks, instep straps and upper closure tabs. Knobs: overall scale plus nylon, rubber and steel material colors.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -9400,7 +11077,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/alpine-expedition/trail-gaiters.kcad.ts",
       "preview": "/assets/alpine-expedition-trail-gaiters.png",
-      "sourceSha256": "26e6da2fc2fd76da0f9a7497b1ddfed6c4347a2559c43badbcd7e2d9ea3873e6",
+      "sourceSha256": "93d828d71a97831b72f61b60a088d770a69a41a07259bf71541c8c9b0f735bad",
       "triangleBudget": 2400,
       "params": [
         {
@@ -9413,13 +11090,35 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "nylon",
           "type": "color",
-          "default": "#62714c",
-          "label": "Asset color"
+          "default": "#4c7063",
+          "label": "Nylon fabric"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30383d",
+          "label": "Rubber"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#69747a",
+          "label": "Steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "stormWorn": {
+          "nylon": "#3b574d",
+          "rubber": "#252c30",
+          "steel": "#525a5f"
+        },
+        "highVisibility": {
+          "nylon": "#e79135",
+          "rubber": "#30383d"
+        }
+      },
       "stats": {
         "triangles": 160,
         "sizeM": [
@@ -9432,19 +11131,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#62714c",
+          "name": "nylon",
+          "color": "#4c7063",
           "parts": [
             "gaiter-shell-0",
             "gaiter-shell-1",
-            "instep-strap-0",
-            "instep-strap-1",
-            "front-hook-0",
-            "front-hook-1",
             "closure-tab-0",
             "closure-tab-1"
           ],
-          "param": "color"
+          "param": "nylon"
+        },
+        {
+          "name": "rubber",
+          "color": "#30383d",
+          "parts": [
+            "instep-strap-0",
+            "instep-strap-1"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "steel",
+          "color": "#69747a",
+          "parts": [
+            "front-hook-0",
+            "front-hook-1"
+          ],
+          "param": "steel"
         }
       ]
     },

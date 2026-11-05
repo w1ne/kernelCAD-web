@@ -6,10 +6,11 @@ from those sources and must be rebuilt in the same change.
 
 ## Catalog quality snapshot (2026-11-05)
 
-The catalog quality gate reports **1,904/2,390 assets passing (79.67%)** and
-486 thin assets (20.33%). This round promoted 50 existing archaeology-fieldwork
-assets from the 1,854/2,390 checkpoint; no IDs were added. Thin assets remain
-in other kits. See the [archaeology fieldwork quality handoff](../artifacts/catalog-demos/archaeology-fieldwork-quality-promotion-20261105/README.md),
+The catalog quality gate reports **1,954/2,390 assets passing (81.76%)** and
+436 thin assets (18.24%) across nine thin kits. This round promoted 50 existing
+alpine-expedition assets from the 1,904/2,390 checkpoint; no IDs were added.
+See the [Alpine expedition quality handoff](../artifacts/catalog-demos/alpine-expedition-quality-promotion-20261105/README.md),
+[archaeology fieldwork quality handoff](../artifacts/catalog-demos/archaeology-fieldwork-quality-promotion-20261105/README.md),
 [EV charging infrastructure handoff](../artifacts/catalog-demos/ev-charging-infrastructure-quality-promotion-20261105/README.md),
 [beverage bottling line handoff](../artifacts/catalog-demos/beverage-bottling-line-quality-promotion-20261105/README.md),
 [data center infrastructure handoff](../artifacts/catalog-demos/data-center-infrastructure-quality-promotion-20261105/README.md),
@@ -76,13 +77,17 @@ builds.
 
 ## Alpine expedition assets
 
-The [alpine expedition kit](../catalog/kits/alpine-expedition/README.md) adds
-50 original low-poly scene props for shelters, climbing, snow travel, rescue,
-and field equipment. Each source exposes overall scale and asset color, and
-the catalog index carries the generated preview path. The [wave demo and
-verification bundle](../artifacts/catalog-demos/alpine-expedition-wave-20261103/README.md)
-shows the source-to-preview workflow and its local evidence; it does not claim
-that this branch has been deployed.
+The [alpine expedition kit](../catalog/kits/alpine-expedition/README.md) keeps
+50 existing scene props for shelters, climbing, snow travel, rescue, and field
+equipment. Each retains its scale control and now has two to four
+material-named color controls, `stormWorn` / `highVisibility` presets, and a
+rendered indexed preview. The promotion adds 143 material controls and 100
+preset entries without changing the catalog count. The [quality promotion
+handoff](../artifacts/catalog-demos/alpine-expedition-quality-promotion-20261105/README.md)
+records the source changes, preview review, regenerated index, local checks and
+inspected MP4. These are visualization assets; local checks do not establish
+deployed behavior or physical acceptance. The [original wave bundle](../artifacts/catalog-demos/alpine-expedition-wave-20261103/README.md)
+records the initial source workflow.
 
 ## Archaeology fieldwork assets
 

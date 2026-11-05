@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "kit": "alpine-expedition",
+  "pagesBuilt": 50,
+  "pagesExpected": 50,
+  "hubPresent": true,
+  "previewCopiesMatched": true,
+  "issues": []
+}

@@ -1,0 +1,36 @@
+{
+  "video": "alpine-expedition-quality-promotion.mp4",
+  "durationSeconds": 20.0,
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "pixelFormat": "yuv420p",
+  "framesDecoded": [
+    {
+      "file": "video-review/decoded-01.png",
+      "timestampSeconds": 1,
+      "exists": true
+    },
+    {
+      "file": "video-review/decoded-02.png",
+      "timestampSeconds": 5,
+      "exists": true
+    },
+    {
+      "file": "video-review/decoded-03.png",
+      "timestampSeconds": 9,
+      "exists": true
+    },
+    {
+      "file": "video-review/decoded-04.png",
+      "timestampSeconds": 13,
+      "exists": true
+    },
+    {
+      "file": "video-review/decoded-05.png",
+      "timestampSeconds": 17,
+      "exists": true
+    }
+  ],
+  "inspection": "Decoded representative frames for manual review; playback is a local source/render replay, not deployed behavior or hardware acceptance."
+}
