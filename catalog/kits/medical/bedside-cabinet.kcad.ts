@@ -23,6 +23,7 @@ meta({
   "triangleBudget": 500
 });
 
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const shell = param('shell', '#e8ecee', { label: 'Shell' });
 const accent = param('accent', '#5c7482', { label: 'Accent' });
 presets({
@@ -32,12 +33,12 @@ presets({
 const p = assembly('bedside-cabinet');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
 
-p.part('cabinet-body', b(0, 0, 210, 360, 300, 420).color(shell));
-p.part('top', b(0, 0, 430, 380, 320, 20).color(accent));
+p.part('cabinet-body', b(0, 0, 210, 360, 300, 420).color(shell).scale(overallScale));
+p.part('top', b(0, 0, 430, 380, 320, 20).color(accent).scale(overallScale));
 for (const z of [300, 120]) {
-  p.part('drawer-' + z, b(0, -154, z, 335, 10, 145).color(shell));
-  p.part('pull-' + z, b(0, -165, z, 54, 12, 10).color(accent));
+  p.part('drawer-' + z, b(0, -154, z, 335, 10, 145).color(shell).scale(overallScale));
+  p.part('pull-' + z, b(0, -165, z, 54, 12, 10).color(accent).scale(overallScale));
 }
-p.part('plinth', b(0, 0, 24, 300, 240, 48).color(accent));
+p.part('plinth', b(0, 0, 24, 300, 240, 48).color(accent).scale(overallScale));
 
 return p.model();

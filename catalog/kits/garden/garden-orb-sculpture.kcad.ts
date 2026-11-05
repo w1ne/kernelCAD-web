@@ -11,6 +11,7 @@ meta({
   triangleBudget: 240,
 });
 
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const orb = param('orb', '#5c8892', { label: 'Orb' });
 const pedestal = param('pedestal', '#9c9584', { label: 'Pedestal' });
 const plinth = param('plinth', '#6c726d', { label: 'Plinth' });
@@ -20,7 +21,7 @@ const partNames = new Map<string, number>();
 const addPart = (name: string, shape: ReturnType<typeof box>) => {
   const count = partNames.get(name) ?? 0;
   partNames.set(name, count + 1);
-  a.part(count === 0 ? name : `${name}-${count + 1}`, shape);
+  a.part(count === 0 ? name : `${name}-${count + 1}`, shape.scale(overallScale));
 };
 
 addPart('plinth', box(520, 520, 110, true).translate(0, 0, 55).color(plinth));

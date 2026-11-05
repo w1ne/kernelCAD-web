@@ -11,6 +11,7 @@ meta({
   triangleBudget: 220,
 });
 
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const sack = param('sack', '#8b7958', { label: 'Sack' });
 const soil = param('soil', '#4c3a2c', { label: 'Soil' });
 const tie = param('tie', '#ba9d68', { label: 'Tie' });
@@ -20,7 +21,7 @@ const partNames = new Map<string, number>();
 const addPart = (name: string, shape: ReturnType<typeof box>) => {
   const count = partNames.get(name) ?? 0;
   partNames.set(name, count + 1);
-  a.part(count === 0 ? name : `${name}-${count + 1}`, shape);
+  a.part(count === 0 ? name : `${name}-${count + 1}`, shape.scale(overallScale));
 };
 
 addPart('sack-body', sphere(300).scale([1.2, 0.82, 0.92]).translate(0, 0, 276).color(sack));

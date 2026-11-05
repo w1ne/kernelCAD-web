@@ -31525,9 +31525,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/city-street/delivery-van.kcad.ts",
       "preview": "/assets/city-street-delivery-van.png",
-      "sourceSha256": "8e49fcf14fae7e10ee72852915e0cd675b268d606608e686b97951d24bc80a4a",
+      "sourceSha256": "5dc0b42ca7c1e165789d09e9270a01560db17735e3ebdf15f9537158e16c5031",
       "triangleBudget": 520,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "body",
           "type": "color",
@@ -31899,9 +31908,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/city-street/e-scooter.kcad.ts",
       "preview": "/assets/city-street-e-scooter.png",
-      "sourceSha256": "d526755453014561d9fa34caea0e55bd5a81983585012f4c2374baf21da02878",
+      "sourceSha256": "9d27793478a01baef6186f7562e54631e3316ae9743258259f126eb4c4d3e159",
       "triangleBudget": 260,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "body",
           "type": "color",
@@ -32014,9 +32032,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/city-street/ev-charger.kcad.ts",
       "preview": "/assets/city-street-ev-charger.png",
-      "sourceSha256": "31ab796a3fca480270aca1a44acf69f87e96f15307384455f8c1524ceb7be8cf",
+      "sourceSha256": "2adcdb0338ee45d435367c2d1134b6c766521c2bb9a6fe519cded20febcf6009",
       "triangleBudget": 320,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "body",
           "type": "color",
@@ -32116,9 +32143,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/city-street/fire-alarm-box.kcad.ts",
       "preview": "/assets/city-street-fire-alarm-box.png",
-      "sourceSha256": "49002df36fce258f33eb1eb421f8b369a87b99c24b5d6354c4156f5991807596",
+      "sourceSha256": "ffb3893b707c28f82d5c88a7ccbf8e0d15766a0b954077e97efd8059cc8497af",
       "triangleBudget": 260,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "body",
           "type": "color",
@@ -34587,9 +34623,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/city-street/public-toilet.kcad.ts",
       "preview": "/assets/city-street-public-toilet.png",
-      "sourceSha256": "bb58e3e8cde33eea6855afdb27886875eb621c4b5b2bd87476f6c0ff334a96a4",
+      "sourceSha256": "f35528d688b918c0366f6fd6195bbe3b21ae5ed96d09d2f486142689ca9aeafa",
       "triangleBudget": 260,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "body",
           "type": "color",
@@ -36548,9 +36593,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/city-street/ticket-machine.kcad.ts",
       "preview": "/assets/city-street-ticket-machine.png",
-      "sourceSha256": "5bbcfb6cabdca51b30a288136123f578bb8fa4440c672f852f940e8a3d48281e",
+      "sourceSha256": "21e1d2bb82c91943f1776b00251f24d21d266485309199f72d2429a81f8c9010",
       "triangleBudget": 220,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "body",
           "type": "color",
@@ -67356,9 +67410,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/garden/bat-box.kcad.ts",
       "preview": "/assets/garden-bat-box.png",
-      "sourceSha256": "8f4e37a4aff51ec7be76d91f1c3936c096729821799452212f6038f6e3b9d274",
+      "sourceSha256": "aac4cd7afe178ef154f675022c26dd3a88e37ec0a573203298205fd45be62912",
       "triangleBudget": 280,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "boxColor",
           "type": "color",
@@ -67463,9 +67526,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/garden/bird-feeder-post.kcad.ts",
       "preview": "/assets/garden-bird-feeder-post.png",
-      "sourceSha256": "946704dcac75125939e5d00ed07e4ae1b9870bb8a7fd952e114dc2cd71eec373",
+      "sourceSha256": "ef7629102d06c3a1e2ddcb6191d8211f7ebe6bdc6d79f627d1c732c0be377b72",
       "triangleBudget": 360,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "body",
           "type": "color",
@@ -67559,9 +67631,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/garden/birdbath.kcad.ts",
       "preview": "/assets/garden-birdbath.png",
-      "sourceSha256": "a321f6caf36443de7f6595d7f642706297c319c01040ce530e013aa583812563",
+      "sourceSha256": "b41c1f7a728028e1f03d33b383afa93f7165894b97ed94dae09b2fd831fcec1e",
       "triangleBudget": 300,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "stone",
           "type": "color",
@@ -67652,9 +67733,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/garden/birdhouse-post.kcad.ts",
       "preview": "/assets/garden-birdhouse-post.png",
-      "sourceSha256": "cc05957771dc005fe6d23d7a1f1eb9ffe8e53e57afddee6ceed0b283eb18ed5e",
+      "sourceSha256": "7828bd26a825e9c1e71527f0e951940b291f5bcdd00fd79c0b68fa56bed9fff0",
       "triangleBudget": 320,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "house",
           "type": "color",
@@ -68487,9 +68577,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/garden/garden-gnome.kcad.ts",
       "preview": "/assets/garden-garden-gnome.png",
-      "sourceSha256": "b91f06c2fbac56d9383aae6bdb243cbb5f67de16cd3a5b709d00673296e2522a",
+      "sourceSha256": "5778cde3c47597e28792df22b7c41bb5e0e96a86db754f3e5f0ff9ba5573a064",
       "triangleBudget": 300,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "coat",
           "type": "color",
@@ -68711,9 +68810,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/garden/garden-kneeling-pad.kcad.ts",
       "preview": "/assets/garden-garden-kneeling-pad.png",
-      "sourceSha256": "23ec19a59df644f0d332012125b039b3bffcec31ab68a3657c34dcda2485a2cc",
+      "sourceSha256": "6975ad0f5cb9c4a87862ccad6979d5ccca6a40fe8ebf955939729c32ef6a26c4",
       "triangleBudget": 220,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "pad",
           "type": "color",
@@ -68905,9 +69013,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/garden/garden-orb-sculpture.kcad.ts",
       "preview": "/assets/garden-garden-orb-sculpture.png",
-      "sourceSha256": "9ff9c0de6780b9f7287aa49f92721c3148c1122bf47f0ff3dfc22b438530ea7b",
+      "sourceSha256": "ba43839d44f1701f8e6101be06fe642145689228a0b165f776f494226d906d73",
       "triangleBudget": 240,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "orb",
           "type": "color",
@@ -69100,9 +69217,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/garden/garden-pinwheel.kcad.ts",
       "preview": "/assets/garden-garden-pinwheel.png",
-      "sourceSha256": "1872e73ff567be739e26705fa3b4ca0bc45ffc2e64af253c1d8c51ccb7fd8d32",
+      "sourceSha256": "1e36c658f966deb535591c6d317722f236a7e6e5938fdd2d306c0655c0052435",
       "triangleBudget": 220,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "blade",
           "type": "color",
@@ -69195,9 +69321,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/garden/garden-sundial.kcad.ts",
       "preview": "/assets/garden-garden-sundial.png",
-      "sourceSha256": "6a59b54aaaf1751a416a590fc4e36333df1a67b57deeb27551e4ec1b5141371c",
+      "sourceSha256": "d0e1f3087326404d47e268bef5990e977b8ce883a3aedebeaa5095689120a1ae",
       "triangleBudget": 300,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "stone",
           "type": "color",
@@ -69734,9 +69869,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/garden/insect-hotel.kcad.ts",
       "preview": "/assets/garden-insect-hotel.png",
-      "sourceSha256": "a7d18979c7b6e4b0284ef7b00bbbb28a34352ab2d2235c16dc4d3be1956b09ce",
+      "sourceSha256": "dde798d8865dac10ce28597d74e3038f273aab3075032468375bb213aeaf1c12",
       "triangleBudget": 420,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "frame",
           "type": "color",
@@ -70050,9 +70194,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/garden/plant-label-set.kcad.ts",
       "preview": "/assets/garden-plant-label-set.png",
-      "sourceSha256": "81556f0c23ab2136e7d03400171bfba9d5c4dd192ba7656fa2dc950e7341614a",
+      "sourceSha256": "4b0066934dae6cb941e1529cb396c35a7c98662ef8c65d5faa8690b73d91f58f",
       "triangleBudget": 220,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "stake",
           "type": "color",
@@ -70361,9 +70514,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/garden/potting-soil-sack.kcad.ts",
       "preview": "/assets/garden-potting-soil-sack.png",
-      "sourceSha256": "4cb6a31114a50e6af48fc85887098de6c132281801c4ef60e3f7eff56e2fac21",
+      "sourceSha256": "9f8b899a9667ee011d216c7bc3fdda09e662370d4fd1b2dd26063db1a77d5239",
       "triangleBudget": 220,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "sack",
           "type": "color",
@@ -70904,9 +71066,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/garden/rotary-sprinkler.kcad.ts",
       "preview": "/assets/garden-rotary-sprinkler.png",
-      "sourceSha256": "6cda03983c301dd255cf1e57d1cbbecaaa4058418e36435de16bd9cccd79c56d",
+      "sourceSha256": "01dd12562148c78fa5116306b2cd05b1a7f7df8ed7902376e0eb1c12c3efe626",
       "triangleBudget": 260,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "body",
           "type": "color",
@@ -71319,9 +71490,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/garden/weather-vane.kcad.ts",
       "preview": "/assets/garden-weather-vane.png",
-      "sourceSha256": "a8666014e1738a4468c2a49f16a4bbd5dd93a8283182136757422b0e6f656cab",
+      "sourceSha256": "204b61b6c1f598effcbc914ff614dab1f8e49dbcadbf2594c697fdc71da35597",
       "triangleBudget": 320,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "pole",
           "type": "color",
@@ -100284,9 +100464,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/adhesive-bandage-box.kcad.ts",
       "preview": "/assets/medical-adhesive-bandage-box.png",
-      "sourceSha256": "d8b6e0c1df78017b9ba0e8e031637359addf79155d3d32d204cf8c9f639e38b3",
+      "sourceSha256": "07f6b61bd56cb75a1dd92fe6f895e14c347dd5b58365e34ec30b9b8d583bc19b",
       "triangleBudget": 260,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -100366,9 +100555,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/bandage-roll.kcad.ts",
       "preview": "/assets/medical-bandage-roll.png",
-      "sourceSha256": "2e7a096b41673d34b53880e201d86cd0f6a53497ba5731f284a8ac051150ee87",
+      "sourceSha256": "b3b1fa8ef016501541879037681a0fe70cb490dd75c8c85494f2f11ec3fc25cc",
       "triangleBudget": 300,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -100446,9 +100644,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/bedside-cabinet.kcad.ts",
       "preview": "/assets/medical-bedside-cabinet.png",
-      "sourceSha256": "7bc7e01358eb90c147d15ec7bc3e867cc47193e7f3c17322a87ce257cb1f5306",
+      "sourceSha256": "c92ca9a88d7f2b15317018587ed3574d49c9a1d6f1965374e46a0b877186fa69",
       "triangleBudget": 500,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -100530,9 +100737,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/blood-collection-tube.kcad.ts",
       "preview": "/assets/medical-blood-collection-tube.png",
-      "sourceSha256": "b4abb10f10391cfdb869539eef201458d8b9146ec3f53bb0b723020b2549978a",
+      "sourceSha256": "7bd8322b4ff52884c8961ce635b459fe1b7fcb0ce364aa4cb5dea4643541ec1e",
       "triangleBudget": 240,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -100611,9 +100827,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/blood-pressure-monitor.kcad.ts",
       "preview": "/assets/medical-blood-pressure-monitor.png",
-      "sourceSha256": "491edf8da44a8b5b9027c40229d77c7862a20751fcc4384de99c26fba385f8ff",
+      "sourceSha256": "2ccc7dbdb8c654238877ba2ee5ffed6f188e507322585dc365d1a58a12af5f0e",
       "triangleBudget": 400,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -100697,9 +100922,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/centrifuge.kcad.ts",
       "preview": "/assets/medical-centrifuge.png",
-      "sourceSha256": "f7a2a1cbd1a7c763c10405c3083733fa0696c87167462803c838fe6898501596",
+      "sourceSha256": "4023055f0c1013da01a9036373a2cfeb350ff948c319d644b01ae84482ecdf8a",
       "triangleBudget": 400,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -100784,9 +101018,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/defibrillator.kcad.ts",
       "preview": "/assets/medical-defibrillator.png",
-      "sourceSha256": "638da0b4533825655ece1cf2d0ff646c60b081e2ace072365fc32bdc3c41fd0a",
+      "sourceSha256": "8044fec180061c75c91c2c3643cef72fd12c610140776e0f466e3c9326d69b47",
       "triangleBudget": 450,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -100869,9 +101112,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/diagnostic-monitor.kcad.ts",
       "preview": "/assets/medical-diagnostic-monitor.png",
-      "sourceSha256": "916c417f8183a08c5174297a0fd49a7d8775e5500cfe44f69359092927a06e18",
+      "sourceSha256": "563b35e1ba4cd64245584bc4c3b9dc0585d6fd1e9bb5a212cdb08f146259fbfc",
       "triangleBudget": 400,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -100954,9 +101206,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/digital-thermometer.kcad.ts",
       "preview": "/assets/medical-digital-thermometer.png",
-      "sourceSha256": "b4c21fd227993721215d5e59c6b4fe7295cd6956e124c4b0bb50c61fa26d6927",
+      "sourceSha256": "0e856351f4eb7bbb4d2880e9462881af8c9ccdb7144af3a52cf031ff6b1aba6b",
       "triangleBudget": 240,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -101036,9 +101297,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/erlenmeyer-flask.kcad.ts",
       "preview": "/assets/medical-erlenmeyer-flask.png",
-      "sourceSha256": "8d6dd164aba3caaca9e626df7e58bc9c6ddba91f561c55a1eab6049adb463f8a",
+      "sourceSha256": "5db143b847d99a1bdbda020c3f96066f1a2792a5a425c4cb01f681d30d535ef5",
       "triangleBudget": 260,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -101118,9 +101388,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/exam-table.kcad.ts",
       "preview": "/assets/medical-exam-table.png",
-      "sourceSha256": "88dd0adbbb26a6dce49337a12e8c761d94be800b86ac9157d6872f023cb62171",
+      "sourceSha256": "429d60c3d909304ab437cfb281c8fc3633c0a4de493e62674818380f6154ffea",
       "triangleBudget": 600,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -101203,9 +101482,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/examination-light.kcad.ts",
       "preview": "/assets/medical-examination-light.png",
-      "sourceSha256": "7251b2a058f2175f289786141b716bca8c5fac6dd38808a05ca3fe2387303256",
+      "sourceSha256": "5760fd0e9c051a3dd41f4a1c6bd14709022b56fdd2a7feb1b108b229348a6f26",
       "triangleBudget": 450,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -101292,9 +101580,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/first-aid-kit.kcad.ts",
       "preview": "/assets/medical-first-aid-kit.png",
-      "sourceSha256": "bc34bc9d141569a0670cb742cdc4b475d0102cceb3fda8161bc3e39ed5ad5e52",
+      "sourceSha256": "0440109c73bc7944f0d631098d51c036354c8d7cefdf3fc3e53daa372298dbfe",
       "triangleBudget": 350,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -101378,9 +101675,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/forceps.kcad.ts",
       "preview": "/assets/medical-forceps.png",
-      "sourceSha256": "b15739c5750befd8eb45a3d64d41b506df7158ca63f66581623bb794b643d20e",
+      "sourceSha256": "d8ec4b3f0de499081e903a70e5c27df93234b47c27f94f3f54908f230ac830b9",
       "triangleBudget": 300,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -101461,9 +101767,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/forearm-crutches.kcad.ts",
       "preview": "/assets/medical-forearm-crutches.png",
-      "sourceSha256": "1cfb2654da329d70e5c3bd43b770f9f69469354262fbfd0a9e20588c36a0d086",
+      "sourceSha256": "6cee9e0e715b382ea322264fea03c3de03e21f72dcb3d944e97b9605c4f9bfa9",
       "triangleBudget": 350,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -101546,9 +101861,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/gauze-pads.kcad.ts",
       "preview": "/assets/medical-gauze-pads.png",
-      "sourceSha256": "633bc6ce5099e89d3b96d6fbdf83d1d704b0a9d3d18403125a6b8c089ee3424d",
+      "sourceSha256": "f725ac8e8cdf5e49e2417e79c79e62926de069569240f9c81341a4dfe98d5910",
       "triangleBudget": 240,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -101732,9 +102056,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/instrument-trolley.kcad.ts",
       "preview": "/assets/medical-instrument-trolley.png",
-      "sourceSha256": "8d0a277de0ee499860172989244cf65e96928fa8c1c2caa1d72023c27fc025cd",
+      "sourceSha256": "a8002aaef1dc579d100911fa528f774a69c2fa71c0d30a8d76f70db731c2f4bf",
       "triangleBudget": 500,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -101817,9 +102150,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/iv-stand.kcad.ts",
       "preview": "/assets/medical-iv-stand.png",
-      "sourceSha256": "52a6f2e69fa59df7970bc5d6bd35a22c640b8970302ab7c39f65d376211263a5",
+      "sourceSha256": "ddae439671444d3cbbaa1f98e416d760c735753bb3793fb512536c697d8d8ad9",
       "triangleBudget": 400,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -101905,9 +102247,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/lab-incubator.kcad.ts",
       "preview": "/assets/medical-lab-incubator.png",
-      "sourceSha256": "e93e0f2475f5908c3b0ad6e5ba1c7a61ce93b20a39998f05aa9e5527bbff8abe",
+      "sourceSha256": "37c94e60151e0c6290d2040dac21dcf6923899a237db61d76db19f4a6cc57b28",
       "triangleBudget": 500,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -102089,9 +102440,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/microscope.kcad.ts",
       "preview": "/assets/medical-microscope.png",
-      "sourceSha256": "b68b447b3dae160087794d7cd031bbd711fbe9769e47cc485945cc8bcc7a8411",
+      "sourceSha256": "5cd64f26fc225f11696b89124e9a2641d0103c8da3b85d0d03f0388c00e0e026",
       "triangleBudget": 500,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -102177,9 +102537,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/nebulizer.kcad.ts",
       "preview": "/assets/medical-nebulizer.png",
-      "sourceSha256": "ab8e1418f5e6606d3ef74185de643f36c671a94b99379c92fddb967a7a715aa7",
+      "sourceSha256": "8ea93e4d9677269899042daff9595c826e10511287113e8d04f6a82c7467381d",
       "triangleBudget": 400,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -102264,9 +102633,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/otoscope.kcad.ts",
       "preview": "/assets/medical-otoscope.png",
-      "sourceSha256": "17f9fa9b8222b8b01137447d2a6f4e03790782cbf6e2af490486fd508d7beaa0",
+      "sourceSha256": "22db0a8f7f4994f9fdee05b46f010395623d5ec3bf3fc20683b7cc2e02fe079c",
       "triangleBudget": 280,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -102346,9 +102724,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/oxygen-cylinder.kcad.ts",
       "preview": "/assets/medical-oxygen-cylinder.png",
-      "sourceSha256": "068c307d52d58698fdf5002d3ecbe93ab3402b3dc3cfcd720a779bd21fb3ebc8",
+      "sourceSha256": "b120b35c3fe68237fcc8afcbe3504f91d3e3cd58a85caac508debc1dab3fea40",
       "triangleBudget": 350,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -102429,9 +102816,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/petri-dish.kcad.ts",
       "preview": "/assets/medical-petri-dish.png",
-      "sourceSha256": "e3daae7cfdc05182d4313c3ca13e3ef94938a277015b34e0b0dbc3cb752874a6",
+      "sourceSha256": "d31ef5eac6d670f1967ea981ecfaadcb79e3a781646e9967ccc3fb957333ceae",
       "triangleBudget": 240,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -102510,9 +102906,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/pill-blister-pack.kcad.ts",
       "preview": "/assets/medical-pill-blister-pack.png",
-      "sourceSha256": "6811a7efca7044af0b68b90d3d6729204b268be0ad59c20c1e78e4ee0cb35e37",
+      "sourceSha256": "24738c5827c238ee1124547f16822bdd615b383e2532f3f64bc2dd9efa4598ae",
       "triangleBudget": 350,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -102595,9 +103000,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/pill-bottle.kcad.ts",
       "preview": "/assets/medical-pill-bottle.png",
-      "sourceSha256": "5eb14042427b6cbef2da8b345f6427658b6f445471e0712f58113ac1f526e425",
+      "sourceSha256": "1c6bae16270d09c30a951ae0847193fbcac399b951db107a64ab58ddb4263ce5",
       "triangleBudget": 260,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -102677,9 +103091,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/pulse-oximeter.kcad.ts",
       "preview": "/assets/medical-pulse-oximeter.png",
-      "sourceSha256": "1cd9b6d8dc168624c5c094a40ddabb0692b93c93f80b36b5d603d3e22959c554",
+      "sourceSha256": "5fc97fd6a48499b9a5aa108d60bbedc16aa67a1318f590633eb9feb38a397f3f",
       "triangleBudget": 300,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -102759,9 +103182,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/reflex-hammer.kcad.ts",
       "preview": "/assets/medical-reflex-hammer.png",
-      "sourceSha256": "0bcdfad000471c4c1eedf53bd604d8c86748119a4bdac3b57829d0497bfe7082",
+      "sourceSha256": "d9b17cd0ad4fb3065e4b3b630415b77ca4b27f0ee6c53e202df37ed81965cf33",
       "triangleBudget": 220,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -102841,9 +103273,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/sharps-container.kcad.ts",
       "preview": "/assets/medical-sharps-container.png",
-      "sourceSha256": "a49f3a11593ddb8499e2ef770c54cffff62fca467f4d92b387806365dd4e0bb5",
+      "sourceSha256": "2fa8adbf74d8f1c9e758a63326fcb0944ebda1e0cb0c5050222516aeb1f8896e",
       "triangleBudget": 300,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -102923,9 +103364,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/specimen-cup.kcad.ts",
       "preview": "/assets/medical-specimen-cup.png",
-      "sourceSha256": "0d5769b8e6de573332314f2d5e9e215e1337382cee94782deacef88cdf633f8e",
+      "sourceSha256": "c6d4aa646f58120a5e333b900cc09fb508be8a8095e7b61be68223e4bf62b83f",
       "triangleBudget": 300,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -103102,9 +103552,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/stethoscope.kcad.ts",
       "preview": "/assets/medical-stethoscope.png",
-      "sourceSha256": "e8808c7a06b5c4f90f1d7ae2eb9b0ee87894e4da183153fcf9013512c2b5ca46",
+      "sourceSha256": "4042694c1021ab142bd9deb7eb4cc2e350fbeb7b27944ac2d20331ae58c170b3",
       "triangleBudget": 350,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -103184,9 +103643,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/surgical-scissors.kcad.ts",
       "preview": "/assets/medical-surgical-scissors.png",
-      "sourceSha256": "e9b158c9533af35a1a051b075941e2dcdcca997f6aef7580611f57b5ec2eb970",
+      "sourceSha256": "5bad4d91cf8372bb7a8bebb6f666374f57f3914b91c337b6e1d223ff112d689a",
       "triangleBudget": 350,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -103266,9 +103734,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/syringe.kcad.ts",
       "preview": "/assets/medical-syringe.png",
-      "sourceSha256": "1ee46115bbb7fbffc97a2a7a573b2aade982409eaa83617a75d4adab61885504",
+      "sourceSha256": "1cd0cdb6130a4eca995c5044b78ddae881fe38ea6e8800d953c1c5d623865a67",
       "triangleBudget": 300,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -103354,9 +103831,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/tongue-depressor-pack.kcad.ts",
       "preview": "/assets/medical-tongue-depressor-pack.png",
-      "sourceSha256": "6bc58f90b8e3d2fa9edb4b699c55d036d6618771f5336f931bfb097863325736",
+      "sourceSha256": "45ced45937559c286d778bd4c6f814db1a29bf19ea17ac19dc41fcf6542ce460",
       "triangleBudget": 240,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -103439,9 +103925,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/walker-frame.kcad.ts",
       "preview": "/assets/medical-walker-frame.png",
-      "sourceSha256": "20b9fdaec285075aa2c2636f811d57ca1e6017e51f195095d037c6389b791a7d",
+      "sourceSha256": "07db0148c3a18e66c9b16302d8e4e6b8aae8f2a0ade7cc7a30ff1d82d577b3b9",
       "triangleBudget": 400,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -103527,9 +104022,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/walking-cane.kcad.ts",
       "preview": "/assets/medical-walking-cane.png",
-      "sourceSha256": "0d7bc61dada4c4739b68e532d33a48b9e1896244cf1ede2caa7a870e04a674d5",
+      "sourceSha256": "acc30716dfd5e6e16496170ad91b00a30e0481e7e11a823af841d6a3c8467e23",
       "triangleBudget": 220,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -103608,9 +104112,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/wheelchair.kcad.ts",
       "preview": "/assets/medical-wheelchair.png",
-      "sourceSha256": "3ae7b1aaa4d0215756eaadc5a71006a844f350edc777ae36520fe107c667d80a",
+      "sourceSha256": "712b14901c20f93ce705aaa0e2f4230fd38e153c05ac52a699790fb769198856",
       "triangleBudget": 500,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "shell",
           "type": "color",
@@ -133339,9 +133852,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/props/jerrycan.kcad.ts",
       "preview": "/assets/props-jerrycan.png",
-      "sourceSha256": "6a625c566399d35e2bb30659f83c0c34d2797860d95814d082a7d1580fc268b4",
+      "sourceSha256": "5a7763bbfb68811b1e8d4b906a6d60bb7096bbe7aa3a017cd8790dc254666256",
       "triangleBudget": 220,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "can",
           "type": "color",
@@ -136250,9 +136772,18 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/props/watering-can.kcad.ts",
       "preview": "/assets/props-watering-can.png",
-      "sourceSha256": "35f67760f438489e44e11b07b058e6b14ef543b068afaba0a57c97a7b36f4dea",
+      "sourceSha256": "ed4c418f88bd3c984b9ae5eba273b69f2638b34d587c7c0b65c69b99583d2e84",
       "triangleBudget": 240,
       "params": [
+        {
+          "name": "scale",
+          "type": "number",
+          "default": 1,
+          "label": "Overall scale",
+          "min": 0.65,
+          "max": 1.35,
+          "step": 0.05
+        },
         {
           "name": "can",
           "type": "color",

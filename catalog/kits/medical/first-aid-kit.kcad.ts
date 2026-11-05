@@ -23,6 +23,7 @@ meta({
   "triangleBudget": 350
 });
 
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const shell = param('shell', '#e8ecee', { label: 'Shell' });
 const accent = param('accent', '#c8403a', { label: 'Accent' });
 presets({
@@ -32,14 +33,14 @@ presets({
 const p = assembly('first-aid-kit');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
 
-p.part('case', b(0, 0, 41, 190, 120, 82).color(shell));
-p.part('lid', b(0, 0, 88, 194, 124, 14).color(accent));
-p.part('handle-left', b(-28, 0, 112, 18, 20, 32).color(shell));
-p.part('handle-right', b(28, 0, 112, 18, 20, 32).color(shell));
-p.part('handle-grip', b(0, 0, 128, 72, 20, 12).color(shell));
-p.part('cross-vertical', b(0, -64, 44, 22, 4, 52).color(accent));
-p.part('cross-horizontal', b(0, -64, 44, 54, 4, 20).color(accent));
-p.part('latch-left', b(-58, -64, 12, 26, 8, 22).color(accent));
-p.part('latch-right', b(58, -64, 12, 26, 8, 22).color(accent));
+p.part('case', b(0, 0, 41, 190, 120, 82).color(shell).scale(overallScale));
+p.part('lid', b(0, 0, 88, 194, 124, 14).color(accent).scale(overallScale));
+p.part('handle-left', b(-28, 0, 112, 18, 20, 32).color(shell).scale(overallScale));
+p.part('handle-right', b(28, 0, 112, 18, 20, 32).color(shell).scale(overallScale));
+p.part('handle-grip', b(0, 0, 128, 72, 20, 12).color(shell).scale(overallScale));
+p.part('cross-vertical', b(0, -64, 44, 22, 4, 52).color(accent).scale(overallScale));
+p.part('cross-horizontal', b(0, -64, 44, 54, 4, 20).color(accent).scale(overallScale));
+p.part('latch-left', b(-58, -64, 12, 26, 8, 22).color(accent).scale(overallScale));
+p.part('latch-right', b(58, -64, 12, 26, 8, 22).color(accent).scale(overallScale));
 
 return p.model();
