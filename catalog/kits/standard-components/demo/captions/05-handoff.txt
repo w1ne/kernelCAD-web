@@ -1,5 +1,6 @@
-LOCAL HANDOFF
-Local catalog pages generated
-Integration gate passed
-Deploy pending PR merge
-No hardware acceptance
+05 / LOCAL HANDOFF
+50 / 50 pass the quality gate
+Previews and index rebuilt
+Follow-up review pending
+Deployment not verified
+No physical acceptance performed

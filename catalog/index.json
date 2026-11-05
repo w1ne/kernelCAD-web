@@ -218967,7 +218967,7 @@
       "id": "angle-bracket",
       "kit": "standard-components",
       "title": "Angle bracket",
-      "description": "Low-poly right-angle mounting bracket with two drilled legs and a reinforcing web. Knobs: model size and finish colour.",
+      "description": "Low-poly right-angle mounting bracket with two drilled legs and a reinforcing web Knobs: model size, steel, stainless steel.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -218985,7 +218985,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/angle-bracket.kcad.ts",
       "preview": "/assets/standard-components-angle-bracket.png",
-      "sourceSha256": "78ff822f01f1423d9365327181b57b530716a2918327697865f9811d13e16a2c",
+      "sourceSha256": "bfa233e87b62be5c5e279f4790bbdf011b6ebafaf391019f9eab731af7a45b28",
       "triangleBudget": 360,
       "params": [
         {
@@ -219000,18 +219000,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#b8c1c6",
+          "label": "Stainless steel"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "stainless": "#7d8a91"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "stainless": "#b38b52"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "stainless": "#8b8275"
         }
       },
       "stats": {
@@ -219026,14 +219038,21 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
             "foot",
-            "upright",
+            "upright"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "stainless",
+          "color": "#b8c1c6",
+          "parts": [
             "web"
           ],
-          "param": "finish"
+          "param": "stainless"
         }
       ]
     },
@@ -219041,7 +219060,7 @@
       "id": "base-mounting-plate",
       "kit": "standard-components",
       "title": "Base mounting plate",
-      "description": "Square equipment mounting plate with four corner holes and a raised locating boss. Knobs: model size and finish colour.",
+      "description": "Square equipment mounting plate with four corner holes and a raised locating boss Knobs: model size, steel, brass.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -219059,7 +219078,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/base-mounting-plate.kcad.ts",
       "preview": "/assets/standard-components-base-mounting-plate.png",
-      "sourceSha256": "8a6907a650eff2cf6fd17926af439acc2e4ee087e7398519950ce3c21fc9d884",
+      "sourceSha256": "168ad147693e639e8dbeadab27a413439241a516b99b70896c87e3001b821aa7",
       "triangleBudget": 300,
       "params": [
         {
@@ -219074,18 +219093,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#b28a4d",
+          "label": "Brass"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "brass": "#725938"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "brass": "#c0944d"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "brass": "#8c734d"
         }
       },
       "stats": {
@@ -219100,13 +219131,20 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
-            "plate",
+            "plate"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "brass",
+          "color": "#b28a4d",
+          "parts": [
             "boss"
           ],
-          "param": "finish"
+          "param": "brass"
         }
       ]
     },
@@ -219114,7 +219152,7 @@
       "id": "beam-coupling",
       "kit": "standard-components",
       "title": "Beam coupling",
-      "description": "Slender beam-style flexible shaft coupling with two end hubs and a slotted center sleeve. Knobs: model size and finish colour.",
+      "description": "Slender beam-style flexible shaft coupling with two end hubs and a slotted center sleeve Knobs: model size, steel, aluminum.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -219132,7 +219170,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/beam-coupling.kcad.ts",
       "preview": "/assets/standard-components-beam-coupling.png",
-      "sourceSha256": "4ae99cb726484ac0ee6724fc03dc436351a37b7d93935f0f3a0f3250ab7ee30c",
+      "sourceSha256": "9e328fbe69b74e08f88c26e0676c6aa23c61b8d84df6bd79672e22397d775b68",
       "triangleBudget": 480,
       "params": [
         {
@@ -219147,18 +219185,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#aebac0",
+          "label": "Aluminum"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "aluminum": "#586970"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "aluminum": "#aab8bc"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "aluminum": "#788177"
         }
       },
       "stats": {
@@ -219173,14 +219223,21 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "aluminum",
+          "color": "#aebac0",
           "parts": [
-            "sleeve",
+            "sleeve"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "steel",
+          "color": "#85929a",
+          "parts": [
             "end-a",
             "end-b"
           ],
-          "param": "finish"
+          "param": "steel"
         }
       ]
     },
@@ -219188,7 +219245,7 @@
       "id": "blind-flange",
       "kit": "standard-components",
       "title": "Blind flange",
-      "description": "Solid round blind pipe flange with four recessed mounting-hole bores. Knobs: model size and finish colour.",
+      "description": "Solid round blind pipe flange with four recessed mounting-hole bores Knobs: model size, cast iron, bronze.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -219206,7 +219263,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/blind-flange.kcad.ts",
       "preview": "/assets/standard-components-blind-flange.png",
-      "sourceSha256": "edacef521a70ce3e01a7985071e014fa67b758d2d08030dfa969b1ef3980b861",
+      "sourceSha256": "c664bbdbda6f4b223c2aec9bd4f9a686470d784280d65a9df285b88b4bd90eb2",
       "triangleBudget": 340,
       "params": [
         {
@@ -219221,18 +219278,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "castIron",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#68747a",
+          "label": "Cast iron"
+        },
+        {
+          "name": "bronze",
+          "type": "color",
+          "default": "#98714c",
+          "label": "Bronze"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "castIron": "#3b4246",
+          "bronze": "#684d37"
         },
         "brass": {
-          "finish": "#b58a43"
+          "castIron": "#69645b",
+          "bronze": "#b0804d"
+        },
+        "weathered": {
+          "castIron": "#4d4b46",
+          "bronze": "#6e583f"
         }
       },
       "stats": {
@@ -219247,13 +219316,20 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "castIron",
+          "color": "#68747a",
           "parts": [
-            "plate",
+            "plate"
+          ],
+          "param": "castIron"
+        },
+        {
+          "name": "bronze",
+          "color": "#98714c",
+          "parts": [
             "hub"
           ],
-          "param": "finish"
+          "param": "bronze"
         }
       ]
     },
@@ -219261,7 +219337,7 @@
       "id": "bulkhead-adapter",
       "kit": "standard-components",
       "title": "Bulkhead adapter",
-      "description": "Hollow through-wall adapter with a tube barrel and a flange on each side. Knobs: model size and finish colour.",
+      "description": "Hollow through-wall adapter with a tube barrel and a flange on each side Knobs: model size, stainless steel, brass.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -219279,7 +219355,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/bulkhead-adapter.kcad.ts",
       "preview": "/assets/standard-components-bulkhead-adapter.png",
-      "sourceSha256": "eeedda2088e2a4102404c0f9943f5dcb3f99717ba10a7876874f01c2362cb7d9",
+      "sourceSha256": "bc422c07194006826f4db862c32b3bb41b28f3a4830914f032f535f23cb562e9",
       "triangleBudget": 340,
       "params": [
         {
@@ -219294,18 +219370,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "stainless",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#b8c1c6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#b28a4d",
+          "label": "Brass"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "stainless": "#7d8a91",
+          "brass": "#725938"
         },
         "brass": {
-          "finish": "#b58a43"
+          "stainless": "#b38b52",
+          "brass": "#c0944d"
+        },
+        "weathered": {
+          "stainless": "#8b8275",
+          "brass": "#8c734d"
         }
       },
       "stats": {
@@ -219320,14 +219408,21 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "brass",
+          "color": "#b28a4d",
           "parts": [
-            "barrel",
+            "barrel"
+          ],
+          "param": "brass"
+        },
+        {
+          "name": "stainless",
+          "color": "#b8c1c6",
+          "parts": [
             "lower-flange",
             "upper-flange"
           ],
-          "param": "finish"
+          "param": "stainless"
         }
       ]
     },
@@ -219335,7 +219430,7 @@
       "id": "cable-clamp",
       "kit": "standard-components",
       "title": "Cable clamp",
-      "description": "Low-profile cable saddle with two fixing ears and a rounded cable guide. Knobs: model size and finish colour.",
+      "description": "Low-profile cable saddle with two fixing ears and a rounded cable guide Knobs: model size, steel, rubber.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -219353,7 +219448,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/cable-clamp.kcad.ts",
       "preview": "/assets/standard-components-cable-clamp.png",
-      "sourceSha256": "1b59ad2e8469d89303ce07d3dbf0d7c44ff6d56ed699df86207ad186ae297910",
+      "sourceSha256": "8dce46398c4966221c4282719ff75979aa95f7b4d655935ebe4070b113e074a4",
       "triangleBudget": 300,
       "params": [
         {
@@ -219368,18 +219463,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#353a3d",
+          "label": "Rubber"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "rubber": "#242729"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "rubber": "#2a2d2f"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "rubber": "#3b3935"
         }
       },
       "stats": {
@@ -219394,15 +219501,22 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
             "foot",
-            "saddle",
             "ear-left",
             "ear-right"
           ],
-          "param": "finish"
+          "param": "steel"
+        },
+        {
+          "name": "rubber",
+          "color": "#353a3d",
+          "parts": [
+            "saddle"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -219410,7 +219524,7 @@
       "id": "cable-gland",
       "kit": "standard-components",
       "title": "Cable gland",
-      "description": "Panel cable gland with a hollow body, stepped compression nut and wide sealing flange. Knobs: model size and finish colour.",
+      "description": "Panel cable gland with a hollow body, stepped compression nut and wide sealing flange Knobs: model size, engineering polymer, rubber.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -219428,7 +219542,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/cable-gland.kcad.ts",
       "preview": "/assets/standard-components-cable-gland.png",
-      "sourceSha256": "7608cd7d958ead5b2ade23016758c62ee62059c9485674db76e8eafa27f9237f",
+      "sourceSha256": "169ab289279c7e9a85f7b0643eee2a5f096e5cbb8b87436acc00b7de3afdfae6",
       "triangleBudget": 420,
       "params": [
         {
@@ -219443,18 +219557,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "polymer",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#e46b3c",
+          "label": "Engineering polymer"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#353a3d",
+          "label": "Rubber"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "polymer": "#244956",
+          "rubber": "#242729"
         },
         "brass": {
-          "finish": "#b58a43"
+          "polymer": "#1d5364",
+          "rubber": "#2a2d2f"
+        },
+        "weathered": {
+          "polymer": "#96734f",
+          "rubber": "#3b3935"
         }
       },
       "stats": {
@@ -219469,15 +219595,22 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "polymer",
+          "color": "#e46b3c",
           "parts": [
             "body",
             "flange",
-            "cap",
+            "cap"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "rubber",
+          "color": "#353a3d",
+          "parts": [
             "strain-relief"
           ],
-          "param": "finish"
+          "param": "rubber"
         }
       ]
     },
@@ -219485,7 +219618,7 @@
       "id": "caster-wheel",
       "kit": "standard-components",
       "title": "Caster wheel",
-      "description": "Single low-poly swivel caster with a fork, mounting plate and centered wheel. Knobs: model size and finish colour.",
+      "description": "Single low-poly swivel caster with a fork, mounting plate and centered wheel Knobs: model size, steel, zinc-plated steel, rubber.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -219503,7 +219636,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/caster-wheel.kcad.ts",
       "preview": "/assets/standard-components-caster-wheel.png",
-      "sourceSha256": "7d4c1847118bedec5d69c33f19ea9b2900db4b2f9a1901b328eff15422cf55f1",
+      "sourceSha256": "397b85d05eb1b036eafdd54a2696da5c222404e223b75920110cc7745d6bd73c",
       "triangleBudget": 380,
       "params": [
         {
@@ -219518,18 +219651,39 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "zinc",
+          "type": "color",
+          "default": "#cbd1d5",
+          "label": "Zinc-plated steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#353a3d",
+          "label": "Rubber"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "zinc": "#929da3",
+          "rubber": "#242729"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "zinc": "#c29a5c",
+          "rubber": "#2a2d2f"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "zinc": "#a19682",
+          "rubber": "#3b3935"
         }
       },
       "stats": {
@@ -219544,18 +219698,32 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
             "mount",
-            "stem",
             "fork-left-front",
             "fork-right-front",
             "fork-left-back",
-            "fork-right-back",
+            "fork-right-back"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "zinc",
+          "color": "#cbd1d5",
+          "parts": [
+            "stem"
+          ],
+          "param": "zinc"
+        },
+        {
+          "name": "rubber",
+          "color": "#353a3d",
+          "parts": [
             "wheel"
           ],
-          "param": "finish"
+          "param": "rubber"
         }
       ]
     },
@@ -219563,7 +219731,7 @@
       "id": "clevis-pin",
       "kit": "standard-components",
       "title": "Clevis pin",
-      "description": "Round headed clevis pin with a straight shank and cross-hole collar. Knobs: model size and finish colour.",
+      "description": "Round headed clevis pin with a straight shank and cross-hole collar Knobs: model size, steel, stainless steel.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -219581,7 +219749,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/clevis-pin.kcad.ts",
       "preview": "/assets/standard-components-clevis-pin.png",
-      "sourceSha256": "c7eda74fdfc49e5c643876d58af3fbf89208733a47dd294bfa2f8fff580dab5c",
+      "sourceSha256": "70b2e15e74a916cf23ae0aea672fe7232ffee5539d07e54baac02599960647d9",
       "triangleBudget": 280,
       "params": [
         {
@@ -219596,18 +219764,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#b8c1c6",
+          "label": "Stainless steel"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "stainless": "#7d8a91"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "stainless": "#b38b52"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "stainless": "#8b8275"
         }
       },
       "stats": {
@@ -219622,13 +219802,20 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
-            "shank",
+            "shank"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "stainless",
+          "color": "#b8c1c6",
+          "parts": [
             "head"
           ],
-          "param": "finish"
+          "param": "stainless"
         }
       ]
     },
@@ -219636,7 +219823,7 @@
       "id": "din-rail-end-stop",
       "kit": "standard-components",
       "title": "DIN rail end stop",
-      "description": "Small rail-end stop with a raised clamp block and front-facing tightening boss. Knobs: model size and finish colour.",
+      "description": "Small rail-end stop with a raised clamp block and front-facing tightening boss Knobs: model size, steel, zinc-plated steel.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -219654,7 +219841,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/din-rail-end-stop.kcad.ts",
       "preview": "/assets/standard-components-din-rail-end-stop.png",
-      "sourceSha256": "d991b015bf42dc97b002acc9e8ab2a5b8475244f509deccc74677ca3b34ed7ca",
+      "sourceSha256": "db50b7840d511e370a08ca14943c75607a846839f201bc1a13bd0248a80a6d2d",
       "triangleBudget": 300,
       "params": [
         {
@@ -219669,18 +219856,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "zinc",
+          "type": "color",
+          "default": "#cbd1d5",
+          "label": "Zinc-plated steel"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "zinc": "#929da3"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "zinc": "#c29a5c"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "zinc": "#a19682"
         }
       },
       "stats": {
@@ -219695,15 +219894,22 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
             "foot",
-            "stop-face",
+            "stop-face"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "zinc",
+          "color": "#cbd1d5",
+          "parts": [
             "clamp",
             "boss"
           ],
-          "param": "finish"
+          "param": "zinc"
         }
       ]
     },
@@ -219711,7 +219917,7 @@
       "id": "din-rail-terminal-block",
       "kit": "standard-components",
       "title": "DIN rail terminal block",
-      "description": "Single terminal block body with top access wells and a stepped rail foot. Knobs: model size and finish colour.",
+      "description": "Single terminal block body with top access wells and a stepped rail foot Knobs: model size, steel, engineering polymer.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -219729,7 +219935,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/din-rail-terminal-block.kcad.ts",
       "preview": "/assets/standard-components-din-rail-terminal-block.png",
-      "sourceSha256": "f427184a99f64b893abb6c5cbc55402882446865d1ec721bee1a6a68f9874a9d",
+      "sourceSha256": "45e767a3a936b2bffb292e97933cfc548e0471beeb1196e4a895df4a6b88515f",
       "triangleBudget": 320,
       "params": [
         {
@@ -219744,18 +219950,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#e46b3c",
+          "label": "Engineering polymer"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "polymer": "#244956"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "polymer": "#1d5364"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "polymer": "#96734f"
         }
       },
       "stats": {
@@ -219770,13 +219988,20 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "polymer",
+          "color": "#e46b3c",
           "parts": [
-            "body",
+            "body"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "steel",
+          "color": "#85929a",
+          "parts": [
             "rail-foot"
           ],
-          "param": "finish"
+          "param": "steel"
         }
       ]
     },
@@ -219784,7 +220009,7 @@
       "id": "din-rail",
       "kit": "standard-components",
       "title": "DIN rail",
-      "description": "Short symmetric top-hat rail profile with a flat web and raised edge lips. Knobs: model size and finish colour.",
+      "description": "Short symmetric top-hat rail profile with a flat web and raised edge lips Knobs: model size, steel, stainless steel, aluminum.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -219802,7 +220027,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/din-rail.kcad.ts",
       "preview": "/assets/standard-components-din-rail.png",
-      "sourceSha256": "06afced749442640d9f68f4d46618d74fb7994f42f520bb9ce10fc8186ab0b50",
+      "sourceSha256": "ba0de3b93354ce866a8edd169afe498483f420fd930878b8f62254d8fc7bd174",
       "triangleBudget": 300,
       "params": [
         {
@@ -219817,18 +220042,39 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#b8c1c6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#aebac0",
+          "label": "Aluminum"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "stainless": "#7d8a91",
+          "aluminum": "#586970"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "stainless": "#b38b52",
+          "aluminum": "#aab8bc"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "stainless": "#8b8275",
+          "aluminum": "#788177"
         }
       },
       "stats": {
@@ -219843,15 +220089,29 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
-            "web",
+            "web"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "aluminum",
+          "color": "#aebac0",
+          "parts": [
             "left-lip",
-            "right-lip",
+            "right-lip"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "stainless",
+          "color": "#b8c1c6",
+          "parts": [
             "ridge"
           ],
-          "param": "finish"
+          "param": "stainless"
         }
       ]
     },
@@ -219859,7 +220119,7 @@
       "id": "door-hinge",
       "kit": "standard-components",
       "title": "Door hinge",
-      "description": "Two-leaf butt hinge with a full-height hinge barrel and alternating knuckle bands. Knobs: model size and finish colour.",
+      "description": "Two-leaf butt hinge with a full-height hinge barrel and alternating knuckle bands Knobs: model size, steel, brass.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -219877,7 +220137,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/door-hinge.kcad.ts",
       "preview": "/assets/standard-components-door-hinge.png",
-      "sourceSha256": "e9252b2179924e6ddbb4b5354e25d9da8a25da4da0a774c2502d324bff87dfd9",
+      "sourceSha256": "eb81bb9acafd468d8236e5e52578930a79bdcf222b204fa65e0c42b8a36d5ae8",
       "triangleBudget": 360,
       "params": [
         {
@@ -219892,18 +220152,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#b28a4d",
+          "label": "Brass"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "brass": "#725938"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "brass": "#c0944d"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "brass": "#8c734d"
         }
       },
       "stats": {
@@ -219918,18 +220190,25 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
             "leaf-left",
             "leaf-right",
             "knuckle-0",
             "knuckle-10",
             "knuckle-20",
-            "knuckle-30",
+            "knuckle-30"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "brass",
+          "color": "#b28a4d",
+          "parts": [
             "pin"
           ],
-          "param": "finish"
+          "param": "brass"
         }
       ]
     },
@@ -219937,7 +220216,7 @@
       "id": "drawer-slide-channel",
       "kit": "standard-components",
       "title": "Drawer slide channel",
-      "description": "Nested low-poly slide rails with C-channel lips for a telescoping drawer track. Knobs: model size and finish colour.",
+      "description": "Nested low-poly slide rails with C-channel lips for a telescoping drawer track Knobs: model size, steel, stainless steel.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -219955,7 +220234,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/drawer-slide-channel.kcad.ts",
       "preview": "/assets/standard-components-drawer-slide-channel.png",
-      "sourceSha256": "61d2fdff7a0784d905ba1e07082bfa0f4268e6a9ff3bd9d7edbf07fb09866ea4",
+      "sourceSha256": "15596208b5f12660793a5113698ec5723efe278b7fa4c5cac8062b7f0da30f99",
       "triangleBudget": 340,
       "params": [
         {
@@ -219970,18 +220249,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#b8c1c6",
+          "label": "Stainless steel"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "stainless": "#7d8a91"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "stainless": "#b38b52"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "stainless": "#8b8275"
         }
       },
       "stats": {
@@ -219996,16 +220287,23 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
             "outer-web",
             "outer-left",
-            "outer-right",
+            "outer-right"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "stainless",
+          "color": "#b8c1c6",
+          "parts": [
             "inner-web",
             "inner-lip"
           ],
-          "param": "finish"
+          "param": "stainless"
         }
       ]
     },
@@ -220013,7 +220311,7 @@
       "id": "flange-bearing-housing",
       "kit": "standard-components",
       "title": "Flange bearing housing",
-      "description": "Square two-hole bearing mount with a raised round boss and a centered shaft opening. Knobs: model size and finish colour.",
+      "description": "Square two-hole bearing mount with a raised round boss and a centered shaft opening Knobs: model size, cast iron, bronze.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -220031,7 +220329,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/flange-bearing-housing.kcad.ts",
       "preview": "/assets/standard-components-flange-bearing-housing.png",
-      "sourceSha256": "7bc84624cc4e355946a2531274fb612aea880a0a93bdf7eabf232a05570ab593",
+      "sourceSha256": "2e801e10ef9ac669aacdecf3b1db3edde3b0b8b17477462ebbfa0ee74c652aab",
       "triangleBudget": 360,
       "params": [
         {
@@ -220046,18 +220344,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "castIron",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#68747a",
+          "label": "Cast iron"
+        },
+        {
+          "name": "bronze",
+          "type": "color",
+          "default": "#98714c",
+          "label": "Bronze"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "castIron": "#3b4246",
+          "bronze": "#684d37"
         },
         "brass": {
-          "finish": "#b58a43"
+          "castIron": "#69645b",
+          "bronze": "#b0804d"
+        },
+        "weathered": {
+          "castIron": "#4d4b46",
+          "bronze": "#6e583f"
         }
       },
       "stats": {
@@ -220072,13 +220382,20 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "castIron",
+          "color": "#68747a",
           "parts": [
-            "plate",
+            "plate"
+          ],
+          "param": "castIron"
+        },
+        {
+          "name": "bronze",
+          "color": "#98714c",
+          "parts": [
             "boss"
           ],
-          "param": "finish"
+          "param": "bronze"
         }
       ]
     },
@@ -220086,7 +220403,7 @@
       "id": "flat-joining-plate",
       "kit": "standard-components",
       "title": "Flat joining plate",
-      "description": "Flat strap plate with a row of four mounting holes for joining two parts in line. Knobs: model size and finish colour.",
+      "description": "Flat strap plate with four zinc-plated fastener heads seated in its mounting holes for joining two parts in line. Knobs: model size, steel, zinc-plated steel.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -220104,8 +220421,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/flat-joining-plate.kcad.ts",
       "preview": "/assets/standard-components-flat-joining-plate.png",
-      "sourceSha256": "36382937894a8f325a3675fa351f516544508dcdebb9e191c4acda9cf90862f8",
-      "triangleBudget": 260,
+      "sourceSha256": "3593b99d346b231e01536ebe2bfe67ee9704cc5c706bc93ed8cdfce80360f28e",
+      "triangleBudget": 620,
       "params": [
         {
           "name": "size",
@@ -220119,25 +220436,37 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "zinc",
+          "type": "color",
+          "default": "#cbd1d5",
+          "label": "Zinc-plated steel"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "zinc": "#929da3"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "zinc": "#c29a5c"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "zinc": "#a19682"
         }
       },
       "stats": {
-        "triangles": 220,
+        "triangles": 572,
         "sizeM": [
           0.084,
-          0.005,
+          0.0075,
           0.024
         ],
         "minUpM": 0,
@@ -220145,12 +220474,27 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
             "plate"
           ],
-          "param": "finish"
+          "param": "steel"
+        },
+        {
+          "name": "zinc",
+          "color": "#cbd1d5",
+          "parts": [
+            "bolt-shank-0",
+            "bolt-head-0",
+            "bolt-shank-1",
+            "bolt-head-1",
+            "bolt-shank-2",
+            "bolt-head-2",
+            "bolt-shank-3",
+            "bolt-head-3"
+          ],
+          "param": "zinc"
         }
       ]
     },
@@ -220158,7 +220502,7 @@
       "id": "gusset-bracket",
       "kit": "standard-components",
       "title": "Gusset bracket",
-      "description": "Triangular shelf-support bracket with a broad wall plate, horizontal toe and solid diagonal web. Knobs: model size and finish colour.",
+      "description": "Triangular shelf-support bracket with a broad wall plate, horizontal toe and solid diagonal web Knobs: model size, steel, stainless steel.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -220176,7 +220520,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/gusset-bracket.kcad.ts",
       "preview": "/assets/standard-components-gusset-bracket.png",
-      "sourceSha256": "c48b6d2e5173af5c67a99c56db47d11585a80127372d7faa722b8a8fdc5f0dfb",
+      "sourceSha256": "20acff40cb86d0fbd983781f17d5c49f4b464926c40b4fcb1eba78b332612675",
       "triangleBudget": 380,
       "params": [
         {
@@ -220191,18 +220535,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#b8c1c6",
+          "label": "Stainless steel"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "stainless": "#7d8a91"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "stainless": "#b38b52"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "stainless": "#8b8275"
         }
       },
       "stats": {
@@ -220217,14 +220573,21 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
             "wall",
-            "toe",
+            "toe"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "stainless",
+          "color": "#b8c1c6",
+          "parts": [
             "gusset"
           ],
-          "param": "finish"
+          "param": "stainless"
         }
       ]
     },
@@ -220232,7 +220595,7 @@
       "id": "handle-pull",
       "kit": "standard-components",
       "title": "Handle pull",
-      "description": "Raised U-shaped cabinet pull with two mounting feet and a straight grip bar. Knobs: model size and finish colour.",
+      "description": "Raised U-shaped cabinet pull with two mounting feet and a straight grip bar Knobs: model size, steel, engineering polymer.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -220250,7 +220613,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/handle-pull.kcad.ts",
       "preview": "/assets/standard-components-handle-pull.png",
-      "sourceSha256": "56a69819973037473df97f247b55f019f2b7d27f6ea563d8a70e01cc78e31598",
+      "sourceSha256": "fb55eaeb7b8b8a89e583e6f7c23b472b3ee798a9639ad6a1b8b35a018648c96b",
       "triangleBudget": 320,
       "params": [
         {
@@ -220265,18 +220628,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#e46b3c",
+          "label": "Engineering polymer"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "polymer": "#244956"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "polymer": "#1d5364"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "polymer": "#96734f"
         }
       },
       "stats": {
@@ -220291,16 +220666,23 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
             "foot-left",
             "foot-right",
             "post-left",
-            "post-right",
+            "post-right"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "polymer",
+          "color": "#e46b3c",
+          "parts": [
             "grip"
           ],
-          "param": "finish"
+          "param": "polymer"
         }
       ]
     },
@@ -220308,7 +220690,7 @@
       "id": "handwheel",
       "kit": "standard-components",
       "title": "Handwheel",
-      "description": "Three-spoke handwheel with a raised center hub and a clear circular rim. Knobs: model size and finish colour.",
+      "description": "Three-spoke handwheel with a raised center hub and a clear circular rim Knobs: model size, steel, cast iron, brass.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -220326,7 +220708,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/handwheel.kcad.ts",
       "preview": "/assets/standard-components-handwheel.png",
-      "sourceSha256": "88c584cd10e2cb6a582d9c189f370bd638986800216416e93b021a0fea52f5c6",
+      "sourceSha256": "f6aee5c69b7e8e530cebcb9db43971b5bc83b31932c08963a5f3cac04116298d",
       "triangleBudget": 340,
       "params": [
         {
@@ -220341,18 +220723,39 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "castIron",
+          "type": "color",
+          "default": "#68747a",
+          "label": "Cast iron"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#b28a4d",
+          "label": "Brass"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "castIron": "#3b4246",
+          "brass": "#725938"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "castIron": "#69645b",
+          "brass": "#c0944d"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "castIron": "#4d4b46",
+          "brass": "#8c734d"
         }
       },
       "stats": {
@@ -220367,16 +220770,30 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "castIron",
+          "color": "#68747a",
           "parts": [
-            "rim",
-            "hub",
+            "rim"
+          ],
+          "param": "castIron"
+        },
+        {
+          "name": "brass",
+          "color": "#b28a4d",
+          "parts": [
+            "hub"
+          ],
+          "param": "brass"
+        },
+        {
+          "name": "steel",
+          "color": "#85929a",
+          "parts": [
             "spoke-0",
             "spoke-60",
             "spoke-120"
           ],
-          "param": "finish"
+          "param": "steel"
         }
       ]
     },
@@ -220384,7 +220801,7 @@
       "id": "hose-barb-adapter",
       "kit": "standard-components",
       "title": "Hose barb adapter",
-      "description": "Stepped hose-barb adapter with a hollow center and three grip ribs. Knobs: model size and finish colour.",
+      "description": "Stepped hose-barb adapter with a hollow center and three grip ribs Knobs: model size, steel, stainless steel, brass.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -220402,7 +220819,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/hose-barb-adapter.kcad.ts",
       "preview": "/assets/standard-components-hose-barb-adapter.png",
-      "sourceSha256": "db1faad131e436a21e9e6d643d2b01fb5bd9e24963bfc45f8985681c91ad65c6",
+      "sourceSha256": "ee842872ed1e12b7beb0b97803f3fa0a7633958e57a61575b04dfe9ff2703f14",
       "triangleBudget": 500,
       "params": [
         {
@@ -220417,18 +220834,39 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#b8c1c6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#b28a4d",
+          "label": "Brass"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "stainless": "#7d8a91",
+          "brass": "#725938"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "stainless": "#b38b52",
+          "brass": "#c0944d"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "stainless": "#8b8275",
+          "brass": "#8c734d"
         }
       },
       "stats": {
@@ -220443,16 +220881,30 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "stainless",
+          "color": "#b8c1c6",
           "parts": [
-            "stem",
+            "stem"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "steel",
+          "color": "#85929a",
+          "parts": [
             "barb-6",
             "barb-13",
-            "barb-20",
+            "barb-20"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "brass",
+          "color": "#b28a4d",
+          "parts": [
             "hex-body"
           ],
-          "param": "finish"
+          "param": "brass"
         }
       ]
     },
@@ -220460,7 +220912,7 @@
       "id": "jaw-coupling",
       "kit": "standard-components",
       "title": "Jaw coupling",
-      "description": "Two jaw hubs with a visible flexible center spider between the shaft bores. Knobs: model size and finish colour.",
+      "description": "Two jaw hubs with a visible flexible center spider between the shaft bores Knobs: model size, steel, engineering polymer.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -220478,7 +220930,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/jaw-coupling.kcad.ts",
       "preview": "/assets/standard-components-jaw-coupling.png",
-      "sourceSha256": "24ea8fd569b3df22011f530b6f91555c6aec906b0536c32abf570544b240eb26",
+      "sourceSha256": "c6324db61764a7335ce924832fecb8db59bcd8b8cf388e9ad8a2280b8470f4df",
       "triangleBudget": 360,
       "params": [
         {
@@ -220493,18 +220945,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#e46b3c",
+          "label": "Engineering polymer"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "polymer": "#244956"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "polymer": "#1d5364"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "polymer": "#96734f"
         }
       },
       "stats": {
@@ -220519,14 +220983,21 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
             "hub-a",
-            "spider",
             "hub-b"
           ],
-          "param": "finish"
+          "param": "steel"
+        },
+        {
+          "name": "polymer",
+          "color": "#e46b3c",
+          "parts": [
+            "spider"
+          ],
+          "param": "polymer"
         }
       ]
     },
@@ -220534,7 +221005,7 @@
       "id": "knurled-knob",
       "kit": "standard-components",
       "title": "Knurled knob",
-      "description": "Compact control knob with a broad grip body, raised crown and center stem. Knobs: model size and finish colour.",
+      "description": "Compact control knob with a broad grip body, raised crown and center stem Knobs: model size, steel, aluminum, engineering polymer.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -220552,7 +221023,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/knurled-knob.kcad.ts",
       "preview": "/assets/standard-components-knurled-knob.png",
-      "sourceSha256": "b6a4fc3c6ad21630216934f05d5ee9e85e6a1cdbff8adbd4c09ed39ab3cb3a8b",
+      "sourceSha256": "765c46070da9d853a7aa961551c6011cac086c44b9647e343160300d00a117ee",
       "triangleBudget": 300,
       "params": [
         {
@@ -220567,18 +221038,39 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#aebac0",
+          "label": "Aluminum"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#e46b3c",
+          "label": "Engineering polymer"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "aluminum": "#586970",
+          "polymer": "#244956"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "aluminum": "#aab8bc",
+          "polymer": "#1d5364"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "aluminum": "#788177",
+          "polymer": "#96734f"
         }
       },
       "stats": {
@@ -220593,12 +221085,10 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
             "stem",
-            "grip",
-            "crown",
             "grip-rib-0",
             "grip-rib-45",
             "grip-rib-90",
@@ -220608,7 +221098,23 @@
             "grip-rib-270",
             "grip-rib-315"
           ],
-          "param": "finish"
+          "param": "steel"
+        },
+        {
+          "name": "polymer",
+          "color": "#e46b3c",
+          "parts": [
+            "grip"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "aluminum",
+          "color": "#aebac0",
+          "parts": [
+            "crown"
+          ],
+          "param": "aluminum"
         }
       ]
     },
@@ -220616,7 +221122,7 @@
       "id": "leveling-foot",
       "kit": "standard-components",
       "title": "Leveling foot",
-      "description": "Adjustable leveling foot with a wide circular pad and centered support stem. Knobs: model size and finish colour.",
+      "description": "Adjustable leveling foot with a wide circular pad and centered support stem Knobs: model size, steel, zinc-plated steel, rubber.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -220634,7 +221140,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/leveling-foot.kcad.ts",
       "preview": "/assets/standard-components-leveling-foot.png",
-      "sourceSha256": "af7d6afa926bea95d697f0879a8a008e588aa4a68fe998b1b0e0304fff8932b8",
+      "sourceSha256": "34d05ad6742e62fb515c865b2763cf7a503d171b4c0c8305d8d301f6c0d761de",
       "triangleBudget": 280,
       "params": [
         {
@@ -220649,18 +221155,39 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "zinc",
+          "type": "color",
+          "default": "#cbd1d5",
+          "label": "Zinc-plated steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#353a3d",
+          "label": "Rubber"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "zinc": "#929da3",
+          "rubber": "#242729"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "zinc": "#c29a5c",
+          "rubber": "#2a2d2f"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "zinc": "#a19682",
+          "rubber": "#3b3935"
         }
       },
       "stats": {
@@ -220675,14 +221202,28 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "rubber",
+          "color": "#353a3d",
           "parts": [
-            "pad",
-            "stem",
+            "pad"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "steel",
+          "color": "#85929a",
+          "parts": [
+            "stem"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "zinc",
+          "color": "#cbd1d5",
+          "parts": [
             "seat"
           ],
-          "param": "finish"
+          "param": "zinc"
         }
       ]
     },
@@ -220690,7 +221231,7 @@
       "id": "linear-guide-carriage",
       "kit": "standard-components",
       "title": "Linear guide carriage",
-      "description": "Block-shaped linear carriage with a recessed underside channel and raised top pad. Knobs: model size and finish colour.",
+      "description": "Block-shaped linear carriage with a recessed underside channel and raised top pad Knobs: model size, steel, cast iron.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -220708,7 +221249,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/linear-guide-carriage.kcad.ts",
       "preview": "/assets/standard-components-linear-guide-carriage.png",
-      "sourceSha256": "f9e98c2586ab8ffbcfa8624360987220ccd92e16ea78e1c8ee4fc34d384b3f70",
+      "sourceSha256": "800526ad65ba66dd5b8691bf15abef7163341cccd40225210442dc1305762380",
       "triangleBudget": 340,
       "params": [
         {
@@ -220723,18 +221264,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "castIron",
+          "type": "color",
+          "default": "#68747a",
+          "label": "Cast iron"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "castIron": "#3b4246"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "castIron": "#69645b"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "castIron": "#4d4b46"
         }
       },
       "stats": {
@@ -220749,13 +221302,20 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "castIron",
+          "color": "#68747a",
           "parts": [
-            "shoe",
+            "shoe"
+          ],
+          "param": "castIron"
+        },
+        {
+          "name": "steel",
+          "color": "#85929a",
+          "parts": [
             "top-pad"
           ],
-          "param": "finish"
+          "param": "steel"
         }
       ]
     },
@@ -220763,7 +221323,7 @@
       "id": "linear-guide-rail",
       "kit": "standard-components",
       "title": "Linear guide rail",
-      "description": "Compact linear motion rail with a broad mounting foot and raised central raceway. Knobs: model size and finish colour.",
+      "description": "Compact linear motion rail with a broad mounting foot and raised central raceway Knobs: model size, steel, aluminum.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -220781,7 +221341,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/linear-guide-rail.kcad.ts",
       "preview": "/assets/standard-components-linear-guide-rail.png",
-      "sourceSha256": "44bfebce0002f7d4c323196ed7422ebf294ec3950c04a5667fa430deed319a36",
+      "sourceSha256": "556238ab9b74cd8a4596103f0e14952e201c46f04e75ab6e55fa148a2bc6139b",
       "triangleBudget": 300,
       "params": [
         {
@@ -220796,18 +221356,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#aebac0",
+          "label": "Aluminum"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "aluminum": "#586970"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "aluminum": "#aab8bc"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "aluminum": "#788177"
         }
       },
       "stats": {
@@ -220822,13 +221394,20 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "aluminum",
+          "color": "#aebac0",
           "parts": [
-            "base",
+            "base"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "steel",
+          "color": "#85929a",
+          "parts": [
             "raceway"
           ],
-          "param": "finish"
+          "param": "steel"
         }
       ]
     },
@@ -220836,7 +221415,7 @@
       "id": "panel-clamp",
       "kit": "standard-components",
       "title": "Panel clamp",
-      "description": "Small edge clamp with a broad base, upright jaw and adjustable pressure pad. Knobs: model size and finish colour.",
+      "description": "Small edge clamp with a broad base, upright jaw and adjustable pressure pad Knobs: model size, steel, zinc-plated steel, rubber.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -220854,7 +221433,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/panel-clamp.kcad.ts",
       "preview": "/assets/standard-components-panel-clamp.png",
-      "sourceSha256": "64cc61be82e7ea2d9dcb900e04c552fc15a63fc78217b493f3adc76e2b974362",
+      "sourceSha256": "871b45d97cafd067a9783869c007484729ec700bb3eedb391ab20cf8f1b239e1",
       "triangleBudget": 320,
       "params": [
         {
@@ -220869,18 +221448,39 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "zinc",
+          "type": "color",
+          "default": "#cbd1d5",
+          "label": "Zinc-plated steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#353a3d",
+          "label": "Rubber"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "zinc": "#929da3",
+          "rubber": "#242729"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "zinc": "#c29a5c",
+          "rubber": "#2a2d2f"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "zinc": "#a19682",
+          "rubber": "#3b3935"
         }
       },
       "stats": {
@@ -220895,15 +221495,29 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
             "base",
-            "jaw",
-            "screw",
+            "jaw"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "zinc",
+          "color": "#cbd1d5",
+          "parts": [
+            "screw"
+          ],
+          "param": "zinc"
+        },
+        {
+          "name": "rubber",
+          "color": "#353a3d",
+          "parts": [
             "pad"
           ],
-          "param": "finish"
+          "param": "rubber"
         }
       ]
     },
@@ -220911,7 +221525,7 @@
       "id": "piano-hinge",
       "kit": "standard-components",
       "title": "Piano hinge",
-      "description": "Long continuous hinge with two flat leaves and alternating knuckles along the pin. Knobs: model size and finish colour.",
+      "description": "Long continuous hinge with two flat leaves, alternating knuckles, and a visible stainless hinge pin. Knobs: model size, steel, stainless steel.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -220929,7 +221543,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/piano-hinge.kcad.ts",
       "preview": "/assets/standard-components-piano-hinge.png",
-      "sourceSha256": "ebe2973c5f94544a1f8af9c45ca6134b2699afbd282f8a28462f0d7d76fdc71f",
+      "sourceSha256": "0e7016ba2fca89baf51a1c6cb782d1bcfe7e5592012dcd13d3bbf7675d14efb6",
       "triangleBudget": 380,
       "params": [
         {
@@ -220944,22 +221558,34 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#b8c1c6",
+          "label": "Stainless steel"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "stainless": "#7d8a91"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "stainless": "#b38b52"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "stainless": "#8b8275"
         }
       },
       "stats": {
-        "triangles": 288,
+        "triangles": 332,
         "sizeM": [
           0.093,
           0.008,
@@ -220970,8 +221596,8 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
             "leaf-left",
             "leaf-right",
@@ -220982,7 +221608,15 @@
             "knuckle-24",
             "knuckle-40"
           ],
-          "param": "finish"
+          "param": "steel"
+        },
+        {
+          "name": "stainless",
+          "color": "#b8c1c6",
+          "parts": [
+            "hinge-pin"
+          ],
+          "param": "stainless"
         }
       ]
     },
@@ -220990,7 +221624,7 @@
       "id": "pillow-block-housing",
       "kit": "standard-components",
       "title": "Pillow block housing",
-      "description": "Raised pillow-block support with a broad base, round bearing boss and two bolt feet. Knobs: model size and finish colour.",
+      "description": "Raised pillow-block support with a broad base, round bearing boss and two bolt feet Knobs: model size, zinc-plated steel, cast iron, bronze.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -221008,7 +221642,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pillow-block-housing.kcad.ts",
       "preview": "/assets/standard-components-pillow-block-housing.png",
-      "sourceSha256": "b591799de3b9e73b141be7723401f81579351c8c2985211618487881a335422e",
+      "sourceSha256": "c3120ac5119ea007b16b811b5f6dab3924aa48a077b2500c76a8382dca05d6b8",
       "triangleBudget": 360,
       "params": [
         {
@@ -221023,18 +221657,39 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "zinc",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#cbd1d5",
+          "label": "Zinc-plated steel"
+        },
+        {
+          "name": "castIron",
+          "type": "color",
+          "default": "#68747a",
+          "label": "Cast iron"
+        },
+        {
+          "name": "bronze",
+          "type": "color",
+          "default": "#98714c",
+          "label": "Bronze"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "zinc": "#929da3",
+          "castIron": "#3b4246",
+          "bronze": "#684d37"
         },
         "brass": {
-          "finish": "#b58a43"
+          "zinc": "#c29a5c",
+          "castIron": "#69645b",
+          "bronze": "#b0804d"
+        },
+        "weathered": {
+          "zinc": "#a19682",
+          "castIron": "#4d4b46",
+          "bronze": "#6e583f"
         }
       },
       "stats": {
@@ -221049,15 +221704,29 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "castIron",
+          "color": "#68747a",
           "parts": [
-            "base",
+            "base"
+          ],
+          "param": "castIron"
+        },
+        {
+          "name": "zinc",
+          "color": "#cbd1d5",
+          "parts": [
             "left-foot",
-            "right-foot",
+            "right-foot"
+          ],
+          "param": "zinc"
+        },
+        {
+          "name": "bronze",
+          "color": "#98714c",
+          "parts": [
             "bearing"
           ],
-          "param": "finish"
+          "param": "bronze"
         }
       ]
     },
@@ -221065,7 +221734,7 @@
       "id": "pipe-coupling",
       "kit": "standard-components",
       "title": "Pipe coupling sleeve",
-      "description": "Short hollow straight coupling sleeve with raised end collars. Knobs: model size and finish colour.",
+      "description": "Short hollow straight coupling sleeve with raised end collars Knobs: model size, steel, stainless steel.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -221083,7 +221752,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-coupling.kcad.ts",
       "preview": "/assets/standard-components-pipe-coupling.png",
-      "sourceSha256": "5e9607fcbfa2f981b521a87ea1d5ed44da65ac20f3d5704025eb5d9be06cb933",
+      "sourceSha256": "e848da3d9e106fc9c12813db7718ccb942971f004664470972c917bfc83eea75",
       "triangleBudget": 320,
       "params": [
         {
@@ -221098,18 +221767,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#b8c1c6",
+          "label": "Stainless steel"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "stainless": "#7d8a91"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "stainless": "#b38b52"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "stainless": "#8b8275"
         }
       },
       "stats": {
@@ -221124,14 +221805,21 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
-            "sleeve",
+            "sleeve"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "stainless",
+          "color": "#b8c1c6",
+          "parts": [
             "collar-a",
             "collar-b"
           ],
-          "param": "finish"
+          "param": "stainless"
         }
       ]
     },
@@ -221139,7 +221827,7 @@
       "id": "pipe-elbow-45",
       "kit": "standard-components",
       "title": "45 degree pipe elbow",
-      "description": "Angled 45 degree pipe connector with open ends and a thicker low-poly center bend. Knobs: model size and finish colour.",
+      "description": "Angled 45 degree pipe connector with open ends and a thicker low-poly center bend Knobs: model size, steel, bronze.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -221157,7 +221845,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-elbow-45.kcad.ts",
       "preview": "/assets/standard-components-pipe-elbow-45.png",
-      "sourceSha256": "1e2bcfd15041f2a5a8abeb52c7bb88dc204242145fe62c45d96d679586826b66",
+      "sourceSha256": "bff9f78ef828fa5f6eb7df65dbe38867f2f5be030aef88c7f9398e51a610136c",
       "triangleBudget": 360,
       "params": [
         {
@@ -221172,18 +221860,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "bronze",
+          "type": "color",
+          "default": "#98714c",
+          "label": "Bronze"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "bronze": "#684d37"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "bronze": "#b0804d"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "bronze": "#6e583f"
         }
       },
       "stats": {
@@ -221198,14 +221898,21 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
             "base",
-            "angled",
+            "angled"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "bronze",
+          "color": "#98714c",
+          "parts": [
             "bend"
           ],
-          "param": "finish"
+          "param": "bronze"
         }
       ]
     },
@@ -221213,7 +221920,7 @@
       "id": "pipe-elbow-90",
       "kit": "standard-components",
       "title": "90 degree pipe elbow",
-      "description": "Low-poly 90 degree elbow fitting with two hollow perpendicular pipe ends. Knobs: model size and finish colour.",
+      "description": "Low-poly 90 degree elbow fitting with two hollow perpendicular pipe ends Knobs: model size, steel, bronze.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -221231,7 +221938,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-elbow-90.kcad.ts",
       "preview": "/assets/standard-components-pipe-elbow-90.png",
-      "sourceSha256": "6f90228b0c933db35a12a04bb6c699c01a963a1aedc286dc97dea870d2bc0189",
+      "sourceSha256": "5fd8998f66717461b16eb3ff4940d8936044c9b2b0c9610e0038cb9974b96d8d",
       "triangleBudget": 380,
       "params": [
         {
@@ -221246,18 +221953,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "bronze",
+          "type": "color",
+          "default": "#98714c",
+          "label": "Bronze"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "bronze": "#684d37"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "bronze": "#b0804d"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "bronze": "#6e583f"
         }
       },
       "stats": {
@@ -221272,14 +221991,21 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
             "upright",
-            "branch",
+            "branch"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "bronze",
+          "color": "#98714c",
+          "parts": [
             "bend"
           ],
-          "param": "finish"
+          "param": "bronze"
         }
       ]
     },
@@ -221287,7 +222013,7 @@
       "id": "pipe-flange",
       "kit": "standard-components",
       "title": "Pipe flange",
-      "description": "Round slip-on pipe flange with a center bore and four bolt-hole positions. Knobs: model size and finish colour.",
+      "description": "Round slip-on pipe flange with a center bore and four bolt-hole positions Knobs: model size, stainless steel, cast iron.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -221305,7 +222031,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-flange.kcad.ts",
       "preview": "/assets/standard-components-pipe-flange.png",
-      "sourceSha256": "8ba5919d6594feef3e4b66c2580d2cbd147d4d28f5133d64ea341d641d904b55",
+      "sourceSha256": "8cfefec718dee503b774639532b4e7f73281712d5f820acee8e86c5ef8d7472c",
       "triangleBudget": 450,
       "params": [
         {
@@ -221320,18 +222046,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "stainless",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#b8c1c6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "castIron",
+          "type": "color",
+          "default": "#68747a",
+          "label": "Cast iron"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "stainless": "#7d8a91",
+          "castIron": "#3b4246"
         },
         "brass": {
-          "finish": "#b58a43"
+          "stainless": "#b38b52",
+          "castIron": "#69645b"
+        },
+        "weathered": {
+          "stainless": "#8b8275",
+          "castIron": "#4d4b46"
         }
       },
       "stats": {
@@ -221346,13 +222084,20 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "castIron",
+          "color": "#68747a",
           "parts": [
-            "flange",
+            "flange"
+          ],
+          "param": "castIron"
+        },
+        {
+          "name": "stainless",
+          "color": "#b8c1c6",
+          "parts": [
             "neck"
           ],
-          "param": "finish"
+          "param": "stainless"
         }
       ]
     },
@@ -221360,7 +222105,7 @@
       "id": "pipe-reducer",
       "kit": "standard-components",
       "title": "Pipe reducer",
-      "description": "Stepped hollow reducer joining a larger pipe end to a smaller pipe end. Knobs: model size and finish colour.",
+      "description": "Stepped hollow reducer joining a larger pipe end to a smaller pipe end Knobs: model size, steel, bronze.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -221378,7 +222123,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-reducer.kcad.ts",
       "preview": "/assets/standard-components-pipe-reducer.png",
-      "sourceSha256": "29383bc1ec2af8e226c4718921e00d70a1c1328097414363f8698d513c0a3c43",
+      "sourceSha256": "a4bf0ec6210f32c023530754c0d2cee4e37107bf315af2129a475de1dce84d82",
       "triangleBudget": 340,
       "params": [
         {
@@ -221393,18 +222138,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "bronze",
+          "type": "color",
+          "default": "#98714c",
+          "label": "Bronze"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "bronze": "#684d37"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "bronze": "#b0804d"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "bronze": "#6e583f"
         }
       },
       "stats": {
@@ -221419,14 +222176,21 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
             "large-end",
-            "transition",
             "small-end"
           ],
-          "param": "finish"
+          "param": "steel"
+        },
+        {
+          "name": "bronze",
+          "color": "#98714c",
+          "parts": [
+            "transition"
+          ],
+          "param": "bronze"
         }
       ]
     },
@@ -221434,7 +222198,7 @@
       "id": "pipe-saddle-clamp",
       "kit": "standard-components",
       "title": "Pipe saddle clamp",
-      "description": "Two-piece saddle clamp with a curved seat, twin side lugs and a mounting foot. Knobs: model size and finish colour.",
+      "description": "Two-piece saddle clamp with a curved seat, twin side lugs and a mounting foot Knobs: model size, steel, rubber.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -221452,7 +222216,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-saddle-clamp.kcad.ts",
       "preview": "/assets/standard-components-pipe-saddle-clamp.png",
-      "sourceSha256": "e01cc5b71663b52a0e3538d5cdc69870edd70e2a0186ed75a0dc112c77be8342",
+      "sourceSha256": "cb2e238838959455351d4f0272e50b026030a5df58a7e6165ddb135ce2b0380d",
       "triangleBudget": 360,
       "params": [
         {
@@ -221467,18 +222231,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#353a3d",
+          "label": "Rubber"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "rubber": "#242729"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "rubber": "#2a2d2f"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "rubber": "#3b3935"
         }
       },
       "stats": {
@@ -221493,15 +222269,22 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
             "foot",
-            "seat",
             "left-lug",
             "right-lug"
           ],
-          "param": "finish"
+          "param": "steel"
+        },
+        {
+          "name": "rubber",
+          "color": "#353a3d",
+          "parts": [
+            "seat"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -221509,7 +222292,7 @@
       "id": "pipe-tee",
       "kit": "standard-components",
       "title": "Pipe tee fitting",
-      "description": "Three-way T pipe fitting with a vertical run and perpendicular side branch. Knobs: model size and finish colour.",
+      "description": "Three-way T pipe fitting with a vertical run and perpendicular side branch Knobs: model size, steel, bronze.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -221527,7 +222310,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-tee.kcad.ts",
       "preview": "/assets/standard-components-pipe-tee.png",
-      "sourceSha256": "98168ca48ba56167bafb765b25622c72fd699d18d5f3d606ea7d0ca8faa722af",
+      "sourceSha256": "35d13e50e8ed799ae1ccafecb6a666ed2b59d9f0e7fd0d13f4d86b424d5370a7",
       "triangleBudget": 360,
       "params": [
         {
@@ -221542,18 +222325,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "bronze",
+          "type": "color",
+          "default": "#98714c",
+          "label": "Bronze"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "bronze": "#684d37"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "bronze": "#b0804d"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "bronze": "#6e583f"
         }
       },
       "stats": {
@@ -221568,13 +222363,20 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
-            "run",
+            "run"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "bronze",
+          "color": "#98714c",
+          "parts": [
             "branch"
           ],
-          "param": "finish"
+          "param": "bronze"
         }
       ]
     },
@@ -221582,7 +222384,7 @@
       "id": "pipe-union",
       "kit": "standard-components",
       "title": "Pipe union",
-      "description": "Compact union fitting with two hollow sockets and a broad central hex-like nut body. Knobs: model size and finish colour.",
+      "description": "Compact union fitting with two hollow sockets and a broad central hex-like nut body Knobs: model size, steel, brass.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -221600,7 +222402,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/pipe-union.kcad.ts",
       "preview": "/assets/standard-components-pipe-union.png",
-      "sourceSha256": "0039791675357788a7f1f52651c33eb60871c7ca6f17bb3ce5fac57e02176bb9",
+      "sourceSha256": "c1e03300a64d860e8f26e8dbe6954befa3f7de37441f886c8398c6e6090d7ada",
       "triangleBudget": 340,
       "params": [
         {
@@ -221615,18 +222417,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#b28a4d",
+          "label": "Brass"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "brass": "#725938"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "brass": "#c0944d"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "brass": "#8c734d"
         }
       },
       "stats": {
@@ -221641,14 +222455,21 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
             "socket-a",
-            "nut",
             "socket-b"
           ],
-          "param": "finish"
+          "param": "steel"
+        },
+        {
+          "name": "brass",
+          "color": "#b28a4d",
+          "parts": [
+            "nut"
+          ],
+          "param": "brass"
         }
       ]
     },
@@ -221656,7 +222477,7 @@
       "id": "retaining-ring",
       "kit": "standard-components",
       "title": "Retaining ring",
-      "description": "Open retaining ring profile with two small installation ears. Knobs: model size and finish colour.",
+      "description": "Open retaining ring profile with two small installation ears Knobs: model size, stainless steel, spring steel.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -221674,7 +222495,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/retaining-ring.kcad.ts",
       "preview": "/assets/standard-components-retaining-ring.png",
-      "sourceSha256": "bdf957b305b37df2d1ab5b4f2a6266a0e80a60c790c312bcd7c5a72a9f398176",
+      "sourceSha256": "4989077f5c9ce32574072dea809f5a9809b550b72e81b471fb2556ff38dfa0dd",
       "triangleBudget": 300,
       "params": [
         {
@@ -221689,18 +222510,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "stainless",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#b8c1c6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "springSteel",
+          "type": "color",
+          "default": "#78868e",
+          "label": "Spring steel"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "stainless": "#7d8a91",
+          "springSteel": "#4c585e"
         },
         "brass": {
-          "finish": "#b58a43"
+          "stainless": "#b38b52",
+          "springSteel": "#75838a"
+        },
+        "weathered": {
+          "stainless": "#8b8275",
+          "springSteel": "#5b5550"
         }
       },
       "stats": {
@@ -221715,14 +222548,21 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "springSteel",
+          "color": "#78868e",
           "parts": [
-            "ring",
+            "ring"
+          ],
+          "param": "springSteel"
+        },
+        {
+          "name": "stainless",
+          "color": "#b8c1c6",
+          "parts": [
             "ear-left",
             "ear-right"
           ],
-          "param": "finish"
+          "param": "stainless"
         }
       ]
     },
@@ -221730,7 +222570,7 @@
       "id": "rubber-bumper",
       "kit": "standard-components",
       "title": "Rubber bumper",
-      "description": "Low-profile cylindrical vibration bumper with a flat base and centered mounting stem. Knobs: model size and finish colour.",
+      "description": "Low-profile cylindrical vibration bumper with a flat base and centered mounting stem Knobs: model size, steel, rubber.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -221748,7 +222588,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/rubber-bumper.kcad.ts",
       "preview": "/assets/standard-components-rubber-bumper.png",
-      "sourceSha256": "30af91d7f05af67949d5576694c90babaae274f9225e1dad3d6dc60200b646a1",
+      "sourceSha256": "2d4be457dc5538c2fa4cdd2e461cafd279ce639dd6f5d0917521ff49660f6771",
       "triangleBudget": 260,
       "params": [
         {
@@ -221763,18 +222603,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#353a3d",
+          "label": "Rubber"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "rubber": "#242729"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "rubber": "#2a2d2f"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "rubber": "#3b3935"
         }
       },
       "stats": {
@@ -221789,14 +222641,21 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "rubber",
+          "color": "#353a3d",
           "parts": [
             "base",
-            "crown",
+            "crown"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "steel",
+          "color": "#85929a",
+          "parts": [
             "stem"
           ],
-          "param": "finish"
+          "param": "steel"
         }
       ]
     },
@@ -221804,7 +222663,7 @@
       "id": "shaft-collar",
       "kit": "standard-components",
       "title": "Shaft collar",
-      "description": "One-piece round shaft collar with a centered bore and a small radial set-screw boss. Knobs: model size and finish colour.",
+      "description": "One-piece round shaft collar with a centered bore and a small radial set-screw boss Knobs: model size, steel, zinc-plated steel.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -221822,7 +222681,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/shaft-collar.kcad.ts",
       "preview": "/assets/standard-components-shaft-collar.png",
-      "sourceSha256": "5b9886721e963c4cd2ca58fc3bec6f7d393d5ba2f67c5ab4671fd876602c82b5",
+      "sourceSha256": "b046549659f6a6372449bfa84f77c54c608f28acb2d8e9448e97134c87366018",
       "triangleBudget": 300,
       "params": [
         {
@@ -221837,18 +222696,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "zinc",
+          "type": "color",
+          "default": "#cbd1d5",
+          "label": "Zinc-plated steel"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "zinc": "#929da3"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "zinc": "#c29a5c"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "zinc": "#a19682"
         }
       },
       "stats": {
@@ -221863,13 +222734,20 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
-            "ring",
+            "ring"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "zinc",
+          "color": "#cbd1d5",
+          "parts": [
             "boss"
           ],
-          "param": "finish"
+          "param": "zinc"
         }
       ]
     },
@@ -221877,7 +222755,7 @@
       "id": "shaft-coupling",
       "kit": "standard-components",
       "title": "Shaft coupling sleeve",
-      "description": "Straight shaft coupler with a thicker center band and two aligned shaft bores. Knobs: model size and finish colour.",
+      "description": "Straight shaft coupler with a thicker center band and two aligned shaft bores Knobs: model size, steel, bronze.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -221895,7 +222773,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/shaft-coupling.kcad.ts",
       "preview": "/assets/standard-components-shaft-coupling.png",
-      "sourceSha256": "60ed1ac54a2d68ebe04a447f173c3b5d4cbb3170c5dbcb70d4796c4882cadfaf",
+      "sourceSha256": "fd7cad44bf51a921b00b7124dc40a534079599941abf94997fe2687f850155b1",
       "triangleBudget": 340,
       "params": [
         {
@@ -221910,18 +222788,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "bronze",
+          "type": "color",
+          "default": "#98714c",
+          "label": "Bronze"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "bronze": "#684d37"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "bronze": "#b0804d"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "bronze": "#6e583f"
         }
       },
       "stats": {
@@ -221936,14 +222826,21 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
             "left-hub",
-            "center-band",
             "right-hub"
           ],
-          "param": "finish"
+          "param": "steel"
+        },
+        {
+          "name": "bronze",
+          "color": "#98714c",
+          "parts": [
+            "center-band"
+          ],
+          "param": "bronze"
         }
       ]
     },
@@ -221951,7 +222848,7 @@
       "id": "shim-pack",
       "kit": "standard-components",
       "title": "Shim pack",
-      "description": "Stack of thin rectangular alignment shims with small offset pull tabs. Knobs: model size and finish colour.",
+      "description": "Stack of thin rectangular alignment shims with small offset pull tabs Knobs: model size, steel, stainless steel, brass.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -221969,7 +222866,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/shim-pack.kcad.ts",
       "preview": "/assets/standard-components-shim-pack.png",
-      "sourceSha256": "da244564a92341cac04dc4928a48c91619ec87ea915e72540cffc1e60846a0d1",
+      "sourceSha256": "fcba8cf93a1f7b655e475458ee14348de501e2443dcac6c0861dcc35464bcbdf",
       "triangleBudget": 280,
       "params": [
         {
@@ -221984,18 +222881,39 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#b8c1c6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#b28a4d",
+          "label": "Brass"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "stainless": "#7d8a91",
+          "brass": "#725938"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "stainless": "#b38b52",
+          "brass": "#c0944d"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "stainless": "#8b8275",
+          "brass": "#8c734d"
         }
       },
       "stats": {
@@ -222010,16 +222928,30 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
             "shim-0",
+            "shim-2"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "stainless",
+          "color": "#b8c1c6",
+          "parts": [
             "shim-1",
-            "shim-2",
-            "shim-3",
+            "shim-3"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "brass",
+          "color": "#b28a4d",
+          "parts": [
             "tabs"
           ],
-          "param": "finish"
+          "param": "brass"
         }
       ]
     },
@@ -222027,7 +222959,7 @@
       "id": "split-shaft-collar",
       "kit": "standard-components",
       "title": "Split shaft collar",
-      "description": "Split clamp collar with a through bore and a raised clamp lug. Knobs: model size and finish colour.",
+      "description": "Split clamp collar with a through bore and a raised clamp lug Knobs: model size, steel, zinc-plated steel.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -222045,7 +222977,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/split-shaft-collar.kcad.ts",
       "preview": "/assets/standard-components-split-shaft-collar.png",
-      "sourceSha256": "18c3bea674b6f145bcc5b6b7fbf3655043b8f3e6eca1a77ac9b25651e914b013",
+      "sourceSha256": "d38927450976ad75461423266bebd767760ab1683d44340f67d7e8f3d262e698",
       "triangleBudget": 300,
       "params": [
         {
@@ -222060,18 +222992,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "zinc",
+          "type": "color",
+          "default": "#cbd1d5",
+          "label": "Zinc-plated steel"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "zinc": "#929da3"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "zinc": "#c29a5c"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "zinc": "#a19682"
         }
       },
       "stats": {
@@ -222086,13 +223030,20 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
-            "collar",
+            "collar"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "zinc",
+          "color": "#cbd1d5",
+          "parts": [
             "lug"
           ],
-          "param": "finish"
+          "param": "zinc"
         }
       ]
     },
@@ -222100,7 +223051,7 @@
       "id": "square-mounting-flange",
       "kit": "standard-components",
       "title": "Square mounting flange",
-      "description": "Square flange with a centered through bore, four corner holes and a short neck. Knobs: model size and finish colour.",
+      "description": "Square flange with a centered through bore, four corner holes and a short neck Knobs: model size, stainless steel, cast iron.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -222118,7 +223069,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/square-mounting-flange.kcad.ts",
       "preview": "/assets/standard-components-square-mounting-flange.png",
-      "sourceSha256": "43790a73777868bf2ab9fd2d649076d52941d832b7dcf7892a5d5a8e8eaee39a",
+      "sourceSha256": "1e8988a11a7a8e2ab7e76131cbc5aa167eb1fbb55bb3695e9ea1d13405900a19",
       "triangleBudget": 360,
       "params": [
         {
@@ -222133,18 +223084,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "stainless",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#b8c1c6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "castIron",
+          "type": "color",
+          "default": "#68747a",
+          "label": "Cast iron"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "stainless": "#7d8a91",
+          "castIron": "#3b4246"
         },
         "brass": {
-          "finish": "#b58a43"
+          "stainless": "#b38b52",
+          "castIron": "#69645b"
+        },
+        "weathered": {
+          "stainless": "#8b8275",
+          "castIron": "#4d4b46"
         }
       },
       "stats": {
@@ -222159,13 +223122,20 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "castIron",
+          "color": "#68747a",
           "parts": [
-            "plate",
+            "plate"
+          ],
+          "param": "castIron"
+        },
+        {
+          "name": "stainless",
+          "color": "#b8c1c6",
+          "parts": [
             "neck"
           ],
-          "param": "finish"
+          "param": "stainless"
         }
       ]
     },
@@ -222173,7 +223143,7 @@
       "id": "t-slot-angle-bracket",
       "kit": "standard-components",
       "title": "T-slot angle bracket",
-      "description": "Compact external corner bracket for joining two perpendicular framing profiles. Knobs: model size and finish colour.",
+      "description": "Compact external corner bracket for joining two perpendicular framing profiles Knobs: model size, steel, aluminum.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -222191,7 +223161,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/t-slot-angle-bracket.kcad.ts",
       "preview": "/assets/standard-components-t-slot-angle-bracket.png",
-      "sourceSha256": "597b82d2630b39bc7ccdc29c09306773cf2a5a7093110efd2f0a808e4e45636e",
+      "sourceSha256": "6ee080db9d9f64127456609f385510057c6083ab19c28e7b5dded18021f76462",
       "triangleBudget": 380,
       "params": [
         {
@@ -222206,18 +223176,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#aebac0",
+          "label": "Aluminum"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "aluminum": "#586970"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "aluminum": "#aab8bc"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "aluminum": "#788177"
         }
       },
       "stats": {
@@ -222232,15 +223214,22 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "aluminum",
+          "color": "#aebac0",
           "parts": [
             "base",
-            "upright",
+            "upright"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "steel",
+          "color": "#85929a",
+          "parts": [
             "web-a",
             "web-b"
           ],
-          "param": "finish"
+          "param": "steel"
         }
       ]
     },
@@ -222248,7 +223237,7 @@
       "id": "t-slot-end-cap",
       "kit": "standard-components",
       "title": "T-slot end cap",
-      "description": "Square profile end cap with a shallow face and four short locating ribs. Knobs: model size and finish colour.",
+      "description": "Polymer end cap with locating ribs seated in a short grooved aluminum extrusion profile. Knobs: model size, aluminum, engineering polymer.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -222266,7 +223255,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/t-slot-end-cap.kcad.ts",
       "preview": "/assets/standard-components-t-slot-end-cap.png",
-      "sourceSha256": "08d38b0720b6e1ea42bf85609d270aca71efa1938735d910620b8e952c2af60d",
+      "sourceSha256": "cafa5c749eb25ebbbe8c5bc33a50106b2d933ea95fa23268522765cdc407d179",
       "triangleBudget": 300,
       "params": [
         {
@@ -222281,25 +223270,37 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "aluminum",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#aebac0",
+          "label": "Aluminum"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#e46b3c",
+          "label": "Engineering polymer"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "aluminum": "#586970",
+          "polymer": "#244956"
         },
         "brass": {
-          "finish": "#b58a43"
+          "aluminum": "#aab8bc",
+          "polymer": "#1d5364"
+        },
+        "weathered": {
+          "aluminum": "#788177",
+          "polymer": "#96734f"
         }
       },
       "stats": {
-        "triangles": 60,
+        "triangles": 156,
         "sizeM": [
           0.044,
-          0.014,
+          0.054,
           0.044
         ],
         "minUpM": 0,
@@ -222307,8 +223308,8 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "polymer",
+          "color": "#e46b3c",
           "parts": [
             "cap",
             "rib--14--14",
@@ -222316,7 +223317,15 @@
             "rib-14--14",
             "rib-14-14"
           ],
-          "param": "finish"
+          "param": "polymer"
+        },
+        {
+          "name": "aluminum",
+          "color": "#aebac0",
+          "parts": [
+            "aluminum-profile"
+          ],
+          "param": "aluminum"
         }
       ]
     },
@@ -222324,7 +223333,7 @@
       "id": "timing-belt-pulley",
       "kit": "standard-components",
       "title": "Timing belt pulley",
-      "description": "Toothed low-poly belt pulley with two retaining flanges and a centered shaft bore. Knobs: model size and finish colour.",
+      "description": "Toothed low-poly belt pulley with two retaining flanges and a centered shaft bore Knobs: model size, steel, aluminum.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -222342,7 +223351,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/timing-belt-pulley.kcad.ts",
       "preview": "/assets/standard-components-timing-belt-pulley.png",
-      "sourceSha256": "cd315ea19b67a471731e4fe3c26eba3609cbae29799638c5560434167a682e19",
+      "sourceSha256": "b84b6fe4f4648661a97b2b417782ef8e117dc89d9816f049ad187473b06dd85b",
       "triangleBudget": 340,
       "params": [
         {
@@ -222357,18 +223366,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#aebac0",
+          "label": "Aluminum"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "aluminum": "#586970"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "aluminum": "#aab8bc"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "aluminum": "#788177"
         }
       },
       "stats": {
@@ -222383,14 +223404,21 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "aluminum",
+          "color": "#aebac0",
           "parts": [
-            "core",
+            "core"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "steel",
+          "color": "#85929a",
+          "parts": [
             "lower-flange",
             "upper-flange"
           ],
-          "param": "finish"
+          "param": "steel"
         }
       ]
     },
@@ -222398,7 +223426,7 @@
       "id": "tube-clamp",
       "kit": "standard-components",
       "title": "Tube clamp",
-      "description": "Compact two-hole clamp block with a semicircular tube seat and a top retainer bridge. Knobs: model size and finish colour.",
+      "description": "Two-hole clamp with a semicircular lined saddle, paired side cheeks, and a raised retainer bridge. Knobs: model size, steel, zinc-plated steel, rubber.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -222416,7 +223444,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/tube-clamp.kcad.ts",
       "preview": "/assets/standard-components-tube-clamp.png",
-      "sourceSha256": "35810b5d67996652271f272847fbb78a86d0bfcf8185d9b5a6638bdbe46babdc",
+      "sourceSha256": "0c3bcf45c5f72b1b375e577271d2d321a4c10ac1a0b94f256316bf4430bbe23d",
       "triangleBudget": 340,
       "params": [
         {
@@ -222431,22 +223459,43 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "zinc",
+          "type": "color",
+          "default": "#cbd1d5",
+          "label": "Zinc-plated steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#353a3d",
+          "label": "Rubber"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "zinc": "#929da3",
+          "rubber": "#242729"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "zinc": "#c29a5c",
+          "rubber": "#2a2d2f"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "zinc": "#a19682",
+          "rubber": "#3b3935"
         }
       },
       "stats": {
-        "triangles": 48,
+        "triangles": 164,
         "sizeM": [
           0.052,
           0.024,
@@ -222457,15 +223506,30 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
             "base",
             "left-cheek",
-            "right-cheek",
+            "right-cheek"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "zinc",
+          "color": "#cbd1d5",
+          "parts": [
             "bridge"
           ],
-          "param": "finish"
+          "param": "zinc"
+        },
+        {
+          "name": "rubber",
+          "color": "#353a3d",
+          "parts": [
+            "rubber-saddle"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -222473,7 +223537,7 @@
       "id": "tubular-spacer",
       "kit": "standard-components",
       "title": "Tubular spacer",
-      "description": "Short hollow cylindrical spacer with flat faces and a centered clearance bore. Knobs: model size and finish colour.",
+      "description": "Short hollow steel spacer with a thin polymer isolation sleeve lining its centered clearance bore. Knobs: model size, steel, engineering polymer.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -222491,7 +223555,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/tubular-spacer.kcad.ts",
       "preview": "/assets/standard-components-tubular-spacer.png",
-      "sourceSha256": "34a46d285e66c38b467c3e067a7cd2cf507163eb474abee6de54590b9f048326",
+      "sourceSha256": "5e2a149dbbc6a8a5f5614033c9049b8b1b95afec97783ba939d1f091d6125f49",
       "triangleBudget": 260,
       "params": [
         {
@@ -222506,22 +223570,34 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#e46b3c",
+          "label": "Engineering polymer"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "polymer": "#244956"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "polymer": "#1d5364"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "polymer": "#96734f"
         }
       },
       "stats": {
-        "triangles": 96,
+        "triangles": 192,
         "sizeM": [
           0.028,
           0.016,
@@ -222532,12 +223608,20 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
             "spacer"
           ],
-          "param": "finish"
+          "param": "steel"
+        },
+        {
+          "name": "polymer",
+          "color": "#e46b3c",
+          "parts": [
+            "isolation-liner"
+          ],
+          "param": "polymer"
         }
       ]
     },
@@ -222545,7 +223629,7 @@
       "id": "u-bracket",
       "kit": "standard-components",
       "title": "U bracket",
-      "description": "Open-top channel mounting bracket with a flat back and two parallel side ears. Knobs: model size and finish colour.",
+      "description": "Open-top channel mounting bracket with a flat back and two parallel side ears Knobs: model size, steel, stainless steel.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -222563,7 +223647,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/u-bracket.kcad.ts",
       "preview": "/assets/standard-components-u-bracket.png",
-      "sourceSha256": "e60bb6bb925e0be9ebd30869e6a01632523327021258ab81dffeffbc4cd1c46f",
+      "sourceSha256": "f6facc17f2fcffed341214f578f950ca7bddf338251647668df7f566869f3a4b",
       "triangleBudget": 320,
       "params": [
         {
@@ -222578,18 +223662,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#b8c1c6",
+          "label": "Stainless steel"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "stainless": "#7d8a91"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "stainless": "#b38b52"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "stainless": "#8b8275"
         }
       },
       "stats": {
@@ -222604,15 +223700,22 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "steel",
+          "color": "#85929a",
           "parts": [
             "back",
             "left-ear",
-            "right-ear",
+            "right-ear"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "stainless",
+          "color": "#b8c1c6",
+          "parts": [
             "cross-pin"
           ],
-          "param": "finish"
+          "param": "stainless"
         }
       ]
     },
@@ -222620,7 +223723,7 @@
       "id": "v-belt-pulley",
       "kit": "standard-components",
       "title": "V-belt pulley",
-      "description": "Stepped V-belt pulley with two shallow belt grooves and a through bore. Knobs: model size and finish colour.",
+      "description": "Stepped V-belt pulley with two shallow belt grooves and a through bore Knobs: model size, steel, cast iron.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -222638,7 +223741,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/v-belt-pulley.kcad.ts",
       "preview": "/assets/standard-components-v-belt-pulley.png",
-      "sourceSha256": "5401d691ea8246e18b287d242b624dddfd78a6489959c013a0d17ab95979c548",
+      "sourceSha256": "6fd99f7c19869bb3dc3f603052c801f65e2fa5029d82e437740183110ace0b9f",
       "triangleBudget": 420,
       "params": [
         {
@@ -222653,18 +223756,30 @@
           ]
         },
         {
-          "name": "finish",
+          "name": "steel",
           "type": "color",
-          "default": "#9aa2a8",
-          "label": "Finish"
+          "default": "#85929a",
+          "label": "Steel"
+        },
+        {
+          "name": "castIron",
+          "type": "color",
+          "default": "#68747a",
+          "label": "Cast iron"
         }
       ],
       "presets": {
         "dark": {
-          "finish": "#3b3e43"
+          "steel": "#3e484e",
+          "castIron": "#3b4246"
         },
         "brass": {
-          "finish": "#b58a43"
+          "steel": "#646f75",
+          "castIron": "#69645b"
+        },
+        "weathered": {
+          "steel": "#665b4d",
+          "castIron": "#4d4b46"
         }
       },
       "stats": {
@@ -222679,15 +223794,22 @@
       },
       "palette": [
         {
-          "name": "finish",
-          "color": "#9aa2a8",
+          "name": "castIron",
+          "color": "#68747a",
           "parts": [
-            "hub",
+            "hub"
+          ],
+          "param": "castIron"
+        },
+        {
+          "name": "steel",
+          "color": "#85929a",
+          "parts": [
             "rim-lower",
             "rim-mid",
             "rim-upper"
           ],
-          "param": "finish"
+          "param": "steel"
         }
       ]
     },

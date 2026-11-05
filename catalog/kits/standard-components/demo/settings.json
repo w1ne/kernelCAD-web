@@ -1,16 +1,103 @@
 {
-  "date": "2026-11-02",
-  "assetSource": "catalog/kits/standard-components/angle-bracket.kcad.ts",
+  "date": "2026-11-05",
+  "scope": "in-place quality promotion of all 50 standard-components assets",
+  "featuredSources": [
+    "catalog/kits/standard-components/caster-wheel.kcad.ts",
+    "catalog/kits/standard-components/jaw-coupling.kcad.ts",
+    "catalog/kits/standard-components/handwheel.kcad.ts",
+    "catalog/kits/standard-components/t-slot-end-cap.kcad.ts",
+    "catalog/kits/standard-components/panel-clamp.kcad.ts"
+  ],
   "defaultParameters": {
     "size": "standard",
-    "finish": "#9aa2a8"
+    "caster-wheel": {
+      "steel": "#85929a",
+      "zinc": "#cbd1d5",
+      "rubber": "#353a3d"
+    },
+    "jaw-coupling": {
+      "steel": "#85929a",
+      "polymer": "#e46b3c"
+    },
+    "handwheel": {
+      "steel": "#85929a",
+      "castIron": "#68747a",
+      "brass": "#b28a4d"
+    },
+    "t-slot-end-cap": {
+      "aluminum": "#aebac0",
+      "polymer": "#e46b3c"
+    },
+    "panel-clamp": {
+      "steel": "#85929a",
+      "zinc": "#cbd1d5",
+      "rubber": "#353a3d"
+    }
   },
-  "catalogPreview": "catalog/kits/standard-components/previews/angle-bracket.png",
-  "previewRenderer": "renderCatalogPreviews.ts; deterministic software-rendered three-quarter view at default parameters",
+  "presets": [
+    "dark",
+    "brass",
+    "weathered"
+  ],
+  "catalogPreviewRenderer": "scripts/renderCatalogPreviews.ts; deterministic software-rendered three-quarter view at default parameters",
   "assetValidation": "bash catalog/kits/standard-components/demo/validate-assets.sh",
-  "catalogBuild": "npm run catalog:build",
-  "previewBuild": "npm run catalog:previews",
+  "qualityGate": "python3 scripts/checkCatalogQuality.py --kit standard-components",
+  "lint": "npx eslint catalog/kits/standard-components/",
+  "catalogBuild": "npx tsx scripts/buildAssetCatalog.ts",
   "catalogPageBuild": "npm run catalog:pages",
-  "integrationGate": "npx vitest run tests/integration/catalog/catalogIndex.test.ts",
-  "caption": "Local source validation and catalog previews. Public deployment awaits PR merge; no hardware acceptance was performed."
+  "integrationGate": "npx vitest run tests/integration/catalog/",
+  "caption": "Local source validation, generated previews, and rebuilt index only. Follow-up review pending; deployment not verified; no physical hardware acceptance was performed.",
+  "previewAssetIDs": [
+    "angle-bracket",
+    "base-mounting-plate",
+    "beam-coupling",
+    "blind-flange",
+    "bulkhead-adapter",
+    "cable-clamp",
+    "cable-gland",
+    "caster-wheel",
+    "clevis-pin",
+    "din-rail",
+    "din-rail-end-stop",
+    "din-rail-terminal-block",
+    "door-hinge",
+    "drawer-slide-channel",
+    "flange-bearing-housing",
+    "flat-joining-plate",
+    "gusset-bracket",
+    "handle-pull",
+    "handwheel",
+    "hose-barb-adapter",
+    "jaw-coupling",
+    "knurled-knob",
+    "leveling-foot",
+    "linear-guide-carriage",
+    "linear-guide-rail",
+    "panel-clamp",
+    "piano-hinge",
+    "pillow-block-housing",
+    "pipe-coupling",
+    "pipe-elbow-45",
+    "pipe-elbow-90",
+    "pipe-flange",
+    "pipe-reducer",
+    "pipe-saddle-clamp",
+    "pipe-tee",
+    "pipe-union",
+    "retaining-ring",
+    "rubber-bumper",
+    "shaft-collar",
+    "shaft-coupling",
+    "shim-pack",
+    "split-shaft-collar",
+    "square-mounting-flange",
+    "t-slot-angle-bracket",
+    "t-slot-end-cap",
+    "timing-belt-pulley",
+    "tube-clamp",
+    "tubular-spacer",
+    "u-bracket",
+    "v-belt-pulley"
+  ],
+  "catalogPreviewInvocation": "npx tsx scripts/renderCatalogPreviews.ts angle-bracket base-mounting-plate beam-coupling blind-flange bulkhead-adapter cable-clamp cable-gland caster-wheel clevis-pin din-rail din-rail-end-stop din-rail-terminal-block door-hinge drawer-slide-channel flange-bearing-housing flat-joining-plate gusset-bracket handle-pull handwheel hose-barb-adapter jaw-coupling knurled-knob leveling-foot linear-guide-carriage linear-guide-rail panel-clamp piano-hinge pillow-block-housing pipe-coupling pipe-elbow-45 pipe-elbow-90 pipe-flange pipe-reducer pipe-saddle-clamp pipe-tee pipe-union retaining-ring rubber-bumper shaft-collar shaft-coupling shim-pack split-shaft-collar square-mounting-flange t-slot-angle-bracket t-slot-end-cap timing-belt-pulley tube-clamp tubular-spacer u-bracket v-belt-pulley"
 }

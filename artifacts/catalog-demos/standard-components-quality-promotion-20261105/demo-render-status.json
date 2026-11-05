@@ -1,0 +1,5 @@
+{
+  "command": "bash catalog/kits/standard-components/demo/make-demo.sh",
+  "exitCode": 0,
+  "durationSeconds": 2.9
+}

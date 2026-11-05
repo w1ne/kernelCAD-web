@@ -1,8 +1,9 @@
+// Distinctive geometry: Straight shaft coupler with a thicker center band and two aligned shaft bores
 meta({
   name: 'shaft-coupling',
   license: 'CC0-1.0',
   title: 'Shaft coupling sleeve',
-  description: 'Straight shaft coupler with a thicker center band and two aligned shaft bores. Knobs: model size and finish colour.',
+  description: 'Straight shaft coupler with a thicker center band and two aligned shaft bores Knobs: model size, steel, bronze.',
   tags: ['shaft coupling', 'shaft sleeve', 'rotary coupling', 'machine'],
   kit: 'standard-components',
   category: 'attachment',
@@ -12,15 +13,17 @@ meta({
 });
 
 const size = param('size', 'standard', { choices: ['compact', 'standard', 'large'], label: 'Model size' });
-const finish = param('finish', '#9aa2a8', { label: 'Finish' });
+const steel = param('steel', '#85929a', { label: 'Steel' });
+const bronze = param('bronze', '#98714c', { label: 'Bronze' });
 presets({
-  dark: { finish: '#3b3e43' },
-  brass: { finish: '#b58a43' },
+  dark: { steel: '#3e484e', bronze: '#684d37' },
+  brass: { steel: '#646f75', bronze: '#b0804d' },
+  weathered: { steel: '#665b4d', bronze: '#6e583f' }
 });
 
 const s = size.value === 'compact' ? 0.75 : size.value === 'large' ? 1.25 : 1;
 const a = assembly('shaft-coupling');
-a.part('left-hub',cylinder(15*s,17*s,14).subtract(cylinder(17*s,8*s,12).translate(0,0,-s)).color(finish));
-a.part('center-band',cylinder(8*s,19*s,14).subtract(cylinder(10*s,8*s,12).translate(0,0,-s)).translate(0,0,15*s).color(finish));
-a.part('right-hub',cylinder(15*s,17*s,14).subtract(cylinder(17*s,8*s,12).translate(0,0,-s)).translate(0,0,23*s).color(finish));
+a.part('left-hub',cylinder(15*s,17*s,14).subtract(cylinder(17*s,8*s,12).translate(0,0,-s)).color(steel));
+a.part('center-band',cylinder(8*s,19*s,14).subtract(cylinder(10*s,8*s,12).translate(0,0,-s)).translate(0,0,15*s).color(bronze));
+a.part('right-hub',cylinder(15*s,17*s,14).subtract(cylinder(17*s,8*s,12).translate(0,0,-s)).translate(0,0,23*s).color(steel));
 return a.model();
