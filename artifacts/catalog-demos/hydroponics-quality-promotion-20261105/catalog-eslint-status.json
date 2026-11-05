@@ -1,0 +1,5 @@
+{
+  "command": "npx eslint catalog/kits/hydroponics/",
+  "exitCode": 0,
+  "passed": true
+}

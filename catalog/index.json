@@ -100118,7 +100118,7 @@
       "id": "aeration-manifold",
       "kit": "hydroponics",
       "title": "Aeration manifold",
-      "description": "Air distribution rail with four outlet risers, end fittings and mounting brackets. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Air distribution rail with four outlet risers, end fittings and mounting brackets. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -100137,7 +100137,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/aeration-manifold.kcad.ts",
       "preview": "/assets/hydroponics-aeration-manifold.png",
-      "sourceSha256": "53ac702fe27f5969a92c2d7a140129dec814b73b3841a86470e0769b61db9a3c",
+      "sourceSha256": "6a74035fc8976980b13a0346c76ccee7a8454183d88d2974f0716888026890b7",
       "triangleBudget": 1800,
       "params": [
         {
@@ -100150,17 +100150,40 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#68847f",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 324,
+        "triangles": 516,
         "sizeM": [
-          1.76,
+          1.754616,
           0.435,
           0.18
         ],
@@ -100169,22 +100192,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#68847f",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
             "mounting-rail",
-            "header",
             "support-left",
-            "support-right",
+            "support-right"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
+            "header",
             "branch-rail",
             "riser-left",
             "riser-mid-left",
             "riser-mid-right",
-            "riser-right",
+            "riser-right"
+          ],
+          "param": "pvc"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
             "end-cap-left",
             "end-cap-right"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -100192,7 +100229,7 @@
       "id": "air-pump-cabinet",
       "kit": "hydroponics",
       "title": "Air pump cabinet",
-      "description": "Ventilated air pump enclosure with raised intake louvres, lift feet and a service panel. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Ventilated air pump enclosure with raised intake louvres, lift feet and a service panel. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -100211,7 +100248,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/air-pump-cabinet.kcad.ts",
       "preview": "/assets/hydroponics-air-pump-cabinet.png",
-      "sourceSha256": "906325bb002170e60009d9c7c35d547611ee7b9ca3b4333495ea7e88bd19d762",
+      "sourceSha256": "56d43b67c9b0ae2a2d1196181514ab8ead57d6d6f233411670a34522139ca9d1",
       "triangleBudget": 1800,
       "params": [
         {
@@ -100224,15 +100261,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#718176",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 196,
+        "triangles": 260,
         "sizeM": [
           0.82,
           1.13,
@@ -100243,8 +100303,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#718176",
+          "name": "polymer",
+          "color": "#ddd8c7",
           "parts": [
             "cabinet",
             "roof-cap",
@@ -100253,12 +100313,26 @@
             "louvre-a",
             "louvre-b",
             "louvre-c",
+            "air-intake"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
+          "parts": [
             "left-foot",
-            "right-foot",
-            "air-intake",
+            "right-foot"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
             "outlet-stub"
           ],
-          "param": "color"
+          "param": "pvc"
         }
       ]
     },
@@ -100266,7 +100340,7 @@
       "id": "bato-bucket",
       "kit": "hydroponics",
       "title": "Bato bucket",
-      "description": "Single recirculating media bucket with a top collar, lower drain fitting and short feed tube. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Single recirculating media bucket with a top collar, lower drain fitting and short feed tube. Parameters: overall scale, pvc, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -100285,7 +100359,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/bato-bucket.kcad.ts",
       "preview": "/assets/hydroponics-bato-bucket.png",
-      "sourceSha256": "0c355e03da49d5e8c999d5b72a1465a0710d6dc82beebe4d80b003b016330ef4",
+      "sourceSha256": "6ddc50108f48324dfe20db6ddc06448b683903b9871375351ca8735375b7881c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -100298,15 +100372,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "pvc",
           "type": "color",
-          "default": "#7c897b",
-          "label": "Asset color"
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "pvc": "#ead789",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 160,
+        "triangles": 224,
         "sizeM": [
           0.47,
           0.68,
@@ -100317,19 +100406,26 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7c897b",
+          "name": "polymer",
+          "color": "#ddd8c7",
           "parts": [
             "bucket-body",
             "upper-rim",
             "inset-lid",
             "front-panel",
             "side-rib-left",
-            "side-rib-right",
+            "side-rib-right"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
             "drain-bulkhead",
             "feed-stub"
           ],
-          "param": "color"
+          "param": "pvc"
         }
       ]
     },
@@ -100337,7 +100433,7 @@
       "id": "blackout-curtain-drive",
       "kit": "hydroponics",
       "title": "Blackout curtain drive",
-      "description": "Greenhouse shade-screen drive assembly with a motor block, roller shaft and end supports. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Greenhouse shade-screen drive assembly with a motor block, roller shaft and end supports. Parameters: overall scale, powder-coated steel, polymer, rubber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -100356,7 +100452,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/blackout-curtain-drive.kcad.ts",
       "preview": "/assets/hydroponics-blackout-curtain-drive.png",
-      "sourceSha256": "26f63b59b635443a19c65c7b5efe6877426ff6c3dad649b9d38b6ead789b9823",
+      "sourceSha256": "16ed40b03810836e2814a8c103c38ba3da944caa2624b650669a042796ffcd76",
       "triangleBudget": 1800,
       "params": [
         {
@@ -100369,17 +100465,40 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#6f8178",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#323a3d",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "polymer": "#b4b5aa",
+          "rubber": "#4b504e"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "polymer": "#f2c84b",
+          "rubber": "#262d30"
+        }
+      },
       "stats": {
-        "triangles": 216,
+        "triangles": 312,
         "sizeM": [
-          0.969,
+          0.963665,
           0.605,
           0.8
         ],
@@ -100388,21 +100507,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6f8178",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
             "mount-plate",
             "left-bracket",
             "right-bracket",
             "motor-box",
-            "screen-rail",
+            "screen-rail"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
             "curtain-weight",
             "limit-switch-box",
-            "roller-tube",
             "drive-coupler",
             "idler-cap"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "rubber",
+          "color": "#323a3d",
+          "parts": [
+            "roller-tube"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -100410,7 +100543,7 @@
       "id": "circulation-pump-skid",
       "kit": "hydroponics",
       "title": "Circulation pump skid",
-      "description": "Compact recirculation unit with pump housing, motor block, inlet elbow and discharge riser. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Recirculation pump skid with a cylindrical motor and volute, axial coupling guard, inlet flange and discharge riser. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -100429,7 +100562,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/circulation-pump-skid.kcad.ts",
       "preview": "/assets/hydroponics-circulation-pump-skid.png",
-      "sourceSha256": "0e6ea3c2d8a73d2d8e385c892026d0b8c0edf757c72fdd43154e07d370b24b2f",
+      "sourceSha256": "2be97b1fd21c0dacd66f83a5135d7a572fd1290fec0d303b2f237e86b10678dc",
       "triangleBudget": 1800,
       "params": [
         {
@@ -100442,17 +100575,40 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#5e7975",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 216,
+        "triangles": 516,
         "sizeM": [
-          1.128,
+          1.05,
           0.67,
           0.47
         ],
@@ -100461,21 +100617,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#5e7975",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
             "base-plate",
             "motor-block",
             "coupling-guard",
-            "pump-support",
-            "front-nameplate",
+            "pump-volute",
+            "motor-endcap",
+            "pump-support-near",
+            "pump-support-far"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
+            "front-nameplate"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
             "inlet-pipe",
             "discharge-pipe",
-            "pump-volute",
-            "inlet-flange",
-            "motor-endcap"
+            "inlet-flange"
           ],
-          "param": "color"
+          "param": "pvc"
         }
       ]
     },
@@ -100483,7 +100654,7 @@
       "id": "coco-coir-slab-holder",
       "kit": "hydroponics",
       "title": "Coir slab holder",
-      "description": "Open-sided slab cradle with a perforated-looking support deck and central drain line. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Open-sided slab cradle with a perforated-looking support deck and central drain line. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -100502,7 +100673,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/coco-coir-slab-holder.kcad.ts",
       "preview": "/assets/hydroponics-coco-coir-slab-holder.png",
-      "sourceSha256": "42c9e7886a005f2c13e13259e78870378f1e23f96029caa6aadfacdede8039e8",
+      "sourceSha256": "04e7be0a3e41a0fb79ba66c12e53161d4bae82a5a98098c05b72ad7c61e68c92",
       "triangleBudget": 1800,
       "params": [
         {
@@ -100515,15 +100686,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#826f5f",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 152,
+        "triangles": 184,
         "sizeM": [
           1.59,
           0.35,
@@ -100534,21 +100728,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#826f5f",
+          "name": "polymer",
+          "color": "#ddd8c7",
           "parts": [
             "left-end",
             "right-end",
-            "front-rail",
-            "back-rail",
             "slab",
             "deck-strip-a",
             "deck-strip-b",
-            "deck-strip-c",
+            "deck-strip-c"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
+          "parts": [
+            "front-rail",
+            "back-rail"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
             "irrigation-line",
             "drain-line"
           ],
-          "param": "color"
+          "param": "pvc"
         }
       ]
     },
@@ -100556,7 +100764,7 @@
       "id": "crop-trellis-frame",
       "kit": "hydroponics",
       "title": "Crop trellis frame",
-      "description": "A freestanding crop-support frame with a top tension rail, four uprights and a raised cross-tie. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "A freestanding crop-support frame with a top tension rail, four uprights and a raised cross-tie. Parameters: overall scale, powder-coated steel, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -100575,7 +100783,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/crop-trellis-frame.kcad.ts",
       "preview": "/assets/hydroponics-crop-trellis-frame.png",
-      "sourceSha256": "600e2e57b425271724367166b149999632d075a3f0ba51a20a87f3a6d6f9774e",
+      "sourceSha256": "6d8d71f26e59e06208000ae2003e32d4fd2af50cec2edf7b814bd749e5dd5fc5",
       "triangleBudget": 1800,
       "params": [
         {
@@ -100588,15 +100796,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#6b8073",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 208,
+        "triangles": 272,
         "sizeM": [
           1.3,
           1.84,
@@ -100607,8 +100830,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6b8073",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
             "foot-left-front",
             "foot-right-front",
@@ -100620,10 +100843,17 @@
             "post-right-back",
             "top-rail",
             "mid-rail",
-            "tension-anchor-left",
+            "tension-anchor-left"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
             "tension-anchor-right"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -100631,7 +100861,7 @@
       "id": "deep-water-culture-bed",
       "kit": "hydroponics",
       "title": "Deep-water culture bed",
-      "description": "Rectangular raft culture trough with a raised rim, flotation deck panels and a drain outlet. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Rectangular raft culture trough with a raised rim, flotation deck panels and a drain outlet. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -100650,7 +100880,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/deep-water-culture-bed.kcad.ts",
       "preview": "/assets/hydroponics-deep-water-culture-bed.png",
-      "sourceSha256": "105ee6ec23aa7854ad23a490afb295e85746697ed1f8e3cc701fb315ac068fa0",
+      "sourceSha256": "34da43aac3dbed346da9216c600abf7f7f9f73661a8d8f85d721a26d4defe7d1",
       "triangleBudget": 1800,
       "params": [
         {
@@ -100663,15 +100893,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#627e7a",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 152,
+        "triangles": 184,
         "sizeM": [
           1.85,
           0.665,
@@ -100682,10 +100935,17 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#627e7a",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
-            "trough-base",
+            "trough-base"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
             "front-wall",
             "back-wall",
             "left-wall",
@@ -100693,10 +100953,17 @@
             "raft-panel-a",
             "raft-panel-b",
             "rim-front",
-            "rim-back",
+            "rim-back"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
             "drain-outlet"
           ],
-          "param": "color"
+          "param": "pvc"
         }
       ]
     },
@@ -100704,7 +100971,7 @@
       "id": "dosing-pump-skid",
       "kit": "hydroponics",
       "title": "Dosing pump skid",
-      "description": "Portable dosing frame with two metering heads, chemical pickup tubes and a small service panel. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Portable dosing frame with two metering heads, chemical pickup tubes and a small service panel. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -100723,7 +100990,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/dosing-pump-skid.kcad.ts",
       "preview": "/assets/hydroponics-dosing-pump-skid.png",
-      "sourceSha256": "d47d0673aebff407ed9f02a18eeab1ab30967c1b1deca1790bd56a723a5003ce",
+      "sourceSha256": "b503399a521d6b0504f5328158eb96678bbcee40ed5b907284fb4dd22bccddc4",
       "triangleBudget": 1800,
       "params": [
         {
@@ -100736,15 +101003,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#5f7c7a",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 272,
+        "triangles": 400,
         "sizeM": [
           0.96,
           0.93,
@@ -100755,23 +101045,37 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#5f7c7a",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
             "base-skid",
+            "left-meter-head",
+            "right-meter-head"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
             "back-panel",
             "pump-shelf",
             "control-box",
             "left-pump-body",
-            "right-pump-body",
+            "right-pump-body"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
             "left-tube-rail",
             "right-tube-rail",
-            "left-meter-head",
-            "right-meter-head",
             "pickup-left",
             "pickup-right"
           ],
-          "param": "color"
+          "param": "pvc"
         }
       ]
     },
@@ -100779,7 +101083,7 @@
       "id": "dutch-bucket-row",
       "kit": "hydroponics",
       "title": "Dutch bucket row",
-      "description": "Four media buckets on a shared stand with paired feed header and drain return rail. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Four media buckets on a shared stand with paired feed header and drain return rail. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -100798,7 +101102,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/dutch-bucket-row.kcad.ts",
       "preview": "/assets/hydroponics-dutch-bucket-row.png",
-      "sourceSha256": "d0e7603eceb57c3e59d83d91be914f6ba27844a148467596123ef10b3b8a7827",
+      "sourceSha256": "5ee06edea293fee6ec9d9ba00511a15aa2d2bff6fac45e58f0cfb65e5d619b61",
       "triangleBudget": 1800,
       "params": [
         {
@@ -100811,17 +101115,40 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#78867a",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 208,
+        "triangles": 272,
         "sizeM": [
-          1.692,
+          1.689455,
           0.7,
           0.96
         ],
@@ -100830,23 +101157,37 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#78867a",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
             "support-frame-left",
             "support-frame-right",
             "longitudinal-rail-front",
-            "longitudinal-rail-back",
+            "longitudinal-rail-back"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
             "bucket-1",
             "bucket-2",
             "bucket-3",
-            "bucket-4",
+            "bucket-4"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
             "feed-header",
             "return-header",
             "feed-riser",
             "return-drop"
           ],
-          "param": "color"
+          "param": "pvc"
         }
       ]
     },
@@ -100854,7 +101195,7 @@
       "id": "ebb-flow-grow-table",
       "kit": "hydroponics",
       "title": "Ebb-and-flow grow table",
-      "description": "Flood-and-drain bench with a shallow growing tray, underframe, overflow standpipe and return outlet. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Flood-and-drain bench with a shallow growing tray, underframe, overflow standpipe and return outlet. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -100873,7 +101214,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/ebb-flow-grow-table.kcad.ts",
       "preview": "/assets/hydroponics-ebb-flow-grow-table.png",
-      "sourceSha256": "96bd677bfdfa7622416d7d0b2113645dbc54cd95ac08815277252b669421c0e3",
+      "sourceSha256": "66b9d280296c4bde93f18b66ce32ad6f5c2e196fc52d5ada7b7876224874dfd8",
       "triangleBudget": 1800,
       "params": [
         {
@@ -100886,15 +101227,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#708579",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 208,
+        "triangles": 272,
         "sizeM": [
           1.8,
           0.97,
@@ -100905,23 +101269,37 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#708579",
+          "name": "polymer",
+          "color": "#ddd8c7",
           "parts": [
             "tray-floor",
             "front-lip",
             "back-lip",
             "left-lip",
-            "right-lip",
+            "right-lip"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
+          "parts": [
             "leg-left-front",
             "leg-right-front",
             "leg-left-back",
             "leg-right-back",
-            "lower-brace",
+            "lower-brace"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
             "overflow-standpipe",
             "return-outlet"
           ],
-          "param": "color"
+          "param": "pvc"
         }
       ]
     },
@@ -100929,7 +101307,7 @@
       "id": "ec-sensor-flow-cell",
       "kit": "hydroponics",
       "title": "EC sensor flow cell",
-      "description": "Inline conductivity cell with paired unions, removable electrode cap and support feet. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Inline conductivity cell with paired unions, removable electrode cap and support feet. Parameters: overall scale, powder-coated steel, stainless steel, pvc, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -100948,7 +101326,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/ec-sensor-flow-cell.kcad.ts",
       "preview": "/assets/hydroponics-ec-sensor-flow-cell.png",
-      "sourceSha256": "c5de2f06414c31555d03d82c3c979fe1e41d71ab265df2bd5019fc4dd449c660",
+      "sourceSha256": "8e3a4c5dd2bdef2f0bb39f3d2ec48240f4866a5ead2283acb6466409e120c4fa",
       "triangleBudget": 1800,
       "params": [
         {
@@ -100961,15 +101339,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#63827d",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b2c0bf",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "stainlessSteel": "#929e9c",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "stainlessSteel": "#d6dfdc",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 216,
+        "triangles": 312,
         "sizeM": [
           0.88,
           0.75,
@@ -100980,21 +101389,42 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#63827d",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
             "base-plate",
             "support-left",
-            "support-right",
+            "support-right"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
             "sensor-block",
             "cable-box",
+            "flow-body"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
             "left-union",
-            "right-union",
-            "flow-body",
+            "right-union"
+          ],
+          "param": "pvc"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b2c0bf",
+          "parts": [
             "electrode-cap",
             "probe-tip"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -101002,7 +101432,7 @@
       "id": "evaporative-cooling-pad",
       "kit": "hydroponics",
       "title": "Evaporative cooling pad",
-      "description": "Cooling wall section with a framed media panel, top water header and lower collection trough. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Cooling wall section with a framed media panel, top water header and lower collection trough. Parameters: overall scale, powder-coated steel, pvc, polymer, grow substrate; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -101021,7 +101451,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/evaporative-cooling-pad.kcad.ts",
       "preview": "/assets/hydroponics-evaporative-cooling-pad.png",
-      "sourceSha256": "36b9b5bbc7380acf7432e06da9395a12bd86e3bcededc092d342dfb3e1dfebef",
+      "sourceSha256": "0749c8b11174f2d587e9a6f7548baf373a6f85a047eae8c7b0f0a5c43bd8db6c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -101034,15 +101464,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#71877b",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
+        },
+        {
+          "name": "growSubstrate",
+          "type": "color",
+          "default": "#8a6848",
+          "label": "Grow substrate"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa",
+          "growSubstrate": "#75604b"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b",
+          "growSubstrate": "#aa8652"
+        }
+      },
       "stats": {
-        "triangles": 228,
+        "triangles": 324,
         "sizeM": [
           1.55,
           1.77,
@@ -101053,22 +101514,43 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#71877b",
+          "name": "growSubstrate",
+          "color": "#8a6848",
           "parts": [
-            "pad-core",
+            "pad-core"
+          ],
+          "param": "growSubstrate"
+        },
+        {
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
+          "parts": [
             "frame-left",
             "frame-right",
             "frame-top",
-            "sump-trough",
-            "front-grille",
             "side-support-left",
-            "side-support-right",
+            "side-support-right"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
+            "sump-trough",
+            "front-grille"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
             "water-header",
             "inlet-riser",
             "drain-outlet"
           ],
-          "param": "color"
+          "param": "pvc"
         }
       ]
     },
@@ -101076,7 +101558,7 @@
       "id": "flood-drain-valve-manifold",
       "kit": "hydroponics",
       "title": "Flood-and-drain valve manifold",
-      "description": "Compact manifold panel with two valve bodies, branch outlets and a central riser. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Compact manifold panel with two valve bodies, branch outlets and a central riser. Parameters: overall scale, powder-coated steel, pvc; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -101095,7 +101577,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/flood-drain-valve-manifold.kcad.ts",
       "preview": "/assets/hydroponics-flood-drain-valve-manifold.png",
-      "sourceSha256": "fa3195f480fbe752be467c37edb72659aa76a17a29be96f431e0f3c335818345",
+      "sourceSha256": "5a802ff36537861d7ef8d28d6346f678ec262e3afd2be8953ed0e33170360652",
       "triangleBudget": 1800,
       "params": [
         {
@@ -101108,15 +101590,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#5e8580",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789"
+        }
+      },
       "stats": {
-        "triangles": 304,
+        "triangles": 464,
         "sizeM": [
           0.73,
           0.51,
@@ -101127,10 +101624,17 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#5e8580",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
-            "mounting-plate",
+            "mounting-plate"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
             "header-pipe",
             "left-branch",
             "right-branch",
@@ -101143,7 +101647,7 @@
             "outlet-left",
             "outlet-right"
           ],
-          "param": "color"
+          "param": "pvc"
         }
       ]
     },
@@ -101151,7 +101655,7 @@
       "id": "greenhouse-circulation-fan",
       "kit": "hydroponics",
       "title": "Greenhouse circulation fan",
-      "description": "Guarded circulation fan on a floor stand with a broad base, mast and cross-blade rotor. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Floor-stand circulation fan with an upright circular guard, swept rotor blades, vertical mast and broad base. Parameters: overall scale, powder-coated steel, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -101170,7 +101674,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/greenhouse-circulation-fan.kcad.ts",
       "preview": "/assets/hydroponics-greenhouse-circulation-fan.png",
-      "sourceSha256": "fadc66429791aedeec6c30deb5145411504965afc7db6f7c203c17d55ad26e47",
+      "sourceSha256": "6c9edf27c3ca4c8cce2a6d07f4f545c4650269183416e342b87d01ed1debc0b5",
       "triangleBudget": 1800,
       "params": [
         {
@@ -101183,40 +101687,63 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#697e77",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 216,
+        "triangles": 348,
         "sizeM": [
-          0.76,
-          1.454,
-          0.76
+          0.722803,
+          1.94,
+          0.42
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#697e77",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
             "base-foot",
             "mast",
             "motor-housing",
-            "blade-horizontal",
-            "blade-vertical",
             "guard-crossbar-a",
             "guard-crossbar-b",
             "fan-guard",
-            "hub",
             "stand-collar"
           ],
-          "param": "color"
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
+            "hub",
+            "blade-north",
+            "blade-southwest",
+            "blade-southeast"
+          ],
+          "param": "polymer"
         }
       ]
     },
@@ -101224,7 +101751,7 @@
       "id": "greenhouse-climate-sensor-post",
       "kit": "hydroponics",
       "title": "Greenhouse climate sensor post",
-      "description": "Freestanding sensor mast with radiation shield discs, junction box and cross-arm mount. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Freestanding sensor mast with radiation shield discs, junction box and cross-arm mount. Parameters: overall scale, powder-coated steel, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -101243,7 +101770,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/greenhouse-climate-sensor-post.kcad.ts",
       "preview": "/assets/hydroponics-greenhouse-climate-sensor-post.png",
-      "sourceSha256": "2b9184b9606b9b1b93154e725b235356f5ca46c42bff8e0030cee57777e11137",
+      "sourceSha256": "bc3e8c05b0cb16020b2879fe629a1aa1c494eb65f71c21483b77be0ad721e079",
       "triangleBudget": 1800,
       "params": [
         {
@@ -101256,15 +101783,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#76877c",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 216,
+        "triangles": 312,
         "sizeM": [
           0.72,
           1.765,
@@ -101275,21 +101817,28 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#76877c",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
             "weighted-foot",
+            "mast"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
             "junction-box",
             "cross-arm",
             "sensor-head",
             "rain-shield-top",
             "rain-shield-mid",
             "rain-shield-low",
-            "mast",
             "aspiration-cap",
             "cable-gland"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -101297,7 +101846,7 @@
       "id": "greenhouse-exhaust-fan",
       "kit": "hydroponics",
       "title": "Greenhouse exhaust fan",
-      "description": "Square wall exhaust fan module with a central hub, four block-style blades and mounting frame. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Wall exhaust module with an open square mounting frame, four swept rotor blades, rear motor and central drive hub. Parameters: overall scale, powder-coated steel, stainless steel, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -101316,7 +101865,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/greenhouse-exhaust-fan.kcad.ts",
       "preview": "/assets/hydroponics-greenhouse-exhaust-fan.png",
-      "sourceSha256": "f15a0697cd276281e1c130489f98dd7b98e5e672e16cb30860772b925cb92b9d",
+      "sourceSha256": "a2409fdbeaa6eefc99ef446cc4c7d7e81d38dae9bd48c635bcf748be2d8e6aa1",
       "triangleBudget": 1800,
       "params": [
         {
@@ -101329,40 +101878,84 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#708279",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b2c0bf",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "stainlessSteel": "#929e9c",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "stainlessSteel": "#d6dfdc",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 216,
+        "triangles": 540,
         "sizeM": [
           1.05,
           1.05,
-          0.44
+          0.515
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#708279",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
-            "outer-frame",
-            "inner-frame",
-            "blade-left",
-            "blade-right",
-            "blade-upper",
-            "blade-lower",
-            "motor-bracket",
             "fan-hub",
-            "corner-boss-left",
-            "corner-boss-right"
+            "motor-housing",
+            "outer-frame-top",
+            "outer-frame-bottom",
+            "outer-frame-left",
+            "outer-frame-right",
+            "inner-frame-top",
+            "inner-frame-bottom",
+            "inner-frame-left",
+            "inner-frame-right"
           ],
-          "param": "color"
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
+            "corner-boss-left",
+            "corner-boss-right",
+            "blade-a",
+            "blade-b",
+            "blade-c",
+            "blade-d"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b2c0bf",
+          "parts": [
+            "motor-shaft"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -101370,7 +101963,7 @@
       "id": "greenhouse-fogger-header",
       "kit": "hydroponics",
       "title": "Greenhouse fogger header",
-      "description": "Suspended misting line with repeated nozzle drops, end feed and a simple support hanger. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Suspended misting line with repeated nozzle drops, end feed and a simple support hanger. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -101389,7 +101982,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/greenhouse-fogger-header.kcad.ts",
       "preview": "/assets/hydroponics-greenhouse-fogger-header.png",
-      "sourceSha256": "8a54df493b0900153e5f997d29c9a9ce982e05e034906724b09d2d02ecae7deb",
+      "sourceSha256": "04e57e14af49803cc3b7b52cf5528237934dc210a77f60b4c97286538eb00acd",
       "triangleBudget": 1800,
       "params": [
         {
@@ -101402,15 +101995,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#6b867c",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 324,
+        "triangles": 516,
         "sizeM": [
           2.02,
           0.6,
@@ -101421,22 +102037,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6b867c",
+          "name": "pvc",
+          "color": "#c7d4ca",
           "parts": [
             "header-rail",
-            "hanger-left",
-            "hanger-right",
-            "brace-left",
-            "brace-right",
             "nozzle-1",
             "nozzle-2",
             "nozzle-3",
             "nozzle-4",
-            "feed-riser",
+            "feed-riser"
+          ],
+          "param": "pvc"
+        },
+        {
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
+          "parts": [
+            "hanger-left",
+            "hanger-right",
+            "brace-left",
+            "brace-right"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
             "end-cap"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -101444,7 +102074,7 @@
       "id": "greenhouse-grow-light-bar",
       "kit": "hydroponics",
       "title": "Greenhouse grow light bar",
-      "description": "Single suspended lighting bar with end caps, support straps and a cable junction box. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Single suspended lighting bar with end caps, support straps and a cable junction box. Parameters: overall scale, powder-coated steel, polymer, polycarbonate; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -101463,7 +102093,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/greenhouse-grow-light-bar.kcad.ts",
       "preview": "/assets/hydroponics-greenhouse-grow-light-bar.png",
-      "sourceSha256": "fdae8abe011a816e1da32117da906fcbd95bc75657c3fb855e0138ffbb03c4b8",
+      "sourceSha256": "f55267fec6cacc8c8924bef113b5053d7c1091fb6f0ae578e9c495fd20b8f514",
       "triangleBudget": 1800,
       "params": [
         {
@@ -101476,15 +102106,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#77897c",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
+        },
+        {
+          "name": "polycarbonate",
+          "type": "color",
+          "default": "#8ccbd1",
+          "label": "Polycarbonate"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "polymer": "#b4b5aa",
+          "polycarbonate": "#83aeb1"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "polymer": "#f2c84b",
+          "polycarbonate": "#b6edf0"
+        }
+      },
       "stats": {
-        "triangles": 128,
+        "triangles": 160,
         "sizeM": [
           1.66,
           0.405,
@@ -101495,19 +102148,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#77897c",
+          "name": "polycarbonate",
+          "color": "#8ccbd1",
           "parts": [
-            "light-diffuser",
+            "light-diffuser"
+          ],
+          "param": "polycarbonate"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
             "upper-housing",
             "end-cap-left",
             "end-cap-right",
-            "suspension-left",
-            "suspension-right",
             "junction-box",
             "cable-entry"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
+          "parts": [
+            "suspension-left",
+            "suspension-right"
+          ],
+          "param": "powderCoatedSteel"
         }
       ]
     },
@@ -101515,7 +102182,7 @@
       "id": "greenhouse-tunnel-bay",
       "kit": "hydroponics",
       "title": "Greenhouse tunnel bay",
-      "description": "A compact hoop-house bay with perimeter posts, ridge beam, door frame and vent curb. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Compact hoop-house bay with perimeter posts, a ridge beam, front-door opening, vent curb and curved polyethylene roof. Parameters: overall scale, powder-coated steel, pvc, polymer, greenhouse polyethylene; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -101534,7 +102201,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/greenhouse-tunnel-bay.kcad.ts",
       "preview": "/assets/hydroponics-greenhouse-tunnel-bay.png",
-      "sourceSha256": "65757ac04ade7a11afb64eab96a6baadd1410aeb1c62081ac786df519b6c66d2",
+      "sourceSha256": "14cf4f8f78454a6a9e1d86674ebe51ef743a5894f86b9b8dac44aa7d373a40d8",
       "triangleBudget": 1800,
       "params": [
         {
@@ -101547,15 +102214,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#728c79",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
+        },
+        {
+          "name": "polyethylene",
+          "type": "color",
+          "default": "#bddbd0",
+          "label": "Greenhouse polyethylene"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa",
+          "polyethylene": "#a9bdb5"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b",
+          "polyethylene": "#e0f2e9"
+        }
+      },
       "stats": {
-        "triangles": 152,
+        "triangles": 316,
         "sizeM": [
           1.555,
           3.015,
@@ -101566,8 +102264,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#728c79",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
             "base-rail-left",
             "base-rail-right",
@@ -101576,11 +102274,33 @@
             "rear-post-left",
             "rear-post-right",
             "ridge-beam",
-            "front-door-header",
-            "vent-curb",
             "ridge-support"
           ],
-          "param": "color"
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
+            "front-door-header"
+          ],
+          "param": "pvc"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
+            "vent-curb"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "polyethylene",
+          "color": "#bddbd0",
+          "parts": [
+            "polyethylene-roof"
+          ],
+          "param": "polyethylene"
         }
       ]
     },
@@ -101588,7 +102308,7 @@
       "id": "handheld-ec-meter",
       "kit": "hydroponics",
       "title": "Handheld EC meter",
-      "description": "Handheld conductivity meter with a tapered-looking grip, raised display and probe lead. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Handheld conductivity meter with a tapered-looking grip, raised display and probe lead. Parameters: overall scale, stainless steel, polymer, instrument glass, safety amber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -101607,7 +102327,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/handheld-ec-meter.kcad.ts",
       "preview": "/assets/hydroponics-handheld-ec-meter.png",
-      "sourceSha256": "c4674a1ecc3226b2e6ea001e2c1bb9efe15f6fb7a6e1e914e6d6f857ca92110f",
+      "sourceSha256": "aebe6bebf515f8ab19f9c91fe1ca8e401531c588f0c4d16f18fd355299d2f5e0",
       "triangleBudget": 1800,
       "params": [
         {
@@ -101620,15 +102340,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#778679",
-          "label": "Asset color"
+          "default": "#b2c0bf",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#51afc1",
+          "label": "Instrument glass"
+        },
+        {
+          "name": "safetyAmber",
+          "type": "color",
+          "default": "#e4a52e",
+          "label": "Safety amber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "stainlessSteel": "#929e9c",
+          "polymer": "#b4b5aa",
+          "glass": "#548e98",
+          "safetyAmber": "#b9842f"
+        },
+        "highVisibility": {
+          "stainlessSteel": "#d6dfdc",
+          "polymer": "#f2c84b",
+          "glass": "#38c5dc",
+          "safetyAmber": "#ffd139"
+        }
+      },
       "stats": {
-        "triangles": 204,
+        "triangles": 300,
         "sizeM": [
           0.325,
           0.685,
@@ -101639,20 +102390,41 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#778679",
+          "name": "polymer",
+          "color": "#ddd8c7",
           "parts": [
             "meter-body",
             "shoulder",
-            "display",
-            "button-one",
-            "button-two",
-            "probe-clip",
-            "probe-stem",
-            "probe-tip",
             "lanyard-eye"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "glass",
+          "color": "#51afc1",
+          "parts": [
+            "display"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "safetyAmber",
+          "color": "#e4a52e",
+          "parts": [
+            "button-one",
+            "button-two"
+          ],
+          "param": "safetyAmber"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b2c0bf",
+          "parts": [
+            "probe-clip",
+            "probe-stem",
+            "probe-tip"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -101660,7 +102432,7 @@
       "id": "handheld-ph-meter",
       "kit": "hydroponics",
       "title": "Handheld pH meter",
-      "description": "Portable acidity meter with a recessed display, key pad, electrode holder and short cable tail. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Portable acidity meter with a recessed display, key pad, electrode holder and short cable tail. Parameters: overall scale, stainless steel, polymer, instrument glass; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -101679,7 +102451,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/handheld-ph-meter.kcad.ts",
       "preview": "/assets/hydroponics-handheld-ph-meter.png",
-      "sourceSha256": "be12bac10436aa12246c308aad42621fe4f16785ea9f69bc22877cd62f07a8b2",
+      "sourceSha256": "12269763268f7625d1bdde64e2496c01e99b85b67e3d0cacb93a2d4f3bc9dbd3",
       "triangleBudget": 1800,
       "params": [
         {
@@ -101692,15 +102464,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#71857c",
-          "label": "Asset color"
+          "default": "#b2c0bf",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#51afc1",
+          "label": "Instrument glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "stainlessSteel": "#929e9c",
+          "polymer": "#b4b5aa",
+          "glass": "#548e98"
+        },
+        "highVisibility": {
+          "stainlessSteel": "#d6dfdc",
+          "polymer": "#f2c84b",
+          "glass": "#38c5dc"
+        }
+      },
       "stats": {
-        "triangles": 216,
+        "triangles": 312,
         "sizeM": [
           0.345,
           0.66,
@@ -101711,21 +102506,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#71857c",
+          "name": "polymer",
+          "color": "#ddd8c7",
           "parts": [
             "meter-shell",
             "upper-cap",
-            "display",
             "keypad",
             "left-key",
             "right-key",
-            "probe-holder",
-            "electrode",
             "connector",
             "cable-end"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "glass",
+          "color": "#51afc1",
+          "parts": [
+            "display"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b2c0bf",
+          "parts": [
+            "probe-holder",
+            "electrode"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -101733,7 +102542,7 @@
       "id": "hydroponic-controller-console",
       "kit": "hydroponics",
       "title": "Hydroponic controller console",
-      "description": "Floor console with raised display hood, selector knobs, lower service door and base plinth. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Floor console with raised display hood, selector knobs, lower service door and base plinth. Parameters: overall scale, powder-coated steel, polymer, instrument glass, safety amber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -101752,7 +102561,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/hydroponic-controller-console.kcad.ts",
       "preview": "/assets/hydroponics-hydroponic-controller-console.png",
-      "sourceSha256": "8eb8985ed180ade0df633a18d34b878b02a3bdfd993d3b66df52155c4b021466",
+      "sourceSha256": "0a79c4a755f08dba398fe3df22ad916f89d62b9b890a8674aabee3f8e3e5a593",
       "triangleBudget": 1800,
       "params": [
         {
@@ -101765,15 +102574,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#617c76",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#51afc1",
+          "label": "Instrument glass"
+        },
+        {
+          "name": "safetyAmber",
+          "type": "color",
+          "default": "#e4a52e",
+          "label": "Safety amber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "polymer": "#b4b5aa",
+          "glass": "#548e98",
+          "safetyAmber": "#b9842f"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "polymer": "#f2c84b",
+          "glass": "#38c5dc",
+          "safetyAmber": "#ffd139"
+        }
+      },
       "stats": {
-        "triangles": 216,
+        "triangles": 312,
         "sizeM": [
           0.76,
           1.51,
@@ -101784,21 +102624,42 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#617c76",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
-            "plinth",
+            "plinth"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
             "cabinet",
+            "lower-door"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "glass",
+          "color": "#51afc1",
+          "parts": [
             "display-hood",
-            "screen",
-            "lower-door",
+            "screen"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "safetyAmber",
+          "color": "#e4a52e",
+          "parts": [
             "left-button",
             "right-button",
             "selector-left",
             "selector-right",
             "signal-stack"
           ],
-          "param": "color"
+          "param": "safetyAmber"
         }
       ]
     },
@@ -101806,7 +102667,7 @@
       "id": "hydroponic-grow-rack",
       "kit": "hydroponics",
       "title": "Hydroponic grow rack",
-      "description": "Three-tier crop rack with growing channels, end supports, diagonal-looking cross braces and a feed riser. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Three-tier crop rack with growing channels, end supports, diagonal-looking cross braces and a feed riser. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -101825,7 +102686,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/hydroponic-grow-rack.kcad.ts",
       "preview": "/assets/hydroponics-hydroponic-grow-rack.png",
-      "sourceSha256": "e2e95f525d804603aab4d645906bd9c5991ef2cc9c9b2e355500139b103d4469",
+      "sourceSha256": "e5db8bae3624baa0f92a9e64d6eda3600adf5bbfa7a7bb7d69786c971ed55d6c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -101838,15 +102699,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#64847c",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 164,
+        "triangles": 196,
         "sizeM": [
           1.335,
           1.75,
@@ -101857,22 +102741,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#64847c",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
             "leg-front-left",
             "leg-front-right",
             "leg-back-left",
             "leg-back-right",
+            "crossbar-low",
+            "crossbar-high"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
             "lower-channel",
             "middle-channel",
-            "upper-channel",
+            "upper-channel"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
             "side-feed",
-            "crossbar-low",
-            "crossbar-high",
             "feed-pipe"
           ],
-          "param": "color"
+          "param": "pvc"
         }
       ]
     },
@@ -101880,7 +102778,7 @@
       "id": "inline-water-heater",
       "kit": "hydroponics",
       "title": "Inline water heater",
-      "description": "Vertical inline heater housing with insulated jacket, access panel and inlet/outlet unions. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Vertical inline heater housing with insulated jacket, access panel and inlet/outlet unions. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -101899,7 +102797,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/inline-water-heater.kcad.ts",
       "preview": "/assets/hydroponics-inline-water-heater.png",
-      "sourceSha256": "32d36d1a76e63ad626f65c2ad680ccee5caa39eca47e06ec8309d04476215f48",
+      "sourceSha256": "29ab73711cf03f40f798f053000c2a0c191dd9f203ae9c422e45334401357050",
       "triangleBudget": 1800,
       "params": [
         {
@@ -101912,15 +102810,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#697f77",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 236,
+        "triangles": 364,
         "sizeM": [
           0.58,
           1.05,
@@ -101931,20 +102852,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#697f77",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
             "support-base",
+            "status-post"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
             "front-panel",
             "insulation-band",
             "junction-box",
             "top-cap",
-            "heater-body",
-            "inlet-union",
-            "outlet-union",
-            "status-post"
+            "heater-body"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
+            "inlet-union",
+            "outlet-union"
+          ],
+          "param": "pvc"
         }
       ]
     },
@@ -101952,7 +102887,7 @@
       "id": "irrigation-lateral-header",
       "kit": "hydroponics",
       "title": "Irrigation lateral header",
-      "description": "Drip irrigation header with parallel distribution bar, end cap and repeated emitter drops. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Drip irrigation header with parallel distribution bar, end cap and repeated emitter drops. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -101971,7 +102906,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/irrigation-lateral-header.kcad.ts",
       "preview": "/assets/hydroponics-irrigation-lateral-header.png",
-      "sourceSha256": "112db9842f91c188ca825011bcbb0583fc0cd71fabd6c1a3b98c996d5e0aadbb",
+      "sourceSha256": "ad7d8f6bfd91be55f3fe3239c0371f3ae22f0955adf217ea8e57ca6ddcb8b766",
       "triangleBudget": 1800,
       "params": [
         {
@@ -101984,15 +102919,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#6a867c",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 280,
+        "triangles": 440,
         "sizeM": [
           1.75,
           0.635,
@@ -102003,21 +102961,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6a867c",
+          "name": "polymer",
+          "color": "#ddd8c7",
           "parts": [
             "main-bar",
+            "end-cap"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
+          "parts": [
             "front-mount",
-            "rear-mount",
+            "rear-mount"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
             "drop-rail",
-            "end-cap",
             "drop-left",
             "drop-mid-left",
             "drop-mid-right",
             "drop-right",
             "flush-valve"
           ],
-          "param": "color"
+          "param": "pvc"
         }
       ]
     },
@@ -102025,7 +102997,7 @@
       "id": "media-filter-vessel",
       "kit": "hydroponics",
       "title": "Media filter vessel",
-      "description": "Compact vertical filtration tank with bolted-looking top ring, service hatch and lower legs. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Compact vertical filtration tank with bolted-looking top ring, service hatch and lower legs. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -102044,7 +103016,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/media-filter-vessel.kcad.ts",
       "preview": "/assets/hydroponics-media-filter-vessel.png",
-      "sourceSha256": "b61f834665bae218c5be6a360962ca3279abadd43fb5bdb4f25bb251cf63f539",
+      "sourceSha256": "7c4ba446d66e25900af0b23e749dfeeb92b1ed5ed889e4ef10c61af07f30166f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -102057,17 +103029,40 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#6a7d74",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 260,
+        "triangles": 388,
         "sizeM": [
-          0.876,
+          0.870323,
           1.28,
           0.8595
         ],
@@ -102076,22 +103071,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6a7d74",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
             "base-frame",
+            "left-foot",
+            "right-foot"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
             "front-panel",
             "side-panel",
             "top-ring",
             "service-cover",
-            "left-foot",
-            "right-foot",
             "vessel-shell",
-            "inlet-port",
-            "outlet-port",
             "backwash-port"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
+            "inlet-port",
+            "outlet-port"
+          ],
+          "param": "pvc"
         }
       ]
     },
@@ -102099,7 +103108,7 @@
       "id": "net-pot-stack",
       "kit": "hydroponics",
       "title": "Net pot stack",
-      "description": "Nested-looking stack of four lightweight planting cups with rolled rims and tapered-looking steps. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Nested-looking stack of four lightweight planting cups with rolled rims and tapered-looking steps. Parameters: overall scale, powder-coated steel, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -102118,7 +103127,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/net-pot-stack.kcad.ts",
       "preview": "/assets/hydroponics-net-pot-stack.png",
-      "sourceSha256": "b09881e40e48b2d780fa53f878cef1ea15cdfa4891f89f9fa77c0e8eff1922bf",
+      "sourceSha256": "181a7b3eb3fad42988a0464445212ec0e0a3456517225d5ee37c7485304f6152",
       "triangleBudget": 1800,
       "params": [
         {
@@ -102131,15 +103140,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#758277",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 140,
+        "triangles": 172,
         "sizeM": [
           0.42,
           0.62,
@@ -102150,10 +103174,17 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#758277",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
-            "base-plate",
+            "base-plate"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
             "lower-cup",
             "second-cup",
             "third-cup",
@@ -102163,7 +103194,7 @@
             "rim-upper",
             "center-spacer"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -102171,7 +103202,7 @@
       "id": "nft-channel-rack",
       "kit": "hydroponics",
       "title": "NFT channel rack",
-      "description": "A-frame-like nutrient film channel stand with paired trough levels, end stops and a vertical feed riser. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "A-frame-like nutrient film channel stand with paired trough levels, end stops and a vertical feed riser. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -102190,7 +103221,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/nft-channel-rack.kcad.ts",
       "preview": "/assets/hydroponics-nft-channel-rack.png",
-      "sourceSha256": "e71af02b98f190caa95f397102aa1c9f5f0a597c0d64c89f4bcd9aa574dd9235",
+      "sourceSha256": "ca295ac362e9c33ee198bbe61ca573c5ca287dc475864745f3d824380cfcd5f4",
       "triangleBudget": 1800,
       "params": [
         {
@@ -102203,15 +103234,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#65867f",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 164,
+        "triangles": 196,
         "sizeM": [
           1.4,
           1.445,
@@ -102222,22 +103276,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#65867f",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
             "left-foot",
             "right-foot",
+            "top-crossbar"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
             "left-upright",
             "right-upright",
             "lower-channel-left",
             "lower-channel-right",
             "upper-channel-left",
-            "upper-channel-right",
-            "top-crossbar",
+            "upper-channel-right"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
             "feed-header",
             "feed-riser"
           ],
-          "param": "color"
+          "param": "pvc"
         }
       ]
     },
@@ -102245,7 +103313,7 @@
       "id": "nutrient-feed-manifold",
       "kit": "hydroponics",
       "title": "Nutrient feed manifold",
-      "description": "Header rail with five evenly spaced outlet branches, isolation blocks and a vertical supply riser. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Header rail with five evenly spaced outlet branches, isolation blocks and a vertical supply riser. Parameters: overall scale, powder-coated steel, pvc; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -102264,7 +103332,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/nutrient-feed-manifold.kcad.ts",
       "preview": "/assets/hydroponics-nutrient-feed-manifold.png",
-      "sourceSha256": "0c55a5cde148ecad2031711e7da23dc24483c679b2dd358c11f936b919a66139",
+      "sourceSha256": "ff5c4aaa7fa208a9fa94961f52b9d3d92b43fd5d71e27ef9922a0eac4b9901ba",
       "triangleBudget": 1800,
       "params": [
         {
@@ -102277,15 +103345,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#5b837d",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789"
+        }
+      },
       "stats": {
-        "triangles": 372,
+        "triangles": 564,
         "sizeM": [
           1.85,
           0.59,
@@ -102296,13 +103379,10 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#5b837d",
+          "name": "pvc",
+          "color": "#c7d4ca",
           "parts": [
             "header",
-            "mount-rail",
-            "support-left",
-            "support-right",
             "valve-left",
             "valve-mid-left",
             "valve-mid",
@@ -102315,7 +103395,17 @@
             "branch-5",
             "supply-riser"
           ],
-          "param": "color"
+          "param": "pvc"
+        },
+        {
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
+          "parts": [
+            "mount-rail",
+            "support-left",
+            "support-right"
+          ],
+          "param": "powderCoatedSteel"
         }
       ]
     },
@@ -102323,7 +103413,7 @@
       "id": "nutrient-measuring-cylinder",
       "kit": "hydroponics",
       "title": "Nutrient measuring cylinder",
-      "description": "Bench measuring vessel with a broad foot, graduated-band ridges and a pouring lip. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Bench measuring vessel with a broad foot, graduated-band ridges and a pouring lip. Parameters: overall scale, powder-coated steel, stainless steel, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -102342,7 +103432,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/nutrient-measuring-cylinder.kcad.ts",
       "preview": "/assets/hydroponics-nutrient-measuring-cylinder.png",
-      "sourceSha256": "a1e689cc70569be074486d4ae89d9142fdf15c3bbaca50fee6d15eef02bbb1fc",
+      "sourceSha256": "92ccd137a35ab5404925b739de5e7bb4c208369ca70a8da014ff994b7c347eda",
       "triangleBudget": 1800,
       "params": [
         {
@@ -102355,15 +103445,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#789079",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b2c0bf",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "stainlessSteel": "#929e9c",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "stainlessSteel": "#d6dfdc",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 204,
+        "triangles": 300,
         "sizeM": [
           0.29,
           0.67,
@@ -102374,20 +103487,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#789079",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
-            "base-foot",
+            "base-foot"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
             "pouring-lip",
             "mark-low",
             "mark-mid-low",
             "mark-mid",
             "mark-mid-high",
             "vessel",
-            "rim",
+            "rim"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b2c0bf",
+          "parts": [
             "spout-tip"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -102395,7 +103522,7 @@
       "id": "nutrient-reservoir-tank",
       "kit": "hydroponics",
       "title": "Nutrient reservoir tank",
-      "description": "Lidded solution reservoir with access hatch, level sight column and low drain fitting. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Lidded solution reservoir with access hatch, level sight column and low drain fitting. Parameters: overall scale, pvc, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -102414,7 +103541,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/nutrient-reservoir-tank.kcad.ts",
       "preview": "/assets/hydroponics-nutrient-reservoir-tank.png",
-      "sourceSha256": "89858bacaf28f3d80c87b9f26db6b8c05eec5db56e4d28c78a765decfc5095bc",
+      "sourceSha256": "856f778a19110e38146c2534060cfad10467b241ecd40dfc662f7cd4330e9e0f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -102427,15 +103554,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "pvc",
           "type": "color",
-          "default": "#6b8376",
-          "label": "Asset color"
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "pvc": "#ead789",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 204,
+        "triangles": 300,
         "sizeM": [
           1.305,
           1.12,
@@ -102446,8 +103588,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6b8376",
+          "name": "polymer",
+          "color": "#ddd8c7",
           "parts": [
             "tank-shell",
             "lid",
@@ -102456,10 +103598,17 @@
             "left-band",
             "right-band",
             "sight-column",
-            "drain-fitting",
             "vent-cap"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
+            "drain-fitting"
+          ],
+          "param": "pvc"
         }
       ]
     },
@@ -102467,7 +103616,7 @@
       "id": "nutrient-solution-chiller",
       "kit": "hydroponics",
       "title": "Nutrient solution chiller",
-      "description": "Compact process cooler with front grille bars, top controls and paired pipe connections. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Compact process cooler with front grille bars, top controls and paired pipe connections. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -102486,7 +103635,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/nutrient-solution-chiller.kcad.ts",
       "preview": "/assets/hydroponics-nutrient-solution-chiller.png",
-      "sourceSha256": "bb9365665a016c19731dd37ccd5374853b50a72667f4b12fc70cbf5ae70ea648",
+      "sourceSha256": "b436ecb1e87a98025995abb2dadf8d8b08e069ce0364cf6a99b4d26a2e7075de",
       "triangleBudget": 1800,
       "params": [
         {
@@ -102499,15 +103648,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#6b807b",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 228,
+        "triangles": 324,
         "sizeM": [
           0.74,
           0.87,
@@ -102518,10 +103690,17 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6b807b",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
-            "base",
+            "base"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
             "chiller-body",
             "top-panel",
             "front-door",
@@ -102529,11 +103708,18 @@
             "grille-b",
             "grille-c",
             "control-pod",
-            "inlet-port",
-            "outlet-port",
             "service-knob"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
+            "inlet-port",
+            "outlet-port"
+          ],
+          "param": "pvc"
         }
       ]
     },
@@ -102541,7 +103727,7 @@
       "id": "overhead-grow-light-frame",
       "kit": "hydroponics",
       "title": "Overhead grow light frame",
-      "description": "Raised horticultural lighting gantry with paired rails, cross beams and hanging light bars. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Raised horticultural lighting gantry with paired rails, cross beams and hanging light bars. Parameters: overall scale, powder-coated steel, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -102560,7 +103746,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/overhead-grow-light-frame.kcad.ts",
       "preview": "/assets/hydroponics-overhead-grow-light-frame.png",
-      "sourceSha256": "4befe1d9babb21272b4f4bb5ec7c6fa10c2ab616080a4b852a61e3dd0fd290da",
+      "sourceSha256": "f14ebc79bd690374c0c98c410c87cc735bb5989931b4cbf3151f0aab642dfa90",
       "triangleBudget": 1800,
       "params": [
         {
@@ -102573,15 +103759,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#71867b",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 232,
+        "triangles": 296,
         "sizeM": [
           1.9,
           2.55,
@@ -102592,8 +103793,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#71867b",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
             "foot-left-front",
             "foot-right-front",
@@ -102605,12 +103806,19 @@
             "leg-right-back",
             "top-beam-front",
             "top-beam-back",
-            "light-bar-a",
-            "light-bar-b",
             "hanger-left",
             "hanger-right"
           ],
-          "param": "color"
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
+            "light-bar-a",
+            "light-bar-b"
+          ],
+          "param": "polymer"
         }
       ]
     },
@@ -102618,7 +103826,7 @@
       "id": "peristaltic-dosing-pump",
       "kit": "hydroponics",
       "title": "Peristaltic dosing pump",
-      "description": "Bench-mounted metering pump with circular pump head, tubing guide and raised controller housing. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Bench-mounted metering pump with circular pump head, tubing guide and raised controller housing. Parameters: overall scale, powder-coated steel, pvc, polymer, rubber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -102637,7 +103845,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/peristaltic-dosing-pump.kcad.ts",
       "preview": "/assets/hydroponics-peristaltic-dosing-pump.png",
-      "sourceSha256": "8ca60ab43c8a222331bbb66326312c1d05f730207296a89df6677d22f6d4ede6",
+      "sourceSha256": "92ea376267b4a963de40c306f197110ad0cf5e3af91c6beaed815f85c9c1c7e6",
       "triangleBudget": 1800,
       "params": [
         {
@@ -102650,17 +103858,48 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#6a8178",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#323a3d",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa",
+          "rubber": "#4b504e"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b",
+          "rubber": "#262d30"
+        }
+      },
       "stats": {
-        "triangles": 248,
+        "triangles": 376,
         "sizeM": [
-          0.484,
+          0.481846,
           0.475,
           0.446
         ],
@@ -102669,21 +103908,42 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6a8178",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
             "mounting-foot",
             "pump-base",
+            "rotor-cap"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#323a3d",
+          "parts": [
             "controller",
-            "screen-bezel",
             "tubing-guide-left",
-            "tubing-guide-right",
-            "pump-head",
-            "rotor-cap",
+            "tubing-guide-right"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
+            "screen-bezel",
+            "pump-head"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
             "tube-inlet",
             "tube-outlet"
           ],
-          "param": "color"
+          "param": "pvc"
         }
       ]
     },
@@ -102691,7 +103951,7 @@
       "id": "ph-probe-flow-cell",
       "kit": "hydroponics",
       "title": "pH probe flow cell",
-      "description": "Sampling cell with two hose unions, a probe gland and a compact mounting block. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Sampling cell with two hose unions, a probe gland and a compact mounting block. Parameters: overall scale, powder-coated steel, stainless steel, pvc, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -102710,7 +103970,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/ph-probe-flow-cell.kcad.ts",
       "preview": "/assets/hydroponics-ph-probe-flow-cell.png",
-      "sourceSha256": "377c96d1fcfb874a6ed472911f6e147464d736afdf2c1610f3d9d4dd2276e4cc",
+      "sourceSha256": "fe3a03c1f3a789eb16855391b5994c3d9e766842a725b394fd2d09a92718d4b2",
       "triangleBudget": 1800,
       "params": [
         {
@@ -102723,15 +103983,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#698780",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b2c0bf",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "stainlessSteel": "#929e9c",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "stainlessSteel": "#d6dfdc",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 280,
+        "triangles": 440,
         "sizeM": [
           0.82,
           0.965,
@@ -102742,21 +104033,42 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#698780",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
-            "mounting-block",
-            "front-label",
+            "mounting-block"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
+            "front-label"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
             "left-union",
             "right-union",
-            "probe-clip",
             "flow-cell",
-            "probe-gland",
-            "probe-stem",
             "inlet",
             "outlet"
           ],
-          "param": "color"
+          "param": "pvc"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b2c0bf",
+          "parts": [
+            "probe-clip",
+            "probe-gland",
+            "probe-stem"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -102764,7 +104076,7 @@
       "id": "plant-support-clip-rack",
       "kit": "hydroponics",
       "title": "Plant support clip rack",
-      "description": "Compact pegboard organizer with stacked clip rails, end brackets and a freestanding foot. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Compact pegboard organizer with stacked clip rails, end brackets and a freestanding foot. Parameters: overall scale, powder-coated steel, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -102783,7 +104095,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/plant-support-clip-rack.kcad.ts",
       "preview": "/assets/hydroponics-plant-support-clip-rack.png",
-      "sourceSha256": "1232b0ba84df4062c1d18a4a944ac842f23e39a55c03fc4468a8c9fd313af86d",
+      "sourceSha256": "49b99a40c75b0206d409e20c44ff72a31b6a0f2403d863fde2eb36d257d00488",
       "triangleBudget": 1800,
       "params": [
         {
@@ -102796,15 +104108,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#7a8577",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 272,
+        "triangles": 400,
         "sizeM": [
           0.85,
           0.875,
@@ -102815,23 +104142,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7a8577",
+          "name": "polymer",
+          "color": "#ddd8c7",
           "parts": [
             "backboard",
-            "base-foot",
             "top-cap",
-            "left-bracket",
-            "right-bracket",
-            "clip-rail-low",
-            "clip-rail-mid",
-            "clip-rail-high",
             "clip-left-low",
             "clip-mid-low",
             "clip-right-low",
             "hanging-eye"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
+          "parts": [
+            "base-foot",
+            "left-bracket",
+            "right-bracket",
+            "clip-rail-low",
+            "clip-rail-mid",
+            "clip-rail-high"
+          ],
+          "param": "powderCoatedSteel"
         }
       ]
     },
@@ -102839,7 +104173,7 @@
       "id": "propagation-plug-tray",
       "kit": "hydroponics",
       "title": "Propagation plug tray",
-      "description": "Shallow seedling insert with a broad rim, four rows of tapered plug cells and carry tabs. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Shallow seedling insert with a broad rim, four rows of tapered plug cells and carry tabs. Parameters: overall scale, polymer, grow substrate; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -102858,7 +104192,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/propagation-plug-tray.kcad.ts",
       "preview": "/assets/hydroponics-propagation-plug-tray.png",
-      "sourceSha256": "ea81843adadcc4344723b0c8767cc2c1f0a947d557a77ab938c2238cf5d7922a",
+      "sourceSha256": "cb6d0d1b916b1527732bcaed8565b808d4284945e495575a0cbd8a34cc0ba254",
       "triangleBudget": 1800,
       "params": [
         {
@@ -102871,17 +104205,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#798578",
-          "label": "Asset color"
+          "default": "#ddd8c7",
+          "label": "Polymer"
+        },
+        {
+          "name": "growSubstrate",
+          "type": "color",
+          "default": "#8a6848",
+          "label": "Grow substrate"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "polymer": "#b4b5aa",
+          "growSubstrate": "#75604b"
+        },
+        "highVisibility": {
+          "polymer": "#f2c84b",
+          "growSubstrate": "#aa8652"
+        }
+      },
       "stats": {
-        "triangles": 196,
+        "triangles": 260,
         "sizeM": [
-          0.884,
+          0.880868,
           0.145,
           0.55
         ],
@@ -102890,22 +104239,29 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#798578",
+          "name": "polymer",
+          "color": "#ddd8c7",
           "parts": [
             "tray-floor",
             "front-rim",
             "back-rim",
             "left-rim",
             "right-rim",
-            "cell-row-front",
-            "cell-row-mid-front",
-            "cell-row-mid-back",
-            "cell-row-back",
             "carry-grip-left",
             "carry-grip-right"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "growSubstrate",
+          "color": "#8a6848",
+          "parts": [
+            "cell-row-front",
+            "cell-row-mid-front",
+            "cell-row-mid-back",
+            "cell-row-back"
+          ],
+          "param": "growSubstrate"
         }
       ]
     },
@@ -102913,7 +104269,7 @@
       "id": "return-water-header",
       "kit": "hydroponics",
       "title": "Return water header",
-      "description": "Raised collection header with four return inlets, end support saddles and a cleanout cap. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Raised collection header with four return inlets, end support saddles and a cleanout cap. Parameters: overall scale, powder-coated steel, pvc; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -102932,7 +104288,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/return-water-header.kcad.ts",
       "preview": "/assets/hydroponics-return-water-header.png",
-      "sourceSha256": "4034d33a7cc2822e57665f2d2d29ea3ceaa406bd7da43d4fa65ca49b158600a1",
+      "sourceSha256": "ae3b06ad0592cc5bd6844e6c29576a3d1970c91ac31eb8287832dbfc9d49222c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -102945,17 +104301,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#688078",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789"
+        }
+      },
       "stats": {
-        "triangles": 280,
+        "triangles": 440,
         "sizeM": [
-          1.925,
+          1.922798,
           0.445,
           0.24
         ],
@@ -102964,21 +104335,28 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#688078",
+          "name": "pvc",
+          "color": "#c7d4ca",
           "parts": [
             "header-pipe",
-            "support-left",
-            "support-center-left",
-            "support-center-right",
-            "support-right",
             "inlet-left",
             "inlet-mid-left",
             "inlet-mid-right",
             "inlet-right",
             "cleanout"
           ],
-          "param": "color"
+          "param": "pvc"
+        },
+        {
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
+          "parts": [
+            "support-left",
+            "support-center-left",
+            "support-center-right",
+            "support-right"
+          ],
+          "param": "powderCoatedSteel"
         }
       ]
     },
@@ -102986,7 +104364,7 @@
       "id": "root-zone-heating-loop",
       "kit": "hydroponics",
       "title": "Root-zone heating loop",
-      "description": "Compact bench loop manifold with three parallel heating runs, end headers and two service risers. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Compact bench loop manifold with three parallel heating runs, end headers and two service risers. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -103005,7 +104383,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/root-zone-heating-loop.kcad.ts",
       "preview": "/assets/hydroponics-root-zone-heating-loop.png",
-      "sourceSha256": "6351e55f94e3df1b18d4af12b0d23af67354ec4b14ae1c2ab7ec03f9c9b96ca4",
+      "sourceSha256": "aed1db416bf7bb7e6fcac87d2216240e0ff963742cc2c54dc8edb24357ec3791",
       "triangleBudget": 1800,
       "params": [
         {
@@ -103018,17 +104396,40 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#7b8172",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 240,
+        "triangles": 336,
         "sizeM": [
-          1.317,
+          1.314944,
           0.275,
           1.077
         ],
@@ -103037,23 +104438,37 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7b8172",
+          "name": "pvc",
+          "color": "#c7d4ca",
           "parts": [
             "left-header",
             "right-header",
-            "run-front",
-            "run-center",
-            "run-back",
-            "support-front-left",
-            "support-front-right",
-            "support-back-left",
-            "support-back-right",
             "inlet-riser",
             "outlet-riser",
             "control-valve"
           ],
-          "param": "color"
+          "param": "pvc"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
+            "run-front",
+            "run-center",
+            "run-back"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
+          "parts": [
+            "support-front-left",
+            "support-front-right",
+            "support-back-left",
+            "support-back-right"
+          ],
+          "param": "powderCoatedSteel"
         }
       ]
     },
@@ -103061,7 +104476,7 @@
       "id": "screen-filter-housing",
       "kit": "hydroponics",
       "title": "Screen filter housing",
-      "description": "Inline filter body with clamp collars, removable cap, inlet and outlet unions. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Inline filter body with clamp collars, removable cap, inlet and outlet unions. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -103080,7 +104495,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/screen-filter-housing.kcad.ts",
       "preview": "/assets/hydroponics-screen-filter-housing.png",
-      "sourceSha256": "eb2a6dea77995cc17b507a727f80f126b65e72f39fd98679d4dff1e7d54a366f",
+      "sourceSha256": "8d1403fa2c88ac5d1b7157c81da51f9f01679c4542dedf83f76f1aedf7bd7eb3",
       "triangleBudget": 1800,
       "params": [
         {
@@ -103093,15 +104508,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#667f78",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 260,
+        "triangles": 388,
         "sizeM": [
           1.34,
           0.915,
@@ -103112,22 +104550,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#667f78",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
             "mounting-skid",
+            "support-left",
+            "support-right"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
             "left-union",
             "right-union",
-            "front-label",
-            "cap-tab",
-            "support-left",
-            "support-right",
-            "filter-canister",
-            "top-cap",
             "inlet-port",
             "outlet-port"
           ],
-          "param": "color"
+          "param": "pvc"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
+            "front-label",
+            "cap-tab",
+            "filter-canister",
+            "top-cap"
+          ],
+          "param": "polymer"
         }
       ]
     },
@@ -103135,7 +104587,7 @@
       "id": "seedling-propagation-cart",
       "kit": "hydroponics",
       "title": "Seedling propagation cart",
-      "description": "Mobile propagation trolley with four shallow trays, push handle and compact caster housings. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Mobile propagation trolley with four shallow trays, push handle and compact caster housings. Parameters: overall scale, powder-coated steel, polymer, rubber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -103154,7 +104606,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/seedling-propagation-cart.kcad.ts",
       "preview": "/assets/hydroponics-seedling-propagation-cart.png",
-      "sourceSha256": "98fccf9ef1f30ace36bf33a6a7b1463f853803258206caa840361d6f7b933144",
+      "sourceSha256": "f0be49473c6d00366a6fa3eb45184f8409b4759dab22a65da2e5dc6d66806e3b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -103167,15 +104619,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#74877d",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#323a3d",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "polymer": "#b4b5aa",
+          "rubber": "#4b504e"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "polymer": "#f2c84b",
+          "rubber": "#262d30"
+        }
+      },
       "stats": {
-        "triangles": 272,
+        "triangles": 400,
         "sizeM": [
           0.92,
           1.753,
@@ -103186,23 +104661,37 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#74877d",
+          "name": "polymer",
+          "color": "#ddd8c7",
           "parts": [
             "lower-tray",
             "tray-two",
             "tray-three",
             "upper-tray",
-            "post-left",
-            "post-right",
             "push-handle",
-            "front-stop",
+            "front-stop"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
+          "parts": [
+            "post-left",
+            "post-right"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#323a3d",
+          "parts": [
             "caster-left-front",
             "caster-right-front",
             "caster-left-back",
             "caster-right-back"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -103210,7 +104699,7 @@
       "id": "seedling-transplant-tool",
       "kit": "hydroponics",
       "title": "Seedling transplant tool",
-      "description": "Hand tool with a tapered dibber body, broad grip and protective collar. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Hand tool with a tapered dibber body, broad grip and protective collar. Parameters: overall scale, powder-coated steel, stainless steel, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -103229,7 +104718,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/seedling-transplant-tool.kcad.ts",
       "preview": "/assets/hydroponics-seedling-transplant-tool.png",
-      "sourceSha256": "1bcec80d48ccb0009139868d792fd43d710ccb87f49ccab286254cb8bf0d60fb",
+      "sourceSha256": "c53b0a3370b4fe4823de5a71a7733ef758bd5d36e7067c05fd564c7ee66f4b3e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -103242,15 +104731,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#7d8475",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b2c0bf",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "stainlessSteel": "#929e9c",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "stainlessSteel": "#d6dfdc",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 160,
+        "triangles": 224,
         "sizeM": [
           0.395,
           0.77,
@@ -103261,19 +104773,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7d8475",
+          "name": "polymer",
+          "color": "#ddd8c7",
           "parts": [
             "grip",
             "grip-end-left",
             "grip-end-right",
-            "shaft",
-            "guard",
-            "tip",
             "collar",
             "hanging-eye"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b2c0bf",
+          "parts": [
+            "shaft",
+            "tip"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
+          "parts": [
+            "guard"
+          ],
+          "param": "powderCoatedSteel"
         }
       ]
     },
@@ -103281,7 +104807,7 @@
       "id": "solution-mixing-tank",
       "kit": "hydroponics",
       "title": "Solution mixing tank",
-      "description": "Vertical mixing vessel with top motor bridge, short agitator shaft and side sampling ports. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Vertical mixing vessel with top motor bridge, short agitator shaft and side sampling ports. Parameters: overall scale, powder-coated steel, stainless steel, pvc, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -103300,7 +104826,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/solution-mixing-tank.kcad.ts",
       "preview": "/assets/hydroponics-solution-mixing-tank.png",
-      "sourceSha256": "3da98f48ce3dd4284e6c3546b770b245913e7c11402b8334ab9357cd1b42367e",
+      "sourceSha256": "f6d1e2a026ea45aabd1efac8215b9727ef47091d2b1012d77c62c2c6f575058f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -103313,15 +104839,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#6c8379",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b2c0bf",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "stainlessSteel": "#929e9c",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "stainlessSteel": "#d6dfdc",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 248,
+        "triangles": 376,
         "sizeM": [
           1.04,
           1.675,
@@ -103332,21 +104889,42 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6c8379",
+          "name": "polymer",
+          "color": "#ddd8c7",
           "parts": [
             "tank-body",
             "top-rim",
+            "service-panel",
+            "agitator-blade",
+            "sampling-port"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
+          "parts": [
             "motor-bridge",
             "motor-cover",
-            "service-panel",
-            "leg-front",
-            "agitator-shaft",
-            "agitator-blade",
-            "sampling-port",
+            "leg-front"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b2c0bf",
+          "parts": [
+            "agitator-shaft"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
             "drain-outlet"
           ],
-          "param": "color"
+          "param": "pvc"
         }
       ]
     },
@@ -103354,7 +104932,7 @@
       "id": "stock-solution-tank",
       "kit": "hydroponics",
       "title": "Stock solution tank",
-      "description": "Compact concentrate vessel with a broad cap, metering port and raised base ring. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Compact concentrate vessel with a broad cap, metering port and raised base ring. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -103373,7 +104951,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/stock-solution-tank.kcad.ts",
       "preview": "/assets/hydroponics-stock-solution-tank.png",
-      "sourceSha256": "591b9b2185a6551ffa96297e765d46b8f7e78dcdff71c7407d26abda1cb16d12",
+      "sourceSha256": "ba343e8879070b4622f73705545c4c8df0daa9cc21c4d5d9b2159bd4003ad17f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -103386,15 +104964,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#7a8572",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 172,
+        "triangles": 236,
         "sizeM": [
           0.77,
           1.03,
@@ -103405,20 +105006,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7a8572",
+          "name": "polymer",
+          "color": "#ddd8c7",
           "parts": [
             "tank",
-            "base-ring",
             "top-cap",
             "cap-grip",
             "front-label-panel",
             "side-rib-left",
-            "side-rib-right",
+            "side-rib-right"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
+          "parts": [
+            "base-ring"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
             "metering-valve",
             "dip-tube"
           ],
-          "param": "color"
+          "param": "pvc"
         }
       ]
     },
@@ -103426,7 +105041,7 @@
       "id": "substrate-grow-gutter",
       "kit": "hydroponics",
       "title": "Substrate grow gutter",
-      "description": "Long raised crop gutter with end caps, support saddles, drain pickup and parallel feed tube. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Long raised crop gutter with end caps, support saddles, drain pickup and parallel feed tube. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -103445,7 +105060,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/substrate-grow-gutter.kcad.ts",
       "preview": "/assets/hydroponics-substrate-grow-gutter.png",
-      "sourceSha256": "ba479f3e085e15d5ef462c09fe45ac7c4fa176e3f4cb54b183da758553932a0c",
+      "sourceSha256": "c785669c1aa0dc7e3de2cf9fc5febe37d426bbd3be454f18c5b1e8e6dd767447",
       "triangleBudget": 1800,
       "params": [
         {
@@ -103458,15 +105073,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#758878",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 152,
+        "triangles": 184,
         "sizeM": [
           2.185,
           0.705,
@@ -103477,21 +105115,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#758878",
+          "name": "polymer",
+          "color": "#ddd8c7",
           "parts": [
             "trough",
             "front-rim",
             "back-rim",
             "end-cap-left",
-            "end-cap-right",
+            "end-cap-right"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
+          "parts": [
             "support-left",
             "support-middle",
-            "support-right",
+            "support-right"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
             "feed-tube",
             "drain-pickup"
           ],
-          "param": "color"
+          "param": "pvc"
         }
       ]
     },
@@ -103499,7 +105151,7 @@
       "id": "sump-return-tank",
       "kit": "hydroponics",
       "title": "Sump return tank",
-      "description": "Low collection tank with screened top grate, paired inlet stubs and a pump access corner. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Low collection tank with screened top grate, paired inlet stubs and a pump access corner. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -103518,7 +105170,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/sump-return-tank.kcad.ts",
       "preview": "/assets/hydroponics-sump-return-tank.png",
-      "sourceSha256": "03242030ca01b9c3c369d08cd2099b924a2201919d176db39847da051a31420d",
+      "sourceSha256": "687ca087c23e9f8ed3eb3e549467486e62a798b295c4212fa054c611fea73c62",
       "triangleBudget": 1800,
       "params": [
         {
@@ -103531,15 +105183,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#657e76",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 228,
+        "triangles": 324,
         "sizeM": [
           1.55,
           0.815,
@@ -103550,10 +105225,17 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#657e76",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
-            "tank-base",
+            "tank-base"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
             "front-wall",
             "back-wall",
             "left-wall",
@@ -103561,11 +105243,18 @@
             "screen-panel-a",
             "screen-panel-b",
             "access-lid",
-            "inlet-left",
-            "inlet-right",
             "pump-socket"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
+            "inlet-left",
+            "inlet-right"
+          ],
+          "param": "pvc"
         }
       ]
     },
@@ -103573,7 +105262,7 @@
       "id": "uv-treatment-chamber",
       "kit": "hydroponics",
       "title": "UV treatment chamber",
-      "description": "Horizontal-looking treatment skid with a vertical chamber body, control box and paired pipe stubs. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Horizontal-looking treatment skid with a vertical chamber body, control box and paired pipe stubs. Parameters: overall scale, powder-coated steel, pvc, polymer, instrument glass; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -103592,7 +105281,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/uv-treatment-chamber.kcad.ts",
       "preview": "/assets/hydroponics-uv-treatment-chamber.png",
-      "sourceSha256": "5f99672dc1369d087479983f4615030f1c9309d5118d9f823254889fb3dd2108",
+      "sourceSha256": "8a0498b609120bf4eb9710f6d11b949ac46cd03a77a2750c1952b380af0ed475",
       "triangleBudget": 1800,
       "params": [
         {
@@ -103605,15 +105294,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#657d7b",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#51afc1",
+          "label": "Instrument glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa",
+          "glass": "#548e98"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b",
+          "glass": "#38c5dc"
+        }
+      },
       "stats": {
-        "triangles": 216,
+        "triangles": 312,
         "sizeM": [
           1.25,
           0.815,
@@ -103624,21 +105344,42 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#657d7b",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
             "skid-base",
+            "left-support",
+            "right-support"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
             "control-box",
             "service-door",
-            "left-support",
-            "right-support",
-            "pipe-left",
-            "pipe-right",
             "treatment-canister",
-            "lamp-cap",
             "sample-tap"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
+            "pipe-left",
+            "pipe-right"
+          ],
+          "param": "pvc"
+        },
+        {
+          "name": "glass",
+          "color": "#51afc1",
+          "parts": [
+            "lamp-cap"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -103646,7 +105387,7 @@
       "id": "venturi-injector-assembly",
       "kit": "hydroponics",
       "title": "Venturi injector assembly",
-      "description": "Inline injector assembly with a central throat body, bypass pipe and adjustment knob. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Inline injector assembly with a central throat body, bypass pipe and adjustment knob. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -103665,7 +105406,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/venturi-injector-assembly.kcad.ts",
       "preview": "/assets/hydroponics-venturi-injector-assembly.png",
-      "sourceSha256": "e96252625c1249e739226c008ae81ae6fafe2ce33cdce95fd632cafb4d36cc11",
+      "sourceSha256": "ae93e029bfbcd2cd45d8ae526d9e7ed684cf35982c2c8fe8085ed3a1aa06ed1a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -103678,15 +105419,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#5e8582",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 216,
+        "triangles": 312,
         "sizeM": [
           1.28,
           0.66,
@@ -103697,12 +105461,26 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#5e8582",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
-            "support-base",
+            "support-base"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
             "left-pipe",
-            "right-pipe",
+            "right-pipe"
+          ],
+          "param": "pvc"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
             "body-center",
             "bypass-bridge",
             "bypass-left",
@@ -103711,7 +105489,7 @@
             "adjustment-knob",
             "suction-port"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -103719,7 +105497,7 @@
       "id": "vertical-grow-tower",
       "kit": "hydroponics",
       "title": "Vertical grow tower",
-      "description": "Stacked hydroponic planting collars around a central feed column on a weighted circular base. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Stacked hydroponic planting collars around a central feed column on a weighted circular base. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -103738,7 +105516,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/vertical-grow-tower.kcad.ts",
       "preview": "/assets/hydroponics-vertical-grow-tower.png",
-      "sourceSha256": "c53ce855877d2fc927433bc37bb41c4e4ed9fb06f4f7450f11559a2775871daf",
+      "sourceSha256": "b9542ecd2b720289ed665c21ed685cc39b56f33f9a2a242fafe57e0681a1c337",
       "triangleBudget": 1800,
       "params": [
         {
@@ -103751,17 +105529,40 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#718a81",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "pvc",
+          "type": "color",
+          "default": "#c7d4ca",
+          "label": "PVC"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "pvc": "#b2bcae",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "pvc": "#ead789",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 336,
+        "triangles": 528,
         "sizeM": [
-          0.61,
+          0.606574,
           1.71,
           0.57
         ],
@@ -103770,23 +105571,37 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#718a81",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
             "base-plinth",
+            "foot-a",
+            "foot-b",
+            "foot-c"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
             "lower-collar",
             "tier-one",
             "tier-two",
             "tier-three",
             "top-lid",
-            "central-feed-column",
             "side-port-left",
-            "side-port-right",
-            "foot-a",
-            "foot-b",
-            "foot-c"
+            "side-port-right"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "pvc",
+          "color": "#c7d4ca",
+          "parts": [
+            "central-feed-column"
+          ],
+          "param": "pvc"
         }
       ]
     },
@@ -103794,7 +105609,7 @@
       "id": "wall-mounted-co2-sensor",
       "kit": "hydroponics",
       "title": "Wall-mounted CO2 sensor",
-      "description": "Compact wall enclosure with a vented cover, mounting lugs and short cable gland. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Compact wall enclosure with a vented cover, mounting lugs and short cable gland. Parameters: overall scale, stainless steel, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -103813,7 +105628,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/wall-mounted-co2-sensor.kcad.ts",
       "preview": "/assets/hydroponics-wall-mounted-co2-sensor.png",
-      "sourceSha256": "e727d9d1ae30096fdde8f7966ca6390bd5ec0e80feb1def754b76376cfb77a42",
+      "sourceSha256": "90fe67b502a6a395974c6b52cd5e32069c474838bda27d2473822f98e2c2142c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -103826,15 +105641,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#71877c",
-          "label": "Asset color"
+          "default": "#b2c0bf",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "stainlessSteel": "#929e9c",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "stainlessSteel": "#d6dfdc",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 172,
+        "triangles": 236,
         "sizeM": [
           0.38,
           0.395,
@@ -103845,8 +105675,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#71877c",
+          "name": "polymer",
+          "color": "#ddd8c7",
           "parts": [
             "backplate",
             "sensor-case",
@@ -103855,10 +105685,17 @@
             "bottom-vent",
             "left-lug",
             "right-lug",
-            "cable-gland",
+            "cable-gland"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b2c0bf",
+          "parts": [
             "sensor-cap"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -103866,7 +105703,7 @@
       "id": "water-level-float",
       "kit": "hydroponics",
       "title": "Water level float",
-      "description": "Float switch assembly with guide mast, adjustable collar and protected cable lead. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Float switch assembly with guide mast, adjustable collar and protected cable lead. Parameters: overall scale, powder-coated steel, stainless steel, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -103885,7 +105722,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/water-level-float.kcad.ts",
       "preview": "/assets/hydroponics-water-level-float.png",
-      "sourceSha256": "fa518aa5db2f461185159df30cfa67c1bb0c62e9caf25de503ea5d06d4f7a163",
+      "sourceSha256": "878bfb7d02e705e611ff8159954d6950a3a793ee926295c0fb4fdef071042982",
       "triangleBudget": 1800,
       "params": [
         {
@@ -103898,15 +105735,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#79877b",
-          "label": "Asset color"
+          "default": "#557b70",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b2c0bf",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#ddd8c7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoatedSteel": "#69766e",
+          "stainlessSteel": "#929e9c",
+          "polymer": "#b4b5aa"
+        },
+        "highVisibility": {
+          "powderCoatedSteel": "#e87832",
+          "stainlessSteel": "#d6dfdc",
+          "polymer": "#f2c84b"
+        }
+      },
       "stats": {
-        "triangles": 268,
+        "triangles": 428,
         "sizeM": [
           0.36,
           0.935,
@@ -103917,20 +105777,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#79877b",
+          "name": "powderCoatedSteel",
+          "color": "#557b70",
           "parts": [
             "mounting-foot",
             "top-bracket",
-            "clamp-block",
+            "guide-mast"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b2c0bf",
+          "parts": [
+            "clamp-block"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#ddd8c7",
+          "parts": [
             "cable-clip",
-            "guide-mast",
             "float-body",
             "adjust-collar",
             "cable-gland",
             "switch-head"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
