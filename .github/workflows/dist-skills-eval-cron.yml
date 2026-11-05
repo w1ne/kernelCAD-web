@@ -9,7 +9,7 @@ on:
 
 jobs:
   eval-claude-code:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -29,7 +29,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.EVAL_ANTHROPIC_API_KEY }}
 
   eval-codex:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -44,7 +44,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.EVAL_OPENAI_API_KEY }}
 
   eval-cursor:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
