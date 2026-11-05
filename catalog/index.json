@@ -2388,7 +2388,7 @@
     {
       "id": "telecom-infrastructure",
       "title": "Telecom infrastructure",
-      "description": "Original low-poly communications-site, rooftop, radio and fiber-network equipment props with editable scale and color controls.",
+      "description": "Original low-poly communications-site, rooftop, radio and fiber-network equipment props with editable scale, material colors and appearance presets.",
       "assets": [
         "antenna-sector-frame",
         "battery-backup-cabinet",
@@ -211033,7 +211033,7 @@
       "id": "antenna-sector-frame",
       "kit": "telecom-infrastructure",
       "title": "Sector antenna frame",
-      "description": "Triangular sector panel support frame with three vertical rails and top and bottom braces. Knobs: overall scale and asset color.",
+      "description": "Triangular sector panel support frame with three vertical rails and top and bottom braces. Knobs: overall scale; galvanized steel, powder-coated steel, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -211052,8 +211052,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/antenna-sector-frame.kcad.ts",
       "preview": "/assets/telecom-infrastructure-antenna-sector-frame.png",
-      "sourceSha256": "244f03a9fed9680bf08f386c6d1a1246a8a74b374622f1aea48525bca3adc1d8",
-      "triangleBudget": 2200,
+      "sourceSha256": "443b0461855285faa572e9c131343d7a5d34031d4aa3a2baff28545ea7bbe1c0",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -211065,13 +211065,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#677177",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#d2dbdc",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b",
+          "stainlessSteel": "#d0d9d6"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18",
+          "stainlessSteel": "#e4e9e6"
+        }
+      },
       "stats": {
         "triangles": 84,
         "sizeM": [
@@ -211084,18 +211107,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#677177",
+          "name": "galvanizedSteel",
+          "color": "#77868d",
           "parts": [
             "rail-a",
             "rail-b",
             "rail-c",
-            "top",
             "bottom",
-            "mount-arm",
+            "mount-arm"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#318b96",
+          "parts": [
+            "top"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
+          "parts": [
             "clamp"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -211103,7 +211140,7 @@
       "id": "battery-backup-cabinet",
       "kit": "telecom-infrastructure",
       "title": "Battery backup cabinet",
-      "description": "Compact backup-power enclosure with double front doors, cable entry hood and bottom plinth. Knobs: overall scale and asset color.",
+      "description": "Compact backup-power enclosure with double front doors, cable entry hood and bottom plinth. Knobs: overall scale; galvanized steel, engineering polymer and cable jacket, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -211122,8 +211159,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/battery-backup-cabinet.kcad.ts",
       "preview": "/assets/telecom-infrastructure-battery-backup-cabinet.png",
-      "sourceSha256": "d8562d061387404355bce5669475169e37f915c21b9558f3835380308687b834",
-      "triangleBudget": 2200,
+      "sourceSha256": "d5c51894d3d41834e07399e131cb9758721ee1175217f40a96a1bbd90359c1ea",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -211135,13 +211172,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#586b73",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#315267",
+          "label": "Engineering polymer and cable jacket"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "polymer": "#263a37",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "polymer": "#27363c",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
         "triangles": 72,
         "sizeM": [
@@ -211154,17 +211214,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#586b73",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "body",
             "top",
             "door-left",
-            "door-right",
-            "intake",
+            "door-right"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "polymer",
+          "color": "#315267",
+          "parts": [
+            "intake"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
             "plinth"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -211172,7 +211246,7 @@
       "id": "cable-entry-gland-plate",
       "kit": "telecom-infrastructure",
       "title": "Cable entry gland plate",
-      "description": "Rectangular entry plate with four raised cable glands and corner bolt heads. Knobs: overall scale and asset color.",
+      "description": "Rectangular entry plate with four raised cable glands and corner bolt heads. Knobs: overall scale; engineering polymer and cable jacket, powder-coated steel, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -211191,8 +211265,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/cable-entry-gland-plate.kcad.ts",
       "preview": "/assets/telecom-infrastructure-cable-entry-gland-plate.png",
-      "sourceSha256": "250af4b0fbd70ebd9cda42a488089157245c17e7d685935139c1109074453390",
-      "triangleBudget": 2200,
+      "sourceSha256": "cdee83b69256cae1a8e8a33e19acc6d8996c52cba0e23c73579a2cb9031706df",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -211204,13 +211278,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#6c7273",
-          "label": "Asset color"
+          "default": "#315267",
+          "label": "Engineering polymer and cable jacket"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#d2dbdc",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "polymer": "#263a37",
+          "powderCoat": "#52756b",
+          "stainlessSteel": "#d0d9d6"
+        },
+        "highVisibility": {
+          "polymer": "#27363c",
+          "powderCoat": "#e0aa18",
+          "stainlessSteel": "#e4e9e6"
+        }
+      },
       "stats": {
         "triangles": 364,
         "sizeM": [
@@ -211223,20 +211320,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6c7273",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
-            "plate",
+            "plate"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "polymer",
+          "color": "#315267",
+          "parts": [
             "gland-0",
             "gland-1",
             "gland-2",
-            "gland-3",
+            "gland-3"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
+          "parts": [
             "bolt--290--160",
             "bolt--290-160",
             "bolt-290--160",
             "bolt-290-160"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -211244,7 +211355,7 @@
       "id": "cable-ladder-section",
       "kit": "telecom-infrastructure",
       "title": "Cable ladder section",
-      "description": "Straight cable ladder tray with twin rails and six evenly spaced rungs. Knobs: overall scale and asset color.",
+      "description": "Straight cable ladder tray with twin rails and six evenly spaced rungs. Knobs: overall scale; galvanized steel, engineering polymer and cable jacket, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -211263,8 +211374,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/cable-ladder-section.kcad.ts",
       "preview": "/assets/telecom-infrastructure-cable-ladder-section.png",
-      "sourceSha256": "51f80f28524974c08d58e21e78f3b30fcdc111e107e8c61b1c7f8f463d1e01cc",
-      "triangleBudget": 2200,
+      "sourceSha256": "710435d204fbd649677c1fad75890e04c32863544fa0b82fbc47082675359084",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -211276,18 +211387,41 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#747c7e",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#315267",
+          "label": "Engineering polymer and cable jacket"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "polymer": "#263a37",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "polymer": "#27363c",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
-        "triangles": 96,
+        "triangles": 132,
         "sizeM": [
           1.5,
-          0.07,
+          0.107,
           0.505
         ],
         "minUpM": 0,
@@ -211295,11 +211429,18 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#747c7e",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "rail-left",
-            "rail-right",
+            "rail-right"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
             "rung-0",
             "rung-1",
             "rung-2",
@@ -211307,7 +211448,17 @@
             "rung-4",
             "rung-5"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#315267",
+          "parts": [
+            "cable-jacket-a",
+            "cable-jacket-b",
+            "cable-jacket-c"
+          ],
+          "param": "polymer"
         }
       ]
     },
@@ -211315,7 +211466,7 @@
       "id": "cable-splice-pit-frame",
       "kit": "telecom-infrastructure",
       "title": "Cable splice pit frame",
-      "description": "Square access pit frame with thick rim, inset lid and paired lifting recesses. Knobs: overall scale and asset color.",
+      "description": "Square access pit frame with thick rim, inset lid and paired lifting recesses. Knobs: overall scale; galvanized steel, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -211334,8 +211485,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/cable-splice-pit-frame.kcad.ts",
       "preview": "/assets/telecom-infrastructure-cable-splice-pit-frame.png",
-      "sourceSha256": "ecd72bcef34e7190ac7821eeec63cd4e7116b7e3d0ad6fff495da4621e5dc19b",
-      "triangleBudget": 2200,
+      "sourceSha256": "ce7e3487c300da68ff9f30c7d99e925d49be23bf19d498499b391a725485d125",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -211347,13 +211498,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#717571",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
         "triangles": 60,
         "sizeM": [
@@ -211366,16 +211532,23 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#717571",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "outer-rim",
             "lid",
             "slot-left",
-            "slot-right",
+            "slot-right"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
             "inner-lip"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -211383,7 +211556,7 @@
       "id": "cable-support-hanger",
       "kit": "telecom-infrastructure",
       "title": "Cable support hanger",
-      "description": "Two-hole wall plate with a projecting U-shaped cable support and end lips. Knobs: overall scale and asset color.",
+      "description": "Two-hole wall plate with a projecting U-shaped cable support and end lips. Knobs: overall scale; galvanized steel, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -211402,8 +211575,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/cable-support-hanger.kcad.ts",
       "preview": "/assets/telecom-infrastructure-cable-support-hanger.png",
-      "sourceSha256": "a8bcc784897e4b5bdbeeff8661e5faf8037900153efaa3ba460c6130d8b8c9c7",
-      "triangleBudget": 2200,
+      "sourceSha256": "6fd11e2572c933cf9708d54aa72195d2d06b4958c7ca2ccd579659c198fb1d92",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -211415,13 +211588,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#6b7478",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
         "triangles": 72,
         "sizeM": [
@@ -211434,17 +211622,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6b7478",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "backplate",
             "arm-left",
             "arm-right",
-            "crossbar",
             "lip-left",
             "lip-right"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
+            "crossbar"
+          ],
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -211452,7 +211647,7 @@
       "id": "cable-tray-elbow",
       "kit": "telecom-infrastructure",
       "title": "Cable tray elbow",
-      "description": "Right-angle cable tray elbow with raised side rails and corner floor panels. Knobs: overall scale and asset color.",
+      "description": "Right-angle cable tray elbow with raised side rails and corner floor panels. Knobs: overall scale; galvanized steel, engineering polymer and cable jacket.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -211471,8 +211666,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/cable-tray-elbow.kcad.ts",
       "preview": "/assets/telecom-infrastructure-cable-tray-elbow.png",
-      "sourceSha256": "896c3bfe3107e3c112b7ba68ed9d1c0cdf39ac5e158a9692906ecfad3eb99104",
-      "triangleBudget": 2200,
+      "sourceSha256": "4704c79196b673ea35e7c32f83869e32175277d6da59e8a18dcdd88bd7beab2f",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -211484,15 +211679,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#747c7e",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#315267",
+          "label": "Engineering polymer and cable jacket"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "polymer": "#263a37"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "polymer": "#27363c"
+        }
+      },
       "stats": {
-        "triangles": 72,
+        "triangles": 120,
         "sizeM": [
           1.2125,
           0.15,
@@ -211503,8 +211713,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#747c7e",
+          "name": "galvanizedSteel",
+          "color": "#77868d",
           "parts": [
             "run-a",
             "run-b",
@@ -211513,7 +211723,18 @@
             "rail-b1",
             "rail-b2"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#315267",
+          "parts": [
+            "cable-run-a",
+            "cable-run-a-2",
+            "cable-run-b",
+            "cable-run-b-2"
+          ],
+          "param": "polymer"
         }
       ]
     },
@@ -211521,7 +211742,7 @@
       "id": "cell-site-cabinet",
       "kit": "telecom-infrastructure",
       "title": "Cell site cabinet",
-      "description": "Outdoor base-station cabinet with raised roof, split access doors, plinth and vent banks. Knobs: overall scale and asset color.",
+      "description": "Outdoor base-station cabinet with raised roof, split access doors, plinth and vent banks. Knobs: overall scale; galvanized steel, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -211540,8 +211761,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/cell-site-cabinet.kcad.ts",
       "preview": "/assets/telecom-infrastructure-cell-site-cabinet.png",
-      "sourceSha256": "f35d8a1b5c1d7ec9fd1b600588d1d7775e8bba524523dd531a63b833b7c3d7af",
-      "triangleBudget": 2200,
+      "sourceSha256": "8282ed9533c106e95632fe79205ec6d6c8e1f5f45769d717dc14ead50bae7822",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -211553,13 +211774,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#71818a",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
         "triangles": 84,
         "sizeM": [
@@ -211572,18 +211808,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#71818a",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "cabinet",
             "roof",
             "left-door",
-            "right-door",
+            "right-door"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
             "vent-1",
             "vent-2",
             "plinth"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -211591,7 +211834,7 @@
       "id": "conduit-riser-frame",
       "kit": "telecom-infrastructure",
       "title": "Conduit riser frame",
-      "description": "Wall-mounted riser frame with three vertical conduits, stand-off brackets and top bridge. Knobs: overall scale and asset color.",
+      "description": "Wall-mounted riser frame with three vertical conduits, stand-off brackets and top bridge. Knobs: overall scale; galvanized steel, engineering polymer and cable jacket, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -211610,8 +211853,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/conduit-riser-frame.kcad.ts",
       "preview": "/assets/telecom-infrastructure-conduit-riser-frame.png",
-      "sourceSha256": "2cf003945e5c33f2f6b092618fff87247d75d5702344d0a4f0d8040d309a8e4a",
-      "triangleBudget": 2200,
+      "sourceSha256": "c9a468da21cfd2a40270db55d075d0d1ddd6f739ad5f3e57c66245a7b853976b",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -211623,37 +211866,77 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#707b7e",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#315267",
+          "label": "Engineering polymer and cable jacket"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "polymer": "#263a37",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "polymer": "#27363c",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
-        "triangles": 180,
+        "triangles": 312,
         "sizeM": [
           0.7,
           1.3,
-          0.19
+          0.195
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#707b7e",
+          "name": "galvanizedSteel",
+          "color": "#77868d",
           "parts": [
             "conduit-0",
             "conduit-1",
             "conduit-2",
-            "bridge-top",
             "bridge-bottom",
             "stand-off-a",
             "stand-off-b"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#318b96",
+          "parts": [
+            "bridge-top"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "polymer",
+          "color": "#315267",
+          "parts": [
+            "cable-band-0",
+            "cable-band-1",
+            "cable-band-2"
+          ],
+          "param": "polymer"
         }
       ]
     },
@@ -211661,7 +211944,7 @@
       "id": "dual-sector-panel-array",
       "kit": "telecom-infrastructure",
       "title": "Dual sector panel array",
-      "description": "Pair of side-by-side sector panels on a shared rear rail with clamp brackets. Knobs: overall scale and asset color.",
+      "description": "Pair of side-by-side sector panels on a shared rear rail with clamp brackets. Knobs: overall scale; galvanized steel, engineering polymer and cable jacket, powder-coated steel, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -211680,8 +211963,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/dual-sector-panel-array.kcad.ts",
       "preview": "/assets/telecom-infrastructure-dual-sector-panel-array.png",
-      "sourceSha256": "0d6f6a0c717217347d75473f7ce6bd75a66ef25dd0ceda6082fd341690a05792",
-      "triangleBudget": 2200,
+      "sourceSha256": "8b57f4efb23de7dd1f25f28b26a1261c36e486a120012dd29a8935daaaf52a3e",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -211693,13 +211976,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#d9ddd7",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#315267",
+          "label": "Engineering polymer and cable jacket"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#d2dbdc",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "polymer": "#263a37",
+          "powderCoat": "#52756b",
+          "stainlessSteel": "#d0d9d6"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "polymer": "#27363c",
+          "powderCoat": "#e0aa18",
+          "stainlessSteel": "#e4e9e6"
+        }
+      },
       "stats": {
         "triangles": 84,
         "sizeM": [
@@ -211712,18 +212026,39 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d9ddd7",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "panel-left",
-            "panel-right",
-            "back-rail",
+            "panel-right"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
+            "back-rail"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
+          "parts": [
             "clamp-upper",
-            "clamp-lower",
+            "clamp-lower"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#315267",
+          "parts": [
             "connector-left",
             "connector-right"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -211731,7 +212066,7 @@
       "id": "equipment-fan-panel",
       "kit": "telecom-infrastructure",
       "title": "Equipment fan panel",
-      "description": "Ventilation panel with twin circular fan shrouds and four mounting tabs. Knobs: overall scale and asset color.",
+      "description": "Ventilation panel with twin circular fan shrouds and four mounting tabs. Knobs: overall scale; galvanized steel, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -211750,8 +212085,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/equipment-fan-panel.kcad.ts",
       "preview": "/assets/telecom-infrastructure-equipment-fan-panel.png",
-      "sourceSha256": "e6e3142ff11e0dac94f3e6ae3ed7d8b3d9f68de9b27dde144d3868cf7e94c275",
-      "triangleBudget": 2200,
+      "sourceSha256": "ea26cd9f053d4afc2aab999bdc6edc14390f0faac064075deec9b62414f4e3f0",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -211763,13 +212098,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#687277",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
         "triangles": 148,
         "sizeM": [
@@ -211782,10 +212132,17 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#687277",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
-            "panel",
+            "panel"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
             "fan-a",
             "fan-b",
             "tab-0",
@@ -211793,7 +212150,7 @@
             "tab-2",
             "tab-3"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -211801,7 +212158,7 @@
       "id": "fiber-coil-reel",
       "kit": "telecom-infrastructure",
       "title": "Fiber slack storage reel",
-      "description": "Compact fiber slack reel with twin flanges, center hub and four cross spokes. Knobs: overall scale and asset color.",
+      "description": "Compact fiber slack reel with twin open flanges, a projecting center hub and a jacketed cable bundle. Knobs: overall scale; galvanized steel, polymer cable jacket, powder-coated steel, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -211820,8 +212177,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/fiber-coil-reel.kcad.ts",
       "preview": "/assets/telecom-infrastructure-fiber-coil-reel.png",
-      "sourceSha256": "74d2b2dbbace2d4a17e97b23738e18da0907f9fb5457c951cd150023ca70cbc3",
-      "triangleBudget": 2200,
+      "sourceSha256": "aa1bb323e0b280cbae657297fe3dbafdb5240bd77332cfdcdaf67db9055004fc",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -211833,37 +212190,90 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#687c65",
-          "label": "Asset color"
+          "default": "#318b96",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#315267",
+          "label": "Engineering polymer and cable jacket"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#d2dbdc",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "powderCoat": "#52756b",
+          "galvanizedSteel": "#8f9b9b",
+          "polymer": "#263a37",
+          "stainlessSteel": "#d0d9d6"
+        },
+        "highVisibility": {
+          "powderCoat": "#e0aa18",
+          "galvanizedSteel": "#3a4b51",
+          "polymer": "#27363c",
+          "stainlessSteel": "#e4e9e6"
+        }
+      },
       "stats": {
-        "triangles": 180,
+        "triangles": 380,
         "sizeM": [
           0.5,
-          0.22,
-          0.7
+          0.5,
+          0.307
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#687c65",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "flange-front",
-            "flange-back",
-            "hub",
+            "flange-back"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
+          "parts": [
+            "hub"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
             "spoke-0",
             "spoke-1",
             "spoke-2",
             "spoke-3"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#315267",
+          "parts": [
+            "fiber-bundle"
+          ],
+          "param": "polymer"
         }
       ]
     },
@@ -211871,7 +212281,7 @@
       "id": "fiber-distribution-cabinet",
       "kit": "telecom-infrastructure",
       "title": "Fiber distribution cabinet",
-      "description": "Street-side fiber distribution cabinet with hinged-looking front, lock and cable plinth. Knobs: overall scale and asset color.",
+      "description": "Street-side fiber distribution cabinet with hinged-looking front, lock and cable plinth. Knobs: overall scale; powder-coated steel, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -211890,8 +212300,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/fiber-distribution-cabinet.kcad.ts",
       "preview": "/assets/telecom-infrastructure-fiber-distribution-cabinet.png",
-      "sourceSha256": "6720e94156524f45a03fe5854053e7daa8a646adc10e19ee2b4e5d9a1bb51049",
-      "triangleBudget": 2200,
+      "sourceSha256": "778f7a13762b2c1e213970ab5c646caaf39996ac1d2dfc77187a9fd458bd0a72",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -211903,13 +212313,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#6b8077",
-          "label": "Asset color"
+          "default": "#318b96",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#d2dbdc",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "powderCoat": "#52756b",
+          "stainlessSteel": "#d0d9d6"
+        },
+        "highVisibility": {
+          "powderCoat": "#e0aa18",
+          "stainlessSteel": "#e4e9e6"
+        }
+      },
       "stats": {
         "triangles": 92,
         "sizeM": [
@@ -211922,16 +212347,23 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6b8077",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "body",
             "hood",
             "door",
-            "lock",
             "lower-skirt"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
+          "parts": [
+            "lock"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -211939,7 +212371,7 @@
       "id": "fiber-dome-closure",
       "kit": "telecom-infrastructure",
       "title": "Fiber dome closure",
-      "description": "Vertical dome splice enclosure with a domed-looking cap, lower collar and four cable ports. Knobs: overall scale and asset color.",
+      "description": "Vertical dome splice enclosure with a domed-looking cap, lower collar and four cable ports. Knobs: overall scale; engineering polymer and cable jacket, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -211958,8 +212390,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/fiber-dome-closure.kcad.ts",
       "preview": "/assets/telecom-infrastructure-fiber-dome-closure.png",
-      "sourceSha256": "917bf57dc4c2fabfde97c495f7fce8e38bd6940ad1ff38b75b02765c511666fa",
-      "triangleBudget": 2200,
+      "sourceSha256": "4724fade4eccec9be0ea1c7fe35c5f1f10ae75d22e3b2f455ee35a5b1caa66de",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -211971,13 +212403,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#68785d",
-          "label": "Asset color"
+          "default": "#315267",
+          "label": "Engineering polymer and cable jacket"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "polymer": "#263a37",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "polymer": "#27363c",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
         "triangles": 308,
         "sizeM": [
@@ -211990,18 +212437,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#68785d",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "base",
-            "body",
+            "body"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "polymer",
+          "color": "#315267",
+          "parts": [
             "dome",
             "port-a",
             "port-b",
             "port-c",
             "port-d"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -212009,7 +212463,7 @@
       "id": "fiber-drop-terminal",
       "kit": "telecom-infrastructure",
       "title": "Fiber drop terminal",
-      "description": "Small multiport drop terminal with six connector caps and a shallow rain hood. Knobs: overall scale and asset color.",
+      "description": "Small multiport drop terminal with six connector caps and a shallow rain hood. Knobs: overall scale; engineering polymer and cable jacket, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -212028,8 +212482,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/fiber-drop-terminal.kcad.ts",
       "preview": "/assets/telecom-infrastructure-fiber-drop-terminal.png",
-      "sourceSha256": "e2e076e12b215438393cf637598fdd33494b5d1fa403066b57cb2e95b064ec23",
-      "triangleBudget": 2200,
+      "sourceSha256": "de79ceff43127a83b426a4f0a0a16e4c268f81a4523e007a9cef5faa4237649d",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -212041,13 +212495,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#8b927e",
-          "label": "Asset color"
+          "default": "#315267",
+          "label": "Engineering polymer and cable jacket"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "polymer": "#263a37",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "polymer": "#27363c",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
         "triangles": 300,
         "sizeM": [
@@ -212060,12 +212529,19 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8b927e",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "case",
             "hood",
-            "face",
+            "face"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "polymer",
+          "color": "#315267",
+          "parts": [
             "port-0",
             "port-1",
             "port-2",
@@ -212073,7 +212549,7 @@
             "port-4",
             "port-5"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -212081,7 +212557,7 @@
       "id": "fiber-handhole-cover",
       "kit": "telecom-infrastructure",
       "title": "Fiber handhole cover",
-      "description": "Rectangular fiber handhole lid with raised rim, lift slots and a small network marker. Knobs: overall scale and asset color.",
+      "description": "Rectangular fiber handhole lid with raised rim, lift slots and a small network marker. Knobs: overall scale; galvanized steel, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -212100,8 +212576,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/fiber-handhole-cover.kcad.ts",
       "preview": "/assets/telecom-infrastructure-fiber-handhole-cover.png",
-      "sourceSha256": "03ed985048eb6ef3abbe34c35b6910e8eab78cecd8024d6cffc39c1607308d07",
-      "triangleBudget": 2200,
+      "sourceSha256": "6a17b2c4c709498c268494448144e9a8c975d96699b31e32ca6252578f7d1862",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -212113,13 +212589,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#747873",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
         "triangles": 60,
         "sizeM": [
@@ -212132,16 +212623,23 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#747873",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "rim",
             "lid",
             "slot-left",
-            "slot-right",
+            "slot-right"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
             "marker"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -212149,7 +212647,7 @@
       "id": "fiber-route-marker",
       "kit": "telecom-infrastructure",
       "title": "Fiber route marker",
-      "description": "Low ground route marker with tapered post, broad cap and square footing. Knobs: overall scale and asset color.",
+      "description": "Low ground route marker with tapered post, broad cap and square footing. Knobs: overall scale; galvanized steel, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -212168,8 +212666,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/fiber-route-marker.kcad.ts",
       "preview": "/assets/telecom-infrastructure-fiber-route-marker.png",
-      "sourceSha256": "a1e798508db11dc6454bd687541adfdf4d16c01ddff88986c38c1d384fac7d0f",
-      "triangleBudget": 2200,
+      "sourceSha256": "66aa6ece8a2565b8002c3f8d9b7519f4cd7a39681e67bfc693a23140f2c5c172",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -212181,13 +212679,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#d5b242",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
         "triangles": 48,
         "sizeM": [
@@ -212200,15 +212713,22 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d5b242",
+          "name": "galvanizedSteel",
+          "color": "#77868d",
           "parts": [
             "foot",
-            "post",
+            "post"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#318b96",
+          "parts": [
             "cap",
             "face"
           ],
-          "param": "color"
+          "param": "powderCoat"
         }
       ]
     },
@@ -212216,7 +212736,7 @@
       "id": "fiber-service-loop-rack",
       "kit": "telecom-infrastructure",
       "title": "Fiber service loop rack",
-      "description": "Wall rack for fiber service loops with four broad retaining fingers and a backplate. Knobs: overall scale and asset color.",
+      "description": "Wall rack with two open fiber service hoops and four narrow retaining fingers. Knobs: overall scale; galvanized steel, engineering polymer and cable jacket, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -212235,8 +212755,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/fiber-service-loop-rack.kcad.ts",
       "preview": "/assets/telecom-infrastructure-fiber-service-loop-rack.png",
-      "sourceSha256": "5a37164043e922491acda42ef2e949f86ef11b18f54c144fc052ab8120bf91c9",
-      "triangleBudget": 2200,
+      "sourceSha256": "13139d76de79e10b43ae658359f1b8ccf890a6b71d12f80205c8acca96a2d219",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -212248,37 +212768,74 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#626e62",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#315267",
+          "label": "Engineering polymer and cable jacket"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "polymer": "#263a37",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "polymer": "#27363c",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
-        "triangles": 148,
+        "triangles": 252,
         "sizeM": [
           0.4,
           0.8,
-          0.72
+          0.465
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#626e62",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
-            "backplate",
+            "backplate"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "polymer",
+          "color": "#315267",
+          "parts": [
             "loop-left",
-            "loop-right",
+            "loop-right"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
             "finger-0",
             "finger-1",
             "finger-2",
             "finger-3"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -212286,7 +212843,7 @@
       "id": "fiber-splice-closure",
       "kit": "telecom-infrastructure",
       "title": "Fiber splice closure",
-      "description": "Inline fiber splice closure with tapered ends, raised center lid and two cable ports. Knobs: overall scale and asset color.",
+      "description": "Inline fiber splice closure with tapered ends, raised center lid and two cable ports. Knobs: overall scale; engineering polymer and cable jacket, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -212305,8 +212862,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/fiber-splice-closure.kcad.ts",
       "preview": "/assets/telecom-infrastructure-fiber-splice-closure.png",
-      "sourceSha256": "aa1e1681329ba6bcde40a7c1514cc5b845a634f3b3ce2929a0c40cc4686e0665",
-      "triangleBudget": 2200,
+      "sourceSha256": "453cb4d6b9348bfd5c101f5468df3e9e993c24ce24ee608d2f98621a5d4a8ad3",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -212318,13 +212875,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#667a60",
-          "label": "Asset color"
+          "default": "#315267",
+          "label": "Engineering polymer and cable jacket"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "polymer": "#263a37",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "polymer": "#27363c",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
         "triangles": 200,
         "sizeM": [
@@ -212337,17 +212909,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#667a60",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "shell",
             "lid",
-            "port-left",
-            "port-right",
             "mount-foot-left",
             "mount-foot-right"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "polymer",
+          "color": "#315267",
+          "parts": [
+            "port-left",
+            "port-right"
+          ],
+          "param": "polymer"
         }
       ]
     },
@@ -212355,7 +212934,7 @@
       "id": "fiber-terminal-box",
       "kit": "telecom-infrastructure",
       "title": "Fiber terminal box",
-      "description": "Wall-mounted fiber terminal enclosure with weather hood, door seam and cable glands. Knobs: overall scale and asset color.",
+      "description": "Wall-mounted fiber terminal enclosure with weather hood, door seam and cable glands. Knobs: overall scale; engineering polymer and cable jacket, powder-coated steel, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -212374,8 +212953,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/fiber-terminal-box.kcad.ts",
       "preview": "/assets/telecom-infrastructure-fiber-terminal-box.png",
-      "sourceSha256": "dc5e348910bd6d50c28b2c8a00750ad0e215ffceb34264773feb6a57b55d3a33",
-      "triangleBudget": 2200,
+      "sourceSha256": "03581d22f8b343451d964fb588a360712d4c417d071d3607109aef5778ed399b",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -212387,13 +212966,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#89927e",
-          "label": "Asset color"
+          "default": "#315267",
+          "label": "Engineering polymer and cable jacket"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#d2dbdc",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "polymer": "#263a37",
+          "powderCoat": "#52756b",
+          "stainlessSteel": "#d0d9d6"
+        },
+        "highVisibility": {
+          "polymer": "#27363c",
+          "powderCoat": "#e0aa18",
+          "stainlessSteel": "#e4e9e6"
+        }
+      },
       "stats": {
         "triangles": 168,
         "sizeM": [
@@ -212406,17 +213008,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#89927e",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "body",
             "hood",
-            "door",
+            "door"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "polymer",
+          "color": "#315267",
+          "parts": [
             "gland-left",
-            "gland-right",
+            "gland-right"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
+          "parts": [
             "latch"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -212424,7 +213040,7 @@
       "id": "gnss-timing-antenna",
       "kit": "telecom-infrastructure",
       "title": "GNSS timing antenna",
-      "description": "Compact timing antenna puck on a short pole with a broad weather cap. Knobs: overall scale and asset color.",
+      "description": "Compact timing antenna puck on a short pole with a broad weather cap. Knobs: overall scale; galvanized steel, engineering polymer and cable jacket, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -212443,8 +213059,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/gnss-timing-antenna.kcad.ts",
       "preview": "/assets/telecom-infrastructure-gnss-timing-antenna.png",
-      "sourceSha256": "6400be23938b26c6edef552d3c9ee1ba07565761aae1382e952d02efa8600fcf",
-      "triangleBudget": 2200,
+      "sourceSha256": "8d084a19bc8ea97dadc06dab3831d3caec7ed89661a2af42cb036c11cf436892",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -212456,13 +213072,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#dedfd5",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#315267",
+          "label": "Engineering polymer and cable jacket"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "polymer": "#263a37",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "polymer": "#27363c",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
         "triangles": 176,
         "sizeM": [
@@ -212475,15 +213114,29 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#dedfd5",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "base",
-            "pole",
-            "puck",
             "cap"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
+            "pole"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#315267",
+          "parts": [
+            "puck"
+          ],
+          "param": "polymer"
         }
       ]
     },
@@ -212491,7 +213144,7 @@
       "id": "grounding-bar",
       "kit": "telecom-infrastructure",
       "title": "Grounding busbar",
-      "description": "Wall-mounted bonding bar with a thick base rail and six rounded-looking terminal posts. Knobs: overall scale and asset color.",
+      "description": "Wall-mounted bonding bar with a thick base rail and six rounded-looking terminal posts. Knobs: overall scale; copper conductor, galvanized steel, engineering polymer and cable jacket.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -212510,8 +213163,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/grounding-bar.kcad.ts",
       "preview": "/assets/telecom-infrastructure-grounding-bar.png",
-      "sourceSha256": "5e6cc3d2e130006974433c48585166e669478d1f92cca1cdfe423727b7ea35ac",
-      "triangleBudget": 2200,
+      "sourceSha256": "2268f1563ea9cbe79752d894800bb73d2a3f7125291eb05440f864c863d9f862",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -212523,13 +213176,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "copper",
           "type": "color",
-          "default": "#b17c38",
-          "label": "Asset color"
+          "default": "#c27836",
+          "label": "Copper conductor"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#315267",
+          "label": "Engineering polymer and cable jacket"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "copper": "#a96d37",
+          "galvanizedSteel": "#8f9b9b",
+          "polymer": "#263a37"
+        },
+        "highVisibility": {
+          "copper": "#c4823c",
+          "galvanizedSteel": "#3a4b51",
+          "polymer": "#27363c"
+        }
+      },
       "stats": {
         "triangles": 300,
         "sizeM": [
@@ -212542,12 +213218,26 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b17c38",
+          "name": "galvanizedSteel",
+          "color": "#77868d",
           "parts": [
-            "rail",
+            "rail"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#315267",
+          "parts": [
             "insulator-left",
-            "insulator-right",
+            "insulator-right"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "copper",
+          "color": "#c27836",
+          "parts": [
             "terminal-0",
             "terminal-1",
             "terminal-2",
@@ -212555,7 +213245,7 @@
             "terminal-4",
             "terminal-5"
           ],
-          "param": "color"
+          "param": "copper"
         }
       ]
     },
@@ -212563,7 +213253,7 @@
       "id": "grounding-rod-kit",
       "kit": "telecom-infrastructure",
       "title": "Grounding rod set",
-      "description": "Three vertical grounding rods with top clamps and a short bonding strap. Knobs: overall scale and asset color.",
+      "description": "Three vertical grounding rods with top clamps and a short bonding strap. Knobs: overall scale; copper conductor, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -212582,8 +213272,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/grounding-rod-kit.kcad.ts",
       "preview": "/assets/telecom-infrastructure-grounding-rod-kit.png",
-      "sourceSha256": "b0ffb491fb4b23fd7241cafc3bb7dec264a0e4b30f54defc3521a229783a22f3",
-      "triangleBudget": 2200,
+      "sourceSha256": "057d816d97d3fbdb09c3d6060be2eb75c375f339bbbc963a9f608c97f054be02",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -212595,13 +213285,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "copper",
           "type": "color",
-          "default": "#8b7655",
-          "label": "Asset color"
+          "default": "#c27836",
+          "label": "Copper conductor"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#d2dbdc",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "copper": "#a96d37",
+          "stainlessSteel": "#d0d9d6"
+        },
+        "highVisibility": {
+          "copper": "#c4823c",
+          "stainlessSteel": "#e4e9e6"
+        }
+      },
       "stats": {
         "triangles": 276,
         "sizeM": [
@@ -212614,18 +213319,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8b7655",
+          "name": "copper",
+          "color": "#c27836",
           "parts": [
             "rod-0",
             "rod-1",
             "rod-2",
-            "clamp-0",
-            "clamp-1",
-            "clamp-2",
             "bonding-bar"
           ],
-          "param": "color"
+          "param": "copper"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
+          "parts": [
+            "clamp-0",
+            "clamp-1",
+            "clamp-2"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -212633,7 +213345,7 @@
       "id": "guy-wire-mast-anchor",
       "kit": "telecom-infrastructure",
       "title": "Guyed mast anchor set",
-      "description": "Three-point guy-wire anchor layout with a central mast stub and ground cleat blocks. Knobs: overall scale and asset color.",
+      "description": "Three-point guy-wire anchor layout with a central mast stub and ground cleat blocks. Knobs: overall scale; galvanized steel, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -212652,8 +213364,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/guy-wire-mast-anchor.kcad.ts",
       "preview": "/assets/telecom-infrastructure-guy-wire-mast-anchor.png",
-      "sourceSha256": "2d55960c4754e2328d77c6721e37aecedf5c3e8887fef21f17336b0f77b1341f",
-      "triangleBudget": 2200,
+      "sourceSha256": "aa0dcff01769ede78ad3cdb54ee2d09bf52f6c992f343789dbcb46a72ca9f5c1",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -212665,18 +213377,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#747b70",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
-        "triangles": 160,
+        "triangles": 256,
         "sizeM": [
           1.5,
-          1.07,
+          0.824342,
           1.32
         ],
         "minUpM": 0,
@@ -212684,11 +213411,10 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#747b70",
+          "name": "galvanizedSteel",
+          "color": "#77868d",
           "parts": [
             "mast",
-            "base",
             "anchor-a",
             "anchor-b",
             "anchor-c",
@@ -212696,7 +213422,15 @@
             "guy-b",
             "guy-c"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#318b96",
+          "parts": [
+            "base"
+          ],
+          "param": "powderCoat"
         }
       ]
     },
@@ -212704,7 +213438,7 @@
       "id": "lattice-mast-section",
       "kit": "telecom-infrastructure",
       "title": "Lattice mast section",
-      "description": "Square lattice mast segment with four corner legs, diagonal braces and end flanges. Knobs: overall scale and asset color.",
+      "description": "Square lattice mast segment with four corner legs, diagonal braces and end flanges. Knobs: overall scale; galvanized steel, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -212723,8 +213457,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/lattice-mast-section.kcad.ts",
       "preview": "/assets/telecom-infrastructure-lattice-mast-section.png",
-      "sourceSha256": "2f7d210f87aa94c92468f55d0b7f883c1248f6d94a75a593cf21b3f96094c7f8",
-      "triangleBudget": 2200,
+      "sourceSha256": "5db23252fb07060211ca8bb31c3d49358e9b4c414f9bd653d7d6efa1c173cd1d",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -212736,18 +213470,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#70797c",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
-        "triangles": 96,
+        "triangles": 260,
         "sizeM": [
           0.56,
-          1.21,
+          1.135,
           0.56
         ],
         "minUpM": 0,
@@ -212755,19 +213504,29 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#70797c",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
-            "leg-a",
+            "leg-a"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
             "leg-b",
             "leg-c",
             "leg-d",
             "cross-x1",
             "cross-x2",
-            "brace-a",
-            "flange"
+            "flange",
+            "brace-front-a",
+            "brace-front-b",
+            "brace-rear-a",
+            "brace-rear-b"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -212775,7 +213534,7 @@
       "id": "lightning-air-terminal",
       "kit": "telecom-infrastructure",
       "title": "Lightning protection air terminal",
-      "description": "Tapered-looking lightning rod on a broad rooftop base plate with a collar. Knobs: overall scale and asset color.",
+      "description": "Tapered-looking lightning rod on a broad rooftop base plate with a collar. Knobs: overall scale; galvanized steel, powder-coated steel, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -212794,8 +213553,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/lightning-air-terminal.kcad.ts",
       "preview": "/assets/telecom-infrastructure-lightning-air-terminal.png",
-      "sourceSha256": "a36d6d79676c475a60d9c1486bbcf38870c32c07c9d62326c750cb6aa154d5e4",
-      "triangleBudget": 2200,
+      "sourceSha256": "7fd0ffde34b3b0339301efc84877cfa23c28df09025238aa6439c417d9a5a2fb",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -212807,13 +213566,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#737b80",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#d2dbdc",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b",
+          "stainlessSteel": "#d0d9d6"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18",
+          "stainlessSteel": "#e4e9e6"
+        }
+      },
       "stats": {
         "triangles": 144,
         "sizeM": [
@@ -212826,15 +213608,29 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#737b80",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
-            "base",
+            "base"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
             "mast",
-            "collar",
             "tip"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
+          "parts": [
+            "collar"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -212842,7 +213638,7 @@
       "id": "mast-extension-section",
       "kit": "telecom-infrastructure",
       "title": "Mast extension section",
-      "description": "Tubular mast extension with overlap sleeve, cap plate and paired mounting tabs. Knobs: overall scale and asset color.",
+      "description": "Tubular mast extension with overlap sleeve, cap plate and paired mounting tabs. Knobs: overall scale; galvanized steel, powder-coated steel, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -212861,8 +213657,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/mast-extension-section.kcad.ts",
       "preview": "/assets/telecom-infrastructure-mast-extension-section.png",
-      "sourceSha256": "1937c1e6a084deda771446c9d0a43bbd8e42157e990f8d8efc4be356aeda701d",
-      "triangleBudget": 2200,
+      "sourceSha256": "682d1b0d4e7e6d7d2e326a23e3f549b898453746400ee97c5f878c397d26ae9d",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -212874,13 +213670,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#737c80",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#d2dbdc",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b",
+          "stainlessSteel": "#d0d9d6"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18",
+          "stainlessSteel": "#e4e9e6"
+        }
+      },
       "stats": {
         "triangles": 156,
         "sizeM": [
@@ -212893,16 +213712,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#737c80",
+          "name": "galvanizedSteel",
+          "color": "#77868d",
           "parts": [
-            "tube",
-            "sleeve",
+            "tube"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
+          "parts": [
+            "sleeve"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#318b96",
+          "parts": [
             "cap",
             "tab-left",
             "tab-right"
           ],
-          "param": "color"
+          "param": "powderCoat"
         }
       ]
     },
@@ -212910,7 +213743,7 @@
       "id": "mast-outrigger-frame",
       "kit": "telecom-infrastructure",
       "title": "Mast outrigger frame",
-      "description": "Rooftop outrigger frame with two ballast rails, cross members and a central mast socket. Knobs: overall scale and asset color.",
+      "description": "Rooftop outrigger frame with two ballast rails, cross members and a central mast socket. Knobs: overall scale; galvanized steel, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -212929,8 +213762,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/mast-outrigger-frame.kcad.ts",
       "preview": "/assets/telecom-infrastructure-mast-outrigger-frame.png",
-      "sourceSha256": "044ef2ba0423e5ed1e1d10cf5a35399b16a86ff06eb5f9a4d8da2876e0342d9e",
-      "triangleBudget": 2200,
+      "sourceSha256": "1a8cb19b09682f21d7c89b75c0027a7aeb10fb005506c3b50210a5921bf1e95a",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -212942,13 +213775,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#657179",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
         "triangles": 116,
         "sizeM": [
@@ -212961,18 +213809,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#657179",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "rail-left",
             "rail-right",
-            "cross-front",
             "cross-rear",
-            "socket",
             "brace-left",
             "brace-right"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
+            "cross-front",
+            "socket"
+          ],
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -212980,7 +213835,7 @@
       "id": "microwave-backhaul-shelter",
       "kit": "telecom-infrastructure",
       "title": "Microwave backhaul shelter",
-      "description": "Narrow field shelter for radio backhaul equipment with door, roof lip and wall vents. Knobs: overall scale and asset color.",
+      "description": "Narrow field shelter for radio backhaul equipment with door, roof lip and wall vents. Knobs: overall scale; galvanized steel, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -212999,8 +213854,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/microwave-backhaul-shelter.kcad.ts",
       "preview": "/assets/telecom-infrastructure-microwave-backhaul-shelter.png",
-      "sourceSha256": "c829119c59d85d6e7055af78f1eefdb848095e57dfacf1b779834b2ce8a92ba3",
-      "triangleBudget": 2200,
+      "sourceSha256": "cea20dffa85757efdedda73abc527663c6cc48343045655dbd856f2055cbd47e",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -213012,18 +213867,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#596a72",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
-        "triangles": 72,
+        "triangles": 96,
         "sizeM": [
           1.68,
-          3.185,
+          2.265,
           1.49
         ],
         "minUpM": 0,
@@ -213031,17 +213901,26 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#596a72",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "base",
-            "shell",
+            "rear-wall",
+            "left-wall",
+            "right-wall",
             "roof",
-            "door",
+            "door"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
             "vent",
             "step"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -213049,7 +213928,7 @@
       "id": "microwave-dish-antenna",
       "kit": "telecom-infrastructure",
       "title": "Microwave dish antenna",
-      "description": "Compact parabolic-looking dish on an offset bracket with feed arm and rear mount. Knobs: overall scale and asset color.",
+      "description": "Compact parabolic-looking dish on an offset bracket with feed arm and rear mount. Knobs: overall scale; aluminum reflector, galvanized steel, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -213068,8 +213947,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/microwave-dish-antenna.kcad.ts",
       "preview": "/assets/telecom-infrastructure-microwave-dish-antenna.png",
-      "sourceSha256": "d37eec84f006b9fed536cb1f1099d3ebe0835d81448b236b98a36a60393167ea",
-      "triangleBudget": 2200,
+      "sourceSha256": "dc004824d3839612d8f4edc28de1ce535cd9abc67d9ce50ed1ec91fcf46a8c26",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -213081,36 +213960,72 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminum",
           "type": "color",
-          "default": "#cfd5d6",
-          "label": "Asset color"
+          "default": "#c2cacc",
+          "label": "Aluminum reflector"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "aluminum": "#aeb9b9",
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "aluminum": "#d4dada",
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
-        "triangles": 136,
+        "triangles": 140,
         "sizeM": [
-          0.84,
-          1.155,
-          0.967
+          0.72,
+          1.19,
+          0.807
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#cfd5d6",
+          "name": "galvanizedSteel",
+          "color": "#77868d",
           "parts": [
-            "dish-rim",
-            "dish-face",
             "feed-arm",
             "feed",
-            "mount-post",
+            "mount-post"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#318b96",
+          "parts": [
             "base"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "aluminum",
+          "color": "#c2cacc",
+          "parts": [
+            "reflector"
+          ],
+          "param": "aluminum"
         }
       ]
     },
@@ -213118,7 +214033,7 @@
       "id": "monopole-mast",
       "kit": "telecom-infrastructure",
       "title": "Monopole antenna mast",
-      "description": "Freestanding tapered-looking monopole with base flange, access rung strip and top mounting plate. Knobs: overall scale and asset color.",
+      "description": "Freestanding tapered-looking monopole with base flange, access rung strip and top mounting plate. Knobs: overall scale; galvanized steel, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -213137,8 +214052,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/monopole-mast.kcad.ts",
       "preview": "/assets/telecom-infrastructure-monopole-mast.png",
-      "sourceSha256": "3c37a1b55899c99f71c70bb1920d399bec7cd6007b848db7b1d2d3810feaf3f3",
-      "triangleBudget": 2200,
+      "sourceSha256": "24ae69dfb5b014e01a4bf4a1c169f7159533c0fabeaf6eaf9660968df4b97f7f",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -213150,15 +214065,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#7b8487",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
-        "triangles": 188,
+        "triangles": 144,
         "sizeM": [
           0.48,
           2.08,
@@ -213169,16 +214099,22 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7b8487",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "base",
-            "shaft-lower",
-            "shaft-upper",
-            "access-strip",
             "top-plate"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
+            "access-strip",
+            "tapered-shaft"
+          ],
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -213186,7 +214122,7 @@
       "id": "omnidirectional-whip-antenna",
       "kit": "telecom-infrastructure",
       "title": "Omnidirectional whip antenna",
-      "description": "Short omnidirectional whip aerial with base puck and stepped connector collar. Knobs: overall scale and asset color.",
+      "description": "Short omnidirectional whip aerial with base puck and stepped connector collar. Knobs: overall scale; galvanized steel, engineering polymer and cable jacket, powder-coated steel, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -213205,8 +214141,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/omnidirectional-whip-antenna.kcad.ts",
       "preview": "/assets/telecom-infrastructure-omnidirectional-whip-antenna.png",
-      "sourceSha256": "54843a152963f6c2b467a5329d6e2ce1a1db1dae3169aa14a9ec42148ad79f7e",
-      "triangleBudget": 2200,
+      "sourceSha256": "f01e5c5ae74154767e5ae067e69485078c5005219d6da24647227651164fb3b5",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -213218,13 +214154,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#454c50",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#315267",
+          "label": "Engineering polymer and cable jacket"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#d2dbdc",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "polymer": "#263a37",
+          "powderCoat": "#52756b",
+          "stainlessSteel": "#d0d9d6"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "polymer": "#27363c",
+          "powderCoat": "#e0aa18",
+          "stainlessSteel": "#e4e9e6"
+        }
+      },
       "stats": {
         "triangles": 176,
         "sizeM": [
@@ -213237,15 +214204,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#454c50",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
-            "base",
-            "collar",
-            "whip",
+            "base"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
+          "parts": [
+            "collar"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#315267",
+          "parts": [
+            "whip"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
             "tip"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -213253,7 +214241,7 @@
       "id": "optical-patch-panel",
       "kit": "telecom-infrastructure",
       "title": "Optical patch panel",
-      "description": "Rack-width optical patch panel with two connector rows and rack ears. Knobs: overall scale and asset color.",
+      "description": "Rack-width optical patch panel with two connector rows and rack ears. Knobs: overall scale; engineering polymer and cable jacket, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -213272,8 +214260,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/optical-patch-panel.kcad.ts",
       "preview": "/assets/telecom-infrastructure-optical-patch-panel.png",
-      "sourceSha256": "5204c4001eefc4d2a504603d83bd7798db6160b54a1208f97de0754d933e35be",
-      "triangleBudget": 2200,
+      "sourceSha256": "3d1cab158ea45f511f101ef1d7d3614bd2e9b8479eef661436413cb188a1fdab",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -213285,13 +214273,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#555e61",
-          "label": "Asset color"
+          "default": "#315267",
+          "label": "Engineering polymer and cable jacket"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "polymer": "#263a37",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "polymer": "#27363c",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
         "triangles": 476,
         "sizeM": [
@@ -213304,12 +214307,19 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#555e61",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "panel",
             "ear-left",
-            "ear-right",
+            "ear-right"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "polymer",
+          "color": "#315267",
+          "parts": [
             "port-0-0",
             "port-0-1",
             "port-0-2",
@@ -213321,7 +214331,7 @@
             "port-1-3",
             "port-1-4"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -213329,7 +214339,7 @@
       "id": "outdoor-network-cabinet",
       "kit": "telecom-infrastructure",
       "title": "Outdoor network cabinet",
-      "description": "Tall weatherproof network enclosure with sloped rain cap, side louvers and raised feet. Knobs: overall scale and asset color.",
+      "description": "Tall weatherproof network enclosure with sloped rain cap, side louvers and raised feet. Knobs: overall scale; galvanized steel, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -213348,8 +214358,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/outdoor-network-cabinet.kcad.ts",
       "preview": "/assets/telecom-infrastructure-outdoor-network-cabinet.png",
-      "sourceSha256": "962e444aca7dd0499d93d232a9f154cbc2f716ebb0abaf081b1dfc8b39dbf262",
-      "triangleBudget": 2200,
+      "sourceSha256": "ed82cf004161f8dc7018864a2b8a0cfa23c0dff48a5c6e8310259970c7f8bdbe",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -213361,13 +214371,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#77838a",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
         "triangles": 84,
         "sizeM": [
@@ -213380,18 +214405,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#77838a",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "body",
             "cap",
-            "side-louver-a",
-            "side-louver-b",
             "door",
             "foot-left",
             "foot-right"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
+            "side-louver-a",
+            "side-louver-b"
+          ],
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -213399,7 +214431,7 @@
       "id": "parapet-mast-clamp",
       "kit": "telecom-infrastructure",
       "title": "Parapet mast clamp",
-      "description": "Parapet clamp frame with twin jaws, vertical mast socket and tightening blocks. Knobs: overall scale and asset color.",
+      "description": "Parapet clamp frame with twin jaws, vertical mast socket and tightening blocks. Knobs: overall scale; galvanized steel, powder-coated steel, elastomer seals and pads, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -213418,8 +214450,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/parapet-mast-clamp.kcad.ts",
       "preview": "/assets/telecom-infrastructure-parapet-mast-clamp.png",
-      "sourceSha256": "961fc663e9f2c0807808f4b272ecceac09402195b00f024fe57cbfb7c45b5c39",
-      "triangleBudget": 2200,
+      "sourceSha256": "a694d33122e0742c499b5e53f170e959b80c9672c1a87aa0ce40076154412ea5",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -213431,13 +214463,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#73797a",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#282d30",
+          "label": "Elastomer seals and pads"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#d2dbdc",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b",
+          "rubber": "#292e2d",
+          "stainlessSteel": "#d0d9d6"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18",
+          "rubber": "#252a2c",
+          "stainlessSteel": "#e4e9e6"
+        }
+      },
       "stats": {
         "triangles": 116,
         "sizeM": [
@@ -213450,18 +214513,39 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#73797a",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "base",
             "jaw-left",
-            "jaw-right",
-            "socket",
-            "cross-bolt",
+            "jaw-right"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
+            "socket"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
+          "parts": [
+            "cross-bolt"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#282d30",
+          "parts": [
             "pad-left",
             "pad-right"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -213469,7 +214553,7 @@
       "id": "pedestal-fiber-terminal",
       "kit": "telecom-infrastructure",
       "title": "Pedestal fiber terminal",
-      "description": "Slim ground pedestal with removable cap, service door and two conduit entries. Knobs: overall scale and asset color.",
+      "description": "Slim ground pedestal with removable cap, service door and two conduit entries. Knobs: overall scale; galvanized steel, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -213488,8 +214572,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/pedestal-fiber-terminal.kcad.ts",
       "preview": "/assets/telecom-infrastructure-pedestal-fiber-terminal.png",
-      "sourceSha256": "812b39fc2cac2324dc93dec747aa304a4763bbd07b22098f3d219063b26710f9",
-      "triangleBudget": 2200,
+      "sourceSha256": "fa8613452ab5b52cc6bc51a221ce1e86f718bb8db4a43caf6d26d4f0afa62f36",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -213501,13 +214585,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#707d72",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
         "triangles": 136,
         "sizeM": [
@@ -213520,17 +214619,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#707d72",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "base",
-            "pedestal",
             "cap",
-            "door",
+            "door"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
+            "pedestal",
             "conduit-a",
             "conduit-b"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -213538,7 +214644,7 @@
       "id": "pole-mount-radio-cabinet",
       "kit": "telecom-infrastructure",
       "title": "Pole mount radio cabinet",
-      "description": "Compact pole-mounted radio enclosure with strap brackets, lid and front service panel. Knobs: overall scale and asset color.",
+      "description": "Compact pole-mounted radio enclosure with strap brackets, lid and front service panel. Knobs: overall scale; galvanized steel, powder-coated steel, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -213557,8 +214663,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/pole-mount-radio-cabinet.kcad.ts",
       "preview": "/assets/telecom-infrastructure-pole-mount-radio-cabinet.png",
-      "sourceSha256": "726833cc46cf49d7210509d68b5c5fb6697e1aa3c9156b222947c1efdd500957",
-      "triangleBudget": 2200,
+      "sourceSha256": "d6829e38b9d0024d528924447687e10fbdfceb69455cf57075648db2d1d947a9",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -213570,13 +214676,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#6d7b82",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#d2dbdc",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b",
+          "stainlessSteel": "#d0d9d6"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18",
+          "stainlessSteel": "#e4e9e6"
+        }
+      },
       "stats": {
         "triangles": 104,
         "sizeM": [
@@ -213589,17 +214718,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6d7b82",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "box",
             "lid",
-            "panel",
+            "panel"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
             "strap-upper",
-            "strap-lower",
+            "strap-lower"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
+          "parts": [
             "lock"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -213607,7 +214750,7 @@
       "id": "radome-cylinder",
       "kit": "telecom-infrastructure",
       "title": "Cylindrical antenna radome",
-      "description": "Smooth cylindrical radome with rounded-looking cap rings and a narrow mounting foot. Knobs: overall scale and asset color.",
+      "description": "Smooth cylindrical radome with rounded-looking cap rings and a narrow mounting foot. Knobs: overall scale; galvanized steel, powder-coated steel, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -213626,8 +214769,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/radome-cylinder.kcad.ts",
       "preview": "/assets/telecom-infrastructure-radome-cylinder.png",
-      "sourceSha256": "2c2887c0c50a92f46113cd326376a291cca7c1fbdb6c0bd06fa2f8cba6a06161",
-      "triangleBudget": 2200,
+      "sourceSha256": "e4f4158f58ee3b866980695408ddc3a03f6aee4a5ab6d37769445b4150fee830",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -213639,13 +214782,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#d8dad4",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#d2dbdc",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b",
+          "stainlessSteel": "#d0d9d6"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18",
+          "stainlessSteel": "#e4e9e6"
+        }
+      },
       "stats": {
         "triangles": 176,
         "sizeM": [
@@ -213658,15 +214824,29 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d8dad4",
+          "name": "galvanizedSteel",
+          "color": "#77868d",
           "parts": [
-            "foot",
+            "foot"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#318b96",
+          "parts": [
             "shell",
-            "cap",
+            "cap"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
+          "parts": [
             "collar"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -213674,7 +214854,7 @@
       "id": "remote-power-shelf",
       "kit": "telecom-infrastructure",
       "title": "Remote power shelf",
-      "description": "Rack power shelf with two module faces, handles and a raised top lip. Knobs: overall scale and asset color.",
+      "description": "Rack power shelf with two module faces, handles and a raised top lip. Knobs: overall scale; galvanized steel, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -213693,8 +214873,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/remote-power-shelf.kcad.ts",
       "preview": "/assets/telecom-infrastructure-remote-power-shelf.png",
-      "sourceSha256": "3a63e77c91beba2a40b7b2e278dc795abe40a8e322019aff4f40869ea3567d28",
-      "triangleBudget": 2200,
+      "sourceSha256": "fb678df1beeae081e2a33e079b29a28b473ee28bc96592a7ce6c933dc98599e0",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -213706,13 +214886,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#626b70",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
         "triangles": 72,
         "sizeM": [
@@ -213725,17 +214920,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#626b70",
+          "name": "galvanizedSteel",
+          "color": "#77868d",
           "parts": [
-            "shelf",
+            "shelf"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#318b96",
+          "parts": [
             "top",
             "module-left",
             "module-right",
             "handle-left",
             "handle-right"
           ],
-          "param": "color"
+          "param": "powderCoat"
         }
       ]
     },
@@ -213743,7 +214945,7 @@
       "id": "remote-radio-unit",
       "kit": "telecom-infrastructure",
       "title": "Remote radio unit",
-      "description": "Outdoor radio unit with finned body, upper mounting ears and two lower connectors. Knobs: overall scale and asset color.",
+      "description": "Outdoor radio unit with finned body, upper mounting ears and two lower connectors. Knobs: overall scale; galvanized steel, engineering polymer and cable jacket, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -213762,8 +214964,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/remote-radio-unit.kcad.ts",
       "preview": "/assets/telecom-infrastructure-remote-radio-unit.png",
-      "sourceSha256": "c6b64609b542dc16d47951e74f3b693c1007e2e8fe98b1568ee2dc70a49bcd07",
-      "triangleBudget": 2200,
+      "sourceSha256": "73e7a1d574cf16e80c0c161c7d3732a1798c42a7d3382f9af1aff1e09dc648e6",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -213775,13 +214977,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#777d7c",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#315267",
+          "label": "Engineering polymer and cable jacket"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "polymer": "#263a37",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "polymer": "#27363c",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
         "triangles": 148,
         "sizeM": [
@@ -213794,18 +215019,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#777d7c",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "body",
             "top-ear-left",
-            "top-ear-right",
+            "top-ear-right"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
             "fin-a",
-            "fin-b",
+            "fin-b"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#315267",
+          "parts": [
             "connector-a",
             "connector-b"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -213813,7 +215052,7 @@
       "id": "rf-hazard-marker",
       "kit": "telecom-infrastructure",
       "title": "RF hazard marker",
-      "description": "Compact RF exposure marker on a post with a raised diamond-like center plate. Knobs: overall scale and asset color.",
+      "description": "Compact RF exposure marker on a post with a raised diamond-like center plate. Knobs: overall scale; galvanized steel, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -213832,8 +215071,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/rf-hazard-marker.kcad.ts",
       "preview": "/assets/telecom-infrastructure-rf-hazard-marker.png",
-      "sourceSha256": "cc07c106c47820e861c1b4454342a7d04ce12c2723f699ae91ffe76fedc8d627",
-      "triangleBudget": 2200,
+      "sourceSha256": "c7793a8b72580b6bb99965fbeb6e89227243a6468d430ace3ab75ca436f1a125",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -213845,13 +215084,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#d3aa37",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
         "triangles": 48,
         "sizeM": [
@@ -213864,15 +215118,22 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d3aa37",
+          "name": "galvanizedSteel",
+          "color": "#77868d",
           "parts": [
             "post",
-            "plate",
             "center",
             "foot"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#318b96",
+          "parts": [
+            "plate"
+          ],
+          "param": "powderCoat"
         }
       ]
     },
@@ -213880,7 +215141,7 @@
       "id": "roof-penetration-seal",
       "kit": "telecom-infrastructure",
       "title": "Roof cable penetration seal",
-      "description": "Low roof cable penetration boot with a rectangular base, collar and capped conduit. Knobs: overall scale and asset color.",
+      "description": "Low roof cable penetration boot with a rectangular base, collar and capped conduit. Knobs: overall scale; galvanized steel, powder-coated steel, elastomer seals and pads, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -213899,8 +215160,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/roof-penetration-seal.kcad.ts",
       "preview": "/assets/telecom-infrastructure-roof-penetration-seal.png",
-      "sourceSha256": "31623076fb78eec1570b35b8f67ee82f0f94b150ec261fe761dcb7ac5584e0f0",
-      "triangleBudget": 2200,
+      "sourceSha256": "dfe63e666852268c34c7ff7e17ea8b116e98f010144540c0744428a986945928",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -213912,13 +215173,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#555c5a",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#282d30",
+          "label": "Elastomer seals and pads"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#d2dbdc",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b",
+          "rubber": "#292e2d",
+          "stainlessSteel": "#d0d9d6"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18",
+          "rubber": "#252a2c",
+          "stainlessSteel": "#e4e9e6"
+        }
+      },
       "stats": {
         "triangles": 188,
         "sizeM": [
@@ -213931,16 +215223,37 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#555c5a",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "base",
-            "boot",
-            "collar",
-            "conduit",
             "cap"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "rubber",
+          "color": "#282d30",
+          "parts": [
+            "boot"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
+          "parts": [
+            "collar"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
+            "conduit"
+          ],
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -213948,7 +215261,7 @@
       "id": "rooftop-microwave-dish",
       "kit": "telecom-infrastructure",
       "title": "Rooftop microwave dish",
-      "description": "Medium rooftop microwave dish with upright post, offset arm and compact feed horn. Knobs: overall scale and asset color.",
+      "description": "Medium rooftop microwave dish with upright post, offset arm and compact feed horn. Knobs: overall scale; aluminum reflector, galvanized steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -213967,8 +215280,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/rooftop-microwave-dish.kcad.ts",
       "preview": "/assets/telecom-infrastructure-rooftop-microwave-dish.png",
-      "sourceSha256": "36665b6107e7811f9182bbccc5f36d48152166e44dd8a8fab7803c9476dbb661",
-      "triangleBudget": 2200,
+      "sourceSha256": "e97bb0b63d83363bc7ca4294eec95b4794a99c7c6ff4dbc1cec4bf648973024e",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -213980,36 +215293,57 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminum",
           "type": "color",
-          "default": "#c7cdcf",
-          "label": "Asset color"
+          "default": "#c2cacc",
+          "label": "Aluminum reflector"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#77868d",
+          "label": "Galvanized steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "aluminum": "#aeb9b9",
+          "galvanizedSteel": "#8f9b9b"
+        },
+        "highVisibility": {
+          "aluminum": "#d4dada",
+          "galvanizedSteel": "#3a4b51"
+        }
+      },
       "stats": {
-        "triangles": 168,
+        "triangles": 172,
         "sizeM": [
-          0.72,
+          0.62,
           1.41,
-          0.858
+          0.708
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#c7cdcf",
+          "name": "galvanizedSteel",
+          "color": "#77868d",
           "parts": [
-            "dish-rim",
-            "dish",
             "arm",
             "feed-horn",
             "post",
             "foot"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "aluminum",
+          "color": "#c2cacc",
+          "parts": [
+            "reflector"
+          ],
+          "param": "aluminum"
         }
       ]
     },
@@ -214017,7 +215351,7 @@
       "id": "rooftop-network-cabinet",
       "kit": "telecom-infrastructure",
       "title": "Rooftop network cabinet",
-      "description": "Low rooftop radio cabinet with raised curb, hinged lid and side ventilation slots. Knobs: overall scale and asset color.",
+      "description": "Low rooftop radio cabinet with raised curb, hinged lid and side ventilation slots. Knobs: overall scale; galvanized steel, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -214036,8 +215370,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/rooftop-network-cabinet.kcad.ts",
       "preview": "/assets/telecom-infrastructure-rooftop-network-cabinet.png",
-      "sourceSha256": "b6b54fa8aa1ea62be758c5625ec5740b1d1f20395cb1fcc9ae5375a038c6f1d2",
-      "triangleBudget": 2200,
+      "sourceSha256": "828403839771c3559c3022f0e49f8ccbab0a30d8375f6783993b7dc87e78a4f1",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -214049,13 +215383,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#7b837d",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
         "triangles": 72,
         "sizeM": [
@@ -214068,17 +215417,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7b837d",
+          "name": "galvanizedSteel",
+          "color": "#77868d",
           "parts": [
-            "curb",
+            "curb"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#318b96",
+          "parts": [
             "body",
             "lid",
             "front-panel",
             "vent-left",
             "vent-right"
           ],
-          "param": "color"
+          "param": "powderCoat"
         }
       ]
     },
@@ -214086,7 +215442,7 @@
       "id": "rooftop-tripod-mast",
       "kit": "telecom-infrastructure",
       "title": "Rooftop tripod mast",
-      "description": "Short rooftop antenna mast on three splayed legs with a round base plate and collar. Knobs: overall scale and asset color.",
+      "description": "Short rooftop antenna mast on three splayed legs with a round base plate and collar. Knobs: overall scale; galvanized steel, powder-coated steel, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -214105,8 +215461,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/rooftop-tripod-mast.kcad.ts",
       "preview": "/assets/telecom-infrastructure-rooftop-tripod-mast.png",
-      "sourceSha256": "1a25acca2d13edce2973bc9a2b6a6e9b71aeee5a2cfeffe4e175923dd3ae32fd",
-      "triangleBudget": 2200,
+      "sourceSha256": "1245f3a03c548f854a08a70050a4e349a55d28cecf019911a3d370c257595778",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -214118,36 +215474,73 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#626c70",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#d2dbdc",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b",
+          "stainlessSteel": "#d0d9d6"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18",
+          "stainlessSteel": "#e4e9e6"
+        }
+      },
       "stats": {
-        "triangles": 168,
+        "triangles": 264,
         "sizeM": [
-          0.54,
+          0.605774,
           1.335,
-          0.54
+          0.616561
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#626c70",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
-            "base",
+            "base"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
             "mast",
             "leg-front",
             "leg-left",
-            "leg-right",
+            "leg-right"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
+          "parts": [
             "collar"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -214155,7 +215548,7 @@
       "id": "sector-panel-antenna",
       "kit": "telecom-infrastructure",
       "title": "Sector panel antenna",
-      "description": "Slim panel antenna with shallow radome, rear mounting rail and connector block. Knobs: overall scale and asset color.",
+      "description": "Slim panel antenna with shallow radome, rear mounting rail and connector block. Knobs: overall scale; engineering polymer and cable jacket, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -214174,8 +215567,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/sector-panel-antenna.kcad.ts",
       "preview": "/assets/telecom-infrastructure-sector-panel-antenna.png",
-      "sourceSha256": "8dffb1b256761899153fc0231d0adc61b8221989756e5d335aea9322d1d0a4d1",
-      "triangleBudget": 2200,
+      "sourceSha256": "1b9deb5edeaea337e5648e9e43e6359d7990791b514ce1c9ad1183dfe474763a",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -214187,13 +215580,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#e2e4dc",
-          "label": "Asset color"
+          "default": "#315267",
+          "label": "Engineering polymer and cable jacket"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "polymer": "#263a37",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "polymer": "#27363c",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
         "triangles": 60,
         "sizeM": [
@@ -214206,16 +215614,23 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#e2e4dc",
+          "name": "polymer",
+          "color": "#315267",
           "parts": [
             "radome",
-            "top-cap",
-            "bottom-cap",
-            "rear-rail",
             "connector"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#318b96",
+          "parts": [
+            "top-cap",
+            "bottom-cap",
+            "rear-rail"
+          ],
+          "param": "powderCoat"
         }
       ]
     },
@@ -214223,7 +215638,7 @@
       "id": "site-id-placard",
       "kit": "telecom-infrastructure",
       "title": "Site identification placard",
-      "description": "Small site identification plate with a raised frame, two posts and bolted feet. Knobs: overall scale and asset color.",
+      "description": "Small site identification plate with a raised frame, two posts and bolted feet. Knobs: overall scale; galvanized steel, powder-coated steel, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -214242,8 +215657,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/site-id-placard.kcad.ts",
       "preview": "/assets/telecom-infrastructure-site-id-placard.png",
-      "sourceSha256": "90bc5df7150576965dd30100d36141f71b1ce4791e195f897a895b86fb1fa7b2",
-      "triangleBudget": 2200,
+      "sourceSha256": "edbdf966c463150347d772b18efbf3e74e4736d2b4a0b7534c491096e5d4a8a9",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -214255,13 +215670,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#63737c",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#d2dbdc",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b",
+          "stainlessSteel": "#d0d9d6"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18",
+          "stainlessSteel": "#e4e9e6"
+        }
+      },
       "stats": {
         "triangles": 136,
         "sizeM": [
@@ -214274,17 +215712,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#63737c",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "plate",
-            "inset",
+            "inset"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
             "post--280",
-            "post-280",
+            "post-280"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
+          "parts": [
             "bolt--320",
             "bolt-320"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -214292,7 +215744,7 @@
       "id": "split-cable-duct",
       "kit": "telecom-infrastructure",
       "title": "Split cable duct",
-      "description": "Low split-duct cable cover with two channel shells and a bridging lid strip. Knobs: overall scale and asset color.",
+      "description": "Low split-duct cable cover with two channel shells and a bridging lid strip. Knobs: overall scale; galvanized steel, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -214311,8 +215763,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/split-cable-duct.kcad.ts",
       "preview": "/assets/telecom-infrastructure-split-cable-duct.png",
-      "sourceSha256": "1653c8126fac4e59be5b286d42d7dd1acf4e5486a9f89a09016282d81710e37f",
-      "triangleBudget": 2200,
+      "sourceSha256": "1a32c5ae97a276fac8c9870e5fe2e7535b11f09b4073a41d81998e30f7183bdd",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -214324,13 +215776,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#8a866e",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
         "triangles": 60,
         "sizeM": [
@@ -214343,16 +215810,23 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8a866e",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "base-a",
             "base-b",
             "lid-a",
-            "lid-b",
+            "lid-b"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
             "center-join"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -214360,7 +215834,7 @@
       "id": "surge-protector-enclosure",
       "kit": "telecom-infrastructure",
       "title": "Surge protection enclosure",
-      "description": "Compact surge protection box with a front cover, conduit entry and top cap. Knobs: overall scale and asset color.",
+      "description": "Compact surge protection box with a front cover, conduit entry and top cap. Knobs: overall scale; galvanized steel, powder-coated steel, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -214379,8 +215853,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/surge-protector-enclosure.kcad.ts",
       "preview": "/assets/telecom-infrastructure-surge-protector-enclosure.png",
-      "sourceSha256": "391b0693af1ad1a7196883f15cb7a52bba0c161d70fb355fbbd2b630919f88dc",
-      "triangleBudget": 2200,
+      "sourceSha256": "81a9f2e697f76b993ba92719a0fc639882b4665f7ded8fe76bdea048f1583c93",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -214392,13 +215866,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#7b817b",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#d2dbdc",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b",
+          "stainlessSteel": "#d0d9d6"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18",
+          "stainlessSteel": "#e4e9e6"
+        }
+      },
       "stats": {
         "triangles": 124,
         "sizeM": [
@@ -214411,16 +215908,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7b817b",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "body",
             "lid",
-            "cap",
-            "conduit",
+            "cap"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
+            "conduit"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
+          "parts": [
             "latch"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -214428,7 +215939,7 @@
       "id": "telecom-cable-marker-post",
       "kit": "telecom-infrastructure",
       "title": "Telecom cable marker post",
-      "description": "Narrow marker post with a ribbed cap, tag plate and buried-end indicator band. Knobs: overall scale and asset color.",
+      "description": "Narrow marker post with a ribbed cap, tag plate and buried-end indicator band. Knobs: overall scale; galvanized steel, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -214447,8 +215958,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/telecom-cable-marker-post.kcad.ts",
       "preview": "/assets/telecom-infrastructure-telecom-cable-marker-post.png",
-      "sourceSha256": "2d50090dcb9c1625d3d6f7ffbbd32fb5b6b1dfecaee00e8112e128b0bac4136b",
-      "triangleBudget": 2200,
+      "sourceSha256": "a814d550ac152974efcd300f87e40c3b92298c0ec1ea0b91105c3f35c662b43a",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -214460,13 +215971,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#cb9e38",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
         "triangles": 60,
         "sizeM": [
@@ -214479,16 +216005,23 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#cb9e38",
+          "name": "galvanizedSteel",
+          "color": "#77868d",
           "parts": [
             "post",
-            "cap",
             "tag",
             "band",
             "foot"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#318b96",
+          "parts": [
+            "cap"
+          ],
+          "param": "powderCoat"
         }
       ]
     },
@@ -214496,7 +216029,7 @@
       "id": "telecom-equipment-shelter",
       "kit": "telecom-infrastructure",
       "title": "Telecom equipment shelter",
-      "description": "Small site shelter with two access doors, vent panels, corner posts and a broad roof. Knobs: overall scale and asset color.",
+      "description": "Small site shelter with two access doors, vent panels, corner posts and a broad roof. Knobs: overall scale; galvanized steel, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -214515,8 +216048,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/telecom-equipment-shelter.kcad.ts",
       "preview": "/assets/telecom-infrastructure-telecom-equipment-shelter.png",
-      "sourceSha256": "e5a87590f316da9fcb87fe76dcf781cec81515e67dc9d6df50ea51971b29dfa3",
-      "triangleBudget": 2200,
+      "sourceSha256": "3ceb2ea3f7e38acc5f88f059cb118384f0d15c8d7ef5893277030a7ac31dfd61",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -214528,13 +216061,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#6a7779",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
         "triangles": 84,
         "sizeM": [
@@ -214547,10 +216095,17 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6a7779",
+          "name": "galvanizedSteel",
+          "color": "#77868d",
           "parts": [
-            "floor",
+            "floor"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#318b96",
+          "parts": [
             "rear",
             "left",
             "right",
@@ -214558,7 +216113,7 @@
             "door-a",
             "door-b"
           ],
-          "param": "color"
+          "param": "powderCoat"
         }
       ]
     },
@@ -214566,7 +216121,7 @@
       "id": "telecom-warning-sign",
       "kit": "telecom-infrastructure",
       "title": "Telecom warning sign",
-      "description": "Site warning placard on two short posts with a broad rectangular sign panel. Knobs: overall scale and asset color.",
+      "description": "Site warning placard on two short posts with a broad rectangular sign panel. Knobs: overall scale; galvanized steel, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -214585,8 +216140,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/telecom-warning-sign.kcad.ts",
       "preview": "/assets/telecom-infrastructure-telecom-warning-sign.png",
-      "sourceSha256": "2cf437e982e85e002dde761be40e46cb3e5f459b6efe1dd40ded47b4d2da5f4f",
-      "triangleBudget": 2200,
+      "sourceSha256": "e2897cb70470a36b748d10e781299c82820a815e4b45c4aaf5447d0af42f79e5",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -214598,13 +216153,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#d6a848",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
         "triangles": 60,
         "sizeM": [
@@ -214617,16 +216187,23 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d6a848",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "panel",
-            "post--300",
-            "post-300",
             "foot-left",
             "foot-right"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
+            "post--300",
+            "post-300"
+          ],
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -214634,7 +216211,7 @@
       "id": "wall-mast-bracket",
       "kit": "telecom-infrastructure",
       "title": "Wall mast stand-off bracket",
-      "description": "Wall stand-off bracket with backplate, two arms, mast clamps and bolt heads. Knobs: overall scale and asset color.",
+      "description": "Wall stand-off bracket with backplate, two arms, mast clamps and bolt heads. Knobs: overall scale; galvanized steel, powder-coated steel, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -214653,8 +216230,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/wall-mast-bracket.kcad.ts",
       "preview": "/assets/telecom-infrastructure-wall-mast-bracket.png",
-      "sourceSha256": "48f83e0527fff0a2cf603319c57f802b941b58fe00b9f4f496764a0946474d13",
-      "triangleBudget": 2200,
+      "sourceSha256": "b94226b51fe0d545139e502bb60cf209fc08c290e5927fed72a4443478b01257",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -214666,13 +216243,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#687278",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#d2dbdc",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b",
+          "stainlessSteel": "#d0d9d6"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18",
+          "stainlessSteel": "#e4e9e6"
+        }
+      },
       "stats": {
         "triangles": 148,
         "sizeM": [
@@ -214685,18 +216285,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#687278",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
-            "backplate",
+            "backplate"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
             "arm-upper",
             "arm-lower",
-            "clamp-upper",
-            "clamp-lower",
             "gusset-a",
             "gusset-b"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
+          "parts": [
+            "clamp-upper",
+            "clamp-lower"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -214704,7 +216318,7 @@
       "id": "waveguide-bridge",
       "kit": "telecom-infrastructure",
       "title": "Waveguide bridge tray",
-      "description": "Raised rooftop waveguide bridge with two support frames and a broad crossing tray. Knobs: overall scale and asset color.",
+      "description": "Raised rooftop waveguide bridge with two support frames and a broad crossing tray. Knobs: overall scale; galvanized steel, engineering polymer and cable jacket, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -214723,8 +216337,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/waveguide-bridge.kcad.ts",
       "preview": "/assets/telecom-infrastructure-waveguide-bridge.png",
-      "sourceSha256": "1e87aba07533aa439a29035d5780013fa0eac3e13656f77dd38ad1b50a232be4",
-      "triangleBudget": 2200,
+      "sourceSha256": "8acc3fdb7f8686d6ec94f7116ccaec00731c8ac71a323e5af5812c5814b76507",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -214736,15 +216350,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#70777a",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#315267",
+          "label": "Engineering polymer and cable jacket"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "polymer": "#263a37",
+          "powderCoat": "#52756b"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "polymer": "#27363c",
+          "powderCoat": "#e0aa18"
+        }
+      },
       "stats": {
-        "triangles": 108,
+        "triangles": 144,
         "sizeM": [
           1.8,
           0.695,
@@ -214755,12 +216392,10 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#70777a",
+          "name": "galvanizedSteel",
+          "color": "#77868d",
           "parts": [
             "tray",
-            "rail-left",
-            "rail-right",
             "leg--700--155",
             "leg--700-155",
             "leg-700--155",
@@ -214768,7 +216403,26 @@
             "cross-a",
             "cross-b"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#318b96",
+          "parts": [
+            "rail-left",
+            "rail-right"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "polymer",
+          "color": "#315267",
+          "parts": [
+            "waveguide-jacket-0",
+            "waveguide-jacket-1",
+            "waveguide-jacket-2"
+          ],
+          "param": "polymer"
         }
       ]
     },
@@ -214776,7 +216430,7 @@
       "id": "weatherproof-junction-box",
       "kit": "telecom-infrastructure",
       "title": "Weatherproof junction box",
-      "description": "Small sealed junction box with screw-down lid, raised lip and three cable entries. Knobs: overall scale and asset color.",
+      "description": "Small sealed junction box with screw-down lid, raised lip and three cable entries. Knobs: overall scale; galvanized steel, powder-coated steel, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -214795,8 +216449,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/weatherproof-junction-box.kcad.ts",
       "preview": "/assets/telecom-infrastructure-weatherproof-junction-box.png",
-      "sourceSha256": "e2ef6cc489b517c457c872b62b258118f0d35b2a2bdc6e150aa6a4b62a706728",
-      "triangleBudget": 2200,
+      "sourceSha256": "ff37929565618167b7e65ee03af04e8211b5b119d282af0ef8816fe63b69d689",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -214808,13 +216462,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#8a9085",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#318b96",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#d2dbdc",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "powderCoat": "#52756b",
+          "stainlessSteel": "#d0d9d6"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "powderCoat": "#e0aa18",
+          "stainlessSteel": "#e4e9e6"
+        }
+      },
       "stats": {
         "triangles": 332,
         "sizeM": [
@@ -214827,20 +216504,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8a9085",
+          "name": "powderCoat",
+          "color": "#318b96",
           "parts": [
             "base",
-            "lid",
+            "lid"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#77868d",
+          "parts": [
             "entry-0",
             "entry-1",
-            "entry-2",
+            "entry-2"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
+          "parts": [
             "screw--145--95",
             "screw--145-95",
             "screw-145--95",
             "screw-145-95"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -214848,7 +216539,7 @@
       "id": "yagi-radio-antenna",
       "kit": "telecom-infrastructure",
       "title": "Yagi radio antenna",
-      "description": "Directional Yagi antenna with a boom, reflector and four short director elements. Knobs: overall scale and asset color.",
+      "description": "Directional Yagi antenna with a boom, reflector and four short director elements. Knobs: overall scale; galvanized steel, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -214867,8 +216558,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/telecom-infrastructure/yagi-radio-antenna.kcad.ts",
       "preview": "/assets/telecom-infrastructure-yagi-radio-antenna.png",
-      "sourceSha256": "c66f303e81b4e3edf9f43603730decb2115aca04e7ecc80a7a1d8c952d38a236",
-      "triangleBudget": 2200,
+      "sourceSha256": "4118e34dbc6f98eea3ee7fa83bc63c3ac79235fb34dcd5a42d259d2ce13948ea",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -214880,13 +216571,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#7b8483",
-          "label": "Asset color"
+          "default": "#77868d",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#d2dbdc",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldSite": {
+          "galvanizedSteel": "#8f9b9b",
+          "stainlessSteel": "#d0d9d6"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#3a4b51",
+          "stainlessSteel": "#e4e9e6"
+        }
+      },
       "stats": {
         "triangles": 104,
         "sizeM": [
@@ -214899,17 +216605,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7b8483",
+          "name": "galvanizedSteel",
+          "color": "#77868d",
           "parts": [
             "boom",
             "reflector",
             "driven",
             "director-a",
-            "director-b",
+            "director-b"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#d2dbdc",
+          "parts": [
             "mast-clamp"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },

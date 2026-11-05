@@ -158,3 +158,17 @@ inspected-video evidence. The [original wave bundle](../artifacts/catalog-demos/
 retains the source-to-preview workflow. These are visualization props; checks
 do not establish equipment ratings, electrical safety, grid compliance,
 operating procedures, or field acceptance.
+
+## Telecom infrastructure assets
+
+The [telecom infrastructure kit](../catalog/kits/telecom-infrastructure/README.md)
+contains 56 original props for radio sites, rooftop equipment, cable routes and
+fiber distribution. The existing asset IDs now expose overall scale, two to
+four material-named color controls, and `fieldSite` / `highVisibility` presets.
+Masts, antennas, cabinets, cable hardware and fiber terminals use distinct
+materials and visible component shapes. Each of the 56 sources has a generated,
+indexed preview. The [quality promotion bundle](../artifacts/catalog-demos/telecom-infrastructure-quality-promotion-20261105/README.md)
+records the source changes, local preview review, preset render, page generation,
+lint and integration evidence. These are stylized scene props; the catalog does
+not establish RF performance, environmental ratings, installation suitability,
+regulatory compliance or hardware acceptance.
