@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: '22' }
+        with: { node-version: '24' }
       - name: Install kernelcad globally (matches what users do)
         run: npm i -g kernelcad@latest
       - name: Install Claude Code
@@ -34,7 +34,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: '22' }
+        with: { node-version: '24' }
       - run: npm i -g kernelcad@latest
       - name: Install Codex CLI
         run: npm i -g @openai/codex
@@ -49,7 +49,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: '22' }
+        with: { node-version: '24' }
       - run: npm i -g kernelcad@latest
       # Cursor is a desktop app; the eval runs the cursor-agent CLI in
       # headless mode. If cursor-agent is not available on CI at the time
