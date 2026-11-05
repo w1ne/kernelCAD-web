@@ -28,6 +28,18 @@ async function lowerScript(code: string): Promise<{
 describe('holeLowerer — single hole', () => {
   beforeAll(async () => { await initOcct(); });
 
+  it.each([
+    ['plain', '', 4],
+    ['threaded', ', thread: { pitch: 0.7, modeled: false }', 4 - 1.0825 * 0.7],
+  ])('keeps the %s blind-hole floor at the requested depth', async (_name, thread, boreDiameter) => {
+    const { shape, diagnostics } = await lowerScript(`return box(20,20,10).hole('top', { u: 0, v: 0, diameter: 4, depth: 5 ${thread} });`);
+    expect(diagnostics).toEqual([]);
+    const expected = 20 * 20 * 10 - Math.PI * (boreDiameter / 2) ** 2 * 5;
+    // Thread minor-diameter constants are rounded; this tolerance still
+    // detects the former 0.01 mm floor error for either diameter.
+    expect(shape.volume()).toBeCloseTo(expected, 2);
+  });
+
   it('blind hole removes ~ π·r²·depth volume from a box', async () => {
     const code = `
       const base = box(40, 40, 20);

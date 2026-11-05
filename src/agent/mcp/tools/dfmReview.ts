@@ -323,7 +323,9 @@ function producerIdOf(model: BuiltModel, part: ResolvedPart): string | undefined
 
 async function runSheetMetal(part: ResolvedPart, model: BuiltModel, settings: SheetMetalSettings, out: PartReview): Promise<void> {
   const id = producerIdOf(model, part);
-  const rep = id !== undefined ? await checkSheetMetal(model.records, id, settings, model.shapes) : undefined;
+  const rep = id !== undefined
+    ? await checkSheetMetal(model.records, id, settings, model.shapes, model.session.paramTable)
+    : undefined;
   if (rep === undefined) {
     out.checks.push(notSheetMetalCheck(part.name));
     return;
