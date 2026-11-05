@@ -1728,7 +1728,7 @@
     {
       "id": "postal-logistics",
       "title": "Postal logistics",
-      "description": "Original low-poly parcel induction, scanning, sortation, mail handling, route preparation, and dispatch props with editable scale and color controls.",
+      "description": "Low-poly parcel induction, scanning, sortation, mail handling, route preparation, and dispatch models with material-specific controls and weathered or high-visibility finish presets.",
       "assets": [
         "automated-label-applicator",
         "barcode-tunnel-scanner",
@@ -159945,7 +159945,7 @@
       "id": "automated-label-applicator",
       "kit": "postal-logistics",
       "title": "Automated label applicator",
-      "description": "Labeling head suspended above a narrow parcel conveyor with guarding and feed controls. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Labeling head suspended above a narrow parcel conveyor with guarding and feed controls. Scale, painted steel, structural steel, stainless steel, label paper, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -159966,7 +159966,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/automated-label-applicator.kcad.ts",
       "preview": "/assets/postal-logistics-automated-label-applicator.png",
-      "sourceSha256": "b7956692486e26e3071edf3527b6046418e272d84583128ef8800ffd53185757",
+      "sourceSha256": "aa5eb0ea7539e61f5bd0db4061168d7a207ffe1c3c22a6bb91cdf93bcb3fa402",
       "triangleBudget": 1800,
       "params": [
         {
@@ -159979,15 +159979,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#5a7287",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#bbc4c4",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "paper",
+          "type": "color",
+          "default": "#eee5ca",
+          "label": "Label paper"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "structuralSteel": "#67675f",
+          "stainlessSteel": "#9ea7a6",
+          "paper": "#c2b99f"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "structuralSteel": "#454f54",
+          "stainlessSteel": "#d9e0de",
+          "paper": "#fff1b7"
+        }
+      },
       "stats": {
-        "triangles": 156,
+        "triangles": 844,
         "sizeM": [
           0.825,
           1.605,
@@ -159998,24 +160029,45 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#5a7287",
           "parts": [
             "conveyor",
+            "control-box"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#58656c",
+          "parts": [
             "frame-left",
             "frame-right",
             "upright-left",
             "upright-right",
-            "crossbeam",
-            "label-roll",
+            "crossbeam"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "paper",
+          "color": "#eee5ca",
+          "parts": [
+            "label-roll"
+          ],
+          "param": "paper"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bbc4c4",
+          "parts": [
             "applicator-head",
             "press-pad",
-            "control-box",
             "roller-a",
             "roller-b",
             "roller-c"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -160023,7 +160075,7 @@
       "id": "barcode-tunnel-scanner",
       "kit": "postal-logistics",
       "title": "Barcode tunnel scanner",
-      "description": "Open-sided parcel scanning tunnel with multiple raised scan heads above a short belt. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Open-sided parcel scanning tunnel with multiple raised scan heads above a short belt. Scale, painted steel, structural steel, stainless steel, instrument glass, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -160044,7 +160096,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/barcode-tunnel-scanner.kcad.ts",
       "preview": "/assets/postal-logistics-barcode-tunnel-scanner.png",
-      "sourceSha256": "64c345b64a1d7c295267242c051f492e915e7c8629f9e5e9351df5a34ac1182e",
+      "sourceSha256": "7ea82dedc243ee10dda125922d5a702fcf0cef72f764ba94b82e4be65992972d",
       "triangleBudget": 1800,
       "params": [
         {
@@ -160057,15 +160109,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#596e83",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#bbc4c4",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "instrumentGlass",
+          "type": "color",
+          "default": "#57b4c3",
+          "label": "Instrument glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "structuralSteel": "#67675f",
+          "stainlessSteel": "#9ea7a6",
+          "instrumentGlass": "#548a91"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "structuralSteel": "#454f54",
+          "stainlessSteel": "#d9e0de",
+          "instrumentGlass": "#6bd0dc"
+        }
+      },
       "stats": {
-        "triangles": 144,
+        "triangles": 720,
         "sizeM": [
           0.72,
           1.32,
@@ -160076,23 +160159,44 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#596e83",
           "parts": [
             "belt",
+            "arch-left",
+            "arch-right",
+            "arch-top"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#58656c",
+          "parts": [
             "left-leg-front",
             "right-leg-front",
             "left-leg-back",
-            "right-leg-back",
-            "arch-left",
-            "arch-right",
-            "arch-top",
+            "right-leg-back"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bbc4c4",
+          "parts": [
             "scan-head-front",
-            "scan-head-back",
+            "scan-head-back"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "instrumentGlass",
+          "color": "#57b4c3",
+          "parts": [
             "side-window-left",
             "side-window-right"
           ],
-          "param": "color"
+          "param": "instrumentGlass"
         }
       ]
     },
@@ -160100,7 +160204,7 @@
       "id": "bulk-mail-hamper",
       "kit": "postal-logistics",
       "title": "Bulk mail hamper",
-      "description": "Large open hamper with reinforced corners, removable liner and low handling skids. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Large open hamper with reinforced corners, removable liner and low handling skids. Scale, painted steel, timber, structural steel, woven fabric, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -160121,7 +160225,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/bulk-mail-hamper.kcad.ts",
       "preview": "/assets/postal-logistics-bulk-mail-hamper.png",
-      "sourceSha256": "3a21e2f39351c54b547bfa60dffd6a382cd34f04c654c9e9d53e7aeac9ab55d1",
+      "sourceSha256": "2416aa6c95fb46949e08f9da3d72e329332fe002759146703c36f4fada8bc9bc",
       "triangleBudget": 1800,
       "params": [
         {
@@ -160134,15 +160238,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#5b737e",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "timber",
+          "type": "color",
+          "default": "#876c4b",
+          "label": "Timber"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#476b7d",
+          "label": "Woven fabric"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "timber": "#71614b",
+          "structuralSteel": "#67675f",
+          "fabric": "#6c6b60"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "timber": "#a27e44",
+          "structuralSteel": "#454f54",
+          "fabric": "#d66a35"
+        }
+      },
       "stats": {
-        "triangles": 144,
+        "triangles": 720,
         "sizeM": [
           0.765,
           0.73,
@@ -160153,23 +160288,44 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "structuralSteel",
+          "color": "#58656c",
+          "parts": [
+            "base"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "paintedSteel",
           "color": "#5b737e",
           "parts": [
-            "base",
             "front-wall",
             "back-wall",
             "left-wall",
             "right-wall",
-            "liner",
             "corner-a",
             "corner-b",
             "corner-c",
-            "corner-d",
+            "corner-d"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "fabric",
+          "color": "#476b7d",
+          "parts": [
+            "liner"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "timber",
+          "color": "#876c4b",
+          "parts": [
             "skid-left",
             "skid-right"
           ],
-          "param": "color"
+          "param": "timber"
         }
       ]
     },
@@ -160177,7 +160333,7 @@
       "id": "bulk-mail-sack",
       "kit": "postal-logistics",
       "title": "Bulk mail sack",
-      "description": "Upright dispatch sack with a reinforced base, folded collar and tie-down tabs. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Upright dispatch sack with a reinforced base, folded collar and tie-down tabs. Scale, woven fabric, structural steel, label paper, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -160198,7 +160354,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/bulk-mail-sack.kcad.ts",
       "preview": "/assets/postal-logistics-bulk-mail-sack.png",
-      "sourceSha256": "0b46c0769f4edb32aa6d8038360771463dc20fd6d6921fc67596e3c0436dfb8e",
+      "sourceSha256": "41ef055f210b5ce8da6ce5d282aa79385caa553343f9fdf31f1c2e62a268348e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -160211,15 +160367,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "fabric",
           "type": "color",
           "default": "#717b75",
-          "label": "Asset color"
+          "label": "Woven fabric"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
+        },
+        {
+          "name": "paper",
+          "type": "color",
+          "default": "#eee5ca",
+          "label": "Label paper"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "fabric": "#6c6b60",
+          "structuralSteel": "#67675f",
+          "paper": "#c2b99f"
+        },
+        "highVisibility": {
+          "fabric": "#d66a35",
+          "structuralSteel": "#454f54",
+          "paper": "#fff1b7"
+        }
+      },
       "stats": {
-        "triangles": 116,
+        "triangles": 436,
         "sizeM": [
           0.52,
           0.7,
@@ -160230,18 +160409,32 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "fabric",
           "color": "#717b75",
           "parts": [
             "sack-body",
             "folded-collar",
             "front-tab-left",
             "front-tab-right",
-            "tie-bar",
-            "base-seam",
+            "tie-bar"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#58656c",
+          "parts": [
+            "base-seam"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "paper",
+          "color": "#eee5ca",
+          "parts": [
             "label-patch"
           ],
-          "param": "color"
+          "param": "paper"
         }
       ]
     },
@@ -160249,7 +160442,7 @@
       "id": "carrier-caseload-sorter",
       "kit": "postal-logistics",
       "title": "Carrier caseload sorter",
-      "description": "Portable multi-compartment case for staging route bundles with a broad carry handle. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Portable multi-compartment case for staging route bundles with a broad carry handle. Scale, painted steel, structural steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -160270,7 +160463,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/carrier-caseload-sorter.kcad.ts",
       "preview": "/assets/postal-logistics-carrier-caseload-sorter.png",
-      "sourceSha256": "01a66bde195bffc1103f57ed78ef433a87b4154bc415aaa82a05302fa73d16de",
+      "sourceSha256": "5ae684f82e0b0adc156854a30185c33407d9091b98fa2af14ee4d938453ee649",
       "triangleBudget": 1800,
       "params": [
         {
@@ -160283,15 +160476,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#59727e",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "structuralSteel": "#67675f"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "structuralSteel": "#454f54"
+        }
+      },
       "stats": {
-        "triangles": 132,
+        "triangles": 660,
         "sizeM": [
           0.68,
           0.565,
@@ -160302,10 +160510,17 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "structuralSteel",
+          "color": "#58656c",
+          "parts": [
+            "base"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "paintedSteel",
           "color": "#59727e",
           "parts": [
-            "base",
             "left-wall",
             "right-wall",
             "back-wall",
@@ -160317,7 +160532,7 @@
             "handle-right",
             "handle"
           ],
-          "param": "color"
+          "param": "paintedSteel"
         }
       ]
     },
@@ -160325,7 +160540,7 @@
       "id": "carrier-route-sequence-rack",
       "kit": "postal-logistics",
       "title": "Carrier route sequence rack",
-      "description": "Wall-mounted route rack with repeated sequence slots, label strips and a lower shelf. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Wall-mounted route rack with repeated sequence slots, label strips and a lower shelf. Scale, painted steel, label paper, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -160346,7 +160561,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/carrier-route-sequence-rack.kcad.ts",
       "preview": "/assets/postal-logistics-carrier-route-sequence-rack.png",
-      "sourceSha256": "d64878ee99119e68566142aa195b3ad7dfbf3b9ee703c0bc73960d550ba42234",
+      "sourceSha256": "30dd89641d5db2330bc4b6e35f6e5a01338a95ad77055c52929fe3345f536d3d",
       "triangleBudget": 1800,
       "params": [
         {
@@ -160359,15 +160574,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#697a79",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "paper",
+          "type": "color",
+          "default": "#eee5ca",
+          "label": "Label paper"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "paper": "#c2b99f"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "paper": "#fff1b7"
+        }
+      },
       "stats": {
-        "triangles": 144,
+        "triangles": 720,
         "sizeM": [
           1.08,
           1.635,
@@ -160378,7 +160608,7 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#697a79",
           "parts": [
             "backboard",
@@ -160390,11 +160620,18 @@
             "divider-a",
             "divider-b",
             "divider-c",
-            "divider-d",
+            "divider-d"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "paper",
+          "color": "#eee5ca",
+          "parts": [
             "label-rail-a",
             "label-rail-b"
           ],
-          "param": "color"
+          "param": "paper"
         }
       ]
     },
@@ -160402,7 +160639,7 @@
       "id": "carrier-satchel",
       "kit": "postal-logistics",
       "title": "Carrier satchel",
-      "description": "Postal carrier shoulder bag with flap, side gussets, strap loops and a broad carrying strap. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Postal carrier shoulder bag with flap, side gussets, strap loops and a broad carrying strap. Scale, woven fabric, stainless steel, moulded polymer, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -160423,7 +160660,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/carrier-satchel.kcad.ts",
       "preview": "/assets/postal-logistics-carrier-satchel.png",
-      "sourceSha256": "d54d510951b96717bfff70fc8d050bf9cea26e87b99dbbabb2ee211e6deb9271",
+      "sourceSha256": "f67177efc4af7555b2b713c996e94bdc01049d943d872417ae3870820fbc0492",
       "triangleBudget": 1800,
       "params": [
         {
@@ -160436,40 +160673,77 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "fabric",
           "type": "color",
           "default": "#596f7e",
-          "label": "Asset color"
+          "label": "Woven fabric"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#bbc4c4",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#477c8e",
+          "label": "Moulded polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "fabric": "#6c6b60",
+          "stainlessSteel": "#9ea7a6",
+          "polymer": "#6c7c7c"
+        },
+        "highVisibility": {
+          "fabric": "#d66a35",
+          "stainlessSteel": "#d9e0de",
+          "polymer": "#e0b245"
+        }
+      },
       "stats": {
-        "triangles": 120,
+        "triangles": 600,
         "sizeM": [
           0.485,
           0.64,
-          0.245
+          0.285723
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
+          "name": "fabric",
           "color": "#596f7e",
           "parts": [
             "bag-body",
-            "front-pocket",
             "flap",
             "side-gusset-left",
             "side-gusset-right",
             "strap-left",
             "strap-right",
-            "shoulder-strap",
+            "shoulder-strap"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "polymer",
+          "color": "#477c8e",
+          "parts": [
+            "front-pocket"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bbc4c4",
+          "parts": [
             "strap-end-left",
             "strap-end-right"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -160477,7 +160751,7 @@
       "id": "conveyor-drive-unit",
       "kit": "postal-logistics",
       "title": "Conveyor drive unit",
-      "description": "Compact conveyor motor and gearbox assembly on a mounting plate with raised vent banks. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Compact conveyor motor and gearbox assembly on a mounting plate with raised vent banks. Scale, painted steel, stainless steel, structural steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -160498,7 +160772,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/conveyor-drive-unit.kcad.ts",
       "preview": "/assets/postal-logistics-conveyor-drive-unit.png",
-      "sourceSha256": "87d2c88fdf937f4b403df4d09029033b4cff9c0de3734b3e8faf9b04bb395c8d",
+      "sourceSha256": "3ed6a23792c08c8dbe14d2a2f4c2bad3d89f631ebbf2a51494512f621594be2e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -160511,15 +160785,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#69777a",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#bbc4c4",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "stainlessSteel": "#9ea7a6",
+          "structuralSteel": "#67675f"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "stainlessSteel": "#d9e0de",
+          "structuralSteel": "#454f54"
+        }
+      },
       "stats": {
-        "triangles": 132,
+        "triangles": 660,
         "sizeM": [
           0.6175,
           0.465,
@@ -160530,22 +160827,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#69777a",
+          "name": "structuralSteel",
+          "color": "#58656c",
           "parts": [
             "mounting-plate",
-            "motor-body",
-            "motor-end",
-            "gearbox",
-            "output-block",
-            "vent-a",
-            "vent-b",
-            "vent-c",
-            "terminal-box",
             "foot-left",
             "foot-right"
           ],
-          "param": "color"
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bbc4c4",
+          "parts": [
+            "motor-body",
+            "motor-end",
+            "gearbox",
+            "vent-a",
+            "vent-b",
+            "vent-c"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#69777a",
+          "parts": [
+            "output-block",
+            "terminal-box"
+          ],
+          "param": "paintedSteel"
         }
       ]
     },
@@ -160553,7 +160864,7 @@
       "id": "conveyor-guard-section",
       "kit": "postal-logistics",
       "title": "Conveyor guard section",
-      "description": "Guarding panel around a conveyor bay with frame rails and closely spaced upright bars. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Guarding panel around a conveyor bay with frame rails and closely spaced upright bars. Scale, painted steel, structural steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -160574,7 +160885,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/conveyor-guard-section.kcad.ts",
       "preview": "/assets/postal-logistics-conveyor-guard-section.png",
-      "sourceSha256": "e13bdfc4c65cf8b9579b11d00888e0ec616a1c8d51694922dfe79f84fcb09fe2",
+      "sourceSha256": "3a0d0468464c3c41ab64ed732892103e3630364e4d00f7036d797490b732ed08",
       "triangleBudget": 1800,
       "params": [
         {
@@ -160587,15 +160898,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#758077",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "structuralSteel": "#67675f"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "structuralSteel": "#454f54"
+        }
+      },
       "stats": {
-        "triangles": 132,
+        "triangles": 660,
         "sizeM": [
           1.09,
           1.145,
@@ -160606,22 +160932,29 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#758077",
+          "name": "structuralSteel",
+          "color": "#58656c",
           "parts": [
             "foot-left",
             "foot-right",
             "post-left",
             "post-right",
             "top-rail",
-            "bottom-rail",
+            "bottom-rail"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#758077",
+          "parts": [
             "bar-a",
             "bar-b",
             "bar-c",
             "bar-d",
             "bar-e"
           ],
-          "param": "color"
+          "param": "paintedSteel"
         }
       ]
     },
@@ -160629,7 +160962,7 @@
       "id": "conveyor-merge-module",
       "kit": "postal-logistics",
       "title": "Conveyor merge module",
-      "description": "Two infeed belts meet at a compact parcel merge deck with a central guide and support frame. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Two infeed belts meet at a compact parcel merge deck with a central guide and support frame. Scale, painted steel, stainless steel, structural steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -160650,7 +160983,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/conveyor-merge-module.kcad.ts",
       "preview": "/assets/postal-logistics-conveyor-merge-module.png",
-      "sourceSha256": "8dd9aac89bef8585af7958f5c9d644183d42a80df7a20fb84244733f2c0ca389",
+      "sourceSha256": "52aa38d011deaf3a68e7a0d6972ccea52572c7a11df9c7ea81e5cd07dcd787db",
       "triangleBudget": 1800,
       "params": [
         {
@@ -160663,15 +160996,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#547c87",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#bbc4c4",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "stainlessSteel": "#9ea7a6",
+          "structuralSteel": "#67675f"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "stainlessSteel": "#d9e0de",
+          "structuralSteel": "#454f54"
+        }
+      },
       "stats": {
-        "triangles": 144,
+        "triangles": 768,
         "sizeM": [
           1.16,
           0.89,
@@ -160682,23 +161038,37 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#547c87",
           "parts": [
             "merge-deck",
             "infeed-left",
-            "infeed-right",
+            "infeed-right"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bbc4c4",
+          "parts": [
             "left-guide",
             "right-guide",
             "center-guide",
-            "support-left",
-            "support-right",
-            "cross-brace",
             "roller-row-a",
             "roller-row-b",
             "roller-row-c"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#58656c",
+          "parts": [
+            "support-left",
+            "support-right",
+            "cross-brace"
+          ],
+          "param": "structuralSteel"
         }
       ]
     },
@@ -160706,7 +161076,7 @@
       "id": "conveyor-transfer-bridge",
       "kit": "postal-logistics",
       "title": "Conveyor transfer bridge",
-      "description": "Short transfer bridge that aligns roller rows between adjoining parcel conveyor beds. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Short transfer bridge that aligns roller rows between adjoining parcel conveyor beds. Scale, painted steel, structural steel, stainless steel, safety amber, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -160727,7 +161097,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/conveyor-transfer-bridge.kcad.ts",
       "preview": "/assets/postal-logistics-conveyor-transfer-bridge.png",
-      "sourceSha256": "1008e83a217a9f7ced25f6086c9651ccc9832a9f24f386ffa8471c324570baf2",
+      "sourceSha256": "7a76247b276f2b98ea52c2896ddab01fae088664f3d4ac12adf400c4d7d454de",
       "triangleBudget": 1800,
       "params": [
         {
@@ -160740,15 +161110,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#607b80",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#bbc4c4",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "safetyAmber",
+          "type": "color",
+          "default": "#e7aa35",
+          "label": "Safety amber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "structuralSteel": "#67675f",
+          "stainlessSteel": "#9ea7a6",
+          "safetyAmber": "#bb8c34"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "structuralSteel": "#454f54",
+          "stainlessSteel": "#d9e0de",
+          "safetyAmber": "#ffd12f"
+        }
+      },
       "stats": {
-        "triangles": 132,
+        "triangles": 724,
         "sizeM": [
           0.65,
           0.85,
@@ -160759,22 +161160,43 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#607b80",
           "parts": [
-            "bridge-deck",
+            "bridge-deck"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#58656c",
+          "parts": [
             "left-rail",
             "right-rail",
             "stand-left",
             "stand-right",
-            "crossbar",
+            "crossbar"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bbc4c4",
+          "parts": [
             "roller-1",
             "roller-2",
             "roller-3",
-            "roller-4",
+            "roller-4"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "safetyAmber",
+          "color": "#e7aa35",
+          "parts": [
             "alignment-stop"
           ],
-          "param": "color"
+          "param": "safetyAmber"
         }
       ]
     },
@@ -160782,7 +161204,7 @@
       "id": "crossbelt-sorter-section",
       "kit": "postal-logistics",
       "title": "Crossbelt sorter section",
-      "description": "Elevated sortation track section with repeated shallow crossbelt carriage trays. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Elevated sortation track section with repeated shallow crossbelt carriage trays. Scale, painted steel, structural steel, moulded polymer, stainless steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -160803,7 +161225,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/crossbelt-sorter-section.kcad.ts",
       "preview": "/assets/postal-logistics-crossbelt-sorter-section.png",
-      "sourceSha256": "153af4eb2564a3004a4d8feb7dbc4ddd84ae36052fcb8d4e37facd6f64517e10",
+      "sourceSha256": "9988f43e145afc7ba8b887a7e5590b8b0248df32a44db664f6166c3b53127e80",
       "triangleBudget": 1800,
       "params": [
         {
@@ -160816,15 +161238,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#56777d",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#477c8e",
+          "label": "Moulded polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#bbc4c4",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "structuralSteel": "#67675f",
+          "polymer": "#6c7c7c",
+          "stainlessSteel": "#9ea7a6"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "structuralSteel": "#454f54",
+          "polymer": "#e0b245",
+          "stainlessSteel": "#d9e0de"
+        }
+      },
       "stats": {
-        "triangles": 144,
+        "triangles": 720,
         "sizeM": [
           0.775,
           0.84,
@@ -160835,23 +161288,44 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#56777d",
+          "name": "structuralSteel",
+          "color": "#58656c",
           "parts": [
             "track-base",
-            "side-left",
-            "side-right",
             "support-left-front",
             "support-right-front",
             "support-left-back",
-            "support-right-back",
+            "support-right-back"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#56777d",
+          "parts": [
+            "side-left",
+            "side-right"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#477c8e",
+          "parts": [
             "tray-1",
             "tray-2",
             "tray-3",
-            "tray-4",
+            "tray-4"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bbc4c4",
+          "parts": [
             "drive-panel"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -160859,7 +161333,7 @@
       "id": "delivery-sequence-case",
       "kit": "postal-logistics",
       "title": "Delivery sequence case",
-      "description": "Tall compartment case with numbered-looking bays, top cover and lower return-mail pocket. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Tall compartment case with numbered-looking bays, top cover and lower return-mail pocket. Scale, painted steel, moulded polymer, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -160880,7 +161354,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/delivery-sequence-case.kcad.ts",
       "preview": "/assets/postal-logistics-delivery-sequence-case.png",
-      "sourceSha256": "b840b3be1be2d7262d3e0731850b5687aaa201074c73498aaafe8666ba86576a",
+      "sourceSha256": "f0ce22a7828f1e69073b8d87a64aa29c0d276104ea66ff7df4c413d893fe5dc3",
       "triangleBudget": 1800,
       "params": [
         {
@@ -160893,15 +161367,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#667b78",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#477c8e",
+          "label": "Moulded polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "polymer": "#6c7c7c"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "polymer": "#e0b245"
+        }
+      },
       "stats": {
-        "triangles": 132,
+        "triangles": 660,
         "sizeM": [
           0.79,
           1.15,
@@ -160912,10 +161401,18 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#667b78",
+          "name": "polymer",
+          "color": "#477c8e",
           "parts": [
             "case-body",
+            "return-pocket"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#667b78",
+          "parts": [
             "top-lip",
             "left-side",
             "right-side",
@@ -160924,10 +161421,9 @@
             "divider-c",
             "divider-d",
             "divider-e",
-            "return-pocket",
             "carry-handle"
           ],
-          "param": "color"
+          "param": "paintedSteel"
         }
       ]
     },
@@ -160935,7 +161431,7 @@
       "id": "gravity-roller-conveyor",
       "kit": "postal-logistics",
       "title": "Gravity roller conveyor",
-      "description": "Short gravity roller section with raised containment rails and two-height support stands. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Short gravity roller section with raised containment rails and two-height support stands. Scale, painted steel, stainless steel, structural steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -160956,7 +161452,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/gravity-roller-conveyor.kcad.ts",
       "preview": "/assets/postal-logistics-gravity-roller-conveyor.png",
-      "sourceSha256": "2d9ae24e4eac30bfcecd82eee5d60879ba38cd3cc516246913ef27319e3217e0",
+      "sourceSha256": "1607bae3b058ccd48cb1db7feef56b193899af03da47306c4e6daf570eb3c493",
       "triangleBudget": 1800,
       "params": [
         {
@@ -160969,15 +161465,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#758078",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#bbc4c4",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "stainlessSteel": "#9ea7a6",
+          "structuralSteel": "#67675f"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "stainlessSteel": "#d9e0de",
+          "structuralSteel": "#454f54"
+        }
+      },
       "stats": {
-        "triangles": 144,
+        "triangles": 816,
         "sizeM": [
           0.615,
           0.765,
@@ -160988,23 +161507,37 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#758078",
           "parts": [
-            "roller-bed",
+            "roller-bed"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bbc4c4",
+          "parts": [
             "left-guide",
             "right-guide",
-            "front-leg-left",
-            "front-leg-right",
-            "rear-leg-left",
-            "rear-leg-right",
             "roller-1",
             "roller-2",
             "roller-3",
             "roller-4",
             "roller-5"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#58656c",
+          "parts": [
+            "front-leg-left",
+            "front-leg-right",
+            "rear-leg-left",
+            "rear-leg-right"
+          ],
+          "param": "structuralSteel"
         }
       ]
     },
@@ -161012,7 +161545,7 @@
       "id": "handheld-postal-scanner",
       "kit": "postal-logistics",
       "title": "Handheld postal scanner",
-      "description": "Rugged handheld parcel scanner with a broad reader head, handle and raised control keys. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Rugged handheld parcel scanner with a broad reader head, handle and raised control keys. Scale, painted steel, safety amber, stainless steel, instrument glass, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -161033,7 +161566,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/handheld-postal-scanner.kcad.ts",
       "preview": "/assets/postal-logistics-handheld-postal-scanner.png",
-      "sourceSha256": "e4b6adf69813dd442f7ab5f5fac05ad79aa31f15ee12dd371eee759b307c0076",
+      "sourceSha256": "b25d137caf1bceaf0c03794de33f3ac8dc9f4e0e03fe1a14c13c4fb59772a09b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -161046,18 +161579,49 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#4e6c7d",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "safetyAmber",
+          "type": "color",
+          "default": "#e7aa35",
+          "label": "Safety amber"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#bbc4c4",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "instrumentGlass",
+          "type": "color",
+          "default": "#57b4c3",
+          "label": "Instrument glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "safetyAmber": "#bb8c34",
+          "stainlessSteel": "#9ea7a6",
+          "instrumentGlass": "#548a91"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "safetyAmber": "#ffd12f",
+          "stainlessSteel": "#d9e0de",
+          "instrumentGlass": "#6bd0dc"
+        }
+      },
       "stats": {
-        "triangles": 108,
+        "triangles": 540,
         "sizeM": [
           0.21,
-          0.36,
+          0.365535,
           0.235
         ],
         "minUpM": 0,
@@ -161065,20 +161629,41 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "stainlessSteel",
+          "color": "#bbc4c4",
+          "parts": [
+            "scanner-head"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "instrumentGlass",
+          "color": "#57b4c3",
+          "parts": [
+            "reader-window"
+          ],
+          "param": "instrumentGlass"
+        },
+        {
+          "name": "paintedSteel",
           "color": "#4e6c7d",
           "parts": [
-            "scanner-head",
-            "reader-window",
             "handle",
             "handle-end",
+            "battery-pack"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "safetyAmber",
+          "color": "#e7aa35",
+          "parts": [
             "trigger",
             "top-key-a",
             "top-key-b",
-            "top-key-c",
-            "battery-pack"
+            "top-key-c"
           ],
-          "param": "color"
+          "param": "safetyAmber"
         }
       ]
     },
@@ -161086,7 +161671,7 @@
       "id": "high-capacity-mail-cart",
       "kit": "postal-logistics",
       "title": "High-capacity mail cart",
-      "description": "Two-tier mail cart with push handle, corner guards and four block-style caster housings. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Two-tier mail cart with push handle, corner guards and four block-style caster housings. Scale, painted steel, rubber, structural steel, safety amber, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -161107,7 +161692,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/high-capacity-mail-cart.kcad.ts",
       "preview": "/assets/postal-logistics-high-capacity-mail-cart.png",
-      "sourceSha256": "dd811b23bc7e4de5dcb373f50f571826a227ad317fc59dd145f14056c0e64d69",
+      "sourceSha256": "be5b61eac1e3886702688db6c83d55f4e0b9b097c7daff4298cd08d47903139f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -161120,17 +161705,48 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#60767c",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30373b",
+          "label": "Rubber"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
+        },
+        {
+          "name": "safetyAmber",
+          "type": "color",
+          "default": "#e7aa35",
+          "label": "Safety amber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "rubber": "#3d3d39",
+          "structuralSteel": "#67675f",
+          "safetyAmber": "#bb8c34"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "rubber": "#252b2e",
+          "structuralSteel": "#454f54",
+          "safetyAmber": "#ffd12f"
+        }
+      },
       "stats": {
-        "triangles": 132,
+        "triangles": 724,
         "sizeM": [
-          0.78,
+          0.769562,
           1.355,
           0.5675
         ],
@@ -161139,22 +161755,43 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#60767c",
           "parts": [
             "lower-deck",
             "upper-deck",
+            "push-handle"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#58656c",
+          "parts": [
             "upright-left",
-            "upright-right",
-            "push-handle",
+            "upright-right"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#30373b",
+          "parts": [
             "wheel-front-left",
             "wheel-front-right",
             "wheel-back-left",
-            "wheel-back-right",
+            "wheel-back-right"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "safetyAmber",
+          "color": "#e7aa35",
+          "parts": [
             "lower-stop",
             "upper-stop"
           ],
-          "param": "color"
+          "param": "safetyAmber"
         }
       ]
     },
@@ -161162,7 +161799,7 @@
       "id": "in-motion-weigh-deck",
       "kit": "postal-logistics",
       "title": "In-motion weigh deck",
-      "description": "Short instrumented roller bed with a raised weighing platform and indicator module. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Short instrumented roller bed with a raised weighing platform and indicator module. Scale, painted steel, stainless steel, structural steel, instrument glass, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -161183,7 +161820,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/in-motion-weigh-deck.kcad.ts",
       "preview": "/assets/postal-logistics-in-motion-weigh-deck.png",
-      "sourceSha256": "d2184b517269580f5db25497ccd37dbbb4da3aace09d9df71d089c24bd778f07",
+      "sourceSha256": "df1cf58543ee72e3ecb673b0c9754eaef23c92b760944d1375d60290a7cbb93d",
       "triangleBudget": 1800,
       "params": [
         {
@@ -161196,15 +161833,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#697b7b",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#bbc4c4",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
+        },
+        {
+          "name": "instrumentGlass",
+          "type": "color",
+          "default": "#57b4c3",
+          "label": "Instrument glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "stainlessSteel": "#9ea7a6",
+          "structuralSteel": "#67675f",
+          "instrumentGlass": "#548a91"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "stainlessSteel": "#d9e0de",
+          "structuralSteel": "#454f54",
+          "instrumentGlass": "#6bd0dc"
+        }
+      },
       "stats": {
-        "triangles": 132,
+        "triangles": 724,
         "sizeM": [
           0.97,
           0.77,
@@ -161215,22 +161883,43 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#697b7b",
+          "name": "structuralSteel",
+          "color": "#58656c",
           "parts": [
             "scale-base",
-            "weigh-deck",
+            "indicator-post",
+            "foot-left",
+            "foot-right"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#697b7b",
+          "parts": [
+            "weigh-deck"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bbc4c4",
+          "parts": [
             "roller-a",
             "roller-b",
             "roller-c",
             "roller-d",
-            "indicator-post",
-            "indicator-head",
-            "display",
-            "foot-left",
-            "foot-right"
+            "indicator-head"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "instrumentGlass",
+          "color": "#57b4c3",
+          "parts": [
+            "display"
+          ],
+          "param": "instrumentGlass"
         }
       ]
     },
@@ -161238,7 +161927,7 @@
       "id": "mail-tray-dispatch-cart",
       "kit": "postal-logistics",
       "title": "Mail tray dispatch cart",
-      "description": "Mobile tray cart with three low shelves, side rails and a tall push handle. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Mobile tray cart with three low shelves, side rails and a tall push handle. Scale, painted steel, rubber, structural steel, safety amber, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -161259,7 +161948,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/mail-tray-dispatch-cart.kcad.ts",
       "preview": "/assets/postal-logistics-mail-tray-dispatch-cart.png",
-      "sourceSha256": "6186295d84d46ef921391d2c3f03b37f67580b5ce8206d3d37cae080d8ef0252",
+      "sourceSha256": "e26d63810c363abed1205a285924f7cdf9e596f70fb1b5b4fdcc0d879479716a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -161272,17 +161961,48 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#5d7581",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30373b",
+          "label": "Rubber"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
+        },
+        {
+          "name": "safetyAmber",
+          "type": "color",
+          "default": "#e7aa35",
+          "label": "Safety amber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "rubber": "#3d3d39",
+          "structuralSteel": "#67675f",
+          "safetyAmber": "#bb8c34"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "rubber": "#252b2e",
+          "structuralSteel": "#454f54",
+          "safetyAmber": "#ffd12f"
+        }
+      },
       "stats": {
-        "triangles": 132,
+        "triangles": 724,
         "sizeM": [
-          0.745,
+          0.735866,
           1.325,
           0.57
         ],
@@ -161291,22 +162011,43 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#5d7581",
+          "name": "rubber",
+          "color": "#30373b",
           "parts": [
             "wheel-left-front",
             "wheel-right-front",
             "wheel-left-back",
-            "wheel-right-back",
+            "wheel-right-back"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#5d7581",
+          "parts": [
             "bottom-shelf",
             "middle-shelf",
             "top-shelf",
+            "handle"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#58656c",
+          "parts": [
             "left-rail",
-            "right-rail",
-            "handle",
+            "right-rail"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "safetyAmber",
+          "color": "#e7aa35",
+          "parts": [
             "tray-stop"
           ],
-          "param": "color"
+          "param": "safetyAmber"
         }
       ]
     },
@@ -161314,7 +162055,7 @@
       "id": "mail-tray-stack",
       "kit": "postal-logistics",
       "title": "Mail tray stack",
-      "description": "Stack of four shallow mail trays with reinforced rims and hand-grip openings. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Stack of four shallow mail trays with reinforced rims and hand-grip openings. Scale, painted steel, moulded polymer, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -161335,7 +162076,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/mail-tray-stack.kcad.ts",
       "preview": "/assets/postal-logistics-mail-tray-stack.png",
-      "sourceSha256": "edd382791ec00b526a6a84183ce3d83223404b4918d89d89c361dfeb0767e710",
+      "sourceSha256": "495df7cf812782f743cb75b9c694693e807aba7eca8ae3fd2785141fdad26091",
       "triangleBudget": 1800,
       "params": [
         {
@@ -161348,15 +162089,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#607b7b",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#477c8e",
+          "label": "Moulded polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "polymer": "#6c7c7c"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "polymer": "#e0b245"
+        }
+      },
       "stats": {
-        "triangles": 96,
+        "triangles": 480,
         "sizeM": [
           0.62,
           0.385,
@@ -161367,19 +162123,26 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#607b7b",
+          "name": "polymer",
+          "color": "#477c8e",
           "parts": [
             "tray-bottom",
             "tray-2",
             "tray-3",
-            "tray-top",
+            "tray-top"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#607b7b",
+          "parts": [
             "rim-front",
             "rim-back",
             "hand-slot-left",
             "hand-slot-right"
           ],
-          "param": "color"
+          "param": "paintedSteel"
         }
       ]
     },
@@ -161387,7 +162150,7 @@
       "id": "mailbag-closing-machine",
       "kit": "postal-logistics",
       "title": "Mailbag closing machine",
-      "description": "Industrial bag-closing head mounted above a work surface with a sack guide and foot control. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Industrial bag-closing head mounted above a work surface with a sack guide and foot control. Scale, painted steel, structural steel, stainless steel, woven fabric, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -161408,7 +162171,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/mailbag-closing-machine.kcad.ts",
       "preview": "/assets/postal-logistics-mailbag-closing-machine.png",
-      "sourceSha256": "65d72e5b1a9e9a59e2d9e7c7852dee37f21b5ef1a8a08a5889bb8189e7fe4c51",
+      "sourceSha256": "fd77aefa3a73571c8561cb8a05b078c4cde52f3b78fc44530128de0af76a6aa2",
       "triangleBudget": 1800,
       "params": [
         {
@@ -161421,15 +162184,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#657a7c",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#bbc4c4",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#476b7d",
+          "label": "Woven fabric"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "structuralSteel": "#67675f",
+          "stainlessSteel": "#9ea7a6",
+          "fabric": "#6c6b60"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "structuralSteel": "#454f54",
+          "stainlessSteel": "#d9e0de",
+          "fabric": "#d66a35"
+        }
+      },
       "stats": {
-        "triangles": 132,
+        "triangles": 660,
         "sizeM": [
           0.88,
           1.29,
@@ -161440,22 +162234,43 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#657a7c",
           "parts": [
-            "tabletop",
+            "tabletop"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#58656c",
+          "parts": [
             "leg-left",
             "leg-right",
             "rear-leg-left",
             "rear-leg-right",
-            "machine-head",
             "thread-post",
-            "thread-guide",
-            "bag-guide",
             "foot-pedal",
             "crossbar"
           ],
-          "param": "color"
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bbc4c4",
+          "parts": [
+            "machine-head",
+            "thread-guide"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "fabric",
+          "color": "#476b7d",
+          "parts": [
+            "bag-guide"
+          ],
+          "param": "fabric"
         }
       ]
     },
@@ -161463,7 +162278,7 @@
       "id": "mailpiece-thickness-gauge",
       "kit": "postal-logistics",
       "title": "Mailpiece thickness gauge",
-      "description": "Bench gauge with measuring bridge, adjustable stop and broad reference plate. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Bench gauge with measuring bridge, adjustable stop and broad reference plate. Scale, painted steel, structural steel, safety amber, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -161484,7 +162299,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/mailpiece-thickness-gauge.kcad.ts",
       "preview": "/assets/postal-logistics-mailpiece-thickness-gauge.png",
-      "sourceSha256": "2fdb713b0406095f81c9ec58ce95c4b99b90e351fb1f0a46433721df35bd32ab",
+      "sourceSha256": "63fab1fd1ecb93493e0f307f6e96fcff708c451c4b42e985ec6cce444325e6c6",
       "triangleBudget": 1800,
       "params": [
         {
@@ -161497,15 +162312,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#707d78",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
+        },
+        {
+          "name": "safetyAmber",
+          "type": "color",
+          "default": "#e7aa35",
+          "label": "Safety amber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "structuralSteel": "#67675f",
+          "safetyAmber": "#bb8c34"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "structuralSteel": "#454f54",
+          "safetyAmber": "#ffd12f"
+        }
+      },
       "stats": {
-        "triangles": 108,
+        "triangles": 540,
         "sizeM": [
           0.62,
           0.495,
@@ -161516,20 +162354,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#707d78",
+          "name": "structuralSteel",
+          "color": "#58656c",
           "parts": [
             "base-plate",
             "left-post",
             "right-post",
+            "measuring-foot",
+            "index-rail"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#707d78",
+          "parts": [
             "bridge",
             "gauge-slider",
-            "measuring-foot",
-            "stop-block",
-            "index-rail",
             "dial"
           ],
-          "param": "color"
+          "param": "paintedSteel"
+        },
+        {
+          "name": "safetyAmber",
+          "color": "#e7aa35",
+          "parts": [
+            "stop-block"
+          ],
+          "param": "safetyAmber"
         }
       ]
     },
@@ -161537,7 +162389,7 @@
       "id": "mailroom-workbench",
       "kit": "postal-logistics",
       "title": "Mailroom workbench",
-      "description": "Sorting workbench with storage cubbies, a high back rail and a broad writing surface. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Sorting workbench with storage cubbies, a high back rail and a broad writing surface. Scale, painted steel, structural steel, moulded polymer, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -161558,7 +162410,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/mailroom-workbench.kcad.ts",
       "preview": "/assets/postal-logistics-mailroom-workbench.png",
-      "sourceSha256": "1a2da644688aedec4272fdd5900a682edc26af3a1f94c173627f019010fed03e",
+      "sourceSha256": "a4ab439b243d9f24726d67c02fa2a76002eaa1d2ffda559feab9be433012945b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -161571,15 +162423,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#687c7a",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#477c8e",
+          "label": "Moulded polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "structuralSteel": "#67675f",
+          "polymer": "#6c7c7c"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "structuralSteel": "#454f54",
+          "polymer": "#e0b245"
+        }
+      },
       "stats": {
-        "triangles": 156,
+        "triangles": 780,
         "sizeM": [
           1.32,
           1.035,
@@ -161590,24 +162465,38 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#687c7a",
           "parts": [
             "top",
+            "cubby-top",
+            "cubby-left",
+            "cubby-right",
+            "divider-a",
+            "divider-b"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#58656c",
+          "parts": [
             "left-leg",
             "right-leg",
             "left-rear-leg",
             "right-rear-leg",
             "back-rail",
-            "cubby-base",
-            "cubby-top",
-            "cubby-left",
-            "cubby-right",
-            "divider-a",
-            "divider-b",
+            "cubby-base"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#477c8e",
+          "parts": [
             "keyboard-tray"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -161615,7 +162504,7 @@
       "id": "overhead-scan-gantry",
       "kit": "postal-logistics",
       "title": "Overhead scan gantry",
-      "description": "Low scan gantry with twin camera heads, side posts and an integrated parcel conveyor. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Low scan gantry with twin camera heads, side posts and an integrated parcel conveyor. Scale, painted steel, structural steel, instrument glass, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -161636,7 +162525,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/overhead-scan-gantry.kcad.ts",
       "preview": "/assets/postal-logistics-overhead-scan-gantry.png",
-      "sourceSha256": "ab4922d07bbef81b2fda65d87539bcb39f62b7e03356d37e0c3fbcac0f481b05",
+      "sourceSha256": "5cd4f89d4b80dc2093997e25b90e3aeff6ea68a8919f25a3048ea93a97d37622",
       "triangleBudget": 1800,
       "params": [
         {
@@ -161649,15 +162538,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#5c7685",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
+        },
+        {
+          "name": "instrumentGlass",
+          "type": "color",
+          "default": "#57b4c3",
+          "label": "Instrument glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "structuralSteel": "#67675f",
+          "instrumentGlass": "#548a91"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "structuralSteel": "#454f54",
+          "instrumentGlass": "#6bd0dc"
+        }
+      },
       "stats": {
-        "triangles": 144,
+        "triangles": 720,
         "sizeM": [
           0.8,
           1.385,
@@ -161668,23 +162580,37 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#5c7685",
+          "name": "structuralSteel",
+          "color": "#58656c",
           "parts": [
             "base-bed",
             "post-left",
             "post-right",
             "post-left-back",
-            "post-right-back",
+            "post-right-back"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#5c7685",
+          "parts": [
             "gantry-front",
             "gantry-back",
+            "status-box"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "instrumentGlass",
+          "color": "#57b4c3",
+          "parts": [
             "camera-a",
             "camera-b",
             "side-camera-left",
-            "side-camera-right",
-            "status-box"
+            "side-camera-right"
           ],
-          "param": "color"
+          "param": "instrumentGlass"
         }
       ]
     },
@@ -161692,7 +162618,7 @@
       "id": "package-induction-conveyor",
       "kit": "postal-logistics",
       "title": "Package induction conveyor",
-      "description": "Parcel induction belt with side rails, support legs and raised roller rows. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Parcel induction belt with side rails, support legs and raised roller rows. Scale, painted steel, structural steel, stainless steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -161713,7 +162639,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/package-induction-conveyor.kcad.ts",
       "preview": "/assets/postal-logistics-package-induction-conveyor.png",
-      "sourceSha256": "5c4e517b9d3ad6a28d465183668d2ed63f8ab25aaa99425ebba113e938fe3880",
+      "sourceSha256": "2abb2df7304e2d639a2f445230f81cc6e5ea2720a81d3d32605266a9011f6eb7",
       "triangleBudget": 1800,
       "params": [
         {
@@ -161726,15 +162652,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#52758b",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#bbc4c4",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "structuralSteel": "#67675f",
+          "stainlessSteel": "#9ea7a6"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "structuralSteel": "#454f54",
+          "stainlessSteel": "#d9e0de"
+        }
+      },
       "stats": {
-        "triangles": 144,
+        "triangles": 800,
         "sizeM": [
           0.58,
           0.855,
@@ -161745,23 +162694,37 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#52758b",
           "parts": [
-            "belt",
+            "belt"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#58656c",
+          "parts": [
             "side-rail-left",
             "side-rail-right",
             "leg-front-left",
             "leg-front-right",
             "leg-back-left",
-            "leg-back-right",
+            "leg-back-right"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bbc4c4",
+          "parts": [
             "roller-row-a",
             "roller-row-b",
             "roller-row-c",
             "roller-row-d",
             "roller-row-e"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -161769,7 +162732,7 @@
       "id": "parcel-belt-diverter",
       "kit": "postal-logistics",
       "title": "Parcel belt diverter",
-      "description": "Conveyor section with a side-mounted actuator and a broad parcel-pushing paddle. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Conveyor section with a side-mounted actuator and a broad parcel-pushing paddle. Scale, painted steel, structural steel, stainless steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -161790,7 +162753,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/parcel-belt-diverter.kcad.ts",
       "preview": "/assets/postal-logistics-parcel-belt-diverter.png",
-      "sourceSha256": "9686735c6913783c7c0a4ee0c9af9fbd3ded03c3fdf65b9e6c341d94344b76f4",
+      "sourceSha256": "4308ca1c1066b274f45ccb95b4b3ef60c5a9e37e7c7e471f14c271244e36cc97",
       "triangleBudget": 1800,
       "params": [
         {
@@ -161803,15 +162766,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#587981",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#bbc4c4",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "structuralSteel": "#67675f",
+          "stainlessSteel": "#9ea7a6"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "structuralSteel": "#454f54",
+          "stainlessSteel": "#d9e0de"
+        }
+      },
       "stats": {
-        "triangles": 156,
+        "triangles": 828,
         "sizeM": [
           0.7925,
           1.045,
@@ -161822,24 +162808,38 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#587981",
           "parts": [
             "belt",
             "side-left",
             "side-right",
+            "pusher-arm",
+            "paddle"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#58656c",
+          "parts": [
             "support-1",
             "support-2",
             "support-3",
-            "support-4",
+            "support-4"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bbc4c4",
+          "parts": [
             "actuator",
-            "pusher-arm",
-            "paddle",
             "roller-a",
             "roller-b",
             "roller-c"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -161847,7 +162847,7 @@
       "id": "parcel-dimensioning-arch",
       "kit": "postal-logistics",
       "title": "Parcel dimensioning arch",
-      "description": "Conveyor portal with overhead and side sensor blocks for parcel size measurement. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Conveyor portal with overhead and side sensor blocks for parcel size measurement. Scale, painted steel, structural steel, stainless steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -161868,7 +162868,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/parcel-dimensioning-arch.kcad.ts",
       "preview": "/assets/postal-logistics-parcel-dimensioning-arch.png",
-      "sourceSha256": "2c2f1a64326b32c534fffa2c3d0596c4a2217a0ca0c2af7ca6290bd77f717382",
+      "sourceSha256": "1d74983fc71b04225fcc70d3d0f32b9ef1c02169264db7e683577cc0d12f649f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -161881,15 +162881,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#536f86",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#bbc4c4",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "structuralSteel": "#67675f",
+          "stainlessSteel": "#9ea7a6"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "structuralSteel": "#454f54",
+          "stainlessSteel": "#d9e0de"
+        }
+      },
       "stats": {
-        "triangles": 144,
+        "triangles": 768,
         "sizeM": [
           0.76,
           1.92,
@@ -161900,23 +162923,37 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#536f86",
           "parts": [
             "conveyor",
+            "top-sensor",
+            "side-sensor-left",
+            "side-sensor-right"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#58656c",
+          "parts": [
             "left-foot",
             "right-foot",
             "left-post",
             "right-post",
-            "crossbar",
-            "top-sensor",
-            "side-sensor-left",
-            "side-sensor-right",
+            "crossbar"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bbc4c4",
+          "parts": [
             "roller-a",
             "roller-b",
             "roller-c"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -161924,7 +162961,7 @@
       "id": "parcel-overflow-container",
       "kit": "postal-logistics",
       "title": "Parcel overflow container",
-      "description": "Deep overflow tub with a reinforcing rim, drain-like feet and two lift handles. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Deep overflow tub with a reinforcing rim, drain-like feet and two lift handles. Scale, moulded polymer, structural steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -161945,7 +162982,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/parcel-overflow-container.kcad.ts",
       "preview": "/assets/postal-logistics-parcel-overflow-container.png",
-      "sourceSha256": "faf067a376b8ec9c970389361c3eea946fb4a3cb3eacd19ab56f45efd7dfd04e",
+      "sourceSha256": "8654e03f20df979c1243efecf668842455ee98721ecd35e998628d60e1c3db31",
       "triangleBudget": 1800,
       "params": [
         {
@@ -161958,15 +162995,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
           "default": "#5f7880",
-          "label": "Asset color"
+          "label": "Moulded polymer"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "polymer": "#6c7c7c",
+          "structuralSteel": "#67675f"
+        },
+        "highVisibility": {
+          "polymer": "#e0b245",
+          "structuralSteel": "#454f54"
+        }
+      },
       "stats": {
-        "triangles": 156,
+        "triangles": 780,
         "sizeM": [
           0.915,
           0.665,
@@ -161977,7 +163029,7 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "polymer",
           "color": "#5f7880",
           "parts": [
             "tub-base",
@@ -161990,11 +163042,18 @@
             "rim-left",
             "rim-right",
             "handle-left",
-            "handle-right",
+            "handle-right"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#58656c",
+          "parts": [
             "foot-left",
             "foot-right"
           ],
-          "param": "color"
+          "param": "structuralSteel"
         }
       ]
     },
@@ -162002,7 +163061,7 @@
       "id": "parcel-singulator",
       "kit": "postal-logistics",
       "title": "Parcel singulator",
-      "description": "Induction belt with adjustable side guides, separator bars and a raised feed throat. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Induction belt with adjustable side guides, separator bars and a raised feed throat. Scale, painted steel, stainless steel, structural steel, safety amber, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -162023,7 +163082,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/parcel-singulator.kcad.ts",
       "preview": "/assets/postal-logistics-parcel-singulator.png",
-      "sourceSha256": "9e53eb8b9a767cd198f8d170ba4f8eaaa74d41624302b8062ad308f165fc5d2d",
+      "sourceSha256": "82353c969625d84dbdc35eb5dc440d81a2a24a7f16c6d928bea79ed29fe9112d",
       "triangleBudget": 1800,
       "params": [
         {
@@ -162036,15 +163095,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#536e7b",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#bbc4c4",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
+        },
+        {
+          "name": "safetyAmber",
+          "type": "color",
+          "default": "#e7aa35",
+          "label": "Safety amber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "stainlessSteel": "#9ea7a6",
+          "structuralSteel": "#67675f",
+          "safetyAmber": "#bb8c34"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "stainlessSteel": "#d9e0de",
+          "structuralSteel": "#454f54",
+          "safetyAmber": "#ffd12f"
+        }
+      },
       "stats": {
-        "triangles": 144,
+        "triangles": 720,
         "sizeM": [
           0.72,
           0.795,
@@ -162055,23 +163145,44 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#536e7b",
           "parts": [
             "feed-deck",
-            "guide-left",
-            "guide-right",
             "throat-left",
             "throat-right",
             "separator-a",
             "separator-b",
             "separator-c",
-            "separator-d",
+            "separator-d"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bbc4c4",
+          "parts": [
+            "guide-left",
+            "guide-right"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#58656c",
+          "parts": [
             "stand-left",
-            "stand-right",
+            "stand-right"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "safetyAmber",
+          "color": "#e7aa35",
+          "parts": [
             "infeed-stop"
           ],
-          "param": "color"
+          "param": "safetyAmber"
         }
       ]
     },
@@ -162079,7 +163190,7 @@
       "id": "parcel-staging-rack",
       "kit": "postal-logistics",
       "title": "Parcel staging rack",
-      "description": "Three-level parcel rack with reinforced uprights, shelf beams and a top clearance frame. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Three-level parcel rack with reinforced uprights, shelf beams and a top clearance frame. Scale, painted steel, structural steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -162100,7 +163211,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/parcel-staging-rack.kcad.ts",
       "preview": "/assets/postal-logistics-parcel-staging-rack.png",
-      "sourceSha256": "a9b919547428a9b21382fbc72c92814eb92b8f33b2701ad8b17bfa0fc46c9f45",
+      "sourceSha256": "db7ae2be4435e173e44a54bc651addea64ea4a2a08e4c1ad5fce75d20865905a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -162113,15 +163224,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#687b79",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "structuralSteel": "#67675f"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "structuralSteel": "#454f54"
+        }
+      },
       "stats": {
-        "triangles": 156,
+        "triangles": 780,
         "sizeM": [
           1.06,
           1.7,
@@ -162132,8 +163258,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#687b79",
+          "name": "structuralSteel",
+          "color": "#58656c",
           "parts": [
             "upright-left",
             "upright-right",
@@ -162141,15 +163267,22 @@
             "front-post-right",
             "rear-post-left",
             "rear-post-right",
-            "shelf-bottom",
-            "shelf-middle",
-            "shelf-top",
             "beam-front-a",
             "beam-back-a",
             "beam-front-b",
             "beam-back-b"
           ],
-          "param": "color"
+          "param": "structuralSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#687b79",
+          "parts": [
+            "shelf-bottom",
+            "shelf-middle",
+            "shelf-top"
+          ],
+          "param": "paintedSteel"
         }
       ]
     },
@@ -162157,7 +163290,7 @@
       "id": "parcel-tray-transfer-cart",
       "kit": "postal-logistics",
       "title": "Parcel tray transfer cart",
-      "description": "Low transfer cart with wide deck, raised stops, four wheel blocks and a push bar. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Low transfer cart with wide deck, raised stops, four wheel blocks and a push bar. Scale, structural steel, rubber, safety amber, moulded polymer, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -162178,7 +163311,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/parcel-tray-transfer-cart.kcad.ts",
       "preview": "/assets/postal-logistics-parcel-tray-transfer-cart.png",
-      "sourceSha256": "538e188cc84d3f52380c98009527517e1db3218828a6b46e54911492f1c5be21",
+      "sourceSha256": "3b78bb1ddc8280870865e9ebe05ffaa7a45298c7fc2a7f5b532c7b1d7e9d842b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -162191,15 +163324,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "structuralSteel",
           "type": "color",
           "default": "#607982",
-          "label": "Asset color"
+          "label": "Structural steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30373b",
+          "label": "Rubber"
+        },
+        {
+          "name": "safetyAmber",
+          "type": "color",
+          "default": "#e7aa35",
+          "label": "Safety amber"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#477c8e",
+          "label": "Moulded polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "structuralSteel": "#67675f",
+          "rubber": "#3d3d39",
+          "safetyAmber": "#bb8c34",
+          "polymer": "#6c7c7c"
+        },
+        "highVisibility": {
+          "structuralSteel": "#454f54",
+          "rubber": "#252b2e",
+          "safetyAmber": "#ffd12f",
+          "polymer": "#e0b245"
+        }
+      },
       "stats": {
-        "triangles": 132,
+        "triangles": 724,
         "sizeM": [
           0.88,
           1.095,
@@ -162210,22 +163374,43 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "structuralSteel",
           "color": "#607982",
           "parts": [
             "deck",
+            "handle-left",
+            "handle-right",
+            "handle"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "safetyAmber",
+          "color": "#e7aa35",
+          "parts": [
             "front-stop",
-            "back-stop",
+            "back-stop"
+          ],
+          "param": "safetyAmber"
+        },
+        {
+          "name": "rubber",
+          "color": "#30373b",
+          "parts": [
             "wheel-left-front",
             "wheel-right-front",
             "wheel-left-back",
-            "wheel-right-back",
-            "handle-left",
-            "handle-right",
-            "handle",
+            "wheel-right-back"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "polymer",
+          "color": "#477c8e",
+          "parts": [
             "tray-rack"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -162233,7 +163418,7 @@
       "id": "parcel-weigh-station",
       "kit": "postal-logistics",
       "title": "Parcel weigh station",
-      "description": "Floor scale platform, upright digital indicator and a compact parcel staging shelf. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Floor scale platform, upright digital indicator and a compact parcel staging shelf. Scale, painted steel, structural steel, stainless steel, instrument glass, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -162254,7 +163439,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/parcel-weigh-station.kcad.ts",
       "preview": "/assets/postal-logistics-parcel-weigh-station.png",
-      "sourceSha256": "356b572022494cbdafbfe00bbff781f5a8ac9afad802f3b62ee0265a559164ce",
+      "sourceSha256": "9d7bf89a57a074c3d86006cf218d9d50af071bf274a49db6a43bde0862c28d39",
       "triangleBudget": 1800,
       "params": [
         {
@@ -162267,15 +163452,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#657a83",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#bbc4c4",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "instrumentGlass",
+          "type": "color",
+          "default": "#57b4c3",
+          "label": "Instrument glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "structuralSteel": "#67675f",
+          "stainlessSteel": "#9ea7a6",
+          "instrumentGlass": "#548a91"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "structuralSteel": "#454f54",
+          "stainlessSteel": "#d9e0de",
+          "instrumentGlass": "#6bd0dc"
+        }
+      },
       "stats": {
-        "triangles": 108,
+        "triangles": 540,
         "sizeM": [
           1.03,
           0.99,
@@ -162286,20 +163502,41 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#657a83",
           "parts": [
             "platform",
             "top-plate",
             "indicator-stem",
-            "indicator-head",
-            "display",
             "shelf-left",
-            "shelf-right",
+            "shelf-right"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bbc4c4",
+          "parts": [
+            "indicator-head"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "instrumentGlass",
+          "color": "#57b4c3",
+          "parts": [
+            "display"
+          ],
+          "param": "instrumentGlass"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#58656c",
+          "parts": [
             "foot-left",
             "foot-right"
           ],
-          "param": "color"
+          "param": "structuralSteel"
         }
       ]
     },
@@ -162307,7 +163544,7 @@
       "id": "postage-meter-workstation",
       "kit": "postal-logistics",
       "title": "Postage meter workstation",
-      "description": "Postage meter, small scale platform and mailpiece catch tray arranged on a service stand. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Postage meter, small scale platform and mailpiece catch tray arranged on a service stand. Scale, painted steel, moulded polymer, structural steel, stainless steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -162328,7 +163565,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/postage-meter-workstation.kcad.ts",
       "preview": "/assets/postal-logistics-postage-meter-workstation.png",
-      "sourceSha256": "29c17270bf82e50f33e4dda8fe7fe586b15fef4ad2a280dc10547ccbb7683246",
+      "sourceSha256": "cd675812737ed55b1cb350c934fd7f9af7215e9d553f0b8e8c0549914d2f91a2",
       "triangleBudget": 1800,
       "params": [
         {
@@ -162341,15 +163578,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#617780",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#477c8e",
+          "label": "Moulded polymer"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#bbc4c4",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "polymer": "#6c7c7c",
+          "structuralSteel": "#67675f",
+          "stainlessSteel": "#9ea7a6"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "polymer": "#e0b245",
+          "structuralSteel": "#454f54",
+          "stainlessSteel": "#d9e0de"
+        }
+      },
       "stats": {
-        "triangles": 108,
+        "triangles": 556,
         "sizeM": [
           0.7,
           1.195,
@@ -162360,20 +163628,41 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#617780",
+          "name": "polymer",
+          "color": "#477c8e",
           "parts": [
             "cabinet",
+            "catch-tray"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#617780",
+          "parts": [
             "countertop",
-            "meter-base",
-            "meter-head",
             "display",
             "scale-platform",
-            "catch-tray",
             "paper-roll",
             "lower-door"
           ],
-          "param": "color"
+          "param": "paintedSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#58656c",
+          "parts": [
+            "meter-base"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bbc4c4",
+          "parts": [
+            "meter-head"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -162381,7 +163670,7 @@
       "id": "postal-dispatch-cage",
       "kit": "postal-logistics",
       "title": "Postal dispatch cage",
-      "description": "Pallet-base dispatch cage with corner uprights, tie bars and a fitted top rail. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Pallet-base dispatch cage with corner uprights, tie bars and a fitted top rail. Scale, timber, structural steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -162402,7 +163691,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/postal-dispatch-cage.kcad.ts",
       "preview": "/assets/postal-logistics-postal-dispatch-cage.png",
-      "sourceSha256": "e16abd877cfd42171fc8e1fb93ff3040171dd6d41cdc247e5ade7db967a037f4",
+      "sourceSha256": "66b4ab3f9591a7850a4925966988041aa9ea09d6810ded19b76761553bcd6478",
       "triangleBudget": 1800,
       "params": [
         {
@@ -162415,15 +163704,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
           "default": "#6b7977",
-          "label": "Asset color"
+          "label": "Timber"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "timber": "#71614b",
+          "structuralSteel": "#67675f"
+        },
+        "highVisibility": {
+          "timber": "#a27e44",
+          "structuralSteel": "#454f54"
+        }
+      },
       "stats": {
-        "triangles": 156,
+        "triangles": 780,
         "sizeM": [
           1.1,
           1.495,
@@ -162434,24 +163738,31 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "timber",
           "color": "#6b7977",
           "parts": [
             "pallet-base",
             "skid-a",
             "skid-b",
             "skid-c",
+            "top-front",
+            "top-back",
+            "top-left",
+            "top-right"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#58656c",
+          "parts": [
             "post-left-front",
             "post-right-front",
             "post-left-back",
             "post-right-back",
-            "top-front",
-            "top-back",
-            "top-left",
-            "top-right",
             "mid-rail"
           ],
-          "param": "color"
+          "param": "structuralSteel"
         }
       ]
     },
@@ -162459,7 +163770,7 @@
       "id": "postal-dispatch-seal-station",
       "kit": "postal-logistics",
       "title": "Postal dispatch seal station",
-      "description": "Dispatch table with a powered sealing head, mail sack guide and completed-bag shelf. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Dispatch table with a powered sealing head, mail sack guide and completed-bag shelf. Scale, painted steel, structural steel, stainless steel, woven fabric, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -162480,7 +163791,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/postal-dispatch-seal-station.kcad.ts",
       "preview": "/assets/postal-logistics-postal-dispatch-seal-station.png",
-      "sourceSha256": "ec7841b0dad24ea3b532c1f0f6c4ed1a40c919ffdc53395ae30676754d58c253",
+      "sourceSha256": "eccd3759d83f917a3fbe80c1e2bcb45b8c3997ad4e76f764d29edcd5bfefd442",
       "triangleBudget": 1800,
       "params": [
         {
@@ -162493,15 +163804,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#667778",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#bbc4c4",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#476b7d",
+          "label": "Woven fabric"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "structuralSteel": "#67675f",
+          "stainlessSteel": "#9ea7a6",
+          "fabric": "#6c6b60"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "structuralSteel": "#454f54",
+          "stainlessSteel": "#d9e0de",
+          "fabric": "#d66a35"
+        }
+      },
       "stats": {
-        "triangles": 132,
+        "triangles": 660,
         "sizeM": [
           0.96,
           1.325,
@@ -162512,22 +163854,43 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#667778",
           "parts": [
             "table",
+            "lower-shelf",
+            "control-box"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#58656c",
+          "parts": [
             "leg-left",
             "leg-right",
             "leg-back-left",
             "leg-back-right",
             "sealer-post",
-            "sealer-head",
-            "press-foot",
-            "bag-guide",
-            "lower-shelf",
-            "control-box"
+            "press-foot"
           ],
-          "param": "color"
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bbc4c4",
+          "parts": [
+            "sealer-head"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "fabric",
+          "color": "#476b7d",
+          "parts": [
+            "bag-guide"
+          ],
+          "param": "fabric"
         }
       ]
     },
@@ -162535,7 +163898,7 @@
       "id": "postal-label-printer",
       "kit": "postal-logistics",
       "title": "Postal label printer",
-      "description": "Desktop shipping-label printer with raised lid, feed slot and output catch tray. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Desktop shipping-label printer with raised lid, feed slot and output catch tray. Scale, painted steel, structural steel, stainless steel, moulded polymer, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -162556,7 +163919,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/postal-label-printer.kcad.ts",
       "preview": "/assets/postal-logistics-postal-label-printer.png",
-      "sourceSha256": "a09135a99dabf4f69bad858c8ac261eb0e0d6649e20471563660ad949d4c9827",
+      "sourceSha256": "79026dec2d6369d365f169917f21d4ae83690e62c0ccb277a18538fa1c120c5b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -162569,39 +163932,91 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#536d79",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#bbc4c4",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#477c8e",
+          "label": "Moulded polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "structuralSteel": "#67675f",
+          "stainlessSteel": "#9ea7a6",
+          "polymer": "#6c7c7c"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "structuralSteel": "#454f54",
+          "stainlessSteel": "#d9e0de",
+          "polymer": "#e0b245"
+        }
+      },
       "stats": {
-        "triangles": 108,
+        "triangles": 556,
         "sizeM": [
           0.44,
-          0.545,
-          0.4675
+          0.533043,
+          0.4666
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#536d79",
+          "name": "structuralSteel",
+          "color": "#58656c",
           "parts": [
             "printer-base",
-            "printer-body",
-            "lid",
-            "feed-roll",
-            "output-tray",
-            "front-panel",
-            "button",
             "left-foot",
             "right-foot"
           ],
-          "param": "color"
+          "param": "structuralSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#536d79",
+          "parts": [
+            "printer-body",
+            "lid",
+            "front-panel",
+            "button"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bbc4c4",
+          "parts": [
+            "feed-roll"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#477c8e",
+          "parts": [
+            "output-tray"
+          ],
+          "param": "polymer"
         }
       ]
     },
@@ -162609,7 +164024,7 @@
       "id": "postal-pallet-roller-deck",
       "kit": "postal-logistics",
       "title": "Postal pallet roller deck",
-      "description": "Heavy parcel transfer deck with continuous rollers, raised end stops and forklift-clear base. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Heavy parcel transfer deck with continuous rollers, raised end stops and forklift-clear base. Scale, painted steel, stainless steel, safety amber, structural steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -162630,7 +164045,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/postal-pallet-roller-deck.kcad.ts",
       "preview": "/assets/postal-logistics-postal-pallet-roller-deck.png",
-      "sourceSha256": "e9195d96d63943b15d2385515c1b5857da03b3bcb2f0b943c1c326edaebe4234",
+      "sourceSha256": "da6df7ef685a12bf39aef6348fe193d2947e94cbd39f7db888ad12b4355555ed",
       "triangleBudget": 1800,
       "params": [
         {
@@ -162643,15 +164058,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#6a7876",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#bbc4c4",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "safetyAmber",
+          "type": "color",
+          "default": "#e7aa35",
+          "label": "Safety amber"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "stainlessSteel": "#9ea7a6",
+          "safetyAmber": "#bb8c34",
+          "structuralSteel": "#67675f"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "stainlessSteel": "#d9e0de",
+          "safetyAmber": "#ffd12f",
+          "structuralSteel": "#454f54"
+        }
+      },
       "stats": {
-        "triangles": 144,
+        "triangles": 800,
         "sizeM": [
           1.18,
           0.58,
@@ -162662,23 +164108,44 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "structuralSteel",
+          "color": "#58656c",
+          "parts": [
+            "deck-frame"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "paintedSteel",
           "color": "#6a7876",
           "parts": [
-            "deck-frame",
             "left-side",
             "right-side",
+            "fork-channel-left",
+            "fork-channel-right"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bbc4c4",
+          "parts": [
             "roller-a",
             "roller-b",
             "roller-c",
             "roller-d",
-            "roller-e",
-            "fork-channel-left",
-            "fork-channel-right",
+            "roller-e"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "safetyAmber",
+          "color": "#e7aa35",
+          "parts": [
             "end-stop-front",
             "end-stop-back"
           ],
-          "param": "color"
+          "param": "safetyAmber"
         }
       ]
     },
@@ -162686,7 +164153,7 @@
       "id": "postal-route-marker-board",
       "kit": "postal-logistics",
       "title": "Postal route marker board",
-      "description": "Freestanding route board with a broad display panel, label ledge and two weighted feet. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Freestanding route board with a broad display panel, label ledge and two weighted feet. Scale, moulded polymer, structural steel, label paper, stainless steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -162707,7 +164174,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/postal-route-marker-board.kcad.ts",
       "preview": "/assets/postal-logistics-postal-route-marker-board.png",
-      "sourceSha256": "e5f61364b9f84751c8a4e510bd6751087b62a1bd33ddf3e16635f197d1d199ac",
+      "sourceSha256": "f63e4232e064930750d0b8673a9f62c03cd5bad3ba89e8d2ab98c851f381839c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -162720,15 +164187,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
           "default": "#677b79",
-          "label": "Asset color"
+          "label": "Moulded polymer"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
+        },
+        {
+          "name": "paper",
+          "type": "color",
+          "default": "#eee5ca",
+          "label": "Label paper"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#bbc4c4",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "polymer": "#6c7c7c",
+          "structuralSteel": "#67675f",
+          "paper": "#c2b99f",
+          "stainlessSteel": "#9ea7a6"
+        },
+        "highVisibility": {
+          "polymer": "#e0b245",
+          "structuralSteel": "#454f54",
+          "paper": "#fff1b7",
+          "stainlessSteel": "#d9e0de"
+        }
+      },
       "stats": {
-        "triangles": 120,
+        "triangles": 600,
         "sizeM": [
           0.98,
           1.61,
@@ -162739,21 +164237,42 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "polymer",
           "color": "#677b79",
           "parts": [
-            "panel",
-            "header",
+            "panel"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bbc4c4",
+          "parts": [
+            "header"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#58656c",
+          "parts": [
             "post-left",
             "post-right",
             "foot-left",
-            "foot-right",
+            "foot-right"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "paper",
+          "color": "#eee5ca",
+          "parts": [
             "label-ledge",
             "route-row-a",
             "route-row-b",
             "route-row-c"
           ],
-          "param": "color"
+          "param": "paper"
         }
       ]
     },
@@ -162761,7 +164280,7 @@
       "id": "postal-sack-loader",
       "kit": "postal-logistics",
       "title": "Postal sack loader",
-      "description": "Mobile sack-loading stand with a low roller deck, upright handle and alignment stops. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Mobile sack-loading stand with a low roller deck, upright handle and alignment stops. Scale, painted steel, stainless steel, safety amber, structural steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -162782,7 +164301,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/postal-sack-loader.kcad.ts",
       "preview": "/assets/postal-logistics-postal-sack-loader.png",
-      "sourceSha256": "2f3ccfb95856dcd53a36029cc082feb1491039eba2ebaf496adea0566d4b8dc8",
+      "sourceSha256": "79d3377a8bbd063d5e1987d11f46d692ec7f513ce2e83548ee6086cc2fcd42d0",
       "triangleBudget": 1800,
       "params": [
         {
@@ -162795,15 +164314,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#5b747e",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#bbc4c4",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "safetyAmber",
+          "type": "color",
+          "default": "#e7aa35",
+          "label": "Safety amber"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "stainlessSteel": "#9ea7a6",
+          "safetyAmber": "#bb8c34",
+          "structuralSteel": "#67675f"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "stainlessSteel": "#d9e0de",
+          "safetyAmber": "#ffd12f",
+          "structuralSteel": "#454f54"
+        }
+      },
       "stats": {
-        "triangles": 132,
+        "triangles": 724,
         "sizeM": [
           0.76,
           1.095,
@@ -162814,22 +164364,43 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "structuralSteel",
+          "color": "#58656c",
+          "parts": [
+            "base"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "paintedSteel",
           "color": "#5b747e",
           "parts": [
-            "base",
             "deck",
-            "roller-a",
-            "roller-b",
-            "roller-c",
             "handle-left",
             "handle-right",
             "handle-top",
-            "stop-left",
-            "stop-right",
             "wheel-front"
           ],
-          "param": "color"
+          "param": "paintedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bbc4c4",
+          "parts": [
+            "roller-a",
+            "roller-b",
+            "roller-c"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "safetyAmber",
+          "color": "#e7aa35",
+          "parts": [
+            "stop-left",
+            "stop-right"
+          ],
+          "param": "safetyAmber"
         }
       ]
     },
@@ -162837,7 +164408,7 @@
       "id": "postal-sack-rack",
       "kit": "postal-logistics",
       "title": "Postal sack rack",
-      "description": "Freestanding rack with hanging sack bays, crossbars and a weighted floor frame. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Freestanding rack with hanging sack bays, crossbars and a weighted floor frame. Scale, painted steel, woven fabric, structural steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -162858,7 +164429,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/postal-sack-rack.kcad.ts",
       "preview": "/assets/postal-logistics-postal-sack-rack.png",
-      "sourceSha256": "a99ac63181541426ff51dd4a23fc51042b2d36a6a5123c403a99b9d8ff46faf8",
+      "sourceSha256": "54800953b61ad582e33a5d93f246d42bd0b56524f66575358b78c5e9c6ef9fd7",
       "triangleBudget": 1800,
       "params": [
         {
@@ -162871,15 +164442,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#6e7a78",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#476b7d",
+          "label": "Woven fabric"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "fabric": "#6c6b60",
+          "structuralSteel": "#67675f"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "fabric": "#d66a35",
+          "structuralSteel": "#454f54"
+        }
+      },
       "stats": {
-        "triangles": 168,
+        "triangles": 840,
         "sizeM": [
           0.93,
           1.5,
@@ -162890,17 +164484,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6e7a78",
+          "name": "structuralSteel",
+          "color": "#58656c",
           "parts": [
             "base-left",
             "base-right",
             "post-left",
-            "post-right",
+            "post-right"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#6e7a78",
+          "parts": [
             "top-bar",
             "middle-bar",
             "bay-divider-left",
-            "bay-divider-right",
+            "bay-divider-right"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "fabric",
+          "color": "#476b7d",
+          "parts": [
             "sack-a",
             "sack-b",
             "sack-c",
@@ -162908,7 +164516,7 @@
             "sack-collar-b",
             "sack-collar-c"
           ],
-          "param": "color"
+          "param": "fabric"
         }
       ]
     },
@@ -162916,7 +164524,7 @@
       "id": "postal-sortation-tray-cabinet",
       "kit": "postal-logistics",
       "title": "Postal sortation tray cabinet",
-      "description": "Tall cabinet with stacked tray openings, central dividers and a low stabilizing plinth. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Tall cabinet with stacked tray openings, central dividers and a low stabilizing plinth. Scale, structural steel, stainless steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -162937,7 +164545,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/postal-sortation-tray-cabinet.kcad.ts",
       "preview": "/assets/postal-logistics-postal-sortation-tray-cabinet.png",
-      "sourceSha256": "76501669b59f9356f250d64432084845ec5bafd3ffa8853915035705ce7e3901",
+      "sourceSha256": "8a9e404b6e4a0b8bffe5bdaa8fa17328b24c7c316906c033202504d053724249",
       "triangleBudget": 1800,
       "params": [
         {
@@ -162950,15 +164558,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "structuralSteel",
           "type": "color",
           "default": "#627a7a",
-          "label": "Asset color"
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#bbc4c4",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "structuralSteel": "#67675f",
+          "stainlessSteel": "#9ea7a6"
+        },
+        "highVisibility": {
+          "structuralSteel": "#454f54",
+          "stainlessSteel": "#d9e0de"
+        }
+      },
       "stats": {
-        "triangles": 156,
+        "triangles": 780,
         "sizeM": [
           0.85,
           1.52,
@@ -162969,7 +164592,7 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "structuralSteel",
           "color": "#627a7a",
           "parts": [
             "plinth",
@@ -162983,10 +164606,17 @@
             "shelf-d",
             "divider-a",
             "divider-b",
-            "divider-c",
+            "divider-c"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bbc4c4",
+          "parts": [
             "divider-d"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -162994,7 +164624,7 @@
       "id": "powered-roller-conveyor",
       "kit": "postal-logistics",
       "title": "Powered roller conveyor",
-      "description": "Straight motorized roller bed with side frames, six roller bars and four adjustable legs. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Straight motorized roller bed with side frames, six roller bars and four adjustable legs. Scale, painted steel, stainless steel, structural steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -163015,7 +164645,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/powered-roller-conveyor.kcad.ts",
       "preview": "/assets/postal-logistics-powered-roller-conveyor.png",
-      "sourceSha256": "b222a0a03f99b620b26ba4be4a353bed0ccd73ca0c3e0c2b40e4bfe4a72886ea",
+      "sourceSha256": "df91ccedee4f107dbd4e0a11ad1a91c6b6d5e270b6957bf6b3675356569eb69f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -163028,15 +164658,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#5e7a85",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#bbc4c4",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "stainlessSteel": "#9ea7a6",
+          "structuralSteel": "#67675f"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "stainlessSteel": "#d9e0de",
+          "structuralSteel": "#454f54"
+        }
+      },
       "stats": {
-        "triangles": 168,
+        "triangles": 936,
         "sizeM": [
           0.811,
           0.795,
@@ -163047,16 +164700,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#5e7a85",
+          "name": "structuralSteel",
+          "color": "#58656c",
           "parts": [
             "bed-frame",
-            "left-side",
-            "right-side",
             "leg-a-left",
             "leg-a-right",
             "leg-b-left",
-            "leg-b-right",
+            "leg-b-right"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#5e7a85",
+          "parts": [
+            "left-side",
+            "right-side"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bbc4c4",
+          "parts": [
             "roller-a",
             "roller-b",
             "roller-c",
@@ -163065,7 +164732,7 @@
             "roller-f",
             "drive-housing"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -163073,7 +164740,7 @@
       "id": "powered-sack-dumper",
       "kit": "postal-logistics",
       "title": "Powered sack dumper",
-      "description": "Tilting-looking sack cradle on a guarded lift frame with a broad floor base. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Tilting-looking sack cradle on a guarded lift frame with a broad floor base. Scale, painted steel, structural steel, stainless steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -163094,7 +164761,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/powered-sack-dumper.kcad.ts",
       "preview": "/assets/postal-logistics-powered-sack-dumper.png",
-      "sourceSha256": "0e621d9b73b7f32908b66472bebcb4925fa339dadddc15ee574cd7a3183ad4bf",
+      "sourceSha256": "85a7858a20436f7a2e5ebe282b1184993bb148c9d2ea973d51a45f7dd1355208",
       "triangleBudget": 1800,
       "params": [
         {
@@ -163107,15 +164774,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#62777c",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#bbc4c4",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "structuralSteel": "#67675f",
+          "stainlessSteel": "#9ea7a6"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "structuralSteel": "#454f54",
+          "stainlessSteel": "#d9e0de"
+        }
+      },
       "stats": {
-        "triangles": 144,
+        "triangles": 720,
         "sizeM": [
           1.055,
           1.355,
@@ -163126,23 +164816,37 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#62777c",
+          "name": "structuralSteel",
+          "color": "#58656c",
           "parts": [
             "base",
             "left-upright",
             "right-upright",
             "top-beam",
+            "control-post"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#62777c",
+          "parts": [
             "cradle-platform",
             "back-plate",
             "left-side",
-            "right-side",
+            "right-side"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bbc4c4",
+          "parts": [
             "actuator-left",
             "actuator-right",
-            "control-post",
             "control-head"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -163150,7 +164854,7 @@
       "id": "rolling-postal-container",
       "kit": "postal-logistics",
       "title": "Rolling postal container",
-      "description": "Four-wheel high-sided mail container with cage uprights, two shelves and a swing gate. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Four-wheel high-sided mail container with cage uprights, two shelves and a swing gate. Scale, structural steel, rubber, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -163171,7 +164875,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/rolling-postal-container.kcad.ts",
       "preview": "/assets/postal-logistics-rolling-postal-container.png",
-      "sourceSha256": "acf5863ca68595b04112cea9a2d300e8bd20059a6a67136b51b8ecf9ed3f0a74",
+      "sourceSha256": "c8bf651f54f565072fba87156e8221765418c465b677d24ee604ea6649017108",
       "triangleBudget": 1800,
       "params": [
         {
@@ -163184,15 +164888,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "structuralSteel",
           "type": "color",
           "default": "#6d7c7b",
-          "label": "Asset color"
+          "label": "Structural steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30373b",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "structuralSteel": "#67675f",
+          "rubber": "#3d3d39"
+        },
+        "highVisibility": {
+          "structuralSteel": "#454f54",
+          "rubber": "#252b2e"
+        }
+      },
       "stats": {
-        "triangles": 156,
+        "triangles": 844,
         "sizeM": [
           0.72,
           1.373,
@@ -163203,14 +164922,10 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "structuralSteel",
           "color": "#6d7c7b",
           "parts": [
             "base",
-            "wheel-left-front",
-            "wheel-right-front",
-            "wheel-left-back",
-            "wheel-right-back",
             "post-left",
             "post-right",
             "post-left-back",
@@ -163220,7 +164935,18 @@
             "shelf",
             "gate"
           ],
-          "param": "color"
+          "param": "structuralSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#30373b",
+          "parts": [
+            "wheel-left-front",
+            "wheel-right-front",
+            "wheel-left-back",
+            "wheel-right-back"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -163228,7 +164954,7 @@
       "id": "scanner-sensor-post",
       "kit": "postal-logistics",
       "title": "Scanner sensor post",
-      "description": "Floor-mounted scanner mast with a short arm, compact reader block and cable housing. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Floor-mounted scanner mast with a short arm, compact reader block and cable housing. Scale, painted steel, structural steel, instrument glass, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -163249,7 +164975,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/scanner-sensor-post.kcad.ts",
       "preview": "/assets/postal-logistics-scanner-sensor-post.png",
-      "sourceSha256": "f0ce59e9fe27fc220f764ecf8350725b46d3ce1a4e54d289fe49433f65cd78d6",
+      "sourceSha256": "08cd3552c88802d21f4cc4d7ec0cd614ed6fb8e8ab4061eb8a619c9f88d39e28",
       "triangleBudget": 1800,
       "params": [
         {
@@ -163262,15 +164988,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#566f83",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
+        },
+        {
+          "name": "instrumentGlass",
+          "type": "color",
+          "default": "#57b4c3",
+          "label": "Instrument glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "structuralSteel": "#67675f",
+          "instrumentGlass": "#548a91"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "structuralSteel": "#454f54",
+          "instrumentGlass": "#6bd0dc"
+        }
+      },
       "stats": {
-        "triangles": 108,
+        "triangles": 540,
         "sizeM": [
           0.525,
           1.19,
@@ -163281,20 +165030,34 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "structuralSteel",
+          "color": "#58656c",
+          "parts": [
+            "foot"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "paintedSteel",
           "color": "#566f83",
           "parts": [
-            "foot",
             "mast",
             "arm",
             "sensor",
-            "lens",
             "junction-box",
             "cable-gland",
             "anchor-left",
             "anchor-right"
           ],
-          "param": "color"
+          "param": "paintedSteel"
+        },
+        {
+          "name": "instrumentGlass",
+          "color": "#57b4c3",
+          "parts": [
+            "lens"
+          ],
+          "param": "instrumentGlass"
         }
       ]
     },
@@ -163302,7 +165065,7 @@
       "id": "sliding-shoe-sorter-section",
       "kit": "postal-logistics",
       "title": "Sliding shoe sorter section",
-      "description": "Parcel sorter deck with diverter shoes, guide rails and a compact discharge lane. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Parcel sorter deck with diverter shoes, guide rails and a compact discharge lane. Scale, painted steel, safety amber, structural steel, stainless steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -163323,7 +165086,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/sliding-shoe-sorter-section.kcad.ts",
       "preview": "/assets/postal-logistics-sliding-shoe-sorter-section.png",
-      "sourceSha256": "c0441eb1a27f8e8c8da61a5edb6bde7da6acd44b20b92aa2a1d4c82d824b9bfa",
+      "sourceSha256": "83b2475d4aae0e8d6ea4eddf40e6dc926d88423235aa76f02bf216ae321f0f5e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -163336,15 +165099,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#5a737b",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "safetyAmber",
+          "type": "color",
+          "default": "#e7aa35",
+          "label": "Safety amber"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#bbc4c4",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "safetyAmber": "#bb8c34",
+          "structuralSteel": "#67675f",
+          "stainlessSteel": "#9ea7a6"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "safetyAmber": "#ffd12f",
+          "structuralSteel": "#454f54",
+          "stainlessSteel": "#d9e0de"
+        }
+      },
       "stats": {
-        "triangles": 156,
+        "triangles": 780,
         "sizeM": [
           0.954,
           0.862,
@@ -163355,24 +165149,45 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#5a737b",
           "parts": [
             "sorter-bed",
+            "discharge-lane"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bbc4c4",
+          "parts": [
             "left-guide",
-            "right-guide",
+            "right-guide"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "safetyAmber",
+          "color": "#e7aa35",
+          "parts": [
             "shoe-rail",
             "shoe-a",
             "shoe-b",
             "shoe-c",
-            "shoe-d",
-            "discharge-lane",
+            "shoe-d"
+          ],
+          "param": "safetyAmber"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#58656c",
+          "parts": [
             "support-left-a",
             "support-right-a",
             "support-left-b",
             "support-right-b"
           ],
-          "param": "color"
+          "param": "structuralSteel"
         }
       ]
     },
@@ -163380,7 +165195,7 @@
       "id": "sorter-chute-bank",
       "kit": "postal-logistics",
       "title": "Sorter chute bank",
-      "description": "Multi-lane parcel discharge bank with numbered-looking bays and a high support frame. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Multi-lane parcel discharge bank with numbered-looking bays and a high support frame. Scale, painted steel, structural steel, label paper, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -163401,7 +165216,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/sorter-chute-bank.kcad.ts",
       "preview": "/assets/postal-logistics-sorter-chute-bank.png",
-      "sourceSha256": "63935bf8a7331ace1e0ddf55e1cf555c6247729cc545f96e56f45f43f58825af",
+      "sourceSha256": "51e64e4ff9b166f00d9810615f403015311bcd4b7d2e910eb6f05b714776906e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -163414,15 +165229,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#6d7775",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
+        },
+        {
+          "name": "paper",
+          "type": "color",
+          "default": "#eee5ca",
+          "label": "Label paper"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "structuralSteel": "#67675f",
+          "paper": "#c2b99f"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "structuralSteel": "#454f54",
+          "paper": "#fff1b7"
+        }
+      },
       "stats": {
-        "triangles": 156,
+        "triangles": 780,
         "sizeM": [
           1.38,
           1.36,
@@ -163433,13 +165271,20 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6d7775",
+          "name": "structuralSteel",
+          "color": "#58656c",
           "parts": [
             "base",
             "upright-left",
             "upright-right",
-            "top-beam",
+            "top-beam"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#6d7775",
+          "parts": [
             "bay-divider-a",
             "bay-divider-b",
             "bay-divider-c",
@@ -163447,10 +165292,17 @@
             "chute-shelf-a",
             "chute-shelf-b",
             "chute-shelf-c",
-            "chute-shelf-d",
+            "chute-shelf-d"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "paper",
+          "color": "#eee5ca",
+          "parts": [
             "front-label-rail"
           ],
-          "param": "color"
+          "param": "paper"
         }
       ]
     },
@@ -163458,7 +165310,7 @@
       "id": "sorter-emergency-stop-pedestal",
       "kit": "postal-logistics",
       "title": "Sorter emergency-stop pedestal",
-      "description": "Standalone emergency-stop post with a weighted base, button head and low protective collar. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Standalone emergency-stop post with a weighted base, button head and low protective collar. Scale, painted steel, structural steel, stainless steel, safety amber, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -163479,7 +165331,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/sorter-emergency-stop-pedestal.kcad.ts",
       "preview": "/assets/postal-logistics-sorter-emergency-stop-pedestal.png",
-      "sourceSha256": "b18ff7bceab04d266d3e37c17df9baeb457d212d2afdd005bad9dcb13f8f92d8",
+      "sourceSha256": "b96b10aee2829dc8cd3e589ae0eb44c1f0c8e726df27a1641b0e11d19e37f78c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -163492,15 +165344,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#6d7372",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#bbc4c4",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "safetyAmber",
+          "type": "color",
+          "default": "#e7aa35",
+          "label": "Safety amber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "structuralSteel": "#67675f",
+          "stainlessSteel": "#9ea7a6",
+          "safetyAmber": "#bb8c34"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "structuralSteel": "#454f54",
+          "stainlessSteel": "#d9e0de",
+          "safetyAmber": "#ffd12f"
+        }
+      },
       "stats": {
-        "triangles": 140,
+        "triangles": 540,
         "sizeM": [
           0.3,
           0.99,
@@ -163511,20 +165394,41 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6d7372",
+          "name": "structuralSteel",
+          "color": "#58656c",
           "parts": [
             "base",
             "post",
-            "head",
-            "button",
             "guard-left",
             "guard-right",
-            "cable-outlet",
             "mounting-foot-left",
             "mounting-foot-right"
           ],
-          "param": "color"
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bbc4c4",
+          "parts": [
+            "head"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "safetyAmber",
+          "color": "#e7aa35",
+          "parts": [
+            "button"
+          ],
+          "param": "safetyAmber"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#6d7372",
+          "parts": [
+            "cable-outlet"
+          ],
+          "param": "paintedSteel"
         }
       ]
     },
@@ -163532,7 +165436,7 @@
       "id": "sorter-maintenance-platform",
       "kit": "postal-logistics",
       "title": "Sorter maintenance platform",
-      "description": "Raised access deck with guardrails, four support legs and a short three-step approach. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Raised access deck with guardrails, four support legs and a short three-step approach. Scale, painted steel, structural steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -163553,7 +165457,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/sorter-maintenance-platform.kcad.ts",
       "preview": "/assets/postal-logistics-sorter-maintenance-platform.png",
-      "sourceSha256": "769e418d1454ad96f28e6b62464ef33f29566d2929f77e6c600242b6c4130b0a",
+      "sourceSha256": "0ea748e7ccd04575788c2a13bf2a8b53198d3d98fda3219dde79c7f6dae2b63f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -163566,15 +165470,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#687b7b",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "structuralSteel": "#67675f"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "structuralSteel": "#454f54"
+        }
+      },
       "stats": {
-        "triangles": 168,
+        "triangles": 840,
         "sizeM": [
           0.95,
           1.32,
@@ -163585,10 +165504,20 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#687b7b",
           "parts": [
             "deck",
+            "step-a",
+            "step-b",
+            "step-c"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#58656c",
+          "parts": [
             "post-left-front",
             "post-right-front",
             "post-left-back",
@@ -163598,12 +165527,9 @@
             "rail-left",
             "rail-right",
             "leg-left",
-            "leg-right",
-            "step-a",
-            "step-b",
-            "step-c"
+            "leg-right"
           ],
-          "param": "color"
+          "param": "structuralSteel"
         }
       ]
     },
@@ -163611,7 +165537,7 @@
       "id": "sorting-operator-console",
       "kit": "postal-logistics",
       "title": "Sorting operator console",
-      "description": "Operator station with angled control desk, twin display blocks, key shelf and status stack. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Operator station with angled control desk, twin display blocks, key shelf and status stack. Scale, painted steel, instrument glass, structural steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -163632,7 +165558,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/sorting-operator-console.kcad.ts",
       "preview": "/assets/postal-logistics-sorting-operator-console.png",
-      "sourceSha256": "2f90d77ec5d30f9ad965f5be21912054badb41f5030e6043f37450d1fee7f7cc",
+      "sourceSha256": "3071c4c2806b1115937927b5887073ddd81094c21ee754378b4925fe491fa327",
       "triangleBudget": 1800,
       "params": [
         {
@@ -163645,15 +165571,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#5b7182",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "instrumentGlass",
+          "type": "color",
+          "default": "#57b4c3",
+          "label": "Instrument glass"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "instrumentGlass": "#548a91",
+          "structuralSteel": "#67675f"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "instrumentGlass": "#6bd0dc",
+          "structuralSteel": "#454f54"
+        }
+      },
       "stats": {
-        "triangles": 240,
+        "triangles": 720,
         "sizeM": [
           0.962,
           1.29,
@@ -163664,23 +165613,37 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#5b7182",
           "parts": [
             "pedestal",
             "desk",
+            "keyboard-shelf",
+            "keypad"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "instrumentGlass",
+          "color": "#57b4c3",
+          "parts": [
             "screen-left",
             "screen-right",
-            "screen-base-left",
-            "screen-base-right",
-            "keyboard-shelf",
-            "keypad",
-            "status-post",
             "status-light-a",
             "status-light-b",
             "status-light-c"
           ],
-          "param": "color"
+          "param": "instrumentGlass"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#58656c",
+          "parts": [
+            "screen-base-left",
+            "screen-base-right",
+            "status-post"
+          ],
+          "param": "structuralSteel"
         }
       ]
     },
@@ -163688,7 +165651,7 @@
       "id": "spiral-parcel-chute",
       "kit": "postal-logistics",
       "title": "Spiral parcel chute",
-      "description": "Compact gravity chute assembled from four turning shelf sections around a central mast. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Compact gravity chute assembled from four turning shelf sections around a central mast. Scale, painted steel, structural steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -163709,7 +165672,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/spiral-parcel-chute.kcad.ts",
       "preview": "/assets/postal-logistics-spiral-parcel-chute.png",
-      "sourceSha256": "27593134a1c76250f36535b7d2153336cdd11066367b67a73d38bb6fc4e4ebd2",
+      "sourceSha256": "5b014b22d2715095f72cf212ac807b823bb8319d6644dfccff14399e62ed9322",
       "triangleBudget": 1800,
       "params": [
         {
@@ -163722,15 +165685,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#747d79",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "structuralSteel": "#67675f"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "structuralSteel": "#454f54"
+        }
+      },
       "stats": {
-        "triangles": 132,
+        "triangles": 660,
         "sizeM": [
           1.2,
           1.56,
@@ -163741,22 +165719,29 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#747d79",
+          "name": "structuralSteel",
+          "color": "#58656c",
           "parts": [
             "foot",
+            "guard-a",
+            "guard-b",
+            "guard-c",
+            "guard-d"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#747d79",
+          "parts": [
             "mast",
             "level-1",
             "level-2",
             "level-3",
             "level-4",
-            "guard-a",
-            "guard-b",
-            "guard-c",
-            "guard-d",
             "landing-pad"
           ],
-          "param": "color"
+          "param": "paintedSteel"
         }
       ]
     },
@@ -163764,7 +165749,7 @@
       "id": "telescopic-parcel-conveyor",
       "kit": "postal-logistics",
       "title": "Telescopic parcel conveyor",
-      "description": "Extending conveyor boom on an adjustable support frame with wheel blocks and nested belt sections. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Extending conveyor boom on an adjustable support frame with wheel blocks and nested belt sections. Scale, painted steel, structural steel, rubber, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -163785,7 +165770,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/telescopic-parcel-conveyor.kcad.ts",
       "preview": "/assets/postal-logistics-telescopic-parcel-conveyor.png",
-      "sourceSha256": "cc3acf668e32f9ac8b991fdea8d4f40baf2b46caf1393d7684f72bc6dae9c8d2",
+      "sourceSha256": "1891b5add2f6ea7cbbf9fa852088ddbb0ebc5a251bbe9d4df81024d9d620eb2e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -163798,40 +165783,77 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#547582",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30373b",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "structuralSteel": "#67675f",
+          "rubber": "#3d3d39"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "structuralSteel": "#454f54",
+          "rubber": "#252b2e"
+        }
+      },
       "stats": {
-        "triangles": 120,
+        "triangles": 600,
         "sizeM": [
           0.815,
-          1.005,
-          1.34
+          1.030747,
+          1.341203
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#547582",
+          "name": "structuralSteel",
+          "color": "#58656c",
           "parts": [
             "base-frame",
+            "left-support",
+            "right-support",
+            "crossbar"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#547582",
+          "parts": [
             "lower-boom",
             "middle-boom",
             "inner-boom",
-            "left-support",
-            "right-support",
-            "crossbar",
-            "left-wheel",
-            "right-wheel",
             "control-box"
           ],
-          "param": "color"
+          "param": "paintedSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#30373b",
+          "parts": [
+            "left-wheel",
+            "right-wheel"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -163839,7 +165861,7 @@
       "id": "tray-induction-loader",
       "kit": "postal-logistics",
       "title": "Tray induction loader",
-      "description": "Feed station with a tray staging deck, backstop, side guides and operator controls. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Feed station with a tray staging deck, backstop, side guides and operator controls. Scale, painted steel, stainless steel, moulded polymer, structural steel, and weathered or highVisibility finish presets are editable.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -163860,7 +165882,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/postal-logistics/tray-induction-loader.kcad.ts",
       "preview": "/assets/postal-logistics-tray-induction-loader.png",
-      "sourceSha256": "3fb1f3274f7f677a0aeda3d016ad1ed265ed6eb924bd505c5ac3cb20168b9c5f",
+      "sourceSha256": "afd8c49958d7f32985010130e96a4d84321d6358244ab8d8547bd7dc9f5065b9",
       "triangleBudget": 1800,
       "params": [
         {
@@ -163873,15 +165895,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#5e7481",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#bbc4c4",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#477c8e",
+          "label": "Moulded polymer"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#58656c",
+          "label": "Structural steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#68777a",
+          "stainlessSteel": "#9ea7a6",
+          "polymer": "#6c7c7c",
+          "structuralSteel": "#67675f"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e36d32",
+          "stainlessSteel": "#d9e0de",
+          "polymer": "#e0b245",
+          "structuralSteel": "#454f54"
+        }
+      },
       "stats": {
-        "triangles": 132,
+        "triangles": 660,
         "sizeM": [
           0.98,
           0.801,
@@ -163892,22 +165945,43 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#5e7481",
+          "name": "structuralSteel",
+          "color": "#58656c",
           "parts": [
             "base",
+            "control-post"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#5e7481",
+          "parts": [
             "feed-deck",
             "backstop",
-            "guide-left",
-            "guide-right",
-            "tray-stack-a",
-            "tray-stack-b",
-            "tray-stack-c",
-            "control-post",
-            "control-head",
             "display"
           ],
-          "param": "color"
+          "param": "paintedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bbc4c4",
+          "parts": [
+            "guide-left",
+            "guide-right",
+            "control-head"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#477c8e",
+          "parts": [
+            "tray-stack-a",
+            "tray-stack-b",
+            "tray-stack-c"
+          ],
+          "param": "polymer"
         }
       ]
     },

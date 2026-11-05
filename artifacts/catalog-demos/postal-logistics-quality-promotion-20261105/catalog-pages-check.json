@@ -1,0 +1,9 @@
+{
+  "kit": "postal-logistics",
+  "localOutput": "/tmp/kernelcad-postal-logistics-quality-promotion-20261105",
+  "indexedAssets": 52,
+  "pagesAndPreviewsChecked": 52,
+  "hubListsKit": true,
+  "passed": true,
+  "failures": []
+}

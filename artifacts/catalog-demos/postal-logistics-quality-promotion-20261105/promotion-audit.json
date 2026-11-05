@@ -1,0 +1,924 @@
+{
+  "catalogAssetCount": 2390,
+  "kit": "postal-logistics",
+  "assets": 52,
+  "indexedSourceHashesMatch": 52,
+  "indexedPreviewsExist": 52,
+  "triangleMinimum": 436,
+  "triangleMaximum": 936,
+  "catalogQualityGate": "thin assets remain in other kits",
+  "kitQualityGate": "passed",
+  "catalogQualitySummary": [
+    "1452/2390 assets pass (25 rich kits, 19 thin kits)",
+    "938 thin assets = 39% of the catalog"
+  ],
+  "catalogQualityBeforeRoundSummary": [
+    "1400/2390 assets pass (24 rich kits, 20 thin kits)",
+    "990 thin assets = 41% of the catalog"
+  ],
+  "catalogQualityDeltaThisRound": {
+    "assetsPromotedToPass": 52,
+    "thinAssetsReduced": 52,
+    "beforePassingAssets": 1400,
+    "afterPassingAssets": 1452
+  },
+  "sourceAndPreviewChecksPassed": true,
+  "failures": [],
+  "assetsAudit": [
+    {
+      "id": "automated-label-applicator",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-automated-label-applicator.png",
+      "previewExists": true,
+      "triangleCount": 844,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "stainlessSteel",
+        "paper"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "barcode-tunnel-scanner",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-barcode-tunnel-scanner.png",
+      "previewExists": true,
+      "triangleCount": 720,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "stainlessSteel",
+        "instrumentGlass"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "bulk-mail-hamper",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-bulk-mail-hamper.png",
+      "previewExists": true,
+      "triangleCount": 720,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "timber",
+        "structuralSteel",
+        "fabric"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "bulk-mail-sack",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-bulk-mail-sack.png",
+      "previewExists": true,
+      "triangleCount": 436,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "fabric",
+        "structuralSteel",
+        "paper"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "carrier-caseload-sorter",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-carrier-caseload-sorter.png",
+      "previewExists": true,
+      "triangleCount": 660,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "carrier-route-sequence-rack",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-carrier-route-sequence-rack.png",
+      "previewExists": true,
+      "triangleCount": 720,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "paper"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "carrier-satchel",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-carrier-satchel.png",
+      "previewExists": true,
+      "triangleCount": 600,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "fabric",
+        "stainlessSteel",
+        "polymer"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "conveyor-drive-unit",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-conveyor-drive-unit.png",
+      "previewExists": true,
+      "triangleCount": 660,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "stainlessSteel",
+        "structuralSteel"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "conveyor-guard-section",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-conveyor-guard-section.png",
+      "previewExists": true,
+      "triangleCount": 660,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "conveyor-merge-module",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-conveyor-merge-module.png",
+      "previewExists": true,
+      "triangleCount": 768,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "stainlessSteel",
+        "structuralSteel"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "conveyor-transfer-bridge",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-conveyor-transfer-bridge.png",
+      "previewExists": true,
+      "triangleCount": 724,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "stainlessSteel",
+        "safetyAmber"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "crossbelt-sorter-section",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-crossbelt-sorter-section.png",
+      "previewExists": true,
+      "triangleCount": 720,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "polymer",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "delivery-sequence-case",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-delivery-sequence-case.png",
+      "previewExists": true,
+      "triangleCount": 660,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "polymer"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "gravity-roller-conveyor",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-gravity-roller-conveyor.png",
+      "previewExists": true,
+      "triangleCount": 816,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "stainlessSteel",
+        "structuralSteel"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "handheld-postal-scanner",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-handheld-postal-scanner.png",
+      "previewExists": true,
+      "triangleCount": 540,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "safetyAmber",
+        "stainlessSteel",
+        "instrumentGlass"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "high-capacity-mail-cart",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-high-capacity-mail-cart.png",
+      "previewExists": true,
+      "triangleCount": 724,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "rubber",
+        "structuralSteel",
+        "safetyAmber"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "in-motion-weigh-deck",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-in-motion-weigh-deck.png",
+      "previewExists": true,
+      "triangleCount": 724,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "stainlessSteel",
+        "structuralSteel",
+        "instrumentGlass"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "mail-tray-dispatch-cart",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-mail-tray-dispatch-cart.png",
+      "previewExists": true,
+      "triangleCount": 724,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "rubber",
+        "structuralSteel",
+        "safetyAmber"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "mail-tray-stack",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-mail-tray-stack.png",
+      "previewExists": true,
+      "triangleCount": 480,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "polymer"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "mailbag-closing-machine",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-mailbag-closing-machine.png",
+      "previewExists": true,
+      "triangleCount": 660,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "stainlessSteel",
+        "fabric"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "mailpiece-thickness-gauge",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-mailpiece-thickness-gauge.png",
+      "previewExists": true,
+      "triangleCount": 540,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "safetyAmber"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "mailroom-workbench",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-mailroom-workbench.png",
+      "previewExists": true,
+      "triangleCount": 780,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "polymer"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "overhead-scan-gantry",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-overhead-scan-gantry.png",
+      "previewExists": true,
+      "triangleCount": 720,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "instrumentGlass"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "package-induction-conveyor",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-package-induction-conveyor.png",
+      "previewExists": true,
+      "triangleCount": 800,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "parcel-belt-diverter",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-parcel-belt-diverter.png",
+      "previewExists": true,
+      "triangleCount": 828,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "parcel-dimensioning-arch",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-parcel-dimensioning-arch.png",
+      "previewExists": true,
+      "triangleCount": 768,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "parcel-overflow-container",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-parcel-overflow-container.png",
+      "previewExists": true,
+      "triangleCount": 780,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "polymer",
+        "structuralSteel"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "parcel-singulator",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-parcel-singulator.png",
+      "previewExists": true,
+      "triangleCount": 720,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "stainlessSteel",
+        "structuralSteel",
+        "safetyAmber"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "parcel-staging-rack",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-parcel-staging-rack.png",
+      "previewExists": true,
+      "triangleCount": 780,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "parcel-tray-transfer-cart",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-parcel-tray-transfer-cart.png",
+      "previewExists": true,
+      "triangleCount": 724,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "structuralSteel",
+        "rubber",
+        "safetyAmber",
+        "polymer"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "parcel-weigh-station",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-parcel-weigh-station.png",
+      "previewExists": true,
+      "triangleCount": 540,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "stainlessSteel",
+        "instrumentGlass"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "postage-meter-workstation",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-postage-meter-workstation.png",
+      "previewExists": true,
+      "triangleCount": 556,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "polymer",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "postal-dispatch-cage",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-postal-dispatch-cage.png",
+      "previewExists": true,
+      "triangleCount": 780,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "timber",
+        "structuralSteel"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "postal-dispatch-seal-station",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-postal-dispatch-seal-station.png",
+      "previewExists": true,
+      "triangleCount": 660,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "stainlessSteel",
+        "fabric"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "postal-label-printer",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-postal-label-printer.png",
+      "previewExists": true,
+      "triangleCount": 556,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "stainlessSteel",
+        "polymer"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "postal-pallet-roller-deck",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-postal-pallet-roller-deck.png",
+      "previewExists": true,
+      "triangleCount": 800,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "stainlessSteel",
+        "safetyAmber",
+        "structuralSteel"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "postal-route-marker-board",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-postal-route-marker-board.png",
+      "previewExists": true,
+      "triangleCount": 600,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "polymer",
+        "structuralSteel",
+        "paper",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "postal-sack-loader",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-postal-sack-loader.png",
+      "previewExists": true,
+      "triangleCount": 724,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "stainlessSteel",
+        "safetyAmber",
+        "structuralSteel"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "postal-sack-rack",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-postal-sack-rack.png",
+      "previewExists": true,
+      "triangleCount": 840,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "fabric",
+        "structuralSteel"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "postal-sortation-tray-cabinet",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-postal-sortation-tray-cabinet.png",
+      "previewExists": true,
+      "triangleCount": 780,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "powered-roller-conveyor",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-powered-roller-conveyor.png",
+      "previewExists": true,
+      "triangleCount": 936,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "stainlessSteel",
+        "structuralSteel"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "powered-sack-dumper",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-powered-sack-dumper.png",
+      "previewExists": true,
+      "triangleCount": 720,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "rolling-postal-container",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-rolling-postal-container.png",
+      "previewExists": true,
+      "triangleCount": 844,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "structuralSteel",
+        "rubber"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "scanner-sensor-post",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-scanner-sensor-post.png",
+      "previewExists": true,
+      "triangleCount": 540,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "instrumentGlass"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "sliding-shoe-sorter-section",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-sliding-shoe-sorter-section.png",
+      "previewExists": true,
+      "triangleCount": 780,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "safetyAmber",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "sorter-chute-bank",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-sorter-chute-bank.png",
+      "previewExists": true,
+      "triangleCount": 780,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "paper"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "sorter-emergency-stop-pedestal",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-sorter-emergency-stop-pedestal.png",
+      "previewExists": true,
+      "triangleCount": 540,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "stainlessSteel",
+        "safetyAmber"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "sorter-maintenance-platform",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-sorter-maintenance-platform.png",
+      "previewExists": true,
+      "triangleCount": 840,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "sorting-operator-console",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-sorting-operator-console.png",
+      "previewExists": true,
+      "triangleCount": 720,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "instrumentGlass",
+        "structuralSteel"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "spiral-parcel-chute",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-spiral-parcel-chute.png",
+      "previewExists": true,
+      "triangleCount": 660,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "telescopic-parcel-conveyor",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-telescopic-parcel-conveyor.png",
+      "previewExists": true,
+      "triangleCount": 600,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "structuralSteel",
+        "rubber"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    },
+    {
+      "id": "tray-induction-loader",
+      "sha256Matches": true,
+      "previewPath": "/assets/postal-logistics-tray-induction-loader.png",
+      "previewExists": true,
+      "triangleCount": 660,
+      "triangleBudget": 1800,
+      "materialControls": [
+        "paintedSteel",
+        "stainlessSteel",
+        "polymer",
+        "structuralSteel"
+      ],
+      "presets": [
+        "highVisibility",
+        "weathered"
+      ]
+    }
+  ],
+  "passed": true
+}
