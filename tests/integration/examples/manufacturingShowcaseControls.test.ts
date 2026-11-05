@@ -76,7 +76,7 @@ const controls = [
       width: { value: 50, min: 45, max: 90 },
       height: { value: 25, min: 20, max: 40 },
       draftDeg: { value: 1.5, min: 1, max: 5 },
-      wall: { value: 2, min: 1.8, max: 2.5 },
+      wall: { value: 2, min: 2, max: 2.5 },
       boardScrewPilotDia: { value: 2.1, min: 2, max: 2.2 },
     },
   },
