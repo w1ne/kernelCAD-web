@@ -223399,7 +223399,7 @@
       "id": "adjustable-stage-leg",
       "kit": "theatre-production",
       "title": "Adjustable stage leg",
-      "description": "Telescoping stage support with a broad floor plate, outer sleeve, adjustment collar and cap pad. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Telescoping stage support with a broad floor plate, outer sleeve, adjustment collar and cap pad. Knobs: overall scale; painted steel, steel hardware, rubber and isolation pads; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -223419,7 +223419,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/adjustable-stage-leg.kcad.ts",
       "preview": "/assets/theatre-production-adjustable-stage-leg.png",
-      "sourceSha256": "17a6c370a4ddc6c5c364e1ad36c2f84d938d078fd59cc16a5ee86d4361f114c8",
+      "sourceSha256": "a0f98263781bf5b3e2a5ab0bfb9e658fc1eb418caebe282ec384362953d93070",
       "triangleBudget": 1800,
       "params": [
         {
@@ -223432,13 +223432,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
-          "default": "#747980",
-          "label": "Asset color"
+          "default": "#454d54",
+          "label": "Painted steel"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#272a2d",
+          "label": "Rubber and isolation pads"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "paintedSteel": "#313940",
+          "hardware": "#c5a052",
+          "rubber": "#222629"
+        },
+        "touring": {
+          "paintedSteel": "#dda21f",
+          "hardware": "#e2b347",
+          "rubber": "#25292c"
+        }
+      },
       "stats": {
         "triangles": 192,
         "sizeM": [
@@ -223451,19 +223474,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#747980",
+          "name": "paintedSteel",
+          "color": "#454d54",
           "parts": [
             "floor-plate",
             "sleeve",
             "inner-post",
-            "deck-cap",
+            "deck-cap"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
             "pin-tab",
             "collar",
-            "locking-pin",
+            "locking-pin"
+          ],
+          "param": "hardware"
+        },
+        {
+          "name": "rubber",
+          "color": "#272a2d",
+          "parts": [
             "level-foot"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -223471,7 +223508,7 @@
       "id": "audio-mixing-console",
       "kit": "theatre-production",
       "title": "Audio mixing console",
-      "description": "Portable audio desk with a sloped control panel, display bridge, channel fader strips and rack base. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Portable audio desk with a sloped control panel, display bridge, channel fader strips and rack base. Knobs: overall scale; steel hardware, powder-coated steel, lens and display glass, polymer controls and cable jacket; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -223491,7 +223528,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/audio-mixing-console.kcad.ts",
       "preview": "/assets/theatre-production-audio-mixing-console.png",
-      "sourceSha256": "9a6035e035af27565ab0da5c539fb8f508490c1abb27bbf6c90589d7008f98fa",
+      "sourceSha256": "e18be7438d0633cf11bd9a03ea71b26cfd0cf5d2da1e268829c997c6534e88df",
       "triangleBudget": 1800,
       "params": [
         {
@@ -223504,13 +223541,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "hardware",
           "type": "color",
-          "default": "#616d79",
-          "label": "Asset color"
+          "default": "#c28f3e",
+          "label": "Steel hardware"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#353b41",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#f3e9bf",
+          "label": "Lens and display glass"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#426878",
+          "label": "Polymer controls and cable jacket"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "hardware": "#c5a052",
+          "powderCoat": "#272d33",
+          "glass": "#ffd15d",
+          "polymer": "#344e5b"
+        },
+        "touring": {
+          "hardware": "#e2b347",
+          "powderCoat": "#315465",
+          "glass": "#31b9d2",
+          "polymer": "#e3a928"
+        }
+      },
       "stats": {
         "triangles": 228,
         "sizeM": [
@@ -223523,22 +223591,43 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#616d79",
+          "name": "hardware",
+          "color": "#c28f3e",
           "parts": [
             "base",
-            "sloped-panel",
+            "arm-rest"
+          ],
+          "param": "hardware"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#353b41",
+          "parts": [
+            "sloped-panel"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "glass",
+          "color": "#f3e9bf",
+          "parts": [
             "display-bridge",
             "display-left",
-            "display-right",
+            "display-right"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "polymer",
+          "color": "#426878",
+          "parts": [
             "fader-bank-left",
             "fader-bank-right",
-            "arm-rest",
             "encoder-left",
             "encoder-mid",
             "encoder-right"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -223546,7 +223635,7 @@
       "id": "audio-monitor-wedge",
       "kit": "theatre-production",
       "title": "Audio monitor wedge",
-      "description": "Low angled stage monitor enclosure with a broad grille, end cheeks and rear connector plate. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Low angled stage monitor enclosure with a broad grille, end cheeks and rear connector plate. Knobs: overall scale; powder-coated steel, polymer controls and cable jacket; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -223566,7 +223655,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/audio-monitor-wedge.kcad.ts",
       "preview": "/assets/theatre-production-audio-monitor-wedge.png",
-      "sourceSha256": "4b8c8733574c940f3c3d95409179edd33970a668614c8f8f136f7bf4206652b9",
+      "sourceSha256": "64ae3ff2ef7cffaf8fbd7028dbcb1f8d4d20fac8dbd246b30044ae0329330ba1",
       "triangleBudget": 1800,
       "params": [
         {
@@ -223579,13 +223668,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#646c77",
-          "label": "Asset color"
+          "default": "#353b41",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#426878",
+          "label": "Polymer controls and cable jacket"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "powderCoat": "#272d33",
+          "polymer": "#344e5b"
+        },
+        "touring": {
+          "powderCoat": "#315465",
+          "polymer": "#e3a928"
+        }
+      },
       "stats": {
         "triangles": 172,
         "sizeM": [
@@ -223598,20 +223702,27 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#646c77",
+          "name": "powderCoat",
+          "color": "#353b41",
           "parts": [
             "speaker-body",
-            "front-grille",
             "top-panel",
             "left-cheek",
             "right-cheek",
             "rear-panel",
-            "carry-recess",
+            "carry-recess"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "polymer",
+          "color": "#426878",
+          "parts": [
+            "front-grille",
             "woofer",
             "connector"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -223619,7 +223730,7 @@
       "id": "backstage-call-board",
       "kit": "theatre-production",
       "title": "Backstage call board",
-      "description": "Freestanding call-time board with a broad display panel, marker ledge and weighted feet. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Freestanding call-time board with a broad display panel, marker ledge and weighted feet. Knobs: overall scale; powder-coated steel, steel hardware; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -223639,7 +223750,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/backstage-call-board.kcad.ts",
       "preview": "/assets/theatre-production-backstage-call-board.png",
-      "sourceSha256": "70b2629a5285a71175b6463d3473339249ade09299143c510f792efc534e549f",
+      "sourceSha256": "9c952ff23c6d82d819f93b6350e28fa0828b0d0bc799cbb666ede3db6cded578",
       "triangleBudget": 1800,
       "params": [
         {
@@ -223652,13 +223763,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#666e78",
-          "label": "Asset color"
+          "default": "#353b41",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "powderCoat": "#272d33",
+          "hardware": "#c5a052"
+        },
+        "touring": {
+          "powderCoat": "#315465",
+          "hardware": "#e2b347"
+        }
+      },
       "stats": {
         "triangles": 208,
         "sizeM": [
@@ -223671,23 +223797,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#666e78",
+          "name": "powderCoat",
+          "color": "#353b41",
           "parts": [
             "panel",
             "header-strip",
-            "left-post",
-            "right-post",
             "marker-ledge",
-            "base-left",
-            "base-right",
             "row-line-one",
             "row-line-two",
             "row-line-three",
             "magnet-left",
             "magnet-right"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
+            "left-post",
+            "right-post",
+            "base-left",
+            "base-right"
+          ],
+          "param": "hardware"
         }
       ]
     },
@@ -223695,7 +223828,7 @@
       "id": "cable-ramp-crossing",
       "kit": "theatre-production",
       "title": "Cable ramp crossing",
-      "description": "Low stage-floor cable cover with a central raceway, sloped shoulders and two end guards. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Low stage-floor cable cover with a central raceway, sloped shoulders and two end guards. Knobs: overall scale; polymer controls and cable jacket, steel hardware; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -223715,7 +223848,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/cable-ramp-crossing.kcad.ts",
       "preview": "/assets/theatre-production-cable-ramp-crossing.png",
-      "sourceSha256": "53147d4c955ae2843b4a8e8dfaf499553737e3bf13990c33f29d811fd9b1703a",
+      "sourceSha256": "4c84229362ecf32da038a7499ef94c409808623d40052b3d7d8e4624231d1d49",
       "triangleBudget": 1800,
       "params": [
         {
@@ -223728,13 +223861,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#696f78",
-          "label": "Asset color"
+          "default": "#426878",
+          "label": "Polymer controls and cable jacket"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "polymer": "#344e5b",
+          "hardware": "#c5a052"
+        },
+        "touring": {
+          "polymer": "#e3a928",
+          "hardware": "#e2b347"
+        }
+      },
       "stats": {
         "triangles": 184,
         "sizeM": [
@@ -223747,8 +223895,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#696f78",
+          "name": "polymer",
+          "color": "#426878",
           "parts": [
             "base",
             "center-raceway",
@@ -223757,11 +223905,18 @@
             "top-cover",
             "end-guard-left",
             "end-guard-right",
-            "hinge-strip",
             "anchor-left",
             "anchor-right"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
+            "hinge-strip"
+          ],
+          "param": "hardware"
         }
       ]
     },
@@ -223769,7 +223924,7 @@
       "id": "counterweight-arbor",
       "kit": "theatre-production",
       "title": "Counterweight arbor",
-      "description": "Stage counterweight frame with guide rails, compact weight stack, top crosshead and bottom stop. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Stage counterweight frame with guide rails, compact weight stack, top crosshead and bottom stop. Knobs: overall scale; painted steel, galvanized steel; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -223789,7 +223944,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/counterweight-arbor.kcad.ts",
       "preview": "/assets/theatre-production-counterweight-arbor.png",
-      "sourceSha256": "ba941513769461e77edd955ca7699dd6dc5f0ec4a7f2a249e1dcf7b4e485e1d1",
+      "sourceSha256": "59ade09ce9cbd15cdfdba4ff978ed585d9defda3d1e91edf2120757d181b1313",
       "triangleBudget": 1800,
       "params": [
         {
@@ -223802,13 +223957,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
-          "default": "#6f7278",
-          "label": "Asset color"
+          "default": "#454d54",
+          "label": "Painted steel"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#aab5b9",
+          "label": "Galvanized steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "paintedSteel": "#313940",
+          "galvanizedSteel": "#c0c8ca"
+        },
+        "touring": {
+          "paintedSteel": "#dda21f",
+          "galvanizedSteel": "#dce2e2"
+        }
+      },
       "stats": {
         "triangles": 208,
         "sizeM": [
@@ -223821,13 +223991,20 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6f7278",
+          "name": "paintedSteel",
+          "color": "#454d54",
           "parts": [
             "guide-left",
             "guide-right",
             "crosshead",
-            "base-crossbar",
+            "base-crossbar"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#aab5b9",
+          "parts": [
             "weight-one",
             "weight-two",
             "weight-three",
@@ -223837,7 +224014,7 @@
             "sheave-left",
             "sheave-right"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -223845,7 +224022,7 @@
       "id": "curtain-track-carrier",
       "kit": "theatre-production",
       "title": "Curtain track carrier",
-      "description": "Compact trolley carriage with roller wheels, curtain hook and end-stop tab. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Compact trolley carriage with roller wheels, curtain hook and end-stop tab. Knobs: overall scale; painted steel, steel hardware, rubber and isolation pads; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -223865,7 +224042,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/curtain-track-carrier.kcad.ts",
       "preview": "/assets/theatre-production-curtain-track-carrier.png",
-      "sourceSha256": "5565ba5f66258d6054e03794dfcfc03c3dcd3437ad8f4429461b16ddb4fbcee9",
+      "sourceSha256": "2bc954abc0b0cb23e6425bbb61466d313dded893c0896e0a9d084e006892341c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -223878,13 +224055,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
-          "default": "#74747b",
-          "label": "Asset color"
+          "default": "#454d54",
+          "label": "Painted steel"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#272a2d",
+          "label": "Rubber and isolation pads"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "paintedSteel": "#313940",
+          "hardware": "#c5a052",
+          "rubber": "#222629"
+        },
+        "touring": {
+          "paintedSteel": "#dda21f",
+          "hardware": "#e2b347",
+          "rubber": "#25292c"
+        }
+      },
       "stats": {
         "triangles": 204,
         "sizeM": [
@@ -223897,20 +224097,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#74747b",
+          "name": "paintedSteel",
+          "color": "#454d54",
           "parts": [
             "carriage",
+            "left-cheek",
+            "right-cheek"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
             "hook-stem",
             "hook-tip",
-            "left-cheek",
-            "right-cheek",
             "stop-tab",
-            "wheel-left",
-            "wheel-right",
             "hanger-eye"
           ],
-          "param": "color"
+          "param": "hardware"
+        },
+        {
+          "name": "rubber",
+          "color": "#272a2d",
+          "parts": [
+            "wheel-left",
+            "wheel-right"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -223918,7 +224132,7 @@
       "id": "cyclorama-drop",
       "kit": "theatre-production",
       "title": "Cyclorama drop",
-      "description": "Broad rear-stage cloth drop with top pipe pocket, lower batten and two side tie tabs. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Broad rear-stage cloth drop with top pipe pocket, lower batten and two side tie tabs. Knobs: overall scale; stage fabric, painted steel, steel hardware; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -223938,7 +224152,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/cyclorama-drop.kcad.ts",
       "preview": "/assets/theatre-production-cyclorama-drop.png",
-      "sourceSha256": "e3516bd9c366a2cf611deae5e5774fb67b9d5ba8834c5d2c78751f6323432c6e",
+      "sourceSha256": "24d5b4a1b281f4ebed97fcf72683a8c285f94721ab918039821485a51b3f819b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -223951,13 +224165,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "fabric",
           "type": "color",
-          "default": "#726f70",
-          "label": "Asset color"
+          "default": "#463849",
+          "label": "Stage fabric"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#46515a",
+          "label": "Painted steel"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "fabric": "#28262d",
+          "steel": "#343b41",
+          "hardware": "#c5a052"
+        },
+        "touring": {
+          "fabric": "#a14469",
+          "steel": "#315968",
+          "hardware": "#e2b347"
+        }
+      },
       "stats": {
         "triangles": 184,
         "sizeM": [
@@ -223970,21 +224207,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#726f70",
+          "name": "fabric",
+          "color": "#463849",
           "parts": [
             "cloth",
-            "top-pocket",
-            "bottom-pocket",
             "side-hem-left",
-            "side-hem-right",
+            "side-hem-right"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "steel",
+          "color": "#46515a",
+          "parts": [
+            "top-pocket",
+            "bottom-pocket"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
             "top-tab-left",
             "top-tab-center",
             "top-tab-right",
             "sleeve-cap-left",
             "sleeve-cap-right"
           ],
-          "param": "color"
+          "param": "hardware"
         }
       ]
     },
@@ -223992,7 +224243,7 @@
       "id": "dance-floor-panel",
       "kit": "theatre-production",
       "title": "Dance floor panel",
-      "description": "Portable sprung-floor section with surface boards, perimeter fascia and underfloor blocks. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Portable sprung-floor section with surface boards, perimeter fascia and underfloor blocks. Knobs: overall scale; stage timber, painted steel, rubber and isolation pads; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224012,7 +224263,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/dance-floor-panel.kcad.ts",
       "preview": "/assets/theatre-production-dance-floor-panel.png",
-      "sourceSha256": "f86699423d8175276f87849ddb57ca775e11b83152592df67ac1bb38193dc7be",
+      "sourceSha256": "d64ed24c3d3e6174068f06706e711b6ec815c9dd307087804c8de71dd2909a7a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -224025,13 +224276,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#776c5d",
-          "label": "Asset color"
+          "default": "#946b43",
+          "label": "Stage timber"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#46515a",
+          "label": "Painted steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#272a2d",
+          "label": "Rubber and isolation pads"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "timber": "#725137",
+          "steel": "#343b41",
+          "rubber": "#222629"
+        },
+        "touring": {
+          "timber": "#cd914b",
+          "steel": "#315968",
+          "rubber": "#25292c"
+        }
+      },
       "stats": {
         "triangles": 284,
         "sizeM": [
@@ -224044,24 +224318,38 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#776c5d",
+          "name": "timber",
+          "color": "#946b43",
           "parts": [
             "floor-surface",
             "front-fascia",
             "back-fascia",
             "left-fascia",
-            "right-fascia",
+            "right-fascia"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "steel",
+          "color": "#46515a",
+          "parts": [
             "under-rail-front",
             "under-rail-back",
             "under-rail-left",
-            "under-rail-right",
+            "under-rail-right"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "rubber",
+          "color": "#272a2d",
+          "parts": [
             "isolation-pad-a",
             "isolation-pad-b",
             "isolation-pad-c",
             "isolation-pad-d"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -224069,7 +224357,7 @@
       "id": "dimmer-rack",
       "kit": "theatre-production",
       "title": "Dimmer rack",
-      "description": "Portable lighting-control rack with vented front panel, breaker rows and top cable tray. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Portable lighting-control rack with vented front panel, breaker rows and top cable tray. Knobs: overall scale; powder-coated steel, lens and display glass; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224089,7 +224377,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/dimmer-rack.kcad.ts",
       "preview": "/assets/theatre-production-dimmer-rack.png",
-      "sourceSha256": "8222c7349cb01ce5897607ba875080a4155f25f340b167b94fe90416909b19d1",
+      "sourceSha256": "634ef525bd7a1541a6d2e087b660735fdf48e7e9b26edf62dc4ab74a3bb852d9",
       "triangleBudget": 1800,
       "params": [
         {
@@ -224102,13 +224390,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#686f78",
-          "label": "Asset color"
+          "default": "#353b41",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#f3e9bf",
+          "label": "Lens and display glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "powderCoat": "#272d33",
+          "glass": "#ffd15d"
+        },
+        "touring": {
+          "powderCoat": "#315465",
+          "glass": "#31b9d2"
+        }
+      },
       "stats": {
         "triangles": 240,
         "sizeM": [
@@ -224121,8 +224424,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#686f78",
+          "name": "powderCoat",
+          "color": "#353b41",
           "parts": [
             "base",
             "left-upright",
@@ -224134,10 +224437,17 @@
             "vent-high",
             "cable-tray",
             "wheel-left",
-            "wheel-right",
+            "wheel-right"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "glass",
+          "color": "#f3e9bf",
+          "parts": [
             "indicator"
           ],
-          "param": "color"
+          "param": "glass"
         }
       ]
     },
@@ -224145,7 +224455,7 @@
       "id": "ellipsoidal-reflector-spotlight",
       "kit": "theatre-production",
       "title": "Ellipsoidal reflector spotlight",
-      "description": "Theatre profile fixture with a horizontal barrel, forward-facing lens, rear housing, yoke and focus control. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Theatre profile fixture with a horizontal barrel, forward-facing lens, rear housing, yoke and focus control. Knobs: overall scale; powder-coated steel, aluminum, steel hardware, lens and display glass; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "center",
       "tags": [
@@ -224165,7 +224475,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/ellipsoidal-reflector-spotlight.kcad.ts",
       "preview": "/assets/theatre-production-ellipsoidal-reflector-spotlight.png",
-      "sourceSha256": "dd465d054d0d00fca070850c26b221fc40526b84603f624b38714687e5d48f25",
+      "sourceSha256": "b4cab68ab5eec1a36e3a473e782c6ea35a2745940f14ecf0650c70fb707d7f6c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -224178,13 +224488,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#686f79",
-          "label": "Asset color"
+          "default": "#353b41",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#bac3c6",
+          "label": "Aluminum"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#f3e9bf",
+          "label": "Lens and display glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "powderCoat": "#272d33",
+          "aluminum": "#c7cecf",
+          "hardware": "#c5a052",
+          "glass": "#ffd15d"
+        },
+        "touring": {
+          "powderCoat": "#315465",
+          "aluminum": "#dce3e2",
+          "hardware": "#e2b347",
+          "glass": "#31b9d2"
+        }
+      },
       "stats": {
         "triangles": 304,
         "sizeM": [
@@ -224197,23 +224538,44 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#686f79",
+          "name": "powderCoat",
+          "color": "#353b41",
           "parts": [
             "rear-housing",
-            "barrel",
             "front-shutter-top",
             "front-shutter-left",
             "front-shutter-right",
+            "focus-knob"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "aluminum",
+          "color": "#bac3c6",
+          "parts": [
+            "barrel"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
             "yoke-left",
             "yoke-right",
             "yoke-crossbar",
-            "focus-knob",
-            "stirrup-eye",
+            "stirrup-eye"
+          ],
+          "param": "hardware"
+        },
+        {
+          "name": "glass",
+          "color": "#f3e9bf",
+          "parts": [
             "lens-rim",
             "lens"
           ],
-          "param": "color"
+          "param": "glass"
         }
       ]
     },
@@ -224221,7 +224583,7 @@
       "id": "floor-cable-trough",
       "kit": "theatre-production",
       "title": "Floor cable trough",
-      "description": "Open-top cable trough section with removable lid strips, sidewalls and joining flanges. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Open-top cable trough section with removable lid strips, sidewalls and joining flanges. Knobs: overall scale; polymer controls and cable jacket, aluminum, steel hardware; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224241,7 +224603,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/floor-cable-trough.kcad.ts",
       "preview": "/assets/theatre-production-floor-cable-trough.png",
-      "sourceSha256": "bce71a019caf1fee11ea9f06fe64290ffe1bf03922bc78c1802abceed304bf80",
+      "sourceSha256": "13ac9745262e86832871437ba882f8024d2604b65dbc48d132edc7599753f808",
       "triangleBudget": 1800,
       "params": [
         {
@@ -224254,13 +224616,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#696e77",
-          "label": "Asset color"
+          "default": "#426878",
+          "label": "Polymer controls and cable jacket"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#bac3c6",
+          "label": "Aluminum"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "polymer": "#344e5b",
+          "aluminum": "#c7cecf",
+          "hardware": "#c5a052"
+        },
+        "touring": {
+          "polymer": "#e3a928",
+          "aluminum": "#dce3e2",
+          "hardware": "#e2b347"
+        }
+      },
       "stats": {
         "triangles": 184,
         "sizeM": [
@@ -224273,8 +224658,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#696e77",
+          "name": "polymer",
+          "color": "#426878",
           "parts": [
             "floor",
             "wall-left",
@@ -224282,12 +224667,26 @@
             "lid-left",
             "lid-right",
             "splice-plate-left",
-            "splice-plate-right",
-            "support-crossbar",
+            "splice-plate-right"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "aluminum",
+          "color": "#bac3c6",
+          "parts": [
+            "support-crossbar"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
             "join-pin-left",
             "join-pin-right"
           ],
-          "param": "color"
+          "param": "hardware"
         }
       ]
     },
@@ -224295,7 +224694,7 @@
       "id": "folding-flat-brace",
       "kit": "theatre-production",
       "title": "Folding flat brace",
-      "description": "Scenery-panel kick brace with a lower floor shoe, pivot plate and adjustable support rod. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Scenery-panel kick brace with a lower floor shoe, pivot plate and adjustable support rod. Knobs: overall scale; painted steel, galvanized steel, steel hardware; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224315,7 +224714,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/folding-flat-brace.kcad.ts",
       "preview": "/assets/theatre-production-folding-flat-brace.png",
-      "sourceSha256": "215cebdabb48611e1eaf75719f46e5b822d69fc6d4bd52f1523cbb63cd6bcdb5",
+      "sourceSha256": "705a247ca6fa571fe3e62ac05bbd83f8b52826c0522653c9f9302283a1d8094c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -224328,13 +224727,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
-          "default": "#72747a",
-          "label": "Asset color"
+          "default": "#454d54",
+          "label": "Painted steel"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#aab5b9",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "paintedSteel": "#313940",
+          "galvanizedSteel": "#c0c8ca",
+          "hardware": "#c5a052"
+        },
+        "touring": {
+          "paintedSteel": "#dda21f",
+          "galvanizedSteel": "#dce2e2",
+          "hardware": "#e2b347"
+        }
+      },
       "stats": {
         "triangles": 172,
         "sizeM": [
@@ -224347,20 +224769,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#72747a",
+          "name": "paintedSteel",
+          "color": "#454d54",
           "parts": [
             "floor-shoe",
             "lower-bracket",
-            "upper-bracket",
-            "brace-rail",
+            "upper-bracket"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#aab5b9",
+          "parts": [
+            "brace-rail"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
             "telescoping-rail",
             "locking-tab",
             "panel-hook",
             "pivot",
             "locking-pin"
           ],
-          "param": "color"
+          "param": "hardware"
         }
       ]
     },
@@ -224368,7 +224804,7 @@
       "id": "folding-stage-ramp",
       "kit": "theatre-production",
       "title": "Folding stage ramp",
-      "description": "Portable inclined-access blockout with a broad tread surface, side rails and hinge-like end drums. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Portable inclined-access blockout with a broad tread surface, side rails and hinge-like end drums. Knobs: overall scale; stage timber, painted steel, steel hardware; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224388,7 +224824,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/folding-stage-ramp.kcad.ts",
       "preview": "/assets/theatre-production-folding-stage-ramp.png",
-      "sourceSha256": "538e2053855d5664d4902aa3211020f91cfb22b306af017956caf3b43ab188a1",
+      "sourceSha256": "a6ae1bf6e53e52cabfd150ef5a3a4a2d8cae26751293cc5edff4c29e353f738f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -224401,13 +224837,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#737783",
-          "label": "Asset color"
+          "default": "#946b43",
+          "label": "Stage timber"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#46515a",
+          "label": "Painted steel"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "timber": "#725137",
+          "steel": "#343b41",
+          "hardware": "#c5a052"
+        },
+        "touring": {
+          "timber": "#cd914b",
+          "steel": "#315968",
+          "hardware": "#e2b347"
+        }
+      },
       "stats": {
         "triangles": 184,
         "sizeM": [
@@ -224420,21 +224879,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#737783",
+          "name": "timber",
+          "color": "#946b43",
           "parts": [
-            "ramp-surface",
+            "ramp-surface"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "steel",
+          "color": "#46515a",
+          "parts": [
             "left-side-rail",
             "right-side-rail",
             "anti-slip-rib-a",
             "anti-slip-rib-b",
             "anti-slip-rib-c",
+            "lower-stop"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
             "top-hinge-plate",
-            "lower-stop",
             "hinge-left",
             "hinge-right"
           ],
-          "param": "color"
+          "param": "hardware"
         }
       ]
     },
@@ -224442,7 +224915,7 @@
       "id": "fresnel-wash-fixture",
       "kit": "theatre-production",
       "title": "Fresnel wash fixture",
-      "description": "Compact Fresnel wash luminaire with a broad lens rim, rear vent body, yoke and clamp spigot. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Compact Fresnel wash luminaire with a broad lens rim, rear vent body, yoke and clamp spigot. Knobs: overall scale; powder-coated steel, steel hardware, aluminum, lens and display glass; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224462,7 +224935,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/fresnel-wash-fixture.kcad.ts",
       "preview": "/assets/theatre-production-fresnel-wash-fixture.png",
-      "sourceSha256": "474d8b84efd7e6fb1b2b1000aa0599876db150d30c33a47a4f81bb2a7b13ad7f",
+      "sourceSha256": "115b0ade8a817bd5a2764ba3ab446760ea9e58a93d8480ff8b1ca21c1b82c549",
       "triangleBudget": 1800,
       "params": [
         {
@@ -224475,13 +224948,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#707580",
-          "label": "Asset color"
+          "default": "#353b41",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#bac3c6",
+          "label": "Aluminum"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#f3e9bf",
+          "label": "Lens and display glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "powderCoat": "#272d33",
+          "hardware": "#c5a052",
+          "aluminum": "#c7cecf",
+          "glass": "#ffd15d"
+        },
+        "touring": {
+          "powderCoat": "#315465",
+          "hardware": "#e2b347",
+          "aluminum": "#dce3e2",
+          "glass": "#31b9d2"
+        }
+      },
       "stats": {
         "triangles": 216,
         "sizeM": [
@@ -224494,21 +224998,42 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#707580",
+          "name": "powderCoat",
+          "color": "#353b41",
           "parts": [
             "rear-case",
             "side-plate-left",
-            "side-plate-right",
+            "side-plate-right"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
             "yoke-arm-left",
             "yoke-arm-right",
             "yoke-crossbar",
             "spigot",
-            "barrel",
-            "lens-rim",
             "focus-handle"
           ],
-          "param": "color"
+          "param": "hardware"
+        },
+        {
+          "name": "aluminum",
+          "color": "#bac3c6",
+          "parts": [
+            "barrel"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "glass",
+          "color": "#f3e9bf",
+          "parts": [
+            "lens-rim"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -224516,7 +225041,7 @@
       "id": "grand-drape-valance",
       "kit": "theatre-production",
       "title": "Grand drape valance",
-      "description": "Gathered-looking theatre valance panel with upper rail, hanging tabs and weighted lower seam. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Gathered-looking theatre valance panel with upper rail, hanging tabs and weighted lower seam. Knobs: overall scale; stage fabric, painted steel, steel hardware; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224536,7 +225061,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/grand-drape-valance.kcad.ts",
       "preview": "/assets/theatre-production-grand-drape-valance.png",
-      "sourceSha256": "ce9d73a3219c5a5dc7627f5b81fb7d2e3265a734110e15705307540c1ed00df6",
+      "sourceSha256": "6286d75425a6eac71797bace277fa0845f4f07f150d875908fd7d9b57ed5a26b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -224549,13 +225074,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "fabric",
           "type": "color",
-          "default": "#684c5a",
-          "label": "Asset color"
+          "default": "#463849",
+          "label": "Stage fabric"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#46515a",
+          "label": "Painted steel"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "fabric": "#28262d",
+          "steel": "#343b41",
+          "hardware": "#c5a052"
+        },
+        "touring": {
+          "fabric": "#a14469",
+          "steel": "#315968",
+          "hardware": "#e2b347"
+        }
+      },
       "stats": {
         "triangles": 196,
         "sizeM": [
@@ -224568,22 +225116,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#684c5a",
+          "name": "fabric",
+          "color": "#463849",
           "parts": [
             "valance",
+            "hem"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "steel",
+          "color": "#46515a",
+          "parts": [
             "top-rail",
             "gather-panel-left",
             "gather-panel-center",
-            "gather-panel-right",
-            "hem",
+            "gather-panel-right"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
             "hanger-left",
             "hanger-center",
             "hanger-right",
             "eyelet-left",
             "eyelet-right"
           ],
-          "param": "color"
+          "param": "hardware"
         }
       ]
     },
@@ -224591,7 +225153,7 @@
       "id": "hoist-controller",
       "kit": "theatre-production",
       "title": "Hoist controller",
-      "description": "Handheld pendant with a cord entry, two oversized control buttons and lower cable exit. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Handheld pendant with a cord entry, two oversized control buttons and lower cable exit. Knobs: overall scale; powder-coated steel, polymer controls and cable jacket; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224611,7 +225173,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/hoist-controller.kcad.ts",
       "preview": "/assets/theatre-production-hoist-controller.png",
-      "sourceSha256": "e94e9bdba2db6a152ad47a26bc8a01d54f7834040aaf37659d48f17b124663b2",
+      "sourceSha256": "d22d19a7cf6d07f1435b564f78d909640f071279b1fdcc2a9e722431884cf497",
       "triangleBudget": 1800,
       "params": [
         {
@@ -224624,13 +225186,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#6b737a",
-          "label": "Asset color"
+          "default": "#353b41",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#426878",
+          "label": "Polymer controls and cable jacket"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "powderCoat": "#272d33",
+          "polymer": "#344e5b"
+        },
+        "touring": {
+          "powderCoat": "#315465",
+          "polymer": "#e3a928"
+        }
+      },
       "stats": {
         "triangles": 248,
         "sizeM": [
@@ -224643,21 +225220,28 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6b737a",
+          "name": "powderCoat",
+          "color": "#353b41",
           "parts": [
             "pendant-body",
             "shoulder",
+            "label-panel"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "polymer",
+          "color": "#426878",
+          "parts": [
             "button-guard-left",
             "button-guard-right",
-            "label-panel",
             "grip",
             "button-left",
             "button-right",
             "cable-entry",
             "cable-tail"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -224665,7 +225249,7 @@
       "id": "led-cyc-wash-light",
       "kit": "theatre-production",
       "title": "LED cyc wash light",
-      "description": "Low-profile cyclorama wash unit with a long lens window, end cheeks and floor-bounce feet. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Low-profile cyclorama wash unit with a long lens window, end cheeks and floor-bounce feet. Knobs: overall scale; powder-coated steel, lens and display glass, steel hardware; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224685,7 +225269,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/led-cyc-wash-light.kcad.ts",
       "preview": "/assets/theatre-production-led-cyc-wash-light.png",
-      "sourceSha256": "c70ffdafe60c261d733bd73ed777a639618cf2b17b98438c8755ceb4f33ec06c",
+      "sourceSha256": "69cf1c4348060738725bdd626f8b02350c82dd84eefc033d2363208b4aa13b91",
       "triangleBudget": 1800,
       "params": [
         {
@@ -224698,13 +225282,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#6d737e",
-          "label": "Asset color"
+          "default": "#353b41",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#f3e9bf",
+          "label": "Lens and display glass"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "powderCoat": "#272d33",
+          "glass": "#ffd15d",
+          "hardware": "#c5a052"
+        },
+        "touring": {
+          "powderCoat": "#315465",
+          "glass": "#31b9d2",
+          "hardware": "#e2b347"
+        }
+      },
       "stats": {
         "triangles": 260,
         "sizeM": [
@@ -224717,22 +225324,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6d737e",
+          "name": "powderCoat",
+          "color": "#353b41",
           "parts": [
             "housing",
-            "front-window",
             "top-grille",
             "end-left",
             "end-right",
-            "foot-left",
-            "foot-right",
-            "lens-a",
-            "lens-b",
-            "lens-c",
             "cable-entry"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "glass",
+          "color": "#f3e9bf",
+          "parts": [
+            "front-window",
+            "lens-a",
+            "lens-b",
+            "lens-c"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
+            "foot-left",
+            "foot-right"
+          ],
+          "param": "hardware"
         }
       ]
     },
@@ -224740,7 +225361,7 @@
       "id": "lighting-control-console",
       "kit": "theatre-production",
       "title": "Lighting control console",
-      "description": "Theatre lighting desk with two display hoods, angled control surface, key bays and side cheeks. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Theatre lighting desk with two display hoods, angled control surface, key bays and side cheeks. Knobs: overall scale; steel hardware, powder-coated steel, lens and display glass, polymer controls and cable jacket; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224760,7 +225381,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/lighting-control-console.kcad.ts",
       "preview": "/assets/theatre-production-lighting-control-console.png",
-      "sourceSha256": "05513564599cc5ec4f2cc8cfddbcb751b330c86e32e6fa091b0450a0afa1f257",
+      "sourceSha256": "44a2d45e603f4b143aaa9313907aa703924b7ed6887b95aa9d35a49d5e71f75d",
       "triangleBudget": 1800,
       "params": [
         {
@@ -224773,13 +225394,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "hardware",
           "type": "color",
-          "default": "#626d79",
-          "label": "Asset color"
+          "default": "#c28f3e",
+          "label": "Steel hardware"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#353b41",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#f3e9bf",
+          "label": "Lens and display glass"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#426878",
+          "label": "Polymer controls and cable jacket"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "hardware": "#c5a052",
+          "powderCoat": "#272d33",
+          "glass": "#ffd15d",
+          "polymer": "#344e5b"
+        },
+        "touring": {
+          "hardware": "#e2b347",
+          "powderCoat": "#315465",
+          "glass": "#31b9d2",
+          "polymer": "#e3a928"
+        }
+      },
       "stats": {
         "triangles": 240,
         "sizeM": [
@@ -224792,23 +225444,44 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#626d79",
+          "name": "hardware",
+          "color": "#c28f3e",
           "parts": [
-            "console-base",
+            "console-base"
+          ],
+          "param": "hardware"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#353b41",
+          "parts": [
             "control-surface",
             "left-cheek",
             "right-cheek",
+            "keyboard-panel"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "glass",
+          "color": "#f3e9bf",
+          "parts": [
             "left-display",
-            "right-display",
-            "keyboard-panel",
+            "right-display"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "polymer",
+          "color": "#426878",
+          "parts": [
             "fader-bank-left",
             "fader-bank-right",
             "trackball",
             "encoder-left",
             "encoder-right"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -224816,7 +225489,7 @@
       "id": "lighting-yoke-bracket",
       "kit": "theatre-production",
       "title": "Lighting yoke bracket",
-      "description": "U-shaped luminaire yoke with paired side arms, crossbar, pivot bosses and a center clamp stem. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "U-shaped luminaire yoke with paired side arms, crossbar, pivot bosses and a center clamp stem. Knobs: overall scale; painted steel, galvanized steel, steel hardware; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224836,7 +225509,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/lighting-yoke-bracket.kcad.ts",
       "preview": "/assets/theatre-production-lighting-yoke-bracket.png",
-      "sourceSha256": "badb31dd538299b7a4320e193dd10e5999095ec98b16a4d472b5287dd37ac5eb",
+      "sourceSha256": "cbf3e9cdc18789572a3450de08073066c66dada13a88aafc6f953b7d7aea4dae",
       "triangleBudget": 1800,
       "params": [
         {
@@ -224849,13 +225522,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
-          "default": "#71757d",
-          "label": "Asset color"
+          "default": "#454d54",
+          "label": "Painted steel"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#aab5b9",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "paintedSteel": "#313940",
+          "galvanizedSteel": "#c0c8ca",
+          "hardware": "#c5a052"
+        },
+        "touring": {
+          "paintedSteel": "#dda21f",
+          "galvanizedSteel": "#dce2e2",
+          "hardware": "#e2b347"
+        }
+      },
       "stats": {
         "triangles": 204,
         "sizeM": [
@@ -224868,20 +225564,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#71757d",
+          "name": "paintedSteel",
+          "color": "#454d54",
           "parts": [
             "arm-left",
             "arm-right",
-            "crossbar",
             "mount-plate",
             "stiffener-left",
             "stiffener-right",
-            "pivot-left",
-            "pivot-right",
             "spigot"
           ],
-          "param": "color"
+          "param": "paintedSteel"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#aab5b9",
+          "parts": [
+            "crossbar"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
+            "pivot-left",
+            "pivot-right"
+          ],
+          "param": "hardware"
         }
       ]
     },
@@ -224889,7 +225599,7 @@
       "id": "marley-floor-roll",
       "kit": "theatre-production",
       "title": "Marley floor roll",
-      "description": "Rolled performance-floor sheet with a broad cylindrical core, loose leading edge and carry cradle. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Rolled performance-floor sheet with a broad cylindrical core, loose leading edge and carry cradle. Knobs: overall scale; painted steel, stage fabric, steel hardware; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224909,7 +225619,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/marley-floor-roll.kcad.ts",
       "preview": "/assets/theatre-production-marley-floor-roll.png",
-      "sourceSha256": "30b917014c1a8434d55cad10ee48260fd172ca72abb6ce89c7bfb23f836793fe",
+      "sourceSha256": "0105ff35db704eec921f1754b06a56ec0ae1370216fc4a767a3b734daa2a9e36",
       "triangleBudget": 1800,
       "params": [
         {
@@ -224922,13 +225632,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "steel",
           "type": "color",
-          "default": "#626b77",
-          "label": "Asset color"
+          "default": "#46515a",
+          "label": "Painted steel"
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#463849",
+          "label": "Stage fabric"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "steel": "#343b41",
+          "fabric": "#28262d",
+          "hardware": "#c5a052"
+        },
+        "touring": {
+          "steel": "#315968",
+          "fabric": "#a14469",
+          "hardware": "#e2b347"
+        }
+      },
       "stats": {
         "triangles": 248,
         "sizeM": [
@@ -224941,21 +225674,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#626b77",
+          "name": "steel",
+          "color": "#46515a",
           "parts": [
             "cradle-left",
             "cradle-right",
             "cradle-crossbar",
+            "roll-core"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "fabric",
+          "color": "#463849",
+          "parts": [
             "loose-sheet",
             "end-strap-left",
-            "end-strap-right",
-            "roll-core",
+            "end-strap-right"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
             "core-cap-left",
             "core-cap-right",
             "retainer-pin"
           ],
-          "param": "color"
+          "param": "hardware"
         }
       ]
     },
@@ -224963,7 +225710,7 @@
       "id": "masking-leg",
       "kit": "theatre-production",
       "title": "Masking leg",
-      "description": "Narrow masking curtain section with a hanging cloth panel, top sleeve and weighted floor hem. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Narrow masking curtain section with a hanging cloth panel, top sleeve and weighted floor hem. Knobs: overall scale; stage fabric, painted steel, steel hardware; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224983,7 +225730,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/masking-leg.kcad.ts",
       "preview": "/assets/theatre-production-masking-leg.png",
-      "sourceSha256": "07e2feb2f292d882eb5fb9f1c9360a6897599c953afec34aff41cf51ccfa30ae",
+      "sourceSha256": "c5b7b63b15ce1aaabea625e6da4ac2db24a7cb839f4d3681b5b66c5bfbe2c1d3",
       "triangleBudget": 1800,
       "params": [
         {
@@ -224996,13 +225743,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "fabric",
           "type": "color",
-          "default": "#5f6877",
-          "label": "Asset color"
+          "default": "#463849",
+          "label": "Stage fabric"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#46515a",
+          "label": "Painted steel"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "fabric": "#28262d",
+          "steel": "#343b41",
+          "hardware": "#c5a052"
+        },
+        "touring": {
+          "fabric": "#a14469",
+          "steel": "#315968",
+          "hardware": "#e2b347"
+        }
+      },
       "stats": {
         "triangles": 172,
         "sizeM": [
@@ -225015,20 +225785,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#5f6877",
+          "name": "fabric",
+          "color": "#463849",
           "parts": [
             "cloth-panel",
-            "top-sleeve",
             "weighted-hem",
             "side-seam-left",
             "side-seam-right",
-            "top-hook-left",
-            "top-hook-right",
             "hem-weight-left",
             "hem-weight-right"
           ],
-          "param": "color"
+          "param": "fabric"
+        },
+        {
+          "name": "steel",
+          "color": "#46515a",
+          "parts": [
+            "top-sleeve"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
+            "top-hook-left",
+            "top-hook-right"
+          ],
+          "param": "hardware"
         }
       ]
     },
@@ -225036,7 +225820,7 @@
       "id": "modular-stage-deck",
       "kit": "theatre-production",
       "title": "Modular stage deck",
-      "description": "Portable stage module with a broad top, perimeter edge trim, braced underframe and leveling feet. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Portable stage module with a broad top, perimeter edge trim, braced underframe and leveling feet. Knobs: overall scale; stage timber, painted steel, rubber and isolation pads; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225056,7 +225840,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/modular-stage-deck.kcad.ts",
       "preview": "/assets/theatre-production-modular-stage-deck.png",
-      "sourceSha256": "ff1b8a7dfcc37b03b2ad24245d0682b550db3d672e3b8b5282aafeebe4f4cf14",
+      "sourceSha256": "7d05920b402d877fab03e275a85fd0aac5121b28f114ded3103ee7ff868733d9",
       "triangleBudget": 1800,
       "params": [
         {
@@ -225069,13 +225853,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#6d737c",
-          "label": "Asset color"
+          "default": "#946b43",
+          "label": "Stage timber"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#46515a",
+          "label": "Painted steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#272a2d",
+          "label": "Rubber and isolation pads"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "timber": "#725137",
+          "steel": "#343b41",
+          "rubber": "#222629"
+        },
+        "touring": {
+          "timber": "#cd914b",
+          "steel": "#315968",
+          "rubber": "#25292c"
+        }
+      },
       "stats": {
         "triangles": 284,
         "sizeM": [
@@ -225088,10 +225895,17 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6d737c",
+          "name": "timber",
+          "color": "#946b43",
           "parts": [
-            "deck-top",
+            "deck-top"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "steel",
+          "color": "#46515a",
+          "parts": [
             "edge-front",
             "edge-back",
             "edge-left",
@@ -225099,13 +225913,20 @@
             "underframe-front",
             "underframe-back",
             "underframe-left",
-            "underframe-right",
+            "underframe-right"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "rubber",
+          "color": "#272a2d",
+          "parts": [
             "foot-a",
             "foot-b",
             "foot-c",
             "foot-d"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -225113,7 +225934,7 @@
       "id": "motorized-chain-hoist",
       "kit": "theatre-production",
       "title": "Motorized chain hoist",
-      "description": "Compact overhead hoist body with a motor cover, suspension bail, chain drop and lower hook block. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Compact overhead hoist body with a motor cover, suspension bail, chain drop and lower hook block. Knobs: overall scale; painted steel, galvanized steel, rubber and isolation pads, steel hardware; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225133,7 +225954,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/motorized-chain-hoist.kcad.ts",
       "preview": "/assets/theatre-production-motorized-chain-hoist.png",
-      "sourceSha256": "ad2dc271dc29ba2c0d6f5e8e76278d531e53b5b9ca478e36da282fc63f5b36f6",
+      "sourceSha256": "269f63ac4e4da1fca47ff248a004ed0759bf1c509e46630887861de07054a9a7",
       "triangleBudget": 1800,
       "params": [
         {
@@ -225146,15 +225967,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
-          "default": "#6b727b",
-          "label": "Asset color"
+          "default": "#454d54",
+          "label": "Painted steel"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#aab5b9",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#272a2d",
+          "label": "Rubber and isolation pads"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "paintedSteel": "#313940",
+          "galvanizedSteel": "#c0c8ca",
+          "rubber": "#222629",
+          "hardware": "#c5a052"
+        },
+        "touring": {
+          "paintedSteel": "#dda21f",
+          "galvanizedSteel": "#dce2e2",
+          "rubber": "#25292c",
+          "hardware": "#e2b347"
+        }
+      },
       "stats": {
-        "triangles": 248,
+        "triangles": 240,
         "sizeM": [
           0.605,
           1.475,
@@ -225165,21 +226017,41 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6b727b",
+          "name": "paintedSteel",
+          "color": "#454d54",
           "parts": [
             "hoist-case",
             "motor-cover",
             "control-cover",
             "suspension-bail-left",
             "suspension-bail-right",
-            "bail-top",
-            "chain",
-            "hook-block",
-            "hook-tip",
+            "bail-top"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#aab5b9",
+          "parts": [
+            "chain"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#272a2d",
+          "parts": [
             "chain-wheel"
           ],
-          "param": "color"
+          "param": "rubber"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
+            "hook-profile"
+          ],
+          "param": "hardware"
         }
       ]
     },
@@ -225187,7 +226059,7 @@
       "id": "orchestra-pit-filler",
       "kit": "theatre-production",
       "title": "Orchestra pit filler",
-      "description": "Removable pit-cover module with edge rails, underframe and two recessed handling grips. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Removable pit-cover module with edge rails, underframe and two recessed handling grips. Knobs: overall scale; stage timber, painted steel, steel hardware; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225207,7 +226079,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/orchestra-pit-filler.kcad.ts",
       "preview": "/assets/theatre-production-orchestra-pit-filler.png",
-      "sourceSha256": "3706318377aa149bbe30380da4f0afbbaf8421353b89d8409340cd5df0391553",
+      "sourceSha256": "9e599bc05f129ade4a7563eb760729b02f4f4f5d9a46ce912bb55b5d6cadb904",
       "triangleBudget": 1800,
       "params": [
         {
@@ -225220,13 +226092,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#676e78",
-          "label": "Asset color"
+          "default": "#946b43",
+          "label": "Stage timber"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#46515a",
+          "label": "Painted steel"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "timber": "#725137",
+          "steel": "#343b41",
+          "hardware": "#c5a052"
+        },
+        "touring": {
+          "timber": "#cd914b",
+          "steel": "#315968",
+          "hardware": "#e2b347"
+        }
+      },
       "stats": {
         "triangles": 196,
         "sizeM": [
@@ -225239,22 +226134,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#676e78",
+          "name": "timber",
+          "color": "#946b43",
           "parts": [
             "deck",
+            "stiffener-front",
+            "stiffener-back"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "steel",
+          "color": "#46515a",
+          "parts": [
             "front-edge",
             "back-edge",
             "support-rail-left",
-            "support-rail-right",
+            "support-rail-right"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
             "grip-left",
             "grip-right",
-            "stiffener-front",
-            "stiffener-back",
             "pin-left",
             "pin-right"
           ],
-          "param": "color"
+          "param": "hardware"
         }
       ]
     },
@@ -225262,7 +226171,7 @@
       "id": "orchestra-shell-panel",
       "kit": "theatre-production",
       "title": "Orchestra shell panel",
-      "description": "Freestanding acoustic-shell section with broad reflector face, folded side returns and support feet. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Freestanding acoustic-shell section with broad reflector face, folded side returns and support feet. Knobs: overall scale; stage timber, painted steel, steel hardware; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225282,7 +226191,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/orchestra-shell-panel.kcad.ts",
       "preview": "/assets/theatre-production-orchestra-shell-panel.png",
-      "sourceSha256": "20ef24eb33f502480aeb0376a6f6ba6e1dc868a21e7661daa1a749c09e2fc111",
+      "sourceSha256": "332094f00d7c1912f4fe35d31e3edf18acc1394860fa28e7fead4c098049446c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -225295,13 +226204,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#7a715f",
-          "label": "Asset color"
+          "default": "#946b43",
+          "label": "Stage timber"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#46515a",
+          "label": "Painted steel"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "timber": "#725137",
+          "steel": "#343b41",
+          "hardware": "#c5a052"
+        },
+        "touring": {
+          "timber": "#cd914b",
+          "steel": "#315968",
+          "hardware": "#e2b347"
+        }
+      },
       "stats": {
         "triangles": 184,
         "sizeM": [
@@ -225314,21 +226246,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7a715f",
+          "name": "timber",
+          "color": "#946b43",
           "parts": [
             "reflector-face",
+            "rear-stiffener-low",
+            "rear-stiffener-high"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "steel",
+          "color": "#46515a",
+          "parts": [
             "left-return",
             "right-return",
             "top-cap",
-            "rear-stiffener-low",
-            "rear-stiffener-high",
             "left-foot",
-            "right-foot",
+            "right-foot"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
             "hinge-left",
             "hinge-right"
           ],
-          "param": "color"
+          "param": "hardware"
         }
       ]
     },
@@ -225336,7 +226282,7 @@
       "id": "par-can-fixture",
       "kit": "theatre-production",
       "title": "PAR can fixture",
-      "description": "Compact PAR-style can with a cylindrical lamp body, lens rim, side yoke and clamp spigot. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Compact PAR-style can with a cylindrical lamp body, lens rim, side yoke and clamp spigot. Knobs: overall scale; steel hardware, powder-coated steel, aluminum, lens and display glass; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225356,7 +226302,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/par-can-fixture.kcad.ts",
       "preview": "/assets/theatre-production-par-can-fixture.png",
-      "sourceSha256": "b7b64baeb0af5fc7814d76db0732267fa9dbe2d296c4ef2f3ece2411ad308d4b",
+      "sourceSha256": "c1252eb46467ea0a6add196d4f7f15a75918e7660eec3677cbbcf7776692fed6",
       "triangleBudget": 1800,
       "params": [
         {
@@ -225369,13 +226315,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "hardware",
           "type": "color",
-          "default": "#73737a",
-          "label": "Asset color"
+          "default": "#c28f3e",
+          "label": "Steel hardware"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#353b41",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#bac3c6",
+          "label": "Aluminum"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#f3e9bf",
+          "label": "Lens and display glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "hardware": "#c5a052",
+          "powderCoat": "#272d33",
+          "aluminum": "#c7cecf",
+          "glass": "#ffd15d"
+        },
+        "touring": {
+          "hardware": "#e2b347",
+          "powderCoat": "#315465",
+          "aluminum": "#dce3e2",
+          "glass": "#31b9d2"
+        }
+      },
       "stats": {
         "triangles": 260,
         "sizeM": [
@@ -225388,8 +226365,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#73737a",
+          "name": "hardware",
+          "color": "#c28f3e",
           "parts": [
             "yoke-left",
             "yoke-right",
@@ -225397,13 +226374,34 @@
             "spigot",
             "lamp-door-tab",
             "side-bolt-left",
-            "side-bolt-right",
+            "side-bolt-right"
+          ],
+          "param": "hardware"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#353b41",
+          "parts": [
             "can-body",
-            "front-rim",
-            "lens",
             "rear-cap"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "aluminum",
+          "color": "#bac3c6",
+          "parts": [
+            "front-rim"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "glass",
+          "color": "#f3e9bf",
+          "parts": [
+            "lens"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -225411,7 +226409,7 @@
       "id": "prop-storage-rack",
       "kit": "theatre-production",
       "title": "Prop storage rack",
-      "description": "Three-tier backstage storage rack with open shelves, side uprights and caster housings. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Three-tier backstage storage rack with open shelves, side uprights and caster housings. Knobs: overall scale; aluminum, polymer controls and cable jacket, rubber and isolation pads; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225431,7 +226429,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/prop-storage-rack.kcad.ts",
       "preview": "/assets/theatre-production-prop-storage-rack.png",
-      "sourceSha256": "e5abef468be501513c772ffdfbc06c72b5b4f2289146a48e73c8a0fecf32e593",
+      "sourceSha256": "148658253539b77ed441555f3a6ae23a8fb6fd2bc74fadd48611c722e4210356",
       "triangleBudget": 1800,
       "params": [
         {
@@ -225444,44 +226442,70 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminum",
           "type": "color",
-          "default": "#6c747b",
-          "label": "Asset color"
+          "default": "#bac3c6",
+          "label": "Aluminum"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#426878",
+          "label": "Polymer controls and cable jacket"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#272a2d",
+          "label": "Rubber and isolation pads"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "aluminum": "#c7cecf",
+          "polymer": "#344e5b",
+          "rubber": "#222629"
+        },
+        "touring": {
+          "aluminum": "#dce3e2",
+          "polymer": "#e3a928",
+          "rubber": "#25292c"
+        }
+      },
       "stats": {
-        "triangles": 296,
+        "triangles": 120,
         "sizeM": [
           1.255,
           1.75,
-          0.6625
+          0.6575
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6c747b",
+          "name": "aluminum",
+          "color": "#bac3c6",
           "parts": [
             "left-upright",
             "right-upright",
             "left-front-post",
-            "right-front-post",
+            "right-front-post"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "polymer",
+          "color": "#426878",
+          "parts": [
             "shelf-low",
             "shelf-mid",
             "shelf-high",
             "front-lip-low",
             "front-lip-mid",
-            "front-lip-high",
-            "caster-left-front",
-            "caster-right-front",
-            "caster-left-back",
-            "caster-right-back"
+            "front-lip-high"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -225489,7 +226513,7 @@
       "id": "prop-table",
       "kit": "theatre-production",
       "title": "Prop table",
-      "description": "Backstage props table with a broad worktop, lower shelf, four legs and end-stop rail. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Backstage props table with a broad worktop, lower shelf, four legs and end-stop rail. Knobs: overall scale; stage timber, painted steel, steel hardware, rubber and isolation pads; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225509,7 +226533,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/prop-table.kcad.ts",
       "preview": "/assets/theatre-production-prop-table.png",
-      "sourceSha256": "0eca88ccbadc4c5f73a7c65031bac97e66635622f3e7c9958576c49a30f4c0ac",
+      "sourceSha256": "e3dc3a83c4e790f2b84953c9586863919787886ef05608365451a39b1b5bc5af",
       "triangleBudget": 1800,
       "params": [
         {
@@ -225522,13 +226546,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#756f65",
-          "label": "Asset color"
+          "default": "#946b43",
+          "label": "Stage timber"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#46515a",
+          "label": "Painted steel"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#272a2d",
+          "label": "Rubber and isolation pads"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "timber": "#725137",
+          "steel": "#343b41",
+          "hardware": "#c5a052",
+          "rubber": "#222629"
+        },
+        "touring": {
+          "timber": "#cd914b",
+          "steel": "#315968",
+          "hardware": "#e2b347",
+          "rubber": "#25292c"
+        }
+      },
       "stats": {
         "triangles": 196,
         "sizeM": [
@@ -225541,22 +226596,43 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#756f65",
+          "name": "timber",
+          "color": "#946b43",
           "parts": [
             "worktop",
-            "lower-shelf",
+            "lower-shelf"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "steel",
+          "color": "#46515a",
+          "parts": [
             "left-front-leg",
             "right-front-leg",
             "left-back-leg",
             "right-back-leg",
             "back-rail",
-            "drawer-front",
-            "handle",
+            "drawer-front"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
+            "handle"
+          ],
+          "param": "hardware"
+        },
+        {
+          "name": "rubber",
+          "color": "#272a2d",
+          "parts": [
             "level-foot-a",
             "level-foot-b"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -225564,7 +226640,7 @@
       "id": "pulley-block",
       "kit": "theatre-production",
       "title": "Pulley block",
-      "description": "Single-sheave block with side cheeks, top attachment eye and lower rope slot. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Single-sheave block with side cheeks, top attachment eye and lower rope slot. Knobs: overall scale; painted steel, galvanized steel, steel hardware; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225584,7 +226660,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/pulley-block.kcad.ts",
       "preview": "/assets/theatre-production-pulley-block.png",
-      "sourceSha256": "e29da44412e7a803bb34d414a3b6b6a0db463b9c435208f5d6f0241aa3a5e85f",
+      "sourceSha256": "02018152d3af0626e4c7356b81ce81583a1f8f99c3f46dd8cdcef6a080a90920",
       "triangleBudget": 1800,
       "params": [
         {
@@ -225597,13 +226673,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
-          "default": "#77777a",
-          "label": "Asset color"
+          "default": "#454d54",
+          "label": "Painted steel"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#aab5b9",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "paintedSteel": "#313940",
+          "galvanizedSteel": "#c0c8ca",
+          "hardware": "#c5a052"
+        },
+        "touring": {
+          "paintedSteel": "#dda21f",
+          "galvanizedSteel": "#dce2e2",
+          "hardware": "#e2b347"
+        }
+      },
       "stats": {
         "triangles": 204,
         "sizeM": [
@@ -225616,20 +226715,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#77777a",
+          "name": "paintedSteel",
+          "color": "#454d54",
           "parts": [
             "cheek-left",
-            "cheek-right",
+            "cheek-right"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#aab5b9",
+          "parts": [
             "top-crossbar",
             "bottom-crossbar",
             "rope-slot-left",
             "rope-slot-right",
-            "sheave",
+            "sheave"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
             "axle",
             "attachment-eye"
           ],
-          "param": "color"
+          "param": "hardware"
         }
       ]
     },
@@ -225637,7 +226750,7 @@
       "id": "rigging-handline-cleat",
       "kit": "theatre-production",
       "title": "Rigging handline cleat",
-      "description": "Wall-mounted handline cleat panel with twin rope posts, fairlead and a lower locking bar. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Wall-mounted handline cleat panel with twin rope posts, fairlead and a lower locking bar. Knobs: overall scale; painted steel, steel hardware, galvanized steel; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225657,7 +226770,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/rigging-handline-cleat.kcad.ts",
       "preview": "/assets/theatre-production-rigging-handline-cleat.png",
-      "sourceSha256": "dd98c7e4e82717853756d4f0d531b1dba4495ef2026941f7bc6a47c8cc23db7e",
+      "sourceSha256": "61162adbfb2403017bfbbcca063b4fbfaab55c6df17d5f0d8b7de18da4e9b64a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -225670,13 +226783,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
-          "default": "#71737b",
-          "label": "Asset color"
+          "default": "#454d54",
+          "label": "Painted steel"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#aab5b9",
+          "label": "Galvanized steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "paintedSteel": "#313940",
+          "hardware": "#c5a052",
+          "galvanizedSteel": "#c0c8ca"
+        },
+        "touring": {
+          "paintedSteel": "#dda21f",
+          "hardware": "#e2b347",
+          "galvanizedSteel": "#dce2e2"
+        }
+      },
       "stats": {
         "triangles": 204,
         "sizeM": [
@@ -225689,20 +226825,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#71737b",
+          "name": "paintedSteel",
+          "color": "#454d54",
           "parts": [
             "backplate",
             "top-cap",
             "left-cheek",
             "right-cheek",
+            "rope-guide"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
             "locking-bar",
-            "rope-guide",
             "cleat-post-left",
-            "cleat-post-right",
+            "cleat-post-right"
+          ],
+          "param": "hardware"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#aab5b9",
+          "parts": [
             "fairlead"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -225710,7 +226860,7 @@
       "id": "riser-cart",
       "kit": "theatre-production",
       "title": "Riser cart",
-      "description": "Rolling cart with stacked folding platform sections, end guards and a tall pull handle. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Rolling cart with stacked folding platform sections, end guards and a tall pull handle. Knobs: overall scale; polymer controls and cable jacket, steel hardware, aluminum, rubber and isolation pads; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225730,7 +226880,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/riser-cart.kcad.ts",
       "preview": "/assets/theatre-production-riser-cart.png",
-      "sourceSha256": "b21d5da5ac0161eeefe5ef724d7f719a7587e0d43d1bf0bcb2d4f29b4e8f9c78",
+      "sourceSha256": "ec677dfdba8aa8204323a71dd0fc9c9f18b82ea488d1fc49374e26eceea212e4",
       "triangleBudget": 1800,
       "params": [
         {
@@ -225743,13 +226893,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#71747c",
-          "label": "Asset color"
+          "default": "#426878",
+          "label": "Polymer controls and cable jacket"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#bac3c6",
+          "label": "Aluminum"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#272a2d",
+          "label": "Rubber and isolation pads"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "polymer": "#344e5b",
+          "hardware": "#c5a052",
+          "aluminum": "#c7cecf",
+          "rubber": "#222629"
+        },
+        "touring": {
+          "polymer": "#e3a928",
+          "hardware": "#e2b347",
+          "aluminum": "#dce3e2",
+          "rubber": "#25292c"
+        }
+      },
       "stats": {
         "triangles": 296,
         "sizeM": [
@@ -225762,25 +226943,46 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#71747c",
+          "name": "polymer",
+          "color": "#426878",
           "parts": [
             "lower-platform",
             "middle-platform",
             "upper-platform",
             "front-stop",
-            "back-stop",
+            "back-stop"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
             "handle-left",
             "handle-right",
-            "handle-top",
+            "handle-top"
+          ],
+          "param": "hardware"
+        },
+        {
+          "name": "aluminum",
+          "color": "#bac3c6",
+          "parts": [
             "side-rail-left",
-            "side-rail-right",
+            "side-rail-right"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "rubber",
+          "color": "#272a2d",
+          "parts": [
             "wheel-a",
             "wheel-b",
             "wheel-c",
             "wheel-d"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -225788,7 +226990,7 @@
       "id": "rolling-stage-platform",
       "kit": "theatre-production",
       "title": "Rolling stage platform",
-      "description": "Mobile platform with a raised work deck, guard sockets and four compact caster blocks. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Mobile platform with a raised work deck, guard sockets and four compact caster blocks. Knobs: overall scale; stage timber, painted steel, steel hardware, rubber and isolation pads; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225808,7 +227010,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/rolling-stage-platform.kcad.ts",
       "preview": "/assets/theatre-production-rolling-stage-platform.png",
-      "sourceSha256": "c2c089c4c33bfaf27019c1959e26fffd4ad6552b090566cf56237cbc5235db2b",
+      "sourceSha256": "30454c0a05e64393ea6b3fce596a9e8fef8101d4bc60d37ff96a0ab1f20e18a6",
       "triangleBudget": 1800,
       "params": [
         {
@@ -225821,15 +227023,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#707681",
-          "label": "Asset color"
+          "default": "#946b43",
+          "label": "Stage timber"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#46515a",
+          "label": "Painted steel"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#272a2d",
+          "label": "Rubber and isolation pads"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "timber": "#725137",
+          "steel": "#343b41",
+          "hardware": "#c5a052",
+          "rubber": "#222629"
+        },
+        "touring": {
+          "timber": "#cd914b",
+          "steel": "#315968",
+          "hardware": "#e2b347",
+          "rubber": "#25292c"
+        }
+      },
       "stats": {
-        "triangles": 260,
+        "triangles": 308,
         "sizeM": [
           1.4,
           0.635,
@@ -225840,22 +227073,47 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#707681",
+          "name": "timber",
+          "color": "#946b43",
           "parts": [
             "platform-deck",
             "front-apron",
-            "rear-apron",
+            "rear-apron"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "steel",
+          "color": "#46515a",
+          "parts": [
             "underframe-left",
             "underframe-right",
-            "socket-left",
-            "socket-right",
-            "caster-left-front",
-            "caster-right-front",
-            "caster-left-back",
-            "caster-right-back"
+            "caster-fork-left-front",
+            "caster-fork-left-back",
+            "caster-fork-right-front",
+            "caster-fork-right-back"
           ],
-          "param": "color"
+          "param": "steel"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
+            "socket-left",
+            "socket-right"
+          ],
+          "param": "hardware"
+        },
+        {
+          "name": "rubber",
+          "color": "#272a2d",
+          "parts": [
+            "caster-wheel-left-front",
+            "caster-wheel-left-back",
+            "caster-wheel-right-front",
+            "caster-wheel-right-back"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -225863,7 +227121,7 @@
       "id": "rope-lock",
       "kit": "theatre-production",
       "title": "Rope lock",
-      "description": "Compact rope-line clamp with a backplate, guide jaw, locking handle and mounting pins. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Compact rope-line clamp with a backplate, guide jaw, locking handle and mounting pins. Knobs: overall scale; painted steel, rubber and isolation pads, steel hardware; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225883,7 +227141,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/rope-lock.kcad.ts",
       "preview": "/assets/theatre-production-rope-lock.png",
-      "sourceSha256": "b5d9bcbd17f8e0ed247162a68ad90735d753f6b3a2480b4b0fd769413d42b32b",
+      "sourceSha256": "f98d82b8feb1f1410826fc452b17b3b0ab011744bca6c1834ec9385002803d4b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -225896,13 +227154,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
-          "default": "#71747c",
-          "label": "Asset color"
+          "default": "#454d54",
+          "label": "Painted steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#272a2d",
+          "label": "Rubber and isolation pads"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "paintedSteel": "#313940",
+          "rubber": "#222629",
+          "hardware": "#c5a052"
+        },
+        "touring": {
+          "paintedSteel": "#dda21f",
+          "rubber": "#25292c",
+          "hardware": "#e2b347"
+        }
+      },
       "stats": {
         "triangles": 204,
         "sizeM": [
@@ -225915,20 +227196,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#71747c",
+          "name": "paintedSteel",
+          "color": "#454d54",
           "parts": [
             "baseplate",
             "left-cheek",
             "right-cheek",
             "jaw",
-            "handle",
-            "grip",
+            "handle"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#272a2d",
+          "parts": [
+            "grip"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
             "pivot",
             "mount-pin-left",
             "mount-pin-right"
           ],
-          "param": "color"
+          "param": "hardware"
         }
       ]
     },
@@ -225936,7 +227231,7 @@
       "id": "sandbag-counterweight",
       "kit": "theatre-production",
       "title": "Sandbag counterweight",
-      "description": "Soft-looking rigging sandbag with central body, folded end caps and hanging loop. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Soft-looking rigging sandbag with central body, folded end caps and hanging loop. Knobs: overall scale; stage fabric, painted steel, steel hardware; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225956,7 +227251,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/sandbag-counterweight.kcad.ts",
       "preview": "/assets/theatre-production-sandbag-counterweight.png",
-      "sourceSha256": "7c6f43f5326e7211dac27b8336c12e08286dd06fc7174fe1a2837264acf86476",
+      "sourceSha256": "38efa715e471ea99c1dfa1d823081395863d92b06487be1d1ac82c95924cd344",
       "triangleBudget": 1800,
       "params": [
         {
@@ -225969,13 +227264,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "fabric",
           "type": "color",
-          "default": "#807563",
-          "label": "Asset color"
+          "default": "#463849",
+          "label": "Stage fabric"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#46515a",
+          "label": "Painted steel"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "fabric": "#28262d",
+          "steel": "#343b41",
+          "hardware": "#c5a052"
+        },
+        "touring": {
+          "fabric": "#a14469",
+          "steel": "#315968",
+          "hardware": "#e2b347"
+        }
+      },
       "stats": {
         "triangles": 128,
         "sizeM": [
@@ -225988,19 +227306,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#807563",
+          "name": "fabric",
+          "color": "#463849",
           "parts": [
             "bag-body",
+            "top-seam",
+            "hanger-strap-left",
+            "hanger-strap-right"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "steel",
+          "color": "#46515a",
+          "parts": [
             "end-left",
             "end-right",
-            "top-seam",
-            "label-patch",
-            "hanger-strap-left",
-            "hanger-strap-right",
+            "label-patch"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
             "suspension-eye"
           ],
-          "param": "color"
+          "param": "hardware"
         }
       ]
     },
@@ -226008,7 +227340,7 @@
       "id": "scenic-flat-panel",
       "kit": "theatre-production",
       "title": "Scenic flat panel",
-      "description": "Lightweight scenery flat with a broad facing, perimeter rails, two battens and foot blocks. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Lightweight scenery flat with a broad facing, perimeter rails, two battens and foot blocks. Knobs: overall scale; stage timber, painted steel, rubber and isolation pads, steel hardware; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226028,7 +227360,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/scenic-flat-panel.kcad.ts",
       "preview": "/assets/theatre-production-scenic-flat-panel.png",
-      "sourceSha256": "c65f6bdc38cff00a448e6456649863db84bbcd5d73f1b931fa0b648aa0c9082d",
+      "sourceSha256": "874d7bfb20ebc12232ec0efb3e0887d7532275b1c6f143ec613d1dd0840cbd9b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -226041,13 +227373,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#756f65",
-          "label": "Asset color"
+          "default": "#946b43",
+          "label": "Stage timber"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#46515a",
+          "label": "Painted steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#272a2d",
+          "label": "Rubber and isolation pads"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "timber": "#725137",
+          "steel": "#343b41",
+          "rubber": "#222629",
+          "hardware": "#c5a052"
+        },
+        "touring": {
+          "timber": "#cd914b",
+          "steel": "#315968",
+          "rubber": "#25292c",
+          "hardware": "#e2b347"
+        }
+      },
       "stats": {
         "triangles": 196,
         "sizeM": [
@@ -226060,22 +227423,43 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#756f65",
+          "name": "timber",
+          "color": "#946b43",
           "parts": [
-            "face",
+            "face"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "steel",
+          "color": "#46515a",
+          "parts": [
             "left-stile",
             "right-stile",
             "top-rail",
             "bottom-rail",
             "batten-low",
-            "batten-high",
+            "batten-high"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "rubber",
+          "color": "#272a2d",
+          "parts": [
             "foot-left",
-            "foot-right",
+            "foot-right"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
             "hinge-pin-left",
             "hinge-pin-right"
           ],
-          "param": "color"
+          "param": "hardware"
         }
       ]
     },
@@ -226083,7 +227467,7 @@
       "id": "scenic-wagon",
       "kit": "theatre-production",
       "title": "Scenic wagon",
-      "description": "Low rolling scenery wagon with a deck, corner posts, push bar and four wheel housings. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Low rolling scenery wagon with a deck, corner posts, push bar and four wheel housings. Knobs: overall scale; stage timber, painted steel, steel hardware, rubber and isolation pads; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226103,7 +227487,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/scenic-wagon.kcad.ts",
       "preview": "/assets/theatre-production-scenic-wagon.png",
-      "sourceSha256": "c3bd2d6df41003ca0f35965db81b1b0b082056097826f717a30a5856444f749a",
+      "sourceSha256": "f3ff318bb63126342e813545d1164c6e300b0b1ff8a6e37d2878e0f16238dbde",
       "triangleBudget": 1800,
       "params": [
         {
@@ -226116,15 +227500,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#6b717b",
-          "label": "Asset color"
+          "default": "#946b43",
+          "label": "Stage timber"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#46515a",
+          "label": "Painted steel"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#272a2d",
+          "label": "Rubber and isolation pads"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "timber": "#725137",
+          "steel": "#343b41",
+          "hardware": "#c5a052",
+          "rubber": "#222629"
+        },
+        "touring": {
+          "timber": "#cd914b",
+          "steel": "#315968",
+          "hardware": "#e2b347",
+          "rubber": "#25292c"
+        }
+      },
       "stats": {
-        "triangles": 296,
+        "triangles": 344,
         "sizeM": [
           1.575,
           1.045,
@@ -226135,25 +227550,50 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6b717b",
+          "name": "timber",
+          "color": "#946b43",
           "parts": [
-            "deck",
+            "deck"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "steel",
+          "color": "#46515a",
+          "parts": [
             "front-stop",
             "back-stop",
             "post-left-front",
             "post-right-front",
             "post-left-back",
-            "post-right-back",
+            "post-right-back"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
             "handle-left",
             "handle-right",
             "handle-top",
-            "caster-a",
-            "caster-b",
-            "caster-c",
-            "caster-d"
+            "caster-bracket-left-front",
+            "caster-bracket-left-back",
+            "caster-bracket-right-front",
+            "caster-bracket-right-back"
           ],
-          "param": "color"
+          "param": "hardware"
+        },
+        {
+          "name": "rubber",
+          "color": "#272a2d",
+          "parts": [
+            "caster-wheel-left-front",
+            "caster-wheel-left-back",
+            "caster-wheel-right-front",
+            "caster-wheel-right-back"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -226161,7 +227601,7 @@
       "id": "scrim-frame",
       "kit": "theatre-production",
       "title": "Scrim frame",
-      "description": "Freestanding scenic scrim panel with a rectangular support frame and weighted stabilizer feet. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Freestanding scenic scrim panel with a rectangular support frame and weighted stabilizer feet. Knobs: overall scale; stage fabric, painted steel, steel hardware; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226181,7 +227621,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/scrim-frame.kcad.ts",
       "preview": "/assets/theatre-production-scrim-frame.png",
-      "sourceSha256": "9156088d5e080f80e3e4c714e1db775235d505bda8d31fcf4c3a726c91e316eb",
+      "sourceSha256": "b8228190472d905c5bd19188ed7d73563aa8f1fe8266d5c45f44ac6a10c681a6",
       "triangleBudget": 1800,
       "params": [
         {
@@ -226194,13 +227634,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "fabric",
           "type": "color",
-          "default": "#7a7770",
-          "label": "Asset color"
+          "default": "#463849",
+          "label": "Stage fabric"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#46515a",
+          "label": "Painted steel"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "fabric": "#28262d",
+          "steel": "#343b41",
+          "hardware": "#c5a052"
+        },
+        "touring": {
+          "fabric": "#a14469",
+          "steel": "#315968",
+          "hardware": "#e2b347"
+        }
+      },
       "stats": {
         "triangles": 184,
         "sizeM": [
@@ -226213,21 +227676,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7a7770",
+          "name": "fabric",
+          "color": "#463849",
           "parts": [
-            "scrim",
+            "scrim"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "steel",
+          "color": "#46515a",
+          "parts": [
             "top-frame",
             "bottom-frame",
             "left-frame",
             "right-frame",
             "mid-rail",
             "foot-left",
-            "foot-right",
+            "foot-right"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
             "foot-pin-left",
             "foot-pin-right"
           ],
-          "param": "color"
+          "param": "hardware"
         }
       ]
     },
@@ -226235,7 +227712,7 @@
       "id": "spotlight-followspot-stand",
       "kit": "theatre-production",
       "title": "Followspot stand",
-      "description": "Tall followspot support with a weighted base, height mast, yoke saddle and paired adjustment knobs. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Tall followspot support with a weighted base, height mast, yoke saddle and paired adjustment knobs. Knobs: overall scale; powder-coated steel, steel hardware; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226255,7 +227732,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/spotlight-followspot-stand.kcad.ts",
       "preview": "/assets/theatre-production-spotlight-followspot-stand.png",
-      "sourceSha256": "48a5ac9c8f3335ff717aac602a33fbde126abc1568dd2810f00e7536b5de20ad",
+      "sourceSha256": "0dfb0c96264abd4e6b81ba4da0f4179eb25584b145bbb90d471367583ff23820",
       "triangleBudget": 1800,
       "params": [
         {
@@ -226268,13 +227745,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#676f79",
-          "label": "Asset color"
+          "default": "#353b41",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "powderCoat": "#272d33",
+          "hardware": "#c5a052"
+        },
+        "touring": {
+          "powderCoat": "#315465",
+          "hardware": "#e2b347"
+        }
+      },
       "stats": {
         "triangles": 204,
         "sizeM": [
@@ -226287,20 +227779,27 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#676f79",
+          "name": "powderCoat",
+          "color": "#353b41",
           "parts": [
             "base",
             "mast",
             "crosshead",
-            "left-yoke",
-            "right-yoke",
             "saddle",
             "height-collar",
             "left-adjuster",
             "right-adjuster"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
+            "left-yoke",
+            "right-yoke"
+          ],
+          "param": "hardware"
         }
       ]
     },
@@ -226308,7 +227807,7 @@
       "id": "stage-batten-section",
       "kit": "theatre-production",
       "title": "Stage batten section",
-      "description": "Short overhead batten assembly with a long tube, end plates, two suspension eyes and a cable clip. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Short overhead batten assembly with a long tube, end plates, two suspension eyes and a cable clip. Knobs: overall scale; powder-coated steel, steel hardware; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226328,7 +227827,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/stage-batten-section.kcad.ts",
       "preview": "/assets/theatre-production-stage-batten-section.png",
-      "sourceSha256": "307fe3b9c7702526fb1f6874b1cd81f96e4beffa5f43df68da56e68bf7935165",
+      "sourceSha256": "7f17adf67811a93e7b89934d434014b947be4cee1f25bfc0631d3c0f325c3dd5",
       "triangleBudget": 1800,
       "params": [
         {
@@ -226341,13 +227840,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#777b80",
-          "label": "Asset color"
+          "default": "#353b41",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "powderCoat": "#272d33",
+          "hardware": "#c5a052"
+        },
+        "touring": {
+          "powderCoat": "#315465",
+          "hardware": "#e2b347"
+        }
+      },
       "stats": {
         "triangles": 160,
         "sizeM": [
@@ -226360,10 +227874,17 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#777b80",
+          "name": "powderCoat",
+          "color": "#353b41",
           "parts": [
-            "batten",
+            "batten"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
             "end-plate-left",
             "end-plate-right",
             "cable-clip",
@@ -226372,7 +227893,7 @@
             "hanger-eye-left",
             "hanger-eye-right"
           ],
-          "param": "color"
+          "param": "hardware"
         }
       ]
     },
@@ -226380,7 +227901,7 @@
       "id": "stage-edge-trim",
       "kit": "theatre-production",
       "title": "Stage edge trim",
-      "description": "Short modular stage-edge fascia section with corner return, fixing tabs and end cap. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Short modular stage-edge fascia section with corner return, fixing tabs and end cap. Knobs: overall scale; stage timber, painted steel, steel hardware; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226400,7 +227921,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/stage-edge-trim.kcad.ts",
       "preview": "/assets/theatre-production-stage-edge-trim.png",
-      "sourceSha256": "53ac2abadd8d3be6a5d827b095784f66271c397ec930cb27a55e9adbf0c0780f",
+      "sourceSha256": "da1c3d39407bbc68ca203dd49b3d9e95c4b1bb4898a7da9d9783d87f3c41ed05",
       "triangleBudget": 1800,
       "params": [
         {
@@ -226413,13 +227934,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#6d727b",
-          "label": "Asset color"
+          "default": "#946b43",
+          "label": "Stage timber"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#46515a",
+          "label": "Painted steel"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "timber": "#725137",
+          "steel": "#343b41",
+          "hardware": "#c5a052"
+        },
+        "touring": {
+          "timber": "#cd914b",
+          "steel": "#315968",
+          "hardware": "#e2b347"
+        }
+      },
       "stats": {
         "triangles": 228,
         "sizeM": [
@@ -226432,22 +227976,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6d727b",
+          "name": "timber",
+          "color": "#946b43",
           "parts": [
-            "fascia",
+            "fascia"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "steel",
+          "color": "#46515a",
+          "parts": [
             "top-lip",
             "left-return",
             "right-return",
+            "end-cap"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
             "fixing-tab-a",
             "fixing-tab-b",
             "fixing-tab-c",
-            "end-cap",
             "fastener-a",
             "fastener-b",
             "fastener-c"
           ],
-          "param": "color"
+          "param": "hardware"
         }
       ]
     },
@@ -226455,7 +228013,7 @@
       "id": "stage-extension-wing",
       "kit": "theatre-production",
       "title": "Stage extension wing",
-      "description": "Side-stage extension platform with a box frame, guard posts and a small tie-in plate. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Side-stage extension platform with a box frame, guard posts and a small tie-in plate. Knobs: overall scale; stage timber, painted steel, steel hardware; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226475,7 +228033,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/stage-extension-wing.kcad.ts",
       "preview": "/assets/theatre-production-stage-extension-wing.png",
-      "sourceSha256": "d4b3166a27d1e4dd1ef628638928e1d5193338cb50e42f5d59ccf0c73718953f",
+      "sourceSha256": "2065962bdc5922595f401765b319a697a0b2be71105b185de45a750400a85c55",
       "triangleBudget": 1800,
       "params": [
         {
@@ -226488,13 +228046,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#737783",
-          "label": "Asset color"
+          "default": "#946b43",
+          "label": "Stage timber"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#46515a",
+          "label": "Painted steel"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "timber": "#725137",
+          "steel": "#343b41",
+          "hardware": "#c5a052"
+        },
+        "touring": {
+          "timber": "#cd914b",
+          "steel": "#315968",
+          "hardware": "#e2b347"
+        }
+      },
       "stats": {
         "triangles": 208,
         "sizeM": [
@@ -226507,11 +228088,18 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#737783",
+          "name": "timber",
+          "color": "#946b43",
           "parts": [
             "platform",
-            "front-apron",
+            "front-apron"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "steel",
+          "color": "#46515a",
+          "parts": [
             "left-rail",
             "right-rail",
             "rear-rail",
@@ -226519,11 +228107,18 @@
             "leg-right-front",
             "leg-left-back",
             "leg-right-back",
-            "tie-in-tab",
             "level-left",
             "level-right"
           ],
-          "param": "color"
+          "param": "steel"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
+            "tie-in-tab"
+          ],
+          "param": "hardware"
         }
       ]
     },
@@ -226531,7 +228126,7 @@
       "id": "stage-manager-console",
       "kit": "theatre-production",
       "title": "Stage manager console",
-      "description": "Compact backstage work surface with a call-board screen, talkback controls and cable trunk. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Compact backstage work surface with a call-board screen, talkback controls and cable trunk. Knobs: overall scale; steel hardware, powder-coated steel, lens and display glass, polymer controls and cable jacket; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226551,7 +228146,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/stage-manager-console.kcad.ts",
       "preview": "/assets/theatre-production-stage-manager-console.png",
-      "sourceSha256": "7fa7c902189fff9730ca6bfaf3e7227ea1ad5c95877089d646dec35b6f029256",
+      "sourceSha256": "33edaecc4698f75f06d968fc412d6e1e5cd2920ee6e3d501fdf4db9b0e5e673a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -226564,13 +228159,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "hardware",
           "type": "color",
-          "default": "#676f79",
-          "label": "Asset color"
+          "default": "#c28f3e",
+          "label": "Steel hardware"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#353b41",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#f3e9bf",
+          "label": "Lens and display glass"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#426878",
+          "label": "Polymer controls and cable jacket"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "hardware": "#c5a052",
+          "powderCoat": "#272d33",
+          "glass": "#ffd15d",
+          "polymer": "#344e5b"
+        },
+        "touring": {
+          "hardware": "#e2b347",
+          "powderCoat": "#315465",
+          "glass": "#31b9d2",
+          "polymer": "#e3a928"
+        }
+      },
       "stats": {
         "triangles": 196,
         "sizeM": [
@@ -226583,22 +228209,43 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#676f79",
+          "name": "hardware",
+          "color": "#c28f3e",
           "parts": [
             "console-base",
-            "desk-top",
             "left-leg",
             "right-leg",
             "rear-post-left",
-            "rear-post-right",
-            "monitor",
+            "rear-post-right"
+          ],
+          "param": "hardware"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#353b41",
+          "parts": [
+            "desk-top",
             "call-board",
-            "lower-shelf",
+            "lower-shelf"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "glass",
+          "color": "#f3e9bf",
+          "parts": [
+            "monitor"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "polymer",
+          "color": "#426878",
+          "parts": [
             "talkback-knob-left",
             "talkback-knob-right"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -226606,7 +228253,7 @@
       "id": "stage-pocket-hatch",
       "kit": "theatre-production",
       "title": "Stage pocket hatch",
-      "description": "Flush access-hatch panel with a perimeter frame, lift recess and corner hinge barrels. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Flush access-hatch panel with a perimeter frame, lift recess and corner hinge barrels. Knobs: overall scale; painted steel, stage timber, steel hardware; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226626,7 +228273,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/stage-pocket-hatch.kcad.ts",
       "preview": "/assets/theatre-production-stage-pocket-hatch.png",
-      "sourceSha256": "c64ffac2acb22274d112abf1d75e380368756647db4645eda05347f81f073611",
+      "sourceSha256": "e406d1487658e704a40c4dcdbc39d646902e7c86d3476a4501382e5b0c0531fc",
       "triangleBudget": 1800,
       "params": [
         {
@@ -226639,13 +228286,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "steel",
           "type": "color",
-          "default": "#6a7079",
-          "label": "Asset color"
+          "default": "#46515a",
+          "label": "Painted steel"
+        },
+        {
+          "name": "timber",
+          "type": "color",
+          "default": "#946b43",
+          "label": "Stage timber"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "steel": "#343b41",
+          "timber": "#725137",
+          "hardware": "#c5a052"
+        },
+        "touring": {
+          "steel": "#315968",
+          "timber": "#cd914b",
+          "hardware": "#e2b347"
+        }
+      },
       "stats": {
         "triangles": 184,
         "sizeM": [
@@ -226658,21 +228328,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6a7079",
+          "name": "steel",
+          "color": "#46515a",
           "parts": [
             "frame-front",
             "frame-back",
             "frame-left",
             "frame-right",
-            "hatch-panel",
-            "lift-recess",
+            "lift-recess"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "timber",
+          "color": "#946b43",
+          "parts": [
+            "hatch-panel"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
             "hinge-strap-left",
             "hinge-strap-right",
             "hinge-barrel-left",
             "hinge-barrel-right"
           ],
-          "param": "color"
+          "param": "hardware"
         }
       ]
     },
@@ -226680,7 +228364,7 @@
       "id": "stage-power-distro",
       "kit": "theatre-production",
       "title": "Stage power distribution box",
-      "description": "Portable stage power enclosure with locking lid, connector rows, carry handles and skid feet. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Portable stage power enclosure with locking lid, connector rows, carry handles and skid feet. Knobs: overall scale; powder-coated steel, steel hardware, polymer controls and cable jacket; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226700,7 +228384,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/stage-power-distro.kcad.ts",
       "preview": "/assets/theatre-production-stage-power-distro.png",
-      "sourceSha256": "39bf4cd1b4a7c666b5fc67ec335de0f7d9ac79ffd874d10927177400c7efccb0",
+      "sourceSha256": "15a7d500a54ccfdd47d5d94ac2dba45bf49a616908a47729ea58fab0c064551b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -226713,13 +228397,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#6d747b",
-          "label": "Asset color"
+          "default": "#353b41",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#426878",
+          "label": "Polymer controls and cable jacket"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "powderCoat": "#272d33",
+          "hardware": "#c5a052",
+          "polymer": "#344e5b"
+        },
+        "touring": {
+          "powderCoat": "#315465",
+          "hardware": "#e2b347",
+          "polymer": "#e3a928"
+        }
+      },
       "stats": {
         "triangles": 240,
         "sizeM": [
@@ -226732,23 +228439,37 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6d747b",
+          "name": "powderCoat",
+          "color": "#353b41",
           "parts": [
             "case",
             "lid",
             "front-panel",
             "panel-left",
             "panel-right",
-            "handle-left",
-            "handle-right",
             "skid-left",
-            "skid-right",
+            "skid-right"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
+            "handle-left",
+            "handle-right"
+          ],
+          "param": "hardware"
+        },
+        {
+          "name": "polymer",
+          "color": "#426878",
+          "parts": [
             "connector-a",
             "connector-b",
             "connector-c"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -226756,7 +228477,7 @@
       "id": "stage-riser-platform",
       "kit": "theatre-production",
       "title": "Stage riser platform",
-      "description": "Two-level riser assembly with stepped decks, boxed supports and a low access step. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Two-level riser assembly with stepped decks, boxed supports and a low access step. Knobs: overall scale; stage timber, painted steel, rubber and isolation pads; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226776,7 +228497,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/stage-riser-platform.kcad.ts",
       "preview": "/assets/theatre-production-stage-riser-platform.png",
-      "sourceSha256": "73a1fc52c0d9706814eb08f4088fc16510fe1a9ebcc644913f6b65085d73c8b2",
+      "sourceSha256": "34c1561f28552628f46060bb78fd5d7ba77ea975c720f09f5c5a8ecbb63b1504",
       "triangleBudget": 1800,
       "params": [
         {
@@ -226789,13 +228510,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#696f79",
-          "label": "Asset color"
+          "default": "#946b43",
+          "label": "Stage timber"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#46515a",
+          "label": "Painted steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#272a2d",
+          "label": "Rubber and isolation pads"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "timber": "#725137",
+          "steel": "#343b41",
+          "rubber": "#222629"
+        },
+        "touring": {
+          "timber": "#cd914b",
+          "steel": "#315968",
+          "rubber": "#25292c"
+        }
+      },
       "stats": {
         "triangles": 208,
         "sizeM": [
@@ -226808,23 +228552,37 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#696f79",
+          "name": "timber",
+          "color": "#946b43",
           "parts": [
             "lower-deck",
             "upper-deck",
+            "step"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "steel",
+          "color": "#46515a",
+          "parts": [
             "lower-front",
             "upper-front",
             "support-left-low",
             "support-right-low",
             "support-left-high",
             "support-right-high",
-            "step",
-            "cross-rail",
+            "cross-rail"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "rubber",
+          "color": "#272a2d",
+          "parts": [
             "foot-left",
             "foot-right"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -226832,7 +228590,7 @@
       "id": "stage-stair-unit",
       "kit": "theatre-production",
       "title": "Stage stair unit",
-      "description": "Three-step stage access unit with boxed treads, side cheeks and rear stabilizing pads. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Three-step stage access unit with boxed treads, side cheeks and rear stabilizing pads. Knobs: overall scale; stage timber, painted steel, rubber and isolation pads; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226852,7 +228610,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/stage-stair-unit.kcad.ts",
       "preview": "/assets/theatre-production-stage-stair-unit.png",
-      "sourceSha256": "c4fad610ec29674e42f0e28f74a43401fc4fcda98e031f47e0875c2c9fa63f4a",
+      "sourceSha256": "cc1a129618d6e2221422a9c52ed66b0467476a0b5ebfe563111461df62cdf75a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -226865,13 +228623,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#707682",
-          "label": "Asset color"
+          "default": "#946b43",
+          "label": "Stage timber"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#46515a",
+          "label": "Painted steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#272a2d",
+          "label": "Rubber and isolation pads"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "timber": "#725137",
+          "steel": "#343b41",
+          "rubber": "#222629"
+        },
+        "touring": {
+          "timber": "#cd914b",
+          "steel": "#315968",
+          "rubber": "#25292c"
+        }
+      },
       "stats": {
         "triangles": 172,
         "sizeM": [
@@ -226884,20 +228665,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#707682",
+          "name": "timber",
+          "color": "#946b43",
           "parts": [
             "step-one",
             "step-two",
-            "step-three",
+            "step-three"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "steel",
+          "color": "#46515a",
+          "parts": [
             "left-cheek",
             "right-cheek",
             "top-landing",
-            "rear-brace",
+            "rear-brace"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "rubber",
+          "color": "#272a2d",
+          "parts": [
             "front-foot-left",
             "front-foot-right"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -226905,7 +228700,7 @@
       "id": "strip-light-battens",
       "kit": "theatre-production",
       "title": "Strip-light batten set",
-      "description": "Three compact strip-light housings with mounting tabs and end caps, arranged as a touring set. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Three compact strip-light housings with mounting tabs and end caps, arranged as a touring set. Knobs: overall scale; powder-coated steel, lens and display glass, steel hardware; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226925,7 +228720,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/strip-light-battens.kcad.ts",
       "preview": "/assets/theatre-production-strip-light-battens.png",
-      "sourceSha256": "e2b48b6528fefda1507124b7326efea810a71bf0efe3def0d5aee92fcd127716",
+      "sourceSha256": "71acd520b02e10dd8bbea0d541446b38bb61aa9d781aa22086f8b7b1637bb0b6",
       "triangleBudget": 1800,
       "params": [
         {
@@ -226938,13 +228733,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#696f78",
-          "label": "Asset color"
+          "default": "#353b41",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#f3e9bf",
+          "label": "Lens and display glass"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "powderCoat": "#272d33",
+          "glass": "#ffd15d",
+          "hardware": "#c5a052"
+        },
+        "touring": {
+          "powderCoat": "#315465",
+          "glass": "#31b9d2",
+          "hardware": "#e2b347"
+        }
+      },
       "stats": {
         "triangles": 208,
         "sizeM": [
@@ -226957,15 +228775,29 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#696f78",
+          "name": "powderCoat",
+          "color": "#353b41",
           "parts": [
             "batten-one",
             "batten-two",
-            "batten-three",
+            "batten-three"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "glass",
+          "color": "#f3e9bf",
+          "parts": [
             "lens-one",
             "lens-two",
-            "lens-three",
+            "lens-three"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
             "tab-left-one",
             "tab-right-one",
             "tab-left-two",
@@ -226973,7 +228805,7 @@
             "hanger-left",
             "hanger-right"
           ],
-          "param": "color"
+          "param": "hardware"
         }
       ]
     },
@@ -226981,7 +228813,7 @@
       "id": "teaser-border",
       "kit": "theatre-production",
       "title": "Teaser border",
-      "description": "Horizontal masking border with a rectangular frame, hanging cloth and top rigging sleeves. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Horizontal masking border with a rectangular frame, hanging cloth and top rigging sleeves. Knobs: overall scale; stage fabric, painted steel, steel hardware; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -227001,7 +228833,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/teaser-border.kcad.ts",
       "preview": "/assets/theatre-production-teaser-border.png",
-      "sourceSha256": "b517334814bacb93255c8874b3c447896b43c2f1ab4670793217787ccaca91b3",
+      "sourceSha256": "0b5eca66e21582e35a817d910d6bddbe94a895be12fd920d30baabc4e858bf60",
       "triangleBudget": 1800,
       "params": [
         {
@@ -227014,13 +228846,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "fabric",
           "type": "color",
-          "default": "#636c79",
-          "label": "Asset color"
+          "default": "#463849",
+          "label": "Stage fabric"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#46515a",
+          "label": "Painted steel"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "fabric": "#28262d",
+          "steel": "#343b41",
+          "hardware": "#c5a052"
+        },
+        "touring": {
+          "fabric": "#a14469",
+          "steel": "#315968",
+          "hardware": "#e2b347"
+        }
+      },
       "stats": {
         "triangles": 184,
         "sizeM": [
@@ -227033,13 +228888,27 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#636c79",
+          "name": "fabric",
+          "color": "#463849",
           "parts": [
             "cloth",
-            "top-sleeve",
             "left-hem",
-            "right-hem",
+            "right-hem"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "steel",
+          "color": "#46515a",
+          "parts": [
+            "top-sleeve"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
             "bottom-weight",
             "hang-tab-left",
             "hang-tab-mid",
@@ -227047,7 +228916,7 @@
             "grommet-left",
             "grommet-right"
           ],
-          "param": "color"
+          "param": "hardware"
         }
       ]
     },
@@ -227055,7 +228924,7 @@
       "id": "touring-road-case",
       "kit": "theatre-production",
       "title": "Touring road case",
-      "description": "Flight case with reinforced corners, recessed pull handles, latches and low roller feet. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Touring flight case with reinforced corners, recessed pull handles, metal latches and four exposed low-profile caster wheels. Knobs: overall scale; polymer controls and cable jacket, aluminum, steel hardware, rubber and isolation pads; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -227075,7 +228944,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/touring-road-case.kcad.ts",
       "preview": "/assets/theatre-production-touring-road-case.png",
-      "sourceSha256": "9fa54e8cb9d11ad9abbcf6e7b7ca8bd236de896aa9dc2ac0f42e3826fa146941",
+      "sourceSha256": "8fdb9e6d045946439413f648361dcfa0fb243563adbe2a12cdcbf9995446071c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -227088,42 +228957,100 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#68717b",
-          "label": "Asset color"
+          "default": "#426878",
+          "label": "Polymer controls and cable jacket"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#bac3c6",
+          "label": "Aluminum"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#272a2d",
+          "label": "Rubber and isolation pads"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "polymer": "#344e5b",
+          "aluminum": "#c7cecf",
+          "hardware": "#c5a052",
+          "rubber": "#222629"
+        },
+        "touring": {
+          "polymer": "#e3a928",
+          "aluminum": "#dce3e2",
+          "hardware": "#e2b347",
+          "rubber": "#25292c"
+        }
+      },
       "stats": {
-        "triangles": 208,
+        "triangles": 344,
         "sizeM": [
           0.98,
           1.04,
-          0.72
+          0.7425
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#68717b",
+          "name": "polymer",
+          "color": "#426878",
           "parts": [
             "case-shell",
-            "lid",
+            "lid"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "aluminum",
+          "color": "#bac3c6",
+          "parts": [
             "front-rail",
-            "back-rail",
+            "back-rail"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
             "left-corner",
             "right-corner",
             "handle-left",
             "handle-right",
             "latch-left",
             "latch-right",
-            "wheel-left",
-            "wheel-right"
+            "caster-plate-front-left",
+            "caster-plate-back-left",
+            "caster-plate-front-right",
+            "caster-plate-back-right"
           ],
-          "param": "color"
+          "param": "hardware"
+        },
+        {
+          "name": "rubber",
+          "color": "#272a2d",
+          "parts": [
+            "caster-wheel-front-left",
+            "caster-wheel-back-left",
+            "caster-wheel-front-right",
+            "caster-wheel-back-right"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -227131,7 +229058,7 @@
       "id": "traveler-curtain-track",
       "kit": "theatre-production",
       "title": "Traveler curtain track",
-      "description": "Straight curtain track with end stops, suspended support points and paired traveler panels. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Straight curtain track with end stops, suspended support points and paired traveler panels. Knobs: overall scale; painted steel, stage fabric, steel hardware; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -227151,7 +229078,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/traveler-curtain-track.kcad.ts",
       "preview": "/assets/theatre-production-traveler-curtain-track.png",
-      "sourceSha256": "2af1b3d004e52b5a5d2adaba459dfd30df32c903eb68dbc5d9a1c1dbfd821742",
+      "sourceSha256": "413b10d43a3c650653fa53ee0f0d74afedb33345491db485eb60a432b8defc21",
       "triangleBudget": 1800,
       "params": [
         {
@@ -227164,13 +229091,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "steel",
           "type": "color",
-          "default": "#6d6e79",
-          "label": "Asset color"
+          "default": "#46515a",
+          "label": "Painted steel"
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#463849",
+          "label": "Stage fabric"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "steel": "#343b41",
+          "fabric": "#28262d",
+          "hardware": "#c5a052"
+        },
+        "touring": {
+          "steel": "#315968",
+          "fabric": "#a14469",
+          "hardware": "#e2b347"
+        }
+      },
       "stats": {
         "triangles": 228,
         "sizeM": [
@@ -227183,22 +229133,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6d6e79",
+          "name": "steel",
+          "color": "#46515a",
           "parts": [
             "track",
             "support-left",
             "support-center",
-            "support-right",
+            "support-right"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "fabric",
+          "color": "#463849",
+          "parts": [
             "left-curtain",
             "right-curtain",
             "bottom-hem-left",
-            "bottom-hem-right",
+            "bottom-hem-right"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
             "carrier-left",
             "carrier-center",
             "carrier-right"
           ],
-          "param": "color"
+          "param": "hardware"
         }
       ]
     },
@@ -227206,7 +229170,7 @@
       "id": "wireless-intercom-beltpack",
       "kit": "theatre-production",
       "title": "Wireless intercom beltpack",
-      "description": "Portable communications pack with antenna, belt clip, talk button and headset socket. Stylized scene geometry. Knobs: overall scale and asset color.",
+      "description": "Portable communications pack with antenna, belt clip, talk button and headset socket. Knobs: overall scale; powder-coated steel, steel hardware, polymer controls and cable jacket; houseShow and touring appearance presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -227226,7 +229190,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/wireless-intercom-beltpack.kcad.ts",
       "preview": "/assets/theatre-production-wireless-intercom-beltpack.png",
-      "sourceSha256": "864b690e3f931239b95e0b08d6ef74c71a8448fbcedad83144ea17e4c6af1709",
+      "sourceSha256": "a203f9a7c7e3a2178e1c82cf47fa6b5ad5421b4d6d6047051485f76fb5295d7f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -227239,13 +229203,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#737780",
-          "label": "Asset color"
+          "default": "#353b41",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c28f3e",
+          "label": "Steel hardware"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#426878",
+          "label": "Polymer controls and cable jacket"
         }
       ],
-      "presets": {},
+      "presets": {
+        "houseShow": {
+          "powderCoat": "#272d33",
+          "hardware": "#c5a052",
+          "polymer": "#344e5b"
+        },
+        "touring": {
+          "powderCoat": "#315465",
+          "hardware": "#e2b347",
+          "polymer": "#e3a928"
+        }
+      },
       "stats": {
         "triangles": 204,
         "sizeM": [
@@ -227258,20 +229245,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#737780",
+          "name": "powderCoat",
+          "color": "#353b41",
           "parts": [
             "pack-body",
-            "belt-clip",
             "top-cap",
+            "front-label"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
+            "belt-clip"
+          ],
+          "param": "hardware"
+        },
+        {
+          "name": "polymer",
+          "color": "#426878",
+          "parts": [
             "side-button",
-            "front-label",
             "antenna-base",
             "antenna",
             "talk-button",
             "headset-socket"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },

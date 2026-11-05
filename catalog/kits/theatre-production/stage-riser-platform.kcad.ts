@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: CC0-1.0
-// Original low-poly theatre-production scene prop, millimetres, Z up, base at z = 0.
+// Stage riser platform: Two-level riser assembly with stepped decks, boxed supports and a low access step.
 
 meta({
   name: "stage-riser-platform",
   license: 'CC0-1.0',
   title: "Stage riser platform",
-  description: "Two-level riser assembly with stepped decks, boxed supports and a low access step. Stylized scene geometry. Knobs: overall scale and asset color.",
+  description: "Two-level riser assembly with stepped decks, boxed supports and a low access step. Knobs: overall scale; stage timber, painted steel, rubber and isolation pads; houseShow and touring appearance presets.",
   tags: ['theatre production', 'stagecraft', 'performing arts', 'low poly', 'scene prop'],
   kit: 'theatre-production',
   category: 'prop',
@@ -15,22 +15,41 @@ meta({
 });
 
 const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });
-const color = param('color', "#696f79", { label: 'Asset color' });
+
+const timber = param('timber', '#946b43', { label: 'Stage timber' });
+const steel = param('steel', '#46515a', { label: 'Painted steel' });
+const rubber = param('rubber', '#272a2d', { label: 'Rubber and isolation pads' });
+
+presets({
+  houseShow: {
+    timber: '#725137',
+    steel: '#343b41',
+    rubber: '#222629',
+  },
+  touring: {
+    timber: '#cd914b',
+    steel: '#315968',
+    rubber: '#25292c',
+  },
+});
+
 const b = (x:number,y:number,z:number,w:number,d:number,h:number) => box(w,d,h,true).translate(x,y,z+h/2).scale(scale);
 const c = (x:number,y:number,z:number,h:number,r:number,s:number) => cylinder(h,r,s).translate(x,y,z).scale(scale);
 
 const p = assembly("stage-riser-platform");
-p.part("lower-deck", b(0,0,280,1700,1000,90).color(color));
-p.part("upper-deck", b(0,250,570,1700,520,90).color(color));
-p.part("lower-front", b(0,-470,190,1700,55,90).color(color));
-p.part("upper-front", b(0,-20,480,1700,55,90).color(color));
-p.part("support-left-low", b(-750,180,0,70,70,280).color(color));
-p.part("support-right-low", b(750,180,0,70,70,280).color(color));
-p.part("support-left-high", b(-750,410,0,70,70,570).color(color));
-p.part("support-right-high", b(750,410,0,70,70,570).color(color));
-p.part("step", b(0,-610,0,540,400,170).color(color));
-p.part("cross-rail", b(0,250,210,1600,60,55).color(color));
-p.part("foot-left", c(-740,-420,0,90,42,10).color(color));
-p.part("foot-right", c(740,-420,0,90,42,10).color(color));
+p.part("lower-deck", b(0,0,280,1700,1000,90).color(timber));
+p.part("upper-deck", b(0,250,570,1700,520,90).color(timber));
+p.part("lower-front", b(0,-470,190,1700,55,90).color(steel));
+p.part("upper-front", b(0,-20,480,1700,55,90).color(steel));
+p.part("support-left-low", b(-750,180,0,70,70,280).color(steel));
+p.part("support-right-low", b(750,180,0,70,70,280).color(steel));
+p.part("support-left-high", b(-750,410,0,70,70,570).color(steel));
+p.part("support-right-high", b(750,410,0,70,70,570).color(steel));
+p.part("step", b(0,-610,0,540,400,170).color(timber));
+p.part("cross-rail", b(0,250,210,1600,60,55).color(steel));
+p.part("foot-left", c(-740,-420,0,90,42,10).color(rubber));
+p.part("foot-right", c(740,-420,0,90,42,10).color(rubber));
+
+
 
 return p.model();

@@ -4,6 +4,16 @@ Reusable catalog sources live in `catalog/kits/<kit>/`. Each `.kcad.ts` file
 declares its metadata and parameter knobs; `catalog/index.json` is generated
 from those sources and must be rebuilt in the same change.
 
+## Catalog quality snapshot (2026-11-05)
+
+The catalog quality gate reports **1,400/2,390 assets passing (58.58%)** and
+990 thin assets (41.42%). This round began at 1,348/2,390 (56.40%) and promoted
+52 existing theatre-production assets; no IDs were added. The earlier 5 Nov
+checkpoint was 1,010/2,390 (42.26%). The full-catalog audit still identifies
+thin assets in other kits; see the [theatre production quality handoff](../artifacts/catalog-demos/theatre-production-quality-promotion-20261105/README.md)
+for source, preview, index, and verification evidence. These are local catalog
+checks and do not represent deployed behavior.
+
 ## Build and audit
 
 ```sh
@@ -76,13 +86,16 @@ compatibility, sensor calibration, or physical acceptance.
 
 The [theatre production kit](../catalog/kits/theatre-production/README.md) adds
 52 original low-poly props for modular staging, scenery, curtains and rigging,
-lighting, audio, backstage operations, and touring storage. Each source exposes
-scale and color controls and has an indexed preview. The [wave demo and
-verification bundle](../artifacts/catalog-demos/theatre-production-wave-20261103/README.md)
-records the source-to-preview workflow, full-catalog integration checks, local
-pages, package boundary audit, and inspected MP4. These are visualization props;
-catalog checks do not establish load capacity, rigging safety, electrical
-ratings, code compliance, or physical acceptance.
+lighting, audio, backstage operations, and touring storage. Each existing ID
+retains its scale control and now has two to four material-named color controls,
+two named appearance presets, and an indexed rendered preview. The [quality
+promotion handoff](../artifacts/catalog-demos/theatre-production-quality-promotion-20261105/README.md)
+records the source changes, preview review, preset render, regenerated index,
+lint, integration, local-page, and inspected-video evidence. The [original wave
+bundle](../artifacts/catalog-demos/theatre-production-wave-20261103/README.md)
+preserves initial kit creation evidence. These are visualization props; checks
+do not establish load capacity, rigging safety, electrical ratings, code
+compliance, or physical acceptance.
 
 ## Recycling facility assets
 

@@ -1,0 +1,15 @@
+{
+  "assets": 52,
+  "newIds": 0,
+  "sourceHashesMatch": true,
+  "indexedMaterialControls": 161,
+  "assetsWithTwoPresets": 52,
+  "previewsPresentAndIndexed": 52,
+  "triangleRange": [
+    120,
+    344
+  ],
+  "triangleBudget": 1800,
+  "issues": [],
+  "passed": true
+}

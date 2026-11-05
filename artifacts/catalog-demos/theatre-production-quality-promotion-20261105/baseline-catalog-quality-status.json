@@ -1,0 +1,6 @@
+{
+  "command": "python scripts/checkCatalogQuality.py --root <baseline snapshot>",
+  "baselineRevision": "a0bbb15de822e8699b763ddc0d93dec2b336284b",
+  "exitCode": 1,
+  "status": "report-with-thin-assets"
+}

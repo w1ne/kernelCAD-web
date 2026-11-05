@@ -1,0 +1,60 @@
+{
+  "date": "2026-11-05",
+  "sourceRevision": "a0bbb15de822e8699b763ddc0d93dec2b336284b",
+  "scope": {
+    "kit": "theatre-production",
+    "existingAssets": 52,
+    "newIds": 0,
+    "triangleBudgetPerAsset": 1800,
+    "materialRolesUsed": [
+      "aluminum",
+      "fabric",
+      "galvanizedSteel",
+      "glass",
+      "hardware",
+      "paintedSteel",
+      "polymer",
+      "powderCoat",
+      "rubber",
+      "steel",
+      "timber"
+    ],
+    "materialControlsPerAsset": {
+      "minimum": 2,
+      "maximum": 4
+    },
+    "presets": [
+      "houseShow",
+      "touring"
+    ],
+    "geometryEnhancements": {
+      "touring-road-case": "Raised shell; four exposed low-profile caster wheels and mounting plates.",
+      "motorized-chain-hoist": "Extruded J-shaped hook reaches the floor below the chain.",
+      "rolling-stage-platform": "Four floor-level caster wheels with steel forks below the deck.",
+      "scenic-wagon": "Four exposed caster wheels with brackets connected to the deck."
+    }
+  },
+  "paletteSource": "promote_theatre_production.py (material defaults and named preset overrides)",
+  "commands": {
+    "promoteSources": "PYTHONDONTWRITEBYTECODE=1 python artifacts/catalog-demos/theatre-production-quality-promotion-20261105/promote_theatre_production.py",
+    "renderPreviews": "npx tsx scripts/renderCatalogPreviews.ts adjustable-stage-leg audio-mixing-console audio-monitor-wedge backstage-call-board cable-ramp-crossing counterweight-arbor curtain-track-carrier cyclorama-drop dance-floor-panel dimmer-rack ellipsoidal-reflector-spotlight floor-cable-trough folding-flat-brace folding-stage-ramp fresnel-wash-fixture grand-drape-valance hoist-controller led-cyc-wash-light lighting-control-console lighting-yoke-bracket marley-floor-roll masking-leg modular-stage-deck motorized-chain-hoist orchestra-pit-filler orchestra-shell-panel par-can-fixture prop-storage-rack prop-table pulley-block rigging-handline-cleat riser-cart rolling-stage-platform rope-lock sandbag-counterweight scenic-flat-panel scenic-wagon scrim-frame spotlight-followspot-stand stage-batten-section stage-edge-trim stage-extension-wing stage-manager-console stage-pocket-hatch stage-power-distro stage-riser-platform stage-stair-unit strip-light-battens teaser-border touring-road-case traveler-curtain-track wireless-intercom-beltpack",
+    "rebuildIndex": "npx tsx scripts/buildAssetCatalog.ts",
+    "catalogIndexCheck": "python artifacts/catalog-demos/theatre-production-quality-promotion-20261105/verify_theatre_catalog.py",
+    "qualityGate": "python scripts/checkCatalogQuality.py --kit theatre-production",
+    "lint": "npx eslint catalog/kits/theatre-production/",
+    "integration": "NODE_OPTIONS=--max-old-space-size=8192 npx vitest run tests/integration/catalog/ --maxWorkers=1 --no-file-parallelism",
+    "localPages": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-theatre-production-quality-20261105-pages",
+    "pageCheck": "python artifacts/catalog-demos/theatre-production-quality-promotion-20261105/verify_theatre_pages.py /tmp/kernelcad-theatre-production-quality-20261105-pages",
+    "presetRender": "npx tsx artifacts/catalog-demos/theatre-production-quality-promotion-20261105/render_theatre_variant.mts",
+    "videoCapture": "PYTHONDONTWRITEBYTECODE=1 python artifacts/catalog-demos/theatre-production-quality-promotion-20261105/capture_theatre_promotion.py",
+    "videoInspection": "PYTHONDONTWRITEBYTECODE=1 python artifacts/catalog-demos/theatre-production-quality-promotion-20261105/inspect_theatre_video.py"
+  },
+  "claimBoundaries": [
+    "local .kcad.ts source authoring and geometry evaluation",
+    "software-rendered default and touring preset previews",
+    "regenerated local catalog index, source hashes, and static asset pages",
+    "local ESLint and catalog integration checks",
+    "feature branch is not deployed; public deployed behavior is unverified",
+    "no rigging capacity, electrical rating, venue compliance, operational safety, or physical acceptance claimed"
+  ]
+}

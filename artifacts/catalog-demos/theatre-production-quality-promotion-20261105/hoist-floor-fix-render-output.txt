@@ -1,0 +1,1 @@
+theatre-production/motorized-chain-hoist: 240 tris
