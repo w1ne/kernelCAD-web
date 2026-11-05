@@ -24724,7 +24724,7 @@
       "id": "air-rinse-enclosure",
       "kit": "beverage-bottling-line",
       "title": "Air rinse enclosure",
-      "description": "Compact enclosure around an ionized-air bottle rinse with access doors and extraction hood. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Compact enclosure around an ionized-air bottle rinse with access doors and extraction hood. Knobs: overall scale and color controls for stainless steel, powder-coated steel, food-grade polymer, and corrugated board.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -24743,7 +24743,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/air-rinse-enclosure.kcad.ts",
       "preview": "/assets/beverage-bottling-line-air-rinse-enclosure.png",
-      "sourceSha256": "fc76d360f60a217d747443b3ed575ac8bfc0df0b2e12ff874a43203aa9584aef",
+      "sourceSha256": "17f4867ee5c5300faef718bd125fcab16e6d9ef6efdfa6950be203fad56f2e40",
       "triangleBudget": 2200,
       "params": [
         {
@@ -24756,19 +24756,44 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade polymer"
+        },
+        {
+          "name": "corrugatedBoard",
+          "type": "color",
+          "default": "#b18a5d",
+          "label": "Corrugated board"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c",
+          "corrugatedBoard": "#c49b6b"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75",
+          "corrugatedBoard": "#886342"
+        }
+      },
       "stats": {
         "triangles": 436,
         "sizeM": [
@@ -24781,24 +24806,30 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "foodPolymer",
+          "color": "#3999a1",
           "parts": [
-            "base-tray",
-            "front-door-left",
-            "front-door-right",
-            "exhaust-stack"
+            "base-tray"
           ],
-          "param": "accent"
+          "param": "foodPolymer"
         },
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "left-panel",
             "right-panel",
-            "rear-panel",
+            "rear-panel"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
+          "parts": [
             "roof",
+            "front-door-left",
+            "front-door-right",
             "air-jet-0",
             "air-jet-1",
             "air-jet-2",
@@ -24807,7 +24838,15 @@
             "air-jet-5",
             "air-jet-6"
           ],
-          "param": "body"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "corrugatedBoard",
+          "color": "#b18a5d",
+          "parts": [
+            "exhaust-stack"
+          ],
+          "param": "corrugatedBoard"
         }
       ]
     },
@@ -24815,7 +24854,7 @@
       "id": "beverage-blend-tank",
       "kit": "beverage-bottling-line",
       "title": "Beverage blend tank",
-      "description": "Agitated blend tank with jacket band, manway, sight glass, and sanitary outlet. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Agitated blend tank with jacket band, manway, sight glass, and sanitary outlet. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and glass tint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -24834,7 +24873,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/beverage-blend-tank.kcad.ts",
       "preview": "/assets/beverage-bottling-line-beverage-blend-tank.png",
-      "sourceSha256": "5896a9016913a423007f06715af6aa889f22cec29f730a5b7f5e8c3ba3f75455",
+      "sourceSha256": "734726728395b032ae36bc3624cf8d58ef5f6073ee5509c99f04e6f59ca74293",
       "triangleBudget": 2200,
       "params": [
         {
@@ -24847,24 +24886,41 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#58acc1",
+          "label": "Glass tint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "glass": "#7ac4d2"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "glass": "#4a8795"
+        }
+      },
       "stats": {
-        "triangles": 424,
+        "triangles": 492,
         "sizeM": [
           0.83,
-          1.48,
+          1.69,
           0.97
         ],
         "minUpM": 0,
@@ -24872,32 +24928,42 @@
       },
       "palette": [
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
             "vessel-shell",
             "top-head",
             "bottom-head",
             "manway",
             "shaft",
+            "impeller-a",
+            "impeller-b",
             "outlet",
+            "sight-clamp-lower",
+            "sight-clamp-upper"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397e91",
+          "parts": [
+            "jacket-band",
+            "agitator-drive",
             "leg-0",
             "leg-1",
             "leg-2",
             "leg-3"
           ],
-          "param": "body"
+          "param": "powderCoat"
         },
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "glass",
+          "color": "#58acc1",
           "parts": [
-            "jacket-band",
-            "agitator-drive",
-            "impeller-a",
-            "impeller-b"
+            "sight-glass"
           ],
-          "param": "accent"
+          "param": "glass"
         }
       ]
     },
@@ -24905,7 +24971,7 @@
       "id": "bottle-accumulation-table",
       "kit": "beverage-bottling-line",
       "title": "Bottle accumulation table",
-      "description": "Low-speed round accumulation table with entry rail, exit lane, and central drive. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Low-speed round accumulation table with entry rail, exit lane, and central drive. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -24924,7 +24990,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/bottle-accumulation-table.kcad.ts",
       "preview": "/assets/beverage-bottling-line-bottle-accumulation-table.png",
-      "sourceSha256": "719e511fc1da16a32ace4445dd5a794f563be11b1e8385125e5b944ca5f17972",
+      "sourceSha256": "80ffd78e0e5c0e97a1e7baf20d20853a0c715977640f9759f151b2c0a55bbd17",
       "triangleBudget": 2200,
       "params": [
         {
@@ -24937,19 +25003,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75"
+        }
+      },
       "stats": {
         "triangles": 276,
         "sizeM": [
@@ -24962,11 +25045,32 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
             "table-top",
-            "outfeed-lane",
+            "turntable-rim",
+            "infeed-lane",
+            "outfeed-lane"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397e91",
+          "parts": [
+            "central-drive",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "foodPolymer",
+          "color": "#3999a1",
+          "parts": [
             "outer-guide-0",
             "outer-guide-1",
             "outer-guide-2",
@@ -24974,21 +25078,7 @@
             "outer-guide-4",
             "outer-guide-5"
           ],
-          "param": "accent"
-        },
-        {
-          "name": "body",
-          "color": "#a6b3b4",
-          "parts": [
-            "central-drive",
-            "turntable-rim",
-            "infeed-lane",
-            "leg-0",
-            "leg-1",
-            "leg-2",
-            "leg-3"
-          ],
-          "param": "body"
+          "param": "foodPolymer"
         }
       ]
     },
@@ -24996,7 +25086,7 @@
       "id": "bottle-case-packer",
       "kit": "beverage-bottling-line",
       "title": "Bottle case packer",
-      "description": "Guarded pick-and-place case packer with bottle grouping lanes and carton lift table. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Guarded pick-and-place case packer with bottle grouping lanes and carton lift table. Knobs: overall scale and color controls for stainless steel, powder-coated steel, food-grade polymer, and corrugated board.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -25015,7 +25105,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/bottle-case-packer.kcad.ts",
       "preview": "/assets/beverage-bottling-line-bottle-case-packer.png",
-      "sourceSha256": "43468185e4d14bde0dc66e5c5c474c9b2eead72ba203ff9359c02fd5ca6708c8",
+      "sourceSha256": "abae123bbcc581939b6125546e74fd4bb7115c53f11c5f0d2d5b4da4b315e4b1",
       "triangleBudget": 2200,
       "params": [
         {
@@ -25028,21 +25118,46 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade polymer"
+        },
+        {
+          "name": "corrugatedBoard",
+          "type": "color",
+          "default": "#b18a5d",
+          "label": "Corrugated board"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c",
+          "corrugatedBoard": "#c49b6b"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75",
+          "corrugatedBoard": "#886342"
+        }
+      },
       "stats": {
-        "triangles": 384,
+        "triangles": 1284,
         "sizeM": [
           1.5,
           1.275,
@@ -25053,34 +25168,75 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "base",
-            "gantry-beam",
-            "gripper-plate",
-            "control-box"
-          ],
-          "param": "accent"
-        },
-        {
-          "name": "body",
-          "color": "#a6b3b4",
-          "parts": [
-            "infeed-conveyor",
-            "case-conveyor",
             "left-post",
             "right-post",
+            "gantry-beam",
             "lift-carriage",
+            "guard-front-left",
+            "guard-front-right",
+            "guard-top-rail",
+            "guard-bottom-rail",
+            "control-box",
+            "lift-table"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
+          "parts": [
+            "infeed-conveyor",
+            "case-conveyor"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "foodPolymer",
+          "color": "#3999a1",
+          "parts": [
+            "gripper-plate",
             "gripper-0",
             "gripper-1",
             "gripper-2",
             "gripper-3",
             "gripper-4",
             "gripper-5",
-            "guard-front"
+            "bottle-body-0",
+            "bottle-neck-0",
+            "bottle-cap-0",
+            "bottle-body-1",
+            "bottle-neck-1",
+            "bottle-cap-1",
+            "bottle-body-2",
+            "bottle-neck-2",
+            "bottle-cap-2",
+            "bottle-body-3",
+            "bottle-neck-3",
+            "bottle-cap-3",
+            "bottle-body-4",
+            "bottle-neck-4",
+            "bottle-cap-4",
+            "bottle-body-5",
+            "bottle-neck-5",
+            "bottle-cap-5"
           ],
-          "param": "body"
+          "param": "foodPolymer"
+        },
+        {
+          "name": "corrugatedBoard",
+          "color": "#b18a5d",
+          "parts": [
+            "carton-bottom",
+            "carton-front-wall",
+            "carton-back-wall",
+            "carton-left-wall",
+            "carton-right-wall"
+          ],
+          "param": "corrugatedBoard"
         }
       ]
     },
@@ -25088,7 +25244,7 @@
       "id": "bottle-date-coder",
       "kit": "beverage-bottling-line",
       "title": "Bottle date coder",
-      "description": "Compact inkjet coding head and touchscreen stand beside a moving-bottle guide. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Compact inkjet coding head and touchscreen stand beside a moving-bottle guide. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -25107,7 +25263,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/bottle-date-coder.kcad.ts",
       "preview": "/assets/beverage-bottling-line-bottle-date-coder.png",
-      "sourceSha256": "23fd45a18cc53c6a0c6594582de653e2acc2b14fda7a221df33338bd63fa031f",
+      "sourceSha256": "94511e6e121996aedf655a8c86bc05bb47571af96660355c07d668659b4732b8",
       "triangleBudget": 2200,
       "params": [
         {
@@ -25120,19 +25276,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75"
+        }
+      },
       "stats": {
         "triangles": 140,
         "sizeM": [
@@ -25145,27 +25318,34 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "base",
-            "screen",
-            "adjustment-wheel",
-            "cable-cover"
+            "controller"
           ],
-          "param": "accent"
+          "param": "powderCoat"
         },
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
             "pedestal",
-            "controller",
+            "screen",
             "print-arm",
             "print-head",
-            "photoeye"
+            "photoeye",
+            "cable-cover"
           ],
-          "param": "body"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "foodPolymer",
+          "color": "#3999a1",
+          "parts": [
+            "adjustment-wheel"
+          ],
+          "param": "foodPolymer"
         }
       ]
     },
@@ -25173,7 +25353,7 @@
       "id": "bottle-infeed-conveyor",
       "kit": "beverage-bottling-line",
       "title": "Bottle infeed conveyor",
-      "description": "Narrow belt with adjustable guides and a dead-plate transfer into the rinser. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Narrow belt with adjustable guides and a dead-plate transfer into the rinser. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -25192,7 +25372,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/bottle-infeed-conveyor.kcad.ts",
       "preview": "/assets/beverage-bottling-line-bottle-infeed-conveyor.png",
-      "sourceSha256": "63973878efecab7c05fd2568079fc2753ecebcf02cc60644d663d43000afbc28",
+      "sourceSha256": "a2634ace223a4be2ee07de3251f5b977434d5563e8619fa290f5cecfc2129556",
       "triangleBudget": 2200,
       "params": [
         {
@@ -25205,19 +25385,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75"
+        }
+      },
       "stats": {
         "triangles": 208,
         "sizeM": [
@@ -25230,30 +25427,37 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "foodPolymer",
+          "color": "#3999a1",
           "parts": [
             "belt",
-            "drive-roller-0",
-            "drive-roller-1"
+            "guide-front",
+            "guide-back"
           ],
-          "param": "accent"
+          "param": "foodPolymer"
         },
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "side-frame-front",
             "side-frame-back",
-            "guide-front",
-            "guide-back",
             "leg-0",
             "leg-1",
             "leg-2",
             "leg-3",
+            "drive-roller-0",
+            "drive-roller-1"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
+          "parts": [
             "transfer-plate"
           ],
-          "param": "body"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -25261,7 +25465,7 @@
       "id": "bottle-reject-pusher",
       "kit": "beverage-bottling-line",
       "title": "Bottle reject pusher",
-      "description": "Side-mounted pneumatic pusher diverts a failed bottle into a padded reject chute. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Side-mounted pneumatic pusher diverts a failed bottle into a padded reject chute. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -25280,7 +25484,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/bottle-reject-pusher.kcad.ts",
       "preview": "/assets/beverage-bottling-line-bottle-reject-pusher.png",
-      "sourceSha256": "7647c8f011d696d211cc25b0a23a30bd02830b81ed561c1b42f2027fe69af2de",
+      "sourceSha256": "3a6b93179cb0ac4e8d0f6b3097531e5132aa7c5d089a083f0c7fb18ba0c0b34a",
       "triangleBudget": 2200,
       "params": [
         {
@@ -25293,19 +25497,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75"
+        }
+      },
       "stats": {
         "triangles": 152,
         "sizeM": [
@@ -25318,28 +25539,35 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
             "conveyor-bed",
+            "pneumatic-cylinder",
             "piston-rod",
             "reject-chute",
             "valve-block"
           ],
-          "param": "accent"
+          "param": "stainlessSteel"
         },
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "side-frame",
-            "pneumatic-cylinder",
-            "pusher-pad",
             "leg-0",
             "leg-1",
             "leg-2"
           ],
-          "param": "body"
+          "param": "powderCoat"
+        },
+        {
+          "name": "foodPolymer",
+          "color": "#3999a1",
+          "parts": [
+            "pusher-pad"
+          ],
+          "param": "foodPolymer"
         }
       ]
     },
@@ -25347,7 +25575,7 @@
       "id": "bottle-rinser-carousel",
       "kit": "beverage-bottling-line",
       "title": "Bottle rinser carousel",
-      "description": "Rotary bottle rinser with an infeed starwheel, spray turret, and catch basin. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Rotary bottle rinser with an infeed starwheel, spray turret, and catch basin. Knobs: overall scale and color controls for stainless steel and powder-coated steel.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -25366,7 +25594,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/bottle-rinser-carousel.kcad.ts",
       "preview": "/assets/beverage-bottling-line-bottle-rinser-carousel.png",
-      "sourceSha256": "ff50af18a8df2bba6842d04c126ac63a5c90b0d248a3702498319f5b28f18086",
+      "sourceSha256": "dc00c4af37bea6206eb023d88cd963867559388fa327a92fba44082cb7fe26e5",
       "triangleBudget": 2200,
       "params": [
         {
@@ -25379,19 +25607,28 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70"
+        }
+      },
       "stats": {
         "triangles": 568,
         "sizeM": [
@@ -25404,25 +25641,12 @@
       },
       "palette": [
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
             "catch-basin",
-            "rinse-turret",
-            "top-drive",
-            "support-0",
-            "support-1",
-            "support-2",
-            "support-3",
-            "spray-guard"
-          ],
-          "param": "body"
-        },
-        {
-          "name": "accent",
-          "color": "#e3a23d",
-          "parts": [
             "rotary-table",
+            "rinse-turret",
             "infeed-lane",
             "outfeed-lane",
             "rinse-nozzle-0",
@@ -25433,7 +25657,20 @@
             "rinse-nozzle-5",
             "rinse-nozzle-6"
           ],
-          "param": "accent"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397e91",
+          "parts": [
+            "top-drive",
+            "support-0",
+            "support-1",
+            "support-2",
+            "support-3",
+            "spray-guard"
+          ],
+          "param": "powderCoat"
         }
       ]
     },
@@ -25441,7 +25678,7 @@
       "id": "bottle-unscrambler",
       "kit": "beverage-bottling-line",
       "title": "Bottle unscrambler",
-      "description": "Rotary bowl and discharge starwheel orient empty bottles before the line infeed. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Rotary bowl and discharge starwheel orient empty bottles before the line infeed. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -25460,7 +25697,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/bottle-unscrambler.kcad.ts",
       "preview": "/assets/beverage-bottling-line-bottle-unscrambler.png",
-      "sourceSha256": "6421919749906666077e958165b626b7a2176d8f20a5880733b637d7de360e0b",
+      "sourceSha256": "d38fdb9af117adf2779eba2e14b993a7f955494e04216f66d8277245a77028f4",
       "triangleBudget": 2200,
       "params": [
         {
@@ -25473,19 +25710,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75"
+        }
+      },
       "stats": {
         "triangles": 328,
         "sizeM": [
@@ -25498,15 +25752,31 @@
       },
       "palette": [
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "support-base",
+            "drive-motor"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
+          "parts": [
+            "turntable",
             "outer-rim",
             "center-column",
+            "discharge-lane"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "foodPolymer",
+          "color": "#3999a1",
+          "parts": [
             "lane-guide-a",
             "lane-guide-b",
-            "drive-motor",
             "bowl-cleat-0",
             "bowl-cleat-1",
             "bowl-cleat-2",
@@ -25514,16 +25784,7 @@
             "bowl-cleat-4",
             "bowl-cleat-5"
           ],
-          "param": "body"
-        },
-        {
-          "name": "accent",
-          "color": "#e3a23d",
-          "parts": [
-            "turntable",
-            "discharge-lane"
-          ],
-          "param": "accent"
+          "param": "foodPolymer"
         }
       ]
     },
@@ -25531,7 +25792,7 @@
       "id": "cap-delivery-chute",
       "kit": "beverage-bottling-line",
       "title": "Closure delivery chute",
-      "description": "Covered gravity chute with inspection lid, clear side slot, and capper handoff nose. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Covered gravity chute with inspection lid, clear side slot, and capper handoff nose. Knobs: overall scale and color controls for stainless steel and powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -25550,7 +25811,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/cap-delivery-chute.kcad.ts",
       "preview": "/assets/beverage-bottling-line-cap-delivery-chute.png",
-      "sourceSha256": "779a29c5e6199abfd37f6dcadf98de3093e558fbb88b621b7db020a57214fce1",
+      "sourceSha256": "a5bec8cc1455b21935d93001c1bf5d8116613fed1b64f02880da23e3ad2363fc",
       "triangleBudget": 2200,
       "params": [
         {
@@ -25563,19 +25824,28 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70"
+        }
+      },
       "stats": {
         "triangles": 108,
         "sizeM": [
@@ -25588,27 +25858,27 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
             "chute-floor",
-            "handoff-nose"
-          ],
-          "param": "accent"
-        },
-        {
-          "name": "body",
-          "color": "#a6b3b4",
-          "parts": [
             "side-left",
             "side-right",
             "cover",
             "inlet-funnel",
+            "handoff-nose"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397e91",
+          "parts": [
             "mount-tab-0",
             "mount-tab-1",
             "mount-tab-2"
           ],
-          "param": "body"
+          "param": "powderCoat"
         }
       ]
     },
@@ -25616,7 +25886,7 @@
       "id": "cap-elevator",
       "kit": "beverage-bottling-line",
       "title": "Bottle-cap elevator",
-      "description": "Enclosed cleated elevator lifts closures from the hopper to an overhead cap sorter. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Enclosed cleated elevator lifts closures from the hopper to an overhead cap sorter. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -25635,7 +25905,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/cap-elevator.kcad.ts",
       "preview": "/assets/beverage-bottling-line-cap-elevator.png",
-      "sourceSha256": "95bd8bf485e02bdc282d685351799203ecc68aad05d42061be82645482a2998b",
+      "sourceSha256": "7951bf937a4c775705be01618e8c8459caf4e0797678b5ddfc9342c1e89728a4",
       "triangleBudget": 2200,
       "params": [
         {
@@ -25648,19 +25918,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75"
+        }
+      },
       "stats": {
         "triangles": 188,
         "sizeM": [
@@ -25673,12 +25960,30 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "base",
+            "lower-guard",
             "side-rail-a",
             "side-rail-b",
+            "drive"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
+          "parts": [
+            "elevator-shroud",
+            "top-discharge"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "foodPolymer",
+          "color": "#3999a1",
+          "parts": [
             "cleat-0",
             "cleat-1",
             "cleat-2",
@@ -25686,18 +25991,7 @@
             "cleat-4",
             "cleat-5"
           ],
-          "param": "accent"
-        },
-        {
-          "name": "body",
-          "color": "#a6b3b4",
-          "parts": [
-            "lower-guard",
-            "elevator-shroud",
-            "top-discharge",
-            "drive"
-          ],
-          "param": "body"
+          "param": "foodPolymer"
         }
       ]
     },
@@ -25705,7 +25999,7 @@
       "id": "cap-feed-hopper",
       "kit": "beverage-bottling-line",
       "title": "Bottle-cap feed hopper",
-      "description": "Covered hopper and metering throat that supplies plastic closures to an orienter. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Covered hopper and metering throat that supplies plastic closures to an orienter. Knobs: overall scale and color controls for stainless steel and powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -25724,7 +26018,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/cap-feed-hopper.kcad.ts",
       "preview": "/assets/beverage-bottling-line-cap-feed-hopper.png",
-      "sourceSha256": "eb4e0a79a657b4167f134f46aa7ec76e703b006d9a67de12fe9f3490aee4bcf6",
+      "sourceSha256": "5ceaab8f0e9ae837a41abef2c1a40b41ece50d8a50503d4b0d5d4f7e4c331548",
       "triangleBudget": 2200,
       "params": [
         {
@@ -25737,19 +26031,28 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70"
+        }
+      },
       "stats": {
         "triangles": 152,
         "sizeM": [
@@ -25762,28 +26065,28 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "stand",
-            "lid"
-          ],
-          "param": "accent"
-        },
-        {
-          "name": "body",
-          "color": "#a6b3b4",
-          "parts": [
-            "hopper",
-            "throat",
-            "inspection-door",
             "vibrator-motor",
             "leg-0",
             "leg-1",
             "leg-2",
             "leg-3"
           ],
-          "param": "body"
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
+          "parts": [
+            "hopper",
+            "throat",
+            "lid",
+            "inspection-door"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -25791,7 +26094,7 @@
       "id": "cap-orienter",
       "kit": "beverage-bottling-line",
       "title": "Bottle-cap orienter",
-      "description": "Vibratory cap bowl with a guarded spiral track and single-file cap exit. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Vibratory cap bowl with a guarded spiral track and single-file cap exit. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -25810,7 +26113,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/cap-orienter.kcad.ts",
       "preview": "/assets/beverage-bottling-line-cap-orienter.png",
-      "sourceSha256": "2eb6725cbd9f59698234d373ca5abd14c730e1352c91dbecea29b9902e102f2f",
+      "sourceSha256": "8b7990e6e41ba34469f850c39a5edf65c6219ef8744f2816f022caba2de7b3d8",
       "triangleBudget": 2200,
       "params": [
         {
@@ -25823,19 +26126,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75"
+        }
+      },
       "stats": {
         "triangles": 284,
         "sizeM": [
@@ -25848,11 +26168,21 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "bowl-base",
+            "drive-box"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
+          "parts": [
+            "bowl-body",
             "center-hub",
+            "upper-ring",
             "exit-track",
             "track-tab-0",
             "track-tab-1",
@@ -25860,19 +26190,16 @@
             "track-tab-3",
             "track-tab-4"
           ],
-          "param": "accent"
+          "param": "stainlessSteel"
         },
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "foodPolymer",
+          "color": "#3999a1",
           "parts": [
-            "bowl-body",
-            "upper-ring",
             "guide-front",
-            "guide-back",
-            "drive-box"
+            "guide-back"
           ],
-          "param": "body"
+          "param": "foodPolymer"
         }
       ]
     },
@@ -25880,7 +26207,7 @@
       "id": "cap-torque-head",
       "kit": "beverage-bottling-line",
       "title": "Cap torque head",
-      "description": "Compact capping chuck with drive housing, adjustable spindle, and closure grip ring. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Compact capping chuck with drive housing, adjustable spindle, and closure grip ring. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -25899,7 +26226,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/cap-torque-head.kcad.ts",
       "preview": "/assets/beverage-bottling-line-cap-torque-head.png",
-      "sourceSha256": "be781e830baf1de6c778148f23556151c9dc9915145153f920f0caaec8622632",
+      "sourceSha256": "99ca897be906e475b02a49b61dd412d49d69319af1dcea876bc9ced73a0a9337",
       "triangleBudget": 2200,
       "params": [
         {
@@ -25912,19 +26239,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75"
+        }
+      },
       "stats": {
         "triangles": 216,
         "sizeM": [
@@ -25937,28 +26281,35 @@
       },
       "palette": [
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
             "spindle",
-            "grip-ring",
-            "drive-body",
+            "chuck",
             "air-port",
             "bolt-tab-0",
             "bolt-tab-1",
             "bolt-tab-2",
             "bolt-tab-3"
           ],
-          "param": "body"
+          "param": "stainlessSteel"
         },
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "foodPolymer",
+          "color": "#3999a1",
           "parts": [
-            "chuck",
+            "grip-ring"
+          ],
+          "param": "foodPolymer"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397e91",
+          "parts": [
+            "drive-body",
             "mount-plate"
           ],
-          "param": "accent"
+          "param": "powderCoat"
         }
       ]
     },
@@ -25966,7 +26317,7 @@
       "id": "carbonation-vessel",
       "kit": "beverage-bottling-line",
       "title": "Beverage carbonation vessel",
-      "description": "Insulated pressure vessel with manway, sample valve, pressure gauge, and base ring. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Insulated pressure vessel with manway, sample valve, pressure gauge, and base ring. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -25985,7 +26336,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/carbonation-vessel.kcad.ts",
       "preview": "/assets/beverage-bottling-line-carbonation-vessel.png",
-      "sourceSha256": "dd0842e1e79941be065f22e6edc946750a1f219a280139d0168230fc4d2b2a31",
+      "sourceSha256": "03ee63462577ec4cedfabedc2cbd5c50544819ab6c12b2e683f5b35e28a5eb35",
       "triangleBudget": 2200,
       "params": [
         {
@@ -25998,19 +26349,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75"
+        }
+      },
       "stats": {
         "triangles": 412,
         "sizeM": [
@@ -26023,31 +26391,38 @@
       },
       "palette": [
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
             "shell",
-            "top-cap",
-            "bottom-cap",
             "top-nozzle",
             "carbon-dioxide-port",
             "sample-valve",
+            "pressure-gauge",
+            "nameplate"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "foodPolymer",
+          "color": "#3999a1",
+          "parts": [
+            "top-cap",
+            "bottom-cap"
+          ],
+          "param": "foodPolymer"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397e91",
+          "parts": [
+            "insulation-jacket",
             "leg-0",
             "leg-1",
             "leg-2",
             "leg-3"
           ],
-          "param": "body"
-        },
-        {
-          "name": "accent",
-          "color": "#e3a23d",
-          "parts": [
-            "insulation-jacket",
-            "pressure-gauge",
-            "nameplate"
-          ],
-          "param": "accent"
+          "param": "powderCoat"
         }
       ]
     },
@@ -26055,7 +26430,7 @@
       "id": "carton-bottom-sealer",
       "kit": "beverage-bottling-line",
       "title": "Carton bottom sealer",
-      "description": "Drive-belt case sealer closes erected carton flaps before bottle loading. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Drive-belt case sealer closes erected carton flaps before bottle loading. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -26074,7 +26449,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/carton-bottom-sealer.kcad.ts",
       "preview": "/assets/beverage-bottling-line-carton-bottom-sealer.png",
-      "sourceSha256": "115c94b5256f1b7d53db1da539b25583fb6ba3f99136196fe1b4a16578c7d7bc",
+      "sourceSha256": "4fccc812e26c7855125e5999dd6f210da49467b9159293867f1a887465fb773d",
       "triangleBudget": 2200,
       "params": [
         {
@@ -26087,19 +26462,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75"
+        }
+      },
       "stats": {
         "triangles": 176,
         "sizeM": [
@@ -26112,30 +26504,37 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "base-frame",
-            "top-crossbeam",
-            "tape-roll"
+            "top-crossbeam"
           ],
-          "param": "accent"
+          "param": "powderCoat"
         },
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
             "infeed-bed",
             "outfeed-bed",
             "tower-left",
-            "tower-right",
+            "tower-right"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "foodPolymer",
+          "color": "#3999a1",
+          "parts": [
             "tape-head",
+            "tape-roll",
             "guide-0",
             "guide-1",
             "guide-2",
             "guide-3"
           ],
-          "param": "body"
+          "param": "foodPolymer"
         }
       ]
     },
@@ -26143,7 +26542,7 @@
       "id": "carton-roller-conveyor",
       "kit": "beverage-bottling-line",
       "title": "Carton roller conveyor",
-      "description": "Wide gravity roller conveyor transfers sealed cartons between packing stations. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Wide gravity roller conveyor transfers sealed cartons between packing stations. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -26162,7 +26561,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/carton-roller-conveyor.kcad.ts",
       "preview": "/assets/beverage-bottling-line-carton-roller-conveyor.png",
-      "sourceSha256": "1e3c190bc65a4bf727511cb7dd127d9b77f600ce6b3fdcbffab729280fc1abf3",
+      "sourceSha256": "7b1f1acbb2e1be4b6764cf0de43bcd8584d0f3456505963371822d0e654e2694",
       "triangleBudget": 2200,
       "params": [
         {
@@ -26175,19 +26574,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#e3a331",
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "safetyPaint": "#f0b336"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "safetyPaint": "#bd7b24"
+        }
+      },
       "stats": {
         "triangles": 704,
         "sizeM": [
@@ -26200,17 +26616,21 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "side-frame-front",
-            "side-frame-back"
+            "side-frame-back",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3"
           ],
-          "param": "accent"
+          "param": "powderCoat"
         },
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
             "roller-0",
             "roller-1",
@@ -26225,17 +26645,20 @@
             "roller-10",
             "roller-11",
             "roller-12",
-            "leg-0",
-            "leg-1",
-            "leg-2",
-            "leg-3",
             "crossbar-0",
             "crossbar-1",
             "crossbar-2",
-            "crossbar-3",
+            "crossbar-3"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#e3a331",
+          "parts": [
             "end-stop"
           ],
-          "param": "body"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -26243,7 +26666,7 @@
       "id": "case-checkweigher",
       "kit": "beverage-bottling-line",
       "title": "Packed-case checkweigher",
-      "description": "Short in-line weigh belt with isolated weigh section, reject output, and status tower. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Short in-line weigh belt with isolated weigh section, reject output, and status tower. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -26262,7 +26685,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/case-checkweigher.kcad.ts",
       "preview": "/assets/beverage-bottling-line-case-checkweigher.png",
-      "sourceSha256": "c96a0f41c2bd390ebf34aca997f40cbbcf00a545339312fc034c521b738cd181",
+      "sourceSha256": "0c77581a7bc41285af055f085ad3bca7186d2f5b712e4afbecdf5eea26a59de2",
       "triangleBudget": 2200,
       "params": [
         {
@@ -26275,19 +26698,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#e3a331",
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "safetyPaint": "#f0b336"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "safetyPaint": "#bd7b24"
+        }
+      },
       "stats": {
         "triangles": 212,
         "sizeM": [
@@ -26300,33 +26740,40 @@
       },
       "palette": [
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
             "left-bed",
-            "right-bed",
-            "frame-front",
-            "frame-back",
-            "hmi-post",
-            "hmi",
-            "leg-0",
-            "leg-1",
-            "leg-2"
-          ],
-          "param": "body"
-        },
-        {
-          "name": "accent",
-          "color": "#e3a23d",
-          "parts": [
             "weigh-bed",
+            "right-bed",
             "load-cell-0",
             "load-cell-1",
             "load-cell-2",
             "load-cell-3",
+            "hmi"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397e91",
+          "parts": [
+            "frame-front",
+            "frame-back",
+            "hmi-post",
+            "leg-0",
+            "leg-1",
+            "leg-2"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#e3a331",
+          "parts": [
             "status-lamp"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -26334,7 +26781,7 @@
       "id": "case-erector",
       "kit": "beverage-bottling-line",
       "title": "Corrugated case erector",
-      "description": "Magazine-fed case erector with squaring frame, suction pick head, and bottom-flap folding rails. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Magazine-fed case erector with squaring frame, suction pick head, and bottom-flap folding rails. Knobs: overall scale and color controls for stainless steel and powder-coated steel.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -26353,7 +26800,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/case-erector.kcad.ts",
       "preview": "/assets/beverage-bottling-line-case-erector.png",
-      "sourceSha256": "ec09b7374321cbd39edfba15bb5b11ab302b4906ee1e7c8db0a0152f4c20d35e",
+      "sourceSha256": "db15f1c25f0b6b8cc58127782d4d25746131a92a4577fdf867134c2132406c91",
       "triangleBudget": 2200,
       "params": [
         {
@@ -26366,19 +26813,28 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70"
+        }
+      },
       "stats": {
         "triangles": 156,
         "sizeM": [
@@ -26391,31 +26847,31 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "base",
+            "squaring-frame-front",
+            "squaring-frame-back",
             "top-beam",
+            "case-platform",
             "folding-rail-0",
             "folding-rail-1",
             "folding-rail-2",
             "folding-rail-3",
-            "hmi"
+            "control-post"
           ],
-          "param": "accent"
+          "param": "powderCoat"
         },
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
             "case-magazine",
             "pick-head",
-            "squaring-frame-front",
-            "squaring-frame-back",
-            "case-platform",
-            "control-post"
+            "hmi"
           ],
-          "param": "body"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -26423,7 +26879,7 @@
       "id": "case-labeler",
       "kit": "beverage-bottling-line",
       "title": "Case label applicator",
-      "description": "Print-and-apply head places a shipping label on the face of a moving carton. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Print-and-apply head places a shipping label on the face of a moving carton. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -26442,7 +26898,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/case-labeler.kcad.ts",
       "preview": "/assets/beverage-bottling-line-case-labeler.png",
-      "sourceSha256": "28c61b37af965714b9b2cdae67c89e0a99f3a46b33c628099485c133155f4b94",
+      "sourceSha256": "efed32801ab781a9595dfb13ddf4e5740f99ec70bc4b5fe65d63acbac7b9c400",
       "triangleBudget": 2200,
       "params": [
         {
@@ -26455,19 +26911,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75"
+        }
+      },
       "stats": {
         "triangles": 172,
         "sizeM": [
@@ -26480,27 +26953,34 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "floor-base",
+            "mounting-arm"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
+          "parts": [
+            "mast",
+            "printer-body",
             "display",
             "peel-roller",
             "air-regulator"
           ],
-          "param": "accent"
+          "param": "stainlessSteel"
         },
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "foodPolymer",
+          "color": "#3999a1",
           "parts": [
-            "mast",
-            "printer-body",
             "label-roll",
-            "apply-pad",
-            "mounting-arm"
+            "apply-pad"
           ],
-          "param": "body"
+          "param": "foodPolymer"
         }
       ]
     },
@@ -26508,7 +26988,7 @@
       "id": "case-layer-palletizer",
       "kit": "beverage-bottling-line",
       "title": "Case layer palletizer",
-      "description": "Layer-forming head lifts a complete case pattern and builds a pallet stack under a safety frame. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Layer-forming head lifts a complete case pattern and builds a pallet stack under a safety frame. Knobs: overall scale and color controls for stainless steel, powder-coated steel, safety paint, and corrugated board.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -26527,7 +27007,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/case-layer-palletizer.kcad.ts",
       "preview": "/assets/beverage-bottling-line-case-layer-palletizer.png",
-      "sourceSha256": "1b92b3da49756879eb14b8e71581eb30f708347e32a5938e3103c47490fb4300",
+      "sourceSha256": "24d6e63d5f67fc6d5ae0f2f231bcfc9e39a2eb879d32a54bb12c7ed5c3d85b4b",
       "triangleBudget": 2200,
       "params": [
         {
@@ -26540,19 +27020,44 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#e3a331",
+          "label": "Safety paint"
+        },
+        {
+          "name": "corrugatedBoard",
+          "type": "color",
+          "default": "#b18a5d",
+          "label": "Corrugated board"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "safetyPaint": "#f0b336",
+          "corrugatedBoard": "#c49b6b"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "safetyPaint": "#bd7b24",
+          "corrugatedBoard": "#886342"
+        }
+      },
       "stats": {
         "triangles": 132,
         "sizeM": [
@@ -26565,29 +27070,43 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "floor-rails",
             "floor-rail-back",
             "lift-carriage",
-            "pallet-deck"
+            "control-console"
           ],
-          "param": "accent"
+          "param": "powderCoat"
         },
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
             "column-left",
             "column-right",
             "top-bridge",
             "layer-plate",
-            "infeed-bed",
-            "operator-gate",
-            "control-console"
+            "infeed-bed"
           ],
-          "param": "body"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "corrugatedBoard",
+          "color": "#b18a5d",
+          "parts": [
+            "pallet-deck"
+          ],
+          "param": "corrugatedBoard"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#e3a331",
+          "parts": [
+            "operator-gate"
+          ],
+          "param": "safetyPaint"
         }
       ]
     },
@@ -26595,7 +27114,7 @@
       "id": "case-taper",
       "kit": "beverage-bottling-line",
       "title": "Case taper",
-      "description": "Adjustable side-belt carton taper with upper tape head and centering rails. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Adjustable side-belt carton taper with upper tape head and centering rails. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -26614,7 +27133,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/case-taper.kcad.ts",
       "preview": "/assets/beverage-bottling-line-case-taper.png",
-      "sourceSha256": "35665cbe13e0500c574a5dd83f6d2a5cafe9f34ac8bfd8e5379bd36227a0ef20",
+      "sourceSha256": "b111cc98ed1c2dafd6fe8f2505cf8c8eef24c526e1392157147979dd97370534",
       "triangleBudget": 2200,
       "params": [
         {
@@ -26627,19 +27146,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75"
+        }
+      },
       "stats": {
         "triangles": 176,
         "sizeM": [
@@ -26652,30 +27188,37 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "base",
-            "bridge",
-            "tape-roll",
-            "hmi"
+            "hmi-post"
           ],
-          "param": "accent"
+          "param": "powderCoat"
         },
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "foodPolymer",
+          "color": "#3999a1",
           "parts": [
             "infeed-belt",
             "outfeed-belt",
+            "tape-head",
+            "tape-roll"
+          ],
+          "param": "foodPolymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
+          "parts": [
             "upright-front",
             "upright-back",
-            "tape-head",
+            "bridge",
             "adjuster-front",
             "adjuster-back",
-            "hmi-post"
+            "hmi"
           ],
-          "param": "body"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -26683,7 +27226,7 @@
       "id": "cip-supply-return-skid",
       "kit": "beverage-bottling-line",
       "title": "CIP supply and return skid",
-      "description": "Compact cleaning-in-place skid with two solution tanks, pump, heat exchanger, and pipe loop. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Compact cleaning-in-place skid with two solution tanks, pump, heat exchanger, and pipe loop. Knobs: overall scale and color controls for stainless steel and powder-coated steel.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -26702,7 +27245,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/cip-supply-return-skid.kcad.ts",
       "preview": "/assets/beverage-bottling-line-cip-supply-return-skid.png",
-      "sourceSha256": "8b1b6b55b1c4abee4efc35756fbb6dc4d62a5423f24ea43c23f65e6e6cfb9574",
+      "sourceSha256": "ba2a8e3539d439bb007ceae2a115422e9392bb5a99aa93b3e9b391215488ed6a",
       "triangleBudget": 2200,
       "params": [
         {
@@ -26715,19 +27258,28 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70"
+        }
+      },
       "stats": {
         "triangles": 648,
         "sizeM": [
@@ -26740,31 +27292,31 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "skid",
+            "pump-motor",
+            "control-cabinet"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
+          "parts": [
+            "cip-tank-0",
+            "cip-tank-1",
             "cip-lid-0",
             "cip-lid-1",
+            "return-pump",
+            "plate-exchanger",
             "exchanger-plate-0",
             "exchanger-plate-1",
             "exchanger-plate-2",
             "exchanger-plate-3",
             "exchanger-plate-4",
             "exchanger-plate-5",
-            "control-cabinet"
-          ],
-          "param": "accent"
-        },
-        {
-          "name": "body",
-          "color": "#a6b3b4",
-          "parts": [
-            "cip-tank-0",
-            "cip-tank-1",
-            "return-pump",
-            "pump-motor",
-            "plate-exchanger",
             "supply-header",
             "return-header",
             "valve-0",
@@ -26773,7 +27325,7 @@
             "valve-3",
             "valve-4"
           ],
-          "param": "body"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -26781,7 +27333,7 @@
       "id": "cip-valve-manifold",
       "kit": "beverage-bottling-line",
       "title": "CIP valve manifold",
-      "description": "Sanitary valve cluster routes clean-in-place supply and return through color-coded branches. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Sanitary valve cluster routes clean-in-place supply and return through color-coded branches. Knobs: overall scale and color controls for stainless steel and powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -26800,7 +27352,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/cip-valve-manifold.kcad.ts",
       "preview": "/assets/beverage-bottling-line-cip-valve-manifold.png",
-      "sourceSha256": "4e4d63834a236a3329c6fd9bcdc0b4a6a914945d0d5ccfc8aa8f5f388a1a8b8a",
+      "sourceSha256": "1f93b2f8ea090912f2a7854b00536cc2cc748a90bda954830ec3e43bc38d1699",
       "triangleBudget": 2200,
       "params": [
         {
@@ -26813,19 +27365,28 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70"
+        }
+      },
       "stats": {
         "triangles": 448,
         "sizeM": [
@@ -26838,34 +27399,34 @@
       },
       "palette": [
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
             "supply-header",
             "return-header",
+            "cross-header",
             "branch-0",
             "branch-1",
             "branch-2",
             "branch-3",
+            "valve-actuator-0",
+            "valve-actuator-1",
+            "valve-actuator-2",
+            "valve-actuator-3"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397e91",
+          "parts": [
             "mount-foot-0",
             "mount-foot-1",
             "mount-foot-2",
             "mount-foot-3",
             "drain-leg"
           ],
-          "param": "body"
-        },
-        {
-          "name": "accent",
-          "color": "#e3a23d",
-          "parts": [
-            "cross-header",
-            "valve-actuator-0",
-            "valve-actuator-1",
-            "valve-actuator-2",
-            "valve-actuator-3"
-          ],
-          "param": "accent"
+          "param": "powderCoat"
         }
       ]
     },
@@ -26873,7 +27434,7 @@
       "id": "corrugated-case-stack",
       "kit": "beverage-bottling-line",
       "title": "Corrugated case stack",
-      "description": "Neat stack of knocked-down corrugated cases staged beside a case erector. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Neat stack of knocked-down corrugated cases staged beside a case erector. Knobs: overall scale and color controls for stainless steel and corrugated board.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -26892,7 +27453,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/corrugated-case-stack.kcad.ts",
       "preview": "/assets/beverage-bottling-line-corrugated-case-stack.png",
-      "sourceSha256": "7bd98e9cbd5d6d78cf2ad1c15b544f4dce55a881d8e6e115bd9968a049f01b92",
+      "sourceSha256": "0e5ff4412d4931378a740fc5e04f1c5acef2740789118339cafcac50c1e5d3f5",
       "triangleBudget": 2200,
       "params": [
         {
@@ -26905,19 +27466,28 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "corrugatedBoard",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#b18a5d",
+          "label": "Corrugated board"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "corrugatedBoard": "#c49b6b"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "corrugatedBoard": "#886342"
+        }
+      },
       "stats": {
         "triangles": 216,
         "sizeM": [
@@ -26930,23 +27500,14 @@
       },
       "palette": [
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
             "case-0-body",
             "case-1-body",
             "case-2-body",
             "case-3-body",
             "case-4-body",
-            "corner-protector-left",
-            "corner-protector-right"
-          ],
-          "param": "body"
-        },
-        {
-          "name": "accent",
-          "color": "#e3a23d",
-          "parts": [
             "case-0-flap-front",
             "case-1-flap-front",
             "case-2-flap-front",
@@ -26957,9 +27518,18 @@
             "case-2-flap-back",
             "case-3-flap-back",
             "case-4-flap-back",
+            "corner-protector-left",
+            "corner-protector-right"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "corrugatedBoard",
+          "color": "#b18a5d",
+          "parts": [
             "stack-label"
           ],
-          "param": "accent"
+          "param": "corrugatedBoard"
         }
       ]
     },
@@ -26967,7 +27537,7 @@
       "id": "empty-bottle-divider-tray",
       "kit": "beverage-bottling-line",
       "title": "Empty bottle divider tray",
-      "description": "Washable compartment tray spaces glass bottles for returnable-container handling. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Washable compartment tray spaces glass bottles for returnable-container handling. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -26986,7 +27556,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/empty-bottle-divider-tray.kcad.ts",
       "preview": "/assets/beverage-bottling-line-empty-bottle-divider-tray.png",
-      "sourceSha256": "c9687552809def76106386809c0d485155a4b5bb3714932510790c0942239be7",
+      "sourceSha256": "cf47600ce0636aa575ff999ec12de84e678ffd14c9ddbd1a42539baeb70afc7b",
       "triangleBudget": 2200,
       "params": [
         {
@@ -26999,19 +27569,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75"
+        }
+      },
       "stats": {
         "triangles": 192,
         "sizeM": [
@@ -27024,25 +27611,10 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "foodPolymer",
+          "color": "#3999a1",
           "parts": [
             "tray-floor",
-            "foot-0",
-            "foot-1",
-            "foot-2",
-            "foot-3"
-          ],
-          "param": "accent"
-        },
-        {
-          "name": "body",
-          "color": "#a6b3b4",
-          "parts": [
-            "rim-front",
-            "rim-back",
-            "rim-left",
-            "rim-right",
             "divider-x-0",
             "divider-x-1",
             "divider-x-2",
@@ -27051,7 +27623,29 @@
             "divider-y-1",
             "divider-y-2"
           ],
-          "param": "body"
+          "param": "foodPolymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
+          "parts": [
+            "rim-front",
+            "rim-back",
+            "rim-left",
+            "rim-right"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397e91",
+          "parts": [
+            "foot-0",
+            "foot-1",
+            "foot-2",
+            "foot-3"
+          ],
+          "param": "powderCoat"
         }
       ]
     },
@@ -27059,7 +27653,7 @@
       "id": "fill-level-inspection-lamp",
       "kit": "beverage-bottling-line",
       "title": "Fill-level inspection lamp",
-      "description": "Backlit inspection panel and bottle guide rails for a manual fill-level check. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Backlit inspection panel and bottle guide rails for a manual fill-level check. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -27078,7 +27672,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/fill-level-inspection-lamp.kcad.ts",
       "preview": "/assets/beverage-bottling-line-fill-level-inspection-lamp.png",
-      "sourceSha256": "24daccba42c4c20d7041d48b9a86706380e054401cf5f196b2ff15bebfe75bdb",
+      "sourceSha256": "eb913ff3e554ec67d4c0490fa29209b4414a0689c4449d4ed953db9465410969",
       "triangleBudget": 2200,
       "params": [
         {
@@ -27091,19 +27685,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75"
+        }
+      },
       "stats": {
         "triangles": 140,
         "sizeM": [
@@ -27116,27 +27727,34 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "base",
-            "diffuser-face",
-            "bottle-guide-front",
-            "bottle-guide-back"
-          ],
-          "param": "accent"
-        },
-        {
-          "name": "body",
-          "color": "#a6b3b4",
-          "parts": [
             "light-panel",
             "top-hood",
             "side-support-left",
-            "side-support-right",
+            "side-support-right"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
+          "parts": [
+            "diffuser-face",
             "inspection-knob"
           ],
-          "param": "body"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "foodPolymer",
+          "color": "#3999a1",
+          "parts": [
+            "bottle-guide-front",
+            "bottle-guide-back"
+          ],
+          "param": "foodPolymer"
         }
       ]
     },
@@ -27144,7 +27762,7 @@
       "id": "filler-valve-head",
       "kit": "beverage-bottling-line",
       "title": "Filler valve head",
-      "description": "Single sanitary fill valve with spring bonnet, bottle centering bell, and product inlet port. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Single sanitary fill valve with spring bonnet, bottle centering bell, and product inlet port. Knobs: overall scale and color controls for stainless steel and powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -27163,7 +27781,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/filler-valve-head.kcad.ts",
       "preview": "/assets/beverage-bottling-line-filler-valve-head.png",
-      "sourceSha256": "ca20d524c6ad98552425c74d2ba002689f1b40dcc66cf12d2981b401c3dcd622",
+      "sourceSha256": "154ec080a795d80d1ab015edeb9148746b15cf46db3d83592a7397254f2d84ae",
       "triangleBudget": 2200,
       "params": [
         {
@@ -27176,19 +27794,28 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70"
+        }
+      },
       "stats": {
         "triangles": 256,
         "sizeM": [
@@ -27201,26 +27828,26 @@
       },
       "palette": [
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
             "valve-body",
+            "bonnet",
             "stem",
             "centering-bell",
             "product-port",
             "clamp-ear-0",
             "clamp-ear-1"
           ],
-          "param": "body"
+          "param": "stainlessSteel"
         },
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
-            "bonnet",
             "mounting-tab"
           ],
-          "param": "accent"
+          "param": "powderCoat"
         }
       ]
     },
@@ -27228,7 +27855,7 @@
       "id": "flash-pasteurizer",
       "kit": "beverage-bottling-line",
       "title": "Flash pasteurizer skid",
-      "description": "Plate heat exchanger and balance tank on a sanitary skid with return and product pumps. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Plate heat exchanger and balance tank on a sanitary skid with return and product pumps. Knobs: overall scale and color controls for stainless steel and powder-coated steel.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -27247,7 +27874,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/flash-pasteurizer.kcad.ts",
       "preview": "/assets/beverage-bottling-line-flash-pasteurizer.png",
-      "sourceSha256": "bd8f9fff273e1d6fbf100ab5a583bdac915305ba47c81c647ef17b3aca74bea4",
+      "sourceSha256": "15cf30522f83d43721032deef3862e8a9197092176aa7281b39c15a66aa227d8",
       "triangleBudget": 2200,
       "params": [
         {
@@ -27260,19 +27887,28 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70"
+        }
+      },
       "stats": {
         "triangles": 508,
         "sizeM": [
@@ -27285,10 +27921,20 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "skid-base",
+            "pump-motor",
+            "control-panel"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
+          "parts": [
+            "exchanger-pack",
             "plate-0",
             "plate-1",
             "plate-2",
@@ -27297,19 +27943,9 @@
             "plate-5",
             "plate-6",
             "plate-7",
-            "tank-lid",
-            "control-panel"
-          ],
-          "param": "accent"
-        },
-        {
-          "name": "body",
-          "color": "#a6b3b4",
-          "parts": [
-            "exchanger-pack",
             "balance-tank",
+            "tank-lid",
             "product-pump",
-            "pump-motor",
             "process-pipe-0",
             "process-pipe-1",
             "process-pipe-2",
@@ -27317,7 +27953,7 @@
             "process-pipe-4",
             "upper-header"
           ],
-          "param": "body"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -27325,7 +27961,7 @@
       "id": "inline-bottle-sample-station",
       "kit": "beverage-bottling-line",
       "title": "In-line bottle sample station",
-      "description": "Small sanitary sample point with bottle shelf, rinse sink, and product line valve. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Small sanitary sample point with bottle shelf, rinse sink, and product line valve. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -27344,7 +27980,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/inline-bottle-sample-station.kcad.ts",
       "preview": "/assets/beverage-bottling-line-inline-bottle-sample-station.png",
-      "sourceSha256": "98a488d514ce3261a70eaac2022e18b238c0672c90c8c52cb779971dc734a35b",
+      "sourceSha256": "b154b8856c0037e369fa0c7b87d575c8ba48afef5d098945333c9cba7ce79d67",
       "triangleBudget": 2200,
       "params": [
         {
@@ -27357,19 +27993,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75"
+        }
+      },
       "stats": {
         "triangles": 184,
         "sizeM": [
@@ -27382,28 +28035,35 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "base",
-            "sample-bottle-holder",
-            "sample-spout",
             "line-guard"
           ],
-          "param": "accent"
+          "param": "powderCoat"
         },
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
             "upright",
             "shelf",
             "rinse-cup",
             "sample-valve",
+            "sample-spout",
             "drain-pan",
             "nameplate"
           ],
-          "param": "body"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "foodPolymer",
+          "color": "#3999a1",
+          "parts": [
+            "sample-bottle-holder"
+          ],
+          "param": "foodPolymer"
         }
       ]
     },
@@ -27411,7 +28071,7 @@
       "id": "label-reel-stand",
       "kit": "beverage-bottling-line",
       "title": "Label reel stand",
-      "description": "Freestanding unwind and rewind reels with a tensioning roller and web guide. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Freestanding unwind and rewind reels with a tensioning roller and web guide. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -27430,7 +28090,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/label-reel-stand.kcad.ts",
       "preview": "/assets/beverage-bottling-line-label-reel-stand.png",
-      "sourceSha256": "518e885ca8392fe909ae57406c36aa831f998febe8da2905dd3136fc893e7eed",
+      "sourceSha256": "d898550dfd129006d0bb756ebb757523f23553eba064ebbf59d621cf79b2107d",
       "triangleBudget": 2200,
       "params": [
         {
@@ -27443,19 +28103,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75"
+        }
+      },
       "stats": {
         "triangles": 304,
         "sizeM": [
@@ -27468,30 +28145,37 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "base",
-            "rewind-reel",
-            "tension-arm"
-          ],
-          "param": "accent"
-        },
-        {
-          "name": "body",
-          "color": "#a6b3b4",
-          "parts": [
-            "upright",
-            "unwind-reel",
-            "top-web-roller",
-            "lower-web-roller",
-            "adjustment-knob",
             "foot-0",
             "foot-1",
             "foot-2",
             "foot-3"
           ],
-          "param": "body"
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
+          "parts": [
+            "upright",
+            "unwind-reel",
+            "rewind-reel",
+            "tension-arm",
+            "adjustment-knob"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "foodPolymer",
+          "color": "#3999a1",
+          "parts": [
+            "top-web-roller",
+            "lower-web-roller"
+          ],
+          "param": "foodPolymer"
         }
       ]
     },
@@ -27499,7 +28183,7 @@
       "id": "neck-handling-air-conveyor",
       "kit": "beverage-bottling-line",
       "title": "Bottle neck-handling air conveyor",
-      "description": "Raised guide track and four support columns carry bottles by their neck rings over a clear floor path. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Raised guide track and four support columns carry bottles by their neck rings over a clear floor path. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -27518,7 +28202,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/neck-handling-air-conveyor.kcad.ts",
       "preview": "/assets/beverage-bottling-line-neck-handling-air-conveyor.png",
-      "sourceSha256": "a6ecf85185fd5cdb5eb78b4cb22cfc9557c5a25ba3e70d66f1fb1bfe2ab0b4b1",
+      "sourceSha256": "6659406702b2900ac04e5448bdeb0a572b9168fba050ea608d13e2242a5fa665",
       "triangleBudget": 2200,
       "params": [
         {
@@ -27531,19 +28215,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75"
+        }
+      },
       "stats": {
         "triangles": 360,
         "sizeM": [
@@ -27556,22 +28257,29 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
-            "top-spine",
-            "air-rail"
+            "top-spine"
           ],
-          "param": "accent"
+          "param": "stainlessSteel"
         },
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "support-column-0",
             "support-column-1",
             "support-column-2",
             "support-column-3",
+            "air-rail"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "foodPolymer",
+          "color": "#3999a1",
+          "parts": [
             "neck-guide-front",
             "neck-guide-back",
             "guide-spacer-0",
@@ -27581,7 +28289,7 @@
             "guide-spacer-4",
             "guide-spacer-5"
           ],
-          "param": "body"
+          "param": "foodPolymer"
         }
       ]
     },
@@ -27589,7 +28297,7 @@
       "id": "pet-blow-molder",
       "kit": "beverage-bottling-line",
       "title": "PET stretch blow molder",
-      "description": "Guarded stretch-blow station with preform heating bays and paired bottle mold nests. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Guarded stretch-blow station with preform heating bays and paired bottle mold nests. Knobs: overall scale and color controls for stainless steel and powder-coated steel.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -27608,7 +28316,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/pet-blow-molder.kcad.ts",
       "preview": "/assets/beverage-bottling-line-pet-blow-molder.png",
-      "sourceSha256": "e6f2241ffd02aea2865ba1a00d85bc9b2bc799b96852b7987ea94a00154cc821",
+      "sourceSha256": "b9ce94ad7b3b5358740fc62dd43c0897771d6096513b1a87f2763153d6481deb",
       "triangleBudget": 2200,
       "params": [
         {
@@ -27621,19 +28329,28 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70"
+        }
+      },
       "stats": {
         "triangles": 364,
         "sizeM": [
@@ -27646,35 +28363,35 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "base",
+            "control-pedestal",
+            "top-crossbeam"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
+          "parts": [
+            "machine-body",
             "service-door-left",
             "service-door-right",
-            "control-pedestal",
+            "heating-tunnel",
             "mold-column-0",
             "mold-column-1",
             "mold-column-2",
             "mold-column-3",
             "mold-column-4",
-            "top-crossbeam"
-          ],
-          "param": "accent"
-        },
-        {
-          "name": "body",
-          "color": "#a6b3b4",
-          "parts": [
-            "machine-body",
-            "heating-tunnel",
             "mold-station-0",
             "mold-station-1",
             "mold-station-2",
             "mold-station-3",
             "mold-station-4"
           ],
-          "param": "body"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -27682,7 +28399,7 @@
       "id": "preform-bulk-bin",
       "kit": "beverage-bottling-line",
       "title": "PET preform bulk bin",
-      "description": "Ventilated bulk hopper for empty PET preforms with a steep throat and inspection lid. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Ventilated bulk hopper for empty PET preforms with a steep throat and inspection lid. Knobs: overall scale and color controls for stainless steel and powder-coated steel.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -27701,7 +28418,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/preform-bulk-bin.kcad.ts",
       "preview": "/assets/beverage-bottling-line-preform-bulk-bin.png",
-      "sourceSha256": "9db2bab5ca3dd1eef60c180b3177a5923ff1efec68557891f3c6d0837e5e19b5",
+      "sourceSha256": "4a797ed37e5e58858f560cdbcf3af6c58d176456c7f1011cffa1524d9b70f8ca",
       "triangleBudget": 2200,
       "params": [
         {
@@ -27714,19 +28431,28 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70"
+        }
+      },
       "stats": {
         "triangles": 96,
         "sizeM": [
@@ -27739,26 +28465,26 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "foot-left",
             "foot-right",
             "foot-back-left",
-            "foot-back-right",
-            "inspection-lid"
+            "foot-back-right"
           ],
-          "param": "accent"
+          "param": "powderCoat"
         },
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
             "hopper-body",
             "sloped-throat",
+            "inspection-lid",
             "outlet-collar"
           ],
-          "param": "body"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -27766,7 +28492,7 @@
       "id": "preform-elevator",
       "kit": "beverage-bottling-line",
       "title": "Preform elevator",
-      "description": "Enclosed cleated elevator that lifts preforms to an overhead unscrambler feed. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Enclosed cleated elevator that lifts preforms to an overhead unscrambler feed. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -27785,7 +28511,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/preform-elevator.kcad.ts",
       "preview": "/assets/beverage-bottling-line-preform-elevator.png",
-      "sourceSha256": "1bfd945886fb0cab1d93aaa53a0ec75336cb754376036ef52a502db0d663ef53",
+      "sourceSha256": "c2c7b5675f29723659d4f9d28ec6e14d973d59673f256bb5f0469ab1218b45be",
       "triangleBudget": 2200,
       "params": [
         {
@@ -27798,19 +28524,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75"
+        }
+      },
       "stats": {
         "triangles": 220,
         "sizeM": [
@@ -27823,31 +28566,38 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "base-frame",
+            "lower-guard",
             "side-rail-a",
             "side-rail-b",
-            "upper-pulley",
+            "drive-motor"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
+          "parts": [
+            "inclined-elevator-cover",
+            "upper-discharge",
+            "upper-pulley"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "foodPolymer",
+          "color": "#3999a1",
+          "parts": [
             "cleat-0",
             "cleat-1",
             "cleat-2",
             "cleat-3",
             "cleat-4"
           ],
-          "param": "accent"
-        },
-        {
-          "name": "body",
-          "color": "#a6b3b4",
-          "parts": [
-            "lower-guard",
-            "inclined-elevator-cover",
-            "upper-discharge",
-            "drive-motor"
-          ],
-          "param": "body"
+          "param": "foodPolymer"
         }
       ]
     },
@@ -27855,7 +28605,7 @@
       "id": "preform-orienter-bowl",
       "kit": "beverage-bottling-line",
       "title": "Preform orienter bowl",
-      "description": "Vibratory bowl with a spiral rim track, central cone, and single-file discharge rail. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Vibratory bowl with a spiral rim track, central cone, and single-file discharge rail. Knobs: overall scale and color controls for stainless steel and powder-coated steel.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -27874,7 +28624,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/preform-orienter-bowl.kcad.ts",
       "preview": "/assets/beverage-bottling-line-preform-orienter-bowl.png",
-      "sourceSha256": "354c5f6bf7159ea72eeecd0ff21be15273268502ab5c917794100b07d456291f",
+      "sourceSha256": "4404e90ad7ba65b16047eeead19d03b65cb069c455aad04abbd7287eb643cc9b",
       "triangleBudget": 2200,
       "params": [
         {
@@ -27887,19 +28637,28 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70"
+        }
+      },
       "stats": {
         "triangles": 224,
         "sizeM": [
@@ -27912,26 +28671,26 @@
       },
       "palette": [
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
             "bowl-skirt",
+            "bowl-rim",
             "central-cone",
-            "vibrator-base",
+            "discharge-track",
             "track-side-a",
-            "track-side-b",
-            "motor-box"
+            "track-side-b"
           ],
-          "param": "body"
+          "param": "stainlessSteel"
         },
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
-            "bowl-rim",
-            "discharge-track"
+            "vibrator-base",
+            "motor-box"
           ],
-          "param": "accent"
+          "param": "powderCoat"
         }
       ]
     },
@@ -27939,7 +28698,7 @@
       "id": "pressure-sensitive-labeler",
       "kit": "beverage-bottling-line",
       "title": "Pressure-sensitive labeler",
-      "description": "Front-and-back label applicators with tamp pads, web rolls, bottle guides, and HMI stand. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Front-and-back label applicators with tamp pads, web rolls, bottle guides, and HMI stand. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -27958,7 +28717,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/pressure-sensitive-labeler.kcad.ts",
       "preview": "/assets/beverage-bottling-line-pressure-sensitive-labeler.png",
-      "sourceSha256": "05475c6936ad2a709ddbdf5f60debab500be352eea16712076a788e1ae8bf7be",
+      "sourceSha256": "d8c1557b43b65e15f488ac6c87704750f8060a51923dee1b486133113de5d63e",
       "triangleBudget": 2200,
       "params": [
         {
@@ -27971,19 +28730,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75"
+        }
+      },
       "stats": {
         "triangles": 232,
         "sizeM": [
@@ -27996,32 +28772,39 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "base",
-            "front-roll",
-            "back-roll",
             "hmi-post"
           ],
-          "param": "accent"
+          "param": "powderCoat"
         },
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
             "conveyor",
             "mast-front",
             "mast-back",
+            "front-roll",
+            "back-roll",
+            "hmi-screen"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "foodPolymer",
+          "color": "#3999a1",
+          "parts": [
             "front-tamp-pad",
             "back-tamp-pad",
-            "hmi-screen",
             "guide-0",
             "guide-1",
             "guide-2",
             "guide-3"
           ],
-          "param": "body"
+          "param": "foodPolymer"
         }
       ]
     },
@@ -28029,7 +28812,7 @@
       "id": "rinse-water-recovery-tank",
       "kit": "beverage-bottling-line",
       "title": "Rinse-water recovery tank",
-      "description": "Small recovery tank with screened inlet, pump stand, level column, and return nozzle. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Small recovery tank with screened inlet, pump stand, level column, and return nozzle. Knobs: overall scale and color controls for stainless steel and powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -28048,7 +28831,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/rinse-water-recovery-tank.kcad.ts",
       "preview": "/assets/beverage-bottling-line-rinse-water-recovery-tank.png",
-      "sourceSha256": "f293aca4f3cf7eed23c4d9236bec5f8546f49377c5557a32043b1755d2b29dd7",
+      "sourceSha256": "46a90a5962f7747727f9caf0694e346d348bc2f1b081ac6b5455281db79fafd4",
       "triangleBudget": 2200,
       "params": [
         {
@@ -28061,19 +28844,28 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70"
+        }
+      },
       "stats": {
         "triangles": 268,
         "sizeM": [
@@ -28086,27 +28878,27 @@
       },
       "palette": [
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
             "tank-shell",
+            "cover",
             "inlet-screen",
             "return-nozzle",
             "pump",
-            "pump-motor"
-          ],
-          "param": "body"
-        },
-        {
-          "name": "accent",
-          "color": "#e3a23d",
-          "parts": [
-            "cover",
-            "support-a",
-            "support-b",
             "level-column"
           ],
-          "param": "accent"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397e91",
+          "parts": [
+            "pump-motor",
+            "support-a",
+            "support-b"
+          ],
+          "param": "powderCoat"
         }
       ]
     },
@@ -28114,7 +28906,7 @@
       "id": "rotary-capper",
       "kit": "beverage-bottling-line",
       "title": "Rotary bottle capper",
-      "description": "Capping turret with torque-head ring, bottle table, cap-feed hood, and guarded discharge. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Capping turret with torque-head ring, bottle table, cap-feed hood, and guarded discharge. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -28133,7 +28925,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/rotary-capper.kcad.ts",
       "preview": "/assets/beverage-bottling-line-rotary-capper.png",
-      "sourceSha256": "0498e342abfac31c75731844201c34815a7fc65e29e2e81361ea4aae0f9301a3",
+      "sourceSha256": "ba228c2ac4bd8310709aa82f657904f7a4e2cefd329b0e05757240c775709886",
       "triangleBudget": 2200,
       "params": [
         {
@@ -28146,19 +28938,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75"
+        }
+      },
       "stats": {
         "triangles": 624,
         "sizeM": [
@@ -28171,13 +28980,24 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "base-skirt",
-            "top-plate",
-            "infeed-deck",
-            "outfeed-deck",
+            "front-guard",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "foodPolymer",
+          "color": "#3999a1",
+          "parts": [
+            "bottle-table",
+            "cap-feed-hood",
             "capper-head-0",
             "capper-head-1",
             "capper-head-2",
@@ -28187,22 +29007,18 @@
             "capper-head-6",
             "capper-head-7"
           ],
-          "param": "accent"
+          "param": "foodPolymer"
         },
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
-            "bottle-table",
             "turret-column",
-            "cap-feed-hood",
-            "front-guard",
-            "leg-0",
-            "leg-1",
-            "leg-2",
-            "leg-3"
+            "top-plate",
+            "infeed-deck",
+            "outfeed-deck"
           ],
-          "param": "body"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -28210,7 +29026,7 @@
       "id": "rotary-filler",
       "kit": "beverage-bottling-line",
       "title": "Rotary bottle filler",
-      "description": "Filling carousel with a covered product bowl, dosing valves, guard skirt, and discharge deck. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Filling carousel with a covered product bowl, dosing valves, guard skirt, and discharge deck. Knobs: overall scale and color controls for stainless steel, powder-coated steel, food-grade polymer, and safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -28229,8 +29045,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/rotary-filler.kcad.ts",
       "preview": "/assets/beverage-bottling-line-rotary-filler.png",
-      "sourceSha256": "d22123a23cb220bb2a6d592981abf0723f3385ccbde038c6c1bfcb2853abff7d",
-      "triangleBudget": 2200,
+      "sourceSha256": "dd7513dd94ceab90148ada65712fbc1680cedf1ca78f27f0ac76587f0bd5d4d2",
+      "triangleBudget": 2800,
       "params": [
         {
           "name": "scale",
@@ -28242,21 +29058,46 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade polymer"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#e3a331",
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c",
+          "safetyPaint": "#f0b336"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75",
+          "safetyPaint": "#bd7b24"
+        }
+      },
       "stats": {
-        "triangles": 832,
+        "triangles": 2416,
         "sizeM": [
           1.48,
           1.015,
@@ -28267,22 +29108,25 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "base-skirt",
-            "top-cover",
-            "operator-rail"
+            "center-drive",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3"
           ],
-          "param": "accent"
+          "param": "powderCoat"
         },
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
             "filler-table",
             "product-bowl",
-            "center-drive",
+            "top-cover",
             "infeed-deck",
             "outfeed-deck",
             "fill-valve-0",
@@ -28296,13 +29140,60 @@
             "fill-valve-8",
             "fill-valve-9",
             "fill-valve-10",
-            "fill-valve-11",
-            "leg-0",
-            "leg-1",
-            "leg-2",
-            "leg-3"
+            "fill-valve-11"
           ],
-          "param": "body"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#e3a331",
+          "parts": [
+            "operator-rail"
+          ],
+          "param": "safetyPaint"
+        },
+        {
+          "name": "foodPolymer",
+          "color": "#3999a1",
+          "parts": [
+            "bottle-body-0",
+            "bottle-neck-0",
+            "bottle-cap-0",
+            "bottle-body-1",
+            "bottle-neck-1",
+            "bottle-cap-1",
+            "bottle-body-2",
+            "bottle-neck-2",
+            "bottle-cap-2",
+            "bottle-body-3",
+            "bottle-neck-3",
+            "bottle-cap-3",
+            "bottle-body-4",
+            "bottle-neck-4",
+            "bottle-cap-4",
+            "bottle-body-5",
+            "bottle-neck-5",
+            "bottle-cap-5",
+            "bottle-body-6",
+            "bottle-neck-6",
+            "bottle-cap-6",
+            "bottle-body-7",
+            "bottle-neck-7",
+            "bottle-cap-7",
+            "bottle-body-8",
+            "bottle-neck-8",
+            "bottle-cap-8",
+            "bottle-body-9",
+            "bottle-neck-9",
+            "bottle-cap-9",
+            "bottle-body-10",
+            "bottle-neck-10",
+            "bottle-cap-10",
+            "bottle-body-11",
+            "bottle-neck-11",
+            "bottle-cap-11"
+          ],
+          "param": "foodPolymer"
         }
       ]
     },
@@ -28310,7 +29201,7 @@
       "id": "sanitary-filter-skid",
       "kit": "beverage-bottling-line",
       "title": "Sanitary cartridge filter skid",
-      "description": "Twin stainless cartridge housings with vent, drain, and sanitary pipe headers. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Twin stainless cartridge housings with vent, drain, and sanitary pipe headers. Knobs: overall scale and color controls for stainless steel and powder-coated steel.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -28329,7 +29220,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/sanitary-filter-skid.kcad.ts",
       "preview": "/assets/beverage-bottling-line-sanitary-filter-skid.png",
-      "sourceSha256": "364380abaa31abff674240f0541847f0606d6cb6ec32776d9b225d3d32ed0188",
+      "sourceSha256": "cae0b2070f1be6c1d2578773bc95a58bda779bb2a193bf703bf7e599a5c5dad7",
       "triangleBudget": 2200,
       "params": [
         {
@@ -28342,19 +29233,28 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70"
+        }
+      },
       "stats": {
         "triangles": 360,
         "sizeM": [
@@ -28367,32 +29267,32 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "skid",
-            "filter-lid-0",
-            "filter-lid-1",
-            "vent-manifold"
-          ],
-          "param": "accent"
-        },
-        {
-          "name": "body",
-          "color": "#a6b3b4",
-          "parts": [
             "filter-housing-0",
             "filter-housing-1",
-            "inlet-header",
-            "outlet-header",
-            "branch-0",
-            "branch-1",
             "skid-foot-0",
             "skid-foot-1",
             "skid-foot-2",
             "skid-foot-3"
           ],
-          "param": "body"
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
+          "parts": [
+            "filter-lid-0",
+            "filter-lid-1",
+            "inlet-header",
+            "outlet-header",
+            "branch-0",
+            "branch-1",
+            "vent-manifold"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -28400,7 +29300,7 @@
       "id": "sanitary-lobe-pump",
       "kit": "beverage-bottling-line",
       "title": "Sanitary rotary-lobe pump",
-      "description": "Low-shear lobe pump with polished casing, motor, coupling guard, and cleanable feet. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Low-shear lobe pump with polished casing, motor, coupling guard, and cleanable feet. Knobs: overall scale and color controls for stainless steel and powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -28419,7 +29319,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/sanitary-lobe-pump.kcad.ts",
       "preview": "/assets/beverage-bottling-line-sanitary-lobe-pump.png",
-      "sourceSha256": "153204ef2063b57d0072f11a3821d6c129b36a66107fa5b02760590c9897a555",
+      "sourceSha256": "97bd54db0d8f50036d9dd91bc6eb478242b7c934630d7d88386987dae0c9f55f",
       "triangleBudget": 2200,
       "params": [
         {
@@ -28432,19 +29332,28 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70"
+        }
+      },
       "stats": {
         "triangles": 304,
         "sizeM": [
@@ -28457,30 +29366,30 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "base",
-            "front-cover",
-            "coupling-guard"
-          ],
-          "param": "accent"
-        },
-        {
-          "name": "body",
-          "color": "#a6b3b4",
-          "parts": [
-            "pump-casing",
-            "inlet",
-            "outlet",
-            "gearbox",
             "motor",
+            "coupling-guard",
             "foot-0",
             "foot-1",
             "foot-2",
             "foot-3"
           ],
-          "param": "body"
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
+          "parts": [
+            "pump-casing",
+            "front-cover",
+            "inlet",
+            "outlet",
+            "gearbox"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -28488,7 +29397,7 @@
       "id": "shrink-bundle-wrapper",
       "kit": "beverage-bottling-line",
       "title": "Bottle bundle shrink wrapper",
-      "description": "Film-feed frame gathers multipacks and wraps them before the shrink tunnel. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Film-feed frame gathers multipacks and wraps them before the shrink tunnel. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -28507,7 +29416,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/shrink-bundle-wrapper.kcad.ts",
       "preview": "/assets/beverage-bottling-line-shrink-bundle-wrapper.png",
-      "sourceSha256": "f35b455bf369b6896301e8be0e4ba0882cef4cfec2e77b2f3fa10fe252e7d9e8",
+      "sourceSha256": "4821e502c7d606be03f0a9724ef8ea262be27f54221fd4d2b2abae00e75bcfd4",
       "triangleBudget": 2200,
       "params": [
         {
@@ -28520,19 +29429,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75"
+        }
+      },
       "stats": {
         "triangles": 264,
         "sizeM": [
@@ -28545,32 +29471,39 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "base",
-            "film-reel",
-            "film-cut-bar"
-          ],
-          "param": "accent"
-        },
-        {
-          "name": "body",
-          "color": "#a6b3b4",
-          "parts": [
-            "product-bed",
-            "portal-left",
-            "portal-right",
-            "portal-top",
-            "film-roller-a",
-            "film-roller-b",
             "control-pod",
             "leg-0",
             "leg-1",
             "leg-2",
             "leg-3"
           ],
-          "param": "body"
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
+          "parts": [
+            "product-bed",
+            "portal-left",
+            "portal-right",
+            "portal-top"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "foodPolymer",
+          "color": "#3999a1",
+          "parts": [
+            "film-reel",
+            "film-roller-a",
+            "film-roller-b",
+            "film-cut-bar"
+          ],
+          "param": "foodPolymer"
         }
       ]
     },
@@ -28578,7 +29511,7 @@
       "id": "sleeve-label-applicator",
       "kit": "beverage-bottling-line",
       "title": "Shrink-sleeve applicator",
-      "description": "Sleeve web former and cutting head positioned over a centered bottle conveyor. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Sleeve web former and cutting head positioned over a centered bottle conveyor. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -28597,7 +29530,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/sleeve-label-applicator.kcad.ts",
       "preview": "/assets/beverage-bottling-line-sleeve-label-applicator.png",
-      "sourceSha256": "d685471c376e825e4ced9285983b48759bbb737a1db4e6f7bef3145ba077548d",
+      "sourceSha256": "8e8450b7d05dbe78d78b81ee82c80c8726eb092897f16ddb8cfa680b25530960",
       "triangleBudget": 2200,
       "params": [
         {
@@ -28610,19 +29543,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75"
+        }
+      },
       "stats": {
         "triangles": 348,
         "sizeM": [
@@ -28635,18 +29585,17 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "base",
-            "film-roll",
             "control-pod"
           ],
-          "param": "accent"
+          "param": "powderCoat"
         },
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
             "conveyor",
             "portal-left",
@@ -28659,7 +29608,15 @@
             "feed-roller-2",
             "feed-roller-3"
           ],
-          "param": "body"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "foodPolymer",
+          "color": "#3999a1",
+          "parts": [
+            "film-roll"
+          ],
+          "param": "foodPolymer"
         }
       ]
     },
@@ -28667,7 +29624,7 @@
       "id": "sleeve-shrink-tunnel",
       "kit": "beverage-bottling-line",
       "title": "Bottle sleeve shrink tunnel",
-      "description": "Heated tunnel with insulated hood, bottle openings, ventilation fan, and guarded conveyor. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Heated tunnel with insulated hood, bottle openings, ventilation fan, and guarded conveyor. Knobs: overall scale and color controls for stainless steel and powder-coated steel.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -28686,7 +29643,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/sleeve-shrink-tunnel.kcad.ts",
       "preview": "/assets/beverage-bottling-line-sleeve-shrink-tunnel.png",
-      "sourceSha256": "9531d49d7c30ed85dded3e18ff45c62fe274cb509149f62a5db17cea2ba22693",
+      "sourceSha256": "d2a134a7d81f93492ac7511f8e2d6f3cd1b107aa2b9158a32731e5e6f2cbc0c3",
       "triangleBudget": 2200,
       "params": [
         {
@@ -28699,19 +29656,28 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70"
+        }
+      },
       "stats": {
         "triangles": 252,
         "sizeM": [
@@ -28724,31 +29690,31 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
             "conveyor-bed",
-            "opening-front",
-            "opening-back",
-            "temperature-panel"
-          ],
-          "param": "accent"
-        },
-        {
-          "name": "body",
-          "color": "#a6b3b4",
-          "parts": [
             "tunnel-shell",
             "roof",
+            "opening-front",
+            "opening-back",
             "vent-0",
             "vent-1",
-            "vent-2",
+            "vent-2"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397e91",
+          "parts": [
             "leg-0",
             "leg-1",
             "leg-2",
-            "leg-3"
+            "leg-3",
+            "temperature-panel"
           ],
-          "param": "body"
+          "param": "powderCoat"
         }
       ]
     },
@@ -28756,7 +29722,7 @@
       "id": "slip-sheet-dispenser",
       "kit": "beverage-bottling-line",
       "title": "Pallet slip-sheet dispenser",
-      "description": "Magazine and vacuum pick head feed a separator sheet to the palletizing station. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Magazine and vacuum pick head feed a separator sheet to the palletizing station. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and corrugated board.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -28775,7 +29741,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/slip-sheet-dispenser.kcad.ts",
       "preview": "/assets/beverage-bottling-line-slip-sheet-dispenser.png",
-      "sourceSha256": "e6b9e57bd9f39f46df3c783b2ea02c38a4c9297cbcd04e8342f982f97b2ab48c",
+      "sourceSha256": "cff44e96014f5d78b0746e235256cec88ffe77f7d4e81f9777472916000c649d",
       "triangleBudget": 2200,
       "params": [
         {
@@ -28788,19 +29754,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "corrugatedBoard",
+          "type": "color",
+          "default": "#b18a5d",
+          "label": "Corrugated board"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "corrugatedBoard": "#c49b6b"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "corrugatedBoard": "#886342"
+        }
+      },
       "stats": {
         "triangles": 304,
         "sizeM": [
@@ -28813,22 +29796,29 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "base",
-            "pick-head"
-          ],
-          "param": "accent"
-        },
-        {
-          "name": "body",
-          "color": "#a6b3b4",
-          "parts": [
-            "sheet-stack",
             "magazine-post-left",
             "magazine-post-right",
-            "top-beam",
+            "top-beam"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "corrugatedBoard",
+          "color": "#b18a5d",
+          "parts": [
+            "sheet-stack"
+          ],
+          "param": "corrugatedBoard"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
+          "parts": [
+            "pick-head",
             "vacuum-cup-0",
             "vacuum-cup-1",
             "vacuum-cup-2",
@@ -28836,7 +29826,7 @@
             "outfeed-shelf",
             "vacuum-pump"
           ],
-          "param": "body"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -28844,7 +29834,7 @@
       "id": "stretch-wrapper",
       "kit": "beverage-bottling-line",
       "title": "Pallet stretch wrapper",
-      "description": "Turntable wrapper with film carriage, mast rollers, and adjustable load-height sensor. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Turntable wrapper with film carriage, mast rollers, and adjustable load-height sensor. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -28863,7 +29853,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/stretch-wrapper.kcad.ts",
       "preview": "/assets/beverage-bottling-line-stretch-wrapper.png",
-      "sourceSha256": "60fd789620f81652b4d6c90385d4dfcaa8c5685c3c3c4179b48aa1c58f4852be",
+      "sourceSha256": "e323605b883a65d8fedbee1067f3c246e5d5f177fec1feacba7050ee449dbd80",
       "triangleBudget": 2200,
       "params": [
         {
@@ -28876,19 +29866,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75"
+        }
+      },
       "stats": {
         "triangles": 356,
         "sizeM": [
@@ -28901,29 +29908,36 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
             "turntable",
-            "mast-base",
-            "film-roll",
-            "control-box"
-          ],
-          "param": "accent"
-        },
-        {
-          "name": "body",
-          "color": "#a6b3b4",
-          "parts": [
             "turntable-hub",
             "mast",
-            "film-carriage",
-            "film-roller-0",
-            "film-roller-1",
-            "film-roller-2",
             "photoeye"
           ],
-          "param": "body"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397e91",
+          "parts": [
+            "mast-base",
+            "control-box"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "foodPolymer",
+          "color": "#3999a1",
+          "parts": [
+            "film-carriage",
+            "film-roll",
+            "film-roller-0",
+            "film-roller-1",
+            "film-roller-2"
+          ],
+          "param": "foodPolymer"
         }
       ]
     },
@@ -28931,7 +29945,7 @@
       "id": "tamper-band-shrink-station",
       "kit": "beverage-bottling-line",
       "title": "Tamper-band shrink station",
-      "description": "Bottle neck band station with a compact heat ring, guide rails, and exhaust hood. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Bottle neck band station with a compact heat ring, guide rails, and exhaust hood. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -28950,7 +29964,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/tamper-band-shrink-station.kcad.ts",
       "preview": "/assets/beverage-bottling-line-tamper-band-shrink-station.png",
-      "sourceSha256": "3609ba3b20d62b2324e22259675aac6b93d3686cb550849fce69ae62a6fd74a9",
+      "sourceSha256": "e606cc41988a62fd3848cd06ef7c5237923e4d8c829512f654d36eb68aebe1c4",
       "triangleBudget": 2200,
       "params": [
         {
@@ -28963,19 +29977,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75"
+        }
+      },
       "stats": {
         "triangles": 140,
         "sizeM": [
@@ -28988,27 +30019,34 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "base",
-            "opening-frame"
-          ],
-          "param": "accent"
-        },
-        {
-          "name": "body",
-          "color": "#a6b3b4",
-          "parts": [
-            "heat-ring",
+            "opening-frame",
             "side-panel-left",
             "side-panel-right",
-            "top-hood",
-            "exhaust-fan",
+            "top-hood"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
+          "parts": [
+            "heat-ring",
+            "exhaust-fan"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "foodPolymer",
+          "color": "#3999a1",
+          "parts": [
             "infeed-guide",
             "outfeed-guide"
           ],
-          "param": "body"
+          "param": "foodPolymer"
         }
       ]
     },
@@ -29016,7 +30054,7 @@
       "id": "vision-inspection-arch",
       "kit": "beverage-bottling-line",
       "title": "Bottle vision inspection arch",
-      "description": "Inspection portal with overhead camera, backlights, side cameras, and a guarded conveyor gap. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Inspection portal with overhead camera, backlights, side cameras, and a guarded conveyor gap. Knobs: overall scale and color controls for stainless steel and powder-coated steel.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -29035,7 +30073,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/vision-inspection-arch.kcad.ts",
       "preview": "/assets/beverage-bottling-line-vision-inspection-arch.png",
-      "sourceSha256": "b4c4d1eb32d0ce0c57a215d3768e463036ebd9c0e8f5907c59fce4d80e8ed5e4",
+      "sourceSha256": "7cf1ee69cde8c48f7d8229a9d2cb573ef895d8f402081c99cde8aa4b9f3599c9",
       "triangleBudget": 2200,
       "params": [
         {
@@ -29048,19 +30086,28 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70"
+        }
+      },
       "stats": {
         "triangles": 144,
         "sizeM": [
@@ -29073,19 +30120,18 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "base-left",
             "base-right",
-            "camera-beam",
-            "reject-sensor"
+            "camera-beam"
           ],
-          "param": "accent"
+          "param": "powderCoat"
         },
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
             "column-left",
             "column-right",
@@ -29093,10 +30139,11 @@
             "side-camera-0",
             "side-camera-1",
             "backlight",
+            "reject-sensor",
             "conveyor-left",
             "conveyor-right"
           ],
-          "param": "body"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -29104,7 +30151,7 @@
       "id": "wraparound-labeler",
       "kit": "beverage-bottling-line",
       "title": "Wraparound bottle labeler",
-      "description": "Roll-fed label station with a vacuum drum, applicator plate, bottle wrap belt, and control box. Knobs: overall scale, equipment color, and safety accent.",
+      "description": "Roll-fed label station with a vacuum drum, applicator plate, bottle wrap belt, and control box. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -29123,7 +30170,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/wraparound-labeler.kcad.ts",
       "preview": "/assets/beverage-bottling-line-wraparound-labeler.png",
-      "sourceSha256": "b3c8982f97e1e476d91aa8f845be05edf17af5628780c23d9ddf13a975dcc3b1",
+      "sourceSha256": "dfdf65e2bad491589c44546e24c7279ba0b54fa2d491bd21471cde9dd723055d",
       "triangleBudget": 2200,
       "params": [
         {
@@ -29136,19 +30183,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a6b3b4",
-          "label": "Equipment color"
+          "default": "#aebdc1",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#e3a23d",
-          "label": "Safety accent"
+          "default": "#397e91",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "sanitaryLine": {
+          "stainlessSteel": "#d2dfe1",
+          "powderCoat": "#4b95a4",
+          "foodPolymer": "#2c828c"
+        },
+        "legacyPlant": {
+          "stainlessSteel": "#858f91",
+          "powderCoat": "#315b70",
+          "foodPolymer": "#286c75"
+        }
+      },
       "stats": {
         "triangles": 216,
         "sizeM": [
@@ -29161,28 +30225,35 @@
       },
       "palette": [
         {
-          "name": "accent",
-          "color": "#e3a23d",
+          "name": "powderCoat",
+          "color": "#397e91",
           "parts": [
             "base-frame",
-            "label-roll",
+            "top-beam",
             "control-box"
           ],
-          "param": "accent"
+          "param": "powderCoat"
         },
         {
-          "name": "body",
-          "color": "#a6b3b4",
+          "name": "foodPolymer",
+          "color": "#3999a1",
           "parts": [
             "bottle-deck",
-            "left-column",
-            "right-column",
-            "top-beam",
-            "vacuum-drum",
-            "pressure-roller",
+            "label-roll",
             "web-guide"
           ],
-          "param": "body"
+          "param": "foodPolymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
+          "parts": [
+            "left-column",
+            "right-column",
+            "vacuum-drum",
+            "pressure-roller"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },

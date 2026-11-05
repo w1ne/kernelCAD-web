@@ -6,16 +6,30 @@ from those sources and must be rebuilt in the same change.
 
 ## Catalog quality snapshot (2026-11-05)
 
-The catalog quality gate reports **1,554/2,390 assets passing (65.02%)** and
-836 thin assets (34.98%). This round promoted 50 existing veterinary clinic
-assets; no IDs were added. The previous checkpoint was 1,504/2,390 (62.93%),
-after promoting 52 space-exploration assets; the earlier 5 Nov checkpoint was
-1,010/2,390 (42.26%). Thin assets remain in other kits. See the [veterinary
-clinic quality handoff](../artifacts/catalog-demos/vet-clinic-quality-promotion-20261105/README.md),
-[space exploration handoff](../artifacts/catalog-demos/space-exploration-quality-promotion-20261105/README.md),
-and [theatre production handoff](../artifacts/catalog-demos/theatre-production-quality-promotion-20261105/README.md)
+The catalog quality gate reports **1,704/2,390 assets passing (71.30%)** and
+686 thin assets (28.70%). This round promoted 50 existing beverage bottling
+line assets from the 1,654/2,390 checkpoint; no IDs were added. Thin assets
+remain in other kits. See the [beverage bottling line handoff](../artifacts/catalog-demos/beverage-bottling-line-quality-promotion-20261105/README.md),
+[data center infrastructure handoff](../artifacts/catalog-demos/data-center-infrastructure-quality-promotion-20261105/README.md),
+[wind energy handoff](../artifacts/catalog-demos/wind-energy-quality-promotion-20261105/README.md),
+[veterinary clinic handoff](../artifacts/catalog-demos/vet-clinic-quality-promotion-20261105/README.md),
+and [space exploration handoff](../artifacts/catalog-demos/space-exploration-quality-promotion-20261105/README.md)
 for source, preview, index, and verification evidence. These are local catalog
 checks and do not represent deployed behavior.
+
+## Beverage bottling line assets
+
+The [beverage bottling line kit](../catalog/kits/beverage-bottling-line/README.md)
+contains 50 original CC0 assets for beverage preparation, bottle handling,
+filling, closure, labelling, inspection and case packing. Every existing ID
+retains its scale control and now has two to four material-named color controls
+plus `sanitaryLine` and `legacyPlant` presets. The 50 sources now expose 137
+material-named color controls and 100 preset entries; all 50 rendered previews
+are indexed.
+The [quality promotion handoff](../artifacts/catalog-demos/beverage-bottling-line-quality-promotion-20261105/README.md)
+records the actual source-to-preview workflow, inspected MP4 and local checks.
+The models are visualization props and do not assert equipment performance,
+food-contact suitability, pressure ratings or physical acceptance.
 
 ## Build and audit
 
