@@ -1,9 +1,11 @@
 {
-  "checkedAt": "2026-11-04T18:08:30.508Z",
-  "sourceHead": "3dd67b101284f760df3a8b5bde436550a6bd80ab",
-  "provenance": "Annotated still sequence from local kernelcad CLI renders of the committed example sources. The generator runs evaluate and neutral-file export commands for every case. It is not a screen recording, deployed-site capture, machine toolpath, fabricated part or physical acceptance.",
+  "checkedAt": "2026-11-05T14:41:56.802Z",
+  "sourceHead": "040183755d13b44753fad4439dd75356907eb2bf",
+  "sourceWorktreeDirty": true,
+  "sourceWorktreeStatus": "M examples/manufacturing-showcase/moulded-housing.kcad.ts",
+  "provenance": "Annotated still sequence from local kernelcad CLI renders of the checked-out example sources. sourceHead records the base commit, sourceWorktreeDirty reports whether example inputs differ from it, and per-case source hashes identify the exact inputs. The generator runs evaluate and neutral-file export commands for every case. It is not a screen recording, deployed-site capture, machine toolpath, fabricated part or physical acceptance.",
   "video": "manufacturing-workflow.mp4",
-  "videoSha256": "0bd2ebd9174ea936b3ddd9af052240fa084f4b7a63d3f8cbf9af0b33ddba1028",
+  "videoSha256": "5641642309a66a9dc8be3690db7cdc268711a0d9d4d0fa4d670e52ec3306304d",
   "durationSec": 37.041667,
   "canvas": "1920x1080",
   "codec": "H.264, yuv420p, 24 fps",
@@ -16,10 +18,10 @@
       "source": "examples/manufacturing-showcase/cut-motor-plate.kcad.ts",
       "durationSec": 4,
       "sourceSha256": "8b0fe0609e465285e3f64d393cd4bcbe01f3f2b840530ba268aa5ada00c71245",
-      "renderSha256": "744cd425116f4ed7464d6ecabeb838ddf3e3fd1de3a7457e30c786b03ce1ff4e",
+      "renderSha256": "eda2f3a4c0f3119e8fd5dd0eee16a459ae97265b275a3b7adfd1d81992e8e558",
       "format": "dxf",
       "artifactBytes": 1853,
-      "artifactSha256": "961fb89c866e40a94d679c233d86aa590ca5eee50d69b98fb63c427cac2c1729",
+      "artifactSha256": "85888931fee25d65ca315ae0f401618db07beb484300377b90d50bfe22ce95b4",
       "evaluateCommand": [
         "kernelcad",
         "evaluate",
@@ -43,6 +45,8 @@
         "--background",
         "dark",
         "--no-watermark",
+        "--pose",
+        "45,65",
         "-o",
         "<temp>/cut-motor-plate.png",
         "examples/manufacturing-showcase/cut-motor-plate.kcad.ts"
@@ -95,7 +99,7 @@
       "renderSha256": "0ee26cd8e13e9ea2615051f5a522c76aa14aad8bfca5a2e12cedb7191e56430f",
       "format": "dxf",
       "artifactBytes": 5849,
-      "artifactSha256": "b3b3f0c7226a246aef6c47560396a6f77e7b5d561ac73ad8faa248ab3cc57f01",
+      "artifactSha256": "4f57ea352aaa7c3b9444d570881ae84fbafc98f62bbf9e0b5f0e1a8e7b12cc3b",
       "evaluateCommand": [
         "kernelcad",
         "evaluate",
@@ -171,7 +175,7 @@
       "renderSha256": "c273f579832a26f561b8b11225e041c7a1448b0d6fc74cb6ecaa5a2655f716df",
       "format": "3mf",
       "artifactBytes": 268104,
-      "artifactSha256": "6bbb026100c009acb269c33c36be17341dcb3c43c9cf398e3806a10a5f838bc8",
+      "artifactSha256": "a7140f2ac60015f1eb7cb17a0ea281c01cebaeb0d8cd79a07848131b4a013df7",
       "evaluateCommand": [
         "kernelcad",
         "evaluate",
@@ -209,11 +213,11 @@
     {
       "source": "examples/manufacturing-showcase/moulded-housing.kcad.ts",
       "durationSec": 4,
-      "sourceSha256": "9ad05af10eaf9118a1a7b8da0957f8317981ceaedf1b60b04ccaee1cae5ffddf",
-      "renderSha256": "5ff64f8288f8516d7e17bef9d485a3b5478126f23d97270ed8e9a6c474b9e779",
+      "sourceSha256": "b644efb6ac995f2310941f763bded288ef958d3df3a3476f5778b4b518ebd95c",
+      "renderSha256": "595153d31a8f96944ca22cfab20e6d6f33a094bb2acbf7368b024a0b8b41e79e",
       "format": "step",
-      "artifactBytes": 133370,
-      "artifactSha256": "6c7a2cb10d70f7e034897a63840a1b51a43d3f3dc5f29d0f175bb5ac6dfb409d",
+      "artifactBytes": 573390,
+      "artifactSha256": "b8db5fa97d0f75675e707286ada6ae8469f8afaff7cbdee38f4fa0a14a0ca620",
       "evaluateCommand": [
         "kernelcad",
         "evaluate",
@@ -243,8 +247,8 @@
         "<temp>/moulded-housing.png",
         "examples/manufacturing-showcase/moulded-housing.kcad.ts"
       ],
-      "testCheck": "Draft/wall checks pass range endpoints; trapped-core control fails.",
-      "openWork": "Add retention/ribs and review gate, ejectors, parting and tool design."
+      "testCheck": "Moulding DFM passes range endpoints; pilot/rib edits are checked and trapped core fails.",
+      "openWork": "Confirm resin/pilot fit and review rib-root radii, flow, gate, ejectors, parting and tooling."
     },
     {
       "source": "examples/manufacturing-showcase/bearing-shaft-assembly.kcad.ts",
@@ -253,7 +257,7 @@
       "renderSha256": "360223397f6eddef7a7af94ab8bc23b070ac483c2626035e6a15d743de39c93e",
       "format": "step",
       "artifactBytes": 96947,
-      "artifactSha256": "46ca28c9a15591a99ae10c7d94e85a9c689d0d7778beb098b81239f2ec055e02",
+      "artifactSha256": "52f0595eb4729a1a94892df6c3217c899792b3a73a73b0f46f279ce47a4572b1",
       "evaluateCommand": [
         "kernelcad",
         "evaluate",
@@ -317,7 +321,7 @@
       "artifact": {
         "format": "dxf",
         "bytes": 1853,
-        "sha256": "961fb89c866e40a94d679c233d86aa590ca5eee50d69b98fb63c427cac2c1729",
+        "sha256": "85888931fee25d65ca315ae0f401618db07beb484300377b90d50bfe22ce95b4",
         "errorDiagnostics": 0
       },
       "renderCommand": [
@@ -328,11 +332,13 @@
         "--background",
         "dark",
         "--no-watermark",
+        "--pose",
+        "45,65",
         "-o",
         "<temp>/cut-motor-plate.png",
         "examples/manufacturing-showcase/cut-motor-plate.kcad.ts"
       ],
-      "renderSha256": "744cd425116f4ed7464d6ecabeb838ddf3e3fd1de3a7457e30c786b03ce1ff4e",
+      "renderSha256": "eda2f3a4c0f3119e8fd5dd0eee16a459ae97265b275a3b7adfd1d81992e8e558",
       "testCheck": "DXF loops, edited hole centres and diameters are read back.",
       "openWork": "Confirm the motor drawing, tolerances, cutter compensation and physical fit."
     },
@@ -409,7 +415,7 @@
       "artifact": {
         "format": "dxf",
         "bytes": 5849,
-        "sha256": "b3b3f0c7226a246aef6c47560396a6f77e7b5d561ac73ad8faa248ab3cc57f01",
+        "sha256": "4f57ea352aaa7c3b9444d570881ae84fbafc98f62bbf9e0b5f0e1a8e7b12cc3b",
         "errorDiagnostics": 0
       },
       "renderCommand": [
@@ -501,7 +507,7 @@
       "artifact": {
         "format": "3mf",
         "bytes": 268104,
-        "sha256": "6bbb026100c009acb269c33c36be17341dcb3c43c9cf398e3806a10a5f838bc8",
+        "sha256": "a7140f2ac60015f1eb7cb17a0ea281c01cebaeb0d8cd79a07848131b4a013df7",
         "errorDiagnostics": 0
       },
       "renderCommand": [
@@ -527,7 +533,7 @@
     {
       "slug": "moulded-housing",
       "source": "examples/manufacturing-showcase/moulded-housing.kcad.ts",
-      "sourceSha256": "9ad05af10eaf9118a1a7b8da0957f8317981ceaedf1b60b04ccaee1cae5ffddf",
+      "sourceSha256": "b644efb6ac995f2310941f763bded288ef958d3df3a3476f5778b4b518ebd95c",
       "evaluateCommand": [
         "kernelcad",
         "evaluate",
@@ -536,7 +542,7 @@
       ],
       "evaluation": {
         "ok": true,
-        "featureCount": 21,
+        "featureCount": 69,
         "errorDiagnostics": 0
       },
       "exportCommand": [
@@ -550,8 +556,8 @@
       ],
       "artifact": {
         "format": "step",
-        "bytes": 133370,
-        "sha256": "6c7a2cb10d70f7e034897a63840a1b51a43d3f3dc5f29d0f175bb5ac6dfb409d",
+        "bytes": 573390,
+        "sha256": "b8db5fa97d0f75675e707286ada6ae8469f8afaff7cbdee38f4fa0a14a0ca620",
         "errorDiagnostics": 0
       },
       "renderCommand": [
@@ -568,9 +574,9 @@
         "<temp>/moulded-housing.png",
         "examples/manufacturing-showcase/moulded-housing.kcad.ts"
       ],
-      "renderSha256": "5ff64f8288f8516d7e17bef9d485a3b5478126f23d97270ed8e9a6c474b9e779",
-      "testCheck": "Draft/wall checks pass range endpoints; trapped-core control fails.",
-      "openWork": "Add retention/ribs and review gate, ejectors, parting and tool design."
+      "renderSha256": "595153d31a8f96944ca22cfab20e6d6f33a094bb2acbf7368b024a0b8b41e79e",
+      "testCheck": "Moulding DFM passes range endpoints; pilot/rib edits are checked and trapped core fails.",
+      "openWork": "Confirm resin/pilot fit and review rib-root radii, flow, gate, ejectors, parting and tooling."
     },
     {
       "slug": "bearing-shaft-assembly",
@@ -599,7 +605,7 @@
       "artifact": {
         "format": "step",
         "bytes": 96947,
-        "sha256": "46ca28c9a15591a99ae10c7d94e85a9c689d0d7778beb098b81239f2ec055e02",
+        "sha256": "52f0595eb4729a1a94892df6c3217c899792b3a73a73b0f46f279ce47a4572b1",
         "errorDiagnostics": 0
       },
       "renderCommand": [

@@ -33,12 +33,44 @@ describe('moulded housing base', () => {
     expect(result.params.find(param => param.name === 'length')).toMatchObject({ min: 70, max: 120 });
     expect(result.params.find(param => param.name === 'width')).toMatchObject({ min: 45, max: 90 });
     expect(result.params.find(param => param.name === 'height')).toMatchObject({ min: 20, max: 40 });
-    expect(result.params.find(param => param.name === 'wall')).toMatchObject({ min: 1.8, max: 2.5 });
+    expect(result.params.find(param => param.name === 'wall')).toMatchObject({ min: 2, max: 2.5 });
+  }, 120_000);
+
+  it('sizes the cored board-screw pilots as an editable interface', async () => {
+    const code = await readFile('examples/manufacturing-showcase/moulded-housing.kcad.ts', 'utf8');
+    const params = await paramsListTool({ file: 'examples/manufacturing-showcase/moulded-housing.kcad.ts' });
+    expect(params.params.find(param => param.name === 'boardScrewPilotDia')).toMatchObject({ min: 2, max: 2.2 });
+
+    const volumes: number[] = [];
+    for (const diameter of [2, 2.2]) {
+      const candidate = code.replace("param('boardScrewPilotDia', 2.1", `param('boardScrewPilotDia', ${diameter}`);
+      const result = await evaluateScriptTool({ code: candidate, skipMechanismCheck: true });
+      expect(result.ok, JSON.stringify(result.diagnostics)).toBe(true);
+      volumes.push(result.sceneSummary!.volume);
+    }
+    expect(volumes[1]).toBeLessThan(volumes[0]!);
+  }, 120_000);
+
+  it('adds measurable drafted structural rib stock to the housing', async () => {
+    const code = await readFile('examples/manufacturing-showcase/moulded-housing.kcad.ts', 'utf8');
+    const start = code.indexOf('// BEGIN STRUCTURAL RIBS');
+    const end = code.indexOf('// END STRUCTURAL RIBS');
+    expect(start).toBeGreaterThanOrEqual(0);
+    expect(end).toBeGreaterThan(start);
+    const withoutRibs = code.slice(0, start) + code.slice(end + '// END STRUCTURAL RIBS'.length);
+
+    const [ribbed, plain] = await Promise.all([
+      evaluateScriptTool({ code, skipMechanismCheck: true }),
+      evaluateScriptTool({ code: withoutRibs, skipMechanismCheck: true }),
+    ]);
+    expect(ribbed.ok, JSON.stringify(ribbed.diagnostics)).toBe(true);
+    expect(plain.ok, JSON.stringify(plain.diagnostics)).toBe(true);
+    expect(ribbed.sceneSummary?.volume).toBeGreaterThan(plain.sceneSummary!.volume + 500);
   }, 120_000);
   it('passes the molding DFM gate at the combined minimum and maximum parameters', async () => {
     const code = await readFile('examples/manufacturing-showcase/moulded-housing.kcad.ts', 'utf8');
     const variants = [
-      { draftDeg: 1, length: 70, width: 45, height: 20, wall: 1.8 },
+      { draftDeg: 1, length: 70, width: 45, height: 20, wall: 2 },
       { draftDeg: 5, length: 120, width: 90, height: 40, wall: 2.5 },
     ];
     for (const variant of variants) {
@@ -51,14 +83,17 @@ describe('moulded housing base', () => {
       const model = await buildModel({ fileName: `moulded-housing-${variant.draftDeg}.kcad.ts`, code: candidate });
       expect(model.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
       const report = await runDfmChecksOnModel(model);
-      expect(report?.moulding?.[0].result.verdict).toBe('pass');
+      expect(report?.moulding?.[0].result.verdict, JSON.stringify({
+        variant,
+        diagnostics: report?.diagnostics.map(diagnostic => ({ code: diagnostic.code, message: diagnostic.message })),
+      })).toBe('pass');
     }
   }, 180_000);
 
   it('changes wall stock while preserving the drafted outer envelope', async () => {
     const code = await readFile('examples/manufacturing-showcase/moulded-housing.kcad.ts', 'utf8');
     const volumes: number[] = [];
-    for (const wall of [1.8, 2.5]) {
+    for (const wall of [2, 2.5]) {
       const candidate = code.replace("param('wall', 2", `param('wall', ${wall}`);
       const result = await evaluateScriptTool({ code: candidate, skipMechanismCheck: true });
       expect(result.ok, JSON.stringify(result.diagnostics)).toBe(true);

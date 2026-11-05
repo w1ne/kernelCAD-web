@@ -44,6 +44,7 @@ const CASES: DemoCase[] = [
     parameters: 'Plate size and thickness, NEMA pitch, pilot diameter, frame-hole size.',
     testCheck: 'DXF loops, edited hole centres and diameters are read back.',
     openWork: 'Confirm the motor drawing, tolerances, cutter compensation and physical fit.',
+    pose: '45,65',
   },
   {
     slug: 'bearing-block',
@@ -90,12 +91,12 @@ const CASES: DemoCase[] = [
   {
     slug: 'moulded-housing',
     process: 'INJECTION MOLDING',
-    title: 'Drafted housing',
+    title: 'Ribbed drafted housing',
     source: 'examples/manufacturing-showcase/moulded-housing.kcad.ts',
     format: 'step',
-    parameters: '1–5° draft, 1.8–2.5 mm wall and editable envelope dimensions.',
-    testCheck: 'Draft/wall checks pass range endpoints; trapped-core control fails.',
-    openWork: 'Add retention/ribs and review gate, ejectors, parting and tool design.',
+    parameters: '1–5° shell draft, 2–2.5 mm nominal wall, four M2.5 pilot bosses and eight 60%-wall ribs with 1.1° release draft.',
+    testCheck: 'Moulding DFM passes range endpoints; pilot/rib edits are checked and trapped core fails.',
+    openWork: 'Confirm resin/pilot fit and review rib-root radii, flow, gate, ejectors, parting and tooling.',
     pose: '45,65',
   },
   {
@@ -134,13 +135,13 @@ function wrap(value: string, maxChars = 44): string[] {
   return lines;
 }
 
-function textBlock(label: string, value: string, y: number, size = 30): string {
-  const lines = wrap(value);
+function textBlock(label: string, value: string, y: number, size = 26): { svg: string; nextY: number } {
+  const lines = wrap(value, 50);
   const labelSvg = `<text x="1132" y="${y}" fill="#91a7c7" font-family="${FONT}" font-size="20" font-weight="700" letter-spacing="2">${escapeXml(label)}</text>`;
   const valueSvg = lines.map((line, index) =>
-    `<text x="1132" y="${y + 38 + index * 34}" fill="#f3f6fb" font-family="${FONT}" font-size="${size}">${escapeXml(line)}</text>`,
+    `<text x="1132" y="${y + 32 + index * 30}" fill="#f3f6fb" font-family="${FONT}" font-size="${size}">${escapeXml(line)}</text>`,
   ).join('');
-  return labelSvg + valueSvg;
+  return { svg: labelSvg + valueSvg, nextY: y + 32 + lines.length * 30 + 12 };
 }
 
 function cardSvg(options: {
@@ -203,6 +204,9 @@ async function main(): Promise<void> {
   const temp = await mkdtemp(join(tmpdir(), 'kernelcad-manufacturing-demo-'));
   try {
     const gitHead = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
+    const sourceWorktreeStatus = execFileSync('git', [
+      'status', '--porcelain', '--', ...CASES.map((item) => item.source),
+    ], { cwd: ROOT, encoding: 'utf8' }).trim();
     const resultRows = [];
     const frames: string[] = [];
     const slideDurations: number[] = [];
@@ -218,9 +222,9 @@ async function main(): Promise<void> {
         <path d="M190 480H1700" stroke="#34445b" stroke-width="2"/>
         <text x="190" y="565" fill="#7dd3c7" font-family="${FONT}" font-size="27" font-weight="700" letter-spacing="2">EVALUATE</text>
         <text x="190" y="630" fill="#ffffff" font-family="${FONT}" font-size="39">kernelcad evaluate --json → diagnostics</text>
-        <path d="M190 700H1700" stroke="#34445b" stroke-width="2"/>
-        <text x="190" y="785" fill="#7dd3c7" font-family="${FONT}" font-size="27" font-weight="700" letter-spacing="2">EXPORT + CHECK</text>
-        <text x="190" y="850" fill="#ffffff" font-family="${FONT}" font-size="39">DXF · STEP · STL · 3MF · independent readback tests</text>
+        <path d="M190 680H1700" stroke="#34445b" stroke-width="2"/>
+        <text x="190" y="750" fill="#7dd3c7" font-family="${FONT}" font-size="27" font-weight="700" letter-spacing="2">EXPORT + CHECK</text>
+        <text x="190" y="815" fill="#ffffff" font-family="${FONT}" font-size="39">DXF · STEP · STL · 3MF · independent readback tests</text>
       `,
     });
     await sharp(introSvg).png().toFile(intro);
@@ -259,14 +263,20 @@ async function main(): Promise<void> {
       const imagePath = expectedRenderPath(item, renderBase);
       const image = await readFile(imagePath);
 
-      const blocks = [
-        textBlock('SOURCE', item.source.split('/').at(-1)!, 355, 28),
-        textBlock('EDITABLE INPUTS', item.parameters, 435, 29),
-        textBlock('REAL CLI STEPS', `kernelcad evaluate --json  →  export ${item.format.toUpperCase()}`, 555, 26),
-        textBlock('EXPORT RESULT', `No error diagnostics · ${artifact.byteLength.toLocaleString()} bytes · SHA-256 ${sha256(artifact).slice(0, 12)}`, 650, 25),
-        textBlock('EXAMPLE TESTS', item.testCheck, 760, 27),
-        textBlock('STILL OPEN', item.openWork, 866, 25),
-      ].join('');
+      const detailSections: Array<[string, string]> = [
+        ['SOURCE', item.source.split('/').at(-1)!],
+        ['EDITABLE INPUTS', item.parameters],
+        ['REAL CLI STEPS', `kernelcad evaluate --json → export ${item.format.toUpperCase()}`],
+        ['EXPORT RESULT', `No error diagnostics · ${artifact.byteLength.toLocaleString()} bytes · SHA-256 ${sha256(artifact).slice(0, 12)}`],
+        ['EXAMPLE TESTS', item.testCheck],
+        ['STILL OPEN', item.openWork],
+      ];
+      let detailY = 318;
+      const blocks = detailSections.map(([label, value]) => {
+        const section = textBlock(label, value, detailY);
+        detailY = section.nextY;
+        return section.svg;
+      }).join('');
       const framePath = join(temp, `${String(index + 1).padStart(2, '0')}-${item.slug}.png`);
       const svg = cardSvg({
         kicker: `${String(index + 1).padStart(2, '0')} / 07  ·  ${item.process}`,
@@ -358,7 +368,9 @@ async function main(): Promise<void> {
     const evidence = {
       checkedAt: new Date().toISOString(),
       sourceHead: gitHead,
-      provenance: 'Annotated still sequence from local kernelcad CLI renders of the committed example sources. The generator runs evaluate and neutral-file export commands for every case. It is not a screen recording, deployed-site capture, machine toolpath, fabricated part or physical acceptance.',
+      sourceWorktreeDirty: sourceWorktreeStatus.length > 0,
+      sourceWorktreeStatus: sourceWorktreeStatus || 'clean',
+      provenance: 'Annotated still sequence from local kernelcad CLI renders of the checked-out example sources. sourceHead records the base commit, sourceWorktreeDirty reports whether example inputs differ from it, and per-case source hashes identify the exact inputs. The generator runs evaluate and neutral-file export commands for every case. It is not a screen recording, deployed-site capture, machine toolpath, fabricated part or physical acceptance.',
       video: 'manufacturing-workflow.mp4',
       videoSha256: sha256(videoBytes),
       durationSec: Number(probe.format?.duration),

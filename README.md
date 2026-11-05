@@ -45,7 +45,7 @@ designing parts for different processes:
 | Laser or waterjet cutting | A motor mounting plate with pilot and hole patterns | [Motor plate](examples/manufacturing-showcase/cut-motor-plate.kcad.ts) |
 | Turning | A shouldered spacer with an axial bore | [Shoulder spacer](examples/manufacturing-showcase/shoulder-spacer.kcad.ts) |
 | Assemblies | A bearing, housing, shaft and retainer | [Bearing assembly](examples/manufacturing-showcase/bearing-shaft-assembly.kcad.ts) |
-| Injection molding | A drafted housing with cored board posts | [Moulded housing](examples/manufacturing-showcase/moulded-housing.kcad.ts) |
+| Injection molding | A drafted housing with board-screw bosses and structural ribs | [Moulded housing](examples/manufacturing-showcase/moulded-housing.kcad.ts) |
 
 The output is CAD for review, not a manufacturing certification. Check
 dimensions, fit, material and process requirements, and prototype or obtain

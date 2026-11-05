@@ -1,9 +1,10 @@
 # Manufacturing showcase walkthrough
 
-`manufacturing-workflow.mp4` is a 37-second illustrated walkthrough of the
-seven committed examples. It shows local `kernelcad evaluate` and DXF, STEP or
+`manufacturing-workflow.mp4` is a 37-second illustrated walkthrough of seven
+manufacturing examples. It shows local `kernelcad evaluate` and DXF, STEP or
 3MF export runs beside publish-preset renders of the same source files. The
-generator records source and artifact hashes in `video-evidence.json`.
+generator records the base commit, example-source worktree status, and source
+and artifact hashes in `video-evidence.json`.
 
 The annotated still sequence is not a screen recording or a deployed-site
 capture. The rendered models and successful exports are digital CAD evidence.
