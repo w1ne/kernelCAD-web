@@ -71,7 +71,7 @@ const promptEdits: PromptEdit[] = [
       ["param('bendAngle', 90", "param('bendAngle', 120"],
     ],
     sizeRange: { min: [55, 99.9, 48], max: [66, 100.1, 58] },
-    holeArrays: [{ diameter: 6.6, count: 4 }],
+    holeArrays: [{ diameter: 6.6, count: 4, spanY: 74 }],
   },
   {
     file: 'shoulder-spacer',
@@ -190,7 +190,7 @@ describe('manufacturing showcase STEP after the requested prompt edits', () => {
       const baseline = await runAndExport({ code: baselineCode, fileName, format: 'step' });
       expect(baseline.diagnostics.filter(diagnostic => diagnostic.severity === 'error')).toEqual([]);
       const baselineReport = await inspectStepBuffer(Buffer.from(baseline.bytes), fileName);
-      expect(Math.abs(report.solids[0]!.volumeMm3 - baselineReport.solids[0]!.volumeMm3)).toBeGreaterThan(500);
+      expect(report.solids[0]!.volumeMm3).toBeGreaterThan(baselineReport.solids[0]!.volumeMm3 + 500);
     }
     if (shaft) {
       const shaftSolid = report.solids.find(solid => {
