@@ -1,0 +1,14 @@
+{
+  "command": "npx vitest run tests/integration/catalog/",
+  "status": "passed",
+  "exitCode": 0,
+  "testFilesPassed": 4,
+  "testsPassed": 15,
+  "durationSeconds": 222.96,
+  "testNamesObserved": [
+    "catalog asset module integration",
+    "asset catalog tools integration",
+    "catalog Studio link and index-hash validation",
+    "catalog source build, export triangle budget, material count, and index freshness"
+  ]
+}

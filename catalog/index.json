@@ -103938,7 +103938,7 @@
       "id": "air-compressor",
       "kit": "industrial-plant",
       "title": "Industrial air compressor",
-      "description": "Packaged air compressor with a receiver tank, motor head, intake filter and service gauge. Knobs: overall scale, body color and accent color.",
+      "description": "Packaged air compressor with a receiver tank, motor head, intake filter and service gauge. Controls: overall scale, steel, safety paint, gauge glass.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -103957,7 +103957,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/air-compressor.kcad.ts",
       "preview": "/assets/industrial-plant-air-compressor.png",
-      "sourceSha256": "c090ba187ad5e0615f0dcace7edc45b929ae23df66222784cd9f0aab054a0fe6",
+      "sourceSha256": "d5704085b2bd5b424ac88354ab7a7472afdfd4642727a0cd73b77969bb7984b6",
       "triangleBudget": 1400,
       "params": [
         {
@@ -103970,19 +103970,34 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#657c87",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e4ab45",
-          "label": "Accent color"
+          "label": "Safety paint"
+        },
+        {
+          "name": "gaugeGlass",
+          "type": "color",
+          "default": "#91c6c8",
+          "label": "Gauge glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f",
+          "gaugeGlass": "#78989b"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 544,
         "sizeM": [
@@ -103995,7 +104010,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e4ab45",
           "parts": [
             "base-frame",
@@ -104004,16 +104019,15 @@
             "head-cap-1",
             "head-cap-2",
             "intake-filter",
-            "pressure-gauge",
             "vent-slot-0",
             "vent-slot-1",
             "vent-slot-2",
             "vent-slot-3"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#657c87",
           "parts": [
             "receiver",
@@ -104022,7 +104036,15 @@
             "cylinder-head-2",
             "air-line"
           ],
-          "param": "body"
+          "param": "steel"
+        },
+        {
+          "name": "gaugeGlass",
+          "color": "#91c6c8",
+          "parts": [
+            "pressure-gauge"
+          ],
+          "param": "gaugeGlass"
         }
       ]
     },
@@ -104030,7 +104052,7 @@
       "id": "axial-flow-fan",
       "kit": "industrial-plant",
       "title": "Axial flow fan",
-      "description": "Axial flow fan with a faceted shroud, central hub, support frame and adjustable service mount. Knobs: overall scale, body color and accent color.",
+      "description": "Axial flow fan with a faceted shroud, central hub, support frame and adjustable service mount. Controls: overall scale, steel, safety paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -104049,7 +104071,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/axial-flow-fan.kcad.ts",
       "preview": "/assets/industrial-plant-axial-flow-fan.png",
-      "sourceSha256": "fb187089997def5f861b8fa80a73e4b51be686e6e605b811deac2de9321407a9",
+      "sourceSha256": "4f0f385c1c3032e1f6c697f3617d94fe4cbc4cdb2aae6a9d8928d7f3ed4a240c",
       "triangleBudget": 1400,
       "params": [
         {
@@ -104062,21 +104084,29 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#708087",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e5ad48",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
-        "triangles": 240,
+        "triangles": 344,
         "sizeM": [
           0.625,
           0.6422,
@@ -104087,7 +104117,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e5ad48",
           "parts": [
             "mounting-base",
@@ -104096,10 +104126,10 @@
             "support-brace--1",
             "support-brace-1"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#708087",
           "parts": [
             "fan-support",
@@ -104110,7 +104140,7 @@
             "fan-blade-3",
             "fan-blade-4"
           ],
-          "param": "body"
+          "param": "steel"
         }
       ]
     },
@@ -104118,7 +104148,7 @@
       "id": "baghouse-dust-collector",
       "kit": "industrial-plant",
       "title": "Baghouse dust collector",
-      "description": "Baghouse collector with filter tubes, a hopper bottom, service platform and induced-draft fan. Knobs: overall scale, body color and accent color.",
+      "description": "Baghouse collector with filter tubes, a hopper bottom, service platform and induced-draft fan. Controls: overall scale, steel, safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -104137,7 +104167,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/baghouse-dust-collector.kcad.ts",
       "preview": "/assets/industrial-plant-baghouse-dust-collector.png",
-      "sourceSha256": "4bcdd2a667784539e1802cd21b1da67b4aa5ea63ad74a8c0a3a067db7590a880",
+      "sourceSha256": "0dd19cfbf5d210afe7f047a06476d9a51b2cb3fa2611b81f3b9651c366881663",
       "triangleBudget": 1400,
       "params": [
         {
@@ -104150,19 +104180,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#748088",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#dfa344",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 468,
         "sizeM": [
@@ -104175,7 +104213,7 @@
       },
       "palette": [
         {
-          "name": "body",
+          "name": "steel",
           "color": "#748088",
           "parts": [
             "collector-plenum",
@@ -104183,10 +104221,10 @@
             "fan-motor",
             "walkway-rail"
           ],
-          "param": "body"
+          "param": "steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#dfa344",
           "parts": [
             "access-roof",
@@ -104201,7 +104239,7 @@
             "fan-duct",
             "service-walkway"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -104209,7 +104247,7 @@
       "id": "belt-conveyor",
       "kit": "industrial-plant",
       "title": "Belt conveyor",
-      "description": "Straight belt conveyor with a raised deck, roller ends, side guides and adjustable support legs. Knobs: overall scale, body color and accent color.",
+      "description": "Straight belt conveyor with a raised deck, roller ends, side guides and adjustable support legs. Controls: overall scale, steel, safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -104228,7 +104266,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/belt-conveyor.kcad.ts",
       "preview": "/assets/industrial-plant-belt-conveyor.png",
-      "sourceSha256": "06e99d5d810e62abfd8ed940523729282bfcb65a1fc9ea137cc281dc67829d22",
+      "sourceSha256": "3feecbc1964a1bc3c17c91a68a9c81fcf5cd425c2b0c05a2a33fd904a0d83b78",
       "triangleBudget": 1400,
       "params": [
         {
@@ -104241,19 +104279,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#687b83",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e2a744",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 292,
         "sizeM": [
@@ -104266,7 +104312,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e2a744",
           "parts": [
             "side-frame--1",
@@ -104281,10 +104327,10 @@
             "roller-1",
             "belt-surface"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#687b83",
           "parts": [
             "support--1-0",
@@ -104296,7 +104342,7 @@
             "conveyor-deck",
             "end-stop"
           ],
-          "param": "body"
+          "param": "steel"
         }
       ]
     },
@@ -104304,7 +104350,7 @@
       "id": "bridge-crane",
       "kit": "industrial-plant",
       "title": "Bridge crane",
-      "description": "Overhead bridge crane with twin runway girders, end trucks, a moving trolley and hanging hook. Knobs: overall scale, body color and accent color.",
+      "description": "Overhead bridge crane with twin runway girders, end trucks, a moving trolley and hanging hook. Controls: overall scale, steel, safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -104323,7 +104369,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/bridge-crane.kcad.ts",
       "preview": "/assets/industrial-plant-bridge-crane.png",
-      "sourceSha256": "24d0967697977014d0a563a738bdcf05020541410ba825f29f053e5108f3ad0c",
+      "sourceSha256": "38fb7760ab35ec1ed0a9d9c0aa6ed31db70b1597b6ad1c1a59206539eacb868f",
       "triangleBudget": 1400,
       "params": [
         {
@@ -104336,19 +104382,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#758087",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e5ac42",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 164,
         "sizeM": [
@@ -104361,7 +104415,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e5ac42",
           "parts": [
             "base-rail-left",
@@ -104371,10 +104425,10 @@
             "trolley",
             "hook-block"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#758087",
           "parts": [
             "column--1",
@@ -104383,7 +104437,7 @@
             "chain",
             "hook"
           ],
-          "param": "body"
+          "param": "steel"
         }
       ]
     },
@@ -104391,7 +104445,7 @@
       "id": "bucket-elevator",
       "kit": "industrial-plant",
       "title": "Bucket elevator",
-      "description": "Bucket elevator with a tall casing, boot housing, head pulley cover and service ladder. Knobs: overall scale, body color and accent color.",
+      "description": "Bucket elevator with a tall casing, boot housing, head pulley cover and service ladder. Controls: overall scale, steel, safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -104410,7 +104464,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/bucket-elevator.kcad.ts",
       "preview": "/assets/industrial-plant-bucket-elevator.png",
-      "sourceSha256": "988396a057fef0fc2233ea884d0e13edc6e026ec9ab399d96f01bfc5778d6dd3",
+      "sourceSha256": "1823419b094433df04532e33e74ab66d55351c0b206c86008bd8ccc9409fb355",
       "triangleBudget": 1400,
       "params": [
         {
@@ -104423,19 +104477,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#718087",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#dfa747",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 260,
         "sizeM": [
@@ -104448,7 +104510,7 @@
       },
       "palette": [
         {
-          "name": "body",
+          "name": "steel",
           "color": "#718087",
           "parts": [
             "elevator-casing",
@@ -104461,10 +104523,10 @@
             "ladder-rung-5",
             "ladder-rung-6"
           ],
-          "param": "body"
+          "param": "steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#dfa747",
           "parts": [
             "boot",
@@ -104478,7 +104540,7 @@
             "service-ladder-left",
             "service-ladder-right"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -104486,7 +104548,7 @@
       "id": "bulk-loading-spout",
       "kit": "industrial-plant",
       "title": "Bulk loading spout",
-      "description": "Bulk loading spout with a telescoping-looking outlet, overhead frame and dust skirt. Knobs: overall scale, body color and accent color.",
+      "description": "Bulk loading spout with a telescoping-looking outlet, overhead frame and dust skirt. Controls: overall scale, steel, safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -104505,7 +104567,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/bulk-loading-spout.kcad.ts",
       "preview": "/assets/industrial-plant-bulk-loading-spout.png",
-      "sourceSha256": "16a80b2201ff8ab0a7dfcb544b678dc7b3902a191c83771e6a9ff8f0a76d51a5",
+      "sourceSha256": "6ce898ac634e944fa38094e9d3c9397a2bdc08609ff165b4da3b4a2b5da10bb2",
       "triangleBudget": 1400,
       "params": [
         {
@@ -104518,19 +104580,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#76838a",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e0aa49",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 224,
         "sizeM": [
@@ -104543,7 +104613,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e0aa49",
           "parts": [
             "support-beam",
@@ -104551,10 +104621,10 @@
             "dust-skirt",
             "cross-brace"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#76838a",
           "parts": [
             "frame-post-left",
@@ -104562,7 +104632,7 @@
             "telescoping-tube",
             "hoist-motor"
           ],
-          "param": "body"
+          "param": "steel"
         }
       ]
     },
@@ -104570,7 +104640,7 @@
       "id": "burner-management-skid",
       "kit": "industrial-plant",
       "title": "Burner management skid",
-      "description": "Burner management skid with a gas train, control cabinet, paired valves and a pilot stack. Knobs: overall scale, body color and accent color.",
+      "description": "Burner management skid with a gas train, control cabinet, paired valves and a pilot stack. Controls: overall scale, steel, safety paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -104589,7 +104659,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/burner-management-skid.kcad.ts",
       "preview": "/assets/industrial-plant-burner-management-skid.png",
-      "sourceSha256": "666cebd38d83cffb168bfdb6f7933010a72ffa5213a1c5028fd0cfacead7e7fc",
+      "sourceSha256": "af50a383da28bfb1e64627eff7d9319308636edc0d672878a1fdb15613dcebec",
       "triangleBudget": 1400,
       "params": [
         {
@@ -104602,19 +104672,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#6b7d83",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e4a43a",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 520,
         "sizeM": [
@@ -104627,7 +104705,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e4a43a",
           "parts": [
             "base-skid",
@@ -104640,10 +104718,10 @@
             "branch-2",
             "pilot-stack"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#6b7d83",
           "parts": [
             "burner-control",
@@ -104652,7 +104730,7 @@
             "valve-wheel-1",
             "valve-wheel-2"
           ],
-          "param": "body"
+          "param": "steel"
         }
       ]
     },
@@ -104660,7 +104738,7 @@
       "id": "cable-tray-bridge",
       "kit": "industrial-plant",
       "title": "Cable tray bridge",
-      "description": "Raised cable tray bridge with perforated-looking rails, crossbars and two support frames. Knobs: overall scale, body color and accent color.",
+      "description": "Raised cable tray bridge with perforated-looking rails, crossbars and two support frames. Controls: overall scale, steel, safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -104679,7 +104757,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/cable-tray-bridge.kcad.ts",
       "preview": "/assets/industrial-plant-cable-tray-bridge.png",
-      "sourceSha256": "75a4ceb5dddfc89f103959da142baf74c9a765d88e554f1545f28af25e8bf136",
+      "sourceSha256": "9b95bfd52a0b606f1ae22f7cd0cbddcdedae6a8b692e1b8f66e54d636a117471",
       "triangleBudget": 1400,
       "params": [
         {
@@ -104692,19 +104770,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#718087",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#dda743",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 168,
         "sizeM": [
@@ -104717,7 +104803,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#dda743",
           "parts": [
             "side-rail--1",
@@ -104725,10 +104811,10 @@
             "side-rail-1",
             "foot-1"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#718087",
           "parts": [
             "support-upright--1",
@@ -104742,7 +104828,7 @@
             "tray-rung-6",
             "tray-rung-7"
           ],
-          "param": "body"
+          "param": "steel"
         }
       ]
     },
@@ -104750,7 +104836,7 @@
       "id": "cartridge-filter-housing",
       "kit": "industrial-plant",
       "title": "Cartridge filter housing",
-      "description": "Vertical cartridge-filter vessel with a quick-access lid, inlet and outlet pipes and a drain. Knobs: overall scale, body color and accent color.",
+      "description": "Vertical cartridge-filter vessel with a quick-access lid, inlet and outlet pipes and a drain. Controls: overall scale, steel, safety paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -104769,7 +104855,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/cartridge-filter-housing.kcad.ts",
       "preview": "/assets/industrial-plant-cartridge-filter-housing.png",
-      "sourceSha256": "3beaf80418092e7d34aaade183e7b41b7fcc5fc90705679d780a4ba886ea05cb",
+      "sourceSha256": "d510f65f44dc5d66bbad70e32ff3878709a51b6efbbde5952cfc2f5822750050",
       "triangleBudget": 1400,
       "params": [
         {
@@ -104782,19 +104868,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#71848a",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e6b24f",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 476,
         "sizeM": [
@@ -104807,7 +104901,7 @@
       },
       "palette": [
         {
-          "name": "body",
+          "name": "steel",
           "color": "#71848a",
           "parts": [
             "shell",
@@ -104823,10 +104917,10 @@
             "ladder-rung-4",
             "ladder-rung-5"
           ],
-          "param": "body"
+          "param": "steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e6b24f",
           "parts": [
             "roof-lip",
@@ -104839,7 +104933,7 @@
             "ladder-left-rail",
             "ladder-right-rail"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -104847,7 +104941,7 @@
       "id": "centrifugal-chiller",
       "kit": "industrial-plant",
       "title": "Centrifugal chiller",
-      "description": "Industrial chiller package with two compressor domes, condenser barrels and pipe connections. Knobs: overall scale, body color and accent color.",
+      "description": "Industrial chiller package with two compressor domes, condenser barrels and pipe connections. Controls: overall scale, steel, safety paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -104866,7 +104960,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/centrifugal-chiller.kcad.ts",
       "preview": "/assets/industrial-plant-centrifugal-chiller.png",
-      "sourceSha256": "830fc2636d3a0db67b7097440767469b30af41673daa49a3d1dd6224a5ace5bb",
+      "sourceSha256": "10fe9c3b1cac3727222af1efbb97150bc170d38b30cc8a5c3e2b0d3b0ee7785e",
       "triangleBudget": 1400,
       "params": [
         {
@@ -104879,19 +104973,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#657c83",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e4a940",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 252,
         "sizeM": [
@@ -104904,7 +105006,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e4a940",
           "parts": [
             "base-frame",
@@ -104915,10 +105017,10 @@
             "compressor-dome-1",
             "pipe-header"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#657c83",
           "parts": [
             "main-casing",
@@ -104928,7 +105030,7 @@
             "support-foot-2",
             "support-foot-3"
           ],
-          "param": "body"
+          "param": "steel"
         }
       ]
     },
@@ -104936,7 +105038,7 @@
       "id": "centrifugal-pump",
       "kit": "industrial-plant",
       "title": "Centrifugal process pump",
-      "description": "Horizontal centrifugal pump with a volute housing, guarded coupling, motor and mounting skid. Knobs: overall scale, body color and accent color.",
+      "description": "Horizontal centrifugal pump with a volute housing, guarded coupling, motor and mounting skid. Controls: overall scale, steel, safety paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -104955,7 +105057,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/centrifugal-pump.kcad.ts",
       "preview": "/assets/industrial-plant-centrifugal-pump.png",
-      "sourceSha256": "3bfd30d864b99df286b520c15ac0a76cec45a8091eb7bd3da01a448501ddc15b",
+      "sourceSha256": "492ebd5808965c90e3e892928f3572de3796c8635f645e5c8ceab73843bd9240",
       "triangleBudget": 1400,
       "params": [
         {
@@ -104968,19 +105070,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#597785",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e7ad42",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 378,
         "sizeM": [
@@ -104993,7 +105103,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e7ad42",
           "parts": [
             "skid",
@@ -105002,10 +105112,10 @@
             "inlet",
             "outlet"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#597785",
           "parts": [
             "motor-foot",
@@ -105014,7 +105124,7 @@
             "pump-neck",
             "outlet-flange"
           ],
-          "param": "body"
+          "param": "steel"
         }
       ]
     },
@@ -105022,7 +105132,7 @@
       "id": "chemical-metering-skid",
       "kit": "industrial-plant",
       "title": "Chemical metering skid",
-      "description": "Chemical dosing skid with paired metering pumps, a shared manifold, gauges and a raised control box. Knobs: overall scale, body color and accent color.",
+      "description": "Chemical dosing skid with paired metering pumps, a shared manifold, gauges and a raised control box. Controls: overall scale, steel, safety paint, gauge glass.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -105041,7 +105151,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/chemical-metering-skid.kcad.ts",
       "preview": "/assets/industrial-plant-chemical-metering-skid.png",
-      "sourceSha256": "f3be938dc96158c81ed80f829f9db8fc004224d9d41e3e3d0f579f2cd4cf4393",
+      "sourceSha256": "72971f4eaef796fb75d6d2e0948dfbb61efbbe778153ba63f5a45aaaa4b56941",
       "triangleBudget": 1400,
       "params": [
         {
@@ -105054,19 +105164,34 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#687c83",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e2a747",
-          "label": "Accent color"
+          "label": "Safety paint"
+        },
+        {
+          "name": "gaugeGlass",
+          "type": "color",
+          "default": "#91c6c8",
+          "label": "Gauge glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f",
+          "gaugeGlass": "#78989b"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 380,
         "sizeM": [
@@ -105079,7 +105204,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e2a747",
           "parts": [
             "base-skid",
@@ -105089,10 +105214,10 @@
             "dose-valve-1",
             "control-box"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#687c83",
           "parts": [
             "common-header",
@@ -105100,10 +105225,17 @@
             "suction-line-0",
             "metering-pump-1",
             "suction-line-1",
-            "control-display",
             "cross-member"
           ],
-          "param": "body"
+          "param": "steel"
+        },
+        {
+          "name": "gaugeGlass",
+          "color": "#91c6c8",
+          "parts": [
+            "control-display"
+          ],
+          "param": "gaugeGlass"
         }
       ]
     },
@@ -105111,7 +105243,7 @@
       "id": "compressed-air-receiver",
       "kit": "industrial-plant",
       "title": "Compressed air receiver",
-      "description": "Compressed-air receiver tank with saddle feet, drain valve, top port and pressure gauge. Knobs: overall scale, body color and accent color.",
+      "description": "Compressed-air receiver tank with saddle feet, drain valve, top port and pressure gauge. Controls: overall scale, steel, safety paint, gauge glass.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -105130,7 +105262,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/compressed-air-receiver.kcad.ts",
       "preview": "/assets/industrial-plant-compressed-air-receiver.png",
-      "sourceSha256": "550345a0ab8c8c44320260cb0730f0f57bb1f2aad44805262b8779a12c36e02f",
+      "sourceSha256": "c70f0d653418f4ecad7d8c597a70a6ca455507bcb082d1247e412d23f08b2e9b",
       "triangleBudget": 1400,
       "params": [
         {
@@ -105143,19 +105275,34 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#6a7e87",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e6ae48",
-          "label": "Accent color"
+          "label": "Safety paint"
+        },
+        {
+          "name": "gaugeGlass",
+          "type": "color",
+          "default": "#91c6c8",
+          "label": "Gauge glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f",
+          "gaugeGlass": "#78989b"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 556,
         "sizeM": [
@@ -105168,7 +105315,7 @@
       },
       "palette": [
         {
-          "name": "body",
+          "name": "steel",
           "color": "#6a7e87",
           "parts": [
             "pressure-shell",
@@ -105178,10 +105325,10 @@
             "port-flange-1",
             "port-flange-2"
           ],
-          "param": "body"
+          "param": "steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e6ae48",
           "parts": [
             "left-head",
@@ -105193,10 +105340,17 @@
             "top-port-0",
             "top-port-1",
             "top-port-2",
-            "pressure-gauge",
             "drain"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
+        },
+        {
+          "name": "gaugeGlass",
+          "color": "#91c6c8",
+          "parts": [
+            "pressure-gauge"
+          ],
+          "param": "gaugeGlass"
         }
       ]
     },
@@ -105204,7 +105358,7 @@
       "id": "cyclone-separator",
       "kit": "industrial-plant",
       "title": "Cyclone separator",
-      "description": "Cyclone separator with a tangential inlet, tall outlet stack and a segmented dust hopper. Knobs: overall scale, body color and accent color.",
+      "description": "Cyclone separator with a tangential inlet, tall outlet stack and a segmented dust hopper. Controls: overall scale, steel, safety paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -105223,7 +105377,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/cyclone-separator.kcad.ts",
       "preview": "/assets/industrial-plant-cyclone-separator.png",
-      "sourceSha256": "33a0aea7898ca3abf6f55ecea80c21101cc42bafb7e1a758cf1c63171b6d104c",
+      "sourceSha256": "d65afa20cafb1ef02a1abdb75690b916aeac3182b6559ccf1130725eeb1bc03e",
       "triangleBudget": 1400,
       "params": [
         {
@@ -105236,19 +105390,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#707e83",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e0a648",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 388,
         "sizeM": [
@@ -105261,7 +105423,7 @@
       },
       "palette": [
         {
-          "name": "body",
+          "name": "steel",
           "color": "#707e83",
           "parts": [
             "barrel",
@@ -105271,10 +105433,10 @@
             "leg-1",
             "leg-2"
           ],
-          "param": "body"
+          "param": "steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e0a648",
           "parts": [
             "upper-rim",
@@ -105283,7 +105445,7 @@
             "outlet-stack",
             "tangential-inlet"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -105291,7 +105453,7 @@
       "id": "diesel-generator-set",
       "kit": "industrial-plant",
       "title": "Diesel generator set",
-      "description": "Packaged diesel generator with a sound enclosure, radiator grille, exhaust stack and skid base. Knobs: overall scale, body color and accent color.",
+      "description": "Packaged diesel generator with a sound enclosure, radiator grille, exhaust stack and skid base. Controls: overall scale, steel, safety paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -105310,7 +105472,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/diesel-generator-set.kcad.ts",
       "preview": "/assets/industrial-plant-diesel-generator-set.png",
-      "sourceSha256": "50031c52c19ecbd0da8108e95a583329b0f187112ed7e68d0aa3c7f8df5d1d7a",
+      "sourceSha256": "1653b51fa773c370efcb0320747a870f82055dd8420d5da281664c2e7cf9230a",
       "triangleBudget": 1400,
       "params": [
         {
@@ -105323,19 +105485,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#647880",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e0a23e",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 208,
         "sizeM": [
@@ -105348,7 +105518,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e0a23e",
           "parts": [
             "base-skid",
@@ -105356,10 +105526,10 @@
             "exhaust",
             "service-door"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#647880",
           "parts": [
             "generator-enclosure",
@@ -105371,7 +105541,7 @@
             "exhaust-cap",
             "control-panel"
           ],
-          "param": "body"
+          "param": "steel"
         }
       ]
     },
@@ -105379,7 +105549,7 @@
       "id": "distillation-column",
       "kit": "industrial-plant",
       "title": "Distillation column",
-      "description": "Slender distillation column with stacked tray bands, a crown nozzle and an operator platform. Knobs: overall scale, body color and accent color.",
+      "description": "Slender distillation column with stacked tray bands, a crown nozzle and an operator platform. Controls: overall scale, steel, safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -105398,7 +105568,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/distillation-column.kcad.ts",
       "preview": "/assets/industrial-plant-distillation-column.png",
-      "sourceSha256": "59df832db7f7acf3106c56cf33c2fca1103a18bd91d23246f56b565fca55ab14",
+      "sourceSha256": "d776e09deada524151f1068b8900d7a2bef30d0a0f2f2cd101930ef6cd5ce0d2",
       "triangleBudget": 1400,
       "params": [
         {
@@ -105411,19 +105581,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#74838b",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e2b455",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 528,
         "sizeM": [
@@ -105436,7 +105614,7 @@
       },
       "palette": [
         {
-          "name": "body",
+          "name": "steel",
           "color": "#74838b",
           "parts": [
             "shell",
@@ -105456,10 +105634,10 @@
             "ladder-rung-4",
             "ladder-rung-5"
           ],
-          "param": "body"
+          "param": "steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e2b455",
           "parts": [
             "roof-lip",
@@ -105475,7 +105653,7 @@
             "ladder-left-rail",
             "ladder-right-rail"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -105483,7 +105661,7 @@
       "id": "electric-chain-hoist",
       "kit": "industrial-plant",
       "title": "Electric chain hoist",
-      "description": "Compact electric chain hoist with a trolley, chain fall, hook block and suspension eye. Knobs: overall scale, body color and accent color.",
+      "description": "Compact electric chain hoist with a trolley, chain fall, hook block and suspension eye. Controls: overall scale, steel, safety paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -105502,7 +105680,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/electric-chain-hoist.kcad.ts",
       "preview": "/assets/industrial-plant-electric-chain-hoist.png",
-      "sourceSha256": "7abdb3303e3639d7a68f539a6a99aa4a3582352eb938541edbf518500afb00dc",
+      "sourceSha256": "c4d523b3bcf4019f0aef16e565b0d45776f77e277812b08d3e4e66e80996457f",
       "triangleBudget": 1400,
       "params": [
         {
@@ -105515,19 +105693,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#667780",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e8a93e",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 192,
         "sizeM": [
@@ -105540,7 +105726,7 @@
       },
       "palette": [
         {
-          "name": "body",
+          "name": "steel",
           "color": "#667780",
           "parts": [
             "hoist-case",
@@ -105549,17 +105735,17 @@
             "hook-block",
             "suspension-eye"
           ],
-          "param": "body"
+          "param": "steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e8a93e",
           "parts": [
             "trolley-plate",
             "chain",
             "hook-tip"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -105567,7 +105753,7 @@
       "id": "electric-pallet-jack",
       "kit": "industrial-plant",
       "title": "Electric pallet jack",
-      "description": "Walk-behind electric pallet jack with twin forks, steer tiller, battery case and load rollers. Knobs: overall scale, body color and accent color.",
+      "description": "Walk-behind electric pallet jack with twin forks, steer tiller, battery case and load rollers. Controls: overall scale, steel, safety paint, rubber.",
       "category": "vehicle",
       "origin": "base",
       "tags": [
@@ -105586,7 +105772,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/electric-pallet-jack.kcad.ts",
       "preview": "/assets/industrial-plant-electric-pallet-jack.png",
-      "sourceSha256": "d79c1fc7ea3ad7998e18bdb4110523dda2702e4a072155d6d16d9ddf91e015e4",
+      "sourceSha256": "6a833cad2dfd8bcec305f8b628b50e65fc6fa8379d5f242c73ecce3fd2029ced",
       "triangleBudget": 1400,
       "params": [
         {
@@ -105599,19 +105785,34 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#758087",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e1a33b",
-          "label": "Accent color"
+          "label": "Safety paint"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30363a",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f",
+          "rubber": "#27292b"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 204,
         "sizeM": [
@@ -105624,19 +105825,16 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e1a33b",
           "parts": [
             "pump-body",
-            "load-roller--1",
-            "load-roller-1",
-            "tiller-shaft",
-            "steer-wheel"
+            "tiller-shaft"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#758087",
           "parts": [
             "fork--1",
@@ -105644,7 +105842,17 @@
             "tiller-base",
             "tiller-grip"
           ],
-          "param": "body"
+          "param": "steel"
+        },
+        {
+          "name": "rubber",
+          "color": "#30363a",
+          "parts": [
+            "load-roller--1",
+            "load-roller-1",
+            "steer-wheel"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -105652,7 +105860,7 @@
       "id": "electrical-control-cabinet",
       "kit": "industrial-plant",
       "title": "Electrical control cabinet",
-      "description": "Floor-standing control cabinet with twin doors, vent slots, indicator lamps and a plinth. Knobs: overall scale, body color and accent color.",
+      "description": "Floor-standing control cabinet with twin doors, vent slots, indicator lamps and a plinth. Controls: overall scale, steel, safety paint, gauge glass.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -105671,7 +105879,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/electrical-control-cabinet.kcad.ts",
       "preview": "/assets/industrial-plant-electrical-control-cabinet.png",
-      "sourceSha256": "88603f726c833c1cf9712698ca6058d38333a7ae5d60148af79c455846a595e9",
+      "sourceSha256": "df37db08ab726175b408ce8d39cdb5549274e26715aa8e7b0db738d15d83d142",
       "triangleBudget": 1400,
       "params": [
         {
@@ -105684,19 +105892,34 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#687a83",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#dfa746",
-          "label": "Accent color"
+          "label": "Safety paint"
+        },
+        {
+          "name": "gaugeGlass",
+          "type": "color",
+          "default": "#91c6c8",
+          "label": "Gauge glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f",
+          "gaugeGlass": "#78989b"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 264,
         "sizeM": [
@@ -105709,7 +105932,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#dfa746",
           "parts": [
             "plinth",
@@ -105717,13 +105940,12 @@
             "vent-slot-0",
             "vent-slot-1",
             "vent-slot-2",
-            "vent-slot-3",
-            "display"
+            "vent-slot-3"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#687a83",
           "parts": [
             "enclosure",
@@ -105734,7 +105956,15 @@
             "indicator-1",
             "indicator-2"
           ],
-          "param": "body"
+          "param": "steel"
+        },
+        {
+          "name": "gaugeGlass",
+          "color": "#91c6c8",
+          "parts": [
+            "display"
+          ],
+          "param": "gaugeGlass"
         }
       ]
     },
@@ -105742,7 +105972,7 @@
       "id": "evaporative-cooling-tower",
       "kit": "industrial-plant",
       "title": "Evaporative cooling tower",
-      "description": "Industrial cooling tower with a broad basin, tapered-looking shell and rooftop fan assembly. Knobs: overall scale, body color and accent color.",
+      "description": "Industrial cooling tower with a broad basin, tapered-looking shell and rooftop fan assembly. Controls: overall scale, steel, safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -105761,7 +105991,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/evaporative-cooling-tower.kcad.ts",
       "preview": "/assets/industrial-plant-evaporative-cooling-tower.png",
-      "sourceSha256": "8d2d55473607dfbb798ffb52ff72b320349e60df6438de4f3bc2ebaad787982f",
+      "sourceSha256": "1bd413dfdaf64d7c522cfe270f4602b8afc8836dd797cc68bda083f2639995e9",
       "triangleBudget": 1400,
       "params": [
         {
@@ -105774,21 +106004,29 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#73838a",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#dda946",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
-        "triangles": 284,
+        "triangles": 320,
         "sizeM": [
           0.68,
           0.9985,
@@ -105799,7 +106037,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#dda946",
           "parts": [
             "basin",
@@ -105807,14 +106045,13 @@
             "fan-ring-0",
             "fan-ring-1"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#73838a",
           "parts": [
-            "tower-body-lower",
-            "tower-body-upper",
+            "tower-shell",
             "drift-cap",
             "fan-hub-0",
             "fan-hub-1",
@@ -105823,7 +106060,7 @@
             "basin-leg-2",
             "basin-leg-3"
           ],
-          "param": "body"
+          "param": "steel"
         }
       ]
     },
@@ -105831,7 +106068,7 @@
       "id": "flare-stack",
       "kit": "industrial-plant",
       "title": "Flare stack",
-      "description": "Braced flare stack with a service platform, ignition head and raised support frame. Knobs: overall scale, body color and accent color.",
+      "description": "Braced flare stack with a service platform, ignition head and raised support frame. Controls: overall scale, steel, safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -105850,7 +106087,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/flare-stack.kcad.ts",
       "preview": "/assets/industrial-plant-flare-stack.png",
-      "sourceSha256": "06d389d2d837ff4aa2dc3c2016423ba4575b1245ccce99993d1ea41d46ea1ef8",
+      "sourceSha256": "7c2cdf65d74072ecbd8bf3501a6e08e8c96e1996ec8f569b2aaed8fe43db08ad",
       "triangleBudget": 1400,
       "params": [
         {
@@ -105863,19 +106100,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#697982",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e7ac45",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 380,
         "sizeM": [
@@ -105888,7 +106133,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e7ac45",
           "parts": [
             "foundation",
@@ -105908,10 +106153,10 @@
             "ladder-rung-7",
             "ladder-rung-8"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#697982",
           "parts": [
             "stack",
@@ -105920,7 +106165,7 @@
             "ladder-rail-left",
             "ladder-rail-right"
           ],
-          "param": "body"
+          "param": "steel"
         }
       ]
     },
@@ -105928,7 +106173,7 @@
       "id": "forklift-truck",
       "kit": "industrial-plant",
       "title": "Forklift truck",
-      "description": "Warehouse forklift with a raised mast, overhead guard, counterweight, paired wheels and forks. Knobs: overall scale, body color and accent color.",
+      "description": "Warehouse forklift with a raised mast, overhead guard, counterweight, paired wheels and forks. Controls: overall scale, steel, safety paint, rubber.",
       "category": "vehicle",
       "origin": "base",
       "tags": [
@@ -105947,7 +106192,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/forklift-truck.kcad.ts",
       "preview": "/assets/industrial-plant-forklift-truck.png",
-      "sourceSha256": "1ad788f9a4e8934dc7d8164f5ea5a1f2368f6e09329f70f4ff7f513520de16f9",
+      "sourceSha256": "26d88592d41294bb5dd6d5548b2e80e820a124d42c7cd3b691563c7b7fd27c86",
       "triangleBudget": 1400,
       "params": [
         {
@@ -105960,19 +106205,34 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#758187",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e4a43c",
-          "label": "Accent color"
+          "label": "Safety paint"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30363a",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f",
+          "rubber": "#27292b"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 332,
         "sizeM": [
@@ -105985,7 +106245,7 @@
       },
       "palette": [
         {
-          "name": "body",
+          "name": "steel",
           "color": "#758187",
           "parts": [
             "chassis",
@@ -105995,25 +106255,32 @@
             "guard-post-front-1",
             "mast-carriage"
           ],
-          "param": "body"
+          "param": "steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e4a43c",
           "parts": [
             "counterweight",
             "operator-seat",
             "overhead-guard-roof",
-            "rear-wheel--1",
-            "front-wheel--1",
             "mast-rail--1",
-            "rear-wheel-1",
-            "front-wheel-1",
             "mast-rail-1",
             "fork--1",
             "fork-1"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
+        },
+        {
+          "name": "rubber",
+          "color": "#30363a",
+          "parts": [
+            "rear-wheel--1",
+            "front-wheel--1",
+            "rear-wheel-1",
+            "front-wheel-1"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -106021,7 +106288,7 @@
       "id": "gantry-crane",
       "kit": "industrial-plant",
       "title": "Gantry crane",
-      "description": "Mobile gantry crane with paired portal frames, caster trucks, crossbeam and chain hoist. Knobs: overall scale, body color and accent color.",
+      "description": "Mobile gantry crane with paired portal frames, caster trucks, crossbeam and chain hoist. Controls: overall scale, steel, safety paint, rubber.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -106040,7 +106307,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/gantry-crane.kcad.ts",
       "preview": "/assets/industrial-plant-gantry-crane.png",
-      "sourceSha256": "ce6580f23d91b71de32eb10ceb86681fda1864df80732dfb313196527261c889",
+      "sourceSha256": "b62c9a602b7bd91b8a22b35ded5646165609265523b4de063ac74be8ece5b2f8",
       "triangleBudget": 1400,
       "params": [
         {
@@ -106053,19 +106320,34 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#748087",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e7ad43",
-          "label": "Accent color"
+          "label": "Safety paint"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30363a",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f",
+          "rubber": "#27292b"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 252,
         "sizeM": [
@@ -106078,20 +106360,18 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e7ad43",
           "parts": [
             "base-rail-left",
             "base-rail-right",
-            "caster--1",
-            "caster-1",
             "trolley",
             "hook-block"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#748087",
           "parts": [
             "portal-leg-front--1",
@@ -106102,7 +106382,16 @@
             "chain",
             "hook"
           ],
-          "param": "body"
+          "param": "steel"
+        },
+        {
+          "name": "rubber",
+          "color": "#30363a",
+          "parts": [
+            "caster--1",
+            "caster-1"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -106110,7 +106399,7 @@
       "id": "grating-walkway-module",
       "kit": "industrial-plant",
       "title": "Grating walkway module",
-      "description": "Industrial grated walkway module with bearer beams, support legs, kick plates and handrails. Knobs: overall scale, body color and accent color.",
+      "description": "Industrial grated walkway module with bearer beams, support legs, kick plates and handrails. Controls: overall scale, steel, safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -106129,7 +106418,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/grating-walkway-module.kcad.ts",
       "preview": "/assets/industrial-plant-grating-walkway-module.png",
-      "sourceSha256": "5d5fe520180bea1fdf65a0efba10f1cd9f9fba07ed025e3ce721907d841e33d5",
+      "sourceSha256": "722db35c6fa0060891fc6dd72ed885c7f5eaad6ef605230e46055ea6c8b76ca2",
       "triangleBudget": 1400,
       "params": [
         {
@@ -106142,19 +106431,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#768187",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#dfa642",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 300,
         "sizeM": [
@@ -106167,7 +106464,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#dfa642",
           "parts": [
             "deck",
@@ -106176,10 +106473,10 @@
             "handrail--1",
             "handrail-1"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#768187",
           "parts": [
             "grating-bar-0",
@@ -106203,7 +106500,7 @@
             "rail-post-1-3",
             "toe-plate-1"
           ],
-          "param": "body"
+          "param": "steel"
         }
       ]
     },
@@ -106211,7 +106508,7 @@
       "id": "horizontal-pressure-vessel",
       "kit": "industrial-plant",
       "title": "Horizontal pressure vessel",
-      "description": "Horizontal pressure vessel on saddle supports with end flanges, top nozzles and a service gauge. Knobs: overall scale, body color and accent color.",
+      "description": "Horizontal pressure vessel on saddle supports with end flanges, top nozzles and a service gauge. Controls: overall scale, steel, safety paint, gauge glass.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -106230,7 +106527,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/horizontal-pressure-vessel.kcad.ts",
       "preview": "/assets/industrial-plant-horizontal-pressure-vessel.png",
-      "sourceSha256": "4eee7bd1b4cc11542fcba14771e19b307d4c8304236015717a1d4504fa8ed51e",
+      "sourceSha256": "4850358c10fdf9c94effdf224b88bbf67416984ae61500502e08a83ccecc8748",
       "triangleBudget": 1400,
       "params": [
         {
@@ -106243,19 +106540,34 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#607986",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e2a849",
-          "label": "Accent color"
+          "label": "Safety paint"
+        },
+        {
+          "name": "gaugeGlass",
+          "type": "color",
+          "default": "#91c6c8",
+          "label": "Gauge glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f",
+          "gaugeGlass": "#78989b"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 468,
         "sizeM": [
@@ -106268,7 +106580,7 @@
       },
       "palette": [
         {
-          "name": "body",
+          "name": "steel",
           "color": "#607986",
           "parts": [
             "pressure-shell",
@@ -106277,10 +106589,10 @@
             "port-flange-0",
             "port-flange-1"
           ],
-          "param": "body"
+          "param": "steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e2a849",
           "parts": [
             "left-head",
@@ -106291,10 +106603,17 @@
             "saddle-1",
             "top-port-0",
             "top-port-1",
-            "pressure-gauge",
             "drain"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
+        },
+        {
+          "name": "gaugeGlass",
+          "color": "#91c6c8",
+          "parts": [
+            "pressure-gauge"
+          ],
+          "param": "gaugeGlass"
         }
       ]
     },
@@ -106302,7 +106621,7 @@
       "id": "industrial-boiler",
       "kit": "industrial-plant",
       "title": "Industrial boiler",
-      "description": "Compact industrial boiler with a firebox, raised flue, burner panel and pipe connections. Knobs: overall scale, body color and accent color.",
+      "description": "Compact industrial boiler with a firebox, raised flue, burner panel and pipe connections. Controls: overall scale, steel, safety paint, gauge glass.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -106321,7 +106640,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/industrial-boiler.kcad.ts",
       "preview": "/assets/industrial-plant-industrial-boiler.png",
-      "sourceSha256": "0f0963a12c2422cef8dfa8b41c79aad251275920cb223a70f08de343513a2321",
+      "sourceSha256": "0cecf54e34697f9e34f8b914611696bb49bee72dc8ed85a4903bb040c9ae343e",
       "triangleBudget": 1400,
       "params": [
         {
@@ -106334,19 +106653,34 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#737d82",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#dfa741",
-          "label": "Accent color"
+          "label": "Safety paint"
+        },
+        {
+          "name": "gaugeGlass",
+          "type": "color",
+          "default": "#91c6c8",
+          "label": "Gauge glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f",
+          "gaugeGlass": "#78989b"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 300,
         "sizeM": [
@@ -106359,27 +106693,34 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#dfa741",
           "parts": [
             "base",
             "burner-door",
             "flue",
-            "gauge",
             "pipe-0",
             "pipe-1",
             "pipe-2"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#737d82",
           "parts": [
             "boiler-shell",
             "flue-cap"
           ],
-          "param": "body"
+          "param": "steel"
+        },
+        {
+          "name": "gaugeGlass",
+          "color": "#91c6c8",
+          "parts": [
+            "gauge"
+          ],
+          "param": "gaugeGlass"
         }
       ]
     },
@@ -106387,7 +106728,7 @@
       "id": "industrial-stair-tower",
       "kit": "industrial-plant",
       "title": "Industrial stair tower",
-      "description": "Compact industrial stair tower with two landings, open treads, guard rails and cross braces. Knobs: overall scale, body color and accent color.",
+      "description": "Compact industrial stair tower with two landings, open treads, guard rails and cross braces. Controls: overall scale, steel, safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -106406,7 +106747,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/industrial-stair-tower.kcad.ts",
       "preview": "/assets/industrial-plant-industrial-stair-tower.png",
-      "sourceSha256": "49a9d918b8d98d0408658a78c92e63afbd72c79f990e0f977bf900ce827352d6",
+      "sourceSha256": "4296b36437fa31c95ec7895d1e200f4e71424c15c5805f8454a53b7f50d8c85a",
       "triangleBudget": 1400,
       "params": [
         {
@@ -106419,19 +106760,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#738087",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#dfa747",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 192,
         "sizeM": [
@@ -106444,7 +106793,7 @@
       },
       "palette": [
         {
-          "name": "body",
+          "name": "steel",
           "color": "#738087",
           "parts": [
             "tower-post--1",
@@ -106454,10 +106803,10 @@
             "upper-guard--1",
             "upper-guard-1"
           ],
-          "param": "body"
+          "param": "steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#dfa747",
           "parts": [
             "lower-landing",
@@ -106471,7 +106820,7 @@
             "tread-6",
             "cross-brace"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -106479,7 +106828,7 @@
       "id": "industrial-transformer",
       "kit": "industrial-plant",
       "title": "Industrial distribution transformer",
-      "description": "Compact distribution transformer with radiator panels, lifting lugs, bushings and wheel skids. Knobs: overall scale, body color and accent color.",
+      "description": "Compact distribution transformer with radiator panels, lifting lugs, bushings and wheel skids. Controls: overall scale, steel, safety paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -106498,7 +106847,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/industrial-transformer.kcad.ts",
       "preview": "/assets/industrial-plant-industrial-transformer.png",
-      "sourceSha256": "e0625230c2e3aa40dbdcb471319cf93fc420bc0346d8aea85141b807b62f6549",
+      "sourceSha256": "25721b2957f1d84b65773c5b000535dabf1ca446f45d4102596b75977d664e82",
       "triangleBudget": 1400,
       "params": [
         {
@@ -106511,19 +106860,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#758080",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e0a744",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 484,
         "sizeM": [
@@ -106536,7 +106893,7 @@
       },
       "palette": [
         {
-          "name": "body",
+          "name": "steel",
           "color": "#758080",
           "parts": [
             "tank",
@@ -106546,10 +106903,10 @@
             "wheel--1",
             "wheel-1"
           ],
-          "param": "body"
+          "param": "steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e0a744",
           "parts": [
             "base-skid",
@@ -106566,7 +106923,7 @@
             "lifting-lug-left",
             "lifting-lug-right"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -106574,7 +106931,7 @@
       "id": "inline-flow-meter",
       "kit": "industrial-plant",
       "title": "Inline flow meter",
-      "description": "Inline flow meter with flanged pipe ends, instrument body, readable display block and cable gland. Knobs: overall scale, body color and accent color.",
+      "description": "Inline flow meter with flanged pipe ends, instrument body, readable display block and cable gland. Controls: overall scale, steel, safety paint, gauge glass.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -106593,7 +106950,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/inline-flow-meter.kcad.ts",
       "preview": "/assets/industrial-plant-inline-flow-meter.png",
-      "sourceSha256": "2be0da97fc7ce63a85535a8b47e8446ae5eec6418741d58ca90702464765e08b",
+      "sourceSha256": "c1c311175d44589d70131bae3682f1474b41c56b5b48261837ab451bd5dbfa76",
       "triangleBudget": 1400,
       "params": [
         {
@@ -106606,19 +106963,34 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#6e7e84",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e1aa48",
-          "label": "Accent color"
+          "label": "Safety paint"
+        },
+        {
+          "name": "gaugeGlass",
+          "type": "color",
+          "default": "#91c6c8",
+          "label": "Gauge glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f",
+          "gaugeGlass": "#78989b"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 212,
         "sizeM": [
@@ -106631,25 +107003,32 @@
       },
       "palette": [
         {
-          "name": "body",
+          "name": "steel",
           "color": "#6e7e84",
           "parts": [
             "pipe-run",
-            "display",
             "cable-gland",
             "instrument-neck"
           ],
-          "param": "body"
+          "param": "steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e1aa48",
           "parts": [
             "flange--1",
             "flange-1",
             "meter-housing"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
+        },
+        {
+          "name": "gaugeGlass",
+          "color": "#91c6c8",
+          "parts": [
+            "display"
+          ],
+          "param": "gaugeGlass"
         }
       ]
     },
@@ -106657,7 +107036,7 @@
       "id": "jib-crane",
       "kit": "industrial-plant",
       "title": "Jib crane",
-      "description": "Floor-mounted jib crane with a base plate, mast, cantilevered boom, brace and chain block. Knobs: overall scale, body color and accent color.",
+      "description": "Floor-mounted jib crane with a base plate, mast, cantilevered boom, brace and chain block. Controls: overall scale, steel, safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -106676,7 +107055,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/jib-crane.kcad.ts",
       "preview": "/assets/industrial-plant-jib-crane.png",
-      "sourceSha256": "3a1b8bcdf4ffcab9b6fabe5bd0b57734c647f31b5c34a84debf6455353218251",
+      "sourceSha256": "6360bcdcbd3e43d9990dbb5da001cd674dc828aac7e2de9b234279de57ac76b7",
       "triangleBudget": 1400,
       "params": [
         {
@@ -106689,19 +107068,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#708088",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e6ad42",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 160,
         "sizeM": [
@@ -106714,7 +107101,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e6ad42",
           "parts": [
             "base-rail-left",
@@ -106723,17 +107110,17 @@
             "hoist",
             "hook"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#708088",
           "parts": [
             "mast",
             "brace",
             "chain"
           ],
-          "param": "body"
+          "param": "steel"
         }
       ]
     },
@@ -106741,7 +107128,7 @@
       "id": "machine-guard-enclosure",
       "kit": "industrial-plant",
       "title": "Machine guard enclosure",
-      "description": "Modular machine guard with mesh-like infill panels, a framed service door and corner feet. Knobs: overall scale, body color and accent color.",
+      "description": "Modular machine guard with mesh-like infill panels, a framed service door and corner feet. Controls: overall scale, steel, safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -106760,7 +107147,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/machine-guard-enclosure.kcad.ts",
       "preview": "/assets/industrial-plant-machine-guard-enclosure.png",
-      "sourceSha256": "00ab2705220ddad043847a20059450c709103215c305c3d505d4097af9b1ac24",
+      "sourceSha256": "bc82658940ee8f1ed71c614dfe792b628346be885aab91d04a700b0d79f0be1d",
       "triangleBudget": 1400,
       "params": [
         {
@@ -106773,19 +107160,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#727f83",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e4ae49",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 168,
         "sizeM": [
@@ -106798,7 +107193,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e4ae49",
           "parts": [
             "floor-frame",
@@ -106810,10 +107205,10 @@
             "side-panel-left",
             "side-panel-right"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#727f83",
           "parts": [
             "corner-post--331-2--266-8",
@@ -106823,7 +107218,7 @@
             "door-panel",
             "top-rail"
           ],
-          "param": "body"
+          "param": "steel"
         }
       ]
     },
@@ -106831,7 +107226,7 @@
       "id": "maintenance-platform",
       "kit": "industrial-plant",
       "title": "Maintenance platform",
-      "description": "Raised maintenance platform with toe boards, guarded perimeter, access ladder and braced legs. Knobs: overall scale, body color and accent color.",
+      "description": "Raised maintenance platform with toe boards, guarded perimeter, access ladder and braced legs. Controls: overall scale, steel, safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -106850,7 +107245,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/maintenance-platform.kcad.ts",
       "preview": "/assets/industrial-plant-maintenance-platform.png",
-      "sourceSha256": "d350fa292de8967716a2f64dda5561bbdd27a423c2b4f34a6a834298dd83278c",
+      "sourceSha256": "12b16e0be40e9be297215013b90aec3e14dc1ca9d84fd508177dfe479a2f9be9",
       "triangleBudget": 1400,
       "params": [
         {
@@ -106863,19 +107258,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#738087",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e0a33f",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 192,
         "sizeM": [
@@ -106888,7 +107291,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e0a33f",
           "parts": [
             "deck",
@@ -106899,10 +107302,10 @@
             "rail-long--1",
             "rail-long-1"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#738087",
           "parts": [
             "post--260-4--226-79999999999998",
@@ -106915,7 +107318,7 @@
             "mid-rail-1-1",
             "access-step"
           ],
-          "param": "body"
+          "param": "steel"
         }
       ]
     },
@@ -106923,7 +107326,7 @@
       "id": "mobile-tool-cart",
       "kit": "industrial-plant",
       "title": "Mobile industrial tool cart",
-      "description": "Mobile shop-floor tool cart with two trays, drawer cabinet, push handle and caster wheels. Knobs: overall scale, body color and accent color.",
+      "description": "Mobile shop-floor tool cart with two trays, drawer cabinet, push handle and caster wheels. Controls: overall scale, steel, safety paint, rubber.",
       "category": "vehicle",
       "origin": "base",
       "tags": [
@@ -106942,7 +107345,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/mobile-tool-cart.kcad.ts",
       "preview": "/assets/industrial-plant-mobile-tool-cart.png",
-      "sourceSha256": "133956a610dd3e2859f0b837be16dda2d582324b0ec7eecb2a8d5893d27dd9ba",
+      "sourceSha256": "0e5447acfea51783e79126ddfc9829ca6b7038c4db9b23b149695facad7daed5",
       "triangleBudget": 1400,
       "params": [
         {
@@ -106955,19 +107358,34 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#6d7d84",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e4a23c",
-          "label": "Accent color"
+          "label": "Safety paint"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30363a",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f",
+          "rubber": "#27292b"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 344,
         "sizeM": [
@@ -106980,7 +107398,7 @@
       },
       "palette": [
         {
-          "name": "body",
+          "name": "steel",
           "color": "#6d7d84",
           "parts": [
             "drawer-cabinet",
@@ -106992,10 +107410,10 @@
             "handle-post--1",
             "handle-post-1"
           ],
-          "param": "body"
+          "param": "steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e4a23c",
           "parts": [
             "drawer-front-0",
@@ -107003,13 +107421,20 @@
             "drawer-front-2",
             "tray-0",
             "tray-1",
-            "push-handle",
+            "push-handle"
+          ],
+          "param": "safetyPaint"
+        },
+        {
+          "name": "rubber",
+          "color": "#30363a",
+          "parts": [
             "caster--193-2--142-79999999999998",
             "caster--193-2-142-79999999999998",
             "caster-193-2--142-79999999999998",
             "caster-193-2-142-79999999999998"
           ],
-          "param": "accent"
+          "param": "rubber"
         }
       ]
     },
@@ -107017,7 +107442,7 @@
       "id": "motor-control-center",
       "kit": "industrial-plant",
       "title": "Motor control center",
-      "description": "Motor-control-center lineup with three distinct bays, operator panels and a shared cable base. Knobs: overall scale, body color and accent color.",
+      "description": "Motor-control-center lineup with three distinct bays, operator panels and a shared cable base. Controls: overall scale, steel, safety paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -107036,7 +107461,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/motor-control-center.kcad.ts",
       "preview": "/assets/industrial-plant-motor-control-center.png",
-      "sourceSha256": "eea7fa073d77a11642b14f912a7bbfc9be63369e791993f977cdabfbd9b37edf",
+      "sourceSha256": "0439eda8121bc80b33676da3fe199da9285b7d719d5d2ea5ff2ba9848433e3c7",
       "triangleBudget": 1400,
       "params": [
         {
@@ -107049,19 +107474,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#687b84",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e3a944",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 396,
         "sizeM": [
@@ -107074,7 +107507,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e3a944",
           "parts": [
             "shared-plinth",
@@ -107084,10 +107517,10 @@
             "operator-panel-2",
             "top-cable-duct"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#687b84",
           "parts": [
             "bay-0",
@@ -107102,7 +107535,7 @@
             "pushbutton-2-0",
             "pushbutton-2-1"
           ],
-          "param": "body"
+          "param": "steel"
         }
       ]
     },
@@ -107110,7 +107543,7 @@
       "id": "packed-scrubber-column",
       "kit": "industrial-plant",
       "title": "Packed scrubber column",
-      "description": "Packed scrubber tower with a wide sump, narrow stack, spray headers and ladder cage. Knobs: overall scale, body color and accent color.",
+      "description": "Packed scrubber tower with a wide sump, narrow stack, spray headers and ladder cage. Controls: overall scale, steel, safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -107129,7 +107562,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/packed-scrubber-column.kcad.ts",
       "preview": "/assets/industrial-plant-packed-scrubber-column.png",
-      "sourceSha256": "7eed2471e32e43421977ffe5852489c24a7d45e07181da5eb39114c348342f68",
+      "sourceSha256": "e23c17496117618fe7bdfc2e74c51b4d31b89addea0d5171aa81fd4b0e8189f0",
       "triangleBudget": 1400,
       "params": [
         {
@@ -107142,19 +107575,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#70848d",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#dca84a",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 548,
         "sizeM": [
@@ -107167,7 +107608,7 @@
       },
       "palette": [
         {
-          "name": "body",
+          "name": "steel",
           "color": "#70848d",
           "parts": [
             "shell",
@@ -107186,10 +107627,10 @@
             "ladder-rung-4",
             "ladder-rung-5"
           ],
-          "param": "body"
+          "param": "steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#dca84a",
           "parts": [
             "roof-lip",
@@ -107205,7 +107646,7 @@
             "ladder-left-rail",
             "ladder-right-rail"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -107213,7 +107654,7 @@
       "id": "pallet-rack-bay",
       "kit": "industrial-plant",
       "title": "Pallet rack bay",
-      "description": "Warehouse pallet-rack bay with braced uprights, three beam levels and safety foot plates. Knobs: overall scale, body color and accent color.",
+      "description": "Warehouse pallet-rack bay with braced uprights, three beam levels and safety foot plates. Controls: overall scale, steel, safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -107232,7 +107673,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/pallet-rack-bay.kcad.ts",
       "preview": "/assets/industrial-plant-pallet-rack-bay.png",
-      "sourceSha256": "8232a9c2b5f5c08c98053e62e8e91a6fd4fa430b097f3fa556e6f5acff34a76b",
+      "sourceSha256": "5176a28242ec9c0dd74a3c05b5c1bafc48b61936a0c767ae2096d374bd0fe297",
       "triangleBudget": 1400,
       "params": [
         {
@@ -107245,19 +107686,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#738088",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e4a43f",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 180,
         "sizeM": [
@@ -107270,7 +107719,7 @@
       },
       "palette": [
         {
-          "name": "body",
+          "name": "steel",
           "color": "#738088",
           "parts": [
             "upright--1",
@@ -107279,10 +107728,10 @@
             "shelf-deck-1",
             "shelf-deck-2"
           ],
-          "param": "body"
+          "param": "steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e4a43f",
           "parts": [
             "footplate--1",
@@ -107296,7 +107745,7 @@
             "beam-front-2",
             "beam-back-2"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -107304,7 +107753,7 @@
       "id": "palletizer-robot-cell",
       "kit": "industrial-plant",
       "title": "Palletizer robot cell",
-      "description": "Palletizing robot cell with a six-axis arm, pallet table, access gate and safety fence. Knobs: overall scale, body color and accent color.",
+      "description": "Palletizing robot cell with a six-axis arm, pallet table, access gate and safety fence. Controls: overall scale, steel, safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -107323,7 +107772,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/palletizer-robot-cell.kcad.ts",
       "preview": "/assets/industrial-plant-palletizer-robot-cell.png",
-      "sourceSha256": "cac0f049fe39b9856d35ab31cf9a18744c13263d2a3aa89a5fee63f7ddf67025",
+      "sourceSha256": "7a7a33dd0ecc04f58ddad77029a7ed00a38200c760bdfbc0aaea632437e5eb18",
       "triangleBudget": 1400,
       "params": [
         {
@@ -107336,19 +107785,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#6b7d84",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e9a43b",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 254,
         "sizeM": [
@@ -107361,7 +107818,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e9a43b",
           "parts": [
             "cell-floor",
@@ -107372,10 +107829,10 @@
             "robot-forearm",
             "gate-leaf"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#6b7d84",
           "parts": [
             "pallet-table",
@@ -107385,7 +107842,7 @@
             "elbow-joint",
             "gripper"
           ],
-          "param": "body"
+          "param": "steel"
         }
       ]
     },
@@ -107393,7 +107850,7 @@
       "id": "pipe-rack-bay",
       "kit": "industrial-plant",
       "title": "Pipe rack bay",
-      "description": "Pipe rack bay with cross-braced uprights, a raised service beam and three parallel utility lines. Knobs: overall scale, body color and accent color.",
+      "description": "Pipe rack bay with cross-braced uprights, a raised service beam and three parallel utility lines. Controls: overall scale, steel, safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -107412,7 +107869,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/pipe-rack-bay.kcad.ts",
       "preview": "/assets/industrial-plant-pipe-rack-bay.png",
-      "sourceSha256": "13991ebe7c0821292e8e8d409b7a41a201ef809c43250f2536ebe250d86900f1",
+      "sourceSha256": "d52709db84181ed4d8ee563bb15bdf5cb79d1b967cbc1466e56b2c8da7cf21cc",
       "triangleBudget": 1400,
       "params": [
         {
@@ -107425,19 +107882,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#707d84",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e2a844",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 360,
         "sizeM": [
@@ -107450,7 +107915,7 @@
       },
       "palette": [
         {
-          "name": "body",
+          "name": "steel",
           "color": "#707d84",
           "parts": [
             "support-column--1",
@@ -107460,10 +107925,10 @@
             "pipe-run-0",
             "pipe-run-2"
           ],
-          "param": "body"
+          "param": "steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e2a844",
           "parts": [
             "baseplate--1",
@@ -107475,7 +107940,7 @@
             "pipe-flange-1",
             "pipe-flange-2"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -107483,7 +107948,7 @@
       "id": "plate-heat-exchanger",
       "kit": "industrial-plant",
       "title": "Plate heat exchanger",
-      "description": "Compact plate heat exchanger with a pack of cooling plates, tie bars and four connection ports. Knobs: overall scale, body color and accent color.",
+      "description": "Compact plate heat exchanger with a pack of cooling plates, tie bars and four connection ports. Controls: overall scale, steel, safety paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -107502,7 +107967,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/plate-heat-exchanger.kcad.ts",
       "preview": "/assets/industrial-plant-plate-heat-exchanger.png",
-      "sourceSha256": "05bb3bd32d8913139e04ac54c143f14398255efc5e7c8ea1b961fdc56a41c00a",
+      "sourceSha256": "924064ce5cd082e0d0787864353ce624d5dff9a7817c86b0507e059016afe0e3",
       "triangleBudget": 1400,
       "params": [
         {
@@ -107515,19 +107980,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#647b84",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e4ad4b",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 344,
         "sizeM": [
@@ -107540,7 +108013,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e4ad4b",
           "parts": [
             "base-frame",
@@ -107550,10 +108023,10 @@
             "port-0",
             "port-1"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#647b84",
           "parts": [
             "fixed-end-plate",
@@ -107569,7 +108042,7 @@
             "port-flange-0",
             "port-flange-1"
           ],
-          "param": "body"
+          "param": "steel"
         }
       ]
     },
@@ -107577,7 +108050,7 @@
       "id": "plc-control-rack",
       "kit": "industrial-plant",
       "title": "PLC control rack",
-      "description": "Open PLC rack with modular I/O cards, side rails, a communication module and wire duct. Knobs: overall scale, body color and accent color.",
+      "description": "Open PLC rack with modular I/O cards, side rails, a communication module and wire duct. Controls: overall scale, steel, safety paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -107596,7 +108069,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/plc-control-rack.kcad.ts",
       "preview": "/assets/industrial-plant-plc-control-rack.png",
-      "sourceSha256": "36d36b40d91d75115fb2e3a94d04fff94728e96778c6ceaed98abeeb00aa125c",
+      "sourceSha256": "9057fee69824c4770e30388643dd5409dee0fc036437b89f12b7298db5745f1b",
       "triangleBudget": 1400,
       "params": [
         {
@@ -107609,19 +108082,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#667984",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#dfa844",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 384,
         "sizeM": [
@@ -107634,7 +108115,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#dfa844",
           "parts": [
             "rack-base",
@@ -107662,10 +108143,10 @@
             "card-led-6-1",
             "card-led-6-2"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#667984",
           "parts": [
             "backplane",
@@ -107677,7 +108158,7 @@
             "io-card-6",
             "wire-duct"
           ],
-          "param": "body"
+          "param": "steel"
         }
       ]
     },
@@ -107685,7 +108166,7 @@
       "id": "positive-displacement-pump",
       "kit": "industrial-plant",
       "title": "Positive displacement pump",
-      "description": "Compact positive-displacement pump with a ribbed gearbox, inlet flange and pressure bypass. Knobs: overall scale, body color and accent color.",
+      "description": "Compact positive-displacement pump with a ribbed gearbox, inlet flange and pressure bypass. Controls: overall scale, steel, safety paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -107704,7 +108185,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/positive-displacement-pump.kcad.ts",
       "preview": "/assets/industrial-plant-positive-displacement-pump.png",
-      "sourceSha256": "61c71693b9edc95c663817fd6ca0ffc683d1143ea9f1138ec5963c4ccd4eddf6",
+      "sourceSha256": "c62f78bb4afaa190769854bdaec77fd2cbcc4f7e93b1ed91124a39346867792c",
       "triangleBudget": 1400,
       "params": [
         {
@@ -107717,19 +108198,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#647985",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e2a747",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 312,
         "sizeM": [
@@ -107742,7 +108231,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e2a747",
           "parts": [
             "skid",
@@ -107751,10 +108240,10 @@
             "inlet",
             "outlet"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#647985",
           "parts": [
             "motor-foot",
@@ -107763,7 +108252,7 @@
             "pump-head",
             "outlet-flange"
           ],
-          "param": "body"
+          "param": "steel"
         }
       ]
     },
@@ -107771,7 +108260,7 @@
       "id": "pressure-relief-valve",
       "kit": "industrial-plant",
       "title": "Pressure relief valve",
-      "description": "Spring-loaded pressure relief valve with inlet flange, bonnet, adjustment cap and lift lever. Knobs: overall scale, body color and accent color.",
+      "description": "Spring-loaded pressure relief valve with inlet flange, bonnet, adjustment cap and lift lever. Controls: overall scale, steel, safety paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -107790,7 +108279,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/pressure-relief-valve.kcad.ts",
       "preview": "/assets/industrial-plant-pressure-relief-valve.png",
-      "sourceSha256": "c5d4daf877f642e235394066b74914169c591ba6ed74d1375366df05d428ed31",
+      "sourceSha256": "a7ccdbc2efcb5f89bdb724109973e04fe642e29945da01daeef6092adc1425c0",
       "triangleBudget": 1400,
       "params": [
         {
@@ -107803,19 +108292,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#788189",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e3aa46",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 484,
         "sizeM": [
@@ -107828,7 +108325,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e3aa46",
           "parts": [
             "inlet-flange",
@@ -107839,10 +108336,10 @@
             "spring-band-1",
             "spring-band-2"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#788189",
           "parts": [
             "inlet-neck",
@@ -107850,7 +108347,7 @@
             "lift-lever",
             "outlet-flange"
           ],
-          "param": "body"
+          "param": "steel"
         }
       ]
     },
@@ -107858,7 +108355,7 @@
       "id": "process-blower",
       "kit": "industrial-plant",
       "title": "Process blower",
-      "description": "Industrial process blower with a broad intake housing, drive motor and raised discharge duct. Knobs: overall scale, body color and accent color.",
+      "description": "Industrial process blower with a broad intake housing, drive motor and raised discharge duct. Controls: overall scale, steel, safety paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -107877,7 +108374,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/process-blower.kcad.ts",
       "preview": "/assets/industrial-plant-process-blower.png",
-      "sourceSha256": "d22d78f5c39449d53d0bbcc9012a0b1c7d40a3a7fcf3df6734a7d838ee19c747",
+      "sourceSha256": "e69029a4fdf281874072e57b61e98c12305c677642c74934868f379006221723",
       "triangleBudget": 1400,
       "params": [
         {
@@ -107890,19 +108387,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#697d86",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#dfa744",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 292,
         "sizeM": [
@@ -107915,7 +108420,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#dfa744",
           "parts": [
             "base",
@@ -107923,10 +108428,10 @@
             "outlet-stack",
             "drive-motor"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#697d86",
           "parts": [
             "volute-housing",
@@ -107937,7 +108442,7 @@
             "anchor-2",
             "anchor-3"
           ],
-          "param": "body"
+          "param": "steel"
         }
       ]
     },
@@ -107945,7 +108450,7 @@
       "id": "process-reactor-vessel",
       "kit": "industrial-plant",
       "title": "Process reactor vessel",
-      "description": "Tall process reactor with a bolted top head, access platforms, side ports and braced supports. Knobs: overall scale, body color and accent color.",
+      "description": "Tall process reactor with a bolted top head, access platforms, side ports and braced supports. Controls: overall scale, steel, safety paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -107964,7 +108469,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/process-reactor-vessel.kcad.ts",
       "preview": "/assets/industrial-plant-process-reactor-vessel.png",
-      "sourceSha256": "d2565a5eb404b0ee341321e8d2b06b9202f77b5e82a7a3f03f4412d316b9d056",
+      "sourceSha256": "b80a6a83670cdb4587db403f314a0f5cc01c0938407a112546760d1c40eda571",
       "triangleBudget": 1400,
       "params": [
         {
@@ -107977,19 +108482,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#71848b",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#db9e3f",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 612,
         "sizeM": [
@@ -108002,7 +108515,7 @@
       },
       "palette": [
         {
-          "name": "body",
+          "name": "steel",
           "color": "#71848b",
           "parts": [
             "shell",
@@ -108020,10 +108533,10 @@
             "ladder-rung-5",
             "platform-rail"
           ],
-          "param": "body"
+          "param": "steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#db9e3f",
           "parts": [
             "roof-lip",
@@ -108040,7 +108553,7 @@
             "ladder-right-rail",
             "access-platform"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -108048,7 +108561,7 @@
       "id": "process-water-silo",
       "kit": "industrial-plant",
       "title": "Process water silo",
-      "description": "Tall process silo with a roof cap, ring stiffeners, discharge hopper and four support legs. Knobs: overall scale, body color and accent color.",
+      "description": "Tall process silo with a roof cap, ring stiffeners, discharge hopper and four support legs. Controls: overall scale, steel, safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -108067,7 +108580,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/process-water-silo.kcad.ts",
       "preview": "/assets/industrial-plant-process-water-silo.png",
-      "sourceSha256": "73c982e1f3ba32ec471df727b96dad92244f7ec44be14a86e874be19c19de60f",
+      "sourceSha256": "42eba30a29db787f04ffa5dddf0ced37f8a313e1ff06dd86ee3b741d26221d4a",
       "triangleBudget": 1400,
       "params": [
         {
@@ -108080,19 +108593,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#77838a",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#d9a343",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 588,
         "sizeM": [
@@ -108105,7 +108626,7 @@
       },
       "palette": [
         {
-          "name": "body",
+          "name": "steel",
           "color": "#77838a",
           "parts": [
             "shell",
@@ -108123,10 +108644,10 @@
             "ladder-rung-4",
             "ladder-rung-5"
           ],
-          "param": "body"
+          "param": "steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#d9a343",
           "parts": [
             "roof-lip",
@@ -108141,7 +108662,7 @@
             "ladder-left-rail",
             "ladder-right-rail"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -108149,7 +108670,7 @@
       "id": "roller-conveyor-line",
       "kit": "industrial-plant",
       "title": "Roller conveyor line",
-      "description": "Gravity roller conveyor section with a sturdy side frame, repeated rollers and end stops. Knobs: overall scale, body color and accent color.",
+      "description": "Gravity roller conveyor section with a sturdy side frame, repeated rollers and end stops. Controls: overall scale, steel, safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -108168,7 +108689,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/roller-conveyor-line.kcad.ts",
       "preview": "/assets/industrial-plant-roller-conveyor-line.png",
-      "sourceSha256": "c31c8e122874386380a04c4a7a44e168b2be132d1ec2cd7ed3b04183f53df8a9",
+      "sourceSha256": "df91b1dc1be2b892c78187077ba2d0d1afe2697baf24bc8089b1563d296f8275",
       "triangleBudget": 1400,
       "params": [
         {
@@ -108181,19 +108702,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#707f84",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e4ab47",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 576,
         "sizeM": [
@@ -108206,7 +108735,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e4ab47",
           "parts": [
             "side-frame--1",
@@ -108227,10 +108756,10 @@
             "roller-7",
             "roller-8"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#707f84",
           "parts": [
             "support--1-0",
@@ -108241,7 +108770,7 @@
             "support-1-2",
             "conveyor-deck"
           ],
-          "param": "body"
+          "param": "steel"
         }
       ]
     },
@@ -108249,7 +108778,7 @@
       "id": "rooftop-air-handler",
       "kit": "industrial-plant",
       "title": "Rooftop air handler",
-      "description": "Packaged rooftop air handler with intake and filter sections, exhaust fans and raised service feet. Knobs: overall scale, body color and accent color.",
+      "description": "Packaged rooftop air handler with intake and filter sections, exhaust fans and raised service feet. Controls: overall scale, steel, safety paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -108268,7 +108797,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/rooftop-air-handler.kcad.ts",
       "preview": "/assets/industrial-plant-rooftop-air-handler.png",
-      "sourceSha256": "3a2a13b39e8d462f54cddeecd22bc4c9175849f13ec77c5584f1a976b33a8f9f",
+      "sourceSha256": "da0c19e71230fcbab0de32b4f29fd32a5a17bfd239656d7e96ee246234102b12",
       "triangleBudget": 1400,
       "params": [
         {
@@ -108281,19 +108810,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#70818a",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#dfa843",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 320,
         "sizeM": [
@@ -108306,7 +108843,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#dfa843",
           "parts": [
             "base-frame",
@@ -108319,10 +108856,10 @@
             "exhaust-fan-2",
             "pipe-header"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#70818a",
           "parts": [
             "main-casing",
@@ -108333,7 +108870,7 @@
             "support-foot-2",
             "support-foot-3"
           ],
-          "param": "body"
+          "param": "steel"
         }
       ]
     },
@@ -108341,7 +108878,7 @@
       "id": "scissor-lift-table",
       "kit": "industrial-plant",
       "title": "Scissor lift table",
-      "description": "Mobile scissor lift table with crossed lifting arms, platform deck, casters and control box. Knobs: overall scale, body color and accent color.",
+      "description": "Mobile scissor lift table with crossed lifting arms, platform deck, casters and control box. Controls: overall scale, steel, safety paint, rubber.",
       "category": "vehicle",
       "origin": "base",
       "tags": [
@@ -108360,7 +108897,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/scissor-lift-table.kcad.ts",
       "preview": "/assets/industrial-plant-scissor-lift-table.png",
-      "sourceSha256": "f846a996a90a113171aa0b1b2897cdcee2c7025e616735e06f9226404f2bc0c9",
+      "sourceSha256": "6a6c19a23fa4c59c591e1eddad96accd4c2c3be97894a85a0ded4771cc2c3b36",
       "triangleBudget": 1400,
       "params": [
         {
@@ -108373,19 +108910,34 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#6d7c82",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e6a33e",
-          "label": "Accent color"
+          "label": "Safety paint"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30363a",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f",
+          "rubber": "#27292b"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 196,
         "sizeM": [
@@ -108398,7 +108950,7 @@
       },
       "palette": [
         {
-          "name": "body",
+          "name": "steel",
           "color": "#6d7c82",
           "parts": [
             "base",
@@ -108408,19 +108960,26 @@
             "safety-rail--1",
             "safety-rail-1"
           ],
-          "param": "body"
+          "param": "steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e6a33e",
           "parts": [
             "platform-deck",
             "scissor-arm-b--1",
+            "scissor-arm-b-1"
+          ],
+          "param": "safetyPaint"
+        },
+        {
+          "name": "rubber",
+          "color": "#30363a",
+          "parts": [
             "caster--1",
-            "scissor-arm-b-1",
             "caster-1"
           ],
-          "param": "accent"
+          "param": "rubber"
         }
       ]
     },
@@ -108428,7 +108987,7 @@
       "id": "screw-conveyor",
       "kit": "industrial-plant",
       "title": "Screw conveyor",
-      "description": "Inclined screw conveyor with an enclosed tube, drive gearbox, feed hopper and support saddles. Knobs: overall scale, body color and accent color.",
+      "description": "Inclined screw conveyor with an enclosed tube, drive gearbox, feed hopper and support saddles. Controls: overall scale, steel, safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -108447,7 +109006,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/screw-conveyor.kcad.ts",
       "preview": "/assets/industrial-plant-screw-conveyor.png",
-      "sourceSha256": "516ae4f992277ad02da13ddc066735bdbabeafdf876dc0a72d2cfd3642ceddb7",
+      "sourceSha256": "cec436312de52076654e3d715ecb32eb88f64b008cdc358ee3236404fec25c15",
       "triangleBudget": 1400,
       "params": [
         {
@@ -108460,19 +109019,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#6f7d83",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e1a742",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 160,
         "sizeM": [
@@ -108485,17 +109052,17 @@
       },
       "palette": [
         {
-          "name": "body",
+          "name": "steel",
           "color": "#6f7d83",
           "parts": [
             "conveyor-tube",
             "saddle-leg-0",
             "saddle-leg-1"
           ],
-          "param": "body"
+          "param": "steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e1a742",
           "parts": [
             "drive-motor",
@@ -108504,7 +109071,7 @@
             "support-foot-0",
             "support-foot-1"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -108512,7 +109079,7 @@
       "id": "shell-and-tube-exchanger",
       "kit": "industrial-plant",
       "title": "Shell and tube heat exchanger",
-      "description": "Horizontal shell-and-tube heat exchanger with tube sheets, saddle feet and paired process nozzles. Knobs: overall scale, body color and accent color.",
+      "description": "Horizontal shell-and-tube heat exchanger with tube sheets, saddle feet and paired process nozzles. Controls: overall scale, steel, safety paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -108531,7 +109098,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/shell-and-tube-exchanger.kcad.ts",
       "preview": "/assets/industrial-plant-shell-and-tube-exchanger.png",
-      "sourceSha256": "a8a5e5cc4c28f399b35b9de05945871127ca63bdb0f6b71d8f0b2f5280f5b597",
+      "sourceSha256": "f16af3f6c71592d7f225ff385a6749c03f982793afb84b85d8c97f9de2d98666",
       "triangleBudget": 1400,
       "params": [
         {
@@ -108544,19 +109111,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#687e89",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#dca144",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 400,
         "sizeM": [
@@ -108569,7 +109144,7 @@
       },
       "palette": [
         {
-          "name": "body",
+          "name": "steel",
           "color": "#687e89",
           "parts": [
             "shell",
@@ -108578,10 +109153,10 @@
             "foot-0",
             "foot-1"
           ],
-          "param": "body"
+          "param": "steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#dca144",
           "parts": [
             "tube-sheet--1",
@@ -108592,7 +109167,7 @@
             "saddle-1",
             "shell-band"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -108600,7 +109175,7 @@
       "id": "steam-header-manifold",
       "kit": "industrial-plant",
       "title": "Steam header manifold",
-      "description": "Steam distribution header with five branch risers, isolation wheels and a raised pressure gauge. Knobs: overall scale, body color and accent color.",
+      "description": "Steam distribution header with five branch risers, isolation wheels and a raised pressure gauge. Controls: overall scale, steel, safety paint, gauge glass.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -108619,7 +109194,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/steam-header-manifold.kcad.ts",
       "preview": "/assets/industrial-plant-steam-header-manifold.png",
-      "sourceSha256": "7d3c476133a78bb282f042466822ddd771a78588b825eeda61de1349f33cfcc4",
+      "sourceSha256": "ac4a01d15da76f47ec6e3f27326d2a9dafb55942615660702245ef5ea4a059f8",
       "triangleBudget": 1400,
       "params": [
         {
@@ -108632,19 +109207,34 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#6e7d84",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#dfa945",
-          "label": "Accent color"
+          "label": "Safety paint"
+        },
+        {
+          "name": "gaugeGlass",
+          "type": "color",
+          "default": "#91c6c8",
+          "label": "Gauge glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f",
+          "gaugeGlass": "#78989b"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 980,
         "sizeM": [
@@ -108657,7 +109247,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#dfa945",
           "parts": [
             "support-skid",
@@ -108670,13 +109260,12 @@
             "branch-3",
             "valve-handle-3",
             "branch-4",
-            "valve-handle-4",
-            "header-gauge"
+            "valve-handle-4"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#6e7d84",
           "parts": [
             "main-header",
@@ -108691,7 +109280,15 @@
             "branch-flange-4",
             "valve-body-4"
           ],
-          "param": "body"
+          "param": "steel"
+        },
+        {
+          "name": "gaugeGlass",
+          "color": "#91c6c8",
+          "parts": [
+            "header-gauge"
+          ],
+          "param": "gaugeGlass"
         }
       ]
     },
@@ -108699,7 +109296,7 @@
       "id": "steel-access-gate",
       "kit": "industrial-plant",
       "title": "Steel access gate",
-      "description": "Self-closing industrial access gate with a hinge post, framed infill and raised toe plate. Knobs: overall scale, body color and accent color.",
+      "description": "Self-closing industrial access gate with a hinge post, framed infill and raised toe plate. Controls: overall scale, steel, safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -108718,7 +109315,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/steel-access-gate.kcad.ts",
       "preview": "/assets/industrial-plant-steel-access-gate.png",
-      "sourceSha256": "4b041728bb19040da185096ebdea5353545250129f557b5f5fbf27936de46e07",
+      "sourceSha256": "93f2da33995e1f662cb5fad9814754760e3e4fc7d7564b1b29980e924eb78fcd",
       "triangleBudget": 1400,
       "params": [
         {
@@ -108731,19 +109328,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#718087",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e3a744",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 132,
         "sizeM": [
@@ -108756,17 +109361,17 @@
       },
       "palette": [
         {
-          "name": "body",
+          "name": "steel",
           "color": "#718087",
           "parts": [
             "hinge-post",
             "latch-post",
             "gate-panel"
           ],
-          "param": "body"
+          "param": "steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e3a744",
           "parts": [
             "gate-top",
@@ -108778,7 +109383,7 @@
             "infill-bar-4",
             "toe-plate"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -108786,7 +109391,7 @@
       "id": "vacuum-pump-unit",
       "kit": "industrial-plant",
       "title": "Vacuum pump unit",
-      "description": "Vacuum pump package with a horizontal motor, exhaust silencer, intake pipe and base rails. Knobs: overall scale, body color and accent color.",
+      "description": "Vacuum pump package with a horizontal motor, exhaust silencer, intake pipe and base rails. Controls: overall scale, steel, safety paint, gauge glass.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -108805,7 +109410,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/vacuum-pump-unit.kcad.ts",
       "preview": "/assets/industrial-plant-vacuum-pump-unit.png",
-      "sourceSha256": "e5f3520eeb64ef5e28d30394ad8c6d1a9defa606ebdea0a44411d0ee29f56669",
+      "sourceSha256": "16e8e66be9c14280a767536e69e2a0dc38f549c09f91e8fafc972b9bdd19f261",
       "triangleBudget": 1400,
       "params": [
         {
@@ -108818,19 +109423,34 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#637a85",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#dda74b",
-          "label": "Accent color"
+          "label": "Safety paint"
+        },
+        {
+          "name": "gaugeGlass",
+          "type": "color",
+          "default": "#91c6c8",
+          "label": "Gauge glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f",
+          "gaugeGlass": "#78989b"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 336,
         "sizeM": [
@@ -108843,30 +109463,37 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#dda74b",
           "parts": [
             "base-frame",
             "motor",
             "silencer",
             "intake-filter",
-            "pressure-gauge",
             "vent-slot-0",
             "vent-slot-1",
             "vent-slot-2",
             "vent-slot-3"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#637a85",
           "parts": [
             "receiver",
             "vacuum-pump-head",
             "air-line"
           ],
-          "param": "body"
+          "param": "steel"
+        },
+        {
+          "name": "gaugeGlass",
+          "color": "#91c6c8",
+          "parts": [
+            "pressure-gauge"
+          ],
+          "param": "gaugeGlass"
         }
       ]
     },
@@ -108874,7 +109501,7 @@
       "id": "valve-manifold-station",
       "kit": "industrial-plant",
       "title": "Valve manifold station",
-      "description": "Process valve station with parallel pipe runs, isolation wheels, gauges and a support frame. Knobs: overall scale, body color and accent color.",
+      "description": "Process valve station with parallel pipe runs, isolation wheels, gauges and a support frame. Controls: overall scale, steel, safety paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -108893,7 +109520,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/valve-manifold-station.kcad.ts",
       "preview": "/assets/industrial-plant-valve-manifold-station.png",
-      "sourceSha256": "71f30a4d6865e09351a521ee066702141f5b53184c05a74e0e1b5eb54ea3a765",
+      "sourceSha256": "8d3cc6f66761e99ede3f761f0a8d7505f2e16b8d89659724327bb4ca6622cb60",
       "triangleBudget": 1400,
       "params": [
         {
@@ -108906,19 +109533,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#6c7e85",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e4aa43",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 740,
         "sizeM": [
@@ -108931,7 +109566,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e4aa43",
           "parts": [
             "support-frame",
@@ -108945,10 +109580,10 @@
             "handwheel-2",
             "flange-2"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#6c7e85",
           "parts": [
             "header",
@@ -108961,7 +109596,7 @@
             "stand--1",
             "stand-1"
           ],
-          "param": "body"
+          "param": "steel"
         }
       ]
     },
@@ -108969,7 +109604,7 @@
       "id": "variable-frequency-drive-cabinet",
       "kit": "industrial-plant",
       "title": "Variable frequency drive cabinet",
-      "description": "Drive cabinet with a large heat-sink back, status display, cooling fan and disconnect handle. Knobs: overall scale, body color and accent color.",
+      "description": "Drive cabinet with a large heat-sink back, status display, cooling fan and disconnect handle. Controls: overall scale, steel, safety paint, gauge glass.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -108988,7 +109623,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/variable-frequency-drive-cabinet.kcad.ts",
       "preview": "/assets/industrial-plant-variable-frequency-drive-cabinet.png",
-      "sourceSha256": "41fdb5fcfc10850698d9338215dd1b995cdc9e9040bd6d15c308701c46a3a6c1",
+      "sourceSha256": "f542b89e5576e2b31b1ac54803b891f899c6ccf9aef97693df2b567c82b4f272",
       "triangleBudget": 1400,
       "params": [
         {
@@ -109001,19 +109636,34 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#647881",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e4ab48",
-          "label": "Accent color"
+          "label": "Safety paint"
+        },
+        {
+          "name": "gaugeGlass",
+          "type": "color",
+          "default": "#91c6c8",
+          "label": "Gauge glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f",
+          "gaugeGlass": "#78989b"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 240,
         "sizeM": [
@@ -109026,7 +109676,7 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e4ab48",
           "parts": [
             "plinth",
@@ -109034,13 +109684,12 @@
             "vent-slot-0",
             "vent-slot-1",
             "vent-slot-2",
-            "vent-slot-3",
-            "display"
+            "vent-slot-3"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#647881",
           "parts": [
             "enclosure",
@@ -109049,7 +109698,15 @@
             "indicator-1",
             "indicator-2"
           ],
-          "param": "body"
+          "param": "steel"
+        },
+        {
+          "name": "gaugeGlass",
+          "color": "#91c6c8",
+          "parts": [
+            "display"
+          ],
+          "param": "gaugeGlass"
         }
       ]
     },
@@ -109057,7 +109714,7 @@
       "id": "vertical-cage-ladder",
       "kit": "industrial-plant",
       "title": "Vertical cage ladder",
-      "description": "Fixed vertical access ladder with evenly spaced rungs, side rails and a wraparound safety cage. Knobs: overall scale, body color and accent color.",
+      "description": "Fixed vertical access ladder with evenly spaced rungs, side rails and a wraparound safety cage. Controls: overall scale, steel, safety paint.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -109076,7 +109733,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/vertical-cage-ladder.kcad.ts",
       "preview": "/assets/industrial-plant-vertical-cage-ladder.png",
-      "sourceSha256": "d5157ed97ed83c086e0b6dae142ee71a66717f3b06e90b83f8422f54960000b6",
+      "sourceSha256": "965cc1b20e9167f21aec5c59033ad7a1dfee18f422fc55fc057bea8c4e2c5e92",
       "triangleBudget": 1400,
       "params": [
         {
@@ -109089,19 +109746,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#6f7f85",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e2a846",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 368,
         "sizeM": [
@@ -109114,7 +109779,7 @@
       },
       "palette": [
         {
-          "name": "body",
+          "name": "steel",
           "color": "#6f7f85",
           "parts": [
             "ladder-rail--1",
@@ -109124,10 +109789,10 @@
             "hoop-support-2",
             "hoop-support-3"
           ],
-          "param": "body"
+          "param": "steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e2a846",
           "parts": [
             "rung-0",
@@ -109145,7 +109810,7 @@
             "top-grab-left",
             "top-grab-right"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -109153,7 +109818,7 @@
       "id": "vertical-storage-tank",
       "kit": "industrial-plant",
       "title": "Vertical storage tank",
-      "description": "Vertical liquid storage tank with a domed-looking roof, service ladder and foundation legs. Knobs: overall scale, body color and accent color.",
+      "description": "Vertical liquid storage tank with a domed-looking roof, service ladder and foundation legs. Controls: overall scale, steel, safety paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -109172,7 +109837,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/vertical-storage-tank.kcad.ts",
       "preview": "/assets/industrial-plant-vertical-storage-tank.png",
-      "sourceSha256": "b7765d5610231b2f1875b62fdc877561fbe310ed8f345ffec51e9fe6ff4b44ae",
+      "sourceSha256": "bb1de2d3c4f8e634de15b26799631064605557ccacc50b3c5928b87a52754011",
       "triangleBudget": 1400,
       "params": [
         {
@@ -109185,19 +109850,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#74828a",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e6ad4e",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 544,
         "sizeM": [
@@ -109210,7 +109883,7 @@
       },
       "palette": [
         {
-          "name": "body",
+          "name": "steel",
           "color": "#74828a",
           "parts": [
             "shell",
@@ -109227,10 +109900,10 @@
             "ladder-rung-4",
             "ladder-rung-5"
           ],
-          "param": "body"
+          "param": "steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e6ad4e",
           "parts": [
             "roof-lip",
@@ -109245,7 +109918,7 @@
             "ladder-left-rail",
             "ladder-right-rail"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -109253,7 +109926,7 @@
       "id": "vibratory-feeder",
       "kit": "industrial-plant",
       "title": "Vibratory feeder",
-      "description": "Vibratory feeder with a wide feed pan, coil supports, drive unit and hopper transition. Knobs: overall scale, body color and accent color.",
+      "description": "Vibratory feeder with a wide feed pan, coil supports, drive unit and hopper transition. Controls: overall scale, steel, safety paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -109272,7 +109945,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/vibratory-feeder.kcad.ts",
       "preview": "/assets/industrial-plant-vibratory-feeder.png",
-      "sourceSha256": "22b11e8f0af6bdfdb028382c57e8c649eb5cab01519aa452efc0bbd9f12d726b",
+      "sourceSha256": "e05b4a6be99d89bd0d38a88b5e21b99750fbe9edebbe5f969cfa910b129f549f",
       "triangleBudget": 1400,
       "params": [
         {
@@ -109285,19 +109958,27 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#687981",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e1a648",
-          "label": "Accent color"
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
         "triangles": 268,
         "sizeM": [
@@ -109310,17 +109991,17 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e1a648",
           "parts": [
             "base",
             "rear-hopper",
             "drive-unit"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
         },
         {
-          "name": "body",
+          "name": "steel",
           "color": "#687981",
           "parts": [
             "feed-pan",
@@ -109330,7 +110011,7 @@
             "spring-1-1",
             "motor"
           ],
-          "param": "body"
+          "param": "steel"
         }
       ]
     },
@@ -109338,7 +110019,7 @@
       "id": "weigh-hopper",
       "kit": "industrial-plant",
       "title": "Weigh hopper",
-      "description": "Batch weigh hopper with a broad upper bin, load-cell supports, discharge cone and outlet gate. Knobs: overall scale, body color and accent color.",
+      "description": "Batch weigh hopper with a broad upper bin, load-cell supports, tapered rectangular discharge chute and outlet gate. Controls: overall scale, steel, safety paint, wear liner.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -109357,7 +110038,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/weigh-hopper.kcad.ts",
       "preview": "/assets/industrial-plant-weigh-hopper.png",
-      "sourceSha256": "02f49c908669bfb1ada385268389725608db2beea68244694941e14a62f8d758",
+      "sourceSha256": "1152aa7679f9a191514232a46ac0ca622de12f3dd76c1320187de18c655065de",
       "triangleBudget": 1400,
       "params": [
         {
@@ -109370,21 +110051,36 @@
           "step": 0.05
         },
         {
-          "name": "body",
+          "name": "steel",
           "type": "color",
           "default": "#748089",
-          "label": "Body color"
+          "label": "Structural steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "type": "color",
           "default": "#e0a747",
-          "label": "Accent color"
+          "label": "Safety paint"
+        },
+        {
+          "name": "liner",
+          "type": "color",
+          "default": "#50666b",
+          "label": "Wear liner"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "steel": "#575851",
+          "safetyPaint": "#9e722f",
+          "liner": "#3f5054"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f5c640"
+        }
+      },
       "stats": {
-        "triangles": 264,
+        "triangles": 236,
         "sizeM": [
           0.5616,
           0.5813,
@@ -109395,24 +110091,22 @@
       },
       "palette": [
         {
-          "name": "body",
+          "name": "steel",
           "color": "#748089",
           "parts": [
             "upper-bin",
-            "hopper-transition-lower",
             "support-leg-0",
             "support-leg-1",
             "support-leg-2",
             "support-leg-3"
           ],
-          "param": "body"
+          "param": "steel"
         },
         {
-          "name": "accent",
+          "name": "safetyPaint",
           "color": "#e0a747",
           "parts": [
             "top-rim",
-            "hopper-transition-upper",
             "outlet",
             "foot-0",
             "foot-1",
@@ -109420,7 +110114,15 @@
             "foot-3",
             "slide-gate"
           ],
-          "param": "accent"
+          "param": "safetyPaint"
+        },
+        {
+          "name": "liner",
+          "color": "#50666b",
+          "parts": [
+            "hopper-transition"
+          ],
+          "param": "liner"
         }
       ]
     },
