@@ -6,12 +6,14 @@ from those sources and must be rebuilt in the same change.
 
 ## Catalog quality snapshot (2026-11-05)
 
-The catalog quality gate reports **1,504/2,390 assets passing (62.93%)** and
-886 thin assets (37.07%). This round began at 1,452/2,390 (60.92%) and promoted
-52 existing space-exploration assets; no IDs were added. The earlier 5 Nov
-checkpoint was 1,010/2,390 (42.26%). The full-catalog audit still identifies
-thin assets in other kits; see the [space exploration quality handoff](../artifacts/catalog-demos/space-exploration-quality-promotion-20261105/README.md)
-and [theatre production quality handoff](../artifacts/catalog-demos/theatre-production-quality-promotion-20261105/README.md)
+The catalog quality gate reports **1,554/2,390 assets passing (65.02%)** and
+836 thin assets (34.98%). This round promoted 50 existing veterinary clinic
+assets; no IDs were added. The previous checkpoint was 1,504/2,390 (62.93%),
+after promoting 52 space-exploration assets; the earlier 5 Nov checkpoint was
+1,010/2,390 (42.26%). Thin assets remain in other kits. See the [veterinary
+clinic quality handoff](../artifacts/catalog-demos/vet-clinic-quality-promotion-20261105/README.md),
+[space exploration handoff](../artifacts/catalog-demos/space-exploration-quality-promotion-20261105/README.md),
+and [theatre production handoff](../artifacts/catalog-demos/theatre-production-quality-promotion-20261105/README.md)
 for source, preview, index, and verification evidence. These are local catalog
 checks and do not represent deployed behavior.
 
@@ -129,12 +131,15 @@ environmental compliance, or physical acceptance.
 The [veterinary clinic kit](../catalog/kits/vet-clinic/README.md) adds 50
 original low-poly props for reception and examination, treatment and imaging,
 surgery and instrument processing, diagnostics, inpatient housing, and grooming.
-Each source exposes scale and color controls and has an indexed preview. The
-[wave demo and verification bundle](../artifacts/catalog-demos/vet-clinic-wave-20261103/README.md)
-records the source-to-preview workflow, catalog audit, generated pages, and
-inspected MP4. These are visualization props; checks do not establish clinical
-suitability, safety, ratings, hygiene, calibration, regulatory compliance, or
-physical acceptance.
+Each existing ID keeps its scale control and now exposes two to four
+material-named color controls, `clinicClean` / `softTeal` presets, and an
+indexed preview. The [quality promotion handoff](../artifacts/catalog-demos/vet-clinic-quality-promotion-20261105/README.md)
+records the 146 material controls, 100 preset entries, refreshed preview review,
+regenerated index, lint, integration, local-page checks, and inspected MP4. The
+[original wave bundle](../artifacts/catalog-demos/vet-clinic-wave-20261103/README.md)
+preserves initial kit evidence. These are visualization props; checks do not
+establish clinical suitability, safety, ratings, hygiene, calibration,
+regulatory compliance, or physical acceptance.
 
 ## Fire station assets
 

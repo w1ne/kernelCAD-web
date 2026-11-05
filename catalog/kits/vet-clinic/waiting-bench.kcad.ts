@@ -1,9 +1,9 @@
-// Original low-poly veterinary clinic scene asset. Millimetres, Z up, base origin.
+// Clinic waiting bench: Three-seat waiting bench with a continuous back, arm rests and open leg clearance. Separate powder-coated steel, stainless steel, vinyl upholstery surfaces keep its component silhouette readable.
 meta({
   name: "waiting-bench",
   license: 'CC0-1.0',
   title: "Clinic waiting bench",
-  description: "Three-seat waiting bench with a continuous back, arm rests and open leg clearance." + ' Editable overall scale and asset color.',
+  description: "Three-seat waiting bench with a continuous back, arm rests and open leg clearance. Material controls: powder-coated steel, stainless steel, vinyl upholstery. Presets: clinicClean and softTeal.",
   tags: ["veterinary", "animal clinic", "animal health", "clinic", "waiting", "bench", "low poly", "CC0"],
   kit: 'vet-clinic',
   category: 'prop',
@@ -13,7 +13,28 @@ meta({
 });
 
 const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
-const color = param('color', "#78909a", { label: 'Asset color' });
+const paintedSteelColor = param('paintedSteelColor', '#6e8994', { label: 'Powder-coated steel' });
+const stainlessSteelColor = param('stainlessSteelColor', '#bdc7c5', { label: 'Stainless steel' });
+const upholsteryColor = param('upholsteryColor', '#62858a', { label: 'Vinyl upholstery' });
+
+presets({
+  clinicClean: { paintedSteelColor: '#e4ebe7' },
+  softTeal: { paintedSteelColor: '#4d858d', stainlessSteelColor: '#8daeb0' },
+});
+
+const finishFor = (name: string) => {
+  switch (name) {
+    case "arm-left": return stainlessSteelColor;
+    case "arm-right": return stainlessSteelColor;
+    case "front-left-leg": return stainlessSteelColor;
+    case "front-right-leg": return stainlessSteelColor;
+    case "rear-left-leg": return stainlessSteelColor;
+    case "rear-right-leg": return stainlessSteelColor;
+    case "lower-crossbar": return stainlessSteelColor;
+    case "back": return upholsteryColor;
+  }
+  return paintedSteelColor;
+};
 const p = assembly("waiting-bench");
 
 const b = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
@@ -21,7 +42,7 @@ const b = (name: string, size: [number, number, number], at: [number, number, nu
   if (rotation?.[0]) shape = shape.rotate([1, 0, 0], rotation[0]);
   if (rotation?.[1]) shape = shape.rotate([0, 1, 0], rotation[1]);
   if (rotation?.[2]) shape = shape.rotate([0, 0, 1], rotation[2]);
-  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(color));
+  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(finishFor(name)));
 };
 
 b("seat", [1500, 450, 88], [0, 0, 450]);

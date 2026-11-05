@@ -234273,7 +234273,7 @@
       "id": "anesthesia-machine",
       "kit": "vet-clinic",
       "title": "Veterinary anesthesia machine",
-      "description": "Mobile anesthesia workstation with gas cylinders, absorber canister, flow controls and monitor. Editable overall scale and asset color.",
+      "description": "Mobile anesthesia workstation with gas cylinders, absorber canister, flow controls and monitor. Material controls: tinted glass and displays, powder-coated steel, rubber, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -234295,7 +234295,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/anesthesia-machine.kcad.ts",
       "preview": "/assets/vet-clinic-anesthesia-machine.png",
-      "sourceSha256": "f99ea96b3e5a3328013ae078be93da774e3c070dd2b922b5fc3a18c4215d113d",
+      "sourceSha256": "ace94da7404d9c6cf97a7fb00a7675045d097d4fe5b250d88f10a7d7fb9725ff",
       "triangleBudget": 1800,
       "params": [
         {
@@ -234308,17 +234308,43 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#647a80",
-          "label": "Asset color"
+          "default": "#718b89",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "glassColor",
+          "type": "color",
+          "default": "#4e8290",
+          "label": "Tinted glass and displays"
+        },
+        {
+          "name": "rubberColor",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Rubber"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "glassColor": "#3f7480"
+        }
+      },
       "stats": {
-        "triangles": 392,
+        "triangles": 492,
         "sizeM": [
-          0.63,
+          0.716,
           1.2025,
           0.515
         ],
@@ -234327,25 +234353,49 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#647a80",
+          "name": "paintedSteelColor",
+          "color": "#718b89",
           "parts": [
             "base",
-            "wheel-a",
-            "wheel-b",
-            "wheel-bracket-a",
-            "wheel-bracket-b",
             "tower",
-            "oxygen-cylinder-left",
-            "oxygen-cylinder-right",
-            "absorber-canister",
             "upper-shelf",
             "monitor",
             "flow-control-a",
             "flow-control-b",
             "breathing-circuit-block"
           ],
-          "param": "color"
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "rubberColor",
+          "color": "#30383b",
+          "parts": [
+            "wheel-a",
+            "wheel-b"
+          ],
+          "param": "rubberColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
+            "wheel-bracket-a",
+            "wheel-bracket-b",
+            "oxygen-cylinder-left",
+            "oxygen-cylinder-right",
+            "oxygen-valve-left",
+            "oxygen-valve-right"
+          ],
+          "param": "stainlessSteelColor"
+        },
+        {
+          "name": "glassColor",
+          "color": "#4e8290",
+          "parts": [
+            "absorber-canister",
+            "monitor-screen"
+          ],
+          "param": "glassColor"
         }
       ]
     },
@@ -234353,7 +234403,7 @@
       "id": "appointment-status-display",
       "kit": "vet-clinic",
       "title": "Appointment status display",
-      "description": "Reception display with a floor stand, wide screen housing and angled viewing face. Editable overall scale and asset color.",
+      "description": "Reception display with a floor stand, wide screen housing and angled viewing face. Material controls: tinted glass and displays, powder-coated steel, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -234376,7 +234426,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/appointment-status-display.kcad.ts",
       "preview": "/assets/vet-clinic-appointment-status-display.png",
-      "sourceSha256": "858d4095cb3bf3f2bf2250b757c7a2051d349d07055bffc32cf2800c9f12bcf6",
+      "sourceSha256": "ef95f9e11d48602c9538dd9049e2c021d6f59fad24529d611a345cbeff08e3a8",
       "triangleBudget": 1800,
       "params": [
         {
@@ -234389,13 +234439,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#536d78",
-          "label": "Asset color"
+          "default": "#8e9991",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "glassColor",
+          "type": "color",
+          "default": "#4e8290",
+          "label": "Tinted glass and displays"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "glassColor": "#3f7480"
+        }
+      },
       "stats": {
         "triangles": 136,
         "sizeM": [
@@ -234408,17 +234478,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#536d78",
+          "name": "paintedSteelColor",
+          "color": "#8e9991",
           "parts": [
-            "base",
+            "base"
+          ],
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
             "stand-column",
+            "service-slot"
+          ],
+          "param": "stainlessSteelColor"
+        },
+        {
+          "name": "glassColor",
+          "color": "#4e8290",
+          "parts": [
             "screen-housing",
             "screen-panel",
-            "service-slot",
             "status-beacon"
           ],
-          "param": "color"
+          "param": "glassColor"
         }
       ]
     },
@@ -234426,7 +234510,7 @@
       "id": "basket-muzzle",
       "kit": "vet-clinic",
       "title": "Basket muzzle",
-      "description": "Open-frame basket muzzle with nose band, side rails and a wider rear strap frame. Editable overall scale and asset color.",
+      "description": "Open-frame basket muzzle with nose band, side rails and a wider rear strap frame. Material controls: fabric straps, molded polymer, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -234448,7 +234532,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/basket-muzzle.kcad.ts",
       "preview": "/assets/vet-clinic-basket-muzzle.png",
-      "sourceSha256": "5ea885e289e8e04b067f6c9be1baf4707b92c7701bad0089d4b9c399e9b407bb",
+      "sourceSha256": "7941b7d3effb0a64c8e6b6e38a7d594177975cf24d507ec75b163b2cf1dd2d27",
       "triangleBudget": 1800,
       "params": [
         {
@@ -234461,13 +234545,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymerColor",
           "type": "color",
-          "default": "#b49468",
-          "label": "Asset color"
+          "default": "#d3dfdc",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "fabricColor",
+          "type": "color",
+          "default": "#b6a98e",
+          "label": "Fabric straps"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "polymerColor": "#e8ece8"
+        },
+        "softTeal": {
+          "polymerColor": "#9bbfc0",
+          "fabricColor": "#6c9290"
+        }
+      },
       "stats": {
         "triangles": 180,
         "sizeM": [
@@ -234480,10 +234584,17 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b49468",
+          "name": "polymerColor",
+          "color": "#d3dfdc",
           "parts": [
-            "front-rim-top",
+            "front-rim-top"
+          ],
+          "param": "polymerColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
             "front-rim-bottom",
             "front-rim-left",
             "front-rim-right",
@@ -234495,11 +234606,18 @@
             "upper-rail-right",
             "lower-rail-left",
             "lower-rail-right",
-            "basket-crossbar",
+            "basket-crossbar"
+          ],
+          "param": "stainlessSteelColor"
+        },
+        {
+          "name": "fabricColor",
+          "color": "#b6a98e",
+          "parts": [
             "crown-strap",
             "chin-strap"
           ],
-          "param": "color"
+          "param": "fabricColor"
         }
       ]
     },
@@ -234507,7 +234625,7 @@
       "id": "cage-card-panel",
       "kit": "vet-clinic",
       "title": "Kennel card panel",
-      "description": "Clip-on kennel identification board with multiple card pockets and reinforced top and bottom rails. Editable overall scale and asset color.",
+      "description": "Clip-on kennel identification board with multiple card pockets and reinforced top and bottom rails. Material controls: powder-coated steel, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -234530,7 +234648,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/cage-card-panel.kcad.ts",
       "preview": "/assets/vet-clinic-cage-card-panel.png",
-      "sourceSha256": "cca652d597e2ddacae0352edd690ccb51fb4eb19e19936a05ac2def8831b1f8d",
+      "sourceSha256": "72319535c3eb47defe86d53bc59b72e1d79d7314fea414f44939ace4d0a58063",
       "triangleBudget": 1800,
       "params": [
         {
@@ -234543,13 +234661,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#6d8184",
-          "label": "Asset color"
+          "default": "#66838a",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "stainlessSteelColor": "#8daeb0"
+        }
+      },
       "stats": {
         "triangles": 156,
         "sizeM": [
@@ -234562,12 +234694,10 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6d8184",
+          "name": "paintedSteelColor",
+          "color": "#66838a",
           "parts": [
             "panel",
-            "top-rail",
-            "bottom-rail",
             "card-pocket-0",
             "card-pocket-1",
             "card-pocket-2",
@@ -234575,11 +234705,20 @@
             "clip-0",
             "clip-1",
             "clip-2",
-            "clip-3",
+            "clip-3"
+          ],
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
+            "top-rail",
+            "bottom-rail",
             "mount-bracket-left",
             "mount-bracket-right"
           ],
-          "param": "color"
+          "param": "stainlessSteelColor"
         }
       ]
     },
@@ -234587,7 +234726,7 @@
       "id": "chemistry-analyzer",
       "kit": "vet-clinic",
       "title": "Veterinary chemistry analyzer",
-      "description": "Bench analyzer with a reagent lid, sample carousel, front access bay and status display. Editable overall scale and asset color.",
+      "description": "Bench analyzer with a reagent lid, sample carousel, front access bay and status display. Material controls: tinted glass and displays, powder-coated steel, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -234609,7 +234748,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/chemistry-analyzer.kcad.ts",
       "preview": "/assets/vet-clinic-chemistry-analyzer.png",
-      "sourceSha256": "d5c2fb7725b94c6d7e22fcf62718713674461c4c1dc807a2abc688c9d3214101",
+      "sourceSha256": "1a35c417a63fd721e545c42021f52ff75d4da2c69ba1007d6af409d456455856",
       "triangleBudget": 1800,
       "params": [
         {
@@ -234622,13 +234761,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#718388",
-          "label": "Asset color"
+          "default": "#829687",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "glassColor",
+          "type": "color",
+          "default": "#4e8290",
+          "label": "Tinted glass and displays"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "glassColor": "#3f7480"
+        }
+      },
       "stats": {
         "triangles": 248,
         "sizeM": [
@@ -234641,21 +234800,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#718388",
+          "name": "paintedSteelColor",
+          "color": "#829687",
           "parts": [
             "analyzer-base",
             "main-housing",
             "reagent-cover",
-            "sample-tray",
             "sample-cup-0",
             "sample-cup-1",
             "sample-cup-2",
             "sample-cup-3",
-            "display-frame",
             "sample-door"
           ],
-          "param": "color"
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
+            "sample-tray"
+          ],
+          "param": "stainlessSteelColor"
+        },
+        {
+          "name": "glassColor",
+          "color": "#4e8290",
+          "parts": [
+            "display-frame"
+          ],
+          "param": "glassColor"
         }
       ]
     },
@@ -234663,7 +234836,7 @@
       "id": "dental-delivery-unit",
       "kit": "vet-clinic",
       "title": "Veterinary dental delivery unit",
-      "description": "Mobile dental cart with instrument tray, handpiece booms, controls and rinse bowl. Editable overall scale and asset color.",
+      "description": "Mobile dental cart with instrument tray, handpiece booms, controls and rinse bowl. Material controls: powder-coated steel, rubber, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -234686,7 +234859,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/dental-delivery-unit.kcad.ts",
       "preview": "/assets/vet-clinic-dental-delivery-unit.png",
-      "sourceSha256": "ee76dc0032758cc19d44c407cbf1bd751b387fe747f476ecfa613444e543185f",
+      "sourceSha256": "e539d8683fb6b903fbddaa378c37a8768f07f0dd0b6d1af4ca8f6e5a0e18c3c1",
       "triangleBudget": 1800,
       "params": [
         {
@@ -234699,13 +234872,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#738a87",
-          "label": "Asset color"
+          "default": "#6e8994",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "rubberColor",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Rubber"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "rubberColor": "#34464a"
+        }
+      },
       "stats": {
         "triangles": 412,
         "sizeM": [
@@ -234718,24 +234911,38 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#738a87",
+          "name": "paintedSteelColor",
+          "color": "#6e8994",
           "parts": [
             "cart-base",
-            "caster-a",
-            "caster-b",
-            "caster-c",
-            "caster-d",
-            "mast",
             "control-housing",
-            "instrument-tray",
             "boom-left",
             "boom-right",
-            "rinse-bowl",
             "handpiece-a",
             "handpiece-b"
           ],
-          "param": "color"
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "rubberColor",
+          "color": "#30383b",
+          "parts": [
+            "caster-a",
+            "caster-b",
+            "caster-c",
+            "caster-d"
+          ],
+          "param": "rubberColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
+            "mast",
+            "instrument-tray",
+            "rinse-bowl"
+          ],
+          "param": "stainlessSteelColor"
         }
       ]
     },
@@ -234743,7 +234950,7 @@
       "id": "dental-scaler-console",
       "kit": "vet-clinic",
       "title": "Dental scaler console",
-      "description": "Compact scaler console with sloped control face, handpiece sockets and foot pedal. Editable overall scale and asset color.",
+      "description": "Compact scaler console with sloped control face, handpiece sockets and foot pedal. Material controls: powder-coated steel, rubber, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -234766,7 +234973,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/dental-scaler-console.kcad.ts",
       "preview": "/assets/vet-clinic-dental-scaler-console.png",
-      "sourceSha256": "e8c484a19c4008d14c1f657375cd9cf26981bdc689fa5e00486aea48d8e66b1e",
+      "sourceSha256": "a751c36d4056961086584078757d32d44f8a1ae76344fb391638a0446b8763ae",
       "triangleBudget": 1800,
       "params": [
         {
@@ -234779,13 +234986,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#58747b",
-          "label": "Asset color"
+          "default": "#8e9991",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "rubberColor",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Rubber"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "rubberColor": "#34464a"
+        }
+      },
       "stats": {
         "triangles": 236,
         "sizeM": [
@@ -234798,8 +235025,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#58747b",
+          "name": "paintedSteelColor",
+          "color": "#8e9991",
           "parts": [
             "console-base",
             "console-body",
@@ -234807,11 +235034,25 @@
             "dial-one",
             "dial-two",
             "dial-three",
-            "handpiece-rack",
-            "foot-pedal",
+            "handpiece-rack"
+          ],
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "rubberColor",
+          "color": "#30383b",
+          "parts": [
+            "foot-pedal"
+          ],
+          "param": "rubberColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
             "cable-post"
           ],
-          "param": "color"
+          "param": "stainlessSteelColor"
         }
       ]
     },
@@ -234819,7 +235060,7 @@
       "id": "dental-xray-arm",
       "kit": "vet-clinic",
       "title": "Veterinary dental X-ray arm",
-      "description": "Wall-mounted articulated imaging arm with two pivots and a compact sensor head. Editable overall scale and asset color.",
+      "description": "Wall-mounted articulated imaging arm with two pivots and a compact sensor head. Material controls: powder-coated steel, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "wall",
       "tags": [
@@ -234842,7 +235083,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/dental-xray-arm.kcad.ts",
       "preview": "/assets/vet-clinic-dental-xray-arm.png",
-      "sourceSha256": "47224a8c787c5ed50b7c6ac6f8221b80751ca3d6b20ffc77f78a57b91cad7875",
+      "sourceSha256": "fc994f7f6349e5bfb7f6bd075fdbec0be1512d9cf74a813bf7694f67f35da6f8",
       "triangleBudget": 1800,
       "params": [
         {
@@ -234855,13 +235096,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#748386",
-          "label": "Asset color"
+          "default": "#66838a",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "stainlessSteelColor": "#8daeb0"
+        }
+      },
       "stats": {
         "triangles": 192,
         "sizeM": [
@@ -234874,19 +235129,26 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#748386",
+          "name": "paintedSteelColor",
+          "color": "#66838a",
           "parts": [
             "wall-plate",
+            "sensor-head",
+            "collimator"
+          ],
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
             "pivot-lower",
             "arm-one",
             "pivot-upper",
             "arm-two",
-            "sensor-head",
-            "collimator",
             "handle"
           ],
-          "param": "color"
+          "param": "stainlessSteelColor"
         }
       ]
     },
@@ -234894,7 +235156,7 @@
       "id": "dog-run-gate",
       "kit": "vet-clinic",
       "title": "Veterinary dog-run gate",
-      "description": "Full-height run gate with a framed swing panel, upright bars and a secure latch. Editable overall scale and asset color.",
+      "description": "Full-height run gate with a framed swing panel, upright bars and a secure latch. Material controls: powder-coated steel, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -234916,7 +235178,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/dog-run-gate.kcad.ts",
       "preview": "/assets/vet-clinic-dog-run-gate.png",
-      "sourceSha256": "8847b3ff95cd2c43b9769c784724f412ba061ed16b0fd1cbeb7f436df3b7be3f",
+      "sourceSha256": "5306ff8c0d615069f818e9519a29316b45907cb1d558ce93f6d46ed26e3786ec",
       "triangleBudget": 1800,
       "params": [
         {
@@ -234929,13 +235191,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#677d7c",
-          "label": "Asset color"
+          "default": "#6e8994",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "stainlessSteelColor": "#8daeb0"
+        }
+      },
       "stats": {
         "triangles": 280,
         "sizeM": [
@@ -234948,15 +235224,22 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#677d7c",
+          "name": "paintedSteelColor",
+          "color": "#6e8994",
           "parts": [
             "left-foot",
             "right-foot",
+            "gate-top",
+            "gate-bottom"
+          ],
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
             "left-post",
             "right-post",
-            "gate-top",
-            "gate-bottom",
             "gate-bar-0",
             "gate-bar-1",
             "gate-bar-2",
@@ -234970,7 +235253,7 @@
             "hinge-upper",
             "hinge-lower"
           ],
-          "param": "color"
+          "param": "stainlessSteelColor"
         }
       ]
     },
@@ -234978,7 +235261,7 @@
       "id": "electrosurgery-generator",
       "kit": "vet-clinic",
       "title": "Electrosurgery generator cart",
-      "description": "Compact generator on a cart with a display face, output sockets and accessory hooks. Editable overall scale and asset color.",
+      "description": "Compact generator on a cart with a display face, output sockets and accessory hooks. Material controls: tinted glass and displays, powder-coated steel, rubber, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -235001,7 +235284,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/electrosurgery-generator.kcad.ts",
       "preview": "/assets/vet-clinic-electrosurgery-generator.png",
-      "sourceSha256": "df1f817fdd59197976c88a5f681777ead4b9b6b6e64fb16bc3b90ddd075cfa2b",
+      "sourceSha256": "b3f7b64b6e651e23984f0ac966ba8b3d5ce72d7e3573ec5738e7c84cb1e869db",
       "triangleBudget": 1800,
       "params": [
         {
@@ -235014,13 +235297,39 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#596e75",
-          "label": "Asset color"
+          "default": "#829687",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "glassColor",
+          "type": "color",
+          "default": "#4e8290",
+          "label": "Tinted glass and displays"
+        },
+        {
+          "name": "rubberColor",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Rubber"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "glassColor": "#3f7480"
+        }
+      },
       "stats": {
         "triangles": 304,
         "sizeM": [
@@ -235033,23 +235342,44 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#596e75",
+          "name": "paintedSteelColor",
+          "color": "#829687",
           "parts": [
             "cart-base",
-            "caster-a",
-            "caster-b",
-            "column",
             "generator-body",
-            "display-frame",
             "output-panel",
             "socket-left",
-            "socket-right",
-            "accessory-hook-left",
-            "accessory-hook-right",
+            "socket-right"
+          ],
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "rubberColor",
+          "color": "#30383b",
+          "parts": [
+            "caster-a",
+            "caster-b",
             "foot-pedal"
           ],
-          "param": "color"
+          "param": "rubberColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
+            "column",
+            "accessory-hook-left",
+            "accessory-hook-right"
+          ],
+          "param": "stainlessSteelColor"
+        },
+        {
+          "name": "glassColor",
+          "color": "#4e8290",
+          "parts": [
+            "display-frame"
+          ],
+          "param": "glassColor"
         }
       ]
     },
@@ -235057,7 +235387,7 @@
       "id": "exam-step-stool",
       "kit": "vet-clinic",
       "title": "Veterinary exam step stool",
-      "description": "Two-tier non-slip step stool with a broad base and side support panels. Editable overall scale and asset color.",
+      "description": "Two-tier non-slip step stool with a broad base and side support panels. Material controls: powder-coated steel, rubber, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -235080,7 +235410,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/exam-step-stool.kcad.ts",
       "preview": "/assets/vet-clinic-exam-step-stool.png",
-      "sourceSha256": "8c8595fc41c1a28191575d85fb3f644398f7fb2303420037b03ec3fc6937a858",
+      "sourceSha256": "b9ceb86544c3a1da4e8852dad247fcfc710032a140a242cc4b49f3d1cd35ffe4",
       "triangleBudget": 1800,
       "params": [
         {
@@ -235093,13 +235423,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#82928f",
-          "label": "Asset color"
+          "default": "#6e8994",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "rubberColor",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Rubber"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "rubberColor": "#34464a"
+        }
+      },
       "stats": {
         "triangles": 96,
         "sizeM": [
@@ -235112,19 +235462,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#82928f",
+          "name": "paintedSteelColor",
+          "color": "#6e8994",
           "parts": [
             "lower-tread",
             "upper-tread",
-            "left-support",
-            "right-support",
             "front-riser",
-            "upper-riser",
+            "upper-riser"
+          ],
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
+            "left-support",
+            "right-support"
+          ],
+          "param": "stainlessSteelColor"
+        },
+        {
+          "name": "rubberColor",
+          "color": "#30383b",
+          "parts": [
             "base-foot-left",
             "base-foot-right"
           ],
-          "param": "color"
+          "param": "rubberColor"
         }
       ]
     },
@@ -235132,7 +235496,7 @@
       "id": "exam-wall-station",
       "kit": "vet-clinic",
       "title": "Examination room wall station",
-      "description": "Wall panel with organized tool hooks, glove box, dispenser and a shallow utility shelf. Editable overall scale and asset color.",
+      "description": "Wall panel with organized tool hooks, glove box, dispenser and a shallow utility shelf. Material controls: powder-coated steel, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -235156,7 +235520,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/exam-wall-station.kcad.ts",
       "preview": "/assets/vet-clinic-exam-wall-station.png",
-      "sourceSha256": "d655e15a60cb0d34816410d3956cddccb4b0e5c3b7db9e9f8d5f5f9fc3c8a0d3",
+      "sourceSha256": "0ab23dbeb8e8faf881e59499db41a55298d1d20a8e6a57205987adde6702a589",
       "triangleBudget": 1800,
       "params": [
         {
@@ -235169,13 +235533,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#607b7b",
-          "label": "Asset color"
+          "default": "#829687",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "stainlessSteelColor": "#8daeb0"
+        }
+      },
       "stats": {
         "triangles": 280,
         "sizeM": [
@@ -235188,13 +235566,20 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#607b7b",
+          "name": "paintedSteelColor",
+          "color": "#829687",
           "parts": [
             "backplate",
             "upper-shelf",
             "glove-box",
-            "dispenser",
+            "dispenser"
+          ],
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
             "lower-rail",
             "tool-hook-a",
             "tool-hook-b",
@@ -235202,7 +235587,7 @@
             "tool-hook-d",
             "tool-hook-e"
           ],
-          "param": "color"
+          "param": "stainlessSteelColor"
         }
       ]
     },
@@ -235210,7 +235595,7 @@
       "id": "fluid-warmer",
       "kit": "vet-clinic",
       "title": "Veterinary fluid warmer",
-      "description": "Counter-top fluid warmer with an insulated housing, front access slot and control panel. Editable overall scale and asset color.",
+      "description": "Counter-top fluid warmer with an insulated housing, front access slot and control panel. Material controls: tinted glass and displays, powder-coated steel, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -235232,7 +235617,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/fluid-warmer.kcad.ts",
       "preview": "/assets/vet-clinic-fluid-warmer.png",
-      "sourceSha256": "2d165b9b04082e9d14873c637dc812bbf28ec35999c6329210360755f048ae8b",
+      "sourceSha256": "5330e825c55626c91f0321448ae385a6b1918618d3f0ecfba95078f0edcdbc3e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -235245,13 +235630,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#718486",
-          "label": "Asset color"
+          "default": "#718b89",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "glassColor",
+          "type": "color",
+          "default": "#4e8290",
+          "label": "Tinted glass and displays"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "glassColor": "#3f7480"
+        }
+      },
       "stats": {
         "triangles": 128,
         "sizeM": [
@@ -235264,19 +235669,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#718486",
+          "name": "paintedSteelColor",
+          "color": "#718b89",
           "parts": [
             "housing",
             "front-door",
-            "door-window",
             "control-panel",
             "temperature-knob",
             "top-lid",
-            "handle",
             "power-base"
           ],
-          "param": "color"
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "glassColor",
+          "color": "#4e8290",
+          "parts": [
+            "door-window"
+          ],
+          "param": "glassColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
+            "handle"
+          ],
+          "param": "stainlessSteelColor"
         }
       ]
     },
@@ -235284,7 +235703,7 @@
       "id": "grooming-bath-tub",
       "kit": "vet-clinic",
       "title": "Veterinary grooming bath tub",
-      "description": "Raised wash tub with splash rim, access ramp, faucet and handheld sprayer support. Editable overall scale and asset color.",
+      "description": "Raised wash tub with splash rim, access ramp, faucet and handheld sprayer support. Material controls: powder-coated steel, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -235307,7 +235726,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/grooming-bath-tub.kcad.ts",
       "preview": "/assets/vet-clinic-grooming-bath-tub.png",
-      "sourceSha256": "a65d6885567855bea74cc880857e5c404d638b76a2acc5c1f8b1c6b42b3d2fc9",
+      "sourceSha256": "ca042b92189890bec637c493cf2ab14b133e1a6e8a3e21584598b043799970d9",
       "triangleBudget": 1800,
       "params": [
         {
@@ -235320,13 +235739,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#7d8a84",
-          "label": "Asset color"
+          "default": "#6e8994",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "stainlessSteelColor": "#8daeb0"
+        }
+      },
       "stats": {
         "triangles": 188,
         "sizeM": [
@@ -235339,10 +235772,18 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7d8a84",
+          "name": "paintedSteelColor",
+          "color": "#6e8994",
           "parts": [
             "tub-shell",
+            "access-ramp"
+          ],
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
             "inner-basin",
             "front-rim",
             "rear-rim",
@@ -235352,11 +235793,10 @@
             "leg-right-front",
             "leg-left-back",
             "leg-right-back",
-            "access-ramp",
             "faucet-riser",
             "sprayer-handle"
           ],
-          "param": "color"
+          "param": "stainlessSteelColor"
         }
       ]
     },
@@ -235364,7 +235804,7 @@
       "id": "hard-sided-pet-carrier",
       "kit": "vet-clinic",
       "title": "Hard-sided pet carrier",
-      "description": "Portable carrier with a ventilated door, side walls, roof and carry handle. Editable overall scale and asset color.",
+      "description": "Portable carrier with a ventilated door, side walls, roof and carry handle. Material controls: molded polymer, rubber, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -235387,7 +235827,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/hard-sided-pet-carrier.kcad.ts",
       "preview": "/assets/vet-clinic-hard-sided-pet-carrier.png",
-      "sourceSha256": "c81d226e5488520d4000ba7176ccd748cf632fd0daa8edc27b15008b32c49c5a",
+      "sourceSha256": "84aa181cc4c0167a78face2e7f09646ae19d044e6f6de501c849692605b325f8",
       "triangleBudget": 1800,
       "params": [
         {
@@ -235400,13 +235840,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymerColor",
           "type": "color",
-          "default": "#8a7869",
-          "label": "Asset color"
+          "default": "#d3dfdc",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "rubberColor",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Rubber"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "polymerColor": "#e8ece8"
+        },
+        "softTeal": {
+          "polymerColor": "#9bbfc0",
+          "rubberColor": "#34464a"
+        }
+      },
       "stats": {
         "triangles": 252,
         "sizeM": [
@@ -235419,8 +235879,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8a7869",
+          "name": "polymerColor",
+          "color": "#d3dfdc",
           "parts": [
             "floor",
             "rear-wall",
@@ -235430,13 +235890,27 @@
             "door-top",
             "door-bottom",
             "door-left",
-            "door-right",
+            "door-right"
+          ],
+          "param": "polymerColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
             "door-bar-a",
             "door-bar-b",
-            "door-bar-c",
+            "door-bar-c"
+          ],
+          "param": "stainlessSteelColor"
+        },
+        {
+          "name": "rubberColor",
+          "color": "#30383b",
+          "parts": [
             "carry-handle"
           ],
-          "param": "color"
+          "param": "rubberColor"
         }
       ]
     },
@@ -235444,7 +235918,7 @@
       "id": "hematology-analyzer",
       "kit": "vet-clinic",
       "title": "Veterinary hematology analyzer",
-      "description": "Compact blood-cell analyzer with a front sample loader and raised reagent bay. Editable overall scale and asset color.",
+      "description": "Compact blood-cell analyzer with a front sample loader and raised reagent bay. Material controls: tinted glass and displays, powder-coated steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -235466,7 +235940,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/hematology-analyzer.kcad.ts",
       "preview": "/assets/vet-clinic-hematology-analyzer.png",
-      "sourceSha256": "9135bcb4ade9ec81df32ac33c2c81b7eb21d5fb45c0db945ecb583b230d99cd5",
+      "sourceSha256": "d2d9ddccb59abad426da8d5f4b7a5da69545282ea573d4073213fcb1829c76ec",
       "triangleBudget": 1800,
       "params": [
         {
@@ -235479,13 +235953,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#62787f",
-          "label": "Asset color"
+          "default": "#6e8994",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "glassColor",
+          "type": "color",
+          "default": "#4e8290",
+          "label": "Tinted glass and displays"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "glassColor": "#3f7480"
+        }
+      },
       "stats": {
         "triangles": 96,
         "sizeM": [
@@ -235498,8 +235986,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#62787f",
+          "name": "paintedSteelColor",
+          "color": "#6e8994",
           "parts": [
             "base",
             "housing",
@@ -235507,10 +235995,17 @@
             "loader-platform",
             "sample-tube-a",
             "sample-tube-b",
-            "front-display",
             "service-door"
           ],
-          "param": "color"
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "glassColor",
+          "color": "#4e8290",
+          "parts": [
+            "front-display"
+          ],
+          "param": "glassColor"
         }
       ]
     },
@@ -235518,7 +236013,7 @@
       "id": "high-velocity-dryer-stand",
       "kit": "vet-clinic",
       "title": "Veterinary grooming dryer stand",
-      "description": "Mobile forced-air dryer stand with a weighted base, adjustable boom and shaped outlet nozzle. Editable overall scale and asset color.",
+      "description": "Mobile forced-air dryer stand with a weighted base, adjustable boom and shaped outlet nozzle. Material controls: powder-coated steel, rubber, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -235541,7 +236036,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/high-velocity-dryer-stand.kcad.ts",
       "preview": "/assets/vet-clinic-high-velocity-dryer-stand.png",
-      "sourceSha256": "93953550eaa0f8915159e6ba8e4ceef4d233e00e4f6ce0a391aa25bc92b7b881",
+      "sourceSha256": "afce257ff5545a451bdce79e25a09a92213f3b274f3748dcfd3f958798a29657",
       "triangleBudget": 1800,
       "params": [
         {
@@ -235554,13 +236049,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#667c7c",
-          "label": "Asset color"
+          "default": "#6e8994",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "rubberColor",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Rubber"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "rubberColor": "#34464a"
+        }
+      },
       "stats": {
         "triangles": 324,
         "sizeM": [
@@ -235573,14 +236088,28 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#667c7c",
+          "name": "rubberColor",
+          "color": "#30383b",
           "parts": [
             "base-foot-x",
             "base-foot-y",
             "caster-a",
-            "caster-b",
-            "mast",
+            "caster-b"
+          ],
+          "param": "rubberColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
+            "mast"
+          ],
+          "param": "stainlessSteelColor"
+        },
+        {
+          "name": "paintedSteelColor",
+          "color": "#6e8994",
+          "parts": [
             "dryer-housing",
             "control-panel",
             "boom",
@@ -235588,7 +236117,7 @@
             "hose-segment-b",
             "air-nozzle"
           ],
-          "param": "color"
+          "param": "paintedSteelColor"
         }
       ]
     },
@@ -235596,7 +236125,7 @@
       "id": "isolation-kennel",
       "kit": "vet-clinic",
       "title": "Veterinary isolation kennel",
-      "description": "Single isolation bay with solid side panels, a framed barred door and status card. Editable overall scale and asset color.",
+      "description": "Single isolation bay with solid side panels, a framed barred door and status card. Material controls: tinted glass and displays, powder-coated steel, molded polymer, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -235618,7 +236147,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/isolation-kennel.kcad.ts",
       "preview": "/assets/vet-clinic-isolation-kennel.png",
-      "sourceSha256": "4e1c316f1672db9f95fbed62f0a2337899396fb8166f91321e211648034ed29b",
+      "sourceSha256": "99f83e039aa8f186563792810fb693737930f027332bf8ca3a995a24fcf9dfa0",
       "triangleBudget": 1800,
       "params": [
         {
@@ -235631,13 +236160,39 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#788580",
-          "label": "Asset color"
+          "default": "#6e8994",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "glassColor",
+          "type": "color",
+          "default": "#4e8290",
+          "label": "Tinted glass and displays"
+        },
+        {
+          "name": "polymerColor",
+          "type": "color",
+          "default": "#d3dfdc",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "glassColor": "#3f7480"
+        }
+      },
       "stats": {
         "triangles": 204,
         "sizeM": [
@@ -235650,28 +236205,49 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#788580",
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
           "parts": [
             "floor-pan",
-            "rear-panel",
-            "left-panel",
-            "right-panel",
-            "top-cap",
-            "door-top",
-            "door-bottom",
-            "door-left",
-            "door-right",
             "door-bar-0",
             "door-bar-1",
             "door-bar-2",
             "door-bar-3",
             "door-bar-4",
             "door-bar-5",
-            "door-bar-6",
+            "door-bar-6"
+          ],
+          "param": "stainlessSteelColor"
+        },
+        {
+          "name": "polymerColor",
+          "color": "#d3dfdc",
+          "parts": [
+            "rear-panel",
+            "left-panel",
+            "right-panel"
+          ],
+          "param": "polymerColor"
+        },
+        {
+          "name": "paintedSteelColor",
+          "color": "#6e8994",
+          "parts": [
+            "top-cap",
+            "door-top",
+            "door-bottom",
+            "door-left",
+            "door-right"
+          ],
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "glassColor",
+          "color": "#4e8290",
+          "parts": [
             "status-card-holder"
           ],
-          "param": "color"
+          "param": "glassColor"
         }
       ]
     },
@@ -235679,7 +236255,7 @@
       "id": "kennel-bowl-rail",
       "kit": "vet-clinic",
       "title": "Kennel feeding bowl rail",
-      "description": "Wall-mounted feeding rail with three removable bowls and height-adjustable brackets. Editable overall scale and asset color.",
+      "description": "Wall-mounted feeding rail with three removable bowls and height-adjustable brackets. Material controls: powder-coated steel, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "wall",
       "tags": [
@@ -235703,7 +236279,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/kennel-bowl-rail.kcad.ts",
       "preview": "/assets/vet-clinic-kennel-bowl-rail.png",
-      "sourceSha256": "38d81dfedd56237a29eecf326cc55aa022bb3b263c9592722b3ad405f8d3c9f9",
+      "sourceSha256": "a3c564b30923f90815eb049bd7f47d59ab3cd6e4086af4ea9ec5f04def9ed328",
       "triangleBudget": 1800,
       "params": [
         {
@@ -235716,13 +236292,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#70817e",
-          "label": "Asset color"
+          "default": "#829687",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "stainlessSteelColor": "#8daeb0"
+        }
+      },
       "stats": {
         "triangles": 228,
         "sizeM": [
@@ -235735,10 +236325,17 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#70817e",
+          "name": "paintedSteelColor",
+          "color": "#829687",
           "parts": [
-            "wall-rail",
+            "wall-rail"
+          ],
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
             "upper-channel",
             "lower-channel",
             "bowl-1",
@@ -235750,7 +236347,7 @@
             "adjuster-left",
             "adjuster-right"
           ],
-          "param": "color"
+          "param": "stainlessSteelColor"
         }
       ]
     },
@@ -235758,7 +236355,7 @@
       "id": "leash-hook-board",
       "kit": "vet-clinic",
       "title": "Leash and collar hook board",
-      "description": "Wall board with spaced pegs for leashes, collars and lead loops in a treatment area. Editable overall scale and asset color.",
+      "description": "Wall board with spaced pegs for leashes, collars and lead loops in a treatment area. Material controls: molded polymer, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -235783,7 +236380,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/leash-hook-board.kcad.ts",
       "preview": "/assets/vet-clinic-leash-hook-board.png",
-      "sourceSha256": "ad143d4672d1d9897e2654cc79a33e387a064784076d3e3b6883ee56a53978e2",
+      "sourceSha256": "2d6f5a626bcdb7e3bec3d0ba320e3f457a7ab8986a344a26e0bf9b7b5b144bc4",
       "triangleBudget": 1800,
       "params": [
         {
@@ -235796,13 +236393,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymerColor",
           "type": "color",
-          "default": "#596d70",
-          "label": "Asset color"
+          "default": "#d3dfdc",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "polymerColor": "#e8ece8"
+        },
+        "softTeal": {
+          "polymerColor": "#9bbfc0",
+          "stainlessSteelColor": "#8daeb0"
+        }
+      },
       "stats": {
         "triangles": 300,
         "sizeM": [
@@ -235815,11 +236426,18 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#596d70",
+          "name": "polymerColor",
+          "color": "#d3dfdc",
           "parts": [
             "backboard",
-            "top-cap",
+            "top-cap"
+          ],
+          "param": "polymerColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
             "lower-rail",
             "peg-1",
             "peg-2",
@@ -235828,7 +236446,7 @@
             "peg-5",
             "peg-6"
           ],
-          "param": "color"
+          "param": "stainlessSteelColor"
         }
       ]
     },
@@ -235836,7 +236454,7 @@
       "id": "mayo-instrument-stand",
       "kit": "vet-clinic",
       "title": "Mayo instrument stand",
-      "description": "Height-adjustable instrument tray on a narrow mobile base with four small casters. Editable overall scale and asset color.",
+      "description": "Height-adjustable instrument tray on a narrow mobile base with four small casters. Material controls: powder-coated steel, rubber, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -235859,7 +236477,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/mayo-instrument-stand.kcad.ts",
       "preview": "/assets/vet-clinic-mayo-instrument-stand.png",
-      "sourceSha256": "507e38c845c6b8d04338383326a6e60d74ad56006cbd920136a87e5f12a7c0ea",
+      "sourceSha256": "940789b3788ae77eee52dc5338e8f564cbe12f5c9335e821cd4759774d7ef0ba",
       "triangleBudget": 1800,
       "params": [
         {
@@ -235872,13 +236490,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#788986",
-          "label": "Asset color"
+          "default": "#718b89",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "rubberColor",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Rubber"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "rubberColor": "#34464a"
+        }
+      },
       "stats": {
         "triangles": 216,
         "sizeM": [
@@ -235891,13 +236529,18 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#788986",
+          "name": "paintedSteelColor",
+          "color": "#718b89",
           "parts": [
-            "base-spoke-x",
+            "base-spoke-x"
+          ],
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
             "base-spoke-y",
-            "caster-a",
-            "caster-b",
             "column",
             "height-clamp",
             "tray",
@@ -235905,7 +236548,16 @@
             "tray-lip-left",
             "tray-lip-right"
           ],
-          "param": "color"
+          "param": "stainlessSteelColor"
+        },
+        {
+          "name": "rubberColor",
+          "color": "#30383b",
+          "parts": [
+            "caster-a",
+            "caster-b"
+          ],
+          "param": "rubberColor"
         }
       ]
     },
@@ -235913,7 +236565,7 @@
       "id": "mobile-exam-light",
       "kit": "vet-clinic",
       "title": "Mobile examination light",
-      "description": "Adjustable lamp head on a weighted mobile base with a tall mast and offset arm. Editable overall scale and asset color.",
+      "description": "Adjustable lamp head on a weighted mobile base with a tall mast and offset arm. Material controls: powder-coated steel, rubber, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -235936,7 +236588,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/mobile-exam-light.kcad.ts",
       "preview": "/assets/vet-clinic-mobile-exam-light.png",
-      "sourceSha256": "ec0dbff8e8f17cfa4156642f03939afe2f602b2942fa3afe339b441d9fe8e552",
+      "sourceSha256": "37a03460790b0d79be3fe7d7959009da30dee64a0f828e7eaa2658ff579da902",
       "triangleBudget": 1800,
       "params": [
         {
@@ -235949,13 +236601,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#80918e",
-          "label": "Asset color"
+          "default": "#8e9991",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "rubberColor",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Rubber"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "rubberColor": "#34464a"
+        }
+      },
       "stats": {
         "triangles": 356,
         "sizeM": [
@@ -235968,22 +236640,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#80918e",
+          "name": "paintedSteelColor",
+          "color": "#8e9991",
           "parts": [
             "base-disc",
+            "joint-a",
+            "lamp-head"
+          ],
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "rubberColor",
+          "color": "#30383b",
+          "parts": [
             "base-foot-a",
             "base-foot-b",
             "caster-a",
-            "caster-b",
+            "caster-b"
+          ],
+          "param": "rubberColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
             "mast",
-            "joint-a",
             "upper-arm",
             "head-yoke",
-            "lamp-head",
             "lamp-handle"
           ],
-          "param": "color"
+          "param": "stainlessSteelColor"
         }
       ]
     },
@@ -235991,7 +236677,7 @@
       "id": "mobile-surgical-light",
       "kit": "vet-clinic",
       "title": "Mobile surgical light",
-      "description": "Mobile multi-head procedure light with a floor mast and articulated overhead arm. Editable overall scale and asset color.",
+      "description": "Mobile multi-head procedure light with a floor mast and articulated overhead arm. Material controls: tinted glass and displays, powder-coated steel, rubber, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -236014,7 +236700,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/mobile-surgical-light.kcad.ts",
       "preview": "/assets/vet-clinic-mobile-surgical-light.png",
-      "sourceSha256": "b6a146e22ee55b56f65e6684a9735ebbe00fb61ed709ea69a14391efd2016436",
+      "sourceSha256": "5e5f84b263b0c277dfa9f9755069b8a9c8f406312ebf0c903838f4fdd2f5c5ef",
       "triangleBudget": 1800,
       "params": [
         {
@@ -236027,13 +236713,39 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#83918a",
-          "label": "Asset color"
+          "default": "#6e8994",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "glassColor",
+          "type": "color",
+          "default": "#4e8290",
+          "label": "Tinted glass and displays"
+        },
+        {
+          "name": "rubberColor",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Rubber"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "glassColor": "#3f7480"
+        }
+      },
       "stats": {
         "triangles": 488,
         "sizeM": [
@@ -236046,25 +236758,46 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#83918a",
+          "name": "paintedSteelColor",
+          "color": "#6e8994",
           "parts": [
             "base-cross-x",
             "base-cross-y",
+            "light-head"
+          ],
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "rubberColor",
+          "color": "#30383b",
+          "parts": [
             "caster-a",
             "caster-b",
-            "caster-c",
+            "caster-c"
+          ],
+          "param": "rubberColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
             "mast",
             "arm-lower",
             "arm-upper",
-            "lamp-yoke",
-            "light-head",
+            "lamp-yoke"
+          ],
+          "param": "stainlessSteelColor"
+        },
+        {
+          "name": "glassColor",
+          "color": "#4e8290",
+          "parts": [
             "lamp-lens-1",
             "lamp-lens-2",
             "lamp-lens-3",
             "lamp-lens-4"
           ],
-          "param": "color"
+          "param": "glassColor"
         }
       ]
     },
@@ -236072,7 +236805,7 @@
       "id": "mobile-ultrasound-cart",
       "kit": "vet-clinic",
       "title": "Mobile ultrasound cart",
-      "description": "Compact imaging cart with a console, angled display, probe cups and twin rear handles. Editable overall scale and asset color.",
+      "description": "Compact imaging cart with a console, angled display, probe cups and twin rear handles. Material controls: tinted glass and displays, powder-coated steel, rubber, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -236095,7 +236828,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/mobile-ultrasound-cart.kcad.ts",
       "preview": "/assets/vet-clinic-mobile-ultrasound-cart.png",
-      "sourceSha256": "6e5826a46881ba60c0d60a459a026f77d3687977dd8bcb75300e914877e4088c",
+      "sourceSha256": "e93ac64e6af98111ae317026a4ea23e005004007be7ecf89297749e6fc592e39",
       "triangleBudget": 1800,
       "params": [
         {
@@ -236108,13 +236841,39 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#70858b",
-          "label": "Asset color"
+          "default": "#829687",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "glassColor",
+          "type": "color",
+          "default": "#4e8290",
+          "label": "Tinted glass and displays"
+        },
+        {
+          "name": "rubberColor",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Rubber"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "glassColor": "#3f7480"
+        }
+      },
       "stats": {
         "triangles": 292,
         "sizeM": [
@@ -236127,22 +236886,43 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#70858b",
+          "name": "paintedSteelColor",
+          "color": "#829687",
           "parts": [
             "base-platform",
-            "wheel-left",
-            "wheel-right",
-            "column",
             "console-body",
             "control-panel",
-            "display",
-            "left-handle",
-            "right-handle",
             "probe-cup-a",
             "probe-cup-b"
           ],
-          "param": "color"
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "rubberColor",
+          "color": "#30383b",
+          "parts": [
+            "wheel-left",
+            "wheel-right"
+          ],
+          "param": "rubberColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
+            "column",
+            "left-handle",
+            "right-handle"
+          ],
+          "param": "stainlessSteelColor"
+        },
+        {
+          "name": "glassColor",
+          "color": "#4e8290",
+          "parts": [
+            "display"
+          ],
+          "param": "glassColor"
         }
       ]
     },
@@ -236150,7 +236930,7 @@
       "id": "multi-channel-infusion-pump",
       "kit": "vet-clinic",
       "title": "Multi-channel infusion pump stand",
-      "description": "Treatment stand carrying two compact infusion pump modules below a multi-hook rail. Editable overall scale and asset color.",
+      "description": "Treatment stand carrying two compact infusion pump modules below a multi-hook rail. Material controls: powder-coated steel, rubber, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -236174,7 +236954,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/multi-channel-infusion-pump.kcad.ts",
       "preview": "/assets/vet-clinic-multi-channel-infusion-pump.png",
-      "sourceSha256": "be3afe92ba34c65ac8e746f78edde0f6a185fedc267a69f85a56cda7bc620819",
+      "sourceSha256": "5a75b2ac5e7d359bcb052c785641bfb76d4556a65e54354e5e0c02da66aaac9c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -236187,13 +236967,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#688087",
-          "label": "Asset color"
+          "default": "#7d8d96",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "rubberColor",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Rubber"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "rubberColor": "#34464a"
+        }
+      },
       "stats": {
         "triangles": 304,
         "sizeM": [
@@ -236206,23 +237006,37 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#688087",
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
           "parts": [
             "base-spoke-x",
             "base-spoke-y",
-            "caster-a",
-            "caster-b",
-            "upright",
-            "pump-upper",
-            "pump-lower",
-            "pump-face-upper",
-            "pump-face-lower",
             "hook-bar",
             "hook-left",
             "hook-right"
           ],
-          "param": "color"
+          "param": "stainlessSteelColor"
+        },
+        {
+          "name": "rubberColor",
+          "color": "#30383b",
+          "parts": [
+            "caster-a",
+            "caster-b"
+          ],
+          "param": "rubberColor"
+        },
+        {
+          "name": "paintedSteelColor",
+          "color": "#7d8d96",
+          "parts": [
+            "upright",
+            "pump-upper",
+            "pump-lower",
+            "pump-face-upper",
+            "pump-face-lower"
+          ],
+          "param": "paintedSteelColor"
         }
       ]
     },
@@ -236230,7 +237044,7 @@
       "id": "multiparameter-monitor",
       "kit": "vet-clinic",
       "title": "Veterinary patient monitor",
-      "description": "Bedside monitor with a stable floor stand, display frame and control knob row. Editable overall scale and asset color.",
+      "description": "Bedside monitor with a stable floor stand, display frame and control knob row. Material controls: tinted glass and displays, powder-coated steel, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -236252,7 +237066,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/multiparameter-monitor.kcad.ts",
       "preview": "/assets/vet-clinic-multiparameter-monitor.png",
-      "sourceSha256": "e72dc3227fc49210d07f165384542a5f15788a6ce56a4822cae895df2fbb81f7",
+      "sourceSha256": "8e9a401d2a1b95610744890083953f3075217dcbed859d4f08dee710318cf03d",
       "triangleBudget": 1800,
       "params": [
         {
@@ -236265,13 +237079,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#596f78",
-          "label": "Asset color"
+          "default": "#829687",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "glassColor",
+          "type": "color",
+          "default": "#4e8290",
+          "label": "Tinted glass and displays"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "glassColor": "#3f7480"
+        }
+      },
       "stats": {
         "triangles": 312,
         "sizeM": [
@@ -236284,13 +237118,19 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#596f78",
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
           "parts": [
             "stand-base",
-            "stand-column",
+            "stand-column"
+          ],
+          "param": "stainlessSteelColor"
+        },
+        {
+          "name": "paintedSteelColor",
+          "color": "#829687",
+          "parts": [
             "monitor-housing",
-            "screen",
             "lower-control-strip",
             "control-a",
             "control-b",
@@ -236298,7 +237138,15 @@
             "control-d",
             "control-e"
           ],
-          "param": "color"
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "glassColor",
+          "color": "#4e8290",
+          "parts": [
+            "screen"
+          ],
+          "param": "glassColor"
         }
       ]
     },
@@ -236306,7 +237154,7 @@
       "id": "oxygen-therapy-cage",
       "kit": "vet-clinic",
       "title": "Veterinary oxygen therapy cage",
-      "description": "Sealed care cage with a gasketed door frame, flow-control panel and a low wheeled base. Editable overall scale and asset color.",
+      "description": "Sealed care cage with a gasketed door frame, flow-control panel and a low wheeled base. Material controls: tinted glass and displays, powder-coated steel, molded polymer, rubber. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -236329,7 +237177,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/oxygen-therapy-cage.kcad.ts",
       "preview": "/assets/vet-clinic-oxygen-therapy-cage.png",
-      "sourceSha256": "065d9779d8a76455367f9a1d996b13977b1b4e9ef80688e26621d44a934d755d",
+      "sourceSha256": "8c5a011d753b536f51de457bdbb272a2d0d3c7dfa2ad608480f975688b16282d",
       "triangleBudget": 1800,
       "params": [
         {
@@ -236342,13 +237190,39 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#657b81",
-          "label": "Asset color"
+          "default": "#718b89",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "glassColor",
+          "type": "color",
+          "default": "#4e8290",
+          "label": "Tinted glass and displays"
+        },
+        {
+          "name": "polymerColor",
+          "type": "color",
+          "default": "#d3dfdc",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "rubberColor",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "glassColor": "#3f7480"
+        }
+      },
       "stats": {
         "triangles": 248,
         "sizeM": [
@@ -236361,21 +237235,42 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#657b81",
+          "name": "paintedSteelColor",
+          "color": "#718b89",
           "parts": [
             "base-cabinet",
-            "chamber",
             "door-frame",
-            "door-window",
             "lower-kick",
             "flow-panel",
             "flow-meter",
-            "inlet-port",
+            "inlet-port"
+          ],
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "polymerColor",
+          "color": "#d3dfdc",
+          "parts": [
+            "chamber"
+          ],
+          "param": "polymerColor"
+        },
+        {
+          "name": "glassColor",
+          "color": "#4e8290",
+          "parts": [
+            "door-window"
+          ],
+          "param": "glassColor"
+        },
+        {
+          "name": "rubberColor",
+          "color": "#30383b",
+          "parts": [
             "caster-a",
             "caster-b"
           ],
-          "param": "color"
+          "param": "rubberColor"
         }
       ]
     },
@@ -236383,7 +237278,7 @@
       "id": "patient-recovery-incubator",
       "kit": "vet-clinic",
       "title": "Patient recovery incubator",
-      "description": "Compact recovery enclosure with a raised access hood, internal shelf and front controller. Editable overall scale and asset color.",
+      "description": "Compact recovery enclosure with a raised access hood, internal shelf and front controller. Material controls: tinted glass and displays, powder-coated steel, rubber, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -236406,7 +237301,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/patient-recovery-incubator.kcad.ts",
       "preview": "/assets/vet-clinic-patient-recovery-incubator.png",
-      "sourceSha256": "b98bf630a44264c0302d81759e6e1f6f3e20e1afe4c71be28ac328dd41e906d9",
+      "sourceSha256": "f4069ac63585ca86c9fc44ece116daa37adb429bcdeedc347e15486d017665f8",
       "triangleBudget": 1800,
       "params": [
         {
@@ -236419,13 +237314,39 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#7b8983",
-          "label": "Asset color"
+          "default": "#8e9991",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "glassColor",
+          "type": "color",
+          "default": "#4e8290",
+          "label": "Tinted glass and displays"
+        },
+        {
+          "name": "rubberColor",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Rubber"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "glassColor": "#3f7480"
+        }
+      },
       "stats": {
         "triangles": 184,
         "sizeM": [
@@ -236438,21 +237359,42 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7b8983",
+          "name": "rubberColor",
+          "color": "#30383b",
           "parts": [
             "wheeled-base",
             "caster-a",
-            "caster-b",
+            "caster-b"
+          ],
+          "param": "rubberColor"
+        },
+        {
+          "name": "paintedSteelColor",
+          "color": "#8e9991",
+          "parts": [
             "lower-chamber",
             "upper-hood",
             "front-access-door",
-            "door-window",
+            "controller"
+          ],
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "glassColor",
+          "color": "#4e8290",
+          "parts": [
+            "door-window"
+          ],
+          "param": "glassColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
             "inside-shelf",
-            "controller",
             "top-handle"
           ],
-          "param": "color"
+          "param": "stainlessSteelColor"
         }
       ]
     },
@@ -236460,7 +237402,7 @@
       "id": "pet-floor-scale",
       "kit": "vet-clinic",
       "title": "Veterinary floor scale",
-      "description": "Low platform scale with a raised readout post for weighing small and medium animals. Editable overall scale and asset color.",
+      "description": "Low platform scale with a raised readout post for weighing small and medium animals. Material controls: tinted glass and displays, powder-coated steel, rubber, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -236482,7 +237424,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/pet-floor-scale.kcad.ts",
       "preview": "/assets/vet-clinic-pet-floor-scale.png",
-      "sourceSha256": "4c658a2d3c1d6664f094cd8cb17623bb7dda79c268f557dc7002f9c3231e9ebe",
+      "sourceSha256": "7ce063c16d8400bcc5d1cb6ec3f22fe24adc23b48c00d269179208a8243c58f5",
       "triangleBudget": 1800,
       "params": [
         {
@@ -236495,13 +237437,39 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#778b8e",
-          "label": "Asset color"
+          "default": "#829687",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "glassColor",
+          "type": "color",
+          "default": "#4e8290",
+          "label": "Tinted glass and displays"
+        },
+        {
+          "name": "rubberColor",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Rubber"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "glassColor": "#3f7480"
+        }
+      },
       "stats": {
         "triangles": 256,
         "sizeM": [
@@ -236514,19 +237482,40 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#778b8e",
+          "name": "paintedSteelColor",
+          "color": "#829687",
           "parts": [
-            "weighing-platform",
+            "weighing-platform"
+          ],
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "rubberColor",
+          "color": "#30383b",
+          "parts": [
             "foot-a",
             "foot-b",
             "foot-c",
-            "foot-d",
-            "readout-post",
+            "foot-d"
+          ],
+          "param": "rubberColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
+            "readout-post"
+          ],
+          "param": "stainlessSteelColor"
+        },
+        {
+          "name": "glassColor",
+          "color": "#4e8290",
+          "parts": [
             "display-housing",
             "display-face"
           ],
-          "param": "color"
+          "param": "glassColor"
         }
       ]
     },
@@ -236534,7 +237523,7 @@
       "id": "radiography-tube-stand",
       "kit": "vet-clinic",
       "title": "Veterinary radiography tube stand",
-      "description": "Mobile stand with an upright column, reach arm, counterweight and compact tube head. Editable overall scale and asset color.",
+      "description": "Mobile stand with an upright column, reach arm, counterweight and compact tube head. Material controls: tinted glass and displays, powder-coated steel, rubber, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -236557,7 +237546,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/radiography-tube-stand.kcad.ts",
       "preview": "/assets/vet-clinic-radiography-tube-stand.png",
-      "sourceSha256": "d299bfe71920419b1c8d654ecf5be5106393c1eb5978116d2654775e9609e815",
+      "sourceSha256": "07dd59553c785ad4418e4660fedd68f40f86051c7933cb6bb9c8327c070a7fb0",
       "triangleBudget": 1800,
       "params": [
         {
@@ -236570,13 +237559,39 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#687d82",
-          "label": "Asset color"
+          "default": "#66838a",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "glassColor",
+          "type": "color",
+          "default": "#4e8290",
+          "label": "Tinted glass and displays"
+        },
+        {
+          "name": "rubberColor",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Rubber"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "glassColor": "#3f7480"
+        }
+      },
       "stats": {
         "triangles": 248,
         "sizeM": [
@@ -236589,21 +237604,42 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#687d82",
+          "name": "rubberColor",
+          "color": "#30383b",
           "parts": [
             "base-foot-n",
             "base-foot-e",
             "wheel-a",
-            "wheel-b",
+            "wheel-b"
+          ],
+          "param": "rubberColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
             "column",
             "reach-arm",
             "counterweight",
-            "tube-head",
-            "tube-face",
             "handle"
           ],
-          "param": "color"
+          "param": "stainlessSteelColor"
+        },
+        {
+          "name": "paintedSteelColor",
+          "color": "#66838a",
+          "parts": [
+            "tube-head"
+          ],
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "glassColor",
+          "color": "#4e8290",
+          "parts": [
+            "tube-face"
+          ],
+          "param": "glassColor"
         }
       ]
     },
@@ -236611,7 +237647,7 @@
       "id": "reception-check-in-counter",
       "kit": "vet-clinic",
       "title": "Veterinary check-in counter",
-      "description": "Reception counter with a client ledge, staff work surface, monitor and keyboard. Editable overall scale and asset color.",
+      "description": "Reception counter with a client ledge, staff work surface, monitor and keyboard. Material controls: tinted glass and displays, powder-coated steel, molded polymer, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -236633,7 +237669,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/reception-check-in-counter.kcad.ts",
       "preview": "/assets/vet-clinic-reception-check-in-counter.png",
-      "sourceSha256": "6fa7919a1cafcd0f7b81028ff9128c96cdfe8f78d96cd97ee69e937394400cef",
+      "sourceSha256": "ff059dd0be888632007e1c1f86d91d4e02166e3f6de98796d3e05168e27698a9",
       "triangleBudget": 1800,
       "params": [
         {
@@ -236646,13 +237682,39 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#75888c",
-          "label": "Asset color"
+          "default": "#8e9991",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "glassColor",
+          "type": "color",
+          "default": "#4e8290",
+          "label": "Tinted glass and displays"
+        },
+        {
+          "name": "polymerColor",
+          "type": "color",
+          "default": "#d3dfdc",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "glassColor": "#3f7480"
+        }
+      },
       "stats": {
         "triangles": 84,
         "sizeM": [
@@ -236665,18 +237727,39 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#75888c",
+          "name": "paintedSteelColor",
+          "color": "#8e9991",
           "parts": [
             "front-plinth",
-            "transaction-counter",
-            "privacy-screen",
-            "monitor-base",
             "monitor-housing",
-            "keyboard",
             "drawer-front"
           ],
-          "param": "color"
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "polymerColor",
+          "color": "#d3dfdc",
+          "parts": [
+            "transaction-counter",
+            "keyboard"
+          ],
+          "param": "polymerColor"
+        },
+        {
+          "name": "glassColor",
+          "color": "#4e8290",
+          "parts": [
+            "privacy-screen"
+          ],
+          "param": "glassColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
+            "monitor-base"
+          ],
+          "param": "stainlessSteelColor"
         }
       ]
     },
@@ -236684,7 +237767,7 @@
       "id": "restraint-loop-stand",
       "kit": "vet-clinic",
       "title": "Animal restraint loop stand",
-      "description": "Freestanding restraint support with a broad weighted foot, upright post and multiple tie points. Editable overall scale and asset color.",
+      "description": "Freestanding restraint support with a broad weighted foot, upright post and multiple tie points. Material controls: powder-coated steel, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -236708,7 +237791,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/restraint-loop-stand.kcad.ts",
       "preview": "/assets/vet-clinic-restraint-loop-stand.png",
-      "sourceSha256": "ce6e7053767583870920b85d60a52a78446677d3d8f338403218e7f5cdcc37cc",
+      "sourceSha256": "73edf02e1353b58412b9724111f07c60ab9c93a4522fb052f2f7e663e4b1cad3",
       "triangleBudget": 1800,
       "params": [
         {
@@ -236721,13 +237804,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#677b7d",
-          "label": "Asset color"
+          "default": "#66838a",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "stainlessSteelColor": "#8daeb0"
+        }
+      },
       "stats": {
         "triangles": 256,
         "sizeM": [
@@ -236740,10 +237837,17 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#677b7d",
+          "name": "paintedSteelColor",
+          "color": "#66838a",
           "parts": [
-            "weighted-base",
+            "weighted-base"
+          ],
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
             "upright-post",
             "cross-arm",
             "end-hook-left",
@@ -236752,7 +237856,7 @@
             "tie-ring-right",
             "height-adjust-clamp"
           ],
-          "param": "color"
+          "param": "stainlessSteelColor"
         }
       ]
     },
@@ -236760,7 +237864,7 @@
       "id": "sample-prep-bench",
       "kit": "vet-clinic",
       "title": "Veterinary sample preparation bench",
-      "description": "Lab bench with drawers, tube rack and reagent bottles for a clinic diagnostics room. Editable overall scale and asset color.",
+      "description": "Lab bench with drawers, tube rack and reagent bottles for a clinic diagnostics room. Material controls: tinted glass and displays, powder-coated steel, molded polymer, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -236783,7 +237887,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/sample-prep-bench.kcad.ts",
       "preview": "/assets/vet-clinic-sample-prep-bench.png",
-      "sourceSha256": "1df0b6435bfe161ee4b41aa9f725dd05fbda17b15b8cb41b62f47b881f8f661e",
+      "sourceSha256": "1ba705e8842624a8a75ae9f035adbb5ebcc49ddd110299d3b15850d7f9ba7ab1",
       "triangleBudget": 1800,
       "params": [
         {
@@ -236796,13 +237900,39 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#7f8d88",
-          "label": "Asset color"
+          "default": "#829687",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "glassColor",
+          "type": "color",
+          "default": "#4e8290",
+          "label": "Tinted glass and displays"
+        },
+        {
+          "name": "polymerColor",
+          "type": "color",
+          "default": "#d3dfdc",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "glassColor": "#3f7480"
+        }
+      },
       "stats": {
         "triangles": 380,
         "sizeM": [
@@ -236815,15 +237945,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7f8d88",
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
           "parts": [
-            "worktop",
+            "worktop"
+          ],
+          "param": "stainlessSteelColor"
+        },
+        {
+          "name": "paintedSteelColor",
+          "color": "#829687",
+          "parts": [
             "cabinet-left",
             "cabinet-right",
             "drawer-left-top",
-            "drawer-right-top",
-            "tube-rack",
+            "drawer-right-top"
+          ],
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "polymerColor",
+          "color": "#d3dfdc",
+          "parts": [
+            "tube-rack"
+          ],
+          "param": "polymerColor"
+        },
+        {
+          "name": "glassColor",
+          "color": "#4e8290",
+          "parts": [
             "tube-0",
             "tube-1",
             "tube-2",
@@ -236832,7 +237983,7 @@
             "reagent-bottle-a",
             "reagent-bottle-b"
           ],
-          "param": "color"
+          "param": "glassColor"
         }
       ]
     },
@@ -236840,7 +237991,7 @@
       "id": "slide-storage-cabinet",
       "kit": "vet-clinic",
       "title": "Microscope slide storage cabinet",
-      "description": "Compact indexed drawer cabinet with labeled fronts and a raised top lip. Editable overall scale and asset color.",
+      "description": "Compact indexed drawer cabinet with labeled fronts and a raised top lip. Material controls: powder-coated steel, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -236864,7 +238015,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/slide-storage-cabinet.kcad.ts",
       "preview": "/assets/vet-clinic-slide-storage-cabinet.png",
-      "sourceSha256": "6ebf7e206da2ac775647ebe434e3bfd4d660eea979acd458f8f80622c27eae6a",
+      "sourceSha256": "cf067492e96f091a63aa708adf0c41cf117e6fa25d9e49ba5fc76aa491b19340",
       "triangleBudget": 1800,
       "params": [
         {
@@ -236877,13 +238028,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#687a7d",
-          "label": "Asset color"
+          "default": "#7d8d96",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "stainlessSteelColor": "#8daeb0"
+        }
+      },
       "stats": {
         "triangles": 132,
         "sizeM": [
@@ -236896,8 +238061,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#687a7d",
+          "name": "paintedSteelColor",
+          "color": "#7d8d96",
           "parts": [
             "cabinet-body",
             "top-cap",
@@ -236905,13 +238070,20 @@
             "drawer-1",
             "drawer-2",
             "drawer-3",
+            "label-strip"
+          ],
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
             "drawer-pull-0",
             "drawer-pull-1",
             "drawer-pull-2",
-            "drawer-pull-3",
-            "label-strip"
+            "drawer-pull-3"
           ],
-          "param": "color"
+          "param": "stainlessSteelColor"
         }
       ]
     },
@@ -236919,7 +238091,7 @@
       "id": "specimen-transport-cooler",
       "kit": "vet-clinic",
       "title": "Specimen transport cooler",
-      "description": "Insulated specimen case with a clamped lid, carry handle and temperature indicator. Editable overall scale and asset color.",
+      "description": "Insulated specimen case with a clamped lid, carry handle and temperature indicator. Material controls: tinted glass and displays, molded polymer, rubber, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -236942,7 +238114,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/specimen-transport-cooler.kcad.ts",
       "preview": "/assets/vet-clinic-specimen-transport-cooler.png",
-      "sourceSha256": "20744e47d2ff2a433b0631905805a9b66c08d9db70030e1edd33c066e687ccc8",
+      "sourceSha256": "f1a07d3bbd2f878e3d317e553279ee87d195c91c1b8b4d119aee3b9970ec78b8",
       "triangleBudget": 1800,
       "params": [
         {
@@ -236955,13 +238127,39 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymerColor",
           "type": "color",
-          "default": "#73888b",
-          "label": "Asset color"
+          "default": "#d3dfdc",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "glassColor",
+          "type": "color",
+          "default": "#4e8290",
+          "label": "Tinted glass and displays"
+        },
+        {
+          "name": "rubberColor",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Rubber"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "polymerColor": "#e8ece8"
+        },
+        "softTeal": {
+          "polymerColor": "#9bbfc0",
+          "glassColor": "#3f7480"
+        }
+      },
       "stats": {
         "triangles": 120,
         "sizeM": [
@@ -236974,21 +238172,42 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#73888b",
+          "name": "polymerColor",
+          "color": "#d3dfdc",
           "parts": [
             "cooler-body",
-            "lid",
+            "lid"
+          ],
+          "param": "polymerColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
             "lid-rim",
             "handle-left",
             "handle-right",
+            "latch-front"
+          ],
+          "param": "stainlessSteelColor"
+        },
+        {
+          "name": "rubberColor",
+          "color": "#30383b",
+          "parts": [
             "carry-grip",
-            "latch-front",
-            "temperature-window",
             "side-grip-left",
             "side-grip-right"
           ],
-          "param": "color"
+          "param": "rubberColor"
+        },
+        {
+          "name": "glassColor",
+          "color": "#4e8290",
+          "parts": [
+            "temperature-window"
+          ],
+          "param": "glassColor"
         }
       ]
     },
@@ -236996,7 +238215,7 @@
       "id": "stacked-feline-condo",
       "kit": "vet-clinic",
       "title": "Stacked feline condo",
-      "description": "Four-compartment feline housing unit with shelves, entry openings and a low climbing step. Editable overall scale and asset color.",
+      "description": "Four-compartment feline housing unit with shelves, entry openings and a low climbing step. Material controls: molded polymer, vinyl upholstery. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -237019,7 +238238,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/stacked-feline-condo.kcad.ts",
       "preview": "/assets/vet-clinic-stacked-feline-condo.png",
-      "sourceSha256": "268f9445262ac812781805c2298a186b16eb6192482d19620332731ab22ea9ed",
+      "sourceSha256": "2d282576ec078ab241f1b2353a95dfbf637709b5771ee6fe4f97f3cf3a5349ae",
       "triangleBudget": 1800,
       "params": [
         {
@@ -237032,13 +238251,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymerColor",
           "type": "color",
-          "default": "#8d7f70",
-          "label": "Asset color"
+          "default": "#d3dfdc",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "upholsteryColor",
+          "type": "color",
+          "default": "#62858a",
+          "label": "Vinyl upholstery"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "polymerColor": "#e8ece8"
+        },
+        "softTeal": {
+          "polymerColor": "#9bbfc0",
+          "upholsteryColor": "#47767d"
+        }
+      },
       "stats": {
         "triangles": 120,
         "sizeM": [
@@ -237051,8 +238284,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8d7f70",
+          "name": "polymerColor",
+          "color": "#d3dfdc",
           "parts": [
             "base",
             "rear-panel-lower",
@@ -237060,12 +238293,19 @@
             "outer-side-left",
             "center-divider",
             "outer-side-right",
+            "top-cap"
+          ],
+          "param": "polymerColor"
+        },
+        {
+          "name": "upholsteryColor",
+          "color": "#62858a",
+          "parts": [
             "middle-shelf",
-            "top-cap",
             "climb-step-one",
             "climb-step-two"
           ],
-          "param": "color"
+          "param": "upholsteryColor"
         }
       ]
     },
@@ -237073,7 +238313,7 @@
       "id": "stainless-kennel-bank",
       "kit": "vet-clinic",
       "title": "Three-bay stainless kennel bank",
-      "description": "Three-bay clinic kennel bank with tray fronts, shared frame and barred doors. Editable overall scale and asset color.",
+      "description": "Three-bay clinic kennel bank with tray fronts, shared frame and barred doors. Material controls: molded polymer, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -237097,7 +238337,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/stainless-kennel-bank.kcad.ts",
       "preview": "/assets/vet-clinic-stainless-kennel-bank.png",
-      "sourceSha256": "cc51de21509ee57df0ba9246191c1a12e58d09430e60b49ff0766123f923dc1e",
+      "sourceSha256": "8a13a7333d9717d55b368ca5c5a3753905df943f8f27e904d8355da8fe4b13cb",
       "triangleBudget": 1800,
       "params": [
         {
@@ -237110,13 +238350,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteelColor",
           "type": "color",
-          "default": "#7d8987",
-          "label": "Asset color"
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "polymerColor",
+          "type": "color",
+          "default": "#d3dfdc",
+          "label": "Molded polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "stainlessSteelColor": "#e1e6e3"
+        },
+        "softTeal": {
+          "stainlessSteelColor": "#8daeb0",
+          "polymerColor": "#9bbfc0"
+        }
+      },
       "stats": {
         "triangles": 372,
         "sizeM": [
@@ -237129,10 +238383,17 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7d8987",
+          "name": "polymerColor",
+          "color": "#d3dfdc",
           "parts": [
-            "base-plinth",
+            "base-plinth"
+          ],
+          "param": "polymerColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
             "roof",
             "rear-panel",
             "left-side",
@@ -237164,7 +238425,7 @@
             "tray-center",
             "tray-right"
           ],
-          "param": "color"
+          "param": "stainlessSteelColor"
         }
       ]
     },
@@ -237172,7 +238433,7 @@
       "id": "surgical-scrub-sink",
       "kit": "vet-clinic",
       "title": "Surgical scrub sink",
-      "description": "Deep wash basin with backsplash, twin taps, four legs and a lower foot control. Editable overall scale and asset color.",
+      "description": "Deep wash basin with backsplash, twin taps, four legs and a lower foot control. Material controls: rubber, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -237195,7 +238456,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/surgical-scrub-sink.kcad.ts",
       "preview": "/assets/vet-clinic-surgical-scrub-sink.png",
-      "sourceSha256": "8b05e0eff29faa14a5a93b70a483c95086a4190cdb87eef1601584585068ad96",
+      "sourceSha256": "841713609c8e25c28e697433bcb16e7466fe85fe22f97dfa2a056ec519f86579",
       "triangleBudget": 1800,
       "params": [
         {
@@ -237208,13 +238469,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteelColor",
           "type": "color",
-          "default": "#82908d",
-          "label": "Asset color"
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubberColor",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "stainlessSteelColor": "#e1e6e3"
+        },
+        "softTeal": {
+          "stainlessSteelColor": "#8daeb0",
+          "rubberColor": "#34464a"
+        }
+      },
       "stats": {
         "triangles": 228,
         "sizeM": [
@@ -237227,8 +238502,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#82908d",
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
           "parts": [
             "basin-shell",
             "basin-rim",
@@ -237239,10 +238514,17 @@
             "leg-right-back",
             "tap-left",
             "tap-right",
-            "drain",
+            "drain"
+          ],
+          "param": "stainlessSteelColor"
+        },
+        {
+          "name": "rubberColor",
+          "color": "#30383b",
+          "parts": [
             "foot-control"
           ],
-          "param": "color"
+          "param": "rubberColor"
         }
       ]
     },
@@ -237250,7 +238532,7 @@
       "id": "surgical-suction-unit",
       "kit": "vet-clinic",
       "title": "Veterinary surgical suction unit",
-      "description": "Mobile suction cart with collection canister, gauge, control housing and hose outlet. Editable overall scale and asset color.",
+      "description": "Mobile suction cart with collection canister, gauge, control housing and hose outlet. Material controls: tinted glass and displays, powder-coated steel, rubber, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -237273,7 +238555,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/surgical-suction-unit.kcad.ts",
       "preview": "/assets/vet-clinic-surgical-suction-unit.png",
-      "sourceSha256": "6c53a00649769e6e567bdff2b04449c3e9c65a5b26b577aaf5f6587136bb9307",
+      "sourceSha256": "e88ad56bd4a00e5f46de6465f1e3ba5e196a205e29d094442393c1fa7c348553",
       "triangleBudget": 1800,
       "params": [
         {
@@ -237286,13 +238568,39 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#6b8082",
-          "label": "Asset color"
+          "default": "#829687",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "glassColor",
+          "type": "color",
+          "default": "#4e8290",
+          "label": "Tinted glass and displays"
+        },
+        {
+          "name": "rubberColor",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Rubber"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "glassColor": "#3f7480"
+        }
+      },
       "stats": {
         "triangles": 312,
         "sizeM": [
@@ -237305,21 +238613,42 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6b8082",
+          "name": "paintedSteelColor",
+          "color": "#829687",
           "parts": [
             "cart-base",
-            "wheel-a",
-            "wheel-b",
             "pump-housing",
             "collection-canister",
             "canister-lid",
-            "vacuum-gauge",
             "hose-outlet",
-            "push-handle",
             "side-control"
           ],
-          "param": "color"
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "rubberColor",
+          "color": "#30383b",
+          "parts": [
+            "wheel-a",
+            "wheel-b"
+          ],
+          "param": "rubberColor"
+        },
+        {
+          "name": "glassColor",
+          "color": "#4e8290",
+          "parts": [
+            "vacuum-gauge"
+          ],
+          "param": "glassColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
+            "push-handle"
+          ],
+          "param": "stainlessSteelColor"
         }
       ]
     },
@@ -237327,7 +238656,7 @@
       "id": "tabletop-autoclave",
       "kit": "vet-clinic",
       "title": "Tabletop instrument sterilizer",
-      "description": "Bench-top sterilizer with a front chamber door, latch and a small control panel. Editable overall scale and asset color.",
+      "description": "Bench-top sterilizer with a front chamber door, latch and a small control panel. Material controls: powder-coated steel, rubber, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -237350,7 +238679,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/tabletop-autoclave.kcad.ts",
       "preview": "/assets/vet-clinic-tabletop-autoclave.png",
-      "sourceSha256": "209d66dd9efcfaf1124dc44941ffa336857c0815e4fead34923cffb569e601b8",
+      "sourceSha256": "d29b42a730ae2053af4dc3fa0697dc75cc88879efd8964a381b0146edb7b8f1b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -237363,13 +238692,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#6e8182",
-          "label": "Asset color"
+          "default": "#7d8d96",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "rubberColor",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Rubber"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "rubberColor": "#34464a"
+        }
+      },
       "stats": {
         "triangles": 236,
         "sizeM": [
@@ -237382,20 +238731,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6e8182",
+          "name": "paintedSteelColor",
+          "color": "#7d8d96",
           "parts": [
             "body",
-            "lower-foot-left",
-            "lower-foot-right",
             "chamber-door",
-            "door-handle-left",
-            "door-handle-right",
             "control-panel",
             "control-knob",
             "top-vent"
           ],
-          "param": "color"
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "rubberColor",
+          "color": "#30383b",
+          "parts": [
+            "lower-foot-left",
+            "lower-foot-right"
+          ],
+          "param": "rubberColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
+            "door-handle-left",
+            "door-handle-right"
+          ],
+          "param": "stainlessSteelColor"
         }
       ]
     },
@@ -237403,7 +238766,7 @@
       "id": "treatment-cart",
       "kit": "vet-clinic",
       "title": "Veterinary treatment cart",
-      "description": "Two-shelf mobile cart with shallow drawers, push handle and four casters. Editable overall scale and asset color.",
+      "description": "Two-shelf mobile cart with shallow drawers, push handle and four casters. Material controls: powder-coated steel, rubber, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -237425,7 +238788,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/treatment-cart.kcad.ts",
       "preview": "/assets/vet-clinic-treatment-cart.png",
-      "sourceSha256": "2e1ff0e6e47051d1cd0ab5732cb3334eba47db0822474e0953b4b14e73b950f1",
+      "sourceSha256": "c93cb31beaa04eeb33ba2f0306869e83efa2c1ffd35401b556ceaa1cf9445eb6",
       "triangleBudget": 1800,
       "params": [
         {
@@ -237438,13 +238801,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#74888b",
-          "label": "Asset color"
+          "default": "#8e9991",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "rubberColor",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Rubber"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "rubberColor": "#34464a"
+        }
+      },
       "stats": {
         "triangles": 196,
         "sizeM": [
@@ -237457,22 +238840,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#74888b",
+          "name": "paintedSteelColor",
+          "color": "#8e9991",
           "parts": [
             "lower-shelf",
             "upper-shelf",
             "drawer-one",
-            "drawer-two",
+            "drawer-two"
+          ],
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
             "post-a",
             "post-b",
             "post-c",
             "post-d",
-            "caster-a",
-            "caster-b",
             "push-handle"
           ],
-          "param": "color"
+          "param": "stainlessSteelColor"
+        },
+        {
+          "name": "rubberColor",
+          "color": "#30383b",
+          "parts": [
+            "caster-a",
+            "caster-b"
+          ],
+          "param": "rubberColor"
         }
       ]
     },
@@ -237480,7 +238877,7 @@
       "id": "urinalysis-analyzer",
       "kit": "vet-clinic",
       "title": "Veterinary urinalysis analyzer",
-      "description": "Small urine analyzer with a strip insertion slot, sample rack and compact angled display. Editable overall scale and asset color.",
+      "description": "Small urine analyzer with a strip insertion slot, sample rack and compact angled display. Material controls: tinted glass and displays, powder-coated steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -237502,7 +238899,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/urinalysis-analyzer.kcad.ts",
       "preview": "/assets/vet-clinic-urinalysis-analyzer.png",
-      "sourceSha256": "0bb2fa0a36dc30b28ebdacb587f72da10036d07778c6aa360c149ba584aa372e",
+      "sourceSha256": "89de9c93a8d63a93159172db7342999f541df14c2529bdebd4dd0698cbe4dff4",
       "triangleBudget": 1800,
       "params": [
         {
@@ -237515,13 +238912,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#89958f",
-          "label": "Asset color"
+          "default": "#66838a",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "glassColor",
+          "type": "color",
+          "default": "#4e8290",
+          "label": "Tinted glass and displays"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "glassColor": "#3f7480"
+        }
+      },
       "stats": {
         "triangles": 248,
         "sizeM": [
@@ -237534,13 +238945,12 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#89958f",
+          "name": "paintedSteelColor",
+          "color": "#66838a",
           "parts": [
             "base",
             "body",
             "lid",
-            "display",
             "strip-slot",
             "sample-rack",
             "sample-position-0",
@@ -237548,7 +238958,15 @@
             "sample-position-2",
             "sample-position-3"
           ],
-          "param": "color"
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "glassColor",
+          "color": "#4e8290",
+          "parts": [
+            "display"
+          ],
+          "param": "glassColor"
         }
       ]
     },
@@ -237556,7 +238974,7 @@
       "id": "veterinary-exam-stool",
       "kit": "vet-clinic",
       "title": "Veterinary exam stool",
-      "description": "Compact wheeled clinician stool with a circular seat, adjustable post and foot ring. Editable overall scale and asset color.",
+      "description": "Compact wheeled clinician stool with a circular seat, adjustable post and foot ring. Material controls: powder-coated steel, rubber, stainless steel, vinyl upholstery. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -237578,7 +238996,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/veterinary-exam-stool.kcad.ts",
       "preview": "/assets/vet-clinic-veterinary-exam-stool.png",
-      "sourceSha256": "e7332a28fc0c580e025d7a5dcc3b5af8ea20577da9efa37d2a4ad3648175b2d2",
+      "sourceSha256": "04eedf622eea6f51dd4556ac20ab6e29e5e29d067831cc6567b141b56dc8d164",
       "triangleBudget": 1800,
       "params": [
         {
@@ -237591,13 +239009,39 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#657b80",
-          "label": "Asset color"
+          "default": "#829687",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "rubberColor",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Rubber"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "upholsteryColor",
+          "type": "color",
+          "default": "#62858a",
+          "label": "Vinyl upholstery"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "rubberColor": "#34464a"
+        }
+      },
       "stats": {
         "triangles": 332,
         "sizeM": [
@@ -237610,20 +239054,41 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#657b80",
+          "name": "upholsteryColor",
+          "color": "#62858a",
           "parts": [
             "seat",
-            "seat-post",
+            "seat-post"
+          ],
+          "param": "upholsteryColor"
+        },
+        {
+          "name": "rubberColor",
+          "color": "#30383b",
+          "parts": [
             "foot-ring",
-            "base-spoke-n",
-            "base-spoke-s",
             "caster-a",
             "caster-b",
             "caster-c",
             "caster-d"
           ],
-          "param": "color"
+          "param": "rubberColor"
+        },
+        {
+          "name": "paintedSteelColor",
+          "color": "#829687",
+          "parts": [
+            "base-spoke-n"
+          ],
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
+            "base-spoke-s"
+          ],
+          "param": "stainlessSteelColor"
         }
       ]
     },
@@ -237631,7 +239096,7 @@
       "id": "veterinary-radiography-table",
       "kit": "vet-clinic",
       "title": "Veterinary radiography table",
-      "description": "Low imaging table with a floating-style top, under-table carriage and four braced legs. Editable overall scale and asset color.",
+      "description": "Low imaging table with a floating-style top, under-table carriage and four braced legs. Material controls: molded polymer, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -237653,7 +239118,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/veterinary-radiography-table.kcad.ts",
       "preview": "/assets/vet-clinic-veterinary-radiography-table.png",
-      "sourceSha256": "65d35a3e6ba43ad9f90e2e65646c64570d986930bf21dbe76bd13dac8b65e798",
+      "sourceSha256": "17385b415d71d60d85b30eceeb8548525b7cbe7a4226877451a5dbb8b4763a43",
       "triangleBudget": 1800,
       "params": [
         {
@@ -237666,13 +239131,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteelColor",
           "type": "color",
-          "default": "#7c8987",
-          "label": "Asset color"
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "polymerColor",
+          "type": "color",
+          "default": "#d3dfdc",
+          "label": "Molded polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "stainlessSteelColor": "#e1e6e3"
+        },
+        "softTeal": {
+          "stainlessSteelColor": "#8daeb0",
+          "polymerColor": "#9bbfc0"
+        }
+      },
       "stats": {
         "triangles": 120,
         "sizeM": [
@@ -237685,10 +239164,17 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7c8987",
+          "name": "polymerColor",
+          "color": "#d3dfdc",
           "parts": [
-            "imaging-top",
+            "imaging-top"
+          ],
+          "param": "polymerColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
             "under-table-carriage",
             "left-leg",
             "right-leg",
@@ -237699,7 +239185,7 @@
             "side-rail-left",
             "side-rail-right"
           ],
-          "param": "color"
+          "param": "stainlessSteelColor"
         }
       ]
     },
@@ -237707,7 +239193,7 @@
       "id": "veterinary-surgery-table",
       "kit": "vet-clinic",
       "title": "Veterinary surgery table",
-      "description": "Height-lift operating table with drainage tray, adjustable side ledges and support frame. Editable overall scale and asset color.",
+      "description": "Height-lift operating table with drainage tray, adjustable side ledges and support frame. Material controls: powder-coated steel, rubber, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -237729,7 +239215,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/veterinary-surgery-table.kcad.ts",
       "preview": "/assets/vet-clinic-veterinary-surgery-table.png",
-      "sourceSha256": "50b49e0958c73b38897a62d62dc21b4e7fc5ec2b1ea44b0579ebc9c09abd0c35",
+      "sourceSha256": "3371d71cb59b01713b69aa4c8f3213c5a79eae1a09876debb7f35bb65e071ced",
       "triangleBudget": 1800,
       "params": [
         {
@@ -237742,13 +239228,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#788987",
-          "label": "Asset color"
+          "default": "#7d8d96",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "rubberColor",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Rubber"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "rubberColor": "#34464a"
+        }
+      },
       "stats": {
         "triangles": 184,
         "sizeM": [
@@ -237761,21 +239267,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#788987",
+          "name": "paintedSteelColor",
+          "color": "#7d8d96",
           "parts": [
             "base-plate",
-            "lift-column",
+            "lift-column"
+          ],
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
             "table-center",
             "table-wing-left",
             "table-wing-right",
             "drain-channel",
             "side-ledge-left",
-            "side-ledge-right",
+            "side-ledge-right"
+          ],
+          "param": "stainlessSteelColor"
+        },
+        {
+          "name": "rubberColor",
+          "color": "#30383b",
+          "parts": [
             "leveling-foot-a",
             "leveling-foot-b"
           ],
-          "param": "color"
+          "param": "rubberColor"
         }
       ]
     },
@@ -237783,7 +239303,7 @@
       "id": "waiting-area-partition-gate",
       "kit": "vet-clinic",
       "title": "Waiting area partition gate",
-      "description": "Freestanding gate panel with a framed opening, closely spaced bars and a latch. Editable overall scale and asset color.",
+      "description": "Freestanding gate panel with a framed opening, closely spaced bars and a latch. Material controls: powder-coated steel, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -237807,7 +239327,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/waiting-area-partition-gate.kcad.ts",
       "preview": "/assets/vet-clinic-waiting-area-partition-gate.png",
-      "sourceSha256": "cf953be5a4b711610439a744e54afcc7b1c96fd577de891c1959901adaaad137",
+      "sourceSha256": "f244586ff6658291ac594e72d1ba73c29febf821bfa3446643f33d689305bee1",
       "triangleBudget": 1800,
       "params": [
         {
@@ -237820,13 +239340,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#627a7e",
-          "label": "Asset color"
+          "default": "#7d8d96",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "stainlessSteelColor": "#8daeb0"
+        }
+      },
       "stats": {
         "triangles": 204,
         "sizeM": [
@@ -237839,11 +239373,18 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#627a7e",
+          "name": "paintedSteelColor",
+          "color": "#7d8d96",
           "parts": [
             "left-foot",
-            "right-foot",
+            "right-foot"
+          ],
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
             "left-post",
             "right-post",
             "top-rail",
@@ -237860,7 +239401,7 @@
             "bar-9",
             "latch-body"
           ],
-          "param": "color"
+          "param": "stainlessSteelColor"
         }
       ]
     },
@@ -237868,7 +239409,7 @@
       "id": "waiting-bench",
       "kit": "vet-clinic",
       "title": "Clinic waiting bench",
-      "description": "Three-seat waiting bench with a continuous back, arm rests and open leg clearance. Editable overall scale and asset color.",
+      "description": "Three-seat waiting bench with a continuous back, arm rests and open leg clearance. Material controls: powder-coated steel, stainless steel, vinyl upholstery. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -237891,7 +239432,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/waiting-bench.kcad.ts",
       "preview": "/assets/vet-clinic-waiting-bench.png",
-      "sourceSha256": "dd2c21ae953f221e31d9a25d37d0197b2aa6addd76ee3d9403b00b1210aaad12",
+      "sourceSha256": "e561d03858d40583c9fc7d3345c4c6d1d30d67f7bdb29a20441debf2b299587a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -237904,13 +239445,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#78909a",
-          "label": "Asset color"
+          "default": "#6e8994",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "upholsteryColor",
+          "type": "color",
+          "default": "#62858a",
+          "label": "Vinyl upholstery"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "stainlessSteelColor": "#8daeb0"
+        }
+      },
       "stats": {
         "triangles": 108,
         "sizeM": [
@@ -237923,11 +239484,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#78909a",
+          "name": "paintedSteelColor",
+          "color": "#6e8994",
           "parts": [
-            "seat",
-            "back",
+            "seat"
+          ],
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "upholsteryColor",
+          "color": "#62858a",
+          "parts": [
+            "back"
+          ],
+          "param": "upholsteryColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
             "arm-left",
             "arm-right",
             "front-left-leg",
@@ -237936,7 +239511,7 @@
             "rear-right-leg",
             "lower-crossbar"
           ],
-          "param": "color"
+          "param": "stainlessSteelColor"
         }
       ]
     },
@@ -237944,7 +239519,7 @@
       "id": "warming-cabinet",
       "kit": "vet-clinic",
       "title": "Veterinary patient warming cabinet",
-      "description": "Mobile warming cabinet with paired doors, interior shelves and a top-mounted control panel. Editable overall scale and asset color.",
+      "description": "Mobile warming cabinet with paired doors, interior shelves and a top-mounted control panel. Material controls: powder-coated steel, rubber. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -237967,7 +239542,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/warming-cabinet.kcad.ts",
       "preview": "/assets/vet-clinic-warming-cabinet.png",
-      "sourceSha256": "984dfff82808b292b21535d1413ebd0646b358aa0c69847f03a92aa470f42846",
+      "sourceSha256": "6fedad19a3b36cfac9e3f87eb607a7f357d1782ee1cb9500412ccb1bd2d0dab8",
       "triangleBudget": 1800,
       "params": [
         {
@@ -237980,13 +239555,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#82918c",
-          "label": "Asset color"
+          "default": "#6e8994",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "rubberColor",
+          "type": "color",
+          "default": "#30383b",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "rubberColor": "#34464a"
+        }
+      },
       "stats": {
         "triangles": 172,
         "sizeM": [
@@ -237999,8 +239588,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#82918c",
+          "name": "paintedSteelColor",
+          "color": "#6e8994",
           "parts": [
             "cabinet-shell",
             "left-door",
@@ -238008,11 +239597,18 @@
             "center-seam",
             "shelf-one",
             "shelf-two",
-            "control-panel",
+            "control-panel"
+          ],
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "rubberColor",
+          "color": "#30383b",
+          "parts": [
             "caster-a",
             "caster-b"
           ],
-          "param": "color"
+          "param": "rubberColor"
         }
       ]
     },
@@ -238020,7 +239616,7 @@
       "id": "wet-treatment-table",
       "kit": "vet-clinic",
       "title": "Wet treatment table",
-      "description": "Stainless-style treatment table with raised edges, a central drain and a braced frame. Editable overall scale and asset color.",
+      "description": "Stainless-style treatment table with raised edges, a central drain and a braced frame. Material controls: molded polymer, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -238043,7 +239639,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/wet-treatment-table.kcad.ts",
       "preview": "/assets/vet-clinic-wet-treatment-table.png",
-      "sourceSha256": "6c159e41ec750ed39ed8e952fda2a13bc407570a70e9f1ed663f34e3b5381094",
+      "sourceSha256": "28d05fa65efa566ec964955c50714737285f68940f504f6f785094d3883023dd",
       "triangleBudget": 1800,
       "params": [
         {
@@ -238056,13 +239652,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteelColor",
           "type": "color",
-          "default": "#758b8d",
-          "label": "Asset color"
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "polymerColor",
+          "type": "color",
+          "default": "#d3dfdc",
+          "label": "Molded polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "stainlessSteelColor": "#e1e6e3"
+        },
+        "softTeal": {
+          "stainlessSteelColor": "#8daeb0",
+          "polymerColor": "#9bbfc0"
+        }
+      },
       "stats": {
         "triangles": 196,
         "sizeM": [
@@ -238075,10 +239685,17 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#758b8d",
+          "name": "polymerColor",
+          "color": "#d3dfdc",
           "parts": [
-            "table-top",
+            "table-top"
+          ],
+          "param": "polymerColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
             "rear-lip",
             "left-lip",
             "right-lip",
@@ -238090,7 +239707,7 @@
             "drain",
             "drain-stem"
           ],
-          "param": "color"
+          "param": "stainlessSteelColor"
         }
       ]
     },
@@ -238098,7 +239715,7 @@
       "id": "xray-cassette",
       "kit": "vet-clinic",
       "title": "Radiography cassette",
-      "description": "Flat protective cassette with reinforced perimeter rails and a small pull handle. Editable overall scale and asset color.",
+      "description": "Flat protective cassette with reinforced perimeter rails and a small pull handle. Material controls: powder-coated steel, molded polymer, stainless steel. Presets: clinicClean and softTeal.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -238120,7 +239737,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/xray-cassette.kcad.ts",
       "preview": "/assets/vet-clinic-xray-cassette.png",
-      "sourceSha256": "bb816936f79a70bfe7f4c92a9254df5e5c46c9895e0e7d0130a56fd145105246",
+      "sourceSha256": "575f01218e97e2896eb29405af25dfc1575c8f02c08c1f29b4ed91421512005d",
       "triangleBudget": 1800,
       "params": [
         {
@@ -238133,13 +239750,33 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#536a70",
-          "label": "Asset color"
+          "default": "#718b89",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "polymerColor",
+          "type": "color",
+          "default": "#d3dfdc",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#bdc7c5",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clinicClean": {
+          "paintedSteelColor": "#e4ebe7"
+        },
+        "softTeal": {
+          "paintedSteelColor": "#4d858d",
+          "polymerColor": "#9bbfc0"
+        }
+      },
       "stats": {
         "triangles": 84,
         "sizeM": [
@@ -238152,18 +239789,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#536a70",
+          "name": "paintedSteelColor",
+          "color": "#718b89",
           "parts": [
-            "cassette-body",
+            "cassette-body"
+          ],
+          "param": "paintedSteelColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#bdc7c5",
+          "parts": [
             "edge-left",
             "edge-right",
             "edge-front",
             "edge-back",
-            "pull-handle",
+            "pull-handle"
+          ],
+          "param": "stainlessSteelColor"
+        },
+        {
+          "name": "polymerColor",
+          "color": "#d3dfdc",
+          "parts": [
             "label-tab"
           ],
-          "param": "color"
+          "param": "polymerColor"
         }
       ]
     },

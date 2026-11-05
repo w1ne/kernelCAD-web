@@ -1,0 +1,5 @@
+{
+  "command": "npx eslint catalog/kits/vet-clinic/",
+  "exitCode": 0,
+  "outputFile": "catalog-eslint-output.txt"
+}

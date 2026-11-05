@@ -1,0 +1,16 @@
+{
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-vet-clinic-catalog-pages",
+  "generatedOutput": "/tmp/kernelcad-vet-clinic-catalog-pages",
+  "assetsInIndex": 2390,
+  "kitRows": 50,
+  "kitPagesChecked": 50,
+  "previewCopiesChecked": 50,
+  "sourceHashesChecked": 50,
+  "parameterCountRange": [
+    3,
+    5
+  ],
+  "hubHasKitAndFinder": true,
+  "failures": [],
+  "passed": true
+}

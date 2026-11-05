@@ -1,9 +1,9 @@
-// Original low-poly veterinary clinic scene asset. Millimetres, Z up, base origin.
+// Hard-sided pet carrier: Portable carrier with a ventilated door, side walls, roof and carry handle. Separate molded polymer, rubber, stainless steel surfaces keep its component silhouette readable.
 meta({
   name: "hard-sided-pet-carrier",
   license: 'CC0-1.0',
   title: "Hard-sided pet carrier",
-  description: "Portable carrier with a ventilated door, side walls, roof and carry handle." + ' Editable overall scale and asset color.',
+  description: "Portable carrier with a ventilated door, side walls, roof and carry handle. Material controls: molded polymer, rubber, stainless steel. Presets: clinicClean and softTeal.",
   tags: ["veterinary", "animal clinic", "animal health", "hard-sided", "pet", "carrier", "low poly", "CC0"],
   kit: 'vet-clinic',
   category: 'prop',
@@ -13,7 +13,24 @@ meta({
 });
 
 const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
-const color = param('color', "#8a7869", { label: 'Asset color' });
+const polymerColor = param('polymerColor', '#d3dfdc', { label: 'Molded polymer' });
+const rubberColor = param('rubberColor', '#30383b', { label: 'Rubber' });
+const stainlessSteelColor = param('stainlessSteelColor', '#bdc7c5', { label: 'Stainless steel' });
+
+presets({
+  clinicClean: { polymerColor: '#e8ece8' },
+  softTeal: { polymerColor: '#9bbfc0', rubberColor: '#34464a' },
+});
+
+const finishFor = (name: string) => {
+  switch (name) {
+    case "carry-handle": return rubberColor;
+    case "door-bar-a": return stainlessSteelColor;
+    case "door-bar-b": return stainlessSteelColor;
+    case "door-bar-c": return stainlessSteelColor;
+  }
+  return polymerColor;
+};
 const p = assembly("hard-sided-pet-carrier");
 
 const b = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
@@ -21,12 +38,12 @@ const b = (name: string, size: [number, number, number], at: [number, number, nu
   if (rotation?.[0]) shape = shape.rotate([1, 0, 0], rotation[0]);
   if (rotation?.[1]) shape = shape.rotate([0, 1, 0], rotation[1]);
   if (rotation?.[2]) shape = shape.rotate([0, 0, 1], rotation[2]);
-  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(color));
+  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(finishFor(name)));
 };
 const c = (name: string, h: number, r: number, segments: number, at: [number, number, number], axis?: [number, number, number], degrees = 0) => {
   let shape = cylinder(h, r, segments);
   if (axis && degrees) shape = shape.rotate(axis, degrees);
-  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(color));
+  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(finishFor(name)));
 };
 
 b("floor", [470, 650, 34], [0, 0, 17]);

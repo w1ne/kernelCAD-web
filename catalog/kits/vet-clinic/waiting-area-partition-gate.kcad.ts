@@ -1,9 +1,9 @@
-// Original low-poly veterinary clinic scene asset. Millimetres, Z up, base origin.
+// Waiting area partition gate: Freestanding gate panel with a framed opening, closely spaced bars and a latch. Separate powder-coated steel, stainless steel surfaces keep its component silhouette readable.
 meta({
   name: "waiting-area-partition-gate",
   license: 'CC0-1.0',
   title: "Waiting area partition gate",
-  description: "Freestanding gate panel with a framed opening, closely spaced bars and a latch." + ' Editable overall scale and asset color.',
+  description: "Freestanding gate panel with a framed opening, closely spaced bars and a latch. Material controls: powder-coated steel, stainless steel. Presets: clinicClean and softTeal.",
   tags: ["veterinary", "animal clinic", "animal health", "waiting", "area", "partition", "gate", "low poly", "CC0"],
   kit: 'vet-clinic',
   category: 'prop',
@@ -13,7 +13,34 @@ meta({
 });
 
 const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
-const color = param('color', "#627a7e", { label: 'Asset color' });
+const paintedSteelColor = param('paintedSteelColor', '#7d8d96', { label: 'Powder-coated steel' });
+const stainlessSteelColor = param('stainlessSteelColor', '#bdc7c5', { label: 'Stainless steel' });
+
+presets({
+  clinicClean: { paintedSteelColor: '#e4ebe7' },
+  softTeal: { paintedSteelColor: '#4d858d', stainlessSteelColor: '#8daeb0' },
+});
+
+const finishFor = (name: string) => {
+  switch (name) {
+    case "left-post": return stainlessSteelColor;
+    case "right-post": return stainlessSteelColor;
+    case "top-rail": return stainlessSteelColor;
+    case "bottom-rail": return stainlessSteelColor;
+    case "bar-0": return stainlessSteelColor;
+    case "bar-1": return stainlessSteelColor;
+    case "bar-2": return stainlessSteelColor;
+    case "bar-3": return stainlessSteelColor;
+    case "bar-4": return stainlessSteelColor;
+    case "bar-5": return stainlessSteelColor;
+    case "bar-6": return stainlessSteelColor;
+    case "bar-7": return stainlessSteelColor;
+    case "bar-8": return stainlessSteelColor;
+    case "bar-9": return stainlessSteelColor;
+    case "latch-body": return stainlessSteelColor;
+  }
+  return paintedSteelColor;
+};
 const p = assembly("waiting-area-partition-gate");
 
 const b = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
@@ -21,7 +48,7 @@ const b = (name: string, size: [number, number, number], at: [number, number, nu
   if (rotation?.[0]) shape = shape.rotate([1, 0, 0], rotation[0]);
   if (rotation?.[1]) shape = shape.rotate([0, 1, 0], rotation[1]);
   if (rotation?.[2]) shape = shape.rotate([0, 0, 1], rotation[2]);
-  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(color));
+  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(finishFor(name)));
 };
 
 b("left-foot", [210, 330, 48], [-560, 0, 24]);
