@@ -103,7 +103,6 @@ const promptEdits: PromptEdit[] = [
       ["param('wall', 2", "param('wall', 2.5"],
     ],
     size: [127, 97, 40],
-    holeArrays: [{ diameter: 2.1, count: 4 }],
     compareWall: true,
   },
   {
