@@ -632,7 +632,7 @@
     {
       "id": "ev-charging-infrastructure",
       "title": "EV charging infrastructure",
-      "description": "Original generic props for AC and DC charging, connectors, power cabinets, parking fixtures, fleet depots, and charging canopies.",
+      "description": "Original generic props for AC and DC charging, connectors, cable routing, power cabinets, parking fixtures, fleet depots, and charging canopies, with editable scale, material-specific color controls, and named appearance presets.",
       "assets": [
         "ac-charging-bollard",
         "battery-buffer-charger-container",
@@ -62571,7 +62571,7 @@
       "id": "ac-charging-bollard",
       "kit": "ev-charging-infrastructure",
       "title": "AC charging bollard",
-      "description": "Short protective charging post with an inset status panel and a pair of plug holders. Knobs: overall scale and asset color.",
+      "description": "Short protective charging post with an inset status panel and a pair of plug holders. Knobs: overall scale and powder-coated metal, display glass, cable elastomer and safety-colored polymer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -62592,7 +62592,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/ac-charging-bollard.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-ac-charging-bollard.png",
-      "sourceSha256": "54f883945f5d8a987fc1db357ffbbb9d1ae13f6a8bb11d86e87da44716f4fc02",
+      "sourceSha256": "553212d33ea76e374fa46f2a6421b59536a7124ea612cf64502750ea167a15dd",
       "triangleBudget": 2400,
       "params": [
         {
@@ -62605,13 +62605,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#7b6956",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#79cfda",
+          "label": "Display glass"
+        },
+        {
+          "name": "cableElastomer",
+          "type": "color",
+          "default": "#1b2427",
+          "label": "Cable elastomer"
+        },
+        {
+          "name": "safetyPolymer",
+          "type": "color",
+          "default": "#f0b13c",
+          "label": "Safety-colored polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "cableElastomer": "#1a2522",
+          "safetyPolymer": "#f3bd2f"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "cableElastomer": "#111719",
+          "safetyPolymer": "#ffbf24"
+        }
+      },
       "stats": {
         "triangles": 340,
         "sizeM": [
@@ -62624,26 +62655,47 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7b6956",
+          "name": "powderCoat",
+          "color": "#397f90",
           "parts": [
             "ground-plate",
             "pedestal-column",
             "main-enclosure",
             "top-cap",
             "front-door",
-            "display-bezel",
-            "display-window",
-            "status-button",
             "vent-slot-1",
             "vent-slot-2",
             "head-cap",
             "left-connector-cradle",
-            "right-connector-cradle",
+            "right-connector-cradle"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#79cfda",
+          "parts": [
+            "display-bezel",
+            "display-window"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "safetyPolymer",
+          "color": "#f0b13c",
+          "parts": [
+            "status-button"
+          ],
+          "param": "safetyPolymer"
+        },
+        {
+          "name": "cableElastomer",
+          "color": "#1b2427",
+          "parts": [
             "cable-tail",
             "cable-tail-second"
           ],
-          "param": "color"
+          "param": "cableElastomer"
         }
       ]
     },
@@ -62651,7 +62703,7 @@
       "id": "battery-buffer-charger-container",
       "kit": "ev-charging-infrastructure",
       "title": "Battery-buffer charger container",
-      "description": "Containerized buffer cabinet with access doors, vent banks, and a cable service side. Knobs: overall scale and asset color.",
+      "description": "Containerized buffer cabinet with access doors, vent banks, and a cable service side. Knobs: overall scale and powder-coated metal, engineering polymer and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -62672,7 +62724,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/battery-buffer-charger-container.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-battery-buffer-charger-container.png",
-      "sourceSha256": "bf948c5041d8ab820d98b33aa042fb1e4448092d4e3335ff1c6f1f5279c6f801",
+      "sourceSha256": "7976b7400552aa1cb9e08cab357b137da1b93daf1d9171b9fe96b57c81d63e1c",
       "triangleBudget": 2400,
       "params": [
         {
@@ -62685,13 +62737,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#66716b",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "engineeringPolymer",
+          "type": "color",
+          "default": "#657f84",
+          "label": "Engineering polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "engineeringPolymer": "#263a36",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "engineeringPolymer": "#222d32",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 244,
         "sizeM": [
@@ -62704,14 +62779,10 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#66716b",
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
           "parts": [
             "container-skid",
-            "container-body",
-            "roof-cap",
-            "front-service-door",
-            "right-service-door",
             "vent-louver-1",
             "vent-louver-2",
             "vent-louver-3",
@@ -62719,11 +62790,29 @@
             "vent-louver-5",
             "vent-louver-6",
             "vent-louver-7",
-            "vent-louver-8",
+            "vent-louver-8"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397f90",
+          "parts": [
+            "container-body",
+            "roof-cap",
+            "front-service-door",
+            "right-service-door"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "engineeringPolymer",
+          "color": "#657f84",
+          "parts": [
             "cable-port-left",
             "cable-port-right"
           ],
-          "param": "color"
+          "param": "engineeringPolymer"
         }
       ]
     },
@@ -62731,7 +62820,7 @@
       "id": "bus-depot-pantograph-post",
       "kit": "ev-charging-infrastructure",
       "title": "Bus depot pantograph post",
-      "description": "Tall depot mast with an offset beam and a suspended charging-head support. Knobs: overall scale and asset color.",
+      "description": "Tall depot mast with an offset beam and a suspended charging-head support. Knobs: overall scale and powder-coated metal, engineering polymer and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -62752,7 +62841,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/bus-depot-pantograph-post.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-bus-depot-pantograph-post.png",
-      "sourceSha256": "0e0b76b60e8b3d8cb9221054733547ad5def7401634b052a91ff7d05b6e7b8c3",
+      "sourceSha256": "693a5d07922f8ad2d7b257b5b1e6259174a9b15eeca74988050ab8147fa859bc",
       "triangleBudget": 2400,
       "params": [
         {
@@ -62765,13 +62854,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#6b7470",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "engineeringPolymer",
+          "type": "color",
+          "default": "#657f84",
+          "label": "Engineering polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "engineeringPolymer": "#263a36",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "engineeringPolymer": "#222d32",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 288,
         "sizeM": [
@@ -62784,19 +62896,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6b7470",
+          "name": "powderCoat",
+          "color": "#397f90",
           "parts": [
             "foundation",
+            "hinge-pin"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
+          "parts": [
             "support-mast",
             "cantilever-beam",
             "beam-stay",
-            "head-mount",
-            "contact-head",
-            "contact-bar",
-            "hinge-pin"
+            "head-mount"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "engineeringPolymer",
+          "color": "#657f84",
+          "parts": [
+            "contact-head",
+            "contact-bar"
+          ],
+          "param": "engineeringPolymer"
         }
       ]
     },
@@ -62804,7 +62930,7 @@
       "id": "ccs-combo-1-connector",
       "kit": "ev-charging-infrastructure",
       "title": "CCS Combo 1 connector",
-      "description": "Generic CCS Combo 1 plug body with a broad grip shell, lower contact block, and cable tail. Knobs: overall scale and asset color.",
+      "description": "Generic CCS Combo 1 plug body with a broad grip shell, lower contact block, and cable tail. Knobs: overall scale and engineering polymer and cable elastomer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -62825,7 +62951,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/ccs-combo-1-connector.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-ccs-combo-1-connector.png",
-      "sourceSha256": "feb1ca034874136b0a29fe57524106e31e71aa64a6feaf40005014556697fccd",
+      "sourceSha256": "83239859bfcb27a2ce92b1ab4baa2c815607160e45c90d1cc0a36d0b559a9ba6",
       "triangleBudget": 2400,
       "params": [
         {
@@ -62838,13 +62964,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "engineeringPolymer",
           "type": "color",
-          "default": "#4a555b",
-          "label": "Asset color"
+          "default": "#657f84",
+          "label": "Engineering polymer"
+        },
+        {
+          "name": "cableElastomer",
+          "type": "color",
+          "default": "#1b2427",
+          "label": "Cable elastomer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "engineeringPolymer": "#263a36",
+          "cableElastomer": "#1a2522"
+        },
+        "nightService": {
+          "engineeringPolymer": "#222d32",
+          "cableElastomer": "#111719"
+        }
+      },
       "stats": {
         "triangles": 180,
         "sizeM": [
@@ -62857,18 +62998,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#4a555b",
+          "name": "engineeringPolymer",
+          "color": "#657f84",
           "parts": [
             "hand-grip",
             "front-coupling",
             "connector-nose",
-            "strain-relief",
-            "cable-stub",
             "grip-ridge-top",
             "lower-contact-block"
           ],
-          "param": "color"
+          "param": "engineeringPolymer"
+        },
+        {
+          "name": "cableElastomer",
+          "color": "#1b2427",
+          "parts": [
+            "strain-relief",
+            "cable-stub"
+          ],
+          "param": "cableElastomer"
         }
       ]
     },
@@ -62876,7 +63024,7 @@
       "id": "ccs-combo-2-connector",
       "kit": "ev-charging-infrastructure",
       "title": "CCS Combo 2 connector",
-      "description": "Generic CCS Combo 2 plug body with a shaped grip, strain relief, and cable tail. Knobs: overall scale and asset color.",
+      "description": "Generic CCS Combo 2 plug body with a shaped grip, strain relief, and cable tail. Knobs: overall scale and engineering polymer and cable elastomer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -62897,7 +63045,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/ccs-combo-2-connector.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-ccs-combo-2-connector.png",
-      "sourceSha256": "c69b98d883c928aa6852021586ac6927849bc8ed466e8fcd721acd0b9f4fc520",
+      "sourceSha256": "760fd4124dfdd5c196e26e5808b22c251e06456320d7b70b2f3f0022e9474a70",
       "triangleBudget": 2400,
       "params": [
         {
@@ -62910,13 +63058,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "engineeringPolymer",
           "type": "color",
-          "default": "#424f55",
-          "label": "Asset color"
+          "default": "#657f84",
+          "label": "Engineering polymer"
+        },
+        {
+          "name": "cableElastomer",
+          "type": "color",
+          "default": "#1b2427",
+          "label": "Cable elastomer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "engineeringPolymer": "#263a36",
+          "cableElastomer": "#1a2522"
+        },
+        "nightService": {
+          "engineeringPolymer": "#222d32",
+          "cableElastomer": "#111719"
+        }
+      },
       "stats": {
         "triangles": 180,
         "sizeM": [
@@ -62929,18 +63092,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#424f55",
+          "name": "engineeringPolymer",
+          "color": "#657f84",
           "parts": [
             "hand-grip",
             "front-coupling",
             "connector-nose",
-            "strain-relief",
-            "cable-stub",
             "grip-ridge-top",
             "lower-contact-block"
           ],
-          "param": "color"
+          "param": "engineeringPolymer"
+        },
+        {
+          "name": "cableElastomer",
+          "color": "#1b2427",
+          "parts": [
+            "strain-relief",
+            "cable-stub"
+          ],
+          "param": "cableElastomer"
         }
       ]
     },
@@ -62948,7 +63118,7 @@
       "id": "chademo-connector",
       "kit": "ev-charging-infrastructure",
       "title": "CHAdeMO connector",
-      "description": "Generic CHAdeMO plug with a rounded hand shell, broad coupling nose, and cable strain relief. Knobs: overall scale and asset color.",
+      "description": "Generic CHAdeMO plug with a rounded hand shell, broad coupling nose, and cable strain relief. Knobs: overall scale and engineering polymer and cable elastomer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -62969,7 +63139,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/chademo-connector.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-chademo-connector.png",
-      "sourceSha256": "3a1cb9bc81622392b07e6eadcde0e5b0c62ea5eb5b1537d0aaccf3d6652ebb49",
+      "sourceSha256": "c8325b9a47199b3cb840f1a799151d126a3dc87f5e09ad285e9b4e787ead8752",
       "triangleBudget": 2400,
       "params": [
         {
@@ -62982,13 +63152,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "engineeringPolymer",
           "type": "color",
-          "default": "#4c565a",
-          "label": "Asset color"
+          "default": "#657f84",
+          "label": "Engineering polymer"
+        },
+        {
+          "name": "cableElastomer",
+          "type": "color",
+          "default": "#1b2427",
+          "label": "Cable elastomer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "engineeringPolymer": "#263a36",
+          "cableElastomer": "#1a2522"
+        },
+        "nightService": {
+          "engineeringPolymer": "#222d32",
+          "cableElastomer": "#111719"
+        }
+      },
       "stats": {
         "triangles": 180,
         "sizeM": [
@@ -63001,18 +63186,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#4c565a",
+          "name": "engineeringPolymer",
+          "color": "#657f84",
           "parts": [
             "hand-grip",
             "front-coupling",
             "connector-nose",
-            "strain-relief",
-            "cable-stub",
             "grip-ridge-top",
             "lower-contact-block"
           ],
-          "param": "color"
+          "param": "engineeringPolymer"
+        },
+        {
+          "name": "cableElastomer",
+          "color": "#1b2427",
+          "parts": [
+            "strain-relief",
+            "cable-stub"
+          ],
+          "param": "cableElastomer"
         }
       ]
     },
@@ -63020,7 +63212,7 @@
       "id": "charger-cable-holster-bollard",
       "kit": "ev-charging-infrastructure",
       "title": "Cable holster bollard",
-      "description": "Protective post with a raised connector cradle, cable loop, and heavy base plate. Knobs: overall scale and asset color.",
+      "description": "Protective post with a raised connector cradle, cable loop, and heavy base plate. Knobs: overall scale and powder-coated metal, engineering polymer and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -63041,7 +63233,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/charger-cable-holster-bollard.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-charger-cable-holster-bollard.png",
-      "sourceSha256": "eff7914e906ddacb2a9169b62e66110d8e054c646ede8fe199d4512f480f8f2b",
+      "sourceSha256": "795f9a0d5730b8b70c85df76fffb6e923626800175a79bfb4261d0fd5ef7a64b",
       "triangleBudget": 2400,
       "params": [
         {
@@ -63054,13 +63246,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#777263",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "engineeringPolymer",
+          "type": "color",
+          "default": "#657f84",
+          "label": "Engineering polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "engineeringPolymer": "#263a36",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "engineeringPolymer": "#222d32",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 200,
         "sizeM": [
@@ -63073,17 +63288,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#777263",
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
           "parts": [
             "anchor-foot",
-            "bollard-post",
+            "bollard-post"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397f90",
+          "parts": [
             "cap",
-            "cradle-support",
-            "connector-cradle",
             "cable-guide"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "engineeringPolymer",
+          "color": "#657f84",
+          "parts": [
+            "cradle-support",
+            "connector-cradle"
+          ],
+          "param": "engineeringPolymer"
         }
       ]
     },
@@ -63091,7 +63320,7 @@
       "id": "charger-cable-retractor",
       "kit": "ev-charging-infrastructure",
       "title": "Charger cable retractor",
-      "description": "Compact overhead retractor body with an arm, pulley housing, and vertical cable drop. Knobs: overall scale and asset color.",
+      "description": "Compact overhead retractor body with an arm, pulley housing, and vertical cable drop. Knobs: overall scale and powder-coated metal, cable elastomer and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -63112,7 +63341,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/charger-cable-retractor.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-charger-cable-retractor.png",
-      "sourceSha256": "2489c39f4db030832683546a815f8bb64af6437c93c0bf56c8881b1ad6a51f8a",
+      "sourceSha256": "69a2e7b53c5ac0fb22bc7e6786acc78446b00d404a4cf612f093bff2d3436794",
       "triangleBudget": 2400,
       "params": [
         {
@@ -63125,13 +63354,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#626f70",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "cableElastomer",
+          "type": "color",
+          "default": "#1b2427",
+          "label": "Cable elastomer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "cableElastomer": "#1a2522",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "cableElastomer": "#111719",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 244,
         "sizeM": [
@@ -63144,18 +63396,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#626f70",
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
           "parts": [
             "base-plate",
             "support-mast",
             "swing-arm",
-            "arm-pivot",
+            "arm-pivot"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397f90",
+          "parts": [
             "retractor-housing",
-            "pulley",
+            "pulley"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "cableElastomer",
+          "color": "#1b2427",
+          "parts": [
             "hanging-cable"
           ],
-          "param": "color"
+          "param": "cableElastomer"
         }
       ]
     },
@@ -63163,7 +63429,7 @@
       "id": "charger-canopy-column-base",
       "kit": "ev-charging-infrastructure",
       "title": "Charger canopy column base",
-      "description": "Steel column shoe with anchor plates, gussets, and a tall support post. Knobs: overall scale and asset color.",
+      "description": "Steel column shoe with anchor plates, gussets, and a tall support post. Knobs: overall scale and powder-coated metal and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -63184,7 +63450,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/charger-canopy-column-base.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-charger-canopy-column-base.png",
-      "sourceSha256": "4783704173555088686892c0b66646b1daffb0e61c4a918fc8eb26a078d05852",
+      "sourceSha256": "7e5423f8850b23812dfb4b35f13f419bd45f275312a3361278b2109a5c5d51bd",
       "triangleBudget": 2400,
       "params": [
         {
@@ -63197,13 +63463,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#74776e",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 260,
         "sizeM": [
@@ -63216,22 +63497,29 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#74776e",
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
           "parts": [
             "base-plate",
             "column-shoe",
             "column-post",
-            "gusset-0",
-            "gusset-1",
-            "gusset-2",
-            "gusset-3",
             "anchor-bolt-0",
             "anchor-bolt-1",
             "anchor-bolt-2",
             "anchor-bolt-3"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397f90",
+          "parts": [
+            "gusset-0",
+            "gusset-1",
+            "gusset-2",
+            "gusset-3"
+          ],
+          "param": "powderCoat"
         }
       ]
     },
@@ -63239,7 +63527,7 @@
       "id": "charger-load-management-panel",
       "kit": "ev-charging-infrastructure",
       "title": "Charger load-management panel",
-      "description": "Wall panel with a central controller display, service door, and connection terminals. Knobs: overall scale and asset color.",
+      "description": "Wall panel with a central controller display, service door, and connection terminals. Knobs: overall scale and powder-coated metal, display glass, safety-colored polymer and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -63260,7 +63548,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/charger-load-management-panel.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-charger-load-management-panel.png",
-      "sourceSha256": "224943a1fa1d70d45533811d74ae1614d53aa68aa994c746a9ffba873cab49c9",
+      "sourceSha256": "b96b6679fb1c0eb12d50f4f1b18a94bb51929ea407914f75bb2d3a425351f5a9",
       "triangleBudget": 2400,
       "params": [
         {
@@ -63273,13 +63561,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#68746f",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#79cfda",
+          "label": "Display glass"
+        },
+        {
+          "name": "safetyPolymer",
+          "type": "color",
+          "default": "#f0b13c",
+          "label": "Safety-colored polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "safetyPolymer": "#f3bd2f",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "safetyPolymer": "#ffbf24",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 244,
         "sizeM": [
@@ -63292,26 +63611,47 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#68746f",
+          "name": "powderCoat",
+          "color": "#397f90",
           "parts": [
             "main-enclosure",
-            "base-plinth",
             "top-cap",
             "door-seam-1",
             "door-seam-2",
-            "display-bezel",
-            "display-window",
-            "status-button",
+            "cable-entry-skirt",
+            "ground-terminal"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
+          "parts": [
+            "base-plinth",
             "vent-slot-1",
             "vent-slot-2",
             "vent-slot-3",
             "vent-slot-4",
-            "vent-slot-5",
-            "cable-entry-skirt",
-            "ground-terminal"
+            "vent-slot-5"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#79cfda",
+          "parts": [
+            "display-bezel",
+            "display-window"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "safetyPolymer",
+          "color": "#f0b13c",
+          "parts": [
+            "status-button"
+          ],
+          "param": "safetyPolymer"
         }
       ]
     },
@@ -63319,7 +63659,7 @@
       "id": "charger-status-display-post",
       "kit": "ev-charging-infrastructure",
       "title": "Charger status display post",
-      "description": "Wayfinding-height display post with a framed status screen and a slim base. Knobs: overall scale and asset color.",
+      "description": "Wayfinding-height display post with a framed status screen and a slim base. Knobs: overall scale and powder-coated metal, display glass, safety-colored polymer and engineering polymer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -63340,7 +63680,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/charger-status-display-post.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-charger-status-display-post.png",
-      "sourceSha256": "e1376c610ab4c461b1c15ca8553eccea91d8f282883ba22519e1e26c0128e5ba",
+      "sourceSha256": "20daadc1ccc16469e8dda6d16ce1b18afbd2c7458156d009b39abaff56e0e206",
       "triangleBudget": 2400,
       "params": [
         {
@@ -63353,13 +63693,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#586c71",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#79cfda",
+          "label": "Display glass"
+        },
+        {
+          "name": "safetyPolymer",
+          "type": "color",
+          "default": "#f0b13c",
+          "label": "Safety-colored polymer"
+        },
+        {
+          "name": "engineeringPolymer",
+          "type": "color",
+          "default": "#657f84",
+          "label": "Engineering polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "safetyPolymer": "#f3bd2f",
+          "engineeringPolymer": "#263a36"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "safetyPolymer": "#ffbf24",
+          "engineeringPolymer": "#222d32"
+        }
+      },
       "stats": {
         "triangles": 252,
         "sizeM": [
@@ -63372,24 +63743,45 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#586c71",
+          "name": "powderCoat",
+          "color": "#397f90",
           "parts": [
             "ground-plate",
             "pedestal-column",
             "main-enclosure",
             "top-cap",
             "front-door",
-            "display-bezel",
-            "display-window",
-            "status-button",
             "vent-slot-1",
             "vent-slot-2",
-            "head-cap",
+            "head-cap"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#79cfda",
+          "parts": [
+            "display-bezel",
+            "display-window"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "safetyPolymer",
+          "color": "#f0b13c",
+          "parts": [
+            "status-button"
+          ],
+          "param": "safetyPolymer"
+        },
+        {
+          "name": "engineeringPolymer",
+          "color": "#657f84",
+          "parts": [
             "left-connector-cradle",
             "right-connector-cradle"
           ],
-          "param": "color"
+          "param": "engineeringPolymer"
         }
       ]
     },
@@ -63397,7 +63789,7 @@
       "id": "charging-island-plinth",
       "kit": "ev-charging-infrastructure",
       "title": "Charging island plinth",
-      "description": "Raised site island with two charger mounting pads, edge curb, and corner markers. Knobs: overall scale and asset color.",
+      "description": "Raised site island with two charger mounting pads, edge curb, and corner markers. Knobs: overall scale and powder-coated metal and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -63418,7 +63810,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/charging-island-plinth.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-charging-island-plinth.png",
-      "sourceSha256": "0bcb046c7fa3ad0d14092e468d6ef0d2fd7bf3749043285c40cccbdf851a8751",
+      "sourceSha256": "3fb00c2e098d55a478d07f04ad34f756ca5e6d2f06e515e385bae2e52315ed8e",
       "triangleBudget": 2400,
       "params": [
         {
@@ -63431,13 +63823,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#85827a",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 224,
         "sizeM": [
@@ -63450,19 +63857,26 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#85827a",
+          "name": "powderCoat",
+          "color": "#397f90",
           "parts": [
             "island-curb",
             "raised-deck",
-            "left-mount-pad",
-            "right-mount-pad",
             "corner-marker-0",
             "corner-marker-1",
             "corner-marker-2",
             "corner-marker-3"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
+          "parts": [
+            "left-mount-pad",
+            "right-mount-pad"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -63470,7 +63884,7 @@
       "id": "charging-payment-terminal",
       "kit": "ev-charging-infrastructure",
       "title": "Charging payment terminal",
-      "description": "Public payment pedestal with a raised display, keypad panel, and card reader slot. Knobs: overall scale and asset color.",
+      "description": "Public payment pedestal with a raised display, keypad panel, and card reader slot. Knobs: overall scale and powder-coated metal, display glass, engineering polymer and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -63491,7 +63905,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/charging-payment-terminal.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-charging-payment-terminal.png",
-      "sourceSha256": "f5bfafba9ed3c5c79399f3a21b236ecc5f23c554e0e5dafb58441760701c75e4",
+      "sourceSha256": "f629548870dc86e2a262243985a56455d5c753bae1a6ad0866358afc1b3c2a47",
       "triangleBudget": 2400,
       "params": [
         {
@@ -63504,13 +63918,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#495d66",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#79cfda",
+          "label": "Display glass"
+        },
+        {
+          "name": "engineeringPolymer",
+          "type": "color",
+          "default": "#657f84",
+          "label": "Engineering polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "engineeringPolymer": "#263a36",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "engineeringPolymer": "#222d32",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 128,
         "sizeM": [
@@ -63523,19 +63968,40 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#495d66",
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
           "parts": [
             "terminal-base",
-            "support-column",
+            "support-column"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#79cfda",
+          "parts": [
             "screen-bezel",
-            "screen-window",
+            "screen-window"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397f90",
+          "parts": [
             "keypad-panel",
             "card-slot",
-            "contactless-reader",
             "weather-hood"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "engineeringPolymer",
+          "color": "#657f84",
+          "parts": [
+            "contactless-reader"
+          ],
+          "param": "engineeringPolymer"
         }
       ]
     },
@@ -63543,7 +64009,7 @@
       "id": "charging-station-direction-sign",
       "kit": "ev-charging-infrastructure",
       "title": "Charging station direction sign",
-      "description": "Roadside direction sign with a two-panel face, support post, and ground sleeve. Knobs: overall scale and asset color.",
+      "description": "Roadside direction sign with a two-panel face, support post, and ground sleeve. Knobs: overall scale and powder-coated metal, safety-colored polymer and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -63564,7 +64030,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/charging-station-direction-sign.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-charging-station-direction-sign.png",
-      "sourceSha256": "8874ada0fbbdf178b2fed19274a15f53e7607eff49e4259e1284992487121fdd",
+      "sourceSha256": "dad0f9fc2bfcc355b97ed8598da680230f23787d339995171e5015b5b98907ee",
       "triangleBudget": 2400,
       "params": [
         {
@@ -63577,13 +64043,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#64756c",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "safetyPolymer",
+          "type": "color",
+          "default": "#f0b13c",
+          "label": "Safety-colored polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "safetyPolymer": "#f3bd2f",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "safetyPolymer": "#ffbf24",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 148,
         "sizeM": [
@@ -63596,18 +64085,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#64756c",
+          "name": "powderCoat",
+          "color": "#397f90",
           "parts": [
             "ground-sleeve",
-            "sign-post",
             "sign-panel",
-            "sign-face",
             "top-cap",
             "lower-arrow-panel",
             "arrow-shaft"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
+          "parts": [
+            "sign-post"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "safetyPolymer",
+          "color": "#f0b13c",
+          "parts": [
+            "sign-face"
+          ],
+          "param": "safetyPolymer"
         }
       ]
     },
@@ -63615,7 +64118,7 @@
       "id": "coiled-charging-cable-reel",
       "kit": "ev-charging-infrastructure",
       "title": "Coiled charging cable reel",
-      "description": "Wall-mounted cable reel with side plates, a central drum, and a guided cable outlet. Knobs: overall scale and asset color.",
+      "description": "Wall-mounted cable reel with side plates, a central drum, and a guided cable outlet. Knobs: overall scale and powder-coated metal, cable elastomer and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -63636,7 +64139,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/coiled-charging-cable-reel.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-coiled-charging-cable-reel.png",
-      "sourceSha256": "9f63108ea89c8d5144582660b5dcf2e8b5660c41b78623ad9adab4a094babd76",
+      "sourceSha256": "a53f278fb1507da83fc4e6078a4441adfeb2bfe1522d8ab9048aed3cdb5d6b91",
       "triangleBudget": 2400,
       "params": [
         {
@@ -63649,13 +64152,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#596b70",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "cableElastomer",
+          "type": "color",
+          "default": "#1b2427",
+          "label": "Cable elastomer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "cableElastomer": "#1a2522",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "cableElastomer": "#111719",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 276,
         "sizeM": [
@@ -63668,18 +64194,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#596b70",
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
           "parts": [
             "wall-mount-plate",
+            "spool-left-flange",
+            "spool-right-flange"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397f90",
+          "parts": [
             "drum-axle",
             "spool-core",
-            "spool-left-flange",
-            "spool-right-flange",
-            "cable-outlet-guide",
+            "cable-outlet-guide"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "cableElastomer",
+          "color": "#1b2427",
+          "parts": [
             "cable-tail"
           ],
-          "param": "color"
+          "param": "cableElastomer"
         }
       ]
     },
@@ -63687,7 +64227,7 @@
       "id": "compact-dc-fast-charger",
       "kit": "ev-charging-infrastructure",
       "title": "Compact DC fast charger",
-      "description": "Floor-standing DC charger with a front display, service door, and paired charging leads. Knobs: overall scale and asset color.",
+      "description": "Floor-standing DC charger with a front display, service door, and paired charging leads. Knobs: overall scale and powder-coated metal, display glass, cable elastomer and safety-colored polymer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -63708,7 +64248,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/compact-dc-fast-charger.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-compact-dc-fast-charger.png",
-      "sourceSha256": "4b122ffb919ab0b34b0fe0465c5154690b263b8c2956ad867e3cea59c5bed92a",
+      "sourceSha256": "8a7cf0bca7503dd7e9b9daa6cfefedf5d0a08bf90d956749171078bc0a6cc997",
       "triangleBudget": 2400,
       "params": [
         {
@@ -63721,35 +64261,63 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#536c77",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#79cfda",
+          "label": "Display glass"
+        },
+        {
+          "name": "cableElastomer",
+          "type": "color",
+          "default": "#1b2427",
+          "label": "Cable elastomer"
+        },
+        {
+          "name": "safetyPolymer",
+          "type": "color",
+          "default": "#f0b13c",
+          "label": "Safety-colored polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "cableElastomer": "#1a2522",
+          "safetyPolymer": "#f3bd2f"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "cableElastomer": "#111719",
+          "safetyPolymer": "#ffbf24"
+        }
+      },
       "stats": {
-        "triangles": 364,
+        "triangles": 492,
         "sizeM": [
-          0.7836,
+          0.7916,
           1.752,
-          1.075
+          1.148
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#536c77",
+          "name": "powderCoat",
+          "color": "#397f90",
           "parts": [
             "main-enclosure",
             "base-plinth",
             "top-cap",
             "front-door",
-            "display-bezel",
-            "display-window",
-            "status-button",
             "vent-slot-1",
             "vent-slot-2",
             "vent-slot-3",
@@ -63758,10 +64326,38 @@
             "roof-visor",
             "left-connector-cradle",
             "right-connector-cradle",
+            "left-connector-handle",
+            "right-connector-handle",
+            "left-contact-collar",
+            "right-contact-collar"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#79cfda",
+          "parts": [
+            "display-bezel",
+            "display-window"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "safetyPolymer",
+          "color": "#f0b13c",
+          "parts": [
+            "status-button"
+          ],
+          "param": "safetyPolymer"
+        },
+        {
+          "name": "cableElastomer",
+          "color": "#1b2427",
+          "parts": [
             "left-charging-cable",
             "right-charging-cable"
           ],
-          "param": "color"
+          "param": "cableElastomer"
         }
       ]
     },
@@ -63769,7 +64365,7 @@
       "id": "curbside-ac-charger-post",
       "kit": "ev-charging-infrastructure",
       "title": "Curbside AC charger post",
-      "description": "Slim public AC post with a readable front panel, paired cable ports, and a broad base. Knobs: overall scale and asset color.",
+      "description": "Slim public AC post with a readable front panel, paired cable ports, and a broad base. Knobs: overall scale and powder-coated metal, display glass, cable elastomer and safety-colored polymer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -63790,7 +64386,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/curbside-ac-charger-post.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-curbside-ac-charger-post.png",
-      "sourceSha256": "fb1c432228b7a91174ab402c218793bfc9c0e503efb4262f1b0d2697719a4bf9",
+      "sourceSha256": "7d6babc5f4d9704376352671343bed17f8eb0455b0adc6ae386b5fd16135cb97",
       "triangleBudget": 2400,
       "params": [
         {
@@ -63803,13 +64399,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#526973",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#79cfda",
+          "label": "Display glass"
+        },
+        {
+          "name": "cableElastomer",
+          "type": "color",
+          "default": "#1b2427",
+          "label": "Cable elastomer"
+        },
+        {
+          "name": "safetyPolymer",
+          "type": "color",
+          "default": "#f0b13c",
+          "label": "Safety-colored polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "cableElastomer": "#1a2522",
+          "safetyPolymer": "#f3bd2f"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "cableElastomer": "#111719",
+          "safetyPolymer": "#ffbf24"
+        }
+      },
       "stats": {
         "triangles": 340,
         "sizeM": [
@@ -63822,26 +64449,47 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#526973",
+          "name": "powderCoat",
+          "color": "#397f90",
           "parts": [
             "ground-plate",
             "pedestal-column",
             "main-enclosure",
             "top-cap",
             "front-door",
-            "display-bezel",
-            "display-window",
-            "status-button",
             "vent-slot-1",
             "vent-slot-2",
             "head-cap",
             "left-connector-cradle",
-            "right-connector-cradle",
+            "right-connector-cradle"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#79cfda",
+          "parts": [
+            "display-bezel",
+            "display-window"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "safetyPolymer",
+          "color": "#f0b13c",
+          "parts": [
+            "status-button"
+          ],
+          "param": "safetyPolymer"
+        },
+        {
+          "name": "cableElastomer",
+          "color": "#1b2427",
+          "parts": [
             "cable-tail",
             "cable-tail-second"
           ],
-          "param": "color"
+          "param": "cableElastomer"
         }
       ]
     },
@@ -63849,7 +64497,7 @@
       "id": "curbside-lamp-charger",
       "kit": "ev-charging-infrastructure",
       "title": "Curbside lamp charger",
-      "description": "Short area-light mast with an integrated side-mounted charger and compact light head. Knobs: overall scale and asset color.",
+      "description": "Short area-light mast with an integrated side-mounted charger and compact light head. Knobs: overall scale and powder-coated metal, display glass, engineering polymer and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -63870,7 +64518,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/curbside-lamp-charger.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-curbside-lamp-charger.png",
-      "sourceSha256": "1f70db757d324bc62560c571730f6c910eacef10b1b746ff480bf5320b634456",
+      "sourceSha256": "16a099eed3c75acbb51f0b1b0abec5b73e4b54ccc5db213d86fb09fb878459af",
       "triangleBudget": 2400,
       "params": [
         {
@@ -63883,13 +64531,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#6c7773",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#79cfda",
+          "label": "Display glass"
+        },
+        {
+          "name": "engineeringPolymer",
+          "type": "color",
+          "default": "#657f84",
+          "label": "Engineering polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "engineeringPolymer": "#263a36",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "engineeringPolymer": "#222d32",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 212,
         "sizeM": [
@@ -63902,18 +64581,39 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6c7773",
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
           "parts": [
             "mast-base",
             "lamp-mast",
-            "light-arm",
+            "light-arm"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397f90",
+          "parts": [
             "light-head",
-            "charger-box",
-            "charger-screen",
+            "charger-box"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#79cfda",
+          "parts": [
+            "charger-screen"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "engineeringPolymer",
+          "color": "#657f84",
+          "parts": [
             "cable-holster"
           ],
-          "param": "color"
+          "param": "engineeringPolymer"
         }
       ]
     },
@@ -63921,7 +64621,7 @@
       "id": "destination-charging-pedestal",
       "kit": "ev-charging-infrastructure",
       "title": "Destination charging pedestal",
-      "description": "Parking-lot charger pedestal with a sheltered display head and side cable holsters. Knobs: overall scale and asset color.",
+      "description": "Parking-lot charger pedestal with a sheltered display head and side cable holsters. Knobs: overall scale and powder-coated metal, display glass, cable elastomer and safety-colored polymer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -63942,7 +64642,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/destination-charging-pedestal.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-destination-charging-pedestal.png",
-      "sourceSha256": "998e5ce43bdd2bc49945ae51734f2f544bebb4f3c022115a9827d1de7a134d48",
+      "sourceSha256": "61b3dc7ee0ff40f3d3681b801c01f27e43f99042e0b4314366650d01aaa5f9e4",
       "triangleBudget": 2400,
       "params": [
         {
@@ -63955,13 +64655,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#617578",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#79cfda",
+          "label": "Display glass"
+        },
+        {
+          "name": "cableElastomer",
+          "type": "color",
+          "default": "#1b2427",
+          "label": "Cable elastomer"
+        },
+        {
+          "name": "safetyPolymer",
+          "type": "color",
+          "default": "#f0b13c",
+          "label": "Safety-colored polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "cableElastomer": "#1a2522",
+          "safetyPolymer": "#f3bd2f"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "cableElastomer": "#111719",
+          "safetyPolymer": "#ffbf24"
+        }
+      },
       "stats": {
         "triangles": 340,
         "sizeM": [
@@ -63974,26 +64705,47 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#617578",
+          "name": "powderCoat",
+          "color": "#397f90",
           "parts": [
             "ground-plate",
             "pedestal-column",
             "main-enclosure",
             "top-cap",
             "front-door",
-            "display-bezel",
-            "display-window",
-            "status-button",
             "vent-slot-1",
             "vent-slot-2",
             "head-cap",
             "left-connector-cradle",
-            "right-connector-cradle",
+            "right-connector-cradle"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#79cfda",
+          "parts": [
+            "display-bezel",
+            "display-window"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "safetyPolymer",
+          "color": "#f0b13c",
+          "parts": [
+            "status-button"
+          ],
+          "param": "safetyPolymer"
+        },
+        {
+          "name": "cableElastomer",
+          "color": "#1b2427",
+          "parts": [
             "cable-tail",
             "cable-tail-second"
           ],
-          "param": "color"
+          "param": "cableElastomer"
         }
       ]
     },
@@ -64001,7 +64753,7 @@
       "id": "dual-connector-dc-dispenser",
       "kit": "ev-charging-infrastructure",
       "title": "Dual-connector DC dispenser",
-      "description": "Public DC charging dispenser with two plug cradles, a central status display, and cable loops. Knobs: overall scale and asset color.",
+      "description": "Public DC charging dispenser with two plug cradles, a central status display, and cable loops. Knobs: overall scale and powder-coated metal, display glass, cable elastomer and safety-colored polymer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -64022,7 +64774,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/dual-connector-dc-dispenser.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-dual-connector-dc-dispenser.png",
-      "sourceSha256": "2f96ba85d817e5dada2ddf18527143fe2c3c8bcc28ba43ce3c649d23e9113444",
+      "sourceSha256": "498ba514135a70a4f87e05857d45f60403c84b956f092ef592719602fda111ce",
       "triangleBudget": 2400,
       "params": [
         {
@@ -64035,13 +64787,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#536a75",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#79cfda",
+          "label": "Display glass"
+        },
+        {
+          "name": "cableElastomer",
+          "type": "color",
+          "default": "#1b2427",
+          "label": "Cable elastomer"
+        },
+        {
+          "name": "safetyPolymer",
+          "type": "color",
+          "default": "#f0b13c",
+          "label": "Safety-colored polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "cableElastomer": "#1a2522",
+          "safetyPolymer": "#f3bd2f"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "cableElastomer": "#111719",
+          "safetyPolymer": "#ffbf24"
+        }
+      },
       "stats": {
         "triangles": 364,
         "sizeM": [
@@ -64054,16 +64837,13 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#536a75",
+          "name": "powderCoat",
+          "color": "#397f90",
           "parts": [
             "main-enclosure",
             "base-plinth",
             "top-cap",
             "front-door",
-            "display-bezel",
-            "display-window",
-            "status-button",
             "vent-slot-1",
             "vent-slot-2",
             "vent-slot-3",
@@ -64071,11 +64851,35 @@
             "vent-slot-5",
             "roof-visor",
             "left-connector-cradle",
-            "right-connector-cradle",
+            "right-connector-cradle"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#79cfda",
+          "parts": [
+            "display-bezel",
+            "display-window"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "safetyPolymer",
+          "color": "#f0b13c",
+          "parts": [
+            "status-button"
+          ],
+          "param": "safetyPolymer"
+        },
+        {
+          "name": "cableElastomer",
+          "color": "#1b2427",
+          "parts": [
             "left-charging-cable",
             "right-charging-cable"
           ],
-          "param": "color"
+          "param": "cableElastomer"
         }
       ]
     },
@@ -64083,7 +64887,7 @@
       "id": "dual-outlet-wallbox",
       "kit": "ev-charging-infrastructure",
       "title": "Dual-outlet wallbox",
-      "description": "Workplace wall charger with two cable outlets, paired status windows, and mounting rails. Knobs: overall scale and asset color.",
+      "description": "Workplace wall charger with two cable outlets, paired status windows, and mounting rails. Knobs: overall scale and powder-coated metal, display glass, safety-colored polymer and engineering polymer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -64104,7 +64908,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/dual-outlet-wallbox.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-dual-outlet-wallbox.png",
-      "sourceSha256": "0c28dec5312d06832c5804116c4a9189452bc6e5bf44c0e0f0fe79efaa72b63a",
+      "sourceSha256": "e54aeef90c6ab03de3f7b6f8da7565609388ef7a70f9cae50259c04b6bab42b3",
       "triangleBudget": 2400,
       "params": [
         {
@@ -64117,13 +64921,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#576d77",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#79cfda",
+          "label": "Display glass"
+        },
+        {
+          "name": "safetyPolymer",
+          "type": "color",
+          "default": "#f0b13c",
+          "label": "Safety-colored polymer"
+        },
+        {
+          "name": "engineeringPolymer",
+          "type": "color",
+          "default": "#657f84",
+          "label": "Engineering polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "safetyPolymer": "#f3bd2f",
+          "engineeringPolymer": "#263a36"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "safetyPolymer": "#ffbf24",
+          "engineeringPolymer": "#222d32"
+        }
+      },
       "stats": {
         "triangles": 252,
         "sizeM": [
@@ -64136,24 +64971,45 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#576d77",
+          "name": "powderCoat",
+          "color": "#397f90",
           "parts": [
             "mounting-rail",
             "main-enclosure",
             "top-cap",
             "front-door",
-            "display-bezel",
-            "display-window",
-            "status-button",
             "vent-slot-1",
             "vent-slot-2",
-            "vent-slot-3",
-            "second-display-bezel",
+            "vent-slot-3"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#79cfda",
+          "parts": [
+            "display-bezel",
+            "display-window",
+            "second-display-bezel"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "safetyPolymer",
+          "color": "#f0b13c",
+          "parts": [
+            "status-button"
+          ],
+          "param": "safetyPolymer"
+        },
+        {
+          "name": "engineeringPolymer",
+          "color": "#657f84",
+          "parts": [
             "left-holster",
             "right-holster"
           ],
-          "param": "color"
+          "param": "engineeringPolymer"
         }
       ]
     },
@@ -64161,7 +65017,7 @@
       "id": "dual-port-ac-pedestal",
       "kit": "ev-charging-infrastructure",
       "title": "Dual-port AC pedestal",
-      "description": "Twin-sided AC pedestal with two front panels and two hanging cable leads. Knobs: overall scale and asset color.",
+      "description": "Twin-sided AC pedestal with two front panels and two hanging cable leads. Knobs: overall scale and powder-coated metal, display glass, safety-colored polymer and engineering polymer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -64182,7 +65038,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/dual-port-ac-pedestal.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-dual-port-ac-pedestal.png",
-      "sourceSha256": "ef37ce8f9fe3f8b5f0df0d2bfda19bbe3e3e0aac199b3412b95349f81fb85f52",
+      "sourceSha256": "8a467dc5a46a978c0ea2f1d2e6da269e75c00169fb10b3f2dabaa079a8d2626e",
       "triangleBudget": 2400,
       "params": [
         {
@@ -64195,13 +65051,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#60757a",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#79cfda",
+          "label": "Display glass"
+        },
+        {
+          "name": "safetyPolymer",
+          "type": "color",
+          "default": "#f0b13c",
+          "label": "Safety-colored polymer"
+        },
+        {
+          "name": "engineeringPolymer",
+          "type": "color",
+          "default": "#657f84",
+          "label": "Engineering polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "safetyPolymer": "#f3bd2f",
+          "engineeringPolymer": "#263a36"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "safetyPolymer": "#ffbf24",
+          "engineeringPolymer": "#222d32"
+        }
+      },
       "stats": {
         "triangles": 352,
         "sizeM": [
@@ -64214,27 +65101,48 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#60757a",
+          "name": "powderCoat",
+          "color": "#397f90",
           "parts": [
             "ground-plate",
             "pedestal-column",
             "main-enclosure",
             "top-cap",
             "front-door",
-            "display-bezel",
-            "display-window",
-            "status-button",
             "vent-slot-1",
             "vent-slot-2",
             "head-cap",
-            "left-connector-cradle",
-            "right-connector-cradle",
             "rear-control-panel",
             "left-cable",
             "right-cable"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#79cfda",
+          "parts": [
+            "display-bezel",
+            "display-window"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "safetyPolymer",
+          "color": "#f0b13c",
+          "parts": [
+            "status-button"
+          ],
+          "param": "safetyPolymer"
+        },
+        {
+          "name": "engineeringPolymer",
+          "color": "#657f84",
+          "parts": [
+            "left-connector-cradle",
+            "right-connector-cradle"
+          ],
+          "param": "engineeringPolymer"
         }
       ]
     },
@@ -64242,7 +65150,7 @@
       "id": "ev-charger-protection-bollard",
       "kit": "ev-charging-infrastructure",
       "title": "Charger protection bollard",
-      "description": "Heavy tubular guard post with a protective cap and square anchor plate. Knobs: overall scale and asset color.",
+      "description": "Heavy tubular guard post with a protective cap and square anchor plate. Knobs: overall scale and powder-coated metal and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -64263,7 +65171,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/ev-charger-protection-bollard.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-ev-charger-protection-bollard.png",
-      "sourceSha256": "83a8b82a98fc193a713c59889b8ad26b1fbe116391bda7eb96ba97ecc4e97e27",
+      "sourceSha256": "5bb9bed4e1bfad5d80594d7810eca61ef89c53e6e511c156d257142930669991",
       "triangleBudget": 2400,
       "params": [
         {
@@ -64276,13 +65184,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#9d6943",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 308,
         "sizeM": [
@@ -64295,18 +65218,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#9d6943",
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
           "parts": [
             "anchor-flange",
             "guard-post",
-            "top-cap",
             "base-anchor-0",
             "base-anchor-1",
             "base-anchor-2",
             "base-anchor-3"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397f90",
+          "parts": [
+            "top-cap"
+          ],
+          "param": "powderCoat"
         }
       ]
     },
@@ -64314,7 +65244,7 @@
       "id": "ev-emergency-stop-station",
       "kit": "ev-charging-infrastructure",
       "title": "EV emergency-stop station",
-      "description": "Protected emergency control post with an overhanging guard and prominent actuator. Knobs: overall scale and asset color.",
+      "description": "Protected emergency control post with an overhanging guard and prominent actuator. Knobs: overall scale and powder-coated metal, safety-colored polymer and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -64335,7 +65265,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/ev-emergency-stop-station.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-ev-emergency-stop-station.png",
-      "sourceSha256": "94ab86658ee123e0c109c6078cae51b984518d916951a663a866e116f0c41673",
+      "sourceSha256": "73092e583402fa0d4dbab5277b9636b6d06ddf2993f330483457e9f1a3c787ac",
       "triangleBudget": 2400,
       "params": [
         {
@@ -64348,13 +65278,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#a3443d",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "safetyPolymer",
+          "type": "color",
+          "default": "#f0b13c",
+          "label": "Safety-colored polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "safetyPolymer": "#f3bd2f",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "safetyPolymer": "#ffbf24",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 136,
         "sizeM": [
@@ -64367,17 +65320,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a3443d",
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
           "parts": [
             "ground-plate",
             "control-post",
-            "guard-hood",
             "actuator-base",
-            "stop-actuator",
             "label-frame"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397f90",
+          "parts": [
+            "guard-hood"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "safetyPolymer",
+          "color": "#f0b13c",
+          "parts": [
+            "stop-actuator"
+          ],
+          "param": "safetyPolymer"
         }
       ]
     },
@@ -64385,7 +65352,7 @@
       "id": "ev-metering-pedestal",
       "kit": "ev-charging-infrastructure",
       "title": "EV metering pedestal",
-      "description": "Utility metering post with a meter head, service panel, and protective plinth. Knobs: overall scale and asset color.",
+      "description": "Utility metering post with a meter head, service panel, and protective plinth. Knobs: overall scale and powder-coated metal, display glass and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -64406,7 +65373,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/ev-metering-pedestal.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-ev-metering-pedestal.png",
-      "sourceSha256": "e651228ec74cbfd738a763b5124f8e53122fc4e28badf1d86dc1229b6eab4ca8",
+      "sourceSha256": "c8fb63e8a77f2c071345ebd25b5a22abaf03550c4fd87673e8e052b4ac3c13a7",
       "triangleBudget": 2400,
       "params": [
         {
@@ -64419,13 +65386,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#65716f",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#79cfda",
+          "label": "Display glass"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 148,
         "sizeM": [
@@ -64438,18 +65428,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#65716f",
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
           "parts": [
             "base-skirt",
-            "pedestal-body",
+            "pedestal-body"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397f90",
+          "parts": [
             "meter-head",
-            "meter-window",
             "meter-dial",
             "service-door",
             "cable-riser"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#79cfda",
+          "parts": [
+            "meter-window"
+          ],
+          "param": "displayGlass"
         }
       ]
     },
@@ -64457,7 +65461,7 @@
       "id": "ev-parking-bay-sign",
       "kit": "ev-charging-infrastructure",
       "title": "EV parking bay sign",
-      "description": "Single-post parking sign with a rectangular face plate and a broad ground socket. Knobs: overall scale and asset color.",
+      "description": "Single-post parking sign with a rectangular face plate and a broad ground socket. Knobs: overall scale and powder-coated metal, safety-colored polymer and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -64478,7 +65482,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/ev-parking-bay-sign.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-ev-parking-bay-sign.png",
-      "sourceSha256": "f17ba3df0cfd2fb77f1472f13f6397c8c214bc8a5aeced5ebb144adebdae3651",
+      "sourceSha256": "c2cae57dd63d83d8962e04fe2f0a70b53c1db903bdf6e3a9542a6e0468e13e2b",
       "triangleBudget": 2400,
       "params": [
         {
@@ -64491,13 +65495,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#5f756e",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "safetyPolymer",
+          "type": "color",
+          "default": "#f0b13c",
+          "label": "Safety-colored polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "safetyPolymer": "#f3bd2f",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "safetyPolymer": "#ffbf24",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 92,
         "sizeM": [
@@ -64510,16 +65537,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#5f756e",
+          "name": "powderCoat",
+          "color": "#397f90",
           "parts": [
             "ground-sleeve",
-            "sign-post",
             "sign-panel",
-            "sign-face",
             "top-cap"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
+          "parts": [
+            "sign-post"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "safetyPolymer",
+          "color": "#f0b13c",
+          "parts": [
+            "sign-face"
+          ],
+          "param": "safetyPolymer"
         }
       ]
     },
@@ -64527,7 +65568,7 @@
       "id": "ev-service-disconnect-cabinet",
       "kit": "ev-charging-infrastructure",
       "title": "EV service disconnect cabinet",
-      "description": "Outdoor service disconnect with a guarded handle, meter window, and lower cable entry. Knobs: overall scale and asset color.",
+      "description": "Outdoor service disconnect with a guarded handle, meter window, and lower cable entry. Knobs: overall scale and powder-coated metal, display glass, safety-colored polymer and engineering polymer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -64548,7 +65589,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/ev-service-disconnect-cabinet.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-ev-service-disconnect-cabinet.png",
-      "sourceSha256": "17045176643f70555124df6fcc2a13088dd78c6539003f8ea941c16a4c280133",
+      "sourceSha256": "a2a6c7f11cba9242cc381966816648da76c3ca23ec8aea3f35f09c21cb9fb214",
       "triangleBudget": 2400,
       "params": [
         {
@@ -64561,13 +65602,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#6e756e",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#79cfda",
+          "label": "Display glass"
+        },
+        {
+          "name": "safetyPolymer",
+          "type": "color",
+          "default": "#f0b13c",
+          "label": "Safety-colored polymer"
+        },
+        {
+          "name": "engineeringPolymer",
+          "type": "color",
+          "default": "#657f84",
+          "label": "Engineering polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "safetyPolymer": "#f3bd2f",
+          "engineeringPolymer": "#263a36"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "safetyPolymer": "#ffbf24",
+          "engineeringPolymer": "#222d32"
+        }
+      },
       "stats": {
         "triangles": 300,
         "sizeM": [
@@ -64580,28 +65652,49 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6e756e",
+          "name": "powderCoat",
+          "color": "#397f90",
           "parts": [
             "main-enclosure",
             "base-plinth",
             "top-cap",
             "door-seam-1",
             "door-seam-2",
-            "display-bezel",
-            "display-window",
-            "status-button",
             "vent-slot-1",
             "vent-slot-2",
             "vent-slot-3",
             "vent-slot-4",
             "vent-slot-5",
             "cable-entry-skirt",
-            "ground-terminal",
+            "ground-terminal"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#79cfda",
+          "parts": [
+            "display-bezel",
+            "display-window"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "safetyPolymer",
+          "color": "#f0b13c",
+          "parts": [
+            "status-button"
+          ],
+          "param": "safetyPolymer"
+        },
+        {
+          "name": "engineeringPolymer",
+          "color": "#657f84",
+          "parts": [
             "handle-guard",
             "disconnect-handle"
           ],
-          "param": "color"
+          "param": "engineeringPolymer"
         }
       ]
     },
@@ -64609,7 +65702,7 @@
       "id": "ev-site-distribution-panel",
       "kit": "ev-charging-infrastructure",
       "title": "EV site distribution panel",
-      "description": "Multi-bay panelboard with grouped breaker doors, indicator windows, and conduit stubs. Knobs: overall scale and asset color.",
+      "description": "Multi-bay panelboard with grouped breaker doors, indicator windows, and conduit stubs. Knobs: overall scale and powder-coated metal, display glass, safety-colored polymer and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -64630,7 +65723,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/ev-site-distribution-panel.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-ev-site-distribution-panel.png",
-      "sourceSha256": "fcd70751a6feb06c66cb9c65b5cf7c0216f4395321207a93df8a65385d4aed9f",
+      "sourceSha256": "cee81fe14b2be28dde95fb6380718761e39e748c3b021eaccc73ec8084848885",
       "triangleBudget": 2400,
       "params": [
         {
@@ -64643,13 +65736,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#707873",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#79cfda",
+          "label": "Display glass"
+        },
+        {
+          "name": "safetyPolymer",
+          "type": "color",
+          "default": "#f0b13c",
+          "label": "Safety-colored polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "safetyPolymer": "#f3bd2f",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "safetyPolymer": "#ffbf24",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 344,
         "sizeM": [
@@ -64662,29 +65786,50 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#707873",
+          "name": "powderCoat",
+          "color": "#397f90",
           "parts": [
             "main-enclosure",
-            "base-plinth",
             "top-cap",
             "door-seam-1",
             "door-seam-2",
             "door-seam-3",
-            "display-bezel",
-            "display-window",
-            "status-button",
-            "vent-slot-1",
-            "vent-slot-2",
-            "vent-slot-3",
-            "vent-slot-4",
-            "vent-slot-5",
             "cable-entry-skirt",
             "ground-terminal",
             "conduit-left",
             "conduit-right"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
+          "parts": [
+            "base-plinth",
+            "vent-slot-1",
+            "vent-slot-2",
+            "vent-slot-3",
+            "vent-slot-4",
+            "vent-slot-5"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#79cfda",
+          "parts": [
+            "display-bezel",
+            "display-window"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "safetyPolymer",
+          "color": "#f0b13c",
+          "parts": [
+            "status-button"
+          ],
+          "param": "safetyPolymer"
         }
       ]
     },
@@ -64692,7 +65837,7 @@
       "id": "fleet-charging-canopy",
       "kit": "ev-charging-infrastructure",
       "title": "Fleet charging canopy",
-      "description": "Open fleet shelter with repeated charger bays, roof frame, and protective corner posts. Knobs: overall scale and asset color.",
+      "description": "Open fleet shelter with repeated charger bays, roof frame, and protective corner posts. Knobs: overall scale and powder-coated metal, cable elastomer and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -64713,7 +65858,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/fleet-charging-canopy.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-fleet-charging-canopy.png",
-      "sourceSha256": "92ec6f230730f652f3fd79b78087e42038b185ca36b2e7373ad3ebe35c787e44",
+      "sourceSha256": "f549654bac88e4cce8506d41d92fa207b549dd16c86648bc493a6865b0e39464",
       "triangleBudget": 2400,
       "params": [
         {
@@ -64726,13 +65871,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#6e7770",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "cableElastomer",
+          "type": "color",
+          "default": "#1b2427",
+          "label": "Cable elastomer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "cableElastomer": "#1a2522",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "cableElastomer": "#111719",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 388,
         "sizeM": [
@@ -64745,8 +65913,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6e7770",
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
           "parts": [
             "left-column-front",
             "left-column-rear",
@@ -64754,21 +65922,35 @@
             "right-column-rear",
             "front-rafter",
             "rear-rafter",
+            "charger-post-1",
+            "charger-post-2",
+            "charger-post-3",
+            "charger-post-4"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397f90",
+          "parts": [
             "roof-spine",
             "bay-divider-0",
             "bay-divider-1",
             "bay-divider-2",
-            "bay-divider-3",
-            "charger-post-1",
+            "bay-divider-3"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "cableElastomer",
+          "color": "#1b2427",
+          "parts": [
             "cable-drop-1",
-            "charger-post-2",
             "cable-drop-2",
-            "charger-post-3",
             "cable-drop-3",
-            "charger-post-4",
             "cable-drop-4"
           ],
-          "param": "color"
+          "param": "cableElastomer"
         }
       ]
     },
@@ -64776,7 +65958,7 @@
       "id": "fleet-depot-dc-dispenser",
       "kit": "ev-charging-infrastructure",
       "title": "Fleet depot DC dispenser",
-      "description": "Fleet charger post with twin high-reach cables, overhead cable guides, and a reinforced foot. Knobs: overall scale and asset color.",
+      "description": "Fleet charger post with twin high-reach cables, overhead cable guides, and a reinforced foot. Knobs: overall scale and powder-coated metal, display glass, cable elastomer and safety-colored polymer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -64797,7 +65979,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/fleet-depot-dc-dispenser.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-fleet-depot-dc-dispenser.png",
-      "sourceSha256": "25d551c4ab6d8a43d0ceee573b3a1ce1d510d4fd2ffd0b63b7739c57ef8730da",
+      "sourceSha256": "5fe86f83e39627c658f933a030b946cb1dea7212dd740bcf244909cfff6121b7",
       "triangleBudget": 2400,
       "params": [
         {
@@ -64810,13 +65992,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#5b6870",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#79cfda",
+          "label": "Display glass"
+        },
+        {
+          "name": "cableElastomer",
+          "type": "color",
+          "default": "#1b2427",
+          "label": "Cable elastomer"
+        },
+        {
+          "name": "safetyPolymer",
+          "type": "color",
+          "default": "#f0b13c",
+          "label": "Safety-colored polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "cableElastomer": "#1a2522",
+          "safetyPolymer": "#f3bd2f"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "cableElastomer": "#111719",
+          "safetyPolymer": "#ffbf24"
+        }
+      },
       "stats": {
         "triangles": 364,
         "sizeM": [
@@ -64829,16 +66042,13 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#5b6870",
+          "name": "powderCoat",
+          "color": "#397f90",
           "parts": [
             "main-enclosure",
             "base-plinth",
             "top-cap",
             "front-door",
-            "display-bezel",
-            "display-window",
-            "status-button",
             "vent-slot-1",
             "vent-slot-2",
             "vent-slot-3",
@@ -64846,11 +66056,35 @@
             "vent-slot-5",
             "roof-visor",
             "left-connector-cradle",
-            "right-connector-cradle",
+            "right-connector-cradle"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#79cfda",
+          "parts": [
+            "display-bezel",
+            "display-window"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "safetyPolymer",
+          "color": "#f0b13c",
+          "parts": [
+            "status-button"
+          ],
+          "param": "safetyPolymer"
+        },
+        {
+          "name": "cableElastomer",
+          "color": "#1b2427",
+          "parts": [
             "left-charging-cable",
             "right-charging-cable"
           ],
-          "param": "color"
+          "param": "cableElastomer"
         }
       ]
     },
@@ -64858,7 +66092,7 @@
       "id": "high-power-charge-dispenser",
       "kit": "ev-charging-infrastructure",
       "title": "High-power charge dispenser",
-      "description": "Tall high-power dispenser with a broad screen, paired cable outlets, and service plinth. Knobs: overall scale and asset color.",
+      "description": "Tall high-power dispenser with a broad screen, paired cable outlets, and service plinth. Knobs: overall scale and powder-coated metal, display glass, cable elastomer and safety-colored polymer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -64879,7 +66113,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/high-power-charge-dispenser.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-high-power-charge-dispenser.png",
-      "sourceSha256": "f309aa1fb2c5dab55c47b1090e77dce826e023cf5d99601157ea475e75757464",
+      "sourceSha256": "ac819ef56edb43bcea64a9c840bdf8dbe5a6926b56f25f35becce35aad0d5e2b",
       "triangleBudget": 2400,
       "params": [
         {
@@ -64892,13 +66126,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#394f5a",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#79cfda",
+          "label": "Display glass"
+        },
+        {
+          "name": "cableElastomer",
+          "type": "color",
+          "default": "#1b2427",
+          "label": "Cable elastomer"
+        },
+        {
+          "name": "safetyPolymer",
+          "type": "color",
+          "default": "#f0b13c",
+          "label": "Safety-colored polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "cableElastomer": "#1a2522",
+          "safetyPolymer": "#f3bd2f"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "cableElastomer": "#111719",
+          "safetyPolymer": "#ffbf24"
+        }
+      },
       "stats": {
         "triangles": 376,
         "sizeM": [
@@ -64911,17 +66176,14 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#394f5a",
+          "name": "powderCoat",
+          "color": "#397f90",
           "parts": [
             "main-enclosure",
             "base-plinth",
             "top-cap",
             "door-seam-1",
             "door-seam-2",
-            "display-bezel",
-            "display-window",
-            "status-button",
             "vent-slot-1",
             "vent-slot-2",
             "vent-slot-3",
@@ -64929,11 +66191,35 @@
             "vent-slot-5",
             "roof-visor",
             "left-connector-cradle",
-            "right-connector-cradle",
+            "right-connector-cradle"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#79cfda",
+          "parts": [
+            "display-bezel",
+            "display-window"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "safetyPolymer",
+          "color": "#f0b13c",
+          "parts": [
+            "status-button"
+          ],
+          "param": "safetyPolymer"
+        },
+        {
+          "name": "cableElastomer",
+          "color": "#1b2427",
+          "parts": [
             "left-charging-cable",
             "right-charging-cable"
           ],
-          "param": "color"
+          "param": "cableElastomer"
         }
       ]
     },
@@ -64941,7 +66227,7 @@
       "id": "home-ac-wallbox",
       "kit": "ev-charging-infrastructure",
       "title": "Home AC wallbox",
-      "description": "Compact wall-mounted AC charger with a status screen, cable hook, and mounting plate. Knobs: overall scale and asset color.",
+      "description": "Compact wall-mounted AC charger with a status screen, cable hook, and mounting plate. Knobs: overall scale and powder-coated metal, display glass, safety-colored polymer and engineering polymer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -64962,7 +66248,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/home-ac-wallbox.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-home-ac-wallbox.png",
-      "sourceSha256": "e94386e298d48015a0d23be93b579fc62a633120fee6620488d5887403208426",
+      "sourceSha256": "ec4209305e5d93ba510361c403ec4892d9c9bd32043550689d52930706765f8d",
       "triangleBudget": 2400,
       "params": [
         {
@@ -64975,13 +66261,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#65747b",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#79cfda",
+          "label": "Display glass"
+        },
+        {
+          "name": "safetyPolymer",
+          "type": "color",
+          "default": "#f0b13c",
+          "label": "Safety-colored polymer"
+        },
+        {
+          "name": "engineeringPolymer",
+          "type": "color",
+          "default": "#657f84",
+          "label": "Engineering polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "safetyPolymer": "#f3bd2f",
+          "engineeringPolymer": "#263a36"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "safetyPolymer": "#ffbf24",
+          "engineeringPolymer": "#222d32"
+        }
+      },
       "stats": {
         "triangles": 208,
         "sizeM": [
@@ -64994,23 +66311,44 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#65747b",
+          "name": "powderCoat",
+          "color": "#397f90",
           "parts": [
             "mounting-plate",
             "main-enclosure",
             "top-cap",
             "front-door",
-            "display-bezel",
-            "display-window",
-            "status-button",
             "vent-slot-1",
             "vent-slot-2",
             "vent-slot-3",
-            "cable-hook",
+            "cable-hook"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#79cfda",
+          "parts": [
+            "display-bezel",
+            "display-window"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "safetyPolymer",
+          "color": "#f0b13c",
+          "parts": [
+            "status-button"
+          ],
+          "param": "safetyPolymer"
+        },
+        {
+          "name": "engineeringPolymer",
+          "color": "#657f84",
+          "parts": [
             "side-holster"
           ],
-          "param": "color"
+          "param": "engineeringPolymer"
         }
       ]
     },
@@ -65018,7 +66356,7 @@
       "id": "j1772-ac-connector",
       "kit": "ev-charging-infrastructure",
       "title": "J1772 AC connector",
-      "description": "Generic J1772 AC plug with a short tapered nose, hand grip, and rear cable stub. Knobs: overall scale and asset color.",
+      "description": "Generic J1772 AC plug with a short tapered nose, hand grip, and rear cable stub. Knobs: overall scale and engineering polymer and cable elastomer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -65039,7 +66377,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/j1772-ac-connector.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-j1772-ac-connector.png",
-      "sourceSha256": "be7773820b0aa13a60702255f963cc2ecf26c78ccfd73aa2209f136131c2927d",
+      "sourceSha256": "a237c71807f37aa5c9c3e0ddef375bbd4af553794c37ca2872f19253a179f6a6",
       "triangleBudget": 2400,
       "params": [
         {
@@ -65052,13 +66390,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "engineeringPolymer",
           "type": "color",
-          "default": "#555c5e",
-          "label": "Asset color"
+          "default": "#657f84",
+          "label": "Engineering polymer"
+        },
+        {
+          "name": "cableElastomer",
+          "type": "color",
+          "default": "#1b2427",
+          "label": "Cable elastomer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "engineeringPolymer": "#263a36",
+          "cableElastomer": "#1a2522"
+        },
+        "nightService": {
+          "engineeringPolymer": "#222d32",
+          "cableElastomer": "#111719"
+        }
+      },
       "stats": {
         "triangles": 168,
         "sizeM": [
@@ -65071,17 +66424,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#555c5e",
+          "name": "engineeringPolymer",
+          "color": "#657f84",
           "parts": [
             "hand-grip",
             "front-coupling",
             "connector-nose",
-            "strain-relief",
-            "cable-stub",
             "grip-ridge-top"
           ],
-          "param": "color"
+          "param": "engineeringPolymer"
+        },
+        {
+          "name": "cableElastomer",
+          "color": "#1b2427",
+          "parts": [
+            "strain-relief",
+            "cable-stub"
+          ],
+          "param": "cableElastomer"
         }
       ]
     },
@@ -65089,7 +66449,7 @@
       "id": "liquid-cooled-charging-cable",
       "kit": "ev-charging-infrastructure",
       "title": "Liquid-cooled charging cable",
-      "description": "Thick high-current cable segment with cooling-line collars and a reinforced connector end. Knobs: overall scale and asset color.",
+      "description": "Thick high-current cable segment with cooling-line collars and a reinforced connector end. Knobs: overall scale and powder-coated metal, cable elastomer and engineering polymer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -65110,7 +66470,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/liquid-cooled-charging-cable.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-liquid-cooled-charging-cable.png",
-      "sourceSha256": "9ef33ce898539b3777d49feefded243878162bab9ebe69edc99202b2e46711e7",
+      "sourceSha256": "62f69e1c2409f6af28ca96a1b12c8b0239a1a43ab3d03abf82c21fae741f8451",
       "triangleBudget": 2400,
       "params": [
         {
@@ -65123,13 +66483,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#4c6269",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "cableElastomer",
+          "type": "color",
+          "default": "#1b2427",
+          "label": "Cable elastomer"
+        },
+        {
+          "name": "engineeringPolymer",
+          "type": "color",
+          "default": "#657f84",
+          "label": "Engineering polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "cableElastomer": "#1a2522",
+          "engineeringPolymer": "#263a36"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "cableElastomer": "#111719",
+          "engineeringPolymer": "#222d32"
+        }
+      },
       "stats": {
         "triangles": 376,
         "sizeM": [
@@ -65142,13 +66525,27 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#4c6269",
+          "name": "cableElastomer",
+          "color": "#1b2427",
           "parts": [
             "main-cable",
             "coolant-line-a",
-            "coolant-line-b",
-            "connector-shell",
+            "coolant-line-b"
+          ],
+          "param": "cableElastomer"
+        },
+        {
+          "name": "engineeringPolymer",
+          "color": "#657f84",
+          "parts": [
+            "connector-shell"
+          ],
+          "param": "engineeringPolymer"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397f90",
+          "parts": [
             "strain-guard",
             "coolant-collar-0",
             "coolant-collar-1",
@@ -65156,7 +66553,7 @@
             "coolant-collar-3",
             "coolant-collar-4"
           ],
-          "param": "color"
+          "param": "powderCoat"
         }
       ]
     },
@@ -65164,7 +66561,7 @@
       "id": "mobile-fast-charge-cart",
       "kit": "ev-charging-infrastructure",
       "title": "Mobile fast-charge cart",
-      "description": "Portable charging cart with a compact power enclosure, cable reel, handle, and casters. Knobs: overall scale and asset color.",
+      "description": "Portable charging cart with a compact power enclosure, cable reel, handle, and casters. Knobs: overall scale and powder-coated metal, display glass, cable elastomer and safety-colored polymer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -65185,7 +66582,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/mobile-fast-charge-cart.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-mobile-fast-charge-cart.png",
-      "sourceSha256": "95fd237a38e6181eb638361453fb16b7a187d96f9b5c45535fb1d76aca5002d1",
+      "sourceSha256": "bd45d11c537cfab8b99002db6d40d62c74c74ad8b7b74e5afc411747cc54600d",
       "triangleBudget": 2400,
       "params": [
         {
@@ -65198,13 +66595,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#667570",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#79cfda",
+          "label": "Display glass"
+        },
+        {
+          "name": "cableElastomer",
+          "type": "color",
+          "default": "#1b2427",
+          "label": "Cable elastomer"
+        },
+        {
+          "name": "safetyPolymer",
+          "type": "color",
+          "default": "#f0b13c",
+          "label": "Safety-colored polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "cableElastomer": "#1a2522",
+          "safetyPolymer": "#f3bd2f"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "cableElastomer": "#111719",
+          "safetyPolymer": "#ffbf24"
+        }
+      },
       "stats": {
         "triangles": 384,
         "sizeM": [
@@ -65217,16 +66645,13 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#667570",
+          "name": "powderCoat",
+          "color": "#397f90",
           "parts": [
             "cart-chassis",
             "main-enclosure",
             "top-cap",
             "front-door",
-            "display-bezel",
-            "display-window",
-            "status-button",
             "vent-slot-1",
             "vent-slot-2",
             "vent-slot-3",
@@ -65234,10 +66659,34 @@
             "left-wheel",
             "right-wheel",
             "push-handle",
-            "cable-reel",
+            "cable-reel"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#79cfda",
+          "parts": [
+            "display-bezel",
+            "display-window"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "safetyPolymer",
+          "color": "#f0b13c",
+          "parts": [
+            "status-button"
+          ],
+          "param": "safetyPolymer"
+        },
+        {
+          "name": "cableElastomer",
+          "color": "#1b2427",
+          "parts": [
             "cable-tail"
           ],
-          "param": "color"
+          "param": "cableElastomer"
         }
       ]
     },
@@ -65245,7 +66694,7 @@
       "id": "modular-charger-power-stack",
       "kit": "ev-charging-infrastructure",
       "title": "Modular charger power stack",
-      "description": "Stacked converter modules with repeated front drawers, service handles, and a base frame. Knobs: overall scale and asset color.",
+      "description": "Stacked converter modules with repeated front drawers, service handles, and a base frame. Knobs: overall scale and powder-coated metal, engineering polymer and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -65266,7 +66715,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/modular-charger-power-stack.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-modular-charger-power-stack.png",
-      "sourceSha256": "1cf28dc54e94b827656feae3f3782ee6b7ae660b660ca4051599c3eb1f8595f8",
+      "sourceSha256": "31edbf299fe2e6ea2943c8d7b36ae182a611e23cb3d97a60a8db0c750874d282",
       "triangleBudget": 2400,
       "params": [
         {
@@ -65279,13 +66728,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#68777a",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "engineeringPolymer",
+          "type": "color",
+          "default": "#657f84",
+          "label": "Engineering polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "engineeringPolymer": "#263a36",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "engineeringPolymer": "#222d32",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 156,
         "sizeM": [
@@ -65298,24 +66770,38 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#68777a",
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
           "parts": [
-            "base-frame",
+            "base-frame"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397f90",
+          "parts": [
             "power-module-1",
             "module-front-1",
-            "module-handle-1",
             "power-module-2",
             "module-front-2",
-            "module-handle-2",
             "power-module-3",
             "module-front-3",
-            "module-handle-3",
             "power-module-4",
-            "module-front-4",
+            "module-front-4"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "engineeringPolymer",
+          "color": "#657f84",
+          "parts": [
+            "module-handle-1",
+            "module-handle-2",
+            "module-handle-3",
             "module-handle-4"
           ],
-          "param": "color"
+          "param": "engineeringPolymer"
         }
       ]
     },
@@ -65323,7 +66809,7 @@
       "id": "nacs-connector",
       "kit": "ev-charging-infrastructure",
       "title": "NACS connector",
-      "description": "Compact generic NACS plug with a tapered nose, grip ribs, and flexible cable stub. Knobs: overall scale and asset color.",
+      "description": "Compact generic NACS plug with a tapered nose, grip ribs, and flexible cable stub. Knobs: overall scale and engineering polymer and cable elastomer color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -65344,7 +66830,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/nacs-connector.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-nacs-connector.png",
-      "sourceSha256": "8e5bd528639d7e4605cc5ca9f6fcd266ba10a78d0721932d533fb51af04e1f97",
+      "sourceSha256": "0edc7fa342a25a3137bc5227a5a0216f5514035320884e92b3dca4e46694f629",
       "triangleBudget": 2400,
       "params": [
         {
@@ -65357,17 +66843,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "engineeringPolymer",
           "type": "color",
-          "default": "#39464b",
-          "label": "Asset color"
+          "default": "#657f84",
+          "label": "Engineering polymer"
+        },
+        {
+          "name": "cableElastomer",
+          "type": "color",
+          "default": "#1b2427",
+          "label": "Cable elastomer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "engineeringPolymer": "#263a36",
+          "cableElastomer": "#1a2522"
+        },
+        "nightService": {
+          "engineeringPolymer": "#222d32",
+          "cableElastomer": "#111719"
+        }
+      },
       "stats": {
-        "triangles": 168,
+        "triangles": 176,
         "sizeM": [
-          0.094,
+          0.084,
           0.137,
           0.438
         ],
@@ -65376,17 +66877,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#39464b",
+          "name": "engineeringPolymer",
+          "color": "#657f84",
           "parts": [
             "hand-grip",
             "front-coupling",
             "connector-nose",
-            "strain-relief",
-            "cable-stub",
             "grip-ridge-top"
           ],
-          "param": "color"
+          "param": "engineeringPolymer"
+        },
+        {
+          "name": "cableElastomer",
+          "color": "#1b2427",
+          "parts": [
+            "strain-relief",
+            "cable-stub"
+          ],
+          "param": "cableElastomer"
         }
       ]
     },
@@ -65394,7 +66902,7 @@
       "id": "outdoor-charger-switchboard",
       "kit": "ev-charging-infrastructure",
       "title": "Outdoor charger switchboard",
-      "description": "Site switchboard enclosure with adjacent electrical bays, instrument windows, and cable glands. Knobs: overall scale and asset color.",
+      "description": "Site switchboard enclosure with adjacent electrical bays, instrument windows, and cable glands. Knobs: overall scale and powder-coated metal, display glass, safety-colored polymer and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -65415,7 +66923,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/outdoor-charger-switchboard.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-outdoor-charger-switchboard.png",
-      "sourceSha256": "e3ab9d85bfcbae442c0bb948d19f4af2db8d82f78ec921e23b1e3de88de12664",
+      "sourceSha256": "7edf153c629565fd2efb1f1e045712df6bea49b533477c6fc5c99a164b4cc064",
       "triangleBudget": 2400,
       "params": [
         {
@@ -65428,13 +66936,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#737a70",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#79cfda",
+          "label": "Display glass"
+        },
+        {
+          "name": "safetyPolymer",
+          "type": "color",
+          "default": "#f0b13c",
+          "label": "Safety-colored polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "safetyPolymer": "#f3bd2f",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "safetyPolymer": "#ffbf24",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 344,
         "sizeM": [
@@ -65447,29 +66986,50 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#737a70",
+          "name": "powderCoat",
+          "color": "#397f90",
           "parts": [
             "main-enclosure",
-            "base-plinth",
             "top-cap",
             "door-seam-1",
             "door-seam-2",
             "door-seam-3",
-            "display-bezel",
-            "display-window",
-            "status-button",
-            "vent-slot-1",
-            "vent-slot-2",
-            "vent-slot-3",
-            "vent-slot-4",
-            "vent-slot-5",
             "cable-entry-skirt",
             "ground-terminal",
             "conduit-left",
             "conduit-right"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
+          "parts": [
+            "base-plinth",
+            "vent-slot-1",
+            "vent-slot-2",
+            "vent-slot-3",
+            "vent-slot-4",
+            "vent-slot-5"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#79cfda",
+          "parts": [
+            "display-bezel",
+            "display-window"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "safetyPolymer",
+          "color": "#f0b13c",
+          "parts": [
+            "status-button"
+          ],
+          "param": "safetyPolymer"
         }
       ]
     },
@@ -65477,7 +67037,7 @@
       "id": "overhead-cable-balance-arm",
       "kit": "ev-charging-infrastructure",
       "title": "Overhead cable balance arm",
-      "description": "Support mast and balanced arm routing two charging leads above a parking bay. Knobs: overall scale and asset color.",
+      "description": "Support mast and balanced arm routing two charging leads above a parking bay. Knobs: overall scale and powder-coated metal, cable elastomer and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -65498,7 +67058,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/overhead-cable-balance-arm.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-overhead-cable-balance-arm.png",
-      "sourceSha256": "fb88a3fa558e7aca9cc4103af32645b3c968ad8924da5b51770eae15f3dde04e",
+      "sourceSha256": "e915572787cd3b9ab598ee908236dc45094cd729a2a62d73487367c855889bfc",
       "triangleBudget": 2400,
       "params": [
         {
@@ -65511,13 +67071,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#69766f",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "cableElastomer",
+          "type": "color",
+          "default": "#1b2427",
+          "label": "Cable elastomer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "cableElastomer": "#1a2522",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "cableElastomer": "#111719",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 288,
         "sizeM": [
@@ -65530,19 +67113,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#69766f",
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
           "parts": [
             "base-plate",
             "support-mast",
             "swing-arm",
-            "arm-pivot",
+            "arm-pivot"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397f90",
+          "parts": [
             "balance-counterweight",
-            "cable-guide",
+            "cable-guide"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "cableElastomer",
+          "color": "#1b2427",
+          "parts": [
             "left-cable-drop",
             "right-cable-drop"
           ],
-          "param": "color"
+          "param": "cableElastomer"
         }
       ]
     },
@@ -65550,7 +67147,7 @@
       "id": "overhead-cable-management-boom",
       "kit": "ev-charging-infrastructure",
       "title": "Overhead cable management boom",
-      "description": "Pedestal-mounted swing arm with a hanging cable guide and balancing weight. Knobs: overall scale and asset color.",
+      "description": "Pedestal-mounted swing arm with a hanging cable guide and balancing weight. Knobs: overall scale and powder-coated metal, cable elastomer and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -65571,7 +67168,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/overhead-cable-management-boom.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-overhead-cable-management-boom.png",
-      "sourceSha256": "a38cfb21c0ae5cfb128574a7532561fa03bc7cca9f442ae04733ae7b0c1ba53c",
+      "sourceSha256": "de68bf2b8c433a3441994808df65743af63d23275e2e998d36a90559a19f878f",
       "triangleBudget": 2400,
       "params": [
         {
@@ -65584,13 +67181,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#68736d",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "cableElastomer",
+          "type": "color",
+          "default": "#1b2427",
+          "label": "Cable elastomer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "cableElastomer": "#1a2522",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "cableElastomer": "#111719",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 244,
         "sizeM": [
@@ -65603,18 +67223,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#68736d",
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
           "parts": [
             "base-plate",
             "support-mast",
             "swing-arm",
-            "arm-pivot",
+            "arm-pivot"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397f90",
+          "parts": [
             "cable-guide",
-            "hanging-cable",
             "balance-weight"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "cableElastomer",
+          "color": "#1b2427",
+          "parts": [
+            "hanging-cable"
+          ],
+          "param": "cableElastomer"
         }
       ]
     },
@@ -65622,7 +67256,7 @@
       "id": "overhead-pantograph-head",
       "kit": "ev-charging-infrastructure",
       "title": "Overhead pantograph head",
-      "description": "Compact overhead charging head with contact bar, hinge blocks, and a mounting yoke. Knobs: overall scale and asset color.",
+      "description": "Compact overhead charging head with contact bar, hinge blocks, and a mounting yoke. Knobs: overall scale and powder-coated metal, engineering polymer and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -65643,7 +67277,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/overhead-pantograph-head.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-overhead-pantograph-head.png",
-      "sourceSha256": "ec7303d91eedc8ec9769393bd13ae7bd1f6e50e5946526c6909cc922d5e4de69",
+      "sourceSha256": "22ac97dd4534cc502f38c028d007f8b6e9a33da3af870acc758ceaacbd9baf55",
       "triangleBudget": 2400,
       "params": [
         {
@@ -65656,13 +67290,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#5e6d70",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "engineeringPolymer",
+          "type": "color",
+          "default": "#657f84",
+          "label": "Engineering polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "engineeringPolymer": "#263a36",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "engineeringPolymer": "#222d32",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 180,
         "sizeM": [
@@ -65675,18 +67332,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#5e6d70",
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
           "parts": [
             "mounting-yoke-left",
-            "mounting-yoke-right",
+            "mounting-yoke-right"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397f90",
+          "parts": [
             "head-housing",
-            "contact-rail",
             "pivot-left",
             "pivot-right",
             "cover-panel"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "engineeringPolymer",
+          "color": "#657f84",
+          "parts": [
+            "contact-rail"
+          ],
+          "param": "engineeringPolymer"
         }
       ]
     },
@@ -65694,7 +67365,7 @@
       "id": "parking-cable-protection-ramp",
       "kit": "ev-charging-infrastructure",
       "title": "Parking cable protection ramp",
-      "description": "Low-profile cable bridge with two raised covers, end slopes, and ground anchors. Knobs: overall scale and asset color.",
+      "description": "Low-profile cable bridge with two raised covers, end slopes, and ground anchors. Knobs: overall scale and powder-coated metal and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -65715,7 +67386,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/parking-cable-protection-ramp.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-parking-cable-protection-ramp.png",
-      "sourceSha256": "96bb5361bba951774b037b1ca42fdf634db4e9cd5cf01bdae8151606cdaccd21",
+      "sourceSha256": "a8da51f1170bbe77c0aa17309e60fb343104e53b5f7a8655d3b4a907db809bc0",
       "triangleBudget": 2400,
       "params": [
         {
@@ -65728,13 +67399,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#6a6e68",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 160,
         "sizeM": [
@@ -65747,19 +67433,26 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6a6e68",
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
           "parts": [
             "ramp-base",
+            "anchor-left",
+            "anchor-right"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397f90",
+          "parts": [
             "cover-left",
             "cover-right",
             "center-divider",
             "end-slope-left",
-            "end-slope-right",
-            "anchor-left",
-            "anchor-right"
+            "end-slope-right"
           ],
-          "param": "color"
+          "param": "powderCoat"
         }
       ]
     },
@@ -65767,7 +67460,7 @@
       "id": "parking-wheel-stop",
       "kit": "ev-charging-infrastructure",
       "title": "Parking wheel stop",
-      "description": "Low parking barrier with beveled ends and recessed anchor locations. Knobs: overall scale and asset color.",
+      "description": "Low parking barrier with beveled ends and recessed anchor locations. Knobs: overall scale and powder-coated metal, engineering polymer and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -65788,7 +67481,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/parking-wheel-stop.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-parking-wheel-stop.png",
-      "sourceSha256": "b8b17f3dfb94fc99d64bb2e1c9553414874e3100ac3c57bf056072ba86f74cc0",
+      "sourceSha256": "3be2bb68e90b1373549f487576bda7f5828a8d36a5144ced61fddceca26915e3",
       "triangleBudget": 2400,
       "params": [
         {
@@ -65801,13 +67494,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#766d5d",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "engineeringPolymer",
+          "type": "color",
+          "default": "#657f84",
+          "label": "Engineering polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "engineeringPolymer": "#263a36",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "engineeringPolymer": "#222d32",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 136,
         "sizeM": [
@@ -65820,17 +67536,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#766d5d",
+          "name": "engineeringPolymer",
+          "color": "#657f84",
           "parts": [
-            "stop-body",
+            "stop-body"
+          ],
+          "param": "engineeringPolymer"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397f90",
+          "parts": [
             "top-face",
-            "anchor-0",
-            "anchor-1",
             "end-left",
             "end-right"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
+          "parts": [
+            "anchor-0",
+            "anchor-1"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -65838,7 +67568,7 @@
       "id": "remote-charger-power-cabinet",
       "kit": "ev-charging-infrastructure",
       "title": "Remote charger power cabinet",
-      "description": "Outdoor power cabinet with divided service doors, top vent slots, and cable-entry base. Knobs: overall scale and asset color.",
+      "description": "Outdoor power cabinet with divided service doors, top vent slots, and cable-entry base. Knobs: overall scale and powder-coated metal and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -65859,7 +67589,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/remote-charger-power-cabinet.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-remote-charger-power-cabinet.png",
-      "sourceSha256": "99a078e5c10699c1b9dd14228bbbb64540dbcc31a7c1f8f2788d6070a1860520",
+      "sourceSha256": "4506e10a7c48b09f4f9bbc03c89f8770c20c178e4ce883ad3a3785af694a10e2",
       "triangleBudget": 2400,
       "params": [
         {
@@ -65872,13 +67602,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#6b7574",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 176,
         "sizeM": [
@@ -65891,23 +67636,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6b7574",
+          "name": "powderCoat",
+          "color": "#397f90",
           "parts": [
             "main-enclosure",
-            "base-plinth",
             "top-cap",
             "door-seam-1",
             "door-seam-2",
+            "cable-entry-skirt",
+            "ground-terminal"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
+          "parts": [
+            "base-plinth",
             "vent-slot-1",
             "vent-slot-2",
             "vent-slot-3",
             "vent-slot-4",
-            "vent-slot-5",
-            "cable-entry-skirt",
-            "ground-terminal"
+            "vent-slot-5"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -65915,7 +67667,7 @@
       "id": "rfid-access-reader-pedestal",
       "kit": "ev-charging-infrastructure",
       "title": "RFID access reader pedestal",
-      "description": "Short access pedestal with a reader face, indicator cap, and bolted floor plate. Knobs: overall scale and asset color.",
+      "description": "Short access pedestal with a reader face, indicator cap, and bolted floor plate. Knobs: overall scale and powder-coated metal, display glass and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -65936,7 +67688,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/rfid-access-reader-pedestal.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-rfid-access-reader-pedestal.png",
-      "sourceSha256": "32d3c4187534fb28755d89a8b702d9451a0c3a648785d645a9a62a579e4bd8fb",
+      "sourceSha256": "6451c365b43c2d3b30e670b8783789ed70b8054c6edfae6a3590f060d2ac0221",
       "triangleBudget": 2400,
       "params": [
         {
@@ -65949,13 +67701,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#566b70",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#79cfda",
+          "label": "Display glass"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 104,
         "sizeM": [
@@ -65968,17 +67743,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#566b70",
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
           "parts": [
             "base-plate",
-            "post",
+            "post"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397f90",
+          "parts": [
             "reader-face",
-            "reader-window",
             "status-lamp",
             "cap"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#79cfda",
+          "parts": [
+            "reader-window"
+          ],
+          "param": "displayGlass"
         }
       ]
     },
@@ -65986,7 +67775,7 @@
       "id": "site-energy-management-controller",
       "kit": "ev-charging-infrastructure",
       "title": "Site energy management controller",
-      "description": "Wall enclosure with a control screen, antenna pair, and cable glands. Knobs: overall scale and asset color.",
+      "description": "Wall enclosure with a control screen, antenna pair, and cable glands. Knobs: overall scale and powder-coated metal, display glass, safety-colored polymer and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -66007,7 +67796,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/site-energy-management-controller.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-site-energy-management-controller.png",
-      "sourceSha256": "d90dca22f52f71f1e5f77db586495e8ab9cd94ce0736985b3f1241c350cfd8ba",
+      "sourceSha256": "2861706f6da1a1ccd2acb06c5366a0bf9943d34ea50ac0569442622ebd64dfb6",
       "triangleBudget": 2400,
       "params": [
         {
@@ -66020,13 +67809,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#55676b",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#79cfda",
+          "label": "Display glass"
+        },
+        {
+          "name": "safetyPolymer",
+          "type": "color",
+          "default": "#f0b13c",
+          "label": "Safety-colored polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "safetyPolymer": "#f3bd2f",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "safetyPolymer": "#ffbf24",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 240,
         "sizeM": [
@@ -66039,23 +67859,44 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#55676b",
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
           "parts": [
             "mounting-plate",
+            "vent-slot-1",
+            "vent-slot-2"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397f90",
+          "parts": [
             "main-enclosure",
             "top-cap",
             "front-door",
-            "display-bezel",
-            "display-window",
-            "status-button",
-            "vent-slot-1",
-            "vent-slot-2",
             "antenna-left",
             "antenna-right",
             "cable-gland-strip"
           ],
-          "param": "color"
+          "param": "powderCoat"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#79cfda",
+          "parts": [
+            "display-bezel",
+            "display-window"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "safetyPolymer",
+          "color": "#f0b13c",
+          "parts": [
+            "status-button"
+          ],
+          "param": "safetyPolymer"
         }
       ]
     },
@@ -66063,7 +67904,7 @@
       "id": "solar-ev-carport",
       "kit": "ev-charging-infrastructure",
       "title": "Solar EV carport",
-      "description": "Parking shelter with tilted panel rows, long-span rafters, and paired support frames. Knobs: overall scale and asset color.",
+      "description": "Parking shelter with tilted panel rows, long-span rafters, and paired support frames. Knobs: overall scale and photovoltaic laminate and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -66084,7 +67925,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/solar-ev-carport.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-solar-ev-carport.png",
-      "sourceSha256": "74073dc461ba552ceb121c87fefa4646b9c7beea228c9d2d5f724d0447f26e27",
+      "sourceSha256": "797eb3052c339ff39fc73b802fbe82b1454bf3636d897281264a5ec9e26c867f",
       "triangleBudget": 2400,
       "params": [
         {
@@ -66097,13 +67938,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "pvLaminate",
           "type": "color",
-          "default": "#526d73",
-          "label": "Asset color"
+          "default": "#1c4562",
+          "label": "Photovoltaic laminate"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "pvLaminate": "#173d59",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "pvLaminate": "#102d45",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 276,
         "sizeM": [
@@ -66116,8 +67972,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#526d73",
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
           "parts": [
             "post-left-front",
             "post-left-rear",
@@ -66127,7 +67983,14 @@
             "rear-beam",
             "panel-rafter-a",
             "panel-rafter-b",
-            "panel-rafter-c",
+            "panel-rafter-c"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "pvLaminate",
+          "color": "#1c4562",
+          "parts": [
             "pv-panel-1",
             "pv-panel-2",
             "pv-panel-3",
@@ -66135,7 +67998,7 @@
             "pv-panel-5",
             "pv-panel-6"
           ],
-          "param": "color"
+          "param": "pvLaminate"
         }
       ]
     },
@@ -66143,7 +68006,7 @@
       "id": "streetlight-charger-arm",
       "kit": "ev-charging-infrastructure",
       "title": "Streetlight charger arm",
-      "description": "Streetlight pole with a compact charging head, side arm, and grounded base collar. Knobs: overall scale and asset color.",
+      "description": "Streetlight pole with a compact charging head, side arm, and grounded base collar. Knobs: overall scale and powder-coated metal, display glass, engineering polymer and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -66164,7 +68027,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/streetlight-charger-arm.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-streetlight-charger-arm.png",
-      "sourceSha256": "8e7bb1e129c8563b56105463cd50ddb46b1171b4fa81c9c5cdcc6d5d068cf804",
+      "sourceSha256": "ee9de8fe30a0848e6a3643417a104115b1295cee5fc6e07200c1e01dde85e714",
       "triangleBudget": 2400,
       "params": [
         {
@@ -66177,13 +68040,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#6d7774",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#79cfda",
+          "label": "Display glass"
+        },
+        {
+          "name": "engineeringPolymer",
+          "type": "color",
+          "default": "#657f84",
+          "label": "Engineering polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "engineeringPolymer": "#263a36",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "engineeringPolymer": "#222d32",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 212,
         "sizeM": [
@@ -66196,18 +68090,39 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6d7774",
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
           "parts": [
             "mast-base",
             "lamp-mast",
-            "light-arm",
+            "light-arm"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#397f90",
+          "parts": [
             "light-head",
-            "charger-box",
-            "charger-screen",
+            "charger-box"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#79cfda",
+          "parts": [
+            "charger-screen"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "engineeringPolymer",
+          "color": "#657f84",
+          "parts": [
             "cable-holster"
           ],
-          "param": "color"
+          "param": "engineeringPolymer"
         }
       ]
     },
@@ -66215,7 +68130,7 @@
       "id": "vehicle-to-grid-power-cabinet",
       "kit": "ev-charging-infrastructure",
       "title": "Vehicle-to-grid power cabinet",
-      "description": "Bidirectional power cabinet with converter bays, a control window, and bus-cable exits. Knobs: overall scale and asset color.",
+      "description": "Bidirectional power cabinet with converter bays, a control window, and bus-cable exits. Knobs: overall scale and powder-coated metal, display glass, safety-colored polymer and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -66236,7 +68151,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/vehicle-to-grid-power-cabinet.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-vehicle-to-grid-power-cabinet.png",
-      "sourceSha256": "89b87cf076551e215c269c7290f1a13341ad78fd03f03bc8a38f77b77c35c0f3",
+      "sourceSha256": "f0e831f8316cf59195c934814fd8e3f6dd7b247ad8d900c124e51b7699f03547",
       "triangleBudget": 2400,
       "params": [
         {
@@ -66249,13 +68164,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#5c6d71",
-          "label": "Asset color"
+          "default": "#397f90",
+          "label": "Powder-coated metal"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#79cfda",
+          "label": "Display glass"
+        },
+        {
+          "name": "safetyPolymer",
+          "type": "color",
+          "default": "#f0b13c",
+          "label": "Safety-colored polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "safetyPolymer": "#f3bd2f",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "safetyPolymer": "#ffbf24",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 244,
         "sizeM": [
@@ -66268,26 +68214,47 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#5c6d71",
+          "name": "powderCoat",
+          "color": "#397f90",
           "parts": [
             "main-enclosure",
-            "base-plinth",
             "top-cap",
             "door-seam-1",
             "door-seam-2",
-            "display-bezel",
-            "display-window",
-            "status-button",
+            "cable-entry-skirt",
+            "ground-terminal"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
+          "parts": [
+            "base-plinth",
             "vent-slot-1",
             "vent-slot-2",
             "vent-slot-3",
             "vent-slot-4",
-            "vent-slot-5",
-            "cable-entry-skirt",
-            "ground-terminal"
+            "vent-slot-5"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#79cfda",
+          "parts": [
+            "display-bezel",
+            "display-window"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "safetyPolymer",
+          "color": "#f0b13c",
+          "parts": [
+            "status-button"
+          ],
+          "param": "safetyPolymer"
         }
       ]
     },
@@ -66295,7 +68262,7 @@
       "id": "wall-mounted-connector-holster",
       "kit": "ev-charging-infrastructure",
       "title": "Wall-mounted connector holster",
-      "description": "Mounting plate and open-front plug cradle for a parked charging connector. Knobs: overall scale and asset color.",
+      "description": "Mounting plate and open-front plug cradle for a parked charging connector. Knobs: overall scale and engineering polymer and stainless steel color controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -66316,7 +68283,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/wall-mounted-connector-holster.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-wall-mounted-connector-holster.png",
-      "sourceSha256": "034edd472582184abad81f7d935beaae61712ffc21b56f301b67f7aeb95a6d20",
+      "sourceSha256": "1eb35f86cf3b200b36bb00b2544271e4d1aeb14a0deaf602d00a8d7f98a77891",
       "triangleBudget": 2400,
       "params": [
         {
@@ -66329,13 +68296,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "engineeringPolymer",
           "type": "color",
-          "default": "#5d6c70",
-          "label": "Asset color"
+          "default": "#657f84",
+          "label": "Engineering polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fleetReady": {
+          "engineeringPolymer": "#263a36",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "engineeringPolymer": "#222d32",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
       "stats": {
         "triangles": 104,
         "sizeM": [
@@ -66348,17 +68330,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#5d6c70",
+          "name": "stainlessSteel",
+          "color": "#b5c0c2",
           "parts": [
-            "mounting-plate",
+            "mounting-plate"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "engineeringPolymer",
+          "color": "#657f84",
+          "parts": [
             "cradle-back",
             "cradle-left",
             "cradle-right",
             "cradle-lip",
             "cable-hook"
           ],
-          "param": "color"
+          "param": "engineeringPolymer"
         }
       ]
     },

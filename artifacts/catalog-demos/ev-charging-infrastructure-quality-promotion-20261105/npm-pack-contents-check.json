@@ -1,0 +1,18 @@
+{
+  "command": "npm pack --json --pack-destination /tmp/kernelcad-ev-pack-20261105 (prepack build enabled)",
+  "tarball": "/tmp/kernelcad-ev-pack-20261105/kernelcad-0.17.4.tgz",
+  "tarballBytes": 70358356,
+  "tarballSha256": "2ff858b130f706e2acc7f8c82df9cecfd97875c0cf42d0836c8e984f3419b8d4",
+  "package": "kernelcad@0.17.4",
+  "packedFileCount": 5200,
+  "catalogIndexIncluded": true,
+  "evChargingSources": 50,
+  "evChargingPreviews": 50,
+  "cliEntryIncluded": true,
+  "headlessPlayerIncluded": true,
+  "packageExports": {
+    "./package.json": "./package.json"
+  },
+  "privateProductPaths": [],
+  "passed": true
+}

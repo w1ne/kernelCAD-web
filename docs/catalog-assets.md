@@ -6,10 +6,11 @@ from those sources and must be rebuilt in the same change.
 
 ## Catalog quality snapshot (2026-11-05)
 
-The catalog quality gate reports **1,704/2,390 assets passing (71.30%)** and
-686 thin assets (28.70%). This round promoted 50 existing beverage bottling
-line assets from the 1,654/2,390 checkpoint; no IDs were added. Thin assets
-remain in other kits. See the [beverage bottling line handoff](../artifacts/catalog-demos/beverage-bottling-line-quality-promotion-20261105/README.md),
+The catalog quality gate reports **1,754/2,390 assets passing (73.39%)** and
+636 thin assets (26.61%). This round promoted 50 existing EV charging
+infrastructure assets from the 1,704/2,390 checkpoint; no IDs were added. Thin
+assets remain in other kits. See the [EV charging infrastructure handoff](../artifacts/catalog-demos/ev-charging-infrastructure-quality-promotion-20261105/README.md),
+[beverage bottling line handoff](../artifacts/catalog-demos/beverage-bottling-line-quality-promotion-20261105/README.md),
 [data center infrastructure handoff](../artifacts/catalog-demos/data-center-infrastructure-quality-promotion-20261105/README.md),
 [wind energy handoff](../artifacts/catalog-demos/wind-energy-quality-promotion-20261105/README.md),
 [veterinary clinic handoff](../artifacts/catalog-demos/vet-clinic-quality-promotion-20261105/README.md),
@@ -30,6 +31,22 @@ The [quality promotion handoff](../artifacts/catalog-demos/beverage-bottling-lin
 records the actual source-to-preview workflow, inspected MP4 and local checks.
 The models are visualization props and do not assert equipment performance,
 food-contact suitability, pressure ratings or physical acceptance.
+
+## EV charging infrastructure assets
+
+The [EV charging infrastructure kit](../catalog/kits/ev-charging-infrastructure/README.md)
+keeps its 50 existing IDs for chargers, connectors, cables, cabinets, parking
+fixtures, and canopies. Every source retains its scale control and exposes two
+to four material-named color controls with `fleetReady` and `nightService`
+presets. The kit has 159 material controls, 100 named preset entries (318
+material values), and 50 refreshed indexed previews; its exports range from 92
+to 492 triangles. The [quality
+promotion handoff](../artifacts/catalog-demos/ev-charging-infrastructure-quality-promotion-20261105/README.md)
+contains the source transformation, before/after preview evidence, actual
+preset renders, local quality and integration results, and an inspected MP4.
+These remain generic visualization assets; the source and catalog checks do
+not establish electrical compatibility, charging performance, installation
+safety, code compliance, certification, or physical acceptance.
 
 ## Build and audit
 
