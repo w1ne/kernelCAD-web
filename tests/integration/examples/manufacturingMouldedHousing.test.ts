@@ -14,9 +14,16 @@ describe('moulded housing base', () => {
     const model = await buildModel({ fileName: 'moulded-housing.kcad.ts', code });
     expect(model.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
     const report = await runDfmChecksOnModel(model);
-    expect(report?.moulding?.[0].result.verdict).toBe('pass');
-    expect(report?.moulding?.[0].result.undercut.areaMm2).toBe(0);
-    expect(report?.moulding?.[0].result.draft.minDraftDeg).toBeGreaterThanOrEqual(1);
+    const moulding = report?.moulding?.[0].result;
+    expect(moulding).toBeDefined();
+    expect(moulding!.verdict).toBe('pass');
+    expect(moulding!.undercut.areaMm2).toBe(0);
+    expect(moulding!.draft.checkedFaces).toBeGreaterThan(0);
+    expect(moulding!.draft.minDraftDeg).toBeGreaterThanOrEqual(moulding!.settings.minDraftDeg);
+    expect(Number.isFinite(moulding!.walls.thinnestMm)).toBe(true);
+    expect(moulding!.walls.thinnestMm).toBeGreaterThanOrEqual(moulding!.settings.minWallMm);
+    expect(moulding!.walls.violations).toEqual([]);
+    expect(moulding!.unmeasured.some(item => /draft|wall thickness/i.test(item))).toBe(false);
   }, 120_000);
   it('includes cored mounting posts in addition to the moulded shell', async () => {
     const result = await evaluateScriptTool({ file: 'examples/manufacturing-showcase/moulded-housing.kcad.ts', skipMechanismCheck: true });
