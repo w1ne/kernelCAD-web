@@ -1,0 +1,9 @@
+{
+  "command": "python3 scripts/checkCatalogQuality.py --top 1",
+  "exitCode": 1,
+  "status": "report_with_remaining_thin_assets",
+  "assetsPassing": 1654,
+  "assetsTotal": 2390,
+  "passRatePercent": 69.2,
+  "remainingThinAssets": 736
+}

@@ -1,0 +1,39 @@
+{
+  "kit": "data-center-infrastructure",
+  "assetsPromoted": 50,
+  "assetsAdded": 0,
+  "materialControls": {
+    "minPerAsset": 2,
+    "maxPerAsset": 4,
+    "totalAfter": 121,
+    "netColorKnobsAddedOverOneOriginalPerAsset": 71
+  },
+  "presetVariantsAdded": 100,
+  "presetMaterialOverrides": 242,
+  "previewsRenderedAndIndexed": 50,
+  "triangleRange": [
+    104,
+    1060
+  ],
+  "catalogBefore": {
+    "passing": 1604,
+    "total": 2390,
+    "passRatePercent": 67.1
+  },
+  "catalogAfter": {
+    "passing": 1654,
+    "total": 2390,
+    "passRatePercent": 69.2
+  },
+  "allKitSourceHashesMatchIndex": true,
+  "allKitRowsHavePreviewPaths": true,
+  "baselineIndexRef": "1543e72a9acb2d9b9cd6aeed6f29512e60d5d4e0",
+  "statusFiles": {
+    "quality": "kit-quality-status.json",
+    "lint": "catalog-eslint-status.json",
+    "integration": "catalog-test-status.json",
+    "pages": "catalog-pages-check.json",
+    "preset": "variant-verification.json",
+    "video": "video-inspection.json"
+  }
+}

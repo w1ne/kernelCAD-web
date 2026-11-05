@@ -1,0 +1,636 @@
+{
+  "kit": "data-center-infrastructure",
+  "assetsPromoted": 50,
+  "idsAdded": 0,
+  "assets": {
+    "enclosed-it-rack": {
+      "materials": [
+        "steel",
+        "rubber",
+        "polymer"
+      ],
+      "parts": 28,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Full-height rack cabinet with front door frame, side panels, rails, and leveling feet. Knobs: overall scale; painted steel, rubber and elastomer, engineering polymer. Presets: facilityStandard and highVisibility."
+    },
+    "open-frame-it-rack": {
+      "materials": [
+        "steel",
+        "rubber"
+      ],
+      "parts": 20,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Four-post equipment rack with adjustable rails, cross-bracing, and base frame. Knobs: overall scale; painted steel, rubber and elastomer. Presets: facilityStandard and highVisibility."
+    },
+    "wall-mount-network-cabinet": {
+      "materials": [
+        "steel",
+        "rubber"
+      ],
+      "parts": 16,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Compact wall cabinet with framed door, mounting ears, and cable-entry plate. Knobs: overall scale; painted steel, rubber and elastomer. Presets: facilityStandard and highVisibility."
+    },
+    "high-density-server-chassis": {
+      "materials": [
+        "steel",
+        "polymer"
+      ],
+      "parts": 15,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Short-depth compute chassis with front drive bays, status strip, and slide rails. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility."
+    },
+    "blade-server-enclosure": {
+      "materials": [
+        "steel",
+        "polymer"
+      ],
+      "parts": 13,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Modular blade enclosure with repeated vertical sleds and rear service rails. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility."
+    },
+    "storage-array-chassis": {
+      "materials": [
+        "steel",
+        "polymer"
+      ],
+      "parts": 15,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Rack storage chassis with drive carriers, controller bays, and paired handles. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility."
+    },
+    "top-of-rack-network-switch": {
+      "materials": [
+        "steel",
+        "polymer"
+      ],
+      "parts": 27,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Rack switch body with a repeated front port row, indicator strip, and mounting ears. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility."
+    },
+    "fiber-patch-panel": {
+      "materials": [
+        "steel",
+        "polymer"
+      ],
+      "parts": 19,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Slim fiber distribution panel with paired connector rows and mounting flanges. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility."
+    },
+    "rack-kvm-console": {
+      "materials": [
+        "steel",
+        "glass"
+      ],
+      "parts": 10,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Pull-out console tray with display housing, keyboard surface, and rack ears. Knobs: overall scale; painted steel, glass and display lenses. Presets: facilityStandard and highVisibility."
+    },
+    "rack-blanking-panel": {
+      "materials": [
+        "steel",
+        "polymer"
+      ],
+      "parts": 8,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Removable rack face panel with end brackets and a small grip tab. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility."
+    },
+    "vertical-cable-manager": {
+      "materials": [
+        "steel",
+        "rubber"
+      ],
+      "parts": 19,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Rack-side cable channel with repeated fingers, covers, and mounting rails. Knobs: overall scale; painted steel, rubber and elastomer. Presets: facilityStandard and highVisibility."
+    },
+    "overhead-cable-ladder": {
+      "materials": [
+        "steel",
+        "polymer"
+      ],
+      "parts": 19,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Suspended ladder tray with side rails, cross rungs, and ceiling hangers. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility."
+    },
+    "overhead-power-busway": {
+      "materials": [
+        "steel",
+        "polymer"
+      ],
+      "parts": 9,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Enclosed busway segment with joined covers, hanger brackets, and end caps. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility."
+    },
+    "busway-plug-in-unit": {
+      "materials": [
+        "steel",
+        "polymer",
+        "rubber"
+      ],
+      "parts": 5,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Compact plug-in tap box with operating handle and cable outlet gland. Knobs: overall scale; painted steel, engineering polymer, rubber and elastomer. Presets: facilityStandard and highVisibility."
+    },
+    "rack-power-distribution-unit": {
+      "materials": [
+        "steel",
+        "polymer",
+        "rubber"
+      ],
+      "parts": 19,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Vertical rack power distribution unit with a narrow steel channel, repeated outlet sockets, a jacketed feed cable, and mounting tabs. Knobs: overall scale; painted steel, engineering polymer, rubber and elastomer. Presets: facilityStandard and highVisibility."
+    },
+    "raised-floor-tile": {
+      "materials": [
+        "steel",
+        "polymer"
+      ],
+      "parts": 9,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Square access-floor panel with support pedestals and edge stringers. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility."
+    },
+    "perforated-floor-tile": {
+      "materials": [
+        "steel",
+        "polymer"
+      ],
+      "parts": 15,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Airflow floor panel with a dense low-relief grille and four support feet. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility."
+    },
+    "floor-cable-grommet": {
+      "materials": [
+        "steel",
+        "rubber"
+      ],
+      "parts": 5,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Raised-floor cable pass-through with split collar and protective curb. Knobs: overall scale; painted steel, rubber and elastomer. Presets: facilityStandard and highVisibility."
+    },
+    "hot-aisle-containment-door": {
+      "materials": [
+        "steel",
+        "polymer"
+      ],
+      "parts": 7,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Aisle-end door assembly with uprights, clear-panel frame, and pull handle. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility."
+    },
+    "cold-aisle-roof-panel": {
+      "materials": [
+        "steel",
+        "polymer"
+      ],
+      "parts": 11,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Overhead containment canopy with a light frame and repeated ceiling panels. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility."
+    },
+    "modular-ups-cabinet": {
+      "materials": [
+        "steel",
+        "polymer",
+        "glass",
+        "rubber"
+      ],
+      "parts": 21,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Modular UPS cabinet with removable power-module drawers, a service display, ventilation louvers, and a separated base plinth. Knobs: overall scale; painted steel, engineering polymer, glass and display lenses, rubber and elastomer. Presets: facilityStandard and highVisibility."
+    },
+    "monolithic-ups-cabinet": {
+      "materials": [
+        "steel",
+        "polymer",
+        "glass",
+        "rubber"
+      ],
+      "parts": 13,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Floor UPS enclosure with control panel, service doors, and cooling slots. Knobs: overall scale; painted steel, engineering polymer, glass and display lenses, rubber and elastomer. Presets: facilityStandard and highVisibility."
+    },
+    "data-center-battery-cabinet": {
+      "materials": [
+        "steel",
+        "polymer",
+        "glass",
+        "rubber"
+      ],
+      "parts": 16,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Battery cabinet with repeated access drawers, terminal details, ventilation slots, and an isolated base plinth. Knobs: overall scale; painted steel, engineering polymer, glass and display lenses, rubber and elastomer. Presets: facilityStandard and highVisibility."
+    },
+    "rack-mounted-battery-tray": {
+      "materials": [
+        "steel",
+        "polymer",
+        "copper"
+      ],
+      "parts": 10,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Compact rack battery module with cell covers, front latch, and slide rails. Knobs: overall scale; painted steel, engineering polymer, copper conductors. Presets: facilityStandard and highVisibility."
+    },
+    "static-transfer-switch": {
+      "materials": [
+        "steel",
+        "polymer",
+        "glass",
+        "rubber"
+      ],
+      "parts": 10,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Transfer cabinet with two source indicators, paired operator controls, a service display, and a transfer handle. Knobs: overall scale; painted steel, engineering polymer, glass and display lenses, rubber and elastomer. Presets: facilityStandard and highVisibility."
+    },
+    "maintenance-bypass-cabinet": {
+      "materials": [
+        "steel",
+        "polymer",
+        "glass",
+        "rubber"
+      ],
+      "parts": 12,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Bypass switchboard cabinet with a guarded rotary bypass handle, paired source paths, and an interlock panel. Knobs: overall scale; painted steel, engineering polymer, glass and display lenses, rubber and elastomer. Presets: facilityStandard and highVisibility."
+    },
+    "switchgear-lineup": {
+      "materials": [
+        "steel",
+        "polymer"
+      ],
+      "parts": 17,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Joined electrical bays with breaker doors, instrument panels, and bus compartment. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility."
+    },
+    "distribution-panelboard": {
+      "materials": [
+        "steel",
+        "polymer",
+        "rubber"
+      ],
+      "parts": 9,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Panelboard enclosure with hinged door, breaker rows, and cable entry gland. Knobs: overall scale; painted steel, engineering polymer, rubber and elastomer. Presets: facilityStandard and highVisibility."
+    },
+    "dry-type-transformer": {
+      "materials": [
+        "steel",
+        "aluminum",
+        "ceramic"
+      ],
+      "parts": 15,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Ventilated transformer block with cooling fins, terminal bushings, and base rails. Knobs: overall scale; painted steel, aluminum fins and panels, electrical ceramic. Presets: facilityStandard and highVisibility."
+    },
+    "automatic-transfer-switch-cabinet": {
+      "materials": [
+        "steel",
+        "polymer",
+        "glass",
+        "rubber"
+      ],
+      "parts": 10,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Transfer cabinet with utility and generator status windows, a central transfer control, and a lower cable plate. Knobs: overall scale; painted steel, engineering polymer, glass and display lenses, rubber and elastomer. Presets: facilityStandard and highVisibility."
+    },
+    "standby-generator-enclosure": {
+      "materials": [
+        "steel",
+        "aluminum"
+      ],
+      "parts": 18,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Packaged generator skid with acoustic canopy, exhaust stack, and service doors. Knobs: overall scale; painted steel, aluminum fins and panels. Presets: facilityStandard and highVisibility."
+    },
+    "day-fuel-tank": {
+      "materials": [
+        "steel",
+        "polymer"
+      ],
+      "parts": 6,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Compact fuel reservoir with support feet, top fill neck, and level gauge. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility."
+    },
+    "power-meter-pedestal": {
+      "materials": [
+        "steel",
+        "glass",
+        "rubber"
+      ],
+      "parts": 6,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Utility metering pedestal with display head, service door, and cable riser. Knobs: overall scale; painted steel, glass and display lenses, rubber and elastomer. Presets: facilityStandard and highVisibility."
+    },
+    "emergency-power-off-station": {
+      "materials": [
+        "steel",
+        "polymer"
+      ],
+      "parts": 6,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Wall-mounted protected control station with actuator and guard hood. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility."
+    },
+    "in-row-cooler": {
+      "materials": [
+        "steel",
+        "polymer"
+      ],
+      "parts": 16,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Row cooling cabinet with front intake grille, top return, and pipe stubs. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility."
+    },
+    "perimeter-precision-cooler": {
+      "materials": [
+        "steel",
+        "rubber"
+      ],
+      "parts": 21,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Perimeter cooling unit with a broad intake grille, top discharge fans, a service door, plinth, and pipe connections. Knobs: overall scale; painted steel, rubber and elastomer. Presets: facilityStandard and highVisibility."
+    },
+    "air-cooled-chiller": {
+      "materials": [
+        "steel",
+        "aluminum",
+        "polymer"
+      ],
+      "parts": 53,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Outdoor chiller frame with multiple top fans, coil banks, and service panels. Knobs: overall scale; painted steel, aluminum fins and panels, engineering polymer. Presets: facilityStandard and highVisibility."
+    },
+    "cooling-tower-cell": {
+      "materials": [
+        "steel",
+        "polymer"
+      ],
+      "parts": 14,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Open cooling-tower cell with basin, fan deck, fill pack, and water riser. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility."
+    },
+    "coolant-distribution-unit": {
+      "materials": [
+        "steel",
+        "aluminum"
+      ],
+      "parts": 14,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Liquid-cooling cabinet with pump bay, heat-exchanger block, and pipe connections. Knobs: overall scale; painted steel, aluminum fins and panels. Presets: facilityStandard and highVisibility."
+    },
+    "liquid-cooling-manifold": {
+      "materials": [
+        "steel",
+        "polymer"
+      ],
+      "parts": 14,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Supply and return headers with evenly spaced branch outlets and support feet. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility."
+    },
+    "rear-door-heat-exchanger": {
+      "materials": [
+        "steel",
+        "polymer"
+      ],
+      "parts": 15,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Rack-door cooling frame with serpentine-look tube runs and inlet connections. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility."
+    },
+    "overhead-coolant-header": {
+      "materials": [
+        "steel",
+        "polymer"
+      ],
+      "parts": 14,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Suspended supply and return pipes with branch drops and hanger brackets. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility."
+    },
+    "condenser-pump-skid": {
+      "materials": [
+        "steel",
+        "polymer"
+      ],
+      "parts": 9,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Pumping skid with paired motors, horizontal pump bodies, and manifold pipes. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility."
+    },
+    "data-center-plate-heat-exchanger": {
+      "materials": [
+        "steel",
+        "polymer"
+      ],
+      "parts": 20,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Compact exchanger stack with tie bars, frame plates, and pipe flanges. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility."
+    },
+    "floor-air-grille": {
+      "materials": [
+        "steel",
+        "polymer"
+      ],
+      "parts": 14,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Low floor air register with a rigid perimeter frame, closely spaced louver bars, a damper tab, and a shallow curb. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility."
+    },
+    "ceiling-return-plenum": {
+      "materials": [
+        "steel",
+        "polymer"
+      ],
+      "parts": 9,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Ducted return-air box with support legs, branch collar, and access panel. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility."
+    },
+    "environmental-sensor": {
+      "materials": [
+        "steel",
+        "polymer"
+      ],
+      "parts": 5,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Room sensor mast with compact head, directional cap, and mounting plate. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility."
+    },
+    "leak-detection-module": {
+      "materials": [
+        "steel",
+        "polymer",
+        "rubber"
+      ],
+      "parts": 6,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Water-leak monitor enclosure with probe terminals and floor sensor puck. Knobs: overall scale; painted steel, engineering polymer, rubber and elastomer. Presets: facilityStandard and highVisibility."
+    },
+    "clean-agent-cylinder-bank": {
+      "materials": [
+        "steel",
+        "polymer"
+      ],
+      "parts": 14,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Suppression cylinder rack with manifold header, valve caps, and anchoring frame. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility."
+    },
+    "data-center-security-camera": {
+      "materials": [
+        "steel",
+        "glass"
+      ],
+      "parts": 6,
+      "presets": [
+        "facilityStandard",
+        "highVisibility"
+      ],
+      "description": "Compact fixed camera on a service mast with sunshield and mounting base. Knobs: overall scale; painted steel, glass and display lenses. Presets: facilityStandard and highVisibility."
+    }
+  },
+  "geometryChanges": [
+    "rack power distribution unit has a narrow outlet channel and separate jacketed feed cable",
+    "perimeter precision cooler has a distinct wide cabinet, front coil and top fans",
+    "UPS, battery, transfer-switch and floor-grille profiles have equipment-specific faces and controls",
+    "air-cooled chiller has repeated coil fins and six visible three-blade fans",
+    "cooling tower has a tapered fan cowl and fan blades",
+    "transformer bushings, generator stack and sensor cap use lofted profiles"
+  ]
+}
