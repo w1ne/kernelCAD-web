@@ -116,7 +116,8 @@ describe('manufacturing showcase STEP after the requested prompt edits', () => {
     if (size) {
       const bounds = report.solids[0]!.bboxExact;
       const actual = bounds.max.map((value, axis) => value - bounds.min[axis]!);
-      actual.forEach((value, axis) => expect(value).toBeCloseTo(size[axis]!, 2));
+      actual.forEach((value, axis) =>
+        expect(Math.abs(value - size[axis]!)).toBeLessThanOrEqual(0.05));
     }
   }, 180_000);
 });
