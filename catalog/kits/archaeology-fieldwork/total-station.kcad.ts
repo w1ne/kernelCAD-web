@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: CC0-1.0
-// Original generic archaeology fieldwork scene prop, millimetres, Z up, base at z = 0.
+// Survey total station: Tripod-mounted survey instrument with a telescope, visible field display, objective lens and three-leg support. Low-poly field visualization geometry in millimetres, Z-up; visible zones use painted polymer, aluminum, glass, rubber.
 
 meta({
   name: "total-station",
   license: 'CC0-1.0',
   title: "Survey total station",
-  description: "Tripod-mounted survey instrument with a compact body, telescope barrel and adjustment knobs. Knobs: overall scale and asset color.",
+  description: "Tripod-mounted survey instrument with a telescope, visible field display, objective lens and three-leg support. Material controls: painted polymer, aluminum, glass, rubber. Appearance presets: field ready and weathered.",
   tags: ["archaeology", "excavation", "fieldwork", "survey total station", "low poly", "scene prop", "CC0"],
   kit: 'archaeology-fieldwork',
   category: 'prop',
@@ -15,7 +15,14 @@ meta({
 });
 
 const scale = param('scale', 1, { min: 0.75, max: 1.25, step: 0.05, label: 'Overall scale' });
-const color = param('color', "#b77b3d", { label: 'Asset color' });
+const paintedPolymer = param('paintedPolymer', '#d39b35', { label: 'Painted polymer' });
+const aluminum = param('aluminum', '#9eafb7', { label: 'Aluminum' });
+const glass = param('glass', '#63949c', { label: 'Glass' });
+const rubber = param('rubber', '#343a3b', { label: 'Rubber' });
+presets({
+  fieldReady: { paintedPolymer: '#edb83f', aluminum: '#c3ccd0', glass: '#94bdc3', rubber: '#454c4d' },
+  weathered: { paintedPolymer: '#ad7c2d', aluminum: '#788990', glass: '#5d7b7f', rubber: '#292f30' },
+});
 const baseZ = 4.787052;
 const p = assembly("total-station");
 const b = (x: number, y: number, z: number, w: number, d: number, h: number, rx = 0, ry = 0, rz = 0) => {
@@ -23,18 +30,21 @@ const b = (x: number, y: number, z: number, w: number, d: number, h: number, rx 
   if (rx) part = part.rotateX(rx);
   if (ry) part = part.rotateY(ry);
   if (rz) part = part.rotateZ(rz);
-  return part.translate(x, y, z + h / 2 - baseZ).scale(scale).color(color);
+  return part.translate(x, y, z + h / 2 - baseZ).scale(scale);
 };
-const c = (x: number, y: number, z: number, h: number, r: number, n = 10) => cylinder(h, r, n).translate(x, y, z - baseZ).scale(scale).color(color);
-const hx = (x: number, y: number, z: number, length: number, r: number, n = 10) => cylinder(length, r, n).alongAxis([1, 0, 0]).translate(x - length / 2, y, z - baseZ).scale(scale).color(color);
+const c = (x: number, y: number, z: number, h: number, r: number, n = 10) => cylinder(h, r, n).translate(x, y, z - baseZ).scale(scale);
+const hx = (x: number, y: number, z: number, length: number, r: number, n = 10) => cylinder(length, r, n).alongAxis([1, 0, 0]).translate(x - length / 2, y, z - baseZ).scale(scale);
 
-p.part("tripod-leg-0", b(-210, -170, 0, 42, 42, 600, -12, 18, 0));
-p.part("tripod-leg-1", b(210, -170, 0, 42, 42, 600, -12, -18, 0));
-p.part("tripod-leg-2", b(0, 220, 0, 42, 42, 600, 15, 0, 0));
-p.part("head-column", c(0, 0, 560, 120, 42, 8));
-p.part("instrument-body", b(0, 0, 680, 260, 190, 190, 0, 0, 0));
-p.part("telescope", hx(0, -115, 745, 260, 36, 10));
-p.part("adjustment-knob-0", c(-155, 0, 685, 42, 24, 8));
-p.part("adjustment-knob-1", c(155, 0, 685, 42, 24, 8));
+p.part("tripod-leg-0", b(-210, -170, 0, 42, 42, 600, -12, 18, 0).color(aluminum));
+p.part("tripod-leg-1", b(210, -170, 0, 42, 42, 600, -12, -18, 0).color(aluminum));
+p.part("tripod-leg-2", b(0, 220, 0, 42, 42, 600, 15, 0, 0).color(aluminum));
+p.part("head-column", c(0, 0, 560, 120, 42, 8).color(aluminum));
+p.part("instrument-body", b(0, 0, 680, 260, 190, 190, 0, 0, 0).color(paintedPolymer));
+p.part("telescope", hx(0, -115, 745, 260, 36, 10).color(paintedPolymer));
+p.part("objective-lens", hx(-132, -115, 745, 18, 27, 10).color(glass));
+p.part("display-bezel", b(70, 0, 870, 92, 64, 16, 0, 0, 0).color(aluminum));
+p.part("display-screen", b(70, 0, 883, 70, 44, 6, 0, 0, 0).color(glass));
+p.part("adjustment-knob-0", c(-155, 0, 685, 42, 24, 8).color(rubber));
+p.part("adjustment-knob-1", c(155, 0, 685, 42, 24, 8).color(rubber));
 
 return p.model();

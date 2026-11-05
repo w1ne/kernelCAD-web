@@ -6,10 +6,11 @@ from those sources and must be rebuilt in the same change.
 
 ## Catalog quality snapshot (2026-11-05)
 
-The catalog quality gate reports **1,754/2,390 assets passing (73.39%)** and
-636 thin assets (26.61%). This round promoted 50 existing EV charging
-infrastructure assets from the 1,704/2,390 checkpoint; no IDs were added. Thin
-assets remain in other kits. See the [EV charging infrastructure handoff](../artifacts/catalog-demos/ev-charging-infrastructure-quality-promotion-20261105/README.md),
+The catalog quality gate reports **1,904/2,390 assets passing (79.67%)** and
+486 thin assets (20.33%). This round promoted 50 existing archaeology-fieldwork
+assets from the 1,854/2,390 checkpoint; no IDs were added. Thin assets remain
+in other kits. See the [archaeology fieldwork quality handoff](../artifacts/catalog-demos/archaeology-fieldwork-quality-promotion-20261105/README.md),
+[EV charging infrastructure handoff](../artifacts/catalog-demos/ev-charging-infrastructure-quality-promotion-20261105/README.md),
 [beverage bottling line handoff](../artifacts/catalog-demos/beverage-bottling-line-quality-promotion-20261105/README.md),
 [data center infrastructure handoff](../artifacts/catalog-demos/data-center-infrastructure-quality-promotion-20261105/README.md),
 [wind energy handoff](../artifacts/catalog-demos/wind-energy-quality-promotion-20261105/README.md),
@@ -87,12 +88,17 @@ that this branch has been deployed.
 
 The [archaeology fieldwork kit](../catalog/kits/archaeology-fieldwork/README.md)
 adds 50 original low-poly scene props for survey layout, excavation, screening,
-sample handling, field records, and site photography. Each asset exposes scale
-and color controls and has a generated preview path in the catalog index. The
+sample handling, field records, and site photography. Each existing ID retains
+scale, has two to four material-named color controls, and includes `fieldReady`
+and `weathered` presets. The 50 assets use 124 material controls and 100 preset
+entries, with a regenerated indexed preview for every ID. The [quality promotion
+handoff](../artifacts/catalog-demos/archaeology-fieldwork-quality-promotion-20261105/README.md)
+records the material mapping, silhouette updates, local checks, and inspected
+MP4. The original
 [wave demo and verification bundle](../artifacts/catalog-demos/archaeology-fieldwork-wave-20261103/README.md)
-records the source-to-preview workflow and local audit results. The kit is a set
-of generic scene props; it does not assert archaeological method approval,
-instrument calibration, historical fidelity, or field acceptance.
+records the initial source-to-preview workflow. These are generic scene props;
+they do not assert archaeological method approval, instrument calibration,
+historical fidelity, deployed behavior, or field acceptance.
 
 ## Apiary assets
 

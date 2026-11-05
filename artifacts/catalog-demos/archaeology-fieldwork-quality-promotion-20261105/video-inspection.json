@@ -1,0 +1,26 @@
+{
+  "video": "archaeology-fieldwork-quality-promotion.mp4",
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "pixelFormat": "yuv420p",
+  "frameRate": "24/1",
+  "durationSeconds": 20.0,
+  "sizeBytes": 208728,
+  "decodedFrames": [
+    "video-review/decoded-01.png",
+    "video-review/decoded-02.png",
+    "video-review/decoded-03.png",
+    "video-review/decoded-04.png",
+    "video-review/decoded-05.png"
+  ],
+  "contactSheet": "video-review/contact-sheet.png",
+  "allFramesDecodeAtExpectedSize": true,
+  "manualVisualReview": "passed",
+  "reviewNotes": [
+    "All five 1280x720 frames decode and the 20-second clip plays through the source, before/after, preset, and local-check sections.",
+    "Source lines wrap without truncating the material names or geometry example; check text is legible at full frame.",
+    "The weathered preset visibly darkens the same total-station geometry while preserving its top display and tripod silhouette.",
+    "Captions label the clip as a replay of local software renders, separate simulation status, deployment verification, and field/hardware acceptance."
+  ]
+}

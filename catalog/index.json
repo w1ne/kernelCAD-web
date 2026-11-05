@@ -21036,7 +21036,7 @@
       "id": "archaeologist-trowel",
       "kit": "archaeology-fieldwork",
       "title": "Archaeologist trowel",
-      "description": "Short-handled pointed excavation trowel with a broad blade and raised ferrule. Knobs: overall scale and asset color.",
+      "description": "Short-handled pointed excavation trowel with a broad blade and raised ferrule. Material controls: timber, stainless steel. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -21059,7 +21059,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/archaeologist-trowel.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-archaeologist-trowel.png",
-      "sourceSha256": "f39514e54816ae3d892a7cf59d3a43068d584b99f65c057ea346091a67bbb7db",
+      "sourceSha256": "8a89c0a39fe19dfc04e53c08e9c9ed3a54c3c2b96f58bdcc092616e26b6c22b8",
       "triangleBudget": 2400,
       "params": [
         {
@@ -21072,35 +21072,56 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#83928a",
-          "label": "Asset color"
+          "default": "#8b6848",
+          "label": "Timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b6",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588"
+        }
+      },
       "stats": {
         "triangles": 156,
         "sizeM": [
-          0.5155,
+          0.563,
           0.076,
-          0.18
+          0.152
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#83928a",
+          "name": "timber",
+          "color": "#8b6848",
           "parts": [
             "handle",
-            "handle-cap",
-            "ferrule",
-            "blade",
-            "blade-tip"
+            "handle-cap"
           ],
-          "param": "color"
+          "param": "timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
+          "parts": [
+            "ferrule",
+            "blade"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -21108,7 +21129,7 @@
       "id": "artifact-bag",
       "kit": "archaeology-fieldwork",
       "title": "Finds collection bag",
-      "description": "Small field bag with a folded opening, side gussets and a blank label patch. Knobs: overall scale and asset color.",
+      "description": "Small field bag with a folded opening, side gussets and a blank label patch. Material controls: canvas, paper. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -21131,7 +21152,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/artifact-bag.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-artifact-bag.png",
-      "sourceSha256": "0faafce955dfdd1e5bfca252def778c101f4a45e811917104c895fe210ea2855",
+      "sourceSha256": "61056f89f8343dd7465b57194147c786b2621d9eba2908ec08de9879ec403105",
       "triangleBudget": 2400,
       "params": [
         {
@@ -21144,13 +21165,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "canvas",
           "type": "color",
-          "default": "#a78b68",
-          "label": "Asset color"
+          "default": "#a99675",
+          "label": "Canvas"
+        },
+        {
+          "name": "paper",
+          "type": "color",
+          "default": "#d8cba9",
+          "label": "Paper"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "canvas": "#c0ad88",
+          "paper": "#eee6d1"
+        },
+        "weathered": {
+          "canvas": "#80745d",
+          "paper": "#a99c7e"
+        }
+      },
       "stats": {
         "triangles": 60,
         "sizeM": [
@@ -21163,16 +21199,23 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a78b68",
+          "name": "canvas",
+          "color": "#a99675",
           "parts": [
             "bag-body",
             "folded-mouth",
-            "label-patch",
             "left-gusset",
             "right-gusset"
           ],
-          "param": "color"
+          "param": "canvas"
+        },
+        {
+          "name": "paper",
+          "color": "#d8cba9",
+          "parts": [
+            "label-patch"
+          ],
+          "param": "paper"
         }
       ]
     },
@@ -21180,7 +21223,7 @@
       "id": "boundary-flag",
       "kit": "archaeology-fieldwork",
       "title": "Survey boundary flag",
-      "description": "Bright survey marker flag mounted on a narrow ground stake. Knobs: overall scale and asset color.",
+      "description": "Bright survey marker flag mounted on a narrow ground stake. Material controls: stainless steel, flag fabric. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -21203,7 +21246,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/boundary-flag.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-boundary-flag.png",
-      "sourceSha256": "4c33eb80ac9783bcdbb4a4599708bc9a2ccb3cd6737f1918a204d1bd4613e41f",
+      "sourceSha256": "c06c82d284680ab03df719758bcc3b234db39f3accdefcd58771be81edc8e5ee",
       "triangleBudget": 2400,
       "params": [
         {
@@ -21216,13 +21259,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#d65b38",
-          "label": "Asset color"
+          "default": "#aab4b6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#dc6842",
+          "label": "Flag fabric"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "stainlessSteel": "#c7cdcf",
+          "fabric": "#f39b35"
+        },
+        "weathered": {
+          "stainlessSteel": "#7a8588",
+          "fabric": "#a9573d"
+        }
+      },
       "stats": {
         "triangles": 100,
         "sizeM": [
@@ -21235,14 +21293,21 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d65b38",
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
           "parts": [
             "flag-stake",
-            "flag-cloth",
             "ground-ferrule"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "fabric",
+          "color": "#dc6842",
+          "parts": [
+            "flag-cloth"
+          ],
+          "param": "fabric"
         }
       ]
     },
@@ -21250,7 +21315,7 @@
       "id": "context-clipboard",
       "kit": "archaeology-fieldwork",
       "title": "Excavation context clipboard",
-      "description": "Field form board with a top clip and pencil loop for recording a soil context. Knobs: overall scale and asset color.",
+      "description": "Field form board with a top clip and pencil loop for recording a soil context. Material controls: timber, paper, stainless steel, brass. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -21273,7 +21338,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/context-clipboard.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-context-clipboard.png",
-      "sourceSha256": "e5d868294b58162672d3c8d8d26afa477393b80c1f3d66f9a622b39339ea47f4",
+      "sourceSha256": "3b94e935ef7425df527a5f69eda78bca7288b1fb55e235a06a4775f4b2801898",
       "triangleBudget": 2400,
       "params": [
         {
@@ -21286,13 +21351,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#8c7355",
-          "label": "Asset color"
+          "default": "#8b6848",
+          "label": "Timber"
+        },
+        {
+          "name": "paper",
+          "type": "color",
+          "default": "#d8cba9",
+          "label": "Paper"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#b18b50",
+          "label": "Brass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "paper": "#eee6d1",
+          "stainlessSteel": "#c7cdcf",
+          "brass": "#c6a364"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "paper": "#a99c7e",
+          "stainlessSteel": "#7a8588",
+          "brass": "#846a3e"
+        }
+      },
       "stats": {
         "triangles": 124,
         "sizeM": [
@@ -21305,16 +21401,37 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8c7355",
+          "name": "timber",
+          "color": "#8b6848",
           "parts": [
-            "board",
-            "paper",
+            "board"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "paper",
+          "color": "#d8cba9",
+          "parts": [
+            "paper"
+          ],
+          "param": "paper"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
+          "parts": [
             "clip",
-            "clip-pivot",
+            "clip-pivot"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "brass",
+          "color": "#b18b50",
+          "parts": [
             "pencil"
           ],
-          "param": "color"
+          "param": "brass"
         }
       ]
     },
@@ -21322,7 +21439,7 @@
       "id": "detail-paintbrush",
       "kit": "archaeology-fieldwork",
       "title": "Detailing brush",
-      "description": "Fine pointed cleaning brush with a tapered grip, ferrule and slim bristle bundle. Knobs: overall scale and asset color.",
+      "description": "Fine pointed cleaning brush with a tapered grip, ferrule and slim bristle bundle. Material controls: timber, stainless steel, brush fiber. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -21345,7 +21462,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/detail-paintbrush.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-detail-paintbrush.png",
-      "sourceSha256": "bb1efdd20a4cf7324c1ea9605e372da46a7eebd9c6157bd64448f77d182ca3ac",
+      "sourceSha256": "d58c4e7458fba8aab2fb9d0328f5afa774b879251789ac70c7d6f1d12b499626",
       "triangleBudget": 2400,
       "params": [
         {
@@ -21358,13 +21475,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#d1a14e",
-          "label": "Asset color"
+          "default": "#8b6848",
+          "label": "Timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "fiber",
+          "type": "color",
+          "default": "#cfb986",
+          "label": "Brush fiber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf",
+          "fiber": "#e2d09d"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588",
+          "fiber": "#a18a61"
+        }
+      },
       "stats": {
         "triangles": 220,
         "sizeM": [
@@ -21377,16 +21517,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d1a14e",
+          "name": "timber",
+          "color": "#8b6848",
           "parts": [
             "handle",
-            "ferrule",
-            "bristles",
-            "bristle-tip",
             "handle-end"
           ],
-          "param": "color"
+          "param": "timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
+          "parts": [
+            "ferrule"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "fiber",
+          "color": "#cfb986",
+          "parts": [
+            "bristles",
+            "bristle-tip"
+          ],
+          "param": "fiber"
         }
       ]
     },
@@ -21394,7 +21548,7 @@
       "id": "detail-scoop",
       "kit": "archaeology-fieldwork",
       "title": "Soil detail scoop",
-      "description": "Small flat soil scoop with raised side cheeks and a short grip. Knobs: overall scale and asset color.",
+      "description": "Small flat soil scoop with raised side cheeks and a short grip. Material controls: timber, stainless steel. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -21417,7 +21571,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/detail-scoop.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-detail-scoop.png",
-      "sourceSha256": "fef935173d1d47d8e9e809fcb45e71771d9779648bddfea13e18aaa72f0f9b86",
+      "sourceSha256": "1262077f2d3bd0daa4a11f64a0bfeea407e972c4f0918fe4326f26509d308d85",
       "triangleBudget": 2400,
       "params": [
         {
@@ -21430,13 +21584,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#969b91",
-          "label": "Asset color"
+          "default": "#8b6848",
+          "label": "Timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b6",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588"
+        }
+      },
       "stats": {
         "triangles": 124,
         "sizeM": [
@@ -21449,16 +21618,23 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#969b91",
+          "name": "timber",
+          "color": "#8b6848",
           "parts": [
-            "handle",
+            "handle"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
+          "parts": [
             "neck",
             "scoop-pan",
             "left-cheek",
             "right-cheek"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -21466,7 +21642,7 @@
       "id": "dustpan-and-brush",
       "kit": "archaeology-fieldwork",
       "title": "Dustpan and brush",
-      "description": "Field dustpan with a raised lip and a compact cleaning brush resting beside it. Knobs: overall scale and asset color.",
+      "description": "Field dustpan with a raised lip and a compact cleaning brush resting beside it. Material controls: molded polymer, timber, brush fiber. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -21489,7 +21665,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/dustpan-and-brush.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-dustpan-and-brush.png",
-      "sourceSha256": "18faa037c3c31126fb728231ba759f56d26e5fc007e2314d0776304459a3080b",
+      "sourceSha256": "91fe16383bdc6aced8bb7d80e05711d32298e9a7e3871ea3f088ca80cf16e3c3",
       "triangleBudget": 2400,
       "params": [
         {
@@ -21502,13 +21678,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#78887d",
-          "label": "Asset color"
+          "default": "#d2d8ce",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "timber",
+          "type": "color",
+          "default": "#8b6848",
+          "label": "Timber"
+        },
+        {
+          "name": "fiber",
+          "type": "color",
+          "default": "#cfb986",
+          "label": "Brush fiber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "polymer": "#e6e9df",
+          "timber": "#a27850",
+          "fiber": "#e2d09d"
+        },
+        "weathered": {
+          "polymer": "#8d9890",
+          "timber": "#705a45",
+          "fiber": "#a18a61"
+        }
+      },
       "stats": {
         "triangles": 84,
         "sizeM": [
@@ -21521,18 +21720,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#78887d",
+          "name": "polymer",
+          "color": "#d2d8ce",
           "parts": [
             "pan-base",
             "pan-back",
             "pan-left-wall",
             "pan-right-wall",
-            "pan-handle",
-            "brush-handle",
+            "pan-handle"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "timber",
+          "color": "#8b6848",
+          "parts": [
+            "brush-handle"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "fiber",
+          "color": "#cfb986",
+          "parts": [
             "brush-head"
           ],
-          "param": "color"
+          "param": "fiber"
         }
       ]
     },
@@ -21540,7 +21753,7 @@
       "id": "excavation-camera-tripod",
       "kit": "archaeology-fieldwork",
       "title": "Camera field tripod",
-      "description": "Three-leg camera tripod with a compact pan head, center column and leveling plate. Knobs: overall scale and asset color.",
+      "description": "Three-leg camera tripod with a compact pan head, center column and leveling plate. Material controls: stainless steel, molded polymer. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -21563,7 +21776,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/excavation-camera-tripod.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-excavation-camera-tripod.png",
-      "sourceSha256": "29157a23790a92e1ac1a7bb2ace3d9773cc2a0ca6bc894c621f676694267626a",
+      "sourceSha256": "22cbad57abd64011b316371e725d4e3f2261dc20f82d206e60d7c9f66c22f68f",
       "triangleBudget": 2400,
       "params": [
         {
@@ -21576,13 +21789,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#838d88",
-          "label": "Asset color"
+          "default": "#aab4b6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#d2d8ce",
+          "label": "Molded polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "stainlessSteel": "#c7cdcf",
+          "polymer": "#e6e9df"
+        },
+        "weathered": {
+          "stainlessSteel": "#7a8588",
+          "polymer": "#8d9890"
+        }
+      },
       "stats": {
         "triangles": 180,
         "sizeM": [
@@ -21595,18 +21823,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#838d88",
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
           "parts": [
             "tripod-leg-0",
             "tripod-leg-1",
             "tripod-leg-2",
             "center-column",
-            "leveling-plate",
+            "leveling-plate"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#d2d8ce",
+          "parts": [
             "pan-head",
             "camera-plate"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -21614,7 +21849,7 @@
       "id": "excavation-grid",
       "kit": "archaeology-fieldwork",
       "title": "Excavation grid ropes",
-      "description": "Four taut survey lines and corner pins mark a square excavation unit. Knobs: overall scale and asset color.",
+      "description": "Four taut survey lines and corner pins mark a square excavation unit. Material controls: survey cord, stainless steel. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -21637,7 +21872,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/excavation-grid.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-excavation-grid.png",
-      "sourceSha256": "de765d7d3890c34e9ec87503abc5ae06788671ad868e61f6fd137e4e60370e72",
+      "sourceSha256": "1458e439479a3d5059d2810b8a591d94b455509d5303f7f69aa8bba8c1584fed",
       "triangleBudget": 2400,
       "params": [
         {
@@ -21650,13 +21885,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "rope",
           "type": "color",
-          "default": "#c69b54",
-          "label": "Asset color"
+          "default": "#c8ad6e",
+          "label": "Survey cord"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b6",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "rope": "#e5cf8d",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "rope": "#907746",
+          "stainlessSteel": "#7a8588"
+        }
+      },
       "stats": {
         "triangles": 352,
         "sizeM": [
@@ -21669,19 +21919,26 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#c69b54",
+          "name": "rope",
+          "color": "#c8ad6e",
           "parts": [
             "north-grid-line",
             "south-grid-line",
             "west-grid-line",
-            "east-grid-line",
+            "east-grid-line"
+          ],
+          "param": "rope"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
+          "parts": [
             "corner-pin-0",
             "corner-pin-1",
             "corner-pin-2",
             "corner-pin-3"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -21689,7 +21946,7 @@
       "id": "excavation-pick",
       "kit": "archaeology-fieldwork",
       "title": "Excavation pick",
-      "description": "Compact pick with a crosswise head, pointed end and short straight handle. Knobs: overall scale and asset color.",
+      "description": "Compact pick with a crosswise head, pointed end and short straight handle. Material controls: timber, stainless steel. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -21712,7 +21969,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/excavation-pick.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-excavation-pick.png",
-      "sourceSha256": "f24d8e49b6796526812dc13156e2ede74c56fdf1c50709c5645dc8179bf7d776",
+      "sourceSha256": "1ee13dedff7a9b1884834d092dc5f461e3b24a5533769114ad89a6c9a21ed1f6",
       "triangleBudget": 2400,
       "params": [
         {
@@ -21725,13 +21982,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#7d8680",
-          "label": "Asset color"
+          "default": "#8b6848",
+          "label": "Timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b6",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588"
+        }
+      },
       "stats": {
         "triangles": 112,
         "sizeM": [
@@ -21744,15 +22016,22 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7d8680",
+          "name": "timber",
+          "color": "#8b6848",
           "parts": [
-            "handle",
+            "handle"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
+          "parts": [
             "head",
             "point",
             "adze-end"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -21760,7 +22039,7 @@
       "id": "field-loupe",
       "kit": "archaeology-fieldwork",
       "title": "Field magnifier",
-      "description": "Hand lens with a circular frame, short stem and oval grip. Knobs: overall scale and asset color.",
+      "description": "Hand lens with a circular frame, short stem and oval grip. Material controls: molded polymer, stainless steel, glass. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -21783,7 +22062,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/field-loupe.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-field-loupe.png",
-      "sourceSha256": "bef98922cbde2d00d80cc818d050d1b3c975a3f03d6df65b40cb5561ae18b59d",
+      "sourceSha256": "eaf0e58225a814c7373d01b6d054d89e36e0978caf1b6ce6deaaf42bcaa58fa2",
       "triangleBudget": 2400,
       "params": [
         {
@@ -21796,15 +22075,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#9c9f94",
-          "label": "Asset color"
+          "default": "#d2d8ce",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#63949c",
+          "label": "Glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "polymer": "#e6e9df",
+          "stainlessSteel": "#c7cdcf",
+          "glass": "#94bdc3"
+        },
+        "weathered": {
+          "polymer": "#8d9890",
+          "stainlessSteel": "#7a8588",
+          "glass": "#5d7b7f"
+        }
+      },
       "stats": {
-        "triangles": 120,
+        "triangles": 164,
         "sizeM": [
           0.3765,
           0.039,
@@ -21815,14 +22117,29 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#9c9f94",
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
           "parts": [
             "lens-frame",
-            "stem",
+            "stem"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "glass",
+          "color": "#63949c",
+          "parts": [
+            "lens"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "polymer",
+          "color": "#d2d8ce",
+          "parts": [
             "grip"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -21830,7 +22147,7 @@
       "id": "field-notebook",
       "kit": "archaeology-fieldwork",
       "title": "Field notebook",
-      "description": "Hard-cover field notebook with a visible spine, elastic band and page block. Knobs: overall scale and asset color.",
+      "description": "Hard-cover field notebook with a visible spine, elastic band and page block. Material controls: leather, paper, rubber. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -21853,7 +22170,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/field-notebook.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-field-notebook.png",
-      "sourceSha256": "7afdb9e6679bc3883b09201645fce47894bc8958f426f1746f7adec2d275eaa9",
+      "sourceSha256": "74d3811128672fe2f1b1b4cffc94a837e4ab4d20a3c7c8c377a135c57bd695f2",
       "triangleBudget": 2400,
       "params": [
         {
@@ -21866,13 +22183,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "leather",
           "type": "color",
-          "default": "#6d846c",
-          "label": "Asset color"
+          "default": "#805b3c",
+          "label": "Leather"
+        },
+        {
+          "name": "paper",
+          "type": "color",
+          "default": "#d8cba9",
+          "label": "Paper"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#343a3b",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "leather": "#9b7049",
+          "paper": "#eee6d1",
+          "rubber": "#454c4d"
+        },
+        "weathered": {
+          "leather": "#664932",
+          "paper": "#a99c7e",
+          "rubber": "#292f30"
+        }
+      },
       "stats": {
         "triangles": 60,
         "sizeM": [
@@ -21885,16 +22225,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6d846c",
+          "name": "paper",
+          "color": "#d8cba9",
           "parts": [
-            "page-block",
+            "page-block"
+          ],
+          "param": "paper"
+        },
+        {
+          "name": "leather",
+          "color": "#805b3c",
+          "parts": [
             "front-cover",
             "back-cover",
-            "spine",
+            "spine"
+          ],
+          "param": "leather"
+        },
+        {
+          "name": "rubber",
+          "color": "#343a3b",
+          "parts": [
             "elastic-band"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -21902,7 +22256,7 @@
       "id": "finds-tray",
       "kit": "archaeology-fieldwork",
       "title": "Finds sorting tray",
-      "description": "Shallow compartmented tray with a raised rim and four open cells. Knobs: overall scale and asset color.",
+      "description": "Shallow compartmented tray with a raised rim and four open cells. Material controls: molded polymer, stainless steel. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -21925,7 +22279,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/finds-tray.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-finds-tray.png",
-      "sourceSha256": "5b38f330ed88d2b7ab45a48b0381a0a754e399b3f14095c7b6d1de5c94598404",
+      "sourceSha256": "80675f65c7f429ada2622414564ad9358652347b61c09f6fc37729f5e764e265",
       "triangleBudget": 2400,
       "params": [
         {
@@ -21938,13 +22292,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#9d906c",
-          "label": "Asset color"
+          "default": "#d2d8ce",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b6",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "polymer": "#e6e9df",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "polymer": "#8d9890",
+          "stainlessSteel": "#7a8588"
+        }
+      },
       "stats": {
         "triangles": 84,
         "sizeM": [
@@ -21957,18 +22326,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#9d906c",
+          "name": "polymer",
+          "color": "#d2d8ce",
           "parts": [
             "tray-floor",
             "rim-0",
             "rim-1",
             "rim-2",
-            "rim-3",
+            "rim-3"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
+          "parts": [
             "center-long",
             "center-cross"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -21976,7 +22352,7 @@
       "id": "fine-mesh-sieve",
       "kit": "archaeology-fieldwork",
       "title": "Fine-mesh sample sieve",
-      "description": "Round hand sieve with a deep side band, dense crossbars and a short grip. Knobs: overall scale and asset color.",
+      "description": "Round hand sieve with a deep side band, dense crossbars and a short grip. Material controls: stainless steel, molded polymer. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -21999,7 +22375,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/fine-mesh-sieve.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-fine-mesh-sieve.png",
-      "sourceSha256": "47d87eef24752eb2d0331ff2ebb50268412a95b14b2d8b973e5840082577ac77",
+      "sourceSha256": "794a994690bcb15d969734898409547bba50222123ec5e8dde59ad18e949f5b4",
       "triangleBudget": 2400,
       "params": [
         {
@@ -22012,13 +22388,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#8f968d",
-          "label": "Asset color"
+          "default": "#aab4b6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#d2d8ce",
+          "label": "Molded polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "stainlessSteel": "#c7cdcf",
+          "polymer": "#e6e9df"
+        },
+        "weathered": {
+          "stainlessSteel": "#7a8588",
+          "polymer": "#8d9890"
+        }
+      },
       "stats": {
         "triangles": 932,
         "sizeM": [
@@ -22031,8 +22422,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8f968d",
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
           "parts": [
             "sieve-rim",
             "mesh-x-0",
@@ -22052,10 +22443,17 @@
             "mesh-y-5",
             "mesh-y-6",
             "mesh-y-7",
-            "mesh-y-8",
+            "mesh-y-8"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#d2d8ce",
+          "parts": [
             "handle"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -22063,7 +22461,7 @@
       "id": "flotation-tank",
       "kit": "archaeology-fieldwork",
       "title": "Soil flotation tank",
-      "description": "Open rectangular sample tank on a braced stand with a hose outlet and top rim. Knobs: overall scale and asset color.",
+      "description": "Open rectangular sample tank on a braced stand with a hose outlet and top rim. Material controls: molded polymer, stainless steel, rubber. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -22086,7 +22484,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/flotation-tank.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-flotation-tank.png",
-      "sourceSha256": "d3944411999883a12791c8d37191d36df707fb558b246d7ed9934e9ef6d3ca96",
+      "sourceSha256": "3245e65d1f93b6e06f7d043f97b3779dde1864865ec52307e630f48e49493838",
       "triangleBudget": 2400,
       "params": [
         {
@@ -22099,13 +22497,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#72918e",
-          "label": "Asset color"
+          "default": "#d2d8ce",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#343a3b",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "polymer": "#e6e9df",
+          "stainlessSteel": "#c7cdcf",
+          "rubber": "#454c4d"
+        },
+        "weathered": {
+          "polymer": "#8d9890",
+          "stainlessSteel": "#7a8588",
+          "rubber": "#292f30"
+        }
+      },
       "stats": {
         "triangles": 196,
         "sizeM": [
@@ -22118,22 +22539,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#72918e",
+          "name": "polymer",
+          "color": "#d2d8ce",
           "parts": [
             "tank-body",
             "tank-rim-0",
             "tank-rim-1",
             "tank-rim-2",
-            "tank-rim-3",
+            "tank-rim-3"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
+          "parts": [
             "stand-leg-0",
             "stand-leg-1",
             "stand-leg-2",
             "stand-leg-3",
-            "outlet",
             "outlet-valve"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#343a3b",
+          "parts": [
+            "outlet"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -22141,7 +22576,7 @@
       "id": "folding-rule",
       "kit": "archaeology-fieldwork",
       "title": "Folding measuring rule",
-      "description": "Three linked flat rule sections with hinge blocks at their joints. Knobs: overall scale and asset color.",
+      "description": "Three linked flat rule sections with hinge blocks at their joints. Material controls: timber, brass. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -22164,7 +22599,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/folding-rule.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-folding-rule.png",
-      "sourceSha256": "059e4a099d230f9421b5d0c69c80e16997f32dc5342fa01591a7d29a2c6ca8a5",
+      "sourceSha256": "36c4079934ae43630b4cbd462a0e5b7ad534d8d9643fee9b2513089875e51761",
       "triangleBudget": 2400,
       "params": [
         {
@@ -22177,13 +22612,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#e2c85c",
-          "label": "Asset color"
+          "default": "#8b6848",
+          "label": "Timber"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#b18b50",
+          "label": "Brass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "brass": "#c6a364"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "brass": "#846a3e"
+        }
+      },
       "stats": {
         "triangles": 124,
         "sizeM": [
@@ -22196,16 +22646,23 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#e2c85c",
+          "name": "timber",
+          "color": "#8b6848",
           "parts": [
             "rule-left",
             "rule-center",
-            "rule-right",
+            "rule-right"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "brass",
+          "color": "#b18b50",
+          "parts": [
             "hinge-0",
             "hinge-1"
           ],
-          "param": "color"
+          "param": "brass"
         }
       ]
     },
@@ -22213,7 +22670,7 @@
       "id": "grade-rod",
       "kit": "archaeology-fieldwork",
       "title": "Survey grade rod",
-      "description": "Tall marked staff with a reinforced shoe and cross-grip at the top. Knobs: overall scale and asset color.",
+      "description": "Tall marked staff with a reinforced shoe and cross-grip at the top. Material controls: aluminum, painted steel, molded polymer. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -22236,7 +22693,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/grade-rod.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-grade-rod.png",
-      "sourceSha256": "06a1054ce8fca8edff665272b30c820c384a1f696f46a372c72190b8f8ed0447",
+      "sourceSha256": "3412020ca522bfe389e07aeb0c71ce33b998606f2ec89443b6bc9eb9832997d6",
       "triangleBudget": 2400,
       "params": [
         {
@@ -22249,13 +22706,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminum",
           "type": "color",
-          "default": "#d7a44a",
-          "label": "Asset color"
+          "default": "#9eafb7",
+          "label": "Aluminum"
+        },
+        {
+          "name": "paintedSteel",
+          "type": "color",
+          "default": "#607b83",
+          "label": "Painted steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#d2d8ce",
+          "label": "Molded polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "aluminum": "#c3ccd0",
+          "paintedSteel": "#e5a536",
+          "polymer": "#e6e9df"
+        },
+        "weathered": {
+          "aluminum": "#788990",
+          "paintedSteel": "#56686c",
+          "polymer": "#8d9890"
+        }
+      },
       "stats": {
         "triangles": 188,
         "sizeM": [
@@ -22268,10 +22748,17 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d7a44a",
+          "name": "aluminum",
+          "color": "#9eafb7",
           "parts": [
-            "rod",
+            "rod"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#607b83",
+          "parts": [
             "graduation-band-0",
             "graduation-band-1",
             "graduation-band-2",
@@ -22281,11 +22768,18 @@
             "graduation-band-6",
             "graduation-band-7",
             "graduation-band-8",
-            "graduation-band-9",
+            "graduation-band-9"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#d2d8ce",
+          "parts": [
             "shoe",
             "top-grip"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -22293,7 +22787,7 @@
       "id": "hand-auger",
       "kit": "archaeology-fieldwork",
       "title": "Hand soil auger",
-      "description": "Manual soil auger with a T-handle, straight shaft and open helical-look cutting blades. Knobs: overall scale and asset color.",
+      "description": "Manual soil auger with a T-handle, straight shaft and open helical-look cutting blades. Material controls: stainless steel, timber. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -22316,7 +22810,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/hand-auger.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-hand-auger.png",
-      "sourceSha256": "201577a1215b5229a82356e3212f67c67889e311e113597825edbcd86776bf05",
+      "sourceSha256": "1b40aa09f5a1de88d10771fcaf073ae05f3aae65fd1cb14e69582eb1ddcc756f",
       "triangleBudget": 2400,
       "params": [
         {
@@ -22329,13 +22823,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#858d88",
-          "label": "Asset color"
+          "default": "#aab4b6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "timber",
+          "type": "color",
+          "default": "#8b6848",
+          "label": "Timber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "stainlessSteel": "#c7cdcf",
+          "timber": "#a27850"
+        },
+        "weathered": {
+          "stainlessSteel": "#7a8588",
+          "timber": "#705a45"
+        }
+      },
       "stats": {
         "triangles": 180,
         "sizeM": [
@@ -22348,18 +22857,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#858d88",
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
           "parts": [
             "shaft",
-            "t-handle",
             "cutting-flight-0",
             "cutting-flight-1",
             "cutting-flight-2",
             "cutting-flight-3",
             "cutting-tip"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "timber",
+          "color": "#8b6848",
+          "parts": [
+            "t-handle"
+          ],
+          "param": "timber"
         }
       ]
     },
@@ -22367,7 +22883,7 @@
       "id": "hand-broom",
       "kit": "archaeology-fieldwork",
       "title": "Hand broom",
-      "description": "Short whisk broom with a tapered handle, bound neck and fan of coarse bristles. Knobs: overall scale and asset color.",
+      "description": "Short whisk broom with a tapered handle, bound neck and fan of coarse bristles. Material controls: timber, brush fiber. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -22390,7 +22906,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/hand-broom.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-hand-broom.png",
-      "sourceSha256": "4060936d1eb2445aff2d56fd1227f6fe3477fd2d94ba3396afc41c7fdd404211",
+      "sourceSha256": "132591ed9a51adeb7121ca6cbe7b11ea610deefe4d942c8cbf2bbb1e700b2edf",
       "triangleBudget": 2400,
       "params": [
         {
@@ -22403,13 +22919,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#a9804d",
-          "label": "Asset color"
+          "default": "#8b6848",
+          "label": "Timber"
+        },
+        {
+          "name": "fiber",
+          "type": "color",
+          "default": "#cfb986",
+          "label": "Brush fiber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "fiber": "#e2d09d"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "fiber": "#a18a61"
+        }
+      },
       "stats": {
         "triangles": 116,
         "sizeM": [
@@ -22422,18 +22953,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a9804d",
+          "name": "timber",
+          "color": "#8b6848",
           "parts": [
             "handle",
-            "bound-neck",
+            "bound-neck"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "fiber",
+          "color": "#cfb986",
+          "parts": [
             "bristle-0",
             "bristle-1",
             "bristle-2",
             "bristle-3",
             "bristle-4"
           ],
-          "param": "color"
+          "param": "fiber"
         }
       ]
     },
@@ -22441,7 +22979,7 @@
       "id": "line-level",
       "kit": "archaeology-fieldwork",
       "title": "String line level",
-      "description": "Small tubular level with a raised center vial and hanging end hooks. Knobs: overall scale and asset color.",
+      "description": "Small tubular level with a raised center vial and hanging end hooks. Material controls: aluminum, glass, stainless steel. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -22464,7 +23002,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/line-level.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-line-level.png",
-      "sourceSha256": "865a9e2a42a1c209b84ceef38edf63ab97b703e77cbf68fb5ea384568b6fea84",
+      "sourceSha256": "ea61c72f8e32cf9e081277413efc0e5cca07c86822c49ef160ace82c88f3cad6",
       "triangleBudget": 2400,
       "params": [
         {
@@ -22477,13 +23015,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminum",
           "type": "color",
-          "default": "#7a9691",
-          "label": "Asset color"
+          "default": "#9eafb7",
+          "label": "Aluminum"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#63949c",
+          "label": "Glass"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b6",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "aluminum": "#c3ccd0",
+          "glass": "#94bdc3",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "aluminum": "#788990",
+          "glass": "#5d7b7f",
+          "stainlessSteel": "#7a8588"
+        }
+      },
       "stats": {
         "triangles": 248,
         "sizeM": [
@@ -22496,15 +23057,29 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7a9691",
+          "name": "aluminum",
+          "color": "#9eafb7",
           "parts": [
-            "level-body",
-            "vial-window",
+            "level-body"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "glass",
+          "color": "#63949c",
+          "parts": [
+            "vial-window"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
+          "parts": [
             "end-hook-0",
             "end-hook-1"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -22512,7 +23087,7 @@
       "id": "margin-trowel",
       "kit": "archaeology-fieldwork",
       "title": "Margin trowel",
-      "description": "Narrow rectangular masonry-style blade on a short grip for fine excavation work. Knobs: overall scale and asset color.",
+      "description": "Narrow rectangular masonry-style blade on a short grip for fine excavation work. Material controls: timber, stainless steel. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -22535,7 +23110,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/margin-trowel.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-margin-trowel.png",
-      "sourceSha256": "84d89cc28dae9d71db4ecbe024ef17be249e532a89753d6b21fb0c0f0fe52040",
+      "sourceSha256": "b01a07939cc303e402c4ade36c7c36c0f363beb9e167eb3240a19af296be29f6",
       "triangleBudget": 2400,
       "params": [
         {
@@ -22548,13 +23123,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#89918c",
-          "label": "Asset color"
+          "default": "#8b6848",
+          "label": "Timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b6",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588"
+        }
+      },
       "stats": {
         "triangles": 112,
         "sizeM": [
@@ -22567,15 +23157,22 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#89918c",
+          "name": "timber",
+          "color": "#8b6848",
           "parts": [
-            "handle",
+            "handle"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
+          "parts": [
             "neck",
             "narrow-blade",
             "shoulder"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -22583,7 +23180,7 @@
       "id": "masonry-chisel",
       "kit": "archaeology-fieldwork",
       "title": "Masonry chisel",
-      "description": "Short steel chisel with a protective hand guard and widened striking cap. Knobs: overall scale and asset color.",
+      "description": "Short steel chisel with a protective hand guard and widened striking cap. Material controls: stainless steel, rubber. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -22606,7 +23203,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/masonry-chisel.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-masonry-chisel.png",
-      "sourceSha256": "b309440f94c3002726ab0538f08cf21c59ef265a72d5ba269e6d7ca8aae495af",
+      "sourceSha256": "791699862f87154ae1dfc2898e2aa30397e66a28df361efe6d7799cffa3e7216",
       "triangleBudget": 2400,
       "params": [
         {
@@ -22619,13 +23216,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#92958d",
-          "label": "Asset color"
+          "default": "#aab4b6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#343a3b",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "stainlessSteel": "#c7cdcf",
+          "rubber": "#454c4d"
+        },
+        "weathered": {
+          "stainlessSteel": "#7a8588",
+          "rubber": "#292f30"
+        }
+      },
       "stats": {
         "triangles": 144,
         "sizeM": [
@@ -22638,15 +23250,22 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#92958d",
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
           "parts": [
             "blade",
             "bevel",
-            "hand-guard",
             "striking-cap"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#343a3b",
+          "parts": [
+            "hand-guard"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -22654,7 +23273,7 @@
       "id": "mattock",
       "kit": "archaeology-fieldwork",
       "title": "Excavation mattock",
-      "description": "Broad adze mattock head on a long field handle. Knobs: overall scale and asset color.",
+      "description": "Broad adze mattock head on a long field handle. Material controls: timber, stainless steel. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -22677,7 +23296,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/mattock.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-mattock.png",
-      "sourceSha256": "2ba2c16b6c0563b1e6bc3dbc34545b72d5c180c310b50170a6178f0d44bf5141",
+      "sourceSha256": "4ab87bee5e7f51ad47415426736afb10db9acb5c93f97db52efb2370187208dd",
       "triangleBudget": 2400,
       "params": [
         {
@@ -22690,13 +23309,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#85867d",
-          "label": "Asset color"
+          "default": "#8b6848",
+          "label": "Timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b6",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588"
+        }
+      },
       "stats": {
         "triangles": 112,
         "sizeM": [
@@ -22709,15 +23343,22 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#85867d",
+          "name": "timber",
+          "color": "#8b6848",
           "parts": [
-            "handle",
+            "handle"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
+          "parts": [
             "head",
             "adze-blade",
             "pick-tip"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -22725,7 +23366,7 @@
       "id": "nested-sieves",
       "kit": "archaeology-fieldwork",
       "title": "Nested field sieves",
-      "description": "Stack of three shallow round sieves with visible rims and different diameters. Knobs: overall scale and asset color.",
+      "description": "Stack of three shallow round sieves with visible rims and different diameters. Material controls: stainless steel, aluminum. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -22748,7 +23389,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/nested-sieves.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-nested-sieves.png",
-      "sourceSha256": "e1024e8d63bc2bb015f19aac76eabac82a8baf6bed92c7d36f11120d042afc48",
+      "sourceSha256": "c9289e2ac09e018d2f57181d3bdd6c651a89178acd01e85098a0bddc60a52089",
       "triangleBudget": 2400,
       "params": [
         {
@@ -22761,13 +23402,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#929990",
-          "label": "Asset color"
+          "default": "#aab4b6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#9eafb7",
+          "label": "Aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "stainlessSteel": "#c7cdcf",
+          "aluminum": "#c3ccd0"
+        },
+        "weathered": {
+          "stainlessSteel": "#7a8588",
+          "aluminum": "#788990"
+        }
+      },
       "stats": {
         "triangles": 332,
         "sizeM": [
@@ -22780,15 +23436,22 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#929990",
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
           "parts": [
             "sieve-0",
             "sieve-1",
-            "sieve-2",
+            "sieve-2"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "aluminum",
+          "color": "#9eafb7",
+          "parts": [
             "center-post"
           ],
-          "param": "color"
+          "param": "aluminum"
         }
       ]
     },
@@ -22796,7 +23459,7 @@
       "id": "north-arrow-marker",
       "kit": "archaeology-fieldwork",
       "title": "North arrow marker",
-      "description": "Portable four-point orientation marker on a low circular base. Knobs: overall scale and asset color.",
+      "description": "Portable four-point orientation marker on a low circular base. Material controls: molded polymer, stainless steel, painted steel. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -22819,7 +23482,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/north-arrow-marker.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-north-arrow-marker.png",
-      "sourceSha256": "b2ddff581e46873e9adf86a4461466fdefaad3bf98c3475fcad56561b519d17e",
+      "sourceSha256": "ce0dab489b7db3acc34f7343e5fcde807a35943cce08f8e0475e34e17f919f52",
       "triangleBudget": 2400,
       "params": [
         {
@@ -22832,13 +23495,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#c4a64c",
-          "label": "Asset color"
+          "default": "#d2d8ce",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "paintedSteel",
+          "type": "color",
+          "default": "#607b83",
+          "label": "Painted steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "polymer": "#e6e9df",
+          "stainlessSteel": "#c7cdcf",
+          "paintedSteel": "#e5a536"
+        },
+        "weathered": {
+          "polymer": "#8d9890",
+          "stainlessSteel": "#7a8588",
+          "paintedSteel": "#56686c"
+        }
+      },
       "stats": {
         "triangles": 136,
         "sizeM": [
@@ -22851,17 +23537,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#c4a64c",
+          "name": "polymer",
+          "color": "#d2d8ce",
           "parts": [
-            "base",
-            "pivot",
+            "base"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
+          "parts": [
+            "pivot"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#607b83",
+          "parts": [
             "north-point",
             "south-point",
             "east-point",
             "west-point"
           ],
-          "param": "color"
+          "param": "paintedSteel"
         }
       ]
     },
@@ -22869,7 +23569,7 @@
       "id": "photo-board",
       "kit": "archaeology-fieldwork",
       "title": "Excavation photo board",
-      "description": "Portable board with a raised clamp, short grip and blank recording face. Knobs: overall scale and asset color.",
+      "description": "Portable board with a raised clamp, short grip and blank recording face. Material controls: timber, paper, stainless steel. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -22892,7 +23592,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/photo-board.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-photo-board.png",
-      "sourceSha256": "fdce66bb2007289fb80ab66fbb4ec464448fd37350490fc626a4faf60060684c",
+      "sourceSha256": "8fb19e34598cf456f06595984e10d7a74150f9a97251a5f489be570bf673f358",
       "triangleBudget": 2400,
       "params": [
         {
@@ -22905,13 +23605,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#71856e",
-          "label": "Asset color"
+          "default": "#8b6848",
+          "label": "Timber"
+        },
+        {
+          "name": "paper",
+          "type": "color",
+          "default": "#d8cba9",
+          "label": "Paper"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b6",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "paper": "#eee6d1",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "paper": "#a99c7e",
+          "stainlessSteel": "#7a8588"
+        }
+      },
       "stats": {
         "triangles": 80,
         "sizeM": [
@@ -22924,15 +23647,29 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#71856e",
+          "name": "paper",
+          "color": "#d8cba9",
           "parts": [
-            "board-face",
+            "board-face"
+          ],
+          "param": "paper"
+        },
+        {
+          "name": "timber",
+          "color": "#8b6848",
+          "parts": [
             "top-rail",
-            "clip",
             "carry-handle"
           ],
-          "param": "color"
+          "param": "timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
+          "parts": [
+            "clip"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -22940,7 +23677,7 @@
       "id": "photo-north-arrow",
       "kit": "archaeology-fieldwork",
       "title": "Photo north arrow",
-      "description": "Compact direction arrow and base used to orient an excavation photograph. Knobs: overall scale and asset color.",
+      "description": "Compact direction arrow and base used to orient an excavation photograph. Material controls: molded polymer, painted steel. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -22963,7 +23700,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/photo-north-arrow.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-photo-north-arrow.png",
-      "sourceSha256": "282d832b5577f245a2ef419aecd698021edf67b49fc600ed87424852d96a983f",
+      "sourceSha256": "e5b066b6aab5146fd9adf409c899bccf87ee9b95797f9f13122343f3d0f56258",
       "triangleBudget": 2400,
       "params": [
         {
@@ -22976,13 +23713,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#d29a42",
-          "label": "Asset color"
+          "default": "#d2d8ce",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "paintedSteel",
+          "type": "color",
+          "default": "#607b83",
+          "label": "Painted steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "polymer": "#e6e9df",
+          "paintedSteel": "#e5a536"
+        },
+        "weathered": {
+          "polymer": "#8d9890",
+          "paintedSteel": "#56686c"
+        }
+      },
       "stats": {
         "triangles": 48,
         "sizeM": [
@@ -22995,15 +23747,22 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d29a42",
+          "name": "polymer",
+          "color": "#d2d8ce",
           "parts": [
             "base",
-            "arrow-shaft",
+            "arrow-shaft"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#607b83",
+          "parts": [
             "arrowhead",
             "tail"
           ],
-          "param": "color"
+          "param": "paintedSteel"
         }
       ]
     },
@@ -23011,7 +23770,7 @@
       "id": "photo-scale-bar",
       "kit": "archaeology-fieldwork",
       "title": "Photo scale bar",
-      "description": "Segmented rectangular scale bar with raised end stops for site photography. Knobs: overall scale and asset color.",
+      "description": "Segmented rectangular scale bar with raised end stops for site photography. Material controls: molded polymer, painted steel. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -23034,7 +23793,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/photo-scale-bar.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-photo-scale-bar.png",
-      "sourceSha256": "f7c69fa09344db2999966279905ac7a26ffe00a6bb3eb2868567cdaab0fb1457",
+      "sourceSha256": "8a16c5740513cb54d13564664e8fbaf0118d9742031668192acee4ee81e299b3",
       "triangleBudget": 2400,
       "params": [
         {
@@ -23047,13 +23806,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#c4b07a",
-          "label": "Asset color"
+          "default": "#d2d8ce",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "paintedSteel",
+          "type": "color",
+          "default": "#607b83",
+          "label": "Painted steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "polymer": "#e6e9df",
+          "paintedSteel": "#e5a536"
+        },
+        "weathered": {
+          "polymer": "#8d9890",
+          "paintedSteel": "#56686c"
+        }
+      },
       "stats": {
         "triangles": 120,
         "sizeM": [
@@ -23066,21 +23840,28 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#c4b07a",
+          "name": "polymer",
+          "color": "#d2d8ce",
           "parts": [
             "bar-body",
+            "end-stop-0",
+            "end-stop-1"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#607b83",
+          "parts": [
             "marker-0",
             "marker-1",
             "marker-2",
             "marker-3",
             "marker-4",
             "marker-5",
-            "marker-6",
-            "end-stop-0",
-            "end-stop-1"
+            "marker-6"
           ],
-          "param": "color"
+          "param": "paintedSteel"
         }
       ]
     },
@@ -23088,7 +23869,7 @@
       "id": "plumb-bob",
       "kit": "archaeology-fieldwork",
       "title": "Plumb bob",
-      "description": "Weighted survey bob hanging from a short line and top eye. Knobs: overall scale and asset color.",
+      "description": "Weighted survey bob hanging from a short line and top eye. Material controls: stainless steel, brass, survey cord. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -23111,7 +23892,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/plumb-bob.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-plumb-bob.png",
-      "sourceSha256": "fc5c49d45b6f4872f231cd5a9d8b6dd3dcc754bdba737d91dc2dd659fdba76bd",
+      "sourceSha256": "0bceb42b8f4b1e45f2e40444ca22c4604f47292d21daf44634867a905de04318",
       "triangleBudget": 2400,
       "params": [
         {
@@ -23124,13 +23905,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#8b9390",
-          "label": "Asset color"
+          "default": "#aab4b6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#b18b50",
+          "label": "Brass"
+        },
+        {
+          "name": "rope",
+          "type": "color",
+          "default": "#c8ad6e",
+          "label": "Survey cord"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "stainlessSteel": "#c7cdcf",
+          "brass": "#c6a364",
+          "rope": "#e5cf8d"
+        },
+        "weathered": {
+          "stainlessSteel": "#7a8588",
+          "brass": "#846a3e",
+          "rope": "#907746"
+        }
+      },
       "stats": {
         "triangles": 228,
         "sizeM": [
@@ -23143,15 +23947,29 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8b9390",
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
           "parts": [
-            "bob-body",
+            "bob-body"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "brass",
+          "color": "#b18b50",
+          "parts": [
             "lower-weight",
-            "line",
             "top-eye"
           ],
-          "param": "color"
+          "param": "brass"
+        },
+        {
+          "name": "rope",
+          "color": "#c8ad6e",
+          "parts": [
+            "line"
+          ],
+          "param": "rope"
         }
       ]
     },
@@ -23159,7 +23977,7 @@
       "id": "pointing-trowel",
       "kit": "archaeology-fieldwork",
       "title": "Pointing trowel",
-      "description": "Triangular pointed hand trowel with a rounded grip and narrow tang. Knobs: overall scale and asset color.",
+      "description": "Triangular pointed hand trowel with a rounded grip and narrow tang. Material controls: timber, stainless steel. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -23182,7 +24000,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/pointing-trowel.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-pointing-trowel.png",
-      "sourceSha256": "2003e2ca1f1fa645782bb2b03392cdc21cc4f56c9ab18e672d00854caa088ef8",
+      "sourceSha256": "3983580fcfe23bce015efd379d48ab62bab5a8075e95169266a6592a704d815e",
       "triangleBudget": 2400,
       "params": [
         {
@@ -23195,13 +24013,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#9b9d94",
-          "label": "Asset color"
+          "default": "#8b6848",
+          "label": "Timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b6",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588"
+        }
+      },
       "stats": {
         "triangles": 156,
         "sizeM": [
@@ -23214,16 +24047,23 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#9b9d94",
+          "name": "timber",
+          "color": "#8b6848",
           "parts": [
             "handle",
-            "grip-cap",
+            "grip-cap"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
+          "parts": [
             "tang",
             "blade",
             "point"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -23231,7 +24071,7 @@
       "id": "round-point-shovel",
       "kit": "archaeology-fieldwork",
       "title": "Round point shovel",
-      "description": "Full-size digging shovel with a rounded blade, socket, long shaft and D grip. Knobs: overall scale and asset color.",
+      "description": "Full-size digging shovel with a rounded blade, socket, long shaft and D grip. Material controls: timber, stainless steel, rubber. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -23254,7 +24094,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/round-point-shovel.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-round-point-shovel.png",
-      "sourceSha256": "0e04955cb104fc40b0473635c43bc12056f94cf9fcd873515e3dfd1bfefb4646",
+      "sourceSha256": "fad4e6434d18f1e4d8f334c66a444a70e322ac6aa50fe18c0f321645beceab9b",
       "triangleBudget": 2400,
       "params": [
         {
@@ -23267,13 +24107,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#a9a49a",
-          "label": "Asset color"
+          "default": "#8b6848",
+          "label": "Timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#343a3b",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf",
+          "rubber": "#454c4d"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588",
+          "rubber": "#292f30"
+        }
+      },
       "stats": {
         "triangles": 200,
         "sizeM": [
@@ -23286,17 +24149,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a9a49a",
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
           "parts": [
             "blade",
-            "shoulder",
-            "shaft",
+            "shoulder"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "timber",
+          "color": "#8b6848",
+          "parts": [
+            "shaft"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "rubber",
+          "color": "#343a3b",
+          "parts": [
             "d-grip-top",
             "d-grip-side-left",
             "d-grip-side-right"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -23304,7 +24181,7 @@
       "id": "sample-scoop",
       "kit": "archaeology-fieldwork",
       "title": "Soil sample scoop",
-      "description": "Long-handled sampling scoop with a shallow bowl and raised rim. Knobs: overall scale and asset color.",
+      "description": "Long-handled sampling scoop with a shallow bowl and raised rim. Material controls: timber, stainless steel. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -23327,7 +24204,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/sample-scoop.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-sample-scoop.png",
-      "sourceSha256": "2a7da321be4c04ae36eea4af845c900b2b43d9899afc59d7a99f542aa6b36b1b",
+      "sourceSha256": "5cb46c30212b8aac739c678b0b769023e2d130d5a2273733cf4251caef9aebf3",
       "triangleBudget": 2400,
       "params": [
         {
@@ -23340,13 +24217,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#a4a297",
-          "label": "Asset color"
+          "default": "#8b6848",
+          "label": "Timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b6",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588"
+        }
+      },
       "stats": {
         "triangles": 168,
         "sizeM": [
@@ -23359,17 +24251,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a4a297",
+          "name": "timber",
+          "color": "#8b6848",
           "parts": [
             "shaft",
-            "cross-grip",
+            "cross-grip"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
+          "parts": [
             "bowl",
             "left-rim",
             "right-rim",
             "neck"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -23377,7 +24276,7 @@
       "id": "sample-tag-set",
       "kit": "archaeology-fieldwork",
       "title": "Field sample tags",
-      "description": "Three punched sample tags with short ties and blank faces. Knobs: overall scale and asset color.",
+      "description": "Three punched sample tags with short ties and blank faces. Material controls: paper, brass, survey cord. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -23400,7 +24299,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/sample-tag-set.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-sample-tag-set.png",
-      "sourceSha256": "f07c37296b9ea81384603f1a0bff01b54c71d9393af8b4b0158f8a5a4c1f20dc",
+      "sourceSha256": "b2eeeafa3e05fc8ce4db26f7b355cba987fdfd354f130249286834ea37341bc4",
       "triangleBudget": 2400,
       "params": [
         {
@@ -23413,13 +24312,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paper",
           "type": "color",
-          "default": "#d2bb73",
-          "label": "Asset color"
+          "default": "#d8cba9",
+          "label": "Paper"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#b18b50",
+          "label": "Brass"
+        },
+        {
+          "name": "rope",
+          "type": "color",
+          "default": "#c8ad6e",
+          "label": "Survey cord"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "paper": "#eee6d1",
+          "brass": "#c6a364",
+          "rope": "#e5cf8d"
+        },
+        "weathered": {
+          "paper": "#a99c7e",
+          "brass": "#846a3e",
+          "rope": "#907746"
+        }
+      },
       "stats": {
         "triangles": 456,
         "sizeM": [
@@ -23432,20 +24354,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d2bb73",
+          "name": "paper",
+          "color": "#d8cba9",
           "parts": [
             "tag-0",
             "tag-1",
-            "tag-2",
+            "tag-2"
+          ],
+          "param": "paper"
+        },
+        {
+          "name": "brass",
+          "color": "#b18b50",
+          "parts": [
             "tie-eye-0",
             "tie-eye-1",
-            "tie-eye-2",
+            "tie-eye-2"
+          ],
+          "param": "brass"
+        },
+        {
+          "name": "rope",
+          "color": "#c8ad6e",
+          "parts": [
             "tie-0",
             "tie-1",
             "tie-2"
           ],
-          "param": "color"
+          "param": "rope"
         }
       ]
     },
@@ -23453,7 +24389,7 @@
       "id": "sample-wash-tray",
       "kit": "archaeology-fieldwork",
       "title": "Finds wash tray",
-      "description": "Shallow rectangular washing tray with a raised perimeter and one drain opening. Knobs: overall scale and asset color.",
+      "description": "Shallow rectangular washing tray with a raised perimeter and one drain opening. Material controls: molded polymer, stainless steel. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -23476,7 +24412,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/sample-wash-tray.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-sample-wash-tray.png",
-      "sourceSha256": "edcf8fa129214ac9787a2eefa36cf801858f2ecf83548ff4a7a23e6428817f93",
+      "sourceSha256": "26e9165482f4801ab7f196ead2b7217ba84ccfca0bfbf1aca318e9497ab1fc25",
       "triangleBudget": 2400,
       "params": [
         {
@@ -23489,13 +24425,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#7f9992",
-          "label": "Asset color"
+          "default": "#d2d8ce",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b6",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "polymer": "#e6e9df",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "polymer": "#8d9890",
+          "stainlessSteel": "#7a8588"
+        }
+      },
       "stats": {
         "triangles": 156,
         "sizeM": [
@@ -23508,17 +24459,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7f9992",
+          "name": "polymer",
+          "color": "#d2d8ce",
           "parts": [
             "tray-floor",
             "tray-wall-0",
             "tray-wall-1",
             "tray-wall-2",
-            "tray-wall-3",
+            "tray-wall-3"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
+          "parts": [
             "drain"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -23526,7 +24484,7 @@
       "id": "sediment-bucket",
       "kit": "archaeology-fieldwork",
       "title": "Sediment bucket",
-      "description": "Open field bucket with a reinforced rim, flat base and swing handle. Knobs: overall scale and asset color.",
+      "description": "Open field bucket with a reinforced rim, flat base and swing handle. Material controls: molded polymer, stainless steel. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -23549,7 +24507,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/sediment-bucket.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-sediment-bucket.png",
-      "sourceSha256": "194382bebc4030f94d6c51b5af5f372b9bcca50504a7b26ed0d5fa52d61af510",
+      "sourceSha256": "28cd3c985556eadf1ea86d13c67ce9a43a5f3a61dd022b8791289d7fd9502a04",
       "triangleBudget": 2400,
       "params": [
         {
@@ -23562,13 +24520,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#799187",
-          "label": "Asset color"
+          "default": "#d2d8ce",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b6",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "polymer": "#e6e9df",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "polymer": "#8d9890",
+          "stainlessSteel": "#7a8588"
+        }
+      },
       "stats": {
         "triangles": 472,
         "sizeM": [
@@ -23581,17 +24554,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#799187",
+          "name": "polymer",
+          "color": "#d2d8ce",
           "parts": [
-            "bucket-body",
+            "bucket-body"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
+          "parts": [
             "bucket-rim",
             "base-band",
             "handle-left",
             "handle-right",
             "handle-grip"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -23599,7 +24579,7 @@
       "id": "shaker-screen",
       "kit": "archaeology-fieldwork",
       "title": "Archaeology shaker screen",
-      "description": "Large raised wooden frame with crossbars and four short support legs. Knobs: overall scale and asset color.",
+      "description": "Large raised wooden frame with crossbars and four short support legs. Material controls: timber, stainless steel. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -23622,7 +24602,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/shaker-screen.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-shaker-screen.png",
-      "sourceSha256": "81473a72d0b606f1b99c8ccca7d98e7bf968f848dd9b8c4683894ffe8fd3aa7f",
+      "sourceSha256": "77ba5ec73cf225ef38e8f01d1248301cc9c17967d33dc03b55459e83c4b0bb63",
       "triangleBudget": 2400,
       "params": [
         {
@@ -23635,13 +24615,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#a37a4c",
-          "label": "Asset color"
+          "default": "#8b6848",
+          "label": "Timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b6",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588"
+        }
+      },
       "stats": {
         "triangles": 756,
         "sizeM": [
@@ -23654,13 +24649,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a37a4c",
+          "name": "timber",
+          "color": "#8b6848",
           "parts": [
             "frame-rail-0",
             "frame-rail-1",
             "frame-rail-2",
             "frame-rail-3",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
+          "parts": [
             "mesh-bar-x-0",
             "mesh-bar-x-1",
             "mesh-bar-x-2",
@@ -23675,13 +24681,9 @@
             "mesh-bar-y-4",
             "mesh-bar-y-5",
             "mesh-bar-y-6",
-            "mesh-bar-y-7",
-            "leg-0",
-            "leg-1",
-            "leg-2",
-            "leg-3"
+            "mesh-bar-y-7"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -23689,7 +24691,7 @@
       "id": "site-camera",
       "kit": "archaeology-fieldwork",
       "title": "Field documentation camera",
-      "description": "Compact field camera with a short lens barrel, raised viewfinder and grip. Knobs: overall scale and asset color.",
+      "description": "Compact field camera with a short lens barrel, raised viewfinder and grip. Material controls: molded polymer, glass, rubber. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -23712,7 +24714,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/site-camera.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-site-camera.png",
-      "sourceSha256": "34714153b4abac37f01f7b8c56f7f10dda7059e69d009b59749eed22bcf16340",
+      "sourceSha256": "fce59466c4afe30aee35aa396f6096b8d1b447c941f9a2af3025416fc0a5373f",
       "triangleBudget": 2400,
       "params": [
         {
@@ -23725,13 +24727,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#667671",
-          "label": "Asset color"
+          "default": "#d2d8ce",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#63949c",
+          "label": "Glass"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#343a3b",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "polymer": "#e6e9df",
+          "glass": "#94bdc3",
+          "rubber": "#454c4d"
+        },
+        "weathered": {
+          "polymer": "#8d9890",
+          "glass": "#5d7b7f",
+          "rubber": "#292f30"
+        }
+      },
       "stats": {
         "triangles": 232,
         "sizeM": [
@@ -23744,18 +24769,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#667671",
+          "name": "polymer",
+          "color": "#d2d8ce",
           "parts": [
             "camera-body",
+            "viewfinder",
+            "shutter-button"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "glass",
+          "color": "#63949c",
+          "parts": [
             "lens-mount",
             "lens",
-            "lens-rim",
-            "viewfinder",
-            "shutter-button",
+            "lens-rim"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "rubber",
+          "color": "#343a3b",
+          "parts": [
             "grip"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -23763,7 +24802,7 @@
       "id": "soft-finds-brush",
       "kit": "archaeology-fieldwork",
       "title": "Soft finds brush",
-      "description": "Wide soft-bristle brush with a short wooden handle and flared brush head. Knobs: overall scale and asset color.",
+      "description": "Wide soft-bristle brush with a short wooden handle and flared brush head. Material controls: timber, brush fiber. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -23786,7 +24825,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/soft-finds-brush.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-soft-finds-brush.png",
-      "sourceSha256": "5fb148a5aaef2128fb3e41e672a19c8ce133e0033be75026ec15ee22ca06d979",
+      "sourceSha256": "05c5235a5d7d6f4323f0d3fb3cd7c5576d5b254393d3d9dd8214e1d2136e4400",
       "triangleBudget": 2400,
       "params": [
         {
@@ -23799,13 +24838,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#b58048",
-          "label": "Asset color"
+          "default": "#8b6848",
+          "label": "Timber"
+        },
+        {
+          "name": "fiber",
+          "type": "color",
+          "default": "#cfb986",
+          "label": "Brush fiber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "fiber": "#e2d09d"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "fiber": "#a18a61"
+        }
+      },
       "stats": {
         "triangles": 408,
         "sizeM": [
@@ -23818,12 +24872,19 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b58048",
+          "name": "timber",
+          "color": "#8b6848",
           "parts": [
             "handle",
             "neck",
-            "brush-block",
+            "brush-block"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "fiber",
+          "color": "#cfb986",
+          "parts": [
             "bristle-bundle-0",
             "bristle-bundle-1",
             "bristle-bundle-2",
@@ -23832,7 +24893,7 @@
             "bristle-bundle-5",
             "bristle-bundle-6"
           ],
-          "param": "color"
+          "param": "fiber"
         }
       ]
     },
@@ -23840,7 +24901,7 @@
       "id": "soil-core-sampler",
       "kit": "archaeology-fieldwork",
       "title": "Soil core sampler",
-      "description": "Hollow field corer with a reinforced mouth, top grip and removable cap. Knobs: overall scale and asset color.",
+      "description": "Hollow field corer with a reinforced mouth, top grip and removable cap. Material controls: stainless steel, rubber, painted steel. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -23863,7 +24924,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/soil-core-sampler.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-soil-core-sampler.png",
-      "sourceSha256": "ccef335fa5ad0327baafd9ad07fadf683a62892a8bc1b1a7201f6d2ce3c519ab",
+      "sourceSha256": "eb28facc549ee9e0c8bfd123af451fc2a04c1dd8e3d6a99e63015e24f54f370b",
       "triangleBudget": 2400,
       "params": [
         {
@@ -23876,13 +24937,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#89928d",
-          "label": "Asset color"
+          "default": "#aab4b6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#343a3b",
+          "label": "Rubber"
+        },
+        {
+          "name": "paintedSteel",
+          "type": "color",
+          "default": "#607b83",
+          "label": "Painted steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "stainlessSteel": "#c7cdcf",
+          "rubber": "#454c4d",
+          "paintedSteel": "#e5a536"
+        },
+        "weathered": {
+          "stainlessSteel": "#7a8588",
+          "rubber": "#292f30",
+          "paintedSteel": "#56686c"
+        }
+      },
       "stats": {
         "triangles": 260,
         "sizeM": [
@@ -23895,16 +24979,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#89928d",
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
           "parts": [
             "sample-tube",
             "mouth-rim",
-            "handle-crossbar",
-            "top-cap",
+            "handle-crossbar"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#343a3b",
+          "parts": [
+            "top-cap"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#607b83",
+          "parts": [
             "depth-window"
           ],
-          "param": "color"
+          "param": "paintedSteel"
         }
       ]
     },
@@ -23912,7 +25010,7 @@
       "id": "soil-knife",
       "kit": "archaeology-fieldwork",
       "title": "Soil profile knife",
-      "description": "Narrow profile knife with a guarded handle, straight blade and lanyard eye. Knobs: overall scale and asset color.",
+      "description": "Narrow profile knife with a guarded handle, straight blade and lanyard eye. Material controls: timber, stainless steel. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -23935,7 +25033,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/soil-knife.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-soil-knife.png",
-      "sourceSha256": "02608c62b1f93cbe8240a283d7cf40872d26535e42d485ae9e4df5265136b9c3",
+      "sourceSha256": "7132b8c2c3e0a4a39c28ad7ca1ed50c4afd462847f69735176f41d37a15e8978",
       "triangleBudget": 2400,
       "params": [
         {
@@ -23948,13 +25046,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#c68f42",
-          "label": "Asset color"
+          "default": "#8b6848",
+          "label": "Timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b6",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588"
+        }
+      },
       "stats": {
         "triangles": 132,
         "sizeM": [
@@ -23967,15 +25080,22 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#c68f42",
+          "name": "timber",
+          "color": "#8b6848",
           "parts": [
-            "handle",
+            "handle"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
+          "parts": [
             "lanyard-eye",
             "blade",
             "blade-point"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -23983,7 +25103,7 @@
       "id": "sorting-pan",
       "kit": "archaeology-fieldwork",
       "title": "Finds sorting pan",
-      "description": "Wide shallow sorting pan with rounded polygon-style rim and central divider. Knobs: overall scale and asset color.",
+      "description": "Wide shallow sorting pan with rounded polygon-style rim and central divider. Material controls: molded polymer, stainless steel. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -24006,7 +25126,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/sorting-pan.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-sorting-pan.png",
-      "sourceSha256": "b7dfc28bcc889cf5f812c64178c8072ee78e842f6ceae769052525437e521e40",
+      "sourceSha256": "0adbb7a7276f33776ef47be3ec7b0dec2abda08408bc94a8f9eab4d13c0e5e34",
       "triangleBudget": 2400,
       "params": [
         {
@@ -24019,13 +25139,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#a28c63",
-          "label": "Asset color"
+          "default": "#d2d8ce",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b6",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "polymer": "#e6e9df",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "polymer": "#8d9890",
+          "stainlessSteel": "#7a8588"
+        }
+      },
       "stats": {
         "triangles": 72,
         "sizeM": [
@@ -24038,17 +25173,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a28c63",
+          "name": "polymer",
+          "color": "#d2d8ce",
           "parts": [
             "pan-base",
             "pan-wall-0",
             "pan-wall-1",
             "pan-wall-2",
-            "pan-wall-3",
+            "pan-wall-3"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
+          "parts": [
             "divider"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -24056,7 +25198,7 @@
       "id": "specimen-jar-rack",
       "kit": "archaeology-fieldwork",
       "title": "Specimen jar rack",
-      "description": "Portable rack with four capped sample jars and a broad carrying base. Knobs: overall scale and asset color.",
+      "description": "Portable rack with four capped sample jars and a broad carrying base. Material controls: aluminum, glass, molded polymer. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -24079,7 +25221,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/specimen-jar-rack.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-specimen-jar-rack.png",
-      "sourceSha256": "1902f3a7057dcd777aa3da9daa4696a5df29b6611c65fd755097de1f7d1bfd85",
+      "sourceSha256": "2ee0c48109e9095963b8eb10aeb34d50d123442d7b5b58c29b2a0af7a6807f71",
       "triangleBudget": 2400,
       "params": [
         {
@@ -24092,13 +25234,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminum",
           "type": "color",
-          "default": "#78918a",
-          "label": "Asset color"
+          "default": "#9eafb7",
+          "label": "Aluminum"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#63949c",
+          "label": "Glass"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#d2d8ce",
+          "label": "Molded polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "aluminum": "#c3ccd0",
+          "glass": "#94bdc3",
+          "polymer": "#e6e9df"
+        },
+        "weathered": {
+          "aluminum": "#788990",
+          "glass": "#5d7b7f",
+          "polymer": "#8d9890"
+        }
+      },
       "stats": {
         "triangles": 388,
         "sizeM": [
@@ -24111,10 +25276,17 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#78918a",
+          "name": "polymer",
+          "color": "#d2d8ce",
           "parts": [
-            "rack-base",
+            "rack-base"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "glass",
+          "color": "#63949c",
+          "parts": [
             "jar-0",
             "jar-1",
             "jar-2",
@@ -24122,11 +25294,18 @@
             "jar-cap-0",
             "jar-cap-1",
             "jar-cap-2",
-            "jar-cap-3",
+            "jar-cap-3"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "aluminum",
+          "color": "#9eafb7",
+          "parts": [
             "rack-rail-0",
             "rack-rail-1"
           ],
-          "param": "color"
+          "param": "aluminum"
         }
       ]
     },
@@ -24134,7 +25313,7 @@
       "id": "square-point-shovel",
       "kit": "archaeology-fieldwork",
       "title": "Square point shovel",
-      "description": "Flat-edged transfer shovel with a broad blade, straight shaft and cross-grip. Knobs: overall scale and asset color.",
+      "description": "Flat-edged transfer shovel with a broad blade, straight shaft and cross-grip. Material controls: timber, stainless steel, rubber. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -24157,7 +25336,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/square-point-shovel.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-square-point-shovel.png",
-      "sourceSha256": "22c99aa8932d5477d2dd51d233f925d15ce563cf6fdc5a4e6a539ec8e2434dfd",
+      "sourceSha256": "1c2b7d85ce35f498066480612264ab800c8334914986fa0fa00cafd1125d0437",
       "triangleBudget": 2400,
       "params": [
         {
@@ -24170,13 +25349,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#9d9a8f",
-          "label": "Asset color"
+          "default": "#8b6848",
+          "label": "Timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#343a3b",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf",
+          "rubber": "#454c4d"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588",
+          "rubber": "#292f30"
+        }
+      },
       "stats": {
         "triangles": 112,
         "sizeM": [
@@ -24189,15 +25391,29 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#9d9a8f",
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
           "parts": [
             "blade",
-            "blade-lip",
-            "shaft",
+            "blade-lip"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "timber",
+          "color": "#8b6848",
+          "parts": [
+            "shaft"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "rubber",
+          "color": "#343a3b",
+          "parts": [
             "cross-grip"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -24205,7 +25421,7 @@
       "id": "survey-compass",
       "kit": "archaeology-fieldwork",
       "title": "Survey compass",
-      "description": "Pocket survey compass with a polygon bezel, center pivot and visible direction needle. Knobs: overall scale and asset color.",
+      "description": "Pocket survey compass with a polygon bezel, center pivot and visible direction needle. Material controls: molded polymer, glass, brass. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -24228,7 +25444,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/survey-compass.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-survey-compass.png",
-      "sourceSha256": "4808372dd4792ca4716ea7db2ae4565bb732011b00cb6db64c6612010331be97",
+      "sourceSha256": "e999e5659ed17315f3d7f6b3432ea8ab89bc5c872827f917ee69e6cd43472fc7",
       "triangleBudget": 2400,
       "params": [
         {
@@ -24241,13 +25457,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#718c73",
-          "label": "Asset color"
+          "default": "#d2d8ce",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#63949c",
+          "label": "Glass"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#b18b50",
+          "label": "Brass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "polymer": "#e6e9df",
+          "glass": "#94bdc3",
+          "brass": "#c6a364"
+        },
+        "weathered": {
+          "polymer": "#8d9890",
+          "glass": "#5d7b7f",
+          "brass": "#846a3e"
+        }
+      },
       "stats": {
         "triangles": 208,
         "sizeM": [
@@ -24260,16 +25499,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#718c73",
+          "name": "polymer",
+          "color": "#d2d8ce",
           "parts": [
-            "compass-case",
-            "bezel",
+            "compass-case"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "glass",
+          "color": "#63949c",
+          "parts": [
+            "bezel"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "brass",
+          "color": "#b18b50",
+          "parts": [
             "needle-long",
             "needle-short",
             "pivot"
           ],
-          "param": "color"
+          "param": "brass"
         }
       ]
     },
@@ -24277,7 +25530,7 @@
       "id": "survey-stake",
       "kit": "archaeology-fieldwork",
       "title": "Survey stake",
-      "description": "Short pointed field stake with a broad head for marking a measured position. Knobs: overall scale and asset color.",
+      "description": "Short pointed field stake with a broad head for marking a measured position. Material controls: timber, painted steel. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -24300,7 +25553,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/survey-stake.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-survey-stake.png",
-      "sourceSha256": "971bb9a6410188e9a8b762b0429f3688a4bbe60e1731d4a5f2a270a2c79c864f",
+      "sourceSha256": "3e9fcf9efb258226bf09191f143868cb4e55573a369464b49222c2826f0bcb2b",
       "triangleBudget": 2400,
       "params": [
         {
@@ -24313,13 +25566,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#b56a37",
-          "label": "Asset color"
+          "default": "#8b6848",
+          "label": "Timber"
+        },
+        {
+          "name": "paintedSteel",
+          "type": "color",
+          "default": "#607b83",
+          "label": "Painted steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "paintedSteel": "#e5a536"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "paintedSteel": "#56686c"
+        }
+      },
       "stats": {
         "triangles": 100,
         "sizeM": [
@@ -24332,14 +25600,21 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b56a37",
+          "name": "timber",
+          "color": "#8b6848",
           "parts": [
-            "stake-shaft",
+            "stake-shaft"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#607b83",
+          "parts": [
             "stake-head",
             "head-tab"
           ],
-          "param": "color"
+          "param": "paintedSteel"
         }
       ]
     },
@@ -24347,7 +25622,7 @@
       "id": "tape-measure",
       "kit": "archaeology-fieldwork",
       "title": "Field tape measure",
-      "description": "Compact tape case with a winding hub, lock button and short measuring blade. Knobs: overall scale and asset color.",
+      "description": "Compact tape case with a winding hub, lock button and short measuring blade. Material controls: molded polymer, stainless steel, rubber. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -24370,7 +25645,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/tape-measure.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-tape-measure.png",
-      "sourceSha256": "ace6d2015acd3815cc71785b97ebe66fa8f9b869eaccc6ea2e52c16a3cd90c4a",
+      "sourceSha256": "c5f19ed0301f922f28f5d6fe2528f667d2ac7f03a5590167b85efe9b1cfaee63",
       "triangleBudget": 2400,
       "params": [
         {
@@ -24383,13 +25658,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#df8d35",
-          "label": "Asset color"
+          "default": "#d2d8ce",
+          "label": "Molded polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#343a3b",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "polymer": "#e6e9df",
+          "stainlessSteel": "#c7cdcf",
+          "rubber": "#454c4d"
+        },
+        "weathered": {
+          "polymer": "#8d9890",
+          "stainlessSteel": "#7a8588",
+          "rubber": "#292f30"
+        }
+      },
       "stats": {
         "triangles": 92,
         "sizeM": [
@@ -24402,16 +25700,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#df8d35",
+          "name": "polymer",
+          "color": "#d2d8ce",
           "parts": [
-            "case",
+            "case"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "rubber",
+          "color": "#343a3b",
+          "parts": [
             "side-hub",
-            "lock-button",
+            "lock-button"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
+          "parts": [
             "tape-blade",
             "hook"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -24419,7 +25731,7 @@
       "id": "total-station",
       "kit": "archaeology-fieldwork",
       "title": "Survey total station",
-      "description": "Tripod-mounted survey instrument with a compact body, telescope barrel and adjustment knobs. Knobs: overall scale and asset color.",
+      "description": "Tripod-mounted survey instrument with a telescope, visible field display, objective lens and three-leg support. Material controls: painted polymer, aluminum, glass, rubber. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -24442,7 +25754,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/total-station.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-total-station.png",
-      "sourceSha256": "03dc4fc7b9efe2f3da49ca132ab4a9f35d8afd0f365c56b517f2c0948b455c98",
+      "sourceSha256": "9078ed8b933d9d847af10fd74831757d40bd7da890b31d6b2d101beaba828e63",
       "triangleBudget": 2400,
       "params": [
         {
@@ -24455,18 +25767,49 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedPolymer",
           "type": "color",
-          "default": "#b77b3d",
-          "label": "Asset color"
+          "default": "#d39b35",
+          "label": "Painted polymer"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#9eafb7",
+          "label": "Aluminum"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#63949c",
+          "label": "Glass"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#343a3b",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "paintedPolymer": "#edb83f",
+          "aluminum": "#c3ccd0",
+          "glass": "#94bdc3",
+          "rubber": "#454c4d"
+        },
+        "weathered": {
+          "paintedPolymer": "#ad7c2d",
+          "aluminum": "#788990",
+          "glass": "#5d7b7f",
+          "rubber": "#292f30"
+        }
+      },
       "stats": {
-        "triangles": 224,
+        "triangles": 292,
         "sizeM": [
           0.644001,
-          0.865213,
+          0.884213,
           0.570845
         ],
         "minUpM": 0,
@@ -24474,19 +25817,43 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b77b3d",
+          "name": "aluminum",
+          "color": "#9eafb7",
           "parts": [
             "tripod-leg-0",
             "tripod-leg-1",
             "tripod-leg-2",
             "head-column",
+            "display-bezel"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "paintedPolymer",
+          "color": "#d39b35",
+          "parts": [
             "instrument-body",
-            "telescope",
+            "telescope"
+          ],
+          "param": "paintedPolymer"
+        },
+        {
+          "name": "glass",
+          "color": "#63949c",
+          "parts": [
+            "objective-lens",
+            "display-screen"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "rubber",
+          "color": "#343a3b",
+          "parts": [
             "adjustment-knob-0",
             "adjustment-knob-1"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -24494,7 +25861,7 @@
       "id": "trenching-spade",
       "kit": "archaeology-fieldwork",
       "title": "Trenching spade",
-      "description": "Long narrow trenching blade with a straight socket and extended handle. Knobs: overall scale and asset color.",
+      "description": "Long narrow trenching blade with a straight socket and extended handle. Material controls: timber, stainless steel. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -24517,7 +25884,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/trenching-spade.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-trenching-spade.png",
-      "sourceSha256": "e7382880d0166c4ad4c5569e63b20844d29a67b04e1319db998c83a73f191d6e",
+      "sourceSha256": "acfb16a9e4c2b40a640b5b7865d19051781c6a4fa79c37819845448dde8f412f",
       "triangleBudget": 2400,
       "params": [
         {
@@ -24530,13 +25897,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#8e9a90",
-          "label": "Asset color"
+          "default": "#8b6848",
+          "label": "Timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b6",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588"
+        }
+      },
       "stats": {
         "triangles": 112,
         "sizeM": [
@@ -24549,15 +25931,22 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8e9a90",
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
           "parts": [
             "narrow-blade",
-            "blade-rib",
+            "blade-rib"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "timber",
+          "color": "#8b6848",
+          "parts": [
             "shaft",
             "grip"
           ],
-          "param": "color"
+          "param": "timber"
         }
       ]
     },
@@ -24565,7 +25954,7 @@
       "id": "water-screen-frame",
       "kit": "archaeology-fieldwork",
       "title": "Water screening frame",
-      "description": "Raised rectangular wash screen with corner legs, side rails and drainage basin. Knobs: overall scale and asset color.",
+      "description": "Raised rectangular wash screen with corner legs, side rails and drainage basin. Material controls: timber, stainless steel, molded polymer. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -24588,7 +25977,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/water-screen-frame.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-water-screen-frame.png",
-      "sourceSha256": "4b047e809ec3632e633ceabf81665e359a95d22a885e4d6090c6b7eb048b1848",
+      "sourceSha256": "9316e04aeeefbdbea067cde0bf1a1aff111a42c65fa8f909a2ce833cc9785aec",
       "triangleBudget": 2400,
       "params": [
         {
@@ -24601,13 +25990,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#718d8c",
-          "label": "Asset color"
+          "default": "#8b6848",
+          "label": "Timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#d2d8ce",
+          "label": "Molded polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf",
+          "polymer": "#e6e9df"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588",
+          "polymer": "#8d9890"
+        }
+      },
       "stats": {
         "triangles": 416,
         "sizeM": [
@@ -24620,8 +26032,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#718d8c",
+          "name": "timber",
+          "color": "#8b6848",
           "parts": [
             "frame-rail-0",
             "frame-rail-1",
@@ -24630,8 +26042,22 @@
             "leg-0",
             "leg-1",
             "leg-2",
-            "leg-3",
-            "drain-tray",
+            "leg-3"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "polymer",
+          "color": "#d2d8ce",
+          "parts": [
+            "drain-tray"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
+          "parts": [
             "mesh-bar-0",
             "mesh-bar-1",
             "mesh-bar-2",
@@ -24640,7 +26066,7 @@
             "mesh-bar-5",
             "mesh-bar-6"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -24648,7 +26074,7 @@
       "id": "wire-cleaning-brush",
       "kit": "archaeology-fieldwork",
       "title": "Wire cleaning brush",
-      "description": "Small stiff cleaning brush with a flat back, metal bristles and a hanging eye. Knobs: overall scale and asset color.",
+      "description": "Small stiff cleaning brush with a flat back, metal bristles and a hanging eye. Material controls: timber, stainless steel, brass. Appearance presets: field ready and weathered.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -24671,7 +26097,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/wire-cleaning-brush.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-wire-cleaning-brush.png",
-      "sourceSha256": "53d86cfec2be26801724d43505a1cf4df248987b8a18be0eddb31cf2a1e20e7f",
+      "sourceSha256": "d7ffffd689cd153a13b9930f658e19de0c2cbd4e543c1dc9da843cf4730e2d72",
       "triangleBudget": 2400,
       "params": [
         {
@@ -24684,13 +26110,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#858983",
-          "label": "Asset color"
+          "default": "#8b6848",
+          "label": "Timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#b18b50",
+          "label": "Brass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldReady": {
+          "timber": "#a27850",
+          "stainlessSteel": "#c7cdcf",
+          "brass": "#c6a364"
+        },
+        "weathered": {
+          "timber": "#705a45",
+          "stainlessSteel": "#7a8588",
+          "brass": "#846a3e"
+        }
+      },
       "stats": {
         "triangles": 384,
         "sizeM": [
@@ -24703,12 +26152,26 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#858983",
+          "name": "timber",
+          "color": "#8b6848",
           "parts": [
             "handle",
-            "hanging-eye",
-            "brush-block",
+            "brush-block"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aab4b6",
+          "parts": [
+            "hanging-eye"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "brass",
+          "color": "#b18b50",
+          "parts": [
             "wire-row-0",
             "wire-row-1",
             "wire-row-2",
@@ -24716,7 +26179,7 @@
             "wire-row-4",
             "wire-row-5"
           ],
-          "param": "color"
+          "param": "brass"
         }
       ]
     },
