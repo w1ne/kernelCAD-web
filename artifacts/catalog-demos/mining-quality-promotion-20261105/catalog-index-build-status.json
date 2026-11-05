@@ -1,0 +1,6 @@
+{
+  "command": "npx tsx scripts/buildAssetCatalog.ts",
+  "status": "PASS",
+  "miningRows": 50,
+  "sourceHashesCurrent": 50
+}

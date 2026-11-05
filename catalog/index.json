@@ -141040,7 +141040,7 @@
       "id": "apron-feeder",
       "kit": "mining",
       "title": "Heavy-duty apron feeder",
-      "description": "Low feeder with overlapping pan plates, side chains, head sprocket housings, and a feed skirt. Knobs: overall scale and asset color.",
+      "description": "Low feeder with overlapping pan plates, side chains, head sprocket housings, and a feed skirt. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -141060,7 +141060,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/apron-feeder.kcad.ts",
       "preview": "/assets/mining-apron-feeder.png",
-      "sourceSha256": "79b13b6b11a3d4373791491dafa24104f99d75009fd0360e71611eac901e2bc6",
+      "sourceSha256": "ed82e8236e66b54269cceb7c49007163e83c71a7661c2f410b45121f4549e631",
       "triangleBudget": 1800,
       "params": [
         {
@@ -141073,15 +141073,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#776c55",
-          "label": "Asset color"
+          "default": "#a89160",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca"
+        }
+      },
       "stats": {
-        "triangles": 256,
+        "triangles": 288,
         "sizeM": [
           1.435,
           0.62,
@@ -141092,11 +141115,18 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#776c55",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
             "left-rail",
-            "right-rail",
+            "right-rail"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#a89160",
+          "parts": [
             "apron-pan-0",
             "apron-pan-1",
             "apron-pan-2",
@@ -141106,13 +141136,20 @@
             "apron-pan-6",
             "apron-pan-7",
             "apron-pan-8",
-            "head-sprocket-left",
-            "head-sprocket-right",
             "feed-skirt-left",
             "feed-skirt-right",
             "drive-motor"
           ],
-          "param": "color"
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "head-sprocket-left",
+            "head-sprocket-right"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -141120,7 +141157,7 @@
       "id": "assay-sample-divider",
       "kit": "mining",
       "title": "Assay sample divider",
-      "description": "Bench sample divider with feed hopper, splitting chute, collection bins, and compact drive enclosure. Knobs: overall scale and asset color.",
+      "description": "Bench sample divider with feed hopper, splitting chute, collection bins, and compact drive enclosure. Controls: overall scale, coated equipment steel, structural steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -141140,7 +141177,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/assay-sample-divider.kcad.ts",
       "preview": "/assets/mining-assay-sample-divider.png",
-      "sourceSha256": "6b3d671faf5a034be37be9107286c082dbf4593426e72b2588ecdcb1263e3af3",
+      "sourceSha256": "4d995bd71399cca3b639f3c90234171af256b3085c9bf54b1a971f6e65232653",
       "triangleBudget": 1800,
       "params": [
         {
@@ -141153,15 +141190,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#847a62",
-          "label": "Asset color"
+          "default": "#a89465",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159"
+        }
+      },
       "stats": {
-        "triangles": 152,
+        "triangles": 184,
         "sizeM": [
           0.74,
           0.765,
@@ -141172,21 +141224,28 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#847a62",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
             "base",
+            "support-post-left",
+            "support-post-right"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#a89465",
+          "parts": [
             "left-bin",
             "right-bin",
-            "support-post-left",
-            "support-post-right",
             "splitter-housing",
             "feed-hopper",
             "rotary-splitter",
             "drive-box",
             "collection-lip"
           ],
-          "param": "color"
+          "param": "coatedSteel"
         }
       ]
     },
@@ -141194,7 +141253,7 @@
       "id": "ball-mill",
       "kit": "mining",
       "title": "Ball mill assembly",
-      "description": "Mill assembly with compact drum shell, trunnion ends, bearing saddles, motor bed, and feed chute. Knobs: overall scale and asset color.",
+      "description": "Mill assembly with compact drum shell, trunnion ends, bearing saddles, motor bed, and feed chute. Controls: overall scale, coated equipment steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -141214,7 +141273,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/ball-mill.kcad.ts",
       "preview": "/assets/mining-ball-mill.png",
-      "sourceSha256": "a837adde5c1baa4c42d51f22f025967ad9252b454db217f2c098d30112e273b8",
+      "sourceSha256": "36c8a307a4156847be725361cac56268b19b56c2ac9501a73f0f9e2d0a330fb3",
       "triangleBudget": 1800,
       "params": [
         {
@@ -141227,15 +141286,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#6d7670",
-          "label": "Asset color"
+          "default": "#65a87b",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "stainlessSteel": "#969f9e"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "stainlessSteel": "#c5ccca"
+        }
+      },
       "stats": {
-        "triangles": 236,
+        "triangles": 396,
         "sizeM": [
           1.585,
           0.655,
@@ -141246,20 +141320,27 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6d7670",
+          "name": "coatedSteel",
+          "color": "#65a87b",
           "parts": [
             "shell",
+            "motor",
+            "feed-chute"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "feed-trunnion",
             "discharge-trunnion",
             "bearing-left",
             "bearing-right",
             "girth-ring",
-            "motor",
-            "feed-chute",
             "discharge-box"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -141267,7 +141348,7 @@
       "id": "belt-magnet-separator",
       "kit": "mining",
       "title": "Overband belt magnet separator",
-      "description": "Overband magnetic separator above a short ore belt with suspended magnet housing and support portal. Knobs: overall scale and asset color.",
+      "description": "Overband magnetic separator above a short ore belt with suspended magnet housing and support portal. Controls: overall scale, coated equipment steel, structural steel, rubber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -141287,7 +141368,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/belt-magnet-separator.kcad.ts",
       "preview": "/assets/mining-belt-magnet-separator.png",
-      "sourceSha256": "eeb9cc0e96e117d35b9c80c3e8a9371712c02d1dea1c0305d817797b70652639",
+      "sourceSha256": "43f533ab636c3ad8e07cdfd2351c18ce7c16f62d3f80bb1725250dc2f2e1ef21",
       "triangleBudget": 1800,
       "params": [
         {
@@ -141300,17 +141381,40 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#73766c",
-          "label": "Asset color"
+          "default": "#94a865",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292d2f",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "rubber": "#393a38"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "rubber": "#24282a"
+        }
+      },
       "stats": {
-        "triangles": 184,
+        "triangles": 248,
         "sizeM": [
-          1.15,
+          1.146574,
           0.77,
           0.6975
         ],
@@ -141319,21 +141423,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#73766c",
+          "name": "rubber",
+          "color": "#292d2f",
           "parts": [
             "conveyor-belt",
+            "belt-drum"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#566168",
+          "parts": [
             "left-stringer",
             "right-stringer",
             "portal-left",
             "portal-right",
-            "portal-top",
+            "portal-top"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#94a865",
+          "parts": [
             "magnet-housing",
             "coil-cap",
-            "control-box",
-            "belt-drum"
+            "control-box"
           ],
-          "param": "color"
+          "param": "coatedSteel"
         }
       ]
     },
@@ -141341,7 +141459,7 @@
       "id": "cone-crusher-module",
       "kit": "mining",
       "title": "Cone crusher module",
-      "description": "Cone crushing station with feed hopper, nested crusher body, access deck, and drive cabinet. Knobs: overall scale and asset color.",
+      "description": "Cone crushing station with feed hopper, nested crusher body, access deck, and drive cabinet. Controls: overall scale, coated equipment steel, structural steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -141361,7 +141479,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/cone-crusher-module.kcad.ts",
       "preview": "/assets/mining-cone-crusher-module.png",
-      "sourceSha256": "ef84d07dd56209233935936f8cda3e8198af52c02461440fcf89e127df98c91a",
+      "sourceSha256": "ac2eef6fe2cf0908711fcade370b4f3e376f1c439389410db2232a79f03b1f4e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -141374,15 +141492,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#65756f",
-          "label": "Asset color"
+          "default": "#65a88f",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159"
+        }
+      },
       "stats": {
-        "triangles": 204,
+        "triangles": 332,
         "sizeM": [
           1.115,
           0.91,
@@ -141393,20 +141526,27 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#65756f",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
             "base-skid",
             "support-left",
             "support-right",
+            "service-deck"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#65a88f",
+          "parts": [
             "crusher-shell",
             "inner-cone",
             "top-bowl",
             "feed-box",
-            "service-deck",
             "drive-cabinet"
           ],
-          "param": "color"
+          "param": "coatedSteel"
         }
       ]
     },
@@ -141414,7 +141554,7 @@
       "id": "continuous-miner",
       "kit": "mining",
       "title": "Continuous miner",
-      "description": "Low tracked mining machine with cutting head, operator canopy, cutter drum, and trailing cable reel. Knobs: overall scale and asset color.",
+      "description": "Low tracked mining machine with cutting head, operator canopy, cutter drum, and trailing cable reel. Controls: overall scale, coated equipment steel, structural steel, stainless steel, rubber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -141434,7 +141574,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/continuous-miner.kcad.ts",
       "preview": "/assets/mining-continuous-miner.png",
-      "sourceSha256": "43bb709ebe506362b8f1376beaf6b949b9588648e644d01abc8519fdd3d8c446",
+      "sourceSha256": "bf6eb10fa452445073390f7345e32522ef785520fdfe2cfcd15103001730a1e7",
       "triangleBudget": 1800,
       "params": [
         {
@@ -141447,38 +141587,120 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#c19b42",
-          "label": "Asset color"
+          "default": "#cb9f39",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292d2f",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e",
+          "rubber": "#393a38"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca",
+          "rubber": "#24282a"
+        }
+      },
       "stats": {
-        "triangles": 160,
+        "triangles": 600,
         "sizeM": [
-          1.17,
-          0.35,
-          0.635
+          1.199882,
+          0.376596,
+          0.656
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#c19b42",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
             "left-track",
-            "right-track",
+            "right-track"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#cb9f39",
+          "parts": [
             "main-body",
             "operator-canopy",
-            "cutting-drum",
             "cutter-boom",
-            "cable-reel",
             "rear-control-box"
           ],
-          "param": "color"
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "cutting-drum",
+            "left-track-shoe-1",
+            "right-track-shoe-1",
+            "left-track-shoe-2",
+            "right-track-shoe-2",
+            "left-track-shoe-3",
+            "right-track-shoe-3",
+            "left-track-shoe-4",
+            "right-track-shoe-4",
+            "left-track-shoe-5",
+            "right-track-shoe-5",
+            "left-track-shoe-6",
+            "right-track-shoe-6",
+            "left-track-shoe-7",
+            "right-track-shoe-7",
+            "left-track-shoe-8",
+            "right-track-shoe-8",
+            "left-track-shoe-9",
+            "right-track-shoe-9",
+            "left-track-shoe-10",
+            "right-track-shoe-10",
+            "cutting-pick-1",
+            "cutting-pick-2",
+            "cutting-pick-3",
+            "cutting-pick-4",
+            "cutting-pick-5",
+            "cutting-pick-6",
+            "cutting-pick-7",
+            "cutting-pick-8",
+            "cutting-pick-9",
+            "cutting-pick-10"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#292d2f",
+          "parts": [
+            "cable-reel"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -141486,7 +141708,7 @@
       "id": "conveyor-take-up-station",
       "kit": "mining",
       "title": "Conveyor take-up station",
-      "description": "Belt take-up frame with paired guide rails, tension carriage, counterweight block, and return drum. Knobs: overall scale and asset color.",
+      "description": "Belt take-up frame with paired guide rails, tension carriage, counterweight block, and return drum. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -141506,7 +141728,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/conveyor-take-up-station.kcad.ts",
       "preview": "/assets/mining-conveyor-take-up-station.png",
-      "sourceSha256": "678f0b1a43fbb6cc1348a75d7234fc3f4f0f3bd11db39d763a4bbf72d6f22172",
+      "sourceSha256": "f8f19e399997c4bfbd704c52abe29c799585b8ac4292fa5e8da56e495dad74bd",
       "triangleBudget": 1800,
       "params": [
         {
@@ -141519,17 +141741,40 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#727970",
-          "label": "Asset color"
+          "default": "#74a865",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca"
+        }
+      },
       "stats": {
-        "triangles": 140,
+        "triangles": 172,
         "sizeM": [
-          1.335,
+          1.33035,
           0.835,
           0.68
         ],
@@ -141538,20 +141783,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#727970",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
             "base",
             "rail-left",
             "rail-right",
             "tower-left",
             "tower-right",
-            "counterweight",
-            "carriage",
-            "take-up-drum",
             "guardrail"
           ],
-          "param": "color"
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#74a865",
+          "parts": [
+            "counterweight",
+            "carriage"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "take-up-drum"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -141559,7 +141818,7 @@
       "id": "core-drill-rig",
       "kit": "mining",
       "title": "Exploration core drill rig",
-      "description": "Portable exploration drill with anchor frame, mast, crown block, rod rack, and control cabinet. Knobs: overall scale and asset color.",
+      "description": "Portable exploration drill with anchor frame, mast, crown block, rod rack, and control cabinet. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -141579,7 +141838,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/core-drill-rig.kcad.ts",
       "preview": "/assets/mining-core-drill-rig.png",
-      "sourceSha256": "8baa9bf1c271443999efb469e2b0e69b54f130645061fe46e631920faa682554",
+      "sourceSha256": "b1df3bf440e41aa1485279c4b1c979a953c76dc8d4a5b7e40e6b1de2108e070c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -141592,15 +141851,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#87917e",
-          "label": "Asset color"
+          "default": "#85a865",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca"
+        }
+      },
       "stats": {
-        "triangles": 160,
+        "triangles": 224,
         "sizeM": [
           1.005,
           1.03,
@@ -141611,19 +141893,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#87917e",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
             "base-frame",
             "left-upright",
-            "right-upright",
+            "right-upright"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#85a865",
+          "parts": [
             "crosshead",
+            "control-cabinet"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "drill-spindle",
-            "control-cabinet",
             "rod-rack",
             "hydraulic-pack"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -141631,7 +141927,7 @@
       "id": "core-tray-rack",
       "kit": "mining",
       "title": "Exploration core tray rack",
-      "description": "Stackable core sample rack with three levels, long trays, end uprights, and top bracing. Knobs: overall scale and asset color.",
+      "description": "Stackable core sample rack with three levels, long trays, end uprights, and top bracing. Controls: overall scale, coated equipment steel, structural steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -141651,7 +141947,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/core-tray-rack.kcad.ts",
       "preview": "/assets/mining-core-tray-rack.png",
-      "sourceSha256": "0ba497af4167921fea4e62719af67e849655d58391de8c3f175012736d611899",
+      "sourceSha256": "3251d609bb5971c68b55174dcbad8329b5fce23fbb52647d7d97e2ab151755d8",
       "triangleBudget": 1800,
       "params": [
         {
@@ -141664,15 +141960,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#8b7656",
-          "label": "Asset color"
+          "default": "#a88248",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159"
+        }
+      },
       "stats": {
-        "triangles": 376,
+        "triangles": 408,
         "sizeM": [
           0.93,
           0.96,
@@ -141683,12 +141994,22 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8b7656",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
             "base-left",
             "base-right",
             "base-crossbar",
+            "upright-left",
+            "upright-right",
+            "top-crossbar"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#a88248",
+          "parts": [
             "core-tray-0",
             "core-tray-1",
             "core-tray-2",
@@ -141707,13 +142028,10 @@
             "core-channel-2-2",
             "core-channel-2-3",
             "core-channel-2-4",
-            "upright-left",
-            "upright-right",
-            "top-crossbar",
             "lifting-eye-left",
             "lifting-eye-right"
           ],
-          "param": "color"
+          "param": "coatedSteel"
         }
       ]
     },
@@ -141721,7 +142039,7 @@
       "id": "crusher-discharge-conveyor",
       "kit": "mining",
       "title": "Crusher discharge conveyor",
-      "description": "Short transfer conveyor with guarded belt, support frames, head and tail drums, and a drive unit. Knobs: overall scale and asset color.",
+      "description": "Short transfer conveyor with guarded belt, support frames, head and tail drums, and a drive unit. Controls: overall scale, structural steel, stainless steel, rubber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -141741,7 +142059,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/crusher-discharge-conveyor.kcad.ts",
       "preview": "/assets/mining-crusher-discharge-conveyor.png",
-      "sourceSha256": "e90c32e0b88170a9569ecb08b5797a739fd7ccf287efa535aa3829e4cd813add",
+      "sourceSha256": "c10795f50ce41c7a3bbd20093b5736e0bb1323c66d0ea9def56869222344b2ca",
       "triangleBudget": 1800,
       "params": [
         {
@@ -141754,15 +142072,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "structuralSteel",
           "type": "color",
-          "default": "#7c7059",
-          "label": "Asset color"
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292d2f",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e",
+          "rubber": "#393a38"
+        },
+        "highVisibility": {
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca",
+          "rubber": "#24282a"
+        }
+      },
       "stats": {
-        "triangles": 184,
+        "triangles": 280,
         "sizeM": [
           1.6,
           0.46,
@@ -141773,21 +142114,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7c7059",
+          "name": "rubber",
+          "color": "#292d2f",
           "parts": [
-            "belt",
+            "belt"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#566168",
+          "parts": [
             "left-stringer",
             "right-stringer",
             "leg-left",
             "leg-right",
             "head-leg-left",
             "head-leg-right",
-            "tail-drum",
-            "head-drum",
             "drive-guard"
           ],
-          "param": "color"
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "tail-drum",
+            "head-drum"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -141795,7 +142150,7 @@
       "id": "crusher-transfer-chute",
       "kit": "mining",
       "title": "Crusher transfer chute",
-      "description": "Enclosed transfer chute with upper feed throat, lower discharge neck, support legs, and inspection cover. Knobs: overall scale and asset color.",
+      "description": "Enclosed transfer chute with upper feed throat, lower discharge neck, support legs, and inspection cover. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -141815,7 +142170,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/crusher-transfer-chute.kcad.ts",
       "preview": "/assets/mining-crusher-transfer-chute.png",
-      "sourceSha256": "5f01f8a1093f703ffb60c4e2d80daeae0c68dad03fa2a244ca2dfcd818adddf8",
+      "sourceSha256": "4b4c7b72989704c3822306b9fc8793c54dec038e51713552967f1d2fed0611a4",
       "triangleBudget": 1800,
       "params": [
         {
@@ -141828,15 +142183,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#716f64",
-          "label": "Asset color"
+          "default": "#a89e65",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca"
+        }
+      },
       "stats": {
-        "triangles": 152,
+        "triangles": 168,
         "sizeM": [
           0.785,
           0.9,
@@ -141847,21 +142225,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#716f64",
+          "name": "coatedSteel",
+          "color": "#a89e65",
           "parts": [
             "top-flange",
             "front-wall",
             "back-wall",
             "left-wall",
             "right-wall",
-            "discharge-neck",
             "inspection-cover",
-            "leg-left",
-            "leg-right",
             "access-boss"
           ],
-          "param": "color"
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "discharge-neck"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#566168",
+          "parts": [
+            "leg-left",
+            "leg-right"
+          ],
+          "param": "structuralSteel"
         }
       ]
     },
@@ -141869,7 +142261,7 @@
       "id": "double-deck-screen",
       "kit": "mining",
       "title": "Double-deck vibrating screen",
-      "description": "Two-level screening unit with framed decks, support springs, discharge lips, and paired exciters. Knobs: overall scale and asset color.",
+      "description": "Two-level screening unit with framed decks, support springs, discharge lips, and paired exciters. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -141889,7 +142281,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/double-deck-screen.kcad.ts",
       "preview": "/assets/mining-double-deck-screen.png",
-      "sourceSha256": "ecdb8462a0ec984c6dc78763d863a0c34377334929299aa5af882101064659ad",
+      "sourceSha256": "a57e94e7bf17b2065bba694a0f5b2e68d24f64012dbdb3f5c0b1a33cbd04c814",
       "triangleBudget": 1800,
       "params": [
         {
@@ -141902,15 +142294,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#6c7975",
-          "label": "Asset color"
+          "default": "#65a894",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca"
+        }
+      },
       "stats": {
-        "triangles": 172,
+        "triangles": 204,
         "sizeM": [
           1.42,
           0.87,
@@ -141921,20 +142336,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6c7975",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
             "base-frame",
             "deck-lower",
-            "deck-upper",
+            "deck-upper"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#65a894",
+          "parts": [
             "side-left",
             "side-right",
-            "discharge-lower",
-            "discharge-upper",
             "exciter-left",
             "exciter-right"
           ],
-          "param": "color"
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "discharge-lower",
+            "discharge-upper"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -141942,7 +142371,7 @@
       "id": "flotation-cell-bank",
       "kit": "mining",
       "title": "Flotation cell bank",
-      "description": "Three-cell flotation bank with connected tank bodies, central drive housings, and access walkway. Knobs: overall scale and asset color.",
+      "description": "Three-cell flotation bank with connected tank bodies, central drive housings, and access walkway. Controls: overall scale, coated equipment steel, structural steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -141962,7 +142391,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/flotation-cell-bank.kcad.ts",
       "preview": "/assets/mining-flotation-cell-bank.png",
-      "sourceSha256": "e8c875af877e53b97294e5d259c28b6ae59063a234a973f5c19d82f93c9c900f",
+      "sourceSha256": "158c4f5caaf15306aa66951e8886a9b2d2608868625b52cfa315b9a4707c2232",
       "triangleBudget": 1800,
       "params": [
         {
@@ -141975,15 +142404,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#617b77",
-          "label": "Asset color"
+          "default": "#65a89e",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159"
+        }
+      },
       "stats": {
-        "triangles": 292,
+        "triangles": 420,
         "sizeM": [
           1.79,
           0.73,
@@ -141994,22 +142438,29 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#617b77",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
             "base-skid",
+            "walkway",
+            "front-rail"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#65a89e",
+          "parts": [
             "cell-0",
             "cell-1",
             "cell-2",
             "motor-0",
             "motor-1",
             "motor-2",
-            "walkway",
-            "front-rail",
             "launder-left",
             "launder-right"
           ],
-          "param": "color"
+          "param": "coatedSteel"
         }
       ]
     },
@@ -142017,7 +142468,7 @@
       "id": "flotation-conditioning-tank",
       "kit": "mining",
       "title": "Flotation conditioning tank",
-      "description": "Conditioning vessel with mixer gearbox, central shaft, paddle set, rim, and feed pipe. Knobs: overall scale and asset color.",
+      "description": "Conditioning vessel with mixer gearbox, central shaft, paddle set, rim, and feed pipe. Controls: overall scale, coated equipment steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -142037,7 +142488,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/flotation-conditioning-tank.kcad.ts",
       "preview": "/assets/mining-flotation-conditioning-tank.png",
-      "sourceSha256": "6c43450d7ab3f5daa6964047a8696f1627020cfc5e7694d026d5e5aefb77314c",
+      "sourceSha256": "bccf5d7c1ef219e911f6eaff82551271d3be73688cf6aef09b046ab3908a4a0e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -142050,15 +142501,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#697b73",
-          "label": "Asset color"
+          "default": "#65a88a",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "stainlessSteel": "#969f9e"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "stainlessSteel": "#c5ccca"
+        }
+      },
       "stats": {
-        "triangles": 236,
+        "triangles": 364,
         "sizeM": [
           0.71,
           0.985,
@@ -142069,20 +142535,27 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#697b73",
+          "name": "coatedSteel",
+          "color": "#65a88a",
           "parts": [
             "tank",
             "rim",
-            "shaft",
             "gearbox",
             "mixer-arm-left",
             "mixer-arm-right",
-            "paddle-left",
-            "paddle-right",
             "feed-nozzle"
           ],
-          "param": "color"
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "shaft",
+            "paddle-left",
+            "paddle-right"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -142090,7 +142563,7 @@
       "id": "grizzly-scalping-deck",
       "kit": "mining",
       "title": "Grizzly scalping deck",
-      "description": "Scalping screen with replaceable parallel bars, reinforced side rails, and shaker drive blocks. Knobs: overall scale and asset color.",
+      "description": "Scalping screen with replaceable parallel bars, reinforced side rails, and shaker drive blocks. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -142110,7 +142583,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/grizzly-scalping-deck.kcad.ts",
       "preview": "/assets/mining-grizzly-scalping-deck.png",
-      "sourceSha256": "23061efdf72fc669947de868d53bd02fe24655e5ee395b0784e6c076d575ff17",
+      "sourceSha256": "b9c670786e477ad8b87017b3e35c2e00679b7d77fbf6588e440cd2084c775904",
       "triangleBudget": 1800,
       "params": [
         {
@@ -142123,15 +142596,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#777c73",
-          "label": "Asset color"
+          "default": "#83a865",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca"
+        }
+      },
       "stats": {
-        "triangles": 256,
+        "triangles": 288,
         "sizeM": [
           1.22,
           0.52,
@@ -142142,12 +142638,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#777c73",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
             "lower-frame",
+            "crossbeam-front",
+            "crossbeam-back"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#83a865",
+          "parts": [
             "side-left",
             "side-right",
+            "vibrator-left",
+            "vibrator-right"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "bar-0",
             "bar-1",
             "bar-2",
@@ -142156,13 +142670,9 @@
             "bar-5",
             "bar-6",
             "bar-7",
-            "bar-8",
-            "crossbeam-front",
-            "crossbeam-back",
-            "vibrator-left",
-            "vibrator-right"
+            "bar-8"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -142170,7 +142680,7 @@
       "id": "gyratory-crusher-station",
       "kit": "mining",
       "title": "Gyratory crusher station",
-      "description": "Tall primary crusher station with portal frame, upper feed ring, main shell, and discharge opening. Knobs: overall scale and asset color.",
+      "description": "Tall primary crusher station with portal frame, upper feed ring, main shell, and discharge opening. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -142190,7 +142700,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/gyratory-crusher-station.kcad.ts",
       "preview": "/assets/mining-gyratory-crusher-station.png",
-      "sourceSha256": "47d772bbb39c0b572e626e7b6a310aa6cfdd62ddda2daa415b6011199094061a",
+      "sourceSha256": "0969250986724c5606e846d41a63b9f2e8d78266ee9429077039ec4dae5ce0ea",
       "triangleBudget": 1800,
       "params": [
         {
@@ -142203,15 +142713,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#6d736d",
-          "label": "Asset color"
+          "default": "#65a865",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca"
+        }
+      },
       "stats": {
-        "triangles": 160,
+        "triangles": 256,
         "sizeM": [
           1.28,
           1.16,
@@ -142222,19 +142755,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6d736d",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
             "foundation",
+            "top-bridge"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#65a865",
+          "parts": [
             "column-left",
             "column-right",
             "rear-column",
-            "crusher-shell",
+            "crusher-shell"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "feed-ring",
-            "top-bridge",
             "discharge-chute"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -142242,7 +142789,7 @@
       "id": "high-pressure-grinding-rolls",
       "kit": "mining",
       "title": "High-pressure grinding rolls",
-      "description": "Roll press with paired compression rolls, rigid side frames, feed hopper, and hydraulic drive blocks. Knobs: overall scale and asset color.",
+      "description": "Roll press with paired compression rolls, rigid side frames, feed hopper, and hydraulic drive blocks. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -142262,7 +142809,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/high-pressure-grinding-rolls.kcad.ts",
       "preview": "/assets/mining-high-pressure-grinding-rolls.png",
-      "sourceSha256": "907023fc8355b78246a97dec41b5db35d986c9b674d5e7b1c980a3ab437099ed",
+      "sourceSha256": "d3b4d01caf8d8b989ba03e592ac947adb6be56a3b1b24adba436fcd5e3e7fb9a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -142275,15 +142822,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#6a7771",
-          "label": "Asset color"
+          "default": "#65a889",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca"
+        }
+      },
       "stats": {
-        "triangles": 184,
+        "triangles": 280,
         "sizeM": [
           1.27,
           0.94,
@@ -142294,21 +142864,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6a7771",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
             "base-frame",
             "left-frame",
-            "right-frame",
+            "right-frame"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "roll-left",
             "roll-right",
-            "feed-hopper",
             "hydraulic-left",
-            "hydraulic-right",
+            "hydraulic-right"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#65a889",
+          "parts": [
+            "feed-hopper",
             "drive-left",
             "drive-right"
           ],
-          "param": "color"
+          "param": "coatedSteel"
         }
       ]
     },
@@ -142316,7 +142900,7 @@
       "id": "hydrocyclone-cluster",
       "kit": "mining",
       "title": "Hydrocyclone cluster",
-      "description": "Cyclone manifold with multiple compact separators, feed header, support frame, and underflow collection box. Knobs: overall scale and asset color.",
+      "description": "Cyclone manifold with multiple compact separators, feed header, support frame, and underflow collection box. Controls: overall scale, coated equipment steel, structural steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -142336,7 +142920,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/hydrocyclone-cluster.kcad.ts",
       "preview": "/assets/mining-hydrocyclone-cluster.png",
-      "sourceSha256": "0e914570686b347b3024a50839ee7a6ef4fd04c878108ea8ea51dd9a3ccf9b57",
+      "sourceSha256": "d574843c6f507d4f3ad4b8df5e1a85705ac4acdf3da201ec7468f11d1537e174",
       "triangleBudget": 1800,
       "params": [
         {
@@ -142349,15 +142933,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#7f7970",
-          "label": "Asset color"
+          "default": "#a88d65",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159"
+        }
+      },
       "stats": {
-        "triangles": 336,
+        "triangles": 432,
         "sizeM": [
           1.05,
           0.8,
@@ -142368,10 +142967,19 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7f7970",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
             "base-frame",
+            "crossbeam",
+            "service-platform"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#a88d65",
+          "parts": [
             "header-left",
             "header-right",
             "cyclone-0",
@@ -142380,11 +142988,9 @@
             "cyclone-3",
             "cyclone-4",
             "underflow-box",
-            "crossbeam",
-            "feed-header",
-            "service-platform"
+            "feed-header"
           ],
-          "param": "color"
+          "param": "coatedSteel"
         }
       ]
     },
@@ -142392,7 +142998,7 @@
       "id": "impact-crusher-module",
       "kit": "mining",
       "title": "Impact crusher module",
-      "description": "Impact crusher housing with feed chute, inspection doors, drive motor, and a raised maintenance rail. Knobs: overall scale and asset color.",
+      "description": "Impact crusher housing with feed chute, inspection doors, drive motor, and a raised maintenance rail. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -142412,7 +143018,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/impact-crusher-module.kcad.ts",
       "preview": "/assets/mining-impact-crusher-module.png",
-      "sourceSha256": "4d613fa5710f20b1f5c9f0e0b501a883003db6bd47470869804017e49de4d9fa",
+      "sourceSha256": "7da51ef2e6f4f966c668944cf2b3d33364b1839b2ba264829a1d6a712ba1bdcc",
       "triangleBudget": 1800,
       "params": [
         {
@@ -142425,15 +143031,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#8a6d47",
-          "label": "Asset color"
+          "default": "#a8742f",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca"
+        }
+      },
       "stats": {
-        "triangles": 128,
+        "triangles": 176,
         "sizeM": [
           1.29,
           1.03,
@@ -142444,19 +143073,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8a6d47",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
             "base-frame",
+            "service-rail"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#a8742f",
+          "parts": [
             "crusher-housing",
             "feed-chute",
             "access-door-left",
             "access-door-right",
-            "rotor-cap",
-            "motor",
-            "service-rail"
+            "motor"
           ],
-          "param": "color"
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "rotor-cap"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -142464,7 +143107,7 @@
       "id": "jaw-crusher-module",
       "kit": "mining",
       "title": "Jaw crusher module",
-      "description": "Primary jaw crusher on a skid with feed throat, paired jaw blocks, flywheel housings, and drive motor. Knobs: overall scale and asset color.",
+      "description": "Primary jaw crusher on a skid with feed throat, paired jaw blocks, flywheel housings, and drive motor. Controls: overall scale, coated equipment steel, structural steel, rubber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -142484,7 +143127,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/jaw-crusher-module.kcad.ts",
       "preview": "/assets/mining-jaw-crusher-module.png",
-      "sourceSha256": "9e95e3502399e5cf02b0119a1bcdf130e42ffd8b19adeb556324cbb836517b91",
+      "sourceSha256": "a27bce922c2b0171eda0d6d77c00e5e32e10dfe8973bedbc27329613250551e6",
       "triangleBudget": 1800,
       "params": [
         {
@@ -142497,17 +143140,40 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#6e7770",
-          "label": "Asset color"
+          "default": "#65a874",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292d2f",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "rubber": "#393a38"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "rubber": "#24282a"
+        }
+      },
       "stats": {
-        "triangles": 208,
+        "triangles": 272,
         "sizeM": [
-          1.33,
+          1.314338,
           0.96,
           0.805
         ],
@@ -142516,23 +143182,37 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6e7770",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
             "base-skid",
             "frame-left",
-            "frame-right",
+            "frame-right"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#65a874",
+          "parts": [
             "feed-wall-front",
             "feed-wall-back",
             "feed-wall-left",
             "feed-wall-right",
             "fixed-jaw",
             "swing-jaw",
-            "flywheel-left",
-            "flywheel-right",
             "drive-motor"
           ],
-          "param": "color"
+          "param": "coatedSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#292d2f",
+          "parts": [
+            "flywheel-left",
+            "flywheel-right"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -142540,7 +143220,7 @@
       "id": "longwall-shearer",
       "kit": "mining",
       "title": "Longwall shearer",
-      "description": "Armored face shearer with twin cutter drums, central drive housing, and low guide shoes. Knobs: overall scale and asset color.",
+      "description": "Armored face shearer with twin cutter drums, central drive housing, and low guide shoes. Controls: overall scale, coated equipment steel, stainless steel, rubber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -142560,7 +143240,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/longwall-shearer.kcad.ts",
       "preview": "/assets/mining-longwall-shearer.png",
-      "sourceSha256": "800a6bb5036558ae8aaf118b2b220162ee444567643019c1e5c1c35177762ef5",
+      "sourceSha256": "a42f59877d5b5efe8267d34d717374839168f1a1ec7d0512f9b359885aa27329",
       "triangleBudget": 1800,
       "params": [
         {
@@ -142573,17 +143253,40 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#77766a",
-          "label": "Asset color"
+          "default": "#a8a365",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292d2f",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "stainlessSteel": "#969f9e",
+          "rubber": "#393a38"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "stainlessSteel": "#c5ccca",
+          "rubber": "#24282a"
+        }
+      },
       "stats": {
-        "triangles": 160,
+        "triangles": 224,
         "sizeM": [
-          1.065,
+          1.057903,
           0.28,
           0.76
         ],
@@ -142592,19 +143295,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#77766a",
+          "name": "coatedSteel",
+          "color": "#a8a365",
           "parts": [
             "shearer-body",
-            "guide-shoe-left",
-            "guide-shoe-right",
             "cutter-left",
             "cutter-right",
             "gearbox-left",
-            "gearbox-right",
+            "gearbox-right"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "guide-shoe-left",
+            "guide-shoe-right"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#292d2f",
+          "parts": [
             "cable-arm"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -142612,7 +143329,7 @@
       "id": "magnetic-separator-drum",
       "kit": "mining",
       "title": "Wet magnetic separator",
-      "description": "Separator frame with feed trough, drum housing, collection launder, and drive block. Knobs: overall scale and asset color.",
+      "description": "Separator frame with feed trough, drum housing, collection launder, and drive block. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -142632,7 +143349,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/magnetic-separator-drum.kcad.ts",
       "preview": "/assets/mining-magnetic-separator-drum.png",
-      "sourceSha256": "8c0725fe82f5486001f7b535c15741e26ad69c79dff9e220a3fd74febbce389d",
+      "sourceSha256": "bf76b97ac9f59bf791bd2827f7d8798dd90870206a2e380103209e6a874b979f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -142645,15 +143362,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#637a75",
-          "label": "Asset color"
+          "default": "#65a89a",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca"
+        }
+      },
       "stats": {
-        "triangles": 140,
+        "triangles": 188,
         "sizeM": [
           1.1,
           0.72,
@@ -142664,20 +143404,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#637a75",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
             "base-frame",
-            "side-left",
-            "side-right",
-            "separator-drum",
-            "feed-trough",
-            "tailings-launder",
-            "drive-motor",
             "top-beam",
             "service-platform"
           ],
-          "param": "color"
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#65a89a",
+          "parts": [
+            "side-left",
+            "side-right",
+            "feed-trough",
+            "tailings-launder",
+            "drive-motor"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "separator-drum"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -142685,7 +143439,7 @@
       "id": "metal-detector-arch",
       "kit": "mining",
       "title": "Conveyor metal detector arch",
-      "description": "Inspection conveyor with detector arch, belt guides, control cabinet, and adjustable sensor head. Knobs: overall scale and asset color.",
+      "description": "Inspection conveyor with detector arch, belt guides, control cabinet, and adjustable sensor head. Controls: overall scale, coated equipment steel, structural steel, stainless steel, rubber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -142705,7 +143459,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/metal-detector-arch.kcad.ts",
       "preview": "/assets/mining-metal-detector-arch.png",
-      "sourceSha256": "20ebd8a9e1c44dc85abfb10b39148ea195ef3c3ea31b4ef34fa37b88e00db0ac",
+      "sourceSha256": "f195d7000dfd6bfd8322ee35df8739c6d53e2a37cc4530b2ff44b3bef2246e1b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -142718,17 +143472,48 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#6d776f",
-          "label": "Asset color"
+          "default": "#65a872",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292d2f",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e",
+          "rubber": "#393a38"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca",
+          "rubber": "#24282a"
+        }
+      },
       "stats": {
-        "triangles": 184,
+        "triangles": 248,
         "sizeM": [
-          1.12,
+          1.114127,
           0.85,
           0.71
         ],
@@ -142737,21 +143522,42 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6d776f",
+          "name": "rubber",
+          "color": "#292d2f",
           "parts": [
-            "belt",
+            "belt"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#566168",
+          "parts": [
             "left-leg",
-            "right-leg",
+            "right-leg"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#65a872",
+          "parts": [
             "arch-top",
             "sensor-left",
             "sensor-right",
             "control-cabinet",
-            "signal-head",
+            "signal-head"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "tail-roller",
             "head-roller"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -142759,7 +143565,7 @@
       "id": "mill-feed-chute",
       "kit": "mining",
       "title": "Mill feed chute",
-      "description": "Wear-lined transfer chute with feed collar, sloped body panels, support saddle, and inspection hatch. Knobs: overall scale and asset color.",
+      "description": "Wear-lined transfer chute with feed collar, sloped body panels, support saddle, and inspection hatch. Controls: overall scale, coated equipment steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -142779,7 +143585,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/mill-feed-chute.kcad.ts",
       "preview": "/assets/mining-mill-feed-chute.png",
-      "sourceSha256": "8a67b64cf055c2d0b45775a0e57330ab360e115f1a1d0bded1b586ce896a0f91",
+      "sourceSha256": "54f8ec6aba68321388925edfa70da1ad24fa137bdad5c1e8a9148430087943c4",
       "triangleBudget": 1800,
       "params": [
         {
@@ -142792,15 +143598,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#736f61",
-          "label": "Asset color"
+          "default": "#a89965",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "stainlessSteel": "#969f9e"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "stainlessSteel": "#c5ccca"
+        }
+      },
       "stats": {
-        "triangles": 152,
+        "triangles": 168,
         "sizeM": [
           0.735,
           0.86,
@@ -142811,8 +143632,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#736f61",
+          "name": "coatedSteel",
+          "color": "#a89965",
           "parts": [
             "top-collar",
             "front-panel",
@@ -142822,10 +143643,17 @@
             "outlet-neck",
             "saddle-left",
             "saddle-right",
-            "inspection-hatch",
+            "inspection-hatch"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "access-boss"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -142833,7 +143661,7 @@
       "id": "mill-relining-machine",
       "kit": "mining",
       "title": "Mill relining machine",
-      "description": "Service platform and hydraulic liner handler with low chassis, lift mast, boom, and guarded operator station. Knobs: overall scale and asset color.",
+      "description": "Service platform and hydraulic liner handler with low chassis, lift mast, boom, and guarded operator station. Controls: overall scale, coated equipment steel, structural steel, rubber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -142853,7 +143681,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/mill-relining-machine.kcad.ts",
       "preview": "/assets/mining-mill-relining-machine.png",
-      "sourceSha256": "7dadb05430a97ae23fd42b560c10e39d8a135d321b4c2d0763d3f12395421201",
+      "sourceSha256": "a5e0e2112f7ce6bc3cfa691bfade160e913638dfd24186f766be6f4743216fac",
       "triangleBudget": 1800,
       "params": [
         {
@@ -142866,17 +143694,40 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#b28a45",
-          "label": "Asset color"
+          "default": "#bb8a34",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292d2f",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "rubber": "#393a38"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "rubber": "#24282a"
+        }
+      },
       "stats": {
-        "triangles": 140,
+        "triangles": 172,
         "sizeM": [
-          1.435,
+          1.429861,
           0.755,
           0.73
         ],
@@ -142885,20 +143736,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b28a45",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
             "chassis",
+            "lift-mast"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#292d2f",
+          "parts": [
             "left-wheel",
-            "right-wheel",
+            "right-wheel"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#bb8a34",
+          "parts": [
             "operator-cab",
             "cab-roof",
-            "lift-mast",
             "handler-boom",
             "tool-head",
             "counterweight"
           ],
-          "param": "color"
+          "param": "coatedSteel"
         }
       ]
     },
@@ -142906,7 +143771,7 @@
       "id": "mine-locomotive",
       "kit": "mining",
       "title": "Underground mine locomotive",
-      "description": "Low-profile mine locomotive with enclosed cab, buffer ends, chassis, and paired wheel trucks. Knobs: overall scale and asset color.",
+      "description": "Low-profile mine locomotive with enclosed cab, buffer ends, chassis, and paired wheel trucks. Controls: overall scale, coated equipment steel, structural steel, rubber, instrument glass; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -142926,7 +143791,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/mine-locomotive.kcad.ts",
       "preview": "/assets/mining-mine-locomotive.png",
-      "sourceSha256": "b5b845231b9a0991301f35c9238b233d21b2949cb77ed45bd25b3836e2f10309",
+      "sourceSha256": "9655ceb2a5b5efc30b0e162c9c218bbf4f2b3148038ed64ef4578c499d0ba36c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -142939,15 +143804,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#a26b40",
-          "label": "Asset color"
+          "default": "#aa6530",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292d2f",
+          "label": "Rubber"
+        },
+        {
+          "name": "instrumentGlass",
+          "type": "color",
+          "default": "#5c929c",
+          "label": "Instrument glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "rubber": "#393a38",
+          "instrumentGlass": "#55787d"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "rubber": "#24282a",
+          "instrumentGlass": "#5fb6c1"
+        }
+      },
       "stats": {
-        "triangles": 248,
+        "triangles": 348,
         "sizeM": [
           0.965,
           0.62,
@@ -142958,21 +143854,45 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a26b40",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
-            "chassis",
+            "chassis"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#aa6530",
+          "parts": [
             "cab",
             "cab-roof",
             "front-buffer",
             "rear-buffer",
+            "battery-box"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#292d2f",
+          "parts": [
             "front-wheel-near",
             "front-wheel-far",
             "rear-wheel-near",
-            "rear-wheel-far",
-            "battery-box"
+            "rear-wheel-far"
           ],
-          "param": "color"
+          "param": "rubber"
+        },
+        {
+          "name": "instrumentGlass",
+          "color": "#5c929c",
+          "parts": [
+            "cab-side-window-near",
+            "cab-side-window-far",
+            "cab-front-window"
+          ],
+          "param": "instrumentGlass"
         }
       ]
     },
@@ -142980,7 +143900,7 @@
       "id": "mine-refuge-chamber",
       "kit": "mining",
       "title": "Mine refuge chamber",
-      "description": "Underground refuge pod with reinforced shell, access door, roof rails, and external air bottles. Knobs: overall scale and asset color.",
+      "description": "Underground refuge pod with reinforced shell, access door, roof rails, and external air bottles. Controls: overall scale, coated equipment steel, structural steel, instrument glass; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143000,7 +143920,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/mine-refuge-chamber.kcad.ts",
       "preview": "/assets/mining-mine-refuge-chamber.png",
-      "sourceSha256": "28329aa990cd4e005341f2b7819ef7566f4d133b04c39865970562c7f9381413",
+      "sourceSha256": "a982112e71e83c54d8205274677d1943823a1de061e7efad229dcaa6c130fbd2",
       "triangleBudget": 1800,
       "params": [
         {
@@ -143013,15 +143933,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#71816e",
-          "label": "Asset color"
+          "default": "#70a865",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "instrumentGlass",
+          "type": "color",
+          "default": "#5c929c",
+          "label": "Instrument glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "instrumentGlass": "#55787d"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "instrumentGlass": "#5fb6c1"
+        }
+      },
       "stats": {
-        "triangles": 160,
+        "triangles": 224,
         "sizeM": [
           1.05,
           0.72,
@@ -143032,19 +143975,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#71816e",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
             "floor-skid",
+            "roof-rail"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#70a865",
+          "parts": [
             "pod-body",
             "roof-cap",
             "entry-door",
-            "window-panel",
             "air-bottle-left",
-            "air-bottle-right",
-            "roof-rail"
+            "air-bottle-right"
           ],
-          "param": "color"
+          "param": "coatedSteel"
+        },
+        {
+          "name": "instrumentGlass",
+          "color": "#5c929c",
+          "parts": [
+            "window-panel"
+          ],
+          "param": "instrumentGlass"
         }
       ]
     },
@@ -143052,7 +144009,7 @@
       "id": "mine-skip",
       "kit": "mining",
       "title": "Mine skip conveyance",
-      "description": "Compact ore skip with reinforced side walls, guide rails, a top bail, and a discharge gate. Knobs: overall scale and asset color.",
+      "description": "Compact ore skip with reinforced side walls, guide rails, a top bail, and a discharge gate. Controls: overall scale, coated equipment steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143072,7 +144029,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/mine-skip.kcad.ts",
       "preview": "/assets/mining-mine-skip.png",
-      "sourceSha256": "66f5d21753475e19bd647d2c55e74192a932adc31676ef72a4b9019bbf1f7f8d",
+      "sourceSha256": "b9d6b7399095fcbcf0db66577b52547be1037e48ae302dd6821c3a6c0ae581d1",
       "triangleBudget": 1800,
       "params": [
         {
@@ -143085,15 +144042,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#786e58",
-          "label": "Asset color"
+          "default": "#a89365",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "stainlessSteel": "#969f9e"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "stainlessSteel": "#c5ccca"
+        }
+      },
       "stats": {
-        "triangles": 140,
+        "triangles": 172,
         "sizeM": [
           0.595,
           0.69,
@@ -143104,8 +144076,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#786e58",
+          "name": "coatedSteel",
+          "color": "#a89365",
           "parts": [
             "floor",
             "side-left",
@@ -143114,10 +144086,17 @@
             "back-wall",
             "guide-left",
             "guide-right",
-            "lifting-pin",
             "gate"
           ],
-          "param": "color"
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "lifting-pin"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -143125,7 +144104,7 @@
       "id": "mine-sump-pump",
       "kit": "mining",
       "title": "Mine sump pump",
-      "description": "Submersible mine pump with screened intake, motor housing, lifting bail, cable, and discharge outlet. Knobs: overall scale and asset color.",
+      "description": "Submersible mine pump with screened intake, motor housing, lifting bail, cable, and discharge outlet. Controls: overall scale, coated equipment steel, structural steel, stainless steel, rubber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143145,7 +144124,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/mine-sump-pump.kcad.ts",
       "preview": "/assets/mining-mine-sump-pump.png",
-      "sourceSha256": "73db4bead5256d4fa42a10078f583450710bd381fe421bcca32f41fb476ebb5c",
+      "sourceSha256": "bb0928428b36a4a8a861df3ab5702be9b225e6415351e853de1404e6eb37e05d",
       "triangleBudget": 1800,
       "params": [
         {
@@ -143158,15 +144137,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#606b64",
-          "label": "Asset color"
+          "default": "#65a87d",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292d2f",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e",
+          "rubber": "#393a38"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca",
+          "rubber": "#24282a"
+        }
+      },
       "stats": {
-        "triangles": 248,
+        "triangles": 360,
         "sizeM": [
           0.322,
           0.88,
@@ -143177,21 +144187,42 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#606b64",
+          "name": "coatedSteel",
+          "color": "#65a87d",
           "parts": [
             "motor-body",
             "pump-head",
+            "handle-left",
+            "handle-right"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#566168",
+          "parts": [
             "intake-foot",
             "screen-guard-front",
-            "screen-guard-back",
-            "handle-left",
-            "handle-right",
-            "discharge-nozzle",
+            "screen-guard-back"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "discharge-nozzle"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#292d2f",
+          "parts": [
             "power-cable",
             "cable-entry"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -143199,7 +144230,7 @@
       "id": "mine-survey-tripod",
       "kit": "mining",
       "title": "Mine survey tripod",
-      "description": "Survey tripod with three sturdy legs, rotating instrument platform, telescope block, and control panel. Knobs: overall scale and asset color.",
+      "description": "Survey tripod with three sturdy legs, rotating instrument platform, telescope block, and control panel. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143219,7 +144250,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/mine-survey-tripod.kcad.ts",
       "preview": "/assets/mining-mine-survey-tripod.png",
-      "sourceSha256": "f8bf64ca6f95960d89d6692eff9c9d4854e87a21deeaf59ec866675c655b5916",
+      "sourceSha256": "54a9e632a003041bdd9f82755d6ed75087a5d96305fb8769802d7b2b13809b5a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -143232,17 +144263,40 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#b7874e",
-          "label": "Asset color"
+          "default": "#c08136",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca"
+        }
+      },
       "stats": {
-        "triangles": 160,
+        "triangles": 224,
         "sizeM": [
-          0.445,
+          0.441819,
           1.015,
           0.395
         ],
@@ -143251,19 +144305,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b7874e",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
             "leg-front",
             "leg-left",
-            "leg-right",
-            "mounting-plate",
+            "leg-right"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "mounting-plate"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#c08136",
+          "parts": [
             "instrument-body",
             "telescope",
             "display",
             "carry-handle"
           ],
-          "param": "color"
+          "param": "coatedSteel"
         }
       ]
     },
@@ -143271,7 +144339,7 @@
       "id": "mine-ventilation-fan",
       "kit": "mining",
       "title": "Mine ventilation fan station",
-      "description": "Compact fan station with intake plenum, motor block, guarded housing, and raised support frame. Knobs: overall scale and asset color.",
+      "description": "Compact fan station with intake plenum, motor block, guarded housing, and raised support frame. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143291,7 +144359,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/mine-ventilation-fan.kcad.ts",
       "preview": "/assets/mining-mine-ventilation-fan.png",
-      "sourceSha256": "1fab5ed2d192664de8c754b71a8228a0c8aee641df5305e36ec0ee2fdde8c81d",
+      "sourceSha256": "eef290591d65c48cf73b1a2af1c9f9a669ea7b833b0e4c9c750bffbabee53e34",
       "triangleBudget": 1800,
       "params": [
         {
@@ -143304,15 +144372,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#638078",
-          "label": "Asset color"
+          "default": "#65a896",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca"
+        }
+      },
       "stats": {
-        "triangles": 160,
+        "triangles": 256,
         "sizeM": [
           0.935,
           0.645,
@@ -143323,19 +144414,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#638078",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
             "base-skid",
             "left-support",
             "right-support",
-            "fan-housing",
-            "inlet-ring",
-            "motor",
-            "outlet-plenum",
             "service-platform"
           ],
-          "param": "color"
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#65a896",
+          "parts": [
+            "fan-housing",
+            "motor",
+            "outlet-plenum"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "inlet-ring"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -143343,7 +144448,7 @@
       "id": "ore-pass-grizzly",
       "kit": "mining",
       "title": "Ore-pass grizzly gate",
-      "description": "Heavy inclined-look grizzly panel in a service frame with parallel bars and side drive housings. Knobs: overall scale and asset color.",
+      "description": "Heavy inclined-look grizzly panel in a service frame with parallel bars and side drive housings. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143363,7 +144468,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/ore-pass-grizzly.kcad.ts",
       "preview": "/assets/mining-ore-pass-grizzly.png",
-      "sourceSha256": "65b3888fbc7cdf7a7fc3dc61cb874f4c913f429776d314c75a17e60c5a20b8d6",
+      "sourceSha256": "c92815301ce8e52eb0010ef889b11eb66fb1b764510469ecbfff05e49bd60439",
       "triangleBudget": 1800,
       "params": [
         {
@@ -143376,15 +144481,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#777d73",
-          "label": "Asset color"
+          "default": "#80a865",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca"
+        }
+      },
       "stats": {
-        "triangles": 244,
+        "triangles": 276,
         "sizeM": [
           1.18,
           0.575,
@@ -143395,12 +144523,29 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#777d73",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
             "lower-frame",
+            "upper-crossbar"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#80a865",
+          "parts": [
             "side-left",
             "side-right",
+            "drive-left",
+            "drive-right"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "grizzly-bar-0",
             "grizzly-bar-1",
             "grizzly-bar-2",
@@ -143409,12 +144554,9 @@
             "grizzly-bar-5",
             "grizzly-bar-6",
             "grizzly-bar-7",
-            "grizzly-bar-8",
-            "drive-left",
-            "drive-right",
-            "upper-crossbar"
+            "grizzly-bar-8"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -143422,7 +144564,7 @@
       "id": "ore-sorting-arch",
       "kit": "mining",
       "title": "Ore sorting sensor arch",
-      "description": "Conveyor inspection arch with sensor heads, side cabinets, belt, and an overhead scanning bar. Knobs: overall scale and asset color.",
+      "description": "Conveyor inspection arch with sensor heads, side cabinets, belt, and an overhead scanning bar. Controls: overall scale, coated equipment steel, structural steel, rubber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143442,7 +144584,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/ore-sorting-arch.kcad.ts",
       "preview": "/assets/mining-ore-sorting-arch.png",
-      "sourceSha256": "9c533ac48c5ea6de521d62bc2bd331b7463124f6b25600e3614b2a12c31d3acc",
+      "sourceSha256": "4ceab485d25cd0e687532ba283d299f064667afa2528c80e9b786178ef482ecf",
       "triangleBudget": 1800,
       "params": [
         {
@@ -143455,15 +144597,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#62736e",
-          "label": "Asset color"
+          "default": "#65a894",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292d2f",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "rubber": "#393a38"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "rubber": "#24282a"
+        }
+      },
       "stats": {
-        "triangles": 152,
+        "triangles": 168,
         "sizeM": [
           1.135,
           0.795,
@@ -143474,21 +144639,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#62736e",
+          "name": "rubber",
+          "color": "#292d2f",
           "parts": [
-            "belt",
+            "belt"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#566168",
+          "parts": [
             "left-leg",
             "right-leg",
             "crossbar",
+            "guard-left",
+            "guard-right"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#65a894",
+          "parts": [
             "sensor-left",
             "sensor-right",
             "control-cabinet",
-            "guard-left",
-            "guard-right",
             "scan-beacon"
           ],
-          "param": "color"
+          "param": "coatedSteel"
         }
       ]
     },
@@ -143496,7 +144675,7 @@
       "id": "overland-conveyor-bridge",
       "kit": "mining",
       "title": "Overland conveyor bridge",
-      "description": "Elevated conveyor gallery with long belt trough, portal supports, and crossed structural braces. Knobs: overall scale and asset color.",
+      "description": "Elevated conveyor gallery with long belt trough, portal supports, and crossed structural braces. Controls: overall scale, coated equipment steel, structural steel, rubber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143516,7 +144695,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/overland-conveyor-bridge.kcad.ts",
       "preview": "/assets/mining-overland-conveyor-bridge.png",
-      "sourceSha256": "83f4b3ec38b4362d654b5625036ac0cd39052e04289623c58043d150460bfc5a",
+      "sourceSha256": "9b039b23511c44cb0d9a4b3fcad9b2b348a8717efa74b351f092e38805a01d82",
       "triangleBudget": 1800,
       "params": [
         {
@@ -143529,15 +144708,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#737b70",
-          "label": "Asset color"
+          "default": "#77a865",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292d2f",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "rubber": "#393a38"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "rubber": "#24282a"
+        }
+      },
       "stats": {
-        "triangles": 220,
+        "triangles": 284,
         "sizeM": [
           1.8,
           0.56,
@@ -143548,10 +144750,17 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#737b70",
+          "name": "rubber",
+          "color": "#292d2f",
           "parts": [
-            "belt",
+            "belt"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#566168",
+          "parts": [
             "left-stringer",
             "right-stringer",
             "portal-leg--610--190",
@@ -143561,11 +144770,18 @@
             "portal-top-left",
             "portal-top-right",
             "cross-brace-front",
-            "cross-brace-back",
+            "cross-brace-back"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#77a865",
+          "parts": [
             "idler-left",
             "idler-right"
           ],
-          "param": "color"
+          "param": "coatedSteel"
         }
       ]
     },
@@ -143573,7 +144789,7 @@
       "id": "radial-stacker",
       "kit": "mining",
       "title": "Radial stacker conveyor",
-      "description": "Mobile radial stacker with long trussed boom, wheeled pivot base, feed hopper, and discharge hood. Knobs: overall scale and asset color.",
+      "description": "Mobile radial stacker with long trussed boom, wheeled pivot base, feed hopper, and discharge hood. Controls: overall scale, coated equipment steel, structural steel, stainless steel, rubber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143593,7 +144809,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/radial-stacker.kcad.ts",
       "preview": "/assets/mining-radial-stacker.png",
-      "sourceSha256": "597db79884c4f4178ea7ca8f8e5c46c00809ad1e96a9355f7bee960a26fe7d86",
+      "sourceSha256": "bd96f9f6b9ce9aeffc6d0dc572f5a46ec62409a5226ef2b4373471d63202bb62",
       "triangleBudget": 1800,
       "params": [
         {
@@ -143606,15 +144822,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#b0833f",
-          "label": "Asset color"
+          "default": "#b98434",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292d2f",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e",
+          "rubber": "#393a38"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca",
+          "rubber": "#24282a"
+        }
+      },
       "stats": {
-        "triangles": 152,
+        "triangles": 184,
         "sizeM": [
           1.75,
           0.75,
@@ -143625,21 +144872,42 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b0833f",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
             "pivot-base",
-            "left-wheel",
-            "right-wheel",
-            "boom-belt",
             "boom-left-truss",
             "boom-right-truss",
-            "support-leg",
-            "feed-hopper",
+            "support-leg"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#292d2f",
+          "parts": [
+            "left-wheel",
+            "right-wheel",
+            "boom-belt"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#b98434",
+          "parts": [
+            "feed-hopper"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "discharge-hood",
             "pivot-bearing"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -143647,7 +144915,7 @@
       "id": "rock-breaker-boom",
       "kit": "mining",
       "title": "Crusher rock-breaker boom",
-      "description": "Pedestal-mounted breaker boom with segmented arm, hydraulic cylinders, and hammer tool. Knobs: overall scale and asset color.",
+      "description": "Pedestal-mounted breaker boom with segmented arm, hydraulic cylinders, and hammer tool. Controls: overall scale, coated equipment steel, structural steel, stainless steel, rubber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143667,7 +144935,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/rock-breaker-boom.kcad.ts",
       "preview": "/assets/mining-rock-breaker-boom.png",
-      "sourceSha256": "9e65ef2c56138d6227cdd1d43f62f56bbbaacf3cf96d3d010896d8d88350e074",
+      "sourceSha256": "bab5e374708509cb118b60db763406f312e0575d137a0fec7f2970db599769a3",
       "triangleBudget": 1800,
       "params": [
         {
@@ -143680,15 +144948,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#b1873d",
-          "label": "Asset color"
+          "default": "#ba8934",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292d2f",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e",
+          "rubber": "#393a38"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca",
+          "rubber": "#24282a"
+        }
+      },
       "stats": {
-        "triangles": 172,
+        "triangles": 220,
         "sizeM": [
           1.08,
           0.79,
@@ -143699,20 +144998,41 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b1873d",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
-            "base-plinth",
+            "base-plinth"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#ba8934",
+          "parts": [
             "turntable",
             "pedestal",
             "boom-lower",
             "boom-upper",
+            "hammer-body"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "hydraulic-cylinder",
-            "hammer-body",
-            "tool-tip",
+            "tool-tip"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#292d2f",
+          "parts": [
             "hose-pack"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -143720,7 +145040,7 @@
       "id": "roof-bolting-rig",
       "kit": "mining",
       "title": "Underground roof-bolting rig",
-      "description": "Compact bolting vehicle with protected cab, tracked base, feed mast, and paired drill heads. Knobs: overall scale and asset color.",
+      "description": "Compact bolting vehicle with protected cab, tracked base, feed mast, and paired drill heads. Controls: overall scale, coated equipment steel, structural steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143740,7 +145060,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/roof-bolting-rig.kcad.ts",
       "preview": "/assets/mining-roof-bolting-rig.png",
-      "sourceSha256": "fbd50aab29a3b9db573a42b6324c149a4498bf010a68c3fd511abba8d9c76df1",
+      "sourceSha256": "050ecb362c8ce62ad95e2e3204b3fb2dad32bdd441f8379e8be023f1b3beeea6",
       "triangleBudget": 1800,
       "params": [
         {
@@ -143753,15 +145073,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#d3a64c",
-          "label": "Asset color"
+          "default": "#dea83e",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159"
+        }
+      },
       "stats": {
-        "triangles": 160,
+        "triangles": 192,
         "sizeM": [
           0.835,
           0.78,
@@ -143772,19 +145107,26 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d3a64c",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
             "left-track",
             "right-track",
             "chassis",
+            "feed-mast"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#dea83e",
+          "parts": [
             "cab",
             "cab-roof",
-            "feed-mast",
             "drill-head-left",
             "drill-head-right"
           ],
-          "param": "color"
+          "param": "coatedSteel"
         }
       ]
     },
@@ -143792,7 +145134,7 @@
       "id": "rotary-blasthole-drill",
       "kit": "mining",
       "title": "Rotary blasthole drill rig",
-      "description": "Surface drill rig with crawler base, elevated deck, tall feed mast, drill string, and operator cabin. Knobs: overall scale and asset color.",
+      "description": "Surface drill rig with crawler base, elevated deck, tall feed mast, drill string, and operator cabin. Controls: overall scale, coated equipment steel, structural steel, stainless steel, rubber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143812,7 +145154,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/rotary-blasthole-drill.kcad.ts",
       "preview": "/assets/mining-rotary-blasthole-drill.png",
-      "sourceSha256": "771465877632cf0980d579df2f57107afab4306cd04a0c91eedf2b5b8142af0a",
+      "sourceSha256": "3441a12377564841e81ce6f71e07af0059448f4f538d2dc76bbf60e9d4c64ed8",
       "triangleBudget": 1800,
       "params": [
         {
@@ -143825,15 +145167,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#d49a38",
-          "label": "Asset color"
+          "default": "#dfa33e",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292d2f",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e",
+          "rubber": "#393a38"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca",
+          "rubber": "#24282a"
+        }
+      },
       "stats": {
-        "triangles": 128,
+        "triangles": 144,
         "sizeM": [
           1.05,
           1.515,
@@ -143844,19 +145217,40 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d49a38",
+          "name": "coatedSteel",
+          "color": "#dfa33e",
           "parts": [
             "left-crawler",
             "right-crawler",
-            "main-deck",
             "operator-cab",
-            "cab-roof",
-            "drill-mast",
-            "drill-string",
+            "cab-roof"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#566168",
+          "parts": [
+            "main-deck",
+            "drill-mast"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "drill-string"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#292d2f",
+          "parts": [
             "hose-rack"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -143864,7 +145258,7 @@
       "id": "run-of-mine-hopper",
       "kit": "mining",
       "title": "Run-of-mine feed hopper",
-      "description": "Large feed hopper with reinforced rim, four support legs, and a central discharge throat. Knobs: overall scale and asset color.",
+      "description": "Large feed hopper with reinforced rim, four support legs, and a central discharge throat. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143884,7 +145278,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/run-of-mine-hopper.kcad.ts",
       "preview": "/assets/mining-run-of-mine-hopper.png",
-      "sourceSha256": "8f76506daa533aae4a8f9f58475931b485b731d69d2e7359cf0e8bf0eec32b98",
+      "sourceSha256": "27324d673217a9eeaf9197bdbe85647ec27c23b50955242fa02042123bb44d68",
       "triangleBudget": 1800,
       "params": [
         {
@@ -143897,15 +145291,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#787469",
-          "label": "Asset color"
+          "default": "#a89665",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca"
+        }
+      },
       "stats": {
-        "triangles": 152,
+        "triangles": 168,
         "sizeM": [
           0.88,
           0.62,
@@ -143916,21 +145333,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#787469",
+          "name": "coatedSteel",
+          "color": "#a89665",
           "parts": [
             "throat",
             "hopper-front",
             "hopper-back",
             "hopper-left",
-            "hopper-right",
+            "hopper-right"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#566168",
+          "parts": [
             "leg-left-front",
             "leg-right-front",
             "leg-left-back",
-            "leg-right-back",
+            "leg-right-back"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "gate-shaft"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -143938,7 +145369,7 @@
       "id": "sag-mill",
       "kit": "mining",
       "title": "SAG grinding mill",
-      "description": "Large grinding-mill shell on support piers with trunnion housings, girth drive ring, and feed end. Knobs: overall scale and asset color.",
+      "description": "Large grinding-mill shell on support piers with trunnion housings, girth drive ring, and feed end. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143958,7 +145389,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/sag-mill.kcad.ts",
       "preview": "/assets/mining-sag-mill.png",
-      "sourceSha256": "de29e4758c071c0b5ca6afc20810553e8caa2ba02a2515843d05d0ccbcfc87b2",
+      "sourceSha256": "b8eb42e4be85ab1ce22fd264969af3faa538359ce0235f70be049672501cee45",
       "triangleBudget": 1800,
       "params": [
         {
@@ -143971,15 +145402,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#72756d",
-          "label": "Asset color"
+          "default": "#8fa865",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca"
+        }
+      },
       "stats": {
-        "triangles": 236,
+        "triangles": 428,
         "sizeM": [
           1.775,
           0.835,
@@ -143990,20 +145444,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#72756d",
+          "name": "coatedSteel",
+          "color": "#8fa865",
           "parts": [
             "shell",
-            "feed-trunnion",
-            "discharge-trunnion",
-            "pier-left",
-            "pier-right",
             "girth-drive",
             "motor-left",
-            "feed-chute",
+            "feed-chute"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "feed-trunnion",
+            "discharge-trunnion",
             "discharge-launder"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#566168",
+          "parts": [
+            "pier-left",
+            "pier-right"
+          ],
+          "param": "structuralSteel"
         }
       ]
     },
@@ -144011,7 +145479,7 @@
       "id": "shaft-headframe",
       "kit": "mining",
       "title": "Mine shaft headframe",
-      "description": "Steel-look headframe with paired uprights, winding sheaves, and a raised service deck. Knobs: overall scale and asset color.",
+      "description": "Steel-look headframe with paired uprights, winding sheaves, and a raised service deck. Controls: overall scale, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -144031,7 +145499,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/shaft-headframe.kcad.ts",
       "preview": "/assets/mining-shaft-headframe.png",
-      "sourceSha256": "e3890d22c5543772027936b578f253b4dc139ae1d1edf43d5f0d801e345b8fe3",
+      "sourceSha256": "ac9ffc024bbaf66ebe99d8f096d216d048e87b29815b7df835d78081cdba198b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -144044,15 +145512,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "structuralSteel",
           "type": "color",
-          "default": "#686d69",
-          "label": "Asset color"
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e"
+        },
+        "highVisibility": {
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca"
+        }
+      },
       "stats": {
-        "triangles": 160,
+        "triangles": 256,
         "sizeM": [
           0.76,
           1.135,
@@ -144063,19 +145546,26 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#686d69",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
             "base-skid",
             "tower-left",
             "tower-right",
             "upper-crossbeam",
             "rear-brace",
-            "sheave-left",
-            "sheave-right",
             "operator-platform"
           ],
-          "param": "color"
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "sheave-left",
+            "sheave-right"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -144083,7 +145573,7 @@
       "id": "slurry-pump-skid",
       "kit": "mining",
       "title": "Slurry pump skid",
-      "description": "Heavy-duty slurry pump with motor, guarded coupling, suction elbow, discharge riser, and base rails. Knobs: overall scale and asset color.",
+      "description": "Heavy-duty slurry pump with motor, guarded coupling, suction elbow, discharge riser, and base rails. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -144103,7 +145593,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/slurry-pump-skid.kcad.ts",
       "preview": "/assets/mining-slurry-pump-skid.png",
-      "sourceSha256": "680d3d91905c83aea5d3557701416fa3b99dd3b904ef683ccecc22699561326a",
+      "sourceSha256": "5c624bcf0635b06b39edec704d90a30914501ef0d98d8999948b6114c3dc8879",
       "triangleBudget": 1800,
       "params": [
         {
@@ -144116,15 +145606,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#657a75",
-          "label": "Asset color"
+          "default": "#65a898",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca"
+        }
+      },
       "stats": {
-        "triangles": 172,
+        "triangles": 268,
         "sizeM": [
           1.25,
           0.725,
@@ -144135,20 +145648,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#657a75",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
             "base-skid",
-            "motor",
             "coupling-guard",
-            "pump-casing",
-            "suction-flange",
-            "discharge-riser",
-            "discharge-flange",
             "motor-foot-left",
             "motor-foot-right"
           ],
-          "param": "color"
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#65a898",
+          "parts": [
+            "motor",
+            "pump-casing",
+            "suction-flange"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "discharge-riser",
+            "discharge-flange"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -144156,7 +145683,7 @@
       "id": "spiral-concentrator",
       "kit": "mining",
       "title": "Spiral concentrator bank",
-      "description": "Gravity separation bank with support column, stacked spiral trays, feed box, and concentrate launders. Knobs: overall scale and asset color.",
+      "description": "Gravity separation bank with support column, stacked spiral trays, feed box, and concentrate launders. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -144176,7 +145703,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/spiral-concentrator.kcad.ts",
       "preview": "/assets/mining-spiral-concentrator.png",
-      "sourceSha256": "19fcca495a13a3e10a1510e9fdbfacaf66fa0ade1a7cf6a79e83d22bc127434e",
+      "sourceSha256": "8ad35c160eacbfc1ddc09b99076a65351004f081e612edddae114a954a423c0a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -144189,15 +145716,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#697c77",
-          "label": "Asset color"
+          "default": "#65a897",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca"
+        }
+      },
       "stats": {
-        "triangles": 240,
+        "triangles": 304,
         "sizeM": [
           0.9,
           1.17,
@@ -144208,10 +145758,17 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#697c77",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
-            "base-skid",
+            "base-skid"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#65a897",
+          "parts": [
             "central-column",
             "spiral-tray-0",
             "spiral-tray-1",
@@ -144220,11 +145777,18 @@
             "spiral-tray-4",
             "spiral-tray-5",
             "feed-box",
-            "concentrate-launder",
+            "concentrate-launder"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "product-spout-a",
             "product-spout-b"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -144232,7 +145796,7 @@
       "id": "stacker-reclaimer-boom",
       "kit": "mining",
       "title": "Stacker reclaimer boom",
-      "description": "Yard boom assembly with turntable, trussed conveyor, support portal, and bucket-wheel end housing. Knobs: overall scale and asset color.",
+      "description": "Yard boom assembly with turntable, trussed conveyor, support portal, and bucket-wheel end housing. Controls: overall scale, coated equipment steel, structural steel, rubber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -144252,7 +145816,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/stacker-reclaimer-boom.kcad.ts",
       "preview": "/assets/mining-stacker-reclaimer-boom.png",
-      "sourceSha256": "0082146b3b08d3d096d313e96e494f02d543da6d7288cab8ff6344608ed8e375",
+      "sourceSha256": "bf44461ae1af0b81048fe2b10845be1209e32db08208e3c3c43bcd3ee4837707",
       "triangleBudget": 1800,
       "params": [
         {
@@ -144265,15 +145829,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#7e7158",
-          "label": "Asset color"
+          "default": "#a88e5c",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292d2f",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "rubber": "#393a38"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "rubber": "#24282a"
+        }
+      },
       "stats": {
-        "triangles": 184,
+        "triangles": 280,
         "sizeM": [
           1.89,
           0.935,
@@ -144284,21 +145871,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7e7158",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
             "foundation",
-            "turntable",
             "portal-left",
             "portal-right",
             "portal-top",
-            "boom-belt",
-            "boom-truss",
+            "boom-truss"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#a88e5c",
+          "parts": [
+            "turntable",
             "bucket-wheel",
             "counterweight",
             "operator-cab"
           ],
-          "param": "color"
+          "param": "coatedSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#292d2f",
+          "parts": [
+            "boom-belt"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -144306,7 +145907,7 @@
       "id": "tailings-filter-press",
       "kit": "mining",
       "title": "Tailings filter press",
-      "description": "Plate-and-frame filter press with paired end frames, stacked filter plates, hydraulic ram, and drip tray. Knobs: overall scale and asset color.",
+      "description": "Plate-and-frame filter press with paired end frames, stacked filter plates, hydraulic ram, and drip tray. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -144326,7 +145927,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/tailings-filter-press.kcad.ts",
       "preview": "/assets/mining-tailings-filter-press.png",
-      "sourceSha256": "704c8299581013a1be9f95e10997b1c201e08ae9538a343f9124566588982a43",
+      "sourceSha256": "63921600e7f12882d32d760ffa21dde329cf5ddb7e3553f92fdc00c41023d742",
       "triangleBudget": 1800,
       "params": [
         {
@@ -144339,17 +145940,40 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#747970",
-          "label": "Asset color"
+          "default": "#83a865",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca"
+        }
+      },
       "stats": {
-        "triangles": 236,
+        "triangles": 268,
         "sizeM": [
-          1.46,
+          1.45535,
           0.895,
           0.72
         ],
@@ -144358,13 +145982,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#747970",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
             "base-rail-left",
             "base-rail-right",
+            "upper-beam"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#83a865",
+          "parts": [
             "fixed-head",
             "moving-head",
+            "drip-tray",
+            "control-pedestal"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "filter-plate-0",
             "filter-plate-1",
             "filter-plate-2",
@@ -144374,12 +146015,9 @@
             "filter-plate-6",
             "filter-plate-7",
             "filter-plate-8",
-            "hydraulic-ram",
-            "drip-tray",
-            "upper-beam",
-            "control-pedestal"
+            "hydraulic-ram"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -144387,7 +146025,7 @@
       "id": "tailings-stack-conveyor",
       "kit": "mining",
       "title": "Tailings stack conveyor",
-      "description": "Long tailings conveyor with trussed support, raised discharge end, belt, and transfer hood. Knobs: overall scale and asset color.",
+      "description": "Long tailings conveyor with trussed support, raised discharge end, belt, and transfer hood. Controls: overall scale, structural steel, stainless steel, rubber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -144407,7 +146045,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/tailings-stack-conveyor.kcad.ts",
       "preview": "/assets/mining-tailings-stack-conveyor.png",
-      "sourceSha256": "daf57340294f65d09c0a97ca4d08c1b54d16320b2f346847585edb7389c2ec6e",
+      "sourceSha256": "c4138d0646e09ab14bb891a44be49d81fe8f381569b9524280c52f535c6c7edb",
       "triangleBudget": 1800,
       "params": [
         {
@@ -144420,15 +146058,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "structuralSteel",
           "type": "color",
-          "default": "#77766c",
-          "label": "Asset color"
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292d2f",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e",
+          "rubber": "#393a38"
+        },
+        "highVisibility": {
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca",
+          "rubber": "#24282a"
+        }
+      },
       "stats": {
-        "triangles": 152,
+        "triangles": 184,
         "sizeM": [
           1.74,
           0.66,
@@ -144439,21 +146100,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#77766c",
+          "name": "rubber",
+          "color": "#292d2f",
           "parts": [
-            "belt",
+            "belt"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#566168",
+          "parts": [
             "left-stringer",
             "right-stringer",
             "support-left",
             "support-right",
             "head-support-left",
             "head-support-right",
-            "truss-web",
+            "truss-web"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "discharge-hood",
             "head-drum"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -144461,7 +146136,7 @@
       "id": "thickener-bridge",
       "kit": "mining",
       "title": "Tailings thickener bridge",
-      "description": "Circular thickener tank with peripheral rim, radial bridge, central drive, and rake-arm crossbar. Knobs: overall scale and asset color.",
+      "description": "Circular thickener tank with peripheral rim, radial bridge, central drive, and rake-arm crossbar. Controls: overall scale, coated equipment steel, structural steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -144481,7 +146156,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/thickener-bridge.kcad.ts",
       "preview": "/assets/mining-thickener-bridge.png",
-      "sourceSha256": "69472e55201ec861d4238be23f9d310d21af015a70a3c3822e7fe237dd18cbd5",
+      "sourceSha256": "0a23b6e55b57dead964a4f13cd3e3ccff2c44c232eafcfd0392bdc68876c9a5c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -144494,15 +146169,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#6a7872",
-          "label": "Asset color"
+          "default": "#65a88b",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159"
+        }
+      },
       "stats": {
-        "triangles": 216,
+        "triangles": 424,
         "sizeM": [
           1.3,
           0.54,
@@ -144513,21 +146203,28 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6a7872",
+          "name": "coatedSteel",
+          "color": "#65a88b",
           "parts": [
             "tank",
             "tank-rim",
-            "bridge",
-            "bridge-rail-left",
-            "bridge-rail-right",
             "center-drive",
             "drive-cover",
             "rake-arm-left",
-            "rake-arm-right",
+            "rake-arm-right"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#566168",
+          "parts": [
+            "bridge",
+            "bridge-rail-left",
+            "bridge-rail-right",
             "walkway"
           ],
-          "param": "color"
+          "param": "structuralSteel"
         }
       ]
     },
@@ -144535,7 +146232,7 @@
       "id": "trommel-screen",
       "kit": "mining",
       "title": "Rotary trommel screen",
-      "description": "Trommel screening unit with perforated-look drum, support frame, feed box, and drive enclosure. Knobs: overall scale and asset color.",
+      "description": "Trommel screening unit with perforated-look drum, support frame, feed box, and drive enclosure. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -144555,7 +146252,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/trommel-screen.kcad.ts",
       "preview": "/assets/mining-trommel-screen.png",
-      "sourceSha256": "e08effed72123966578d1644ad4f9eed949fdb778310e8d888ee6b19f3c89342",
+      "sourceSha256": "f78843ab3c3be97f659680c2010569a36141d8d8990801e88def33ec7532f70e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -144568,15 +146265,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#7c7869",
-          "label": "Asset color"
+          "default": "#a89a65",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "stainlessSteel": "#969f9e"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "stainlessSteel": "#c5ccca"
+        }
+      },
       "stats": {
-        "triangles": 204,
+        "triangles": 348,
         "sizeM": [
           1.33,
           0.86,
@@ -144587,20 +146307,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7c7869",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
             "base-skid",
             "support-left",
             "support-right",
+            "drive-guard"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "drum-front-ring",
             "drum-body",
-            "drum-rear-ring",
+            "drum-rear-ring"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#a89a65",
+          "parts": [
             "feed-box",
-            "drive-guard",
             "oversize-chute"
           ],
-          "param": "color"
+          "param": "coatedSteel"
         }
       ]
     },
@@ -144608,7 +146342,7 @@
       "id": "underground-shuttle-car",
       "kit": "mining",
       "title": "Underground shuttle car",
-      "description": "Low ore shuttle with a deep haul body, operator enclosure, front bumper, and wheel guards. Knobs: overall scale and asset color.",
+      "description": "Low ore shuttle with a deep haul body, operator enclosure, front bumper, and wheel guards. Controls: overall scale, coated equipment steel, structural steel, rubber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -144628,7 +146362,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/underground-shuttle-car.kcad.ts",
       "preview": "/assets/mining-underground-shuttle-car.png",
-      "sourceSha256": "a1c906a5a5cafc14a5afae985ccd4d579a582923c317f37135944b2fec79ccd2",
+      "sourceSha256": "00a065755e0386c674b942785d87c9eed07933bdef7edabc34cd6899cbfef4ae",
       "triangleBudget": 1800,
       "params": [
         {
@@ -144641,15 +146375,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#b17a38",
-          "label": "Asset color"
+          "default": "#ba7d34",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#566168",
+          "label": "Structural steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292d2f",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "structuralSteel": "#666a66",
+          "rubber": "#393a38"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "structuralSteel": "#465159",
+          "rubber": "#24282a"
+        }
+      },
       "stats": {
-        "triangles": 160,
+        "triangles": 192,
         "sizeM": [
           1.265,
           0.605,
@@ -144660,19 +146417,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b17a38",
+          "name": "structuralSteel",
+          "color": "#566168",
           "parts": [
-            "chassis",
+            "chassis"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#ba7d34",
+          "parts": [
             "ore-body",
             "body-rim",
             "operator-cab",
-            "cab-roof",
+            "cab-roof"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#292d2f",
+          "parts": [
             "front-wheel-set",
             "rear-wheel-set",
             "front-bumper"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -144680,7 +146451,7 @@
       "id": "vacuum-disc-filter",
       "kit": "mining",
       "title": "Vacuum disc filter",
-      "description": "Dewatering unit with trough, central shaft, filter-disc panels, support bearings, and vacuum header. Knobs: overall scale and asset color.",
+      "description": "Dewatering unit with trough, central shaft, filter-disc panels, support bearings, and vacuum header. Controls: overall scale, coated equipment steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -144700,7 +146471,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/vacuum-disc-filter.kcad.ts",
       "preview": "/assets/mining-vacuum-disc-filter.png",
-      "sourceSha256": "32931699a6da151807212371c2d938866b73d88d9534b52db2ae53bd3f97b4bc",
+      "sourceSha256": "3a57379d5b54947d8ccb4cb80fe49a70257b478994d70195520c21a4d0f70b5d",
       "triangleBudget": 1800,
       "params": [
         {
@@ -144713,15 +146484,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#738079",
-          "label": "Asset color"
+          "default": "#65a884",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#6c716d",
+          "stainlessSteel": "#969f9e"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e48a1e",
+          "stainlessSteel": "#c5ccca"
+        }
+      },
       "stats": {
-        "triangles": 208,
+        "triangles": 272,
         "sizeM": [
           1.3,
           0.82,
@@ -144732,10 +146518,20 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#738079",
+          "name": "coatedSteel",
+          "color": "#65a884",
           "parts": [
             "trough",
+            "vacuum-header",
+            "drive-motor",
+            "vacuum-receiver"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "left-bearing",
             "right-bearing",
             "filter-shaft",
@@ -144743,12 +146539,9 @@
             "filter-disc-1",
             "filter-disc-2",
             "filter-disc-3",
-            "filter-disc-4",
-            "vacuum-header",
-            "drive-motor",
-            "vacuum-receiver"
+            "filter-disc-4"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
