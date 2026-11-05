@@ -1,0 +1,7 @@
+{
+  "before": "2051/2390 (85.82%)",
+  "after": "2091/2390 (87.49%)",
+  "remainingThin": "299/2390 (12.51%)",
+  "fullScanExitCode": 1,
+  "fullScanReason": "The catalog-wide script returns 1 while any thin assets remain; the reported count is 2,091/2,390 passing."
+}

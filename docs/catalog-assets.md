@@ -6,10 +6,10 @@ from those sources and must be rebuilt in the same change.
 
 ## Catalog quality snapshot (2026-11-05)
 
-The catalog quality gate reports **2,051/2,390 assets passing (85.82%)** and
-339 thin assets (14.18%) in eight fully thin kits and additional mixed kits.
-The latest round promoted 48 existing retail-store assets from the
-2,003/2,390 checkpoint; no IDs were added.
+The catalog quality gate reports **2,091/2,390 assets passing (87.49%)** and
+299 thin assets (12.51%) across seven fully thin kits and additional mixed kits.
+The latest round promoted 40 existing airfield assets from the
+2,051/2,390 checkpoint; no IDs were added.
 See the [Apiary quality handoff](../artifacts/catalog-demos/apiary-quality-promotion-20261105/README.md),
 [Alpine expedition quality handoff](../artifacts/catalog-demos/alpine-expedition-quality-promotion-20261105/README.md),
 [archaeology fieldwork quality handoff](../artifacts/catalog-demos/archaeology-fieldwork-quality-promotion-20261105/README.md),
@@ -18,9 +18,25 @@ See the [Apiary quality handoff](../artifacts/catalog-demos/apiary-quality-promo
 [data center infrastructure handoff](../artifacts/catalog-demos/data-center-infrastructure-quality-promotion-20261105/README.md),
 [wind energy handoff](../artifacts/catalog-demos/wind-energy-quality-promotion-20261105/README.md),
 [veterinary clinic handoff](../artifacts/catalog-demos/vet-clinic-quality-promotion-20261105/README.md),
-and [space exploration handoff](../artifacts/catalog-demos/space-exploration-quality-promotion-20261105/README.md)
+[space exploration handoff](../artifacts/catalog-demos/space-exploration-quality-promotion-20261105/README.md),
+and [airfield handoff](../artifacts/catalog-demos/airfield-quality-promotion-20261105/README.md)
 for source, preview, index, and verification evidence. These are local catalog
 checks and do not represent deployed behavior.
+
+## Airfield assets
+
+The [airfield kit](../catalog/kits/airfield/README.md) keeps its 40 existing
+aircraft, apron vehicles and airport fixtures. Each source retains scale and
+adds two to four material-named color controls plus `weathered` and
+`highVisibility` presets. The promotion adds 142 material controls and 80 named
+preset entries; all 40 previews were refreshed and indexed. The airport fire
+engine has a red rescue body, a pale crew cab, dark rubber tyres and a stainless
+roof ladder; the control tower, hangar and terminal now have clearer color and
+silhouette details. The [quality promotion handoff](../artifacts/catalog-demos/airfield-quality-promotion-20261105/README.md)
+records the source changes, reviewed previews, regenerated index, local checks
+and inspected MP4. These are visualization assets; local checks do not
+establish deployed behavior, aviation performance, airworthiness or physical
+acceptance.
 
 ## Retail store assets
 

@@ -1,0 +1,15 @@
+{
+  "kit": "airfield",
+  "assets": 40,
+  "materialControlRange": [
+    2,
+    4
+  ],
+  "materialControls": 142,
+  "presetBlocks": 40,
+  "sourceHashesMatched": 40,
+  "previewPathsPresent": 40,
+  "triangleBudgetsWithinLimit": 40,
+  "sameIDsAsBefore": true,
+  "failures": []
+}

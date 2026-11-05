@@ -2740,7 +2740,7 @@
       "id": "aircraft-fuel-truck",
       "kit": "airfield",
       "title": "Aircraft fuel truck",
-      "description": "Refueling tanker with a rounded tank, cab, rear hose reel and ground-service chassis.",
+      "description": "Runway refueller with a rounded tank, distinct driver cab, hose reel and four heavy tyres. Material controls: vehicle paint, windshield glass, stainless steel, tyre and belt rubber. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -2761,7 +2761,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/aircraft-fuel-truck.kcad.ts",
       "preview": "/assets/airfield-aircraft-fuel-truck.png",
-      "sourceSha256": "be70410af1697a036a371238d936345d4696f882988c2f8f74abe4a4ee1387f3",
+      "sourceSha256": "3f06851a6f51a5347531308dbc6bc4d168ef626174f7059e2973910fe3baf0db",
       "triangleBudget": 1800,
       "params": [
         {
@@ -2774,17 +2774,48 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "vehiclePaint",
           "type": "color",
-          "default": "#9d8050",
-          "label": "Asset color"
+          "default": "#d9ae27",
+          "label": "Vehicle paint"
+        },
+        {
+          "name": "windshieldGlass",
+          "type": "color",
+          "default": "#72b1bd",
+          "label": "Windshield glass"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#a9b4b6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#282e31",
+          "label": "Tyre and belt rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "vehiclePaint": "#596765",
+          "windshieldGlass": "#315c69",
+          "stainlessSteel": "#536267",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "vehiclePaint": "#f0b52f",
+          "windshieldGlass": "#82c8d0",
+          "stainlessSteel": "#aeb9bb",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
-        "triangles": 274,
+        "triangles": 310,
         "sizeM": [
-          0.5525,
+          0.55725,
           0.275256,
           0.2552
         ],
@@ -2793,19 +2824,43 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#9d8050",
+          "name": "stainlessSteel",
+          "color": "#a9b4b6",
           "parts": [
             "chassis",
-            "cab",
             "tanker",
-            "hose-reel",
+            "hose-reel"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "vehiclePaint",
+          "color": "#d9ae27",
+          "parts": [
+            "cab"
+          ],
+          "param": "vehiclePaint"
+        },
+        {
+          "name": "windshieldGlass",
+          "color": "#72b1bd",
+          "parts": [
+            "cab-windscreen",
+            "cab-side-window-left",
+            "cab-side-window-right"
+          ],
+          "param": "windshieldGlass"
+        },
+        {
+          "name": "rubber",
+          "color": "#282e31",
+          "parts": [
             "wheel-1-left",
             "wheel-1-right",
             "wheel-2-left",
             "wheel-2-right"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -2813,7 +2868,7 @@
       "id": "aircraft-hangar",
       "kit": "airfield",
       "title": "Aircraft hangar",
-      "description": "Large apron hangar with a wide front opening, deep roof, side walls and upper roof ridge.",
+      "description": "Open-front apron hangar with side and rear walls, a pitched gable roof, ridge cap and a clear aircraft-door opening. Material controls: metal cladding, roof metal, concrete. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -2834,7 +2889,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/aircraft-hangar.kcad.ts",
       "preview": "/assets/airfield-aircraft-hangar.png",
-      "sourceSha256": "d0ce1d7670871eddddad400588c69683f04eb119d24ed440a7ff8ad250276b2c",
+      "sourceSha256": "39d10d1bbd3f9b94cb44fa582fcb97e939a155724b4494df4ede3898516062a6",
       "triangleBudget": 1800,
       "params": [
         {
@@ -2847,18 +2902,41 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "cladding",
           "type": "color",
-          "default": "#a0a29b",
-          "label": "Asset color"
+          "default": "#f0ead8",
+          "label": "Metal cladding"
+        },
+        {
+          "name": "roofMetal",
+          "type": "color",
+          "default": "#39799c",
+          "label": "Roof metal"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#bcb8ad",
+          "label": "Concrete"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "cladding": "#596765",
+          "roofMetal": "#536267",
+          "concrete": "#555751"
+        },
+        "highVisibility": {
+          "cladding": "#f0b52f",
+          "roofMetal": "#aeb9bb",
+          "concrete": "#999990"
+        }
+      },
       "stats": {
-        "triangles": 72,
+        "triangles": 76,
         "sizeM": [
           0.7,
-          0.37,
+          0.407,
           0.6
         ],
         "minUpM": 0,
@@ -2866,17 +2944,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a0a29b",
+          "name": "cladding",
+          "color": "#f0ead8",
           "parts": [
             "left-wall",
-            "right-wall",
-            "rear-wall",
+            "right-wall"
+          ],
+          "param": "cladding"
+        },
+        {
+          "name": "concrete",
+          "color": "#bcb8ad",
+          "parts": [
+            "rear-wall"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "roofMetal",
+          "color": "#39799c",
+          "parts": [
             "roof",
             "ridge",
             "door-header"
           ],
-          "param": "color"
+          "param": "roofMetal"
         }
       ]
     },
@@ -2884,7 +2976,7 @@
       "id": "aircraft-maintenance-lift",
       "kit": "airfield",
       "title": "Aircraft maintenance lift",
-      "description": "Self-propelled scissor lift with a guarded service platform, crossed arms and compact chassis.",
+      "description": "Self-propelled scissor lift with a guarded service platform, crossed arms and compact chassis. Material controls: powder-coated steel, galvanized steel, tyre rubber. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -2905,7 +2997,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/aircraft-maintenance-lift.kcad.ts",
       "preview": "/assets/airfield-aircraft-maintenance-lift.png",
-      "sourceSha256": "bff9f2f462b420e81777c9c0047f7906a1eb739290bf5f00d77a1c17b26385ac",
+      "sourceSha256": "af0111e878fed9ff4136854942a16d9da9679bceb680721a8e21d53335334985",
       "triangleBudget": 1800,
       "params": [
         {
@@ -2918,13 +3010,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#b68b43",
-          "label": "Asset color"
+          "default": "#d6a72d",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#89989c",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292f32",
+          "label": "Tyre rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoat": "#596765",
+          "galvanizedSteel": "#536267",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "powderCoat": "#d6a72d",
+          "galvanizedSteel": "#aeb9bb",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
         "triangles": 292,
         "sizeM": [
@@ -2937,22 +3052,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b68b43",
+          "name": "powderCoat",
+          "color": "#d6a72d",
           "parts": [
             "chassis",
-            "lower-platform",
             "scissor-arm-left",
             "scissor-arm-right",
-            "scissor-pivot",
+            "scissor-pivot"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#89989c",
+          "parts": [
+            "lower-platform",
             "upper-platform",
-            "guardrail-front",
+            "guardrail-front"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#292f32",
+          "parts": [
             "wheel-1-left",
             "wheel-1-right",
             "wheel-2-left",
             "wheel-2-right"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -2960,7 +3089,7 @@
       "id": "aircraft-uld-container",
       "kit": "airfield",
       "title": "Aircraft ULD container",
-      "description": "Rounded-corner air cargo unit load device with a raised roof and pallet base.",
+      "description": "Rounded-corner air cargo unit load device with a raised roof and pallet base. Material controls: aluminium, polymer pallet, steel fittings. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -2981,7 +3110,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/aircraft-uld-container.kcad.ts",
       "preview": "/assets/airfield-aircraft-uld-container.png",
-      "sourceSha256": "cd02e20f2fb221749b308a0a8a17df1e682c4cb55a246e620f01644f6a7f73ab",
+      "sourceSha256": "5096cf5dca72bf35efd8d0fd4ecc02b1061c48f7029bbdee9d49aa1ac2887540",
       "triangleBudget": 1800,
       "params": [
         {
@@ -2994,13 +3123,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminium",
           "type": "color",
-          "default": "#8b9697",
-          "label": "Asset color"
+          "default": "#b6c0c1",
+          "label": "Aluminium"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#566f72",
+          "label": "Polymer pallet"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#7d898d",
+          "label": "Steel fittings"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "aluminium": "#536267",
+          "polymer": "#596765",
+          "steel": "#536267"
+        },
+        "highVisibility": {
+          "aluminium": "#aeb9bb",
+          "polymer": "#f0b52f",
+          "steel": "#aeb9bb"
+        }
+      },
       "stats": {
         "triangles": 48,
         "sizeM": [
@@ -3013,15 +3165,29 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8b9697",
+          "name": "polymer",
+          "color": "#566f72",
           "parts": [
-            "pallet",
+            "pallet"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "aluminium",
+          "color": "#b6c0c1",
+          "parts": [
             "cargo-body",
-            "roof",
+            "roof"
+          ],
+          "param": "aluminium"
+        },
+        {
+          "name": "steel",
+          "color": "#7d898d",
+          "parts": [
             "front-lip"
           ],
-          "param": "color"
+          "param": "steel"
         }
       ]
     },
@@ -3029,7 +3195,7 @@
       "id": "aircraft-wheel-chocks",
       "kit": "airfield",
       "title": "Aircraft wheel chocks",
-      "description": "Paired triangular wheel chocks with connecting safety rope and broad ground contact.",
+      "description": "Paired triangular wheel chocks with connecting safety rope and broad ground contact. Material controls: high-visibility paint, rope fabric. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -3050,7 +3216,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/aircraft-wheel-chocks.kcad.ts",
       "preview": "/assets/airfield-aircraft-wheel-chocks.png",
-      "sourceSha256": "c62e29498604ba1e6d257bd87048e8aa3ce71c7861c8001077680500b067b9ff",
+      "sourceSha256": "267a224f94bbaa8be465eb627fa3af1eae0195553dbe97db750f24d4c9bb8d12",
       "triangleBudget": 1800,
       "params": [
         {
@@ -3063,13 +3229,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "safetyPaint",
           "type": "color",
-          "default": "#bf9d4e",
-          "label": "Asset color"
+          "default": "#e76f32",
+          "label": "High-visibility paint"
+        },
+        {
+          "name": "ropeFabric",
+          "type": "color",
+          "default": "#343a3d",
+          "label": "Rope fabric"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "safetyPaint": "#596765",
+          "ropeFabric": "#945b3c"
+        },
+        "highVisibility": {
+          "safetyPaint": "#f0b52f",
+          "ropeFabric": "#262b2e"
+        }
+      },
       "stats": {
         "triangles": 60,
         "sizeM": [
@@ -3082,14 +3263,21 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#bf9d4e",
+          "name": "safetyPaint",
+          "color": "#e76f32",
           "parts": [
             "left-chock",
-            "right-chock",
+            "right-chock"
+          ],
+          "param": "safetyPaint"
+        },
+        {
+          "name": "ropeFabric",
+          "color": "#343a3d",
+          "parts": [
             "safety-rope"
           ],
-          "param": "color"
+          "param": "ropeFabric"
         }
       ]
     },
@@ -3097,7 +3285,7 @@
       "id": "airport-control-tower",
       "kit": "airfield",
       "title": "Airport control tower",
-      "description": "Air traffic control tower with a tapered shaft, glazed cab and broad roof cap.",
+      "description": "Air traffic control tower with a tapered concrete shaft, glazed observation cab and broad roof cap. Material controls: metal cladding, roof metal, concrete, glazing. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -3118,7 +3306,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/airport-control-tower.kcad.ts",
       "preview": "/assets/airfield-airport-control-tower.png",
-      "sourceSha256": "7d9e19190201452732b0a008750ef2281df01a07de30890edeceef8bead0eb1d",
+      "sourceSha256": "330d28dffeca0d7c1d20de374942c75dc8e60af5319432d130e4f290539005b6",
       "triangleBudget": 1800,
       "params": [
         {
@@ -3131,13 +3319,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "cladding",
           "type": "color",
-          "default": "#82949a",
-          "label": "Asset color"
+          "default": "#f4c430",
+          "label": "Metal cladding"
+        },
+        {
+          "name": "roofMetal",
+          "type": "color",
+          "default": "#38596d",
+          "label": "Roof metal"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#b8b4aa",
+          "label": "Concrete"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#2aa9be",
+          "label": "Glazing"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "cladding": "#596765",
+          "roofMetal": "#536267",
+          "concrete": "#555751",
+          "glass": "#315c69"
+        },
+        "highVisibility": {
+          "cladding": "#f0b52f",
+          "roofMetal": "#aeb9bb",
+          "concrete": "#999990",
+          "glass": "#82c8d0"
+        }
+      },
       "stats": {
         "triangles": 72,
         "sizeM": [
@@ -3150,17 +3369,38 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#82949a",
+          "name": "concrete",
+          "color": "#b8b4aa",
           "parts": [
             "base",
-            "shaft",
-            "control-cab",
-            "roof-cap",
+            "shaft"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "cladding",
+          "color": "#f4c430",
+          "parts": [
+            "control-cab"
+          ],
+          "param": "cladding"
+        },
+        {
+          "name": "roofMetal",
+          "color": "#38596d",
+          "parts": [
+            "roof-cap"
+          ],
+          "param": "roofMetal"
+        },
+        {
+          "name": "glass",
+          "color": "#2aa9be",
+          "parts": [
             "left-cab-window-band",
             "right-cab-window-band"
           ],
-          "param": "color"
+          "param": "glass"
         }
       ]
     },
@@ -3168,7 +3408,7 @@
       "id": "airport-fire-engine",
       "kit": "airfield",
       "title": "Airport fire engine",
-      "description": "Airport rescue truck with a tall cab, equipment body, roof monitor and heavy wheels.",
+      "description": "Airport rescue truck with a pale crew cab, red equipment body, roof monitor, raised metallic ladder, heavy axles and metal compartment doors. Material controls: rescue vehicle paint, crew cab paint, stainless steel, tyre rubber. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -3189,7 +3429,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/airport-fire-engine.kcad.ts",
       "preview": "/assets/airfield-airport-fire-engine.png",
-      "sourceSha256": "831f1e31a98cc3f6e399cbb2512eb7f4780bac3ae900afdf531290c66a219091",
+      "sourceSha256": "82d9789d2affc22b521093eae5981d9ea0fd63673586980282e53b6b2257e8a4",
       "triangleBudget": 1800,
       "params": [
         {
@@ -3202,15 +3442,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "vehiclePaint",
           "type": "color",
-          "default": "#b65343",
-          "label": "Asset color"
+          "default": "#d93a31",
+          "label": "Rescue vehicle paint"
+        },
+        {
+          "name": "cabPaint",
+          "type": "color",
+          "default": "#e7e8df",
+          "label": "Crew cab paint"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#a9b4b6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#282e31",
+          "label": "Tyre rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "vehiclePaint": "#596765",
+          "cabPaint": "#596765",
+          "stainlessSteel": "#536267",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "vehiclePaint": "#f0b52f",
+          "cabPaint": "#f0b52f",
+          "stainlessSteel": "#aeb9bb",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
-        "triangles": 268,
+        "triangles": 388,
         "sizeM": [
           0.5525,
           0.3816,
@@ -3221,20 +3492,51 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b65343",
+          "name": "stainlessSteel",
+          "color": "#a9b4b6",
           "parts": [
             "chassis",
-            "cab",
-            "equipment-body",
             "roof-monitor",
             "monitor-nozzle",
+            "equipment-compartment-front",
+            "equipment-compartment-rear",
+            "roof-ladder-outer-rail",
+            "roof-ladder-inner-rail",
+            "roof-ladder-rung-1",
+            "roof-ladder-rung-2",
+            "roof-ladder-rung-3",
+            "roof-ladder-rung-4",
+            "roof-ladder-rung-5",
+            "roof-ladder-rung-6"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "cabPaint",
+          "color": "#e7e8df",
+          "parts": [
+            "cab"
+          ],
+          "param": "cabPaint"
+        },
+        {
+          "name": "vehiclePaint",
+          "color": "#d93a31",
+          "parts": [
+            "equipment-body"
+          ],
+          "param": "vehiclePaint"
+        },
+        {
+          "name": "rubber",
+          "color": "#282e31",
+          "parts": [
             "wheel-1-left",
             "wheel-1-right",
             "wheel-2-left",
             "wheel-2-right"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -3242,7 +3544,7 @@
       "id": "amphibious-seaplane",
       "kit": "airfield",
       "title": "Amphibious seaplane",
-      "description": "Twin-engine seaplane with a high wing, twin floats and water-ready hull profile.",
+      "description": "Twin-engine seaplane with a high wing, twin floats and water-ready hull profile. Material controls: airframe paint, canopy glass, bare aluminium, tyre rubber. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -3263,7 +3565,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/amphibious-seaplane.kcad.ts",
       "preview": "/assets/airfield-amphibious-seaplane.png",
-      "sourceSha256": "b2877c54cfc61ede99ced8b5759effa1f0cd91ae7238886cbed425a6e523cae5",
+      "sourceSha256": "5c2c060ed54faca1d818b768b3542e68001f266b93de051af52e355ae3413ab9",
       "triangleBudget": 1800,
       "params": [
         {
@@ -3276,13 +3578,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "airframePaint",
           "type": "color",
-          "default": "#688b82",
-          "label": "Asset color"
+          "default": "#558aa0",
+          "label": "Airframe paint"
+        },
+        {
+          "name": "canopyGlass",
+          "type": "color",
+          "default": "#76b6c0",
+          "label": "Canopy glass"
+        },
+        {
+          "name": "bareMetal",
+          "type": "color",
+          "default": "#aab5b8",
+          "label": "Bare aluminium"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292f32",
+          "label": "Tyre rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "airframePaint": "#596765",
+          "canopyGlass": "#315c69",
+          "bareMetal": "#536267",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "airframePaint": "#f0b52f",
+          "canopyGlass": "#82c8d0",
+          "bareMetal": "#aeb9bb",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
         "triangles": 682,
         "sizeM": [
@@ -3295,14 +3628,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#688b82",
+          "name": "airframePaint",
+          "color": "#558aa0",
           "parts": [
             "fuselage",
-            "cockpit-canopy",
             "main-wing",
             "tailplane",
             "vertical-tail",
+            "left-float",
+            "right-float"
+          ],
+          "param": "airframePaint"
+        },
+        {
+          "name": "canopyGlass",
+          "color": "#76b6c0",
+          "parts": [
+            "cockpit-canopy"
+          ],
+          "param": "canopyGlass"
+        },
+        {
+          "name": "bareMetal",
+          "color": "#aab5b8",
+          "parts": [
             "left-wing-strut",
             "right-wing-strut",
             "engine-1",
@@ -3315,18 +3664,23 @@
             "engine-2-blade-1",
             "engine-2-blade-2",
             "engine-2-blade-3",
-            "left-float",
             "left-float-strut",
-            "right-float",
             "right-float-strut",
             "nose-gear-strut",
-            "nose-wheel",
             "left-main-gear-strut",
+            "right-main-gear-strut"
+          ],
+          "param": "bareMetal"
+        },
+        {
+          "name": "rubber",
+          "color": "#292f32",
+          "parts": [
+            "nose-wheel",
             "left-main-wheel",
-            "right-main-gear-strut",
             "right-main-wheel"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -3334,7 +3688,7 @@
       "id": "approach-lighting-array",
       "kit": "airfield",
       "title": "Approach lighting array",
-      "description": "Approach-light runway fixture with a long crossbar, center mast and side braces.",
+      "description": "Approach-light runway fixture with a long crossbar, center mast and side braces. Material controls: galvanized steel, optical glass. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -3355,7 +3709,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/approach-lighting-array.kcad.ts",
       "preview": "/assets/airfield-approach-lighting-array.png",
-      "sourceSha256": "a9ce6b157d059ac1231c35a47739f5a5ce2dd1e8664da91fc8e0923de040f173",
+      "sourceSha256": "d1eac420395facd0939ea61f8c36e062448ca365e9b76563aedc3d985f86de6c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -3368,13 +3722,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#a3925a",
-          "label": "Asset color"
+          "default": "#8c999c",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "lensGlass",
+          "type": "color",
+          "default": "#e8c766",
+          "label": "Optical glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#536267",
+          "lensGlass": "#9b8242"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#aeb9bb",
+          "lensGlass": "#e8c766"
+        }
+      },
       "stats": {
         "triangles": 200,
         "sizeM": [
@@ -3387,18 +3756,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a3925a",
+          "name": "galvanizedSteel",
+          "color": "#8c999c",
           "parts": [
             "center-mast",
             "crossbar",
-            "center-light",
             "left-brace",
+            "right-brace"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "lensGlass",
+          "color": "#e8c766",
+          "parts": [
+            "center-light",
             "left-end-light",
-            "right-brace",
             "right-end-light"
           ],
-          "param": "color"
+          "param": "lensGlass"
         }
       ]
     },
@@ -3406,7 +3782,7 @@
       "id": "apron-shuttle-bus",
       "kit": "airfield",
       "title": "Apron shuttle bus",
-      "description": "Long low-floor airport shuttle bus with a broad passenger cabin and three wheel pairs.",
+      "description": "Long low-floor airport shuttle bus with a broad passenger cabin and three wheel pairs. Material controls: vehicle paint, windshield glass, stainless steel, tyre and belt rubber. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -3427,7 +3803,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/apron-shuttle-bus.kcad.ts",
       "preview": "/assets/airfield-apron-shuttle-bus.png",
-      "sourceSha256": "839946d3f28368e0212cfba0c3dc0e6903495628bde56b5d835104ccd1c5b749",
+      "sourceSha256": "651b3e360709d580dc49062590502f0723ed9fb82166ecc8668e5c32a56a7394",
       "triangleBudget": 1800,
       "params": [
         {
@@ -3440,13 +3816,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "vehiclePaint",
           "type": "color",
-          "default": "#87939a",
-          "label": "Asset color"
+          "default": "#4b7892",
+          "label": "Vehicle paint"
+        },
+        {
+          "name": "windshieldGlass",
+          "type": "color",
+          "default": "#72b1bd",
+          "label": "Windshield glass"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#a9b4b6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#282e31",
+          "label": "Tyre and belt rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "vehiclePaint": "#596765",
+          "windshieldGlass": "#315c69",
+          "stainlessSteel": "#536267",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "vehiclePaint": "#f0b52f",
+          "windshieldGlass": "#82c8d0",
+          "stainlessSteel": "#aeb9bb",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
         "triangles": 300,
         "sizeM": [
@@ -3459,12 +3866,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#87939a",
+          "name": "stainlessSteel",
+          "color": "#a9b4b6",
           "parts": [
-            "chassis",
-            "passenger-cabin",
-            "front-windscreen",
+            "chassis"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "vehiclePaint",
+          "color": "#4b7892",
+          "parts": [
+            "passenger-cabin"
+          ],
+          "param": "vehiclePaint"
+        },
+        {
+          "name": "windshieldGlass",
+          "color": "#72b1bd",
+          "parts": [
+            "front-windscreen"
+          ],
+          "param": "windshieldGlass"
+        },
+        {
+          "name": "rubber",
+          "color": "#282e31",
+          "parts": [
             "wheel-1-left",
             "wheel-1-right",
             "wheel-2-left",
@@ -3472,7 +3900,7 @@
             "wheel-3-left",
             "wheel-3-right"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -3480,7 +3908,7 @@
       "id": "baggage-cart-train",
       "kit": "airfield",
       "title": "Baggage cart train",
-      "description": "Apron tractor towing three low-sided baggage trailers with paired axles.",
+      "description": "Apron tractor towing three low-sided baggage trailers with paired axles. Material controls: tractor paint, trailer paint, galvanized steel, tyre rubber. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -3501,7 +3929,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/baggage-cart-train.kcad.ts",
       "preview": "/assets/airfield-baggage-cart-train.png",
-      "sourceSha256": "1a4fb95da9217f971e1458c6ee35f2a99306e25bc3d5143b6649abbe87d14afc",
+      "sourceSha256": "188e6a31cacedaf3910065d422dd2fd984bc4ff35056f12bc23bf958556de70d",
       "triangleBudget": 1800,
       "params": [
         {
@@ -3514,13 +3942,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "tractorPaint",
           "type": "color",
-          "default": "#a58b53",
-          "label": "Asset color"
+          "default": "#557d59",
+          "label": "Tractor paint"
+        },
+        {
+          "name": "trailerPaint",
+          "type": "color",
+          "default": "#e2b535",
+          "label": "Trailer paint"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#89969a",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292f32",
+          "label": "Tyre rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "tractorPaint": "#596765",
+          "trailerPaint": "#596765",
+          "galvanizedSteel": "#536267",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "tractorPaint": "#f0b52f",
+          "trailerPaint": "#f0b52f",
+          "galvanizedSteel": "#aeb9bb",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
         "triangles": 360,
         "sizeM": [
@@ -3533,25 +3992,46 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a58b53",
+          "name": "galvanizedSteel",
+          "color": "#89969a",
           "parts": [
             "chassis",
-            "tractor-cab",
             "trailer-1-bed",
+            "trailer-2-bed",
+            "trailer-3-bed"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "tractorPaint",
+          "color": "#557d59",
+          "parts": [
+            "tractor-cab"
+          ],
+          "param": "tractorPaint"
+        },
+        {
+          "name": "trailerPaint",
+          "color": "#e2b535",
+          "parts": [
             "trailer-1-load",
+            "trailer-2-load",
+            "trailer-3-load"
+          ],
+          "param": "trailerPaint"
+        },
+        {
+          "name": "rubber",
+          "color": "#292f32",
+          "parts": [
             "trailer-1-left-wheel",
             "trailer-1-right-wheel",
-            "trailer-2-bed",
-            "trailer-2-load",
             "trailer-2-left-wheel",
             "trailer-2-right-wheel",
-            "trailer-3-bed",
-            "trailer-3-load",
             "trailer-3-left-wheel",
             "trailer-3-right-wheel"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -3559,7 +4039,7 @@
       "id": "baggage-tractor",
       "kit": "airfield",
       "title": "Baggage tractor",
-      "description": "Compact electric apron tractor with a forward cab, low chassis, tow coupling and four wheels.",
+      "description": "Compact electric apron tractor with a forward cab, low chassis, tow coupling and four wheels. Material controls: vehicle paint, windshield glass, stainless steel, tyre and belt rubber. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -3580,7 +4060,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/baggage-tractor.kcad.ts",
       "preview": "/assets/airfield-baggage-tractor.png",
-      "sourceSha256": "59f108152e922e7eb0abde495f529ce49a2e4625f66b26f39c7b9ba97334af59",
+      "sourceSha256": "1bc9c2a5e712c9065cad88c579f90ba016d3cdd0c4febbc42ec84435841b9f83",
       "triangleBudget": 1800,
       "params": [
         {
@@ -3593,15 +4073,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "vehiclePaint",
           "type": "color",
-          "default": "#c3a542",
-          "label": "Asset color"
+          "default": "#d5af32",
+          "label": "Vehicle paint"
+        },
+        {
+          "name": "windshieldGlass",
+          "type": "color",
+          "default": "#72b1bd",
+          "label": "Windshield glass"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#a9b4b6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#282e31",
+          "label": "Tyre and belt rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "vehiclePaint": "#596765",
+          "windshieldGlass": "#315c69",
+          "stainlessSteel": "#536267",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "vehiclePaint": "#f0b52f",
+          "windshieldGlass": "#82c8d0",
+          "stainlessSteel": "#aeb9bb",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
-        "triangles": 236,
+        "triangles": 272,
         "sizeM": [
           0.3405,
           0.1742,
@@ -3612,20 +4123,44 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#c3a542",
+          "name": "stainlessSteel",
+          "color": "#a9b4b6",
           "parts": [
             "chassis",
+            "tow-bar"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "vehiclePaint",
+          "color": "#d5af32",
+          "parts": [
             "operator-cab",
             "rear-body",
-            "tow-bar",
-            "front-hood",
+            "front-hood"
+          ],
+          "param": "vehiclePaint"
+        },
+        {
+          "name": "windshieldGlass",
+          "color": "#72b1bd",
+          "parts": [
+            "cab-windscreen",
+            "cab-side-window-left",
+            "cab-side-window-right"
+          ],
+          "param": "windshieldGlass"
+        },
+        {
+          "name": "rubber",
+          "color": "#282e31",
+          "parts": [
             "wheel-1-left",
             "wheel-1-right",
             "wheel-2-left",
             "wheel-2-right"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -3633,7 +4168,7 @@
       "id": "belt-loader",
       "kit": "airfield",
       "title": "Belt loader",
-      "description": "Compact baggage loader with an inclined conveyor belt, support frame and low service chassis.",
+      "description": "Compact baggage loader with an inclined conveyor belt, support frame and low service chassis. Material controls: vehicle paint, windshield glass, stainless steel, tyre and belt rubber. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -3654,7 +4189,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/belt-loader.kcad.ts",
       "preview": "/assets/airfield-belt-loader.png",
-      "sourceSha256": "69cca90a1e1ebe4b441a966dc2d697120101692a6d4bb3e96afa70d993bb0a9f",
+      "sourceSha256": "8df5e50233aeeb2c60bf08423b6d4c4ae3031b82b7b067de5991131b482f215e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -3667,15 +4202,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "vehiclePaint",
           "type": "color",
-          "default": "#718b65",
-          "label": "Asset color"
+          "default": "#e4b22c",
+          "label": "Vehicle paint"
+        },
+        {
+          "name": "windshieldGlass",
+          "type": "color",
+          "default": "#72b1bd",
+          "label": "Windshield glass"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#a9b4b6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#282e31",
+          "label": "Tyre and belt rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "vehiclePaint": "#596765",
+          "windshieldGlass": "#315c69",
+          "stainlessSteel": "#536267",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "vehiclePaint": "#f0b52f",
+          "windshieldGlass": "#82c8d0",
+          "stainlessSteel": "#aeb9bb",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
-        "triangles": 236,
+        "triangles": 272,
         "sizeM": [
           0.3995,
           0.326675,
@@ -3686,20 +4252,44 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#718b65",
+          "name": "stainlessSteel",
+          "color": "#a9b4b6",
           "parts": [
             "chassis",
-            "operator-cab",
             "conveyor-frame",
+            "loader-support"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "vehiclePaint",
+          "color": "#e4b22c",
+          "parts": [
+            "operator-cab"
+          ],
+          "param": "vehiclePaint"
+        },
+        {
+          "name": "windshieldGlass",
+          "color": "#72b1bd",
+          "parts": [
+            "cab-windscreen",
+            "cab-side-window-left",
+            "cab-side-window-right"
+          ],
+          "param": "windshieldGlass"
+        },
+        {
+          "name": "rubber",
+          "color": "#282e31",
+          "parts": [
             "conveyor-belt",
-            "loader-support",
             "wheel-1-left",
             "wheel-1-right",
             "wheel-2-left",
             "wheel-2-right"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -3707,7 +4297,7 @@
       "id": "biplane",
       "kit": "airfield",
       "title": "Biplane",
-      "description": "Open-cockpit biplane with two stacked wings, interplane struts, propeller and fixed landing gear.",
+      "description": "Open-cockpit biplane with two stacked wings, interplane struts, propeller and fixed landing gear. Material controls: airframe paint, canopy glass, bare aluminium, tyre rubber. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -3728,7 +4318,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/biplane.kcad.ts",
       "preview": "/assets/airfield-biplane.png",
-      "sourceSha256": "e76ebe9e0b936659c4ac4a2b7f75213dbfd72e9f497be7c3082bb9fbdda5b236",
+      "sourceSha256": "57b71672db09bca5ede0a2d04d969da6d6673020ac007bc7bb697817cd5700a5",
       "triangleBudget": 1800,
       "params": [
         {
@@ -3741,13 +4331,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "airframePaint",
           "type": "color",
-          "default": "#b25e40",
-          "label": "Asset color"
+          "default": "#b94b40",
+          "label": "Airframe paint"
+        },
+        {
+          "name": "canopyGlass",
+          "type": "color",
+          "default": "#76b6c0",
+          "label": "Canopy glass"
+        },
+        {
+          "name": "bareMetal",
+          "type": "color",
+          "default": "#aab5b8",
+          "label": "Bare aluminium"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292f32",
+          "label": "Tyre rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "airframePaint": "#596765",
+          "canopyGlass": "#315c69",
+          "bareMetal": "#536267",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "airframePaint": "#f0b52f",
+          "canopyGlass": "#82c8d0",
+          "bareMetal": "#aeb9bb",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
         "triangles": 472,
         "sizeM": [
@@ -3760,15 +4381,29 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b25e40",
+          "name": "airframePaint",
+          "color": "#b94b40",
           "parts": [
             "fuselage",
-            "cockpit-canopy",
             "main-wing",
             "tailplane",
             "vertical-tail",
-            "upper-wing",
+            "upper-wing"
+          ],
+          "param": "airframePaint"
+        },
+        {
+          "name": "canopyGlass",
+          "color": "#76b6c0",
+          "parts": [
+            "cockpit-canopy"
+          ],
+          "param": "canopyGlass"
+        },
+        {
+          "name": "bareMetal",
+          "color": "#aab5b8",
+          "parts": [
             "left-interplane-strut",
             "right-interplane-strut",
             "engine-1",
@@ -3777,13 +4412,20 @@
             "engine-1-blade-2",
             "engine-1-blade-3",
             "nose-gear-strut",
-            "nose-wheel",
             "left-main-gear-strut",
+            "right-main-gear-strut"
+          ],
+          "param": "bareMetal"
+        },
+        {
+          "name": "rubber",
+          "color": "#292f32",
+          "parts": [
+            "nose-wheel",
             "left-main-wheel",
-            "right-main-gear-strut",
             "right-main-wheel"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -3791,7 +4433,7 @@
       "id": "cargo-aircraft",
       "kit": "airfield",
       "title": "Cargo aircraft",
-      "description": "High-tail freighter with a broad fuselage, raised wing and four under-wing engines.",
+      "description": "High-tail freighter with a broad fuselage, raised wing and four under-wing engines. Material controls: airframe paint, canopy glass, bare aluminium, tyre rubber. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -3812,7 +4454,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/cargo-aircraft.kcad.ts",
       "preview": "/assets/airfield-cargo-aircraft.png",
-      "sourceSha256": "eed6192a3a02bdfcce7ab0e7bf63c62663af11e3196ed1dd9605b54c061b27b7",
+      "sourceSha256": "f8bca41cb31eb06770c6c75bcb6d5c96228637152bac3c520206a242cd510518",
       "triangleBudget": 1800,
       "params": [
         {
@@ -3825,13 +4467,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "airframePaint",
           "type": "color",
-          "default": "#8c8060",
-          "label": "Asset color"
+          "default": "#507a99",
+          "label": "Airframe paint"
+        },
+        {
+          "name": "canopyGlass",
+          "type": "color",
+          "default": "#76b6c0",
+          "label": "Canopy glass"
+        },
+        {
+          "name": "bareMetal",
+          "type": "color",
+          "default": "#aab5b8",
+          "label": "Bare aluminium"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292f32",
+          "label": "Tyre rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "airframePaint": "#596765",
+          "canopyGlass": "#315c69",
+          "bareMetal": "#536267",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "airframePaint": "#f0b52f",
+          "canopyGlass": "#82c8d0",
+          "bareMetal": "#aeb9bb",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
         "triangles": 458,
         "sizeM": [
@@ -3844,15 +4517,29 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8c8060",
+          "name": "airframePaint",
+          "color": "#507a99",
           "parts": [
             "fuselage",
             "cargo-nose",
-            "cockpit-canopy",
             "main-wing",
             "tailplane",
-            "vertical-tail",
+            "vertical-tail"
+          ],
+          "param": "airframePaint"
+        },
+        {
+          "name": "canopyGlass",
+          "color": "#76b6c0",
+          "parts": [
+            "cockpit-canopy"
+          ],
+          "param": "canopyGlass"
+        },
+        {
+          "name": "bareMetal",
+          "color": "#aab5b8",
+          "parts": [
             "left-wing-strut",
             "right-wing-strut",
             "engine-1",
@@ -3860,13 +4547,20 @@
             "engine-3",
             "engine-4",
             "nose-gear-strut",
-            "nose-wheel",
             "left-main-gear-strut",
+            "right-main-gear-strut"
+          ],
+          "param": "bareMetal"
+        },
+        {
+          "name": "rubber",
+          "color": "#292f32",
+          "parts": [
+            "nose-wheel",
             "left-main-wheel",
-            "right-main-gear-strut",
             "right-main-wheel"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -3874,7 +4568,7 @@
       "id": "catering-truck",
       "kit": "airfield",
       "title": "Catering truck",
-      "description": "High-sided catering vehicle with a box body, cab, rear stabilizers and raised service platform.",
+      "description": "High-sided catering vehicle with a box body, cab, rear stabilizers and raised service platform. Material controls: vehicle paint, windshield glass, stainless steel, tyre and belt rubber. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -3895,7 +4589,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/catering-truck.kcad.ts",
       "preview": "/assets/airfield-catering-truck.png",
-      "sourceSha256": "85cc3f9c4ec889b218e08decaaded9c75a9d26f9e6b0c933dd22b3510c8ab31f",
+      "sourceSha256": "e274383c4358534842d9b3e3ceb735b82e026dd4389bb981d2553497d883d8f2",
       "triangleBudget": 1800,
       "params": [
         {
@@ -3908,17 +4602,48 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "vehiclePaint",
           "type": "color",
-          "default": "#8196a2",
-          "label": "Asset color"
+          "default": "#d7d9d1",
+          "label": "Vehicle paint"
+        },
+        {
+          "name": "windshieldGlass",
+          "type": "color",
+          "default": "#72b1bd",
+          "label": "Windshield glass"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#a9b4b6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#282e31",
+          "label": "Tyre and belt rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "vehiclePaint": "#596765",
+          "windshieldGlass": "#315c69",
+          "stainlessSteel": "#536267",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "vehiclePaint": "#f0b52f",
+          "windshieldGlass": "#82c8d0",
+          "stainlessSteel": "#aeb9bb",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
-        "triangles": 236,
+        "triangles": 272,
         "sizeM": [
-          0.53665,
+          0.5414,
           0.54,
           0.2448
         ],
@@ -3927,20 +4652,44 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8196a2",
+          "name": "stainlessSteel",
+          "color": "#a9b4b6",
           "parts": [
             "chassis",
+            "lift-mast"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "vehiclePaint",
+          "color": "#d7d9d1",
+          "parts": [
             "cab",
             "service-box",
-            "lift-platform",
-            "lift-mast",
+            "lift-platform"
+          ],
+          "param": "vehiclePaint"
+        },
+        {
+          "name": "windshieldGlass",
+          "color": "#72b1bd",
+          "parts": [
+            "cab-windscreen",
+            "cab-side-window-left",
+            "cab-side-window-right"
+          ],
+          "param": "windshieldGlass"
+        },
+        {
+          "name": "rubber",
+          "color": "#282e31",
+          "parts": [
             "wheel-1-left",
             "wheel-1-right",
             "wheel-2-left",
             "wheel-2-right"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -3948,7 +4697,7 @@
       "id": "deicing-truck",
       "kit": "airfield",
       "title": "De-icing truck",
-      "description": "De-icing service vehicle with a fluid tank, telescoping boom and raised operator basket.",
+      "description": "De-icing service vehicle with a fluid tank, telescoping boom and raised operator basket. Material controls: vehicle paint, windshield glass, stainless steel, tyre and belt rubber. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -3969,7 +4718,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/deicing-truck.kcad.ts",
       "preview": "/assets/airfield-deicing-truck.png",
-      "sourceSha256": "90ba79ecfdd54167cc90cfae016a483de3d161b338668212f9c75dd9fd8da6bb",
+      "sourceSha256": "469782c4ac635f00fa7649a4c8c165c7f81b8f37213f6f07ce427a6c4caad75b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -3982,17 +4731,48 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "vehiclePaint",
           "type": "color",
-          "default": "#7c8990",
-          "label": "Asset color"
+          "default": "#d8b32a",
+          "label": "Vehicle paint"
+        },
+        {
+          "name": "windshieldGlass",
+          "type": "color",
+          "default": "#72b1bd",
+          "label": "Windshield glass"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#a9b4b6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#282e31",
+          "label": "Tyre and belt rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "vehiclePaint": "#596765",
+          "windshieldGlass": "#315c69",
+          "stainlessSteel": "#536267",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "vehiclePaint": "#f0b52f",
+          "windshieldGlass": "#82c8d0",
+          "stainlessSteel": "#aeb9bb",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
-        "triangles": 268,
+        "triangles": 304,
         "sizeM": [
-          0.5185,
+          0.52325,
           0.586,
           0.2552
         ],
@@ -4001,21 +4781,45 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7c8990",
+          "name": "stainlessSteel",
+          "color": "#a9b4b6",
           "parts": [
             "chassis",
+            "boom-base",
+            "boom-arm"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "vehiclePaint",
+          "color": "#d8b32a",
+          "parts": [
             "cab",
             "fluid-tank",
-            "boom-base",
-            "boom-arm",
-            "operator-basket",
+            "operator-basket"
+          ],
+          "param": "vehiclePaint"
+        },
+        {
+          "name": "windshieldGlass",
+          "color": "#72b1bd",
+          "parts": [
+            "cab-windscreen",
+            "cab-side-window-left",
+            "cab-side-window-right"
+          ],
+          "param": "windshieldGlass"
+        },
+        {
+          "name": "rubber",
+          "color": "#282e31",
+          "parts": [
             "wheel-1-left",
             "wheel-1-right",
             "wheel-2-left",
             "wheel-2-right"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -4023,7 +4827,7 @@
       "id": "firefighting-helicopter",
       "kit": "airfield",
       "title": "Firefighting helicopter",
-      "description": "Heavy-lift helicopter with a long rotor, reinforced skids and a suspended water bucket.",
+      "description": "Heavy-lift helicopter with a long rotor, reinforced skids and a suspended water bucket. Material controls: airframe paint, cockpit glass, rotor and hardware metal. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -4044,7 +4848,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/firefighting-helicopter.kcad.ts",
       "preview": "/assets/airfield-firefighting-helicopter.png",
-      "sourceSha256": "39273f0d4a0e6b30de6b2c2c8f50490cf60aefc71c84f75def7b2702b07427c9",
+      "sourceSha256": "db3b0c37f67d7d2f79fd5c56e2e88e70e0f18bcc2986c9d6a4e2d961b73725a4",
       "triangleBudget": 1800,
       "params": [
         {
@@ -4057,13 +4861,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "airframePaint",
           "type": "color",
-          "default": "#b94e3f",
-          "label": "Asset color"
+          "default": "#d93a31",
+          "label": "Airframe paint"
+        },
+        {
+          "name": "canopyGlass",
+          "type": "color",
+          "default": "#78b9c3",
+          "label": "Cockpit glass"
+        },
+        {
+          "name": "bareMetal",
+          "type": "color",
+          "default": "#9ca9ad",
+          "label": "Rotor and hardware metal"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "airframePaint": "#596765",
+          "canopyGlass": "#315c69",
+          "bareMetal": "#536267"
+        },
+        "highVisibility": {
+          "airframePaint": "#f0b52f",
+          "canopyGlass": "#82c8d0",
+          "bareMetal": "#aeb9bb"
+        }
+      },
       "stats": {
         "triangles": 398,
         "sizeM": [
@@ -4076,14 +4903,28 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b94e3f",
+          "name": "airframePaint",
+          "color": "#d93a31",
           "parts": [
             "cabin",
-            "cockpit",
             "tail-boom",
             "tail-fin",
-            "tail-plane",
+            "tail-plane"
+          ],
+          "param": "airframePaint"
+        },
+        {
+          "name": "canopyGlass",
+          "color": "#78b9c3",
+          "parts": [
+            "cockpit"
+          ],
+          "param": "canopyGlass"
+        },
+        {
+          "name": "bareMetal",
+          "color": "#9ca9ad",
+          "parts": [
             "rotor-mast",
             "main-rotor-blade-a",
             "main-rotor-blade-b",
@@ -4099,7 +4940,7 @@
             "bucket-cable",
             "water-bucket"
           ],
-          "param": "color"
+          "param": "bareMetal"
         }
       ]
     },
@@ -4107,7 +4948,7 @@
       "id": "high-wing-bush-plane",
       "kit": "airfield",
       "title": "High-wing bush plane",
-      "description": "Short-field utility aircraft with a high wing, large wheels and a single nose propeller.",
+      "description": "Short-field utility aircraft with a high wing, large wheels and a single nose propeller. Material controls: airframe paint, canopy glass, bare aluminium, tyre rubber. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -4128,7 +4969,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/high-wing-bush-plane.kcad.ts",
       "preview": "/assets/airfield-high-wing-bush-plane.png",
-      "sourceSha256": "118b8553e57bf8e61649af34a49d476599fe4b20435288d207e6aa0900aeb345",
+      "sourceSha256": "c384f0a14041c90f46dab38a923185ad1779c8287d3c648a2fb96897c0ea4769",
       "triangleBudget": 1800,
       "params": [
         {
@@ -4141,13 +4982,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "airframePaint",
           "type": "color",
-          "default": "#9a8054",
-          "label": "Asset color"
+          "default": "#d6b33d",
+          "label": "Airframe paint"
+        },
+        {
+          "name": "canopyGlass",
+          "type": "color",
+          "default": "#76b6c0",
+          "label": "Canopy glass"
+        },
+        {
+          "name": "bareMetal",
+          "type": "color",
+          "default": "#aab5b8",
+          "label": "Bare aluminium"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292f32",
+          "label": "Tyre rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "airframePaint": "#596765",
+          "canopyGlass": "#315c69",
+          "bareMetal": "#536267",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "airframePaint": "#f0b52f",
+          "canopyGlass": "#82c8d0",
+          "bareMetal": "#aeb9bb",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
         "triangles": 476,
         "sizeM": [
@@ -4160,14 +5032,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#9a8054",
+          "name": "airframePaint",
+          "color": "#d6b33d",
           "parts": [
             "fuselage",
-            "cockpit-canopy",
             "main-wing",
             "tailplane",
             "vertical-tail",
+            "left-wing-support",
+            "right-wing-support"
+          ],
+          "param": "airframePaint"
+        },
+        {
+          "name": "canopyGlass",
+          "color": "#76b6c0",
+          "parts": [
+            "cockpit-canopy"
+          ],
+          "param": "canopyGlass"
+        },
+        {
+          "name": "bareMetal",
+          "color": "#aab5b8",
+          "parts": [
             "left-wing-strut",
             "right-wing-strut",
             "engine-1",
@@ -4176,15 +5064,20 @@
             "engine-1-blade-2",
             "engine-1-blade-3",
             "nose-gear-strut",
-            "nose-wheel",
             "left-main-gear-strut",
-            "left-main-wheel",
-            "right-main-gear-strut",
-            "right-main-wheel",
-            "left-wing-support",
-            "right-wing-support"
+            "right-main-gear-strut"
           ],
-          "param": "color"
+          "param": "bareMetal"
+        },
+        {
+          "name": "rubber",
+          "color": "#292f32",
+          "parts": [
+            "nose-wheel",
+            "left-main-wheel",
+            "right-main-wheel"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -4192,7 +5085,7 @@
       "id": "lavatory-service-truck",
       "kit": "airfield",
       "title": "Lavatory service truck",
-      "description": "Compact sanitary service vehicle with a tank body, rear hose and low access step.",
+      "description": "Compact sanitary service vehicle with a tank body, rear hose and low access step. Material controls: vehicle paint, windshield glass, stainless steel, tyre and belt rubber. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -4213,7 +5106,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/lavatory-service-truck.kcad.ts",
       "preview": "/assets/airfield-lavatory-service-truck.png",
-      "sourceSha256": "226d1306552ff4473f8a95d6b556e5dd1c8aaa3907413ed0cf54ba057205b8f6",
+      "sourceSha256": "5a636b17ce37c215a6056cd12988321a74d19c7c71c6a2428f80e5a97c8e4aad",
       "triangleBudget": 1800,
       "params": [
         {
@@ -4226,17 +5119,48 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "vehiclePaint",
           "type": "color",
-          "default": "#64858a",
-          "label": "Asset color"
+          "default": "#4c9caa",
+          "label": "Vehicle paint"
+        },
+        {
+          "name": "windshieldGlass",
+          "type": "color",
+          "default": "#72b1bd",
+          "label": "Windshield glass"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#a9b4b6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#282e31",
+          "label": "Tyre and belt rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "vehiclePaint": "#596765",
+          "windshieldGlass": "#315c69",
+          "stainlessSteel": "#536267",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "vehiclePaint": "#f0b52f",
+          "windshieldGlass": "#82c8d0",
+          "stainlessSteel": "#aeb9bb",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
-        "triangles": 288,
+        "triangles": 324,
         "sizeM": [
-          0.4936,
+          0.49835,
           0.2542,
           0.2396
         ],
@@ -4245,20 +5169,44 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#64858a",
+          "name": "stainlessSteel",
+          "color": "#a9b4b6",
           "parts": [
             "chassis",
-            "cab",
-            "service-tank",
             "rear-hose",
-            "access-step",
+            "access-step"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "vehiclePaint",
+          "color": "#4c9caa",
+          "parts": [
+            "cab",
+            "service-tank"
+          ],
+          "param": "vehiclePaint"
+        },
+        {
+          "name": "windshieldGlass",
+          "color": "#72b1bd",
+          "parts": [
+            "cab-windscreen",
+            "cab-side-window-left",
+            "cab-side-window-right"
+          ],
+          "param": "windshieldGlass"
+        },
+        {
+          "name": "rubber",
+          "color": "#282e31",
+          "parts": [
             "wheel-1-left",
             "wheel-1-right",
             "wheel-2-left",
             "wheel-2-right"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -4266,7 +5214,7 @@
       "id": "narrowbody-airliner",
       "kit": "airfield",
       "title": "Narrowbody airliner",
-      "description": "Single-aisle airliner with swept wings, under-wing engines, tail fin and landing gear.",
+      "description": "Single-aisle airliner with swept wings, under-wing engines, tail fin and landing gear. Material controls: airframe paint, canopy glass, bare aluminium, tyre rubber. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -4287,7 +5235,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/narrowbody-airliner.kcad.ts",
       "preview": "/assets/airfield-narrowbody-airliner.png",
-      "sourceSha256": "b66eda93f419fb5cd07466b5a44281a9c020b350578669dbf70e7c04ca0dac54",
+      "sourceSha256": "a50f0e62fdb5a899569ee5e87e20c546dc6d294f1d73e198f604637106415daf",
       "triangleBudget": 1800,
       "params": [
         {
@@ -4300,13 +5248,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "airframePaint",
           "type": "color",
-          "default": "#7f9eb0",
-          "label": "Asset color"
+          "default": "#e9e8df",
+          "label": "Airframe paint"
+        },
+        {
+          "name": "canopyGlass",
+          "type": "color",
+          "default": "#76b6c0",
+          "label": "Canopy glass"
+        },
+        {
+          "name": "bareMetal",
+          "type": "color",
+          "default": "#aab5b8",
+          "label": "Bare aluminium"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292f32",
+          "label": "Tyre rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "airframePaint": "#596765",
+          "canopyGlass": "#315c69",
+          "bareMetal": "#536267",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "airframePaint": "#f0b52f",
+          "canopyGlass": "#82c8d0",
+          "bareMetal": "#aeb9bb",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
         "triangles": 340,
         "sizeM": [
@@ -4319,24 +5298,45 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7f9eb0",
+          "name": "airframePaint",
+          "color": "#e9e8df",
           "parts": [
             "fuselage",
-            "cockpit-canopy",
             "main-wing",
             "tailplane",
-            "vertical-tail",
+            "vertical-tail"
+          ],
+          "param": "airframePaint"
+        },
+        {
+          "name": "canopyGlass",
+          "color": "#76b6c0",
+          "parts": [
+            "cockpit-canopy"
+          ],
+          "param": "canopyGlass"
+        },
+        {
+          "name": "bareMetal",
+          "color": "#aab5b8",
+          "parts": [
             "engine-1",
             "engine-2",
             "nose-gear-strut",
-            "nose-wheel",
             "left-main-gear-strut",
+            "right-main-gear-strut"
+          ],
+          "param": "bareMetal"
+        },
+        {
+          "name": "rubber",
+          "color": "#292f32",
+          "parts": [
+            "nose-wheel",
             "left-main-wheel",
-            "right-main-gear-strut",
             "right-main-wheel"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -4344,7 +5344,7 @@
       "id": "passenger-boarding-stairs",
       "kit": "airfield",
       "title": "Passenger boarding stairs",
-      "description": "Towable mobile stairway with a stepped flight, upper landing, handrails and four wheels.",
+      "description": "Towable mobile stairway with a stepped flight, upper landing, handrails and four wheels. Material controls: powder-coated steel, galvanized steel, tyre rubber. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -4365,7 +5365,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/passenger-boarding-stairs.kcad.ts",
       "preview": "/assets/airfield-passenger-boarding-stairs.png",
-      "sourceSha256": "521381c8777c644c6a203a8f328857d8b540539c258ef2c421c35ac33fca4360",
+      "sourceSha256": "3221f5c8b886b20d41954c7be5fe7ef2793fa5af7b98e1c1fff0b9ec58b6e43f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -4378,13 +5378,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#a18a50",
-          "label": "Asset color"
+          "default": "#d6a72d",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#89989c",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292f32",
+          "label": "Tyre rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoat": "#596765",
+          "galvanizedSteel": "#536267",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "powderCoat": "#d6a72d",
+          "galvanizedSteel": "#aeb9bb",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
         "triangles": 320,
         "sizeM": [
@@ -4397,12 +5420,19 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a18a50",
+          "name": "powderCoat",
+          "color": "#d6a72d",
           "parts": [
             "chassis",
+            "upper-landing"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#89989c",
+          "parts": [
             "base-platform",
-            "upper-landing",
             "step-01",
             "step-02",
             "step-03",
@@ -4411,13 +5441,20 @@
             "step-06",
             "step-07",
             "left-handrail",
-            "right-handrail",
+            "right-handrail"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#292f32",
+          "parts": [
             "wheel-1-left",
             "wheel-1-right",
             "wheel-2-left",
             "wheel-2-right"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -4425,7 +5462,7 @@
       "id": "passenger-jet-bridge",
       "kit": "airfield",
       "title": "Passenger jet bridge",
-      "description": "Telescoping passenger bridge with a terminal connector, support column and aircraft docking head.",
+      "description": "Telescoping passenger bridge with a terminal connector, support column and aircraft docking head. Material controls: powder-coated steel, galvanized steel, tyre rubber. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -4446,7 +5483,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/passenger-jet-bridge.kcad.ts",
       "preview": "/assets/airfield-passenger-jet-bridge.png",
-      "sourceSha256": "0536d9311d25668d565757517d0ba64d44b0aa6a8bf4b7a7f2042b260db55d25",
+      "sourceSha256": "914bcf8ccfb6566ea0a816e3b71e64eee80762121b61bce86633f1d3ba61b355",
       "triangleBudget": 1800,
       "params": [
         {
@@ -4459,13 +5496,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#8d9695",
-          "label": "Asset color"
+          "default": "#d6a72d",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#89989c",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292f32",
+          "label": "Tyre rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "powderCoat": "#596765",
+          "galvanizedSteel": "#536267",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "powderCoat": "#d6a72d",
+          "galvanizedSteel": "#aeb9bb",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
         "triangles": 160,
         "sizeM": [
@@ -4478,19 +5538,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8d9695",
+          "name": "galvanizedSteel",
+          "color": "#89989c",
           "parts": [
             "terminal-base",
+            "support-column"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#d6a72d",
+          "parts": [
             "terminal-connector",
             "telescoping-section",
-            "docking-head",
-            "support-column",
+            "docking-head"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "rubber",
+          "color": "#292f32",
+          "parts": [
             "support-wheel-base",
             "support-wheel-left",
             "support-wheel-right"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -4498,7 +5572,7 @@
       "id": "precision-approach-indicator",
       "kit": "airfield",
       "title": "Precision approach indicator",
-      "description": "Four-unit visual approach indicator bar on a low ground stand.",
+      "description": "Four-unit visual approach indicator bar on a low ground stand. Material controls: galvanized steel, optical glass, housing paint. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -4519,7 +5593,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/precision-approach-indicator.kcad.ts",
       "preview": "/assets/airfield-precision-approach-indicator.png",
-      "sourceSha256": "3bc86527e90bdce5902363f64976e0176b54add333b3ada6886657165c6b41b7",
+      "sourceSha256": "4c3cd01ee0f804db0306f0b262d2c0f9cd5752a2887a044047b61dc9c674dbee",
       "triangleBudget": 1800,
       "params": [
         {
@@ -4532,13 +5606,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#a89051",
-          "label": "Asset color"
+          "default": "#818f93",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "lensGlass",
+          "type": "color",
+          "default": "#e8e2ce",
+          "label": "Optical glass"
+        },
+        {
+          "name": "housingPaint",
+          "type": "color",
+          "default": "#53666a",
+          "label": "Housing paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#536267",
+          "lensGlass": "#9b8242",
+          "housingPaint": "#596765"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#aeb9bb",
+          "lensGlass": "#e8e2ce",
+          "housingPaint": "#f0b52f"
+        }
+      },
       "stats": {
         "triangles": 108,
         "sizeM": [
@@ -4551,20 +5648,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a89051",
+          "name": "housingPaint",
+          "color": "#53666a",
           "parts": [
-            "base-rail",
+            "base-rail"
+          ],
+          "param": "housingPaint"
+        },
+        {
+          "name": "lensGlass",
+          "color": "#e8e2ce",
+          "parts": [
             "lamp-1",
-            "lamp-bracket-1",
             "lamp-2",
-            "lamp-bracket-2",
             "lamp-3",
+            "lamp-4"
+          ],
+          "param": "lensGlass"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#818f93",
+          "parts": [
+            "lamp-bracket-1",
+            "lamp-bracket-2",
             "lamp-bracket-3",
-            "lamp-4",
             "lamp-bracket-4"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -4572,7 +5683,7 @@
       "id": "private-jet",
       "kit": "airfield",
       "title": "Private jet",
-      "description": "Long-range business jet with a narrow cabin, swept wings and two rear-mounted engines.",
+      "description": "Long-range business jet with a narrow cabin, swept wings and two rear-mounted engines. Material controls: airframe paint, canopy glass, bare aluminium, tyre rubber. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -4593,7 +5704,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/private-jet.kcad.ts",
       "preview": "/assets/airfield-private-jet.png",
-      "sourceSha256": "12451c47dc1d06a4b298ab5a614e30f15a7ef7fe5b0efc69dd2d5ef12f82812a",
+      "sourceSha256": "28349fab5e132ce825cb86f2f1717b3f7820e85eb9d76401c8f956614f0d1e53",
       "triangleBudget": 1800,
       "params": [
         {
@@ -4606,13 +5717,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "airframePaint",
           "type": "color",
-          "default": "#a7a9a2",
-          "label": "Asset color"
+          "default": "#ebe9e0",
+          "label": "Airframe paint"
+        },
+        {
+          "name": "canopyGlass",
+          "type": "color",
+          "default": "#76b6c0",
+          "label": "Canopy glass"
+        },
+        {
+          "name": "bareMetal",
+          "type": "color",
+          "default": "#aab5b8",
+          "label": "Bare aluminium"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292f32",
+          "label": "Tyre rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "airframePaint": "#596765",
+          "canopyGlass": "#315c69",
+          "bareMetal": "#536267",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "airframePaint": "#f0b52f",
+          "canopyGlass": "#82c8d0",
+          "bareMetal": "#aeb9bb",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
         "triangles": 340,
         "sizeM": [
@@ -4625,24 +5767,45 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a7a9a2",
+          "name": "airframePaint",
+          "color": "#ebe9e0",
           "parts": [
             "fuselage",
-            "cockpit-canopy",
             "main-wing",
             "tailplane",
-            "vertical-tail",
+            "vertical-tail"
+          ],
+          "param": "airframePaint"
+        },
+        {
+          "name": "canopyGlass",
+          "color": "#76b6c0",
+          "parts": [
+            "cockpit-canopy"
+          ],
+          "param": "canopyGlass"
+        },
+        {
+          "name": "bareMetal",
+          "color": "#aab5b8",
+          "parts": [
             "engine-1",
             "engine-2",
             "nose-gear-strut",
-            "nose-wheel",
             "left-main-gear-strut",
+            "right-main-gear-strut"
+          ],
+          "param": "bareMetal"
+        },
+        {
+          "name": "rubber",
+          "color": "#292f32",
+          "parts": [
+            "nose-wheel",
             "left-main-wheel",
-            "right-main-gear-strut",
             "right-main-wheel"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -4650,7 +5813,7 @@
       "id": "pushback-tug",
       "kit": "airfield",
       "title": "Pushback tug",
-      "description": "Low-profile aircraft pushback tug with a broad wheelbase, raised cab and nose-wheel cradle.",
+      "description": "Low-profile aircraft pushback tug with a broad wheelbase, raised cab and nose-wheel cradle. Material controls: vehicle paint, windshield glass, stainless steel, tyre and belt rubber. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -4671,7 +5834,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/pushback-tug.kcad.ts",
       "preview": "/assets/airfield-pushback-tug.png",
-      "sourceSha256": "726d6d48872da8e09917373e920cb59405556d20d52e45d7230de0fb54601264",
+      "sourceSha256": "1fadc34277eb164a24e1c32923b35cc17b8cbacce3c6ce87935a2a19be49fa61",
       "triangleBudget": 1800,
       "params": [
         {
@@ -4684,15 +5847,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "vehiclePaint",
           "type": "color",
-          "default": "#c27b44",
-          "label": "Asset color"
+          "default": "#d9ae27",
+          "label": "Vehicle paint"
+        },
+        {
+          "name": "windshieldGlass",
+          "type": "color",
+          "default": "#72b1bd",
+          "label": "Windshield glass"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#a9b4b6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#282e31",
+          "label": "Tyre and belt rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "vehiclePaint": "#596765",
+          "windshieldGlass": "#315c69",
+          "stainlessSteel": "#536267",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "vehiclePaint": "#f0b52f",
+          "windshieldGlass": "#82c8d0",
+          "stainlessSteel": "#aeb9bb",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
-        "triangles": 236,
+        "triangles": 272,
         "sizeM": [
           0.5784,
           0.1798,
@@ -4703,20 +5897,44 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#c27b44",
+          "name": "stainlessSteel",
+          "color": "#a9b4b6",
           "parts": [
             "chassis",
+            "tow-bar"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "vehiclePaint",
+          "color": "#d9ae27",
+          "parts": [
             "operator-cab",
-            "rear-body",
-            "tow-bar",
+            "rear-body"
+          ],
+          "param": "vehiclePaint"
+        },
+        {
+          "name": "windshieldGlass",
+          "color": "#72b1bd",
+          "parts": [
+            "cab-windscreen",
+            "cab-side-window-left",
+            "cab-side-window-right"
+          ],
+          "param": "windshieldGlass"
+        },
+        {
+          "name": "rubber",
+          "color": "#282e31",
+          "parts": [
             "nose-wheel-cradle",
             "wheel-1-left",
             "wheel-1-right",
             "wheel-2-left",
             "wheel-2-right"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -4724,7 +5942,7 @@
       "id": "regional-jet",
       "kit": "airfield",
       "title": "Regional jet",
-      "description": "Small passenger jet with swept wings, two under-wing engines and a three-wheel landing gear.",
+      "description": "Small passenger jet with swept wings, two under-wing engines and a three-wheel landing gear. Material controls: airframe paint, canopy glass, bare aluminium, tyre rubber. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -4745,7 +5963,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/regional-jet.kcad.ts",
       "preview": "/assets/airfield-regional-jet.png",
-      "sourceSha256": "a58ba28c238c4d8f4f848fb058fc654f2a173a3b4700882cf8a10778a3da207f",
+      "sourceSha256": "fec54fa33000bd7bc582aaa11428865d472f607bbd1143875b8ba82fcc97e4be",
       "triangleBudget": 1800,
       "params": [
         {
@@ -4758,13 +5976,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "airframePaint",
           "type": "color",
-          "default": "#7195ad",
-          "label": "Asset color"
+          "default": "#e9e8df",
+          "label": "Airframe paint"
+        },
+        {
+          "name": "canopyGlass",
+          "type": "color",
+          "default": "#76b6c0",
+          "label": "Canopy glass"
+        },
+        {
+          "name": "bareMetal",
+          "type": "color",
+          "default": "#aab5b8",
+          "label": "Bare aluminium"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292f32",
+          "label": "Tyre rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "airframePaint": "#596765",
+          "canopyGlass": "#315c69",
+          "bareMetal": "#536267",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "airframePaint": "#f0b52f",
+          "canopyGlass": "#82c8d0",
+          "bareMetal": "#aeb9bb",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
         "triangles": 340,
         "sizeM": [
@@ -4777,24 +6026,45 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7195ad",
+          "name": "airframePaint",
+          "color": "#e9e8df",
           "parts": [
             "fuselage",
-            "cockpit-canopy",
             "main-wing",
             "tailplane",
-            "vertical-tail",
+            "vertical-tail"
+          ],
+          "param": "airframePaint"
+        },
+        {
+          "name": "canopyGlass",
+          "color": "#76b6c0",
+          "parts": [
+            "cockpit-canopy"
+          ],
+          "param": "canopyGlass"
+        },
+        {
+          "name": "bareMetal",
+          "color": "#aab5b8",
+          "parts": [
             "engine-1",
             "engine-2",
             "nose-gear-strut",
-            "nose-wheel",
             "left-main-gear-strut",
+            "right-main-gear-strut"
+          ],
+          "param": "bareMetal"
+        },
+        {
+          "name": "rubber",
+          "color": "#292f32",
+          "parts": [
+            "nose-wheel",
             "left-main-wheel",
-            "right-main-gear-strut",
             "right-main-wheel"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -4802,7 +6072,7 @@
       "id": "rescue-helicopter",
       "kit": "airfield",
       "title": "Rescue helicopter",
-      "description": "Rescue helicopter with a wide cabin, tail rotor, landing skids and side-mounted hoist arm.",
+      "description": "Rescue helicopter with a wide cabin, tail rotor, landing skids and side-mounted hoist arm. Material controls: airframe paint, cockpit glass, rotor and hardware metal. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -4823,7 +6093,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/rescue-helicopter.kcad.ts",
       "preview": "/assets/airfield-rescue-helicopter.png",
-      "sourceSha256": "b825a7f191e9eb322aaf0114729d43cfbcb07380add0c26ed0648f8bf883de83",
+      "sourceSha256": "d9bd1ce15677b455f6bf14be1875935b516d55e14dd23b6a8f89d8f534aa449a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -4836,13 +6106,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "airframePaint",
           "type": "color",
-          "default": "#c57945",
-          "label": "Asset color"
+          "default": "#d9b02d",
+          "label": "Airframe paint"
+        },
+        {
+          "name": "canopyGlass",
+          "type": "color",
+          "default": "#78b9c3",
+          "label": "Cockpit glass"
+        },
+        {
+          "name": "bareMetal",
+          "type": "color",
+          "default": "#9ca9ad",
+          "label": "Rotor and hardware metal"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "airframePaint": "#596765",
+          "canopyGlass": "#315c69",
+          "bareMetal": "#536267"
+        },
+        "highVisibility": {
+          "airframePaint": "#f0b52f",
+          "canopyGlass": "#82c8d0",
+          "bareMetal": "#aeb9bb"
+        }
+      },
       "stats": {
         "triangles": 404,
         "sizeM": [
@@ -4855,14 +6148,28 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#c57945",
+          "name": "airframePaint",
+          "color": "#d9b02d",
           "parts": [
             "cabin",
-            "cockpit",
             "tail-boom",
             "tail-fin",
-            "tail-plane",
+            "tail-plane"
+          ],
+          "param": "airframePaint"
+        },
+        {
+          "name": "canopyGlass",
+          "color": "#78b9c3",
+          "parts": [
+            "cockpit"
+          ],
+          "param": "canopyGlass"
+        },
+        {
+          "name": "bareMetal",
+          "color": "#9ca9ad",
+          "parts": [
             "rotor-mast",
             "main-rotor-blade-a",
             "main-rotor-blade-b",
@@ -4879,7 +6186,7 @@
             "hoist-cable",
             "hoist-hook"
           ],
-          "param": "color"
+          "param": "bareMetal"
         }
       ]
     },
@@ -4887,7 +6194,7 @@
       "id": "runway-edge-light",
       "kit": "airfield",
       "title": "Runway edge light",
-      "description": "Low runway-edge fixture with a broad ground plate, short stem and raised light housing.",
+      "description": "Low runway-edge fixture with a broad ground plate, short stem and raised light housing. Material controls: cast aluminium, optical glass, concrete base. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -4908,7 +6215,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/runway-edge-light.kcad.ts",
       "preview": "/assets/airfield-runway-edge-light.png",
-      "sourceSha256": "c7a59fde13a2f7d257a9191f50f5a0bc4b7f544d4610ccea373ceeff6d79d75a",
+      "sourceSha256": "4835df33f413e48cf56fcd62f47e7865c17b6fbb8cb8016efba76ef25de58253",
       "triangleBudget": 1800,
       "params": [
         {
@@ -4921,13 +6228,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "castAluminium",
           "type": "color",
-          "default": "#b4a05e",
-          "label": "Asset color"
+          "default": "#98a5a8",
+          "label": "Cast aluminium"
+        },
+        {
+          "name": "lensGlass",
+          "type": "color",
+          "default": "#e8c76c",
+          "label": "Optical glass"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#858780",
+          "label": "Concrete base"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "castAluminium": "#536267",
+          "lensGlass": "#9b8242",
+          "concrete": "#555751"
+        },
+        "highVisibility": {
+          "castAluminium": "#aeb9bb",
+          "lensGlass": "#e8c76c",
+          "concrete": "#999990"
+        }
+      },
       "stats": {
         "triangles": 94,
         "sizeM": [
@@ -4940,14 +6270,28 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b4a05e",
+          "name": "concrete",
+          "color": "#858780",
           "parts": [
-            "ground-plate",
-            "light-stem",
+            "ground-plate"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "castAluminium",
+          "color": "#98a5a8",
+          "parts": [
+            "light-stem"
+          ],
+          "param": "castAluminium"
+        },
+        {
+          "name": "lensGlass",
+          "color": "#e8c76c",
+          "parts": [
             "lamp-housing"
           ],
-          "param": "color"
+          "param": "lensGlass"
         }
       ]
     },
@@ -4955,7 +6299,7 @@
       "id": "runway-sweeper",
       "kit": "airfield",
       "title": "Runway sweeper",
-      "description": "Apron sweeper vehicle with a front rotary brush, operator cab and rear equipment housing.",
+      "description": "Apron sweeper vehicle with a front rotary brush, operator cab and rear equipment housing. Material controls: vehicle paint, windshield glass, stainless steel, tyre and belt rubber. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -4976,7 +6320,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/runway-sweeper.kcad.ts",
       "preview": "/assets/airfield-runway-sweeper.png",
-      "sourceSha256": "968053386cf4d0b8428af97a420a526719dc3d98df5b04b57442ddbb6b49ace3",
+      "sourceSha256": "6fba0e395a4c8941a5de9e27bdcf985d759dbea4ec0af98517f2c224b30b0b80",
       "triangleBudget": 1800,
       "params": [
         {
@@ -4989,15 +6333,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "vehiclePaint",
           "type": "color",
-          "default": "#9d8750",
-          "label": "Asset color"
+          "default": "#c9a52b",
+          "label": "Vehicle paint"
+        },
+        {
+          "name": "windshieldGlass",
+          "type": "color",
+          "default": "#72b1bd",
+          "label": "Windshield glass"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#a9b4b6",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#282e31",
+          "label": "Tyre and belt rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "vehiclePaint": "#596765",
+          "windshieldGlass": "#315c69",
+          "stainlessSteel": "#536267",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "vehiclePaint": "#f0b52f",
+          "windshieldGlass": "#82c8d0",
+          "stainlessSteel": "#aeb9bb",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
-        "triangles": 268,
+        "triangles": 304,
         "sizeM": [
           0.4974,
           0.238,
@@ -5008,12 +6383,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#9d8750",
+          "name": "stainlessSteel",
+          "color": "#a9b4b6",
           "parts": [
-            "chassis",
+            "chassis"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "vehiclePaint",
+          "color": "#c9a52b",
+          "parts": [
             "cab",
-            "equipment-body",
+            "equipment-body"
+          ],
+          "param": "vehiclePaint"
+        },
+        {
+          "name": "windshieldGlass",
+          "color": "#72b1bd",
+          "parts": [
+            "cab-windscreen",
+            "cab-side-window-left",
+            "cab-side-window-right"
+          ],
+          "param": "windshieldGlass"
+        },
+        {
+          "name": "rubber",
+          "color": "#282e31",
+          "parts": [
             "front-brush",
             "brush-arm",
             "wheel-1-left",
@@ -5021,7 +6420,7 @@
             "wheel-2-left",
             "wheel-2-right"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -5029,7 +6428,7 @@
       "id": "runway-threshold-light-array",
       "kit": "airfield",
       "title": "Runway threshold light array",
-      "description": "Portable low-profile array of evenly spaced runway threshold lamp housings.",
+      "description": "Portable runway threshold bar with a low aluminium base and alternating red and green optical lamps. Material controls: aluminium bar, red optical glass, green optical glass. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -5050,7 +6449,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/runway-threshold-light-array.kcad.ts",
       "preview": "/assets/airfield-runway-threshold-light-array.png",
-      "sourceSha256": "e24fa499d2cb3a4d13585cb5bb0624edad619708e3fddebae424c1bd66c31c97",
+      "sourceSha256": "72add3d5a72af7664e8c2825147a7adfc53ccd9af884dc5a330155a83afa1e23",
       "triangleBudget": 1800,
       "params": [
         {
@@ -5063,13 +6462,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminium",
           "type": "color",
-          "default": "#a4935b",
-          "label": "Asset color"
+          "default": "#8e9b9e",
+          "label": "Aluminium bar"
+        },
+        {
+          "name": "redLens",
+          "type": "color",
+          "default": "#c84036",
+          "label": "Red optical glass"
+        },
+        {
+          "name": "greenLens",
+          "type": "color",
+          "default": "#4c9b62",
+          "label": "Green optical glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "aluminium": "#536267",
+          "redLens": "#842f2b",
+          "greenLens": "#2d6840"
+        },
+        "highVisibility": {
+          "aluminium": "#aeb9bb",
+          "redLens": "#c84036",
+          "greenLens": "#4c9b62"
+        }
+      },
       "stats": {
         "triangles": 804,
         "sizeM": [
@@ -5082,30 +6504,44 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a4935b",
+          "name": "aluminium",
+          "color": "#8e9b9e",
           "parts": [
-            "base-bar",
+            "base-bar"
+          ],
+          "param": "aluminium"
+        },
+        {
+          "name": "redLens",
+          "color": "#c84036",
+          "parts": [
             "left-light-01",
-            "right-light-01",
             "left-light-02",
-            "right-light-02",
             "left-light-03",
-            "right-light-03",
             "left-light-04",
-            "right-light-04",
             "left-light-05",
-            "right-light-05",
             "left-light-06",
-            "right-light-06",
             "left-light-07",
-            "right-light-07",
             "left-light-08",
+            "left-light-09"
+          ],
+          "param": "redLens"
+        },
+        {
+          "name": "greenLens",
+          "color": "#4c9b62",
+          "parts": [
+            "right-light-01",
+            "right-light-02",
+            "right-light-03",
+            "right-light-04",
+            "right-light-05",
+            "right-light-06",
+            "right-light-07",
             "right-light-08",
-            "left-light-09",
             "right-light-09"
           ],
-          "param": "color"
+          "param": "greenLens"
         }
       ]
     },
@@ -5113,7 +6549,7 @@
       "id": "sailplane",
       "kit": "airfield",
       "title": "Sailplane",
-      "description": "Slender glider fuselage and long tapered wings with a compact tailplane and small wheel.",
+      "description": "Slender glider fuselage and long tapered wings with a compact tailplane and small wheel. Material controls: airframe paint, canopy glass, bare aluminium, tyre rubber. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -5134,7 +6570,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/sailplane.kcad.ts",
       "preview": "/assets/airfield-sailplane.png",
-      "sourceSha256": "f5f0c49cb4a33f8e0705270e3cc152b995fb658d75caae16c533a859aaa304f3",
+      "sourceSha256": "861e6f3152a2b7046322c622e9ec4973a77bce4c7bad3925be4f56299db4c4f7",
       "triangleBudget": 1800,
       "params": [
         {
@@ -5147,13 +6583,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "airframePaint",
           "type": "color",
-          "default": "#a0a6a1",
-          "label": "Asset color"
+          "default": "#e3e2da",
+          "label": "Airframe paint"
+        },
+        {
+          "name": "canopyGlass",
+          "type": "color",
+          "default": "#76b6c0",
+          "label": "Canopy glass"
+        },
+        {
+          "name": "bareMetal",
+          "type": "color",
+          "default": "#aab5b8",
+          "label": "Bare aluminium"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292f32",
+          "label": "Tyre rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "airframePaint": "#596765",
+          "canopyGlass": "#315c69",
+          "bareMetal": "#536267",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "airframePaint": "#f0b52f",
+          "canopyGlass": "#82c8d0",
+          "bareMetal": "#aeb9bb",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
         "triangles": 160,
         "sizeM": [
@@ -5166,18 +6633,39 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a0a6a1",
+          "name": "airframePaint",
+          "color": "#e3e2da",
           "parts": [
             "fuselage",
-            "cockpit-canopy",
             "main-wing",
             "tailplane",
-            "vertical-tail",
-            "glider-wheel-strut",
+            "vertical-tail"
+          ],
+          "param": "airframePaint"
+        },
+        {
+          "name": "canopyGlass",
+          "color": "#76b6c0",
+          "parts": [
+            "cockpit-canopy"
+          ],
+          "param": "canopyGlass"
+        },
+        {
+          "name": "bareMetal",
+          "color": "#aab5b8",
+          "parts": [
+            "glider-wheel-strut"
+          ],
+          "param": "bareMetal"
+        },
+        {
+          "name": "rubber",
+          "color": "#292f32",
+          "parts": [
             "glider-wheel"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -5185,7 +6673,7 @@
       "id": "single-engine-trainer",
       "kit": "airfield",
       "title": "Single-engine trainer",
-      "description": "Light training aircraft with a high wing, cockpit canopy, nose propeller and tricycle landing gear.",
+      "description": "Light training aircraft with a high wing, cockpit canopy, nose propeller and tricycle landing gear. Material controls: airframe paint, canopy glass, bare aluminium, tyre rubber. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -5206,7 +6694,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/single-engine-trainer.kcad.ts",
       "preview": "/assets/airfield-single-engine-trainer.png",
-      "sourceSha256": "091ad47e0b7ed9a2d18ab8c8dc7cc9489e319c59b706565e817540e1b9ea21fb",
+      "sourceSha256": "8e5cf2e9f8e433403536999a056312786c312126be9e0ac392b0ee2b3f5ee774",
       "triangleBudget": 1800,
       "params": [
         {
@@ -5219,13 +6707,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "airframePaint",
           "type": "color",
-          "default": "#d5b64d",
-          "label": "Asset color"
+          "default": "#d8ddd9",
+          "label": "Airframe paint"
+        },
+        {
+          "name": "canopyGlass",
+          "type": "color",
+          "default": "#76b6c0",
+          "label": "Canopy glass"
+        },
+        {
+          "name": "bareMetal",
+          "type": "color",
+          "default": "#aab5b8",
+          "label": "Bare aluminium"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292f32",
+          "label": "Tyre rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "airframePaint": "#596765",
+          "canopyGlass": "#315c69",
+          "bareMetal": "#536267",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "airframePaint": "#f0b52f",
+          "canopyGlass": "#82c8d0",
+          "bareMetal": "#aeb9bb",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
         "triangles": 450,
         "sizeM": [
@@ -5238,14 +6757,28 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d5b64d",
+          "name": "airframePaint",
+          "color": "#d8ddd9",
           "parts": [
             "fuselage",
-            "cockpit-canopy",
             "main-wing",
             "tailplane",
-            "vertical-tail",
+            "vertical-tail"
+          ],
+          "param": "airframePaint"
+        },
+        {
+          "name": "canopyGlass",
+          "color": "#76b6c0",
+          "parts": [
+            "cockpit-canopy"
+          ],
+          "param": "canopyGlass"
+        },
+        {
+          "name": "bareMetal",
+          "color": "#aab5b8",
+          "parts": [
             "left-wing-strut",
             "right-wing-strut",
             "engine-1",
@@ -5254,13 +6787,20 @@
             "engine-1-blade-2",
             "engine-1-blade-3",
             "nose-gear-strut",
-            "nose-wheel",
             "left-main-gear-strut",
+            "right-main-gear-strut"
+          ],
+          "param": "bareMetal"
+        },
+        {
+          "name": "rubber",
+          "color": "#292f32",
+          "parts": [
+            "nose-wheel",
             "left-main-wheel",
-            "right-main-gear-strut",
             "right-main-wheel"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -5268,7 +6808,7 @@
       "id": "taxiway-guidance-sign",
       "kit": "airfield",
       "title": "Taxiway guidance sign",
-      "description": "Freestanding airfield guidance sign with a wide panel, two posts and weighted feet.",
+      "description": "Freestanding airfield guidance sign with a wide panel, two posts and weighted feet. Material controls: reflective sign film, galvanized steel, concrete feet. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -5289,7 +6829,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/taxiway-guidance-sign.kcad.ts",
       "preview": "/assets/airfield-taxiway-guidance-sign.png",
-      "sourceSha256": "54c9f3f2a1d5993840cb1d550344fe3638afcbfd66e3261adb9ba3acec21ff97",
+      "sourceSha256": "a2035ff2eee5d9c117a926f8d660885cb25949b40cae79234195619a5d225d1e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -5302,13 +6842,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "reflectiveFilm",
           "type": "color",
-          "default": "#a88f4d",
-          "label": "Asset color"
+          "default": "#d7b83d",
+          "label": "Reflective sign film"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#8d999b",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#858780",
+          "label": "Concrete feet"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "reflectiveFilm": "#806b39",
+          "galvanizedSteel": "#536267",
+          "concrete": "#555751"
+        },
+        "highVisibility": {
+          "reflectiveFilm": "#f0c234",
+          "galvanizedSteel": "#aeb9bb",
+          "concrete": "#999990"
+        }
+      },
       "stats": {
         "triangles": 60,
         "sizeM": [
@@ -5321,16 +6884,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a88f4d",
+          "name": "reflectiveFilm",
+          "color": "#d7b83d",
           "parts": [
-            "panel",
+            "panel"
+          ],
+          "param": "reflectiveFilm"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#8d999b",
+          "parts": [
             "left-post",
-            "right-post",
+            "right-post"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "concrete",
+          "color": "#858780",
+          "parts": [
             "left-foot",
             "right-foot"
           ],
-          "param": "color"
+          "param": "concrete"
         }
       ]
     },
@@ -5338,7 +6915,7 @@
       "id": "terminal-gate-front",
       "kit": "airfield",
       "title": "Terminal gate front",
-      "description": "Terminal concourse facade with a wide gate opening, upper canopy and side service blocks.",
+      "description": "Terminal gate facade with two concrete piers, a glazed passenger opening, projecting canopy and apron slab. Material controls: roof metal, concrete, glazing. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -5359,7 +6936,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/terminal-gate-front.kcad.ts",
       "preview": "/assets/airfield-terminal-gate-front.png",
-      "sourceSha256": "05c352245b0d244268cb4d20e710d4ac89a2a714e07a40e1c4b451ce2d041ff1",
+      "sourceSha256": "f9fad1c5520874cf394737fd7a307b068f33062da8ed50aedf9ae8c9a096c83c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -5372,35 +6949,74 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "roofMetal",
           "type": "color",
-          "default": "#9b9d99",
-          "label": "Asset color"
+          "default": "#356d8f",
+          "label": "Roof metal"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#b6aa96",
+          "label": "Concrete"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#3db4c2",
+          "label": "Glazing"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "roofMetal": "#536267",
+          "concrete": "#555751",
+          "glass": "#315c69"
+        },
+        "highVisibility": {
+          "roofMetal": "#aeb9bb",
+          "concrete": "#999990",
+          "glass": "#82c8d0"
+        }
+      },
       "stats": {
-        "triangles": 60,
+        "triangles": 84,
         "sizeM": [
-          0.85,
+          0.68,
           0.351,
-          0.55
+          0.33
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#9b9d99",
+          "name": "concrete",
+          "color": "#b6aa96",
           "parts": [
             "left-pier",
             "right-pier",
             "gate-canopy",
-            "concourse-roof",
             "gate-apron"
           ],
-          "param": "color"
+          "param": "concrete"
+        },
+        {
+          "name": "roofMetal",
+          "color": "#356d8f",
+          "parts": [
+            "concourse-roof"
+          ],
+          "param": "roofMetal"
+        },
+        {
+          "name": "glass",
+          "color": "#3db4c2",
+          "parts": [
+            "gate-glazing-front",
+            "gate-glazing-back"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -5408,7 +7024,7 @@
       "id": "twin-engine-trainer",
       "kit": "airfield",
       "title": "Twin-engine trainer",
-      "description": "Compact twin-propeller trainer with tapered wings, twin nacelles and a low tailplane.",
+      "description": "Compact twin-propeller trainer with tapered wings, twin nacelles and a low tailplane. Material controls: airframe paint, canopy glass, bare aluminium, tyre rubber. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -5429,7 +7045,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/twin-engine-trainer.kcad.ts",
       "preview": "/assets/airfield-twin-engine-trainer.png",
-      "sourceSha256": "c65234e8c30016819a701836ba96f0db21d27616ca704fa0023bc53fbd123428",
+      "sourceSha256": "77d70dcca431d975912381d68f85cd9bbbc597764886501e82242d9ae7731aa7",
       "triangleBudget": 1800,
       "params": [
         {
@@ -5442,13 +7058,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "airframePaint",
           "type": "color",
-          "default": "#537b89",
-          "label": "Asset color"
+          "default": "#d8ddd9",
+          "label": "Airframe paint"
+        },
+        {
+          "name": "canopyGlass",
+          "type": "color",
+          "default": "#76b6c0",
+          "label": "Canopy glass"
+        },
+        {
+          "name": "bareMetal",
+          "type": "color",
+          "default": "#aab5b8",
+          "label": "Bare aluminium"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292f32",
+          "label": "Tyre rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "airframePaint": "#596765",
+          "canopyGlass": "#315c69",
+          "bareMetal": "#536267",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "airframePaint": "#f0b52f",
+          "canopyGlass": "#82c8d0",
+          "bareMetal": "#aeb9bb",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
         "triangles": 574,
         "sizeM": [
@@ -5461,14 +7108,28 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#537b89",
+          "name": "airframePaint",
+          "color": "#d8ddd9",
           "parts": [
             "fuselage",
-            "cockpit-canopy",
             "main-wing",
             "tailplane",
-            "vertical-tail",
+            "vertical-tail"
+          ],
+          "param": "airframePaint"
+        },
+        {
+          "name": "canopyGlass",
+          "color": "#76b6c0",
+          "parts": [
+            "cockpit-canopy"
+          ],
+          "param": "canopyGlass"
+        },
+        {
+          "name": "bareMetal",
+          "color": "#aab5b8",
+          "parts": [
             "engine-1",
             "engine-1-prop-hub",
             "engine-1-blade-1",
@@ -5480,13 +7141,20 @@
             "engine-2-blade-2",
             "engine-2-blade-3",
             "nose-gear-strut",
-            "nose-wheel",
             "left-main-gear-strut",
+            "right-main-gear-strut"
+          ],
+          "param": "bareMetal"
+        },
+        {
+          "name": "rubber",
+          "color": "#292f32",
+          "parts": [
+            "nose-wheel",
             "left-main-wheel",
-            "right-main-gear-strut",
             "right-main-wheel"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -5494,7 +7162,7 @@
       "id": "ultralight-trike",
       "kit": "airfield",
       "title": "Ultralight trike",
-      "description": "Minimal weight-shift aircraft with a triangular wing, open frame, seat and three small wheels.",
+      "description": "Minimal weight-shift aircraft with a triangular wing, open frame, seat and three small wheels. Material controls: airframe paint, canopy glass, bare aluminium, tyre rubber. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -5515,7 +7183,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/ultralight-trike.kcad.ts",
       "preview": "/assets/airfield-ultralight-trike.png",
-      "sourceSha256": "cd0cdf1a08ce5c71cde80f908af6e3c4073482bcbb471ffc1ca639bf8f3082f2",
+      "sourceSha256": "74139e45b5753e9b2557e864230d0331b057e324a452f756d60682df5475e65c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -5528,13 +7196,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "airframePaint",
           "type": "color",
-          "default": "#b68b43",
-          "label": "Asset color"
+          "default": "#e0b53b",
+          "label": "Airframe paint"
+        },
+        {
+          "name": "canopyGlass",
+          "type": "color",
+          "default": "#76b6c0",
+          "label": "Canopy glass"
+        },
+        {
+          "name": "bareMetal",
+          "type": "color",
+          "default": "#aab5b8",
+          "label": "Bare aluminium"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292f32",
+          "label": "Tyre rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "airframePaint": "#596765",
+          "canopyGlass": "#315c69",
+          "bareMetal": "#536267",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "airframePaint": "#f0b52f",
+          "canopyGlass": "#82c8d0",
+          "bareMetal": "#aeb9bb",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
         "triangles": 476,
         "sizeM": [
@@ -5547,14 +7246,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b68b43",
+          "name": "airframePaint",
+          "color": "#e0b53b",
           "parts": [
             "fuselage",
-            "cockpit-canopy",
             "main-wing",
             "tailplane",
             "vertical-tail",
+            "open-frame",
+            "seat"
+          ],
+          "param": "airframePaint"
+        },
+        {
+          "name": "canopyGlass",
+          "color": "#76b6c0",
+          "parts": [
+            "cockpit-canopy"
+          ],
+          "param": "canopyGlass"
+        },
+        {
+          "name": "bareMetal",
+          "color": "#aab5b8",
+          "parts": [
             "left-wing-strut",
             "right-wing-strut",
             "engine-1",
@@ -5562,16 +7277,21 @@
             "engine-1-blade-1",
             "engine-1-blade-2",
             "engine-1-blade-3",
-            "open-frame",
-            "seat",
             "nose-gear-strut",
-            "nose-wheel",
             "left-main-gear-strut",
+            "right-main-gear-strut"
+          ],
+          "param": "bareMetal"
+        },
+        {
+          "name": "rubber",
+          "color": "#292f32",
+          "parts": [
+            "nose-wheel",
             "left-main-wheel",
-            "right-main-gear-strut",
             "right-main-wheel"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -5579,7 +7299,7 @@
       "id": "utility-helicopter",
       "kit": "airfield",
       "title": "Utility helicopter",
-      "description": "Utility helicopter with a glazed cabin, tail boom, two-blade rotor and paired landing skids.",
+      "description": "Utility helicopter with a glazed cabin, tail boom, two-blade rotor and paired landing skids. Material controls: airframe paint, cockpit glass, rotor and hardware metal. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -5600,7 +7320,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/utility-helicopter.kcad.ts",
       "preview": "/assets/airfield-utility-helicopter.png",
-      "sourceSha256": "f6e17eaa181d044717bb33be14aebabb7c7e3227890e4d3c0af0285e70639881",
+      "sourceSha256": "fc283997336d33667de8f1fb0e97696d33198a8d3ae0cc74e77a6d5e982fa553",
       "triangleBudget": 1800,
       "params": [
         {
@@ -5613,13 +7333,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "airframePaint",
           "type": "color",
-          "default": "#778b75",
-          "label": "Asset color"
+          "default": "#e5e4da",
+          "label": "Airframe paint"
+        },
+        {
+          "name": "canopyGlass",
+          "type": "color",
+          "default": "#78b9c3",
+          "label": "Cockpit glass"
+        },
+        {
+          "name": "bareMetal",
+          "type": "color",
+          "default": "#9ca9ad",
+          "label": "Rotor and hardware metal"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "airframePaint": "#596765",
+          "canopyGlass": "#315c69",
+          "bareMetal": "#536267"
+        },
+        "highVisibility": {
+          "airframePaint": "#f0b52f",
+          "canopyGlass": "#82c8d0",
+          "bareMetal": "#aeb9bb"
+        }
+      },
       "stats": {
         "triangles": 310,
         "sizeM": [
@@ -5632,14 +7375,28 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#778b75",
+          "name": "airframePaint",
+          "color": "#e5e4da",
           "parts": [
             "cabin",
-            "cockpit",
             "tail-boom",
             "tail-fin",
-            "tail-plane",
+            "tail-plane"
+          ],
+          "param": "airframePaint"
+        },
+        {
+          "name": "canopyGlass",
+          "color": "#78b9c3",
+          "parts": [
+            "cockpit"
+          ],
+          "param": "canopyGlass"
+        },
+        {
+          "name": "bareMetal",
+          "color": "#9ca9ad",
+          "parts": [
             "rotor-mast",
             "main-rotor-blade-a",
             "main-rotor-blade-b",
@@ -5653,7 +7410,7 @@
             "right-skid-support-rear",
             "right-skid"
           ],
-          "param": "color"
+          "param": "bareMetal"
         }
       ]
     },
@@ -5661,7 +7418,7 @@
       "id": "widebody-airliner",
       "kit": "airfield",
       "title": "Widebody airliner",
-      "description": "Wide-body passenger aircraft with a broad fuselage, four engine nacelles and a wide main wing.",
+      "description": "Wide-body passenger aircraft with a broad fuselage, four engine nacelles and a wide main wing. Material controls: airframe paint, canopy glass, bare aluminium, tyre rubber. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -5682,7 +7439,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/widebody-airliner.kcad.ts",
       "preview": "/assets/airfield-widebody-airliner.png",
-      "sourceSha256": "309d4ff7d541321d3911954c45464685e30f53746bc8d293bd53b9a0f58715b5",
+      "sourceSha256": "3aa516bf068b1ca94fff420a034cf4fa83c24dcbc529e3081983bf411ff4301f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -5695,13 +7452,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "airframePaint",
           "type": "color",
-          "default": "#8399a7",
-          "label": "Asset color"
+          "default": "#e9e8df",
+          "label": "Airframe paint"
+        },
+        {
+          "name": "canopyGlass",
+          "type": "color",
+          "default": "#76b6c0",
+          "label": "Canopy glass"
+        },
+        {
+          "name": "bareMetal",
+          "type": "color",
+          "default": "#aab5b8",
+          "label": "Bare aluminium"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292f32",
+          "label": "Tyre rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "airframePaint": "#596765",
+          "canopyGlass": "#315c69",
+          "bareMetal": "#536267",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "airframePaint": "#f0b52f",
+          "canopyGlass": "#82c8d0",
+          "bareMetal": "#aeb9bb",
+          "rubber": "#262b2e"
+        }
+      },
       "stats": {
         "triangles": 402,
         "sizeM": [
@@ -5714,26 +7502,47 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8399a7",
+          "name": "airframePaint",
+          "color": "#e9e8df",
           "parts": [
             "fuselage",
-            "cockpit-canopy",
             "main-wing",
             "tailplane",
-            "vertical-tail",
+            "vertical-tail"
+          ],
+          "param": "airframePaint"
+        },
+        {
+          "name": "canopyGlass",
+          "color": "#76b6c0",
+          "parts": [
+            "cockpit-canopy"
+          ],
+          "param": "canopyGlass"
+        },
+        {
+          "name": "bareMetal",
+          "color": "#aab5b8",
+          "parts": [
             "engine-1",
             "engine-2",
             "engine-3",
             "engine-4",
             "nose-gear-strut",
-            "nose-wheel",
             "left-main-gear-strut",
+            "right-main-gear-strut"
+          ],
+          "param": "bareMetal"
+        },
+        {
+          "name": "rubber",
+          "color": "#292f32",
+          "parts": [
+            "nose-wheel",
             "left-main-wheel",
-            "right-main-gear-strut",
             "right-main-wheel"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -5741,7 +7550,7 @@
       "id": "windsock-mast",
       "kit": "airfield",
       "title": "Windsock mast",
-      "description": "Airfield windsock on a tall mast with a circular support frame and tapered fabric sleeve.",
+      "description": "Airfield windsock on a tall mast with a circular support frame and tapered fabric sleeve. Material controls: galvanized steel, windsock fabric, reflective fabric. Appearance presets: weathered and high visibility.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -5762,7 +7571,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/windsock-mast.kcad.ts",
       "preview": "/assets/airfield-windsock-mast.png",
-      "sourceSha256": "360e37fc7f0fad3ab1f9b2d426bfe1d233fc2df8e04aad19846f43e9c910ce04",
+      "sourceSha256": "15a736df421a87c2d4c7761ede2a38c347b52652bc049d055dea68cf1afaf1b7",
       "triangleBudget": 1800,
       "params": [
         {
@@ -5775,13 +7584,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#9c7c49",
-          "label": "Asset color"
+          "default": "#879497",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#e15b34",
+          "label": "Windsock fabric"
+        },
+        {
+          "name": "reflectiveFilm",
+          "type": "color",
+          "default": "#eee5cf",
+          "label": "Reflective fabric"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#536267",
+          "fabric": "#945b3c",
+          "reflectiveFilm": "#806b39"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#aeb9bb",
+          "fabric": "#ed6739",
+          "reflectiveFilm": "#f0c234"
+        }
+      },
       "stats": {
         "triangles": 260,
         "sizeM": [
@@ -5794,19 +7626,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#9c7c49",
+          "name": "galvanizedSteel",
+          "color": "#879497",
           "parts": [
             "mast",
             "support-ring",
-            "sock-tail",
-            "sock-mouth",
             "left-ring-support",
             "right-ring-support",
             "front-ring-support",
             "back-ring-support"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "fabric",
+          "color": "#e15b34",
+          "parts": [
+            "sock-tail"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "reflectiveFilm",
+          "color": "#eee5cf",
+          "parts": [
+            "sock-mouth"
+          ],
+          "param": "reflectiveFilm"
         }
       ]
     },
