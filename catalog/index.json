@@ -225749,7 +225749,7 @@
       "id": "activated-carbon-filter-vessel",
       "kit": "water-treatment",
       "title": "Activated carbon filter vessel",
-      "description": "Tall carbon filter vessel with top hatch, lower skirt, side ports and three support legs. Knobs: overall scale and asset color.",
+      "description": "Tall carbon filter vessel with top hatch, lower skirt, side ports and three support legs. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225768,7 +225768,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/activated-carbon-filter-vessel.kcad.ts",
       "preview": "/assets/water-treatment-activated-carbon-filter-vessel.png",
-      "sourceSha256": "4bf0a3750c645ba068bb942cc80a693395dfef0fb38660d5423ef78e140e0915",
+      "sourceSha256": "1920f40505e6fec03d6deced4ed3a402e5f89aec82c9f23e115eb4cde343f340",
       "triangleBudget": 2200,
       "params": [
         {
@@ -225781,15 +225781,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#5f7071",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "structuralSteel": "#6e6b63",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "structuralSteel": "#505b60",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 300,
+        "triangles": 540,
         "sizeM": [
           0.56,
           1.245,
@@ -225800,20 +225823,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#5f7071",
+          "name": "coatedSteel",
+          "color": "#3d8589",
           "parts": [
             "vessel",
             "top-dome",
             "bottom-dome",
-            "hatch",
+            "hatch"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "port-upper",
-            "port-lower",
+            "port-lower"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#68777b",
+          "parts": [
             "leg--170",
             "leg-0",
             "leg-170"
           ],
-          "param": "color"
+          "param": "structuralSteel"
         }
       ]
     },
@@ -225821,7 +225858,7 @@
       "id": "aeration-basin",
       "kit": "water-treatment",
       "title": "Aeration basin",
-      "description": "Rectangular aeration basin with divider wall, two pipe headers and service walkway. Knobs: overall scale and asset color.",
+      "description": "Rectangular aeration basin with divider wall, two pipe headers and service walkway. Parameters: overall scale and concrete, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225840,7 +225877,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/aeration-basin.kcad.ts",
       "preview": "/assets/water-treatment-aeration-basin.png",
-      "sourceSha256": "7e212d14693b53170b0768119d9cfea2a9d88e397167058d58bf2adeb7b00f26",
+      "sourceSha256": "3ed0e8cb8170dcc44f673b34b440f46b5b9a436c4c5e5727cfb0378a121e86fa",
       "triangleBudget": 2200,
       "params": [
         {
@@ -225853,15 +225890,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "concrete",
           "type": "color",
-          "default": "#72817b",
-          "label": "Asset color"
+          "default": "#b8b1a1",
+          "label": "Concrete"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "concrete": "#9b9587",
+          "structuralSteel": "#6e6b63",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "concrete": "#c6bdac",
+          "structuralSteel": "#505b60",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 148,
+        "triangles": 212,
         "sizeM": [
           1.5,
           1.2,
@@ -225872,18 +225932,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#72817b",
+          "name": "concrete",
+          "color": "#b8b1a1",
           "parts": [
             "basin-floor",
             "wall-front",
             "wall-back",
-            "divider",
-            "walkway",
+            "divider"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#68777b",
+          "parts": [
+            "walkway"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "header-left",
             "header-right"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -225891,7 +225965,7 @@
       "id": "aeration-header-bridge",
       "kit": "water-treatment",
       "title": "Aeration header bridge",
-      "description": "Raised process-air bridge with twin pipe rails, cross supports and access steps. Knobs: overall scale and asset color.",
+      "description": "Raised process-air bridge with twin pipe rails, cross supports and access steps. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225910,7 +225984,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/aeration-header-bridge.kcad.ts",
       "preview": "/assets/water-treatment-aeration-header-bridge.png",
-      "sourceSha256": "c1cf7ec690854e1061bd92f2b272a3c8b8d5458842e7ad3ff3e3cb30500105d0",
+      "sourceSha256": "96eeced18694764c8cfce1bb31954ed0c14fc03be0f6bad17244b82417c8e463",
       "triangleBudget": 2200,
       "params": [
         {
@@ -225923,15 +225997,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#606d6c",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "structuralSteel": "#6e6b63",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "structuralSteel": "#505b60",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 184,
+        "triangles": 248,
         "sizeM": [
           1.245,
           0.505,
@@ -225942,21 +226039,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#606d6c",
+          "name": "structuralSteel",
+          "color": "#68777b",
           "parts": [
             "walkway",
             "post--470",
             "post-470",
             "rail-front",
-            "rail-back",
+            "rail-back"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "header-a",
-            "header-b",
+            "header-b"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#3d8589",
+          "parts": [
             "step-0",
             "step-1",
             "step-2"
           ],
-          "param": "color"
+          "param": "coatedSteel"
         }
       ]
     },
@@ -225964,7 +226075,7 @@
       "id": "air-release-valve-assembly",
       "kit": "water-treatment",
       "title": "Air release valve assembly",
-      "description": "Small vertical air-release valve with base flange, canister, bonnet and side vent port. Knobs: overall scale and asset color.",
+      "description": "Small vertical air-release valve with base flange, canister, bonnet and side vent port. Parameters: overall scale and coated equipment steel, stainless steel, safety amber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225983,7 +226094,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/air-release-valve-assembly.kcad.ts",
       "preview": "/assets/water-treatment-air-release-valve-assembly.png",
-      "sourceSha256": "4216ceae12889683871b3af4fe23068dd55a1674f37574554cf620d12c127ae0",
+      "sourceSha256": "e840b14b236e68c7ac9b7ba4a421c1ffe6d4e4b5f311cc266872fa654d419c34",
       "triangleBudget": 2200,
       "params": [
         {
@@ -225996,15 +226107,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#777d72",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "warningAmber",
+          "type": "color",
+          "default": "#e8a936",
+          "label": "Safety amber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "stainlessSteel": "#9ca7a6",
+          "warningAmber": "#c28e34"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "stainlessSteel": "#e1ddd0",
+          "warningAmber": "#ffd138"
+        }
+      },
       "stats": {
-        "triangles": 232,
+        "triangles": 440,
         "sizeM": [
           0.32,
           0.413,
@@ -226015,17 +226149,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#777d72",
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
           "parts": [
             "flange",
+            "vent"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#3d8589",
+          "parts": [
             "body",
             "bonnet",
-            "vent",
-            "cap",
+            "cap"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "warningAmber",
+          "color": "#e8a936",
+          "parts": [
             "tag"
           ],
-          "param": "color"
+          "param": "warningAmber"
         }
       ]
     },
@@ -226033,7 +226181,7 @@
       "id": "backwash-pump-skid",
       "kit": "water-treatment",
       "title": "Filter backwash pump skid",
-      "description": "Twin backwash pump set on a shared base with suction headers and motor blocks. Knobs: overall scale and asset color.",
+      "description": "Twin backwash pump set on a shared base with suction headers and motor blocks. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226052,7 +226200,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/backwash-pump-skid.kcad.ts",
       "preview": "/assets/water-treatment-backwash-pump-skid.png",
-      "sourceSha256": "1b5ed9118ea9ced2a7ea679995f2669b9529cbcd899938a77897ad934569526f",
+      "sourceSha256": "7faa4cda0584eeeeee94c22ff2de91d33170c6af8efff59750a62c06d57cc1c3",
       "triangleBudget": 2200,
       "params": [
         {
@@ -226065,15 +226213,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#697773",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "structuralSteel": "#6e6b63",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "structuralSteel": "#505b60",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 236,
+        "triangles": 364,
         "sizeM": [
           1.25,
           1.105,
@@ -226084,20 +226255,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#697773",
+          "name": "structuralSteel",
+          "color": "#68777b",
           "parts": [
             "base",
-            "pump-a",
-            "pump-b",
-            "motor-a",
-            "motor-b",
-            "suction-header",
-            "discharge-header",
             "foot--420",
             "foot-420"
           ],
-          "param": "color"
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#3d8589",
+          "parts": [
+            "pump-a",
+            "pump-b",
+            "motor-a",
+            "motor-b"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "suction-header",
+            "discharge-header"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -226105,7 +226290,7 @@
       "id": "bar-screen-channel",
       "kit": "water-treatment",
       "title": "Bar screen channel",
-      "description": "Open intake channel with two retaining walls, screen bars and a raised debris rack. Knobs: overall scale and asset color.",
+      "description": "Open intake channel with two retaining walls, screen bars and a raised debris rack. Parameters: overall scale and concrete, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226124,7 +226309,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/bar-screen-channel.kcad.ts",
       "preview": "/assets/water-treatment-bar-screen-channel.png",
-      "sourceSha256": "c7a38b8e4407ec48759d352d0e8c3c63d06ccdc8e0c4bddab1e8de627c53ca75",
+      "sourceSha256": "fc87990e13e2ce7a1112f798d986cc7fdbe67e0ff0f3889815e81c2ab3365515",
       "triangleBudget": 2200,
       "params": [
         {
@@ -226137,13 +226322,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "concrete",
           "type": "color",
-          "default": "#687a7a",
-          "label": "Asset color"
+          "default": "#b8b1a1",
+          "label": "Concrete"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "concrete": "#9b9587",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "concrete": "#c6bdac",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
         "triangles": 132,
         "sizeM": [
@@ -226156,22 +226356,29 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#687a7a",
+          "name": "concrete",
+          "color": "#b8b1a1",
           "parts": [
             "channel-base",
             "wall-left",
             "wall-right",
+            "top-crossbar"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "screen-bar-0",
             "screen-bar-1",
             "screen-bar-2",
             "screen-bar-3",
             "screen-bar-4",
             "screen-bar-5",
-            "screen-bar-6",
-            "top-crossbar"
+            "screen-bar-6"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -226179,7 +226386,7 @@
       "id": "belt-filter-press",
       "kit": "water-treatment",
       "title": "Belt filter press",
-      "description": "Compact belt press with paired roller banks, side frame plates and collection pan. Knobs: overall scale and asset color.",
+      "description": "Compact belt press with paired roller banks, side frame plates and collection pan. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226198,7 +226405,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/belt-filter-press.kcad.ts",
       "preview": "/assets/water-treatment-belt-filter-press.png",
-      "sourceSha256": "c05a2b8c56b7d3b9e239b4578640004e42b78c752b75ea0715bc550b09567ede",
+      "sourceSha256": "722c2fcf9c0af7586c24724cae68592778fc9f7c658202e652245878dbb0b70f",
       "triangleBudget": 2200,
       "params": [
         {
@@ -226211,15 +226418,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#626d68",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "structuralSteel": "#6e6b63",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "structuralSteel": "#505b60",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 236,
+        "triangles": 364,
         "sizeM": [
           1.1,
           0.845,
@@ -226230,20 +226460,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#626d68",
+          "name": "structuralSteel",
+          "color": "#68777b",
           "parts": [
             "base",
+            "frame-left",
+            "frame-right",
+            "upper-beam"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "roller-0",
             "roller-1",
             "roller-2",
-            "roller-3",
-            "frame-left",
-            "frame-right",
-            "collection-pan",
-            "upper-beam"
+            "roller-3"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#3d8589",
+          "parts": [
+            "collection-pan"
+          ],
+          "param": "coatedSteel"
         }
       ]
     },
@@ -226251,7 +226495,7 @@
       "id": "check-valve-assembly",
       "kit": "water-treatment",
       "title": "Check valve assembly",
-      "description": "Compact check valve body with hinged cover, raised inspection bonnet and flange ends. Knobs: overall scale and asset color.",
+      "description": "Compact check valve body with hinged cover, raised inspection bonnet and flange ends. Parameters: overall scale and coated equipment steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226270,7 +226514,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/check-valve-assembly.kcad.ts",
       "preview": "/assets/water-treatment-check-valve-assembly.png",
-      "sourceSha256": "0fed90b640620f56a4af70291cb0bee61bd0680edf3bd9a3dbd091cd7d8b42c7",
+      "sourceSha256": "29fa3f7234b8185418a8503833c51071e042b29de845c20b6cc05aa85976579a",
       "triangleBudget": 2200,
       "params": [
         {
@@ -226283,15 +226527,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#717970",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 200,
+        "triangles": 376,
         "sizeM": [
           0.36,
           0.415,
@@ -226302,17 +226561,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#717970",
+          "name": "coatedSteel",
+          "color": "#3d8589",
           "parts": [
             "body",
-            "flange-left",
-            "flange-right",
             "cover",
             "hinge",
             "inspection-bolt"
           ],
-          "param": "color"
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "flange-left",
+            "flange-right"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -226320,7 +226586,7 @@
       "id": "chemical-storage-tank",
       "kit": "water-treatment",
       "title": "Chemical storage tank",
-      "description": "Vertical chemical storage tank with conical-look top, access hatch and containment curb. Knobs: overall scale and asset color.",
+      "description": "Vertical chemical storage tank with conical-look top, access hatch and containment curb. Parameters: overall scale and coated equipment steel, stainless steel, instrument glass; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226339,7 +226605,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/chemical-storage-tank.kcad.ts",
       "preview": "/assets/water-treatment-chemical-storage-tank.png",
-      "sourceSha256": "de58140887e978db9ed64b54ce235f575c9fad4e1b8243e1aa4236f702dddb35",
+      "sourceSha256": "75df261bc6a25dd49ceeb0ef29089af9dfe34c6c06a3ba47dee008f810f7c3b4",
       "triangleBudget": 2200,
       "params": [
         {
@@ -226352,15 +226618,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#7b8876",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "instrumentGlass",
+          "type": "color",
+          "default": "#5eb5c1",
+          "label": "Instrument glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "stainlessSteel": "#9ca7a6",
+          "instrumentGlass": "#548b91"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "stainlessSteel": "#e1ddd0",
+          "instrumentGlass": "#43b4c8"
+        }
+      },
       "stats": {
-        "triangles": 200,
+        "triangles": 376,
         "sizeM": [
           0.78,
           1.075,
@@ -226371,17 +226660,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7b8876",
+          "name": "coatedSteel",
+          "color": "#3d8589",
           "parts": [
             "containment",
             "tank",
             "roof",
-            "hatch",
-            "level-strip",
+            "hatch"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "instrumentGlass",
+          "color": "#5eb5c1",
+          "parts": [
+            "level-strip"
+          ],
+          "param": "instrumentGlass"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "drain"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -226389,7 +226692,7 @@
       "id": "chlorine-dosing-skid",
       "kit": "water-treatment",
       "title": "Chlorine dosing skid",
-      "description": "Chemical dosing skid with metering pump, small day tank, tube rack and spill tray. Knobs: overall scale and asset color.",
+      "description": "Chemical dosing skid with metering pump, small day tank, tube rack and spill tray. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226408,7 +226711,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/chlorine-dosing-skid.kcad.ts",
       "preview": "/assets/water-treatment-chlorine-dosing-skid.png",
-      "sourceSha256": "3167c8a21115ffc012860f5e613b7b73cb184a0ec22d392d9e9f10900e5b9f08",
+      "sourceSha256": "67118697138e902f59dfbd058d85a73bc9707019798a1a3497d8e129c62d4867",
       "triangleBudget": 2200,
       "params": [
         {
@@ -226421,15 +226724,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#a19b7d",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "structuralSteel": "#6e6b63",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "structuralSteel": "#505b60",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 140,
+        "triangles": 188,
         "sizeM": [
           0.88,
           0.51,
@@ -226440,20 +226766,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a19b7d",
+          "name": "structuralSteel",
+          "color": "#68777b",
           "parts": [
             "tray",
+            "top-rail"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#3d8589",
+          "parts": [
             "day-tank",
             "pump",
-            "control",
+            "control"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "tube-0",
             "tube-1",
             "tube-2",
-            "tube-3",
-            "top-rail"
+            "tube-3"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -226461,7 +226801,7 @@
       "id": "chlorine-residual-analyzer",
       "kit": "water-treatment",
       "title": "Residual chlorine analyzer",
-      "description": "Instrument stand with analyzer head, sample cabinet, status panel and inlet tubing. Knobs: overall scale and asset color.",
+      "description": "Instrument stand with analyzer head, sample cabinet, status panel and inlet tubing. Parameters: overall scale and coated equipment steel, structural steel, instrument glass; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226480,7 +226820,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/chlorine-residual-analyzer.kcad.ts",
       "preview": "/assets/water-treatment-chlorine-residual-analyzer.png",
-      "sourceSha256": "a3f3da047bba0a3d1c18de1dda4efa22a35cfa02e3ee5e652dfc34c19e66a58a",
+      "sourceSha256": "db04db8c3e71007a3408920c5d113c73c981f068cae71b742a31f79bce04e87e",
       "triangleBudget": 2200,
       "params": [
         {
@@ -226493,15 +226833,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#d1d1c6",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "instrumentGlass",
+          "type": "color",
+          "default": "#5eb5c1",
+          "label": "Instrument glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "structuralSteel": "#6e6b63",
+          "instrumentGlass": "#548b91"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "structuralSteel": "#505b60",
+          "instrumentGlass": "#43b4c8"
+        }
+      },
       "stats": {
-        "triangles": 104,
+        "triangles": 136,
         "sizeM": [
           0.5,
           0.875,
@@ -226512,17 +226875,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d1d1c6",
+          "name": "structuralSteel",
+          "color": "#68777b",
           "parts": [
             "base",
-            "cabinet",
-            "head",
-            "display",
-            "sample-line",
             "support-post"
           ],
-          "param": "color"
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#3d8589",
+          "parts": [
+            "cabinet",
+            "head",
+            "sample-line"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "instrumentGlass",
+          "color": "#5eb5c1",
+          "parts": [
+            "display"
+          ],
+          "param": "instrumentGlass"
         }
       ]
     },
@@ -226530,7 +226907,7 @@
       "id": "circular-clarifier",
       "kit": "water-treatment",
       "title": "Circular clarifier tank",
-      "description": "Circular clarifier with wide rim, central feed well, bridge beam and scraper drive housing. Knobs: overall scale and asset color.",
+      "description": "Circular clarifier with wide rim, central feed well, bridge beam and scraper drive housing. Parameters: overall scale and concrete, structural steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226549,7 +226926,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/circular-clarifier.kcad.ts",
       "preview": "/assets/water-treatment-circular-clarifier.png",
-      "sourceSha256": "22cd04bbbf08ca932a28f2d37291c23637b9e4257913e129b40bed87aa7f1e0a",
+      "sourceSha256": "975133aac14c7d209e645b745c79a32c7b8a1019a2f3fbfbc0c382aa2d5c11b7",
       "triangleBudget": 2200,
       "params": [
         {
@@ -226562,15 +226939,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "concrete",
           "type": "color",
-          "default": "#73807d",
-          "label": "Asset color"
+          "default": "#b8b1a1",
+          "label": "Concrete"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "concrete": "#9b9587",
+          "structuralSteel": "#6e6b63"
+        },
+        "highVisibility": {
+          "concrete": "#c6bdac",
+          "structuralSteel": "#505b60"
+        }
+      },
       "stats": {
-        "triangles": 168,
+        "triangles": 376,
         "sizeM": [
           1.12,
           0.69,
@@ -226581,17 +226973,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#73807d",
+          "name": "concrete",
+          "color": "#b8b1a1",
           "parts": [
             "tank",
             "rim",
             "feed-well",
+            "drive"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#68777b",
+          "parts": [
             "bridge",
-            "drive",
             "walkway"
           ],
-          "param": "color"
+          "param": "structuralSteel"
         }
       ]
     },
@@ -226599,7 +226998,7 @@
       "id": "coagulant-mixing-tank",
       "kit": "water-treatment",
       "title": "Coagulant mixing tank",
-      "description": "Cylindrical mixing tank with a compact gearbox, crossbar and twin impeller blades. Knobs: overall scale and asset color.",
+      "description": "Cylindrical mixing tank with a compact gearbox, crossbar and twin impeller blades. Parameters: overall scale and coated equipment steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226618,7 +227017,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/coagulant-mixing-tank.kcad.ts",
       "preview": "/assets/water-treatment-coagulant-mixing-tank.png",
-      "sourceSha256": "1d69d0e56ac52c5c90a2c36aa1bb6b4dcd18ec153b898b652020e634969c6219",
+      "sourceSha256": "e47c98c60fe596168cca183cd92d9b266a71e6de97bf3692ec1319439fcbb348",
       "triangleBudget": 2200,
       "params": [
         {
@@ -226631,15 +227030,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#7d8278",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 212,
+        "triangles": 372,
         "sizeM": [
           0.71,
           1.26,
@@ -226650,18 +227064,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7d8278",
+          "name": "coatedSteel",
+          "color": "#3d8589",
           "parts": [
             "tank",
             "rim",
+            "gearbox"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "shaft",
-            "gearbox",
             "impeller-left",
             "impeller-right",
             "inlet"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -226669,7 +227090,7 @@
       "id": "coarse-screen-panel",
       "kit": "water-treatment",
       "title": "Coarse intake screen panel",
-      "description": "Removable screen panel in a reinforced frame with evenly spaced vertical bars. Knobs: overall scale and asset color.",
+      "description": "Removable screen panel in a reinforced frame with evenly spaced vertical bars. Parameters: overall scale and structural steel, stainless steel, safety amber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226688,7 +227109,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/coarse-screen-panel.kcad.ts",
       "preview": "/assets/water-treatment-coarse-screen-panel.png",
-      "sourceSha256": "37b194f5ea5c7d8cc6e6737f8fe6c7750b76fdd9751632163e11bd1d0af2f452",
+      "sourceSha256": "ed379c462104274f93e38c410c78e3dc84c9d0f3ef1efa9eb4ff69a81fcf3cd3",
       "triangleBudget": 2200,
       "params": [
         {
@@ -226701,13 +227122,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "structuralSteel",
           "type": "color",
-          "default": "#626e70",
-          "label": "Asset color"
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "warningAmber",
+          "type": "color",
+          "default": "#e8a936",
+          "label": "Safety amber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "structuralSteel": "#6e6b63",
+          "stainlessSteel": "#9ca7a6",
+          "warningAmber": "#c28e34"
+        },
+        "highVisibility": {
+          "structuralSteel": "#505b60",
+          "stainlessSteel": "#e1ddd0",
+          "warningAmber": "#ffd138"
+        }
+      },
       "stats": {
         "triangles": 144,
         "sizeM": [
@@ -226720,23 +227164,37 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#626e70",
+          "name": "structuralSteel",
+          "color": "#68777b",
           "parts": [
             "frame-left",
             "frame-right",
             "frame-top",
-            "frame-bottom",
+            "frame-bottom"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "bar-0",
             "bar-1",
             "bar-2",
             "bar-3",
             "bar-4",
             "bar-5",
-            "bar-6",
+            "bar-6"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "warningAmber",
+          "color": "#e8a936",
+          "parts": [
             "grip"
           ],
-          "param": "color"
+          "param": "warningAmber"
         }
       ]
     },
@@ -226744,7 +227202,7 @@
       "id": "dewatering-screw-conveyor",
       "kit": "water-treatment",
       "title": "Sludge dewatering screw conveyor",
-      "description": "Inclined-look screw conveyor tube with feed hopper, discharge chute and support legs. Knobs: overall scale and asset color.",
+      "description": "Inclined-look screw conveyor tube with feed hopper, discharge chute and support legs. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226763,7 +227221,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/dewatering-screw-conveyor.kcad.ts",
       "preview": "/assets/water-treatment-dewatering-screw-conveyor.png",
-      "sourceSha256": "d504888f6ccfadf26b10fc96a696270644ac529391b8ee033aee3174432d5d34",
+      "sourceSha256": "7b6f25b0079aa60cb295417a8b739061190cb0d5f2ca281dca278d775069ef5a",
       "triangleBudget": 2200,
       "params": [
         {
@@ -226776,17 +227234,40 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#636e68",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "structuralSteel": "#6e6b63",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "structuralSteel": "#505b60",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 128,
+        "triangles": 160,
         "sizeM": [
-          1.035,
+          1.029861,
           0.735,
           0.43
         ],
@@ -226795,19 +227276,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#636e68",
+          "name": "structuralSteel",
+          "color": "#68777b",
           "parts": [
             "base",
-            "trough",
-            "hopper",
-            "discharge",
-            "drive",
             "leg--250",
             "leg-260",
             "guard"
           ],
-          "param": "color"
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#3d8589",
+          "parts": [
+            "trough",
+            "hopper",
+            "drive"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "discharge"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -226815,7 +227310,7 @@
       "id": "dual-pump-manifold-skid",
       "kit": "water-treatment",
       "title": "Dual pump manifold skid",
-      "description": "Two pump bodies joined by a common suction header, discharge header and service frame. Knobs: overall scale and asset color.",
+      "description": "Two pump bodies joined by a common suction header, discharge header and service frame. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226834,7 +227329,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/dual-pump-manifold-skid.kcad.ts",
       "preview": "/assets/water-treatment-dual-pump-manifold-skid.png",
-      "sourceSha256": "74b4b7c12f1d28892b321c38033664eefa6501f77d38efbf8f53edbd214e031c",
+      "sourceSha256": "eeae50c5f3b0ff5c4deaa2898c78ece64df2787823629ab6db0ed4b7be3b6581",
       "triangleBudget": 2200,
       "params": [
         {
@@ -226847,15 +227342,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#687773",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "structuralSteel": "#6e6b63",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "structuralSteel": "#505b60",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 248,
+        "triangles": 376,
         "sizeM": [
           1.2,
           1.035,
@@ -226866,21 +227384,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#687773",
+          "name": "structuralSteel",
+          "color": "#68777b",
           "parts": [
             "base",
-            "pump-0",
-            "pump-1",
-            "suction-header",
-            "discharge-header",
-            "branch-0",
-            "branch-1",
             "frame-post--500",
             "frame-post-500",
             "top-frame"
           ],
-          "param": "color"
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#3d8589",
+          "parts": [
+            "pump-0",
+            "pump-1",
+            "branch-0",
+            "branch-1"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "suction-header",
+            "discharge-header"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -226888,7 +227420,7 @@
       "id": "effluent-weir-channel",
       "kit": "water-treatment",
       "title": "Effluent weir channel",
-      "description": "Open effluent channel with end walls, notched weir plate and side collection trough. Knobs: overall scale and asset color.",
+      "description": "Open effluent channel with end walls, notched weir plate and side collection trough. Parameters: overall scale and concrete, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226907,7 +227439,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/effluent-weir-channel.kcad.ts",
       "preview": "/assets/water-treatment-effluent-weir-channel.png",
-      "sourceSha256": "53b4c1819bd3c323231200d3a917150e68b9f21e59318ff45f14f7a207bc0dff",
+      "sourceSha256": "4dd1c71db23868cbfabeab42c408f174453df0e483e169bf3056875269233752",
       "triangleBudget": 2200,
       "params": [
         {
@@ -226920,13 +227452,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "concrete",
           "type": "color",
-          "default": "#637b77",
-          "label": "Asset color"
+          "default": "#b8b1a1",
+          "label": "Concrete"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "concrete": "#9b9587",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "concrete": "#c6bdac",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
         "triangles": 168,
         "sizeM": [
@@ -226939,12 +227486,20 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#637b77",
+          "name": "concrete",
+          "color": "#b8b1a1",
           "parts": [
             "floor",
             "wall-front",
             "wall-back",
+            "collection-trough"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "weir-plate",
             "notch-0",
             "notch-1",
@@ -226954,10 +227509,9 @@
             "notch-5",
             "notch-6",
             "notch-7",
-            "notch-8",
-            "collection-trough"
+            "notch-8"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -226965,7 +227519,7 @@
       "id": "electromagnetic-flow-meter",
       "kit": "water-treatment",
       "title": "Electromagnetic flow meter",
-      "description": "Inline flow meter with a short pipe body, twin flanges and compact electronics head. Knobs: overall scale and asset color.",
+      "description": "Inline flow meter with a short pipe body, twin flanges and compact electronics head. Parameters: overall scale and coated equipment steel, stainless steel, instrument glass; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226984,7 +227538,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/electromagnetic-flow-meter.kcad.ts",
       "preview": "/assets/water-treatment-electromagnetic-flow-meter.png",
-      "sourceSha256": "e730380230d9c3dc95f7d67c3d10e7a018b32016a94bd4894f08f6620126584a",
+      "sourceSha256": "23f8261ac3d5f67595982406434427df5210c9aa156262d9d186a8ccadc297f9",
       "triangleBudget": 2200,
       "params": [
         {
@@ -226997,15 +227551,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#6e7772",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "instrumentGlass",
+          "type": "color",
+          "default": "#5eb5c1",
+          "label": "Instrument glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "stainlessSteel": "#9ca7a6",
+          "instrumentGlass": "#548b91"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "stainlessSteel": "#e1ddd0",
+          "instrumentGlass": "#43b4c8"
+        }
+      },
       "stats": {
-        "triangles": 156,
+        "triangles": 300,
         "sizeM": [
           0.37,
           0.89,
@@ -227016,16 +227593,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6e7772",
+          "name": "coatedSteel",
+          "color": "#3d8589",
           "parts": [
             "body",
+            "electronics-head"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "flange-low",
-            "flange-high",
-            "electronics-head",
+            "flange-high"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "instrumentGlass",
+          "color": "#5eb5c1",
+          "parts": [
             "display"
           ],
-          "param": "color"
+          "param": "instrumentGlass"
         }
       ]
     },
@@ -227033,7 +227624,7 @@
       "id": "equalization-basin",
       "kit": "water-treatment",
       "title": "Equalization basin",
-      "description": "Low open equalization basin with thick perimeter walls and a central mixer column. Knobs: overall scale and asset color.",
+      "description": "Low open equalization basin with thick perimeter walls and a central mixer column. Parameters: overall scale and concrete, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -227052,7 +227643,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/equalization-basin.kcad.ts",
       "preview": "/assets/water-treatment-equalization-basin.png",
-      "sourceSha256": "d7ef9ce0cffd3365fcd0da81a84c4011c8fc902e2074f8c01cd88805bedd5ab6",
+      "sourceSha256": "87ee2cf5410f7ac8acb1d75e0153ac4c4891ab01f379f7c2601ea00042321a09",
       "triangleBudget": 2200,
       "params": [
         {
@@ -227065,15 +227656,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "concrete",
           "type": "color",
-          "default": "#667a78",
-          "label": "Asset color"
+          "default": "#b8b1a1",
+          "label": "Concrete"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "concrete": "#9b9587",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "concrete": "#c6bdac",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 160,
+        "triangles": 224,
         "sizeM": [
           1.4,
           0.55,
@@ -227084,10 +227690,17 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#667a78",
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
           "parts": [
-            "floor",
+            "floor"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "concrete",
+          "color": "#b8b1a1",
+          "parts": [
             "wall-front",
             "wall-back",
             "wall-left",
@@ -227096,7 +227709,7 @@
             "mixer-arm",
             "mixer-hub"
           ],
-          "param": "color"
+          "param": "concrete"
         }
       ]
     },
@@ -227104,7 +227717,7 @@
       "id": "ferric-dosing-tank",
       "kit": "water-treatment",
       "title": "Ferric coagulant day tank",
-      "description": "Small chemical day tank with bund base, level column, vent and dosing outlet. Knobs: overall scale and asset color.",
+      "description": "Small chemical day tank with bund base, level column, vent and dosing outlet. Parameters: overall scale and coated equipment steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -227123,7 +227736,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/ferric-dosing-tank.kcad.ts",
       "preview": "/assets/water-treatment-ferric-dosing-tank.png",
-      "sourceSha256": "0b6321ee73805d4f8a24af6d1b84f3014dea1d2010e49dff08b96378c3958a69",
+      "sourceSha256": "e20214efa0bcd4a2ee168743e385f8908776f2023c13243af4f9d1d579383c82",
       "triangleBudget": 2200,
       "params": [
         {
@@ -227136,15 +227749,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#8a765f",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 200,
+        "triangles": 360,
         "sizeM": [
           0.65,
           0.845,
@@ -227155,17 +227783,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8a765f",
+          "name": "coatedSteel",
+          "color": "#3d8589",
           "parts": [
             "bund",
             "tank",
             "lid",
+            "level-column"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "vent",
-            "level-column",
             "outlet"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -227173,7 +227808,7 @@
       "id": "fine-bubble-diffuser-grid",
       "kit": "water-treatment",
       "title": "Fine bubble diffuser grid",
-      "description": "Rectangular diffuser grid with parallel air laterals, end headers and short support feet. Knobs: overall scale and asset color.",
+      "description": "Rectangular diffuser grid with parallel air laterals, end headers and short support feet. Parameters: overall scale and coated equipment steel, structural steel, stainless steel, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -227192,7 +227827,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/fine-bubble-diffuser-grid.kcad.ts",
       "preview": "/assets/water-treatment-fine-bubble-diffuser-grid.png",
-      "sourceSha256": "bcd6aad0739d995862a4474ad601a0d4c1318fe4c15d3558876c34089f3c5654",
+      "sourceSha256": "2be830ab44ce481fc0eedbd994ca382f911bdfe34d06f6dd005a7ae1225a2f07",
       "triangleBudget": 2200,
       "params": [
         {
@@ -227205,15 +227840,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#737d78",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#719582",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "structuralSteel": "#6e6b63",
+          "stainlessSteel": "#9ca7a6",
+          "polymer": "#718477"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "structuralSteel": "#505b60",
+          "stainlessSteel": "#e1ddd0",
+          "polymer": "#e4bd43"
+        }
+      },
       "stats": {
-        "triangles": 452,
+        "triangles": 676,
         "sizeM": [
           0.94,
           0.12,
@@ -227224,11 +227890,18 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#737d78",
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
           "parts": [
             "header-left",
-            "header-right",
+            "header-right"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#3d8589",
+          "parts": [
             "lateral-0",
             "lateral-1",
             "lateral-2",
@@ -227236,18 +227909,32 @@
             "lateral-4",
             "lateral-5",
             "lateral-6",
-            "lateral-7",
+            "lateral-7"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#719582",
+          "parts": [
             "diffuser-0",
             "diffuser-1",
             "diffuser-2",
             "diffuser-3",
             "diffuser-4",
             "diffuser-5",
-            "diffuser-6",
+            "diffuser-6"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#68777b",
+          "parts": [
             "foot--360",
             "foot-360"
           ],
-          "param": "color"
+          "param": "structuralSteel"
         }
       ]
     },
@@ -227255,7 +227942,7 @@
       "id": "flocculation-tank",
       "kit": "water-treatment",
       "title": "Flocculation tank",
-      "description": "Open flocculation tank with raised rim, central mixer shaft and three paddle arms. Knobs: overall scale and asset color.",
+      "description": "Open flocculation tank with raised rim, central mixer shaft and three paddle arms. Parameters: overall scale and coated equipment steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -227274,7 +227961,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/flocculation-tank.kcad.ts",
       "preview": "/assets/water-treatment-flocculation-tank.png",
-      "sourceSha256": "ad27343cea5490f537b2f7a7a55727fd544bf825823bd30a188a365cec987aa1",
+      "sourceSha256": "54bcc4bc9fb461ab8f846fbeec976fa204625aa46e3f8f6b1f5528473e7bfc5a",
       "triangleBudget": 2200,
       "params": [
         {
@@ -227287,15 +227974,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#6f817a",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 192,
+        "triangles": 320,
         "sizeM": [
           0.98,
           1.09,
@@ -227306,19 +228008,26 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6f817a",
+          "name": "coatedSteel",
+          "color": "#3d8589",
           "parts": [
             "tank",
             "rim",
-            "shaft",
             "mixer-arm-a",
             "mixer-arm-b",
             "paddle-a",
             "paddle-b",
             "motor"
           ],
-          "param": "color"
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "shaft"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -227326,7 +228035,7 @@
       "id": "flow-meter-spool",
       "kit": "water-treatment",
       "title": "Flow meter spool piece",
-      "description": "Straight metering spool with flange rings and a raised sensor boss. Knobs: overall scale and asset color.",
+      "description": "Straight metering spool with flange rings and a raised sensor boss. Parameters: overall scale and coated equipment steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -227345,7 +228054,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/flow-meter-spool.kcad.ts",
       "preview": "/assets/water-treatment-flow-meter-spool.png",
-      "sourceSha256": "d55e53127b01157554dfad9eab3915aa916886257ab9465c972fcda7b35e3bb7",
+      "sourceSha256": "a58e8929efef715c9bc719b9c048a168ae9edd90bf34c9a1d4adfc113ef1629a",
       "triangleBudget": 2200,
       "params": [
         {
@@ -227358,15 +228067,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#687370",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 188,
+        "triangles": 364,
         "sizeM": [
           0.34,
           0.78,
@@ -227377,16 +228101,23 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#687370",
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
           "parts": [
             "spool",
             "flange-low",
             "flange-high",
-            "sensor-boss",
+            "sensor-boss"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#3d8589",
+          "parts": [
             "transmitter"
           ],
-          "param": "color"
+          "param": "coatedSteel"
         }
       ]
     },
@@ -227394,7 +228125,7 @@
       "id": "grit-classifier",
       "kit": "water-treatment",
       "title": "Grit classifier unit",
-      "description": "Compact grit classifier with sloped trough, feed hopper, discharge chute and support legs. Knobs: overall scale and asset color.",
+      "description": "Compact grit classifier with sloped trough, feed hopper, discharge chute and support legs. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -227413,7 +228144,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/grit-classifier.kcad.ts",
       "preview": "/assets/water-treatment-grit-classifier.png",
-      "sourceSha256": "f99b9413e5d94a2fa09e8524b0807680f2dbf33211f52984a5d5f88063ad2d9e",
+      "sourceSha256": "a96dec6ee15e0a1a9c34d1fcb7fee1390caed58717817475eae5b14377499a5a",
       "triangleBudget": 2200,
       "params": [
         {
@@ -227426,15 +228157,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#777b75",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "structuralSteel": "#6e6b63",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "structuralSteel": "#505b60",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 104,
+        "triangles": 136,
         "sizeM": [
           0.95,
           0.67,
@@ -227445,17 +228199,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#777b75",
+          "name": "coatedSteel",
+          "color": "#3d8589",
           "parts": [
             "trough",
             "feed-hopper",
-            "discharge",
-            "leg--330",
-            "leg-330",
             "drive"
           ],
-          "param": "color"
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "discharge"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#68777b",
+          "parts": [
+            "leg--330",
+            "leg-330"
+          ],
+          "param": "structuralSteel"
         }
       ]
     },
@@ -227463,7 +228231,7 @@
       "id": "grit-removal-chamber",
       "kit": "water-treatment",
       "title": "Grit removal chamber",
-      "description": "Rectangular grit chamber with sloped-look hopper base, inlet lip and extraction pipe stand. Knobs: overall scale and asset color.",
+      "description": "Rectangular grit chamber with sloped-look hopper base, inlet lip and extraction pipe stand. Parameters: overall scale and concrete, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -227482,7 +228250,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/grit-removal-chamber.kcad.ts",
       "preview": "/assets/water-treatment-grit-removal-chamber.png",
-      "sourceSha256": "1fc732c5c2ab51ae7a1f075266aee9e1d09701ccebd4d00661c93706ff06624a",
+      "sourceSha256": "c9b8baa20c23debb3c2f17bbce5e1c757f19310e21edb69555d74ebf91543eb2",
       "triangleBudget": 2200,
       "params": [
         {
@@ -227495,15 +228263,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "concrete",
           "type": "color",
-          "default": "#737a78",
-          "label": "Asset color"
+          "default": "#b8b1a1",
+          "label": "Concrete"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "concrete": "#9b9587",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "concrete": "#c6bdac",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 116,
+        "triangles": 148,
         "sizeM": [
           1.04,
           0.42,
@@ -227514,18 +228297,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#737a78",
+          "name": "concrete",
+          "color": "#b8b1a1",
           "parts": [
             "basin-floor",
             "wall-left",
             "wall-right",
             "end-wall",
             "hopper",
-            "draw-off",
+            "draw-off"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "inlet-lip"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -227533,7 +228323,7 @@
       "id": "high-lift-pump-skid",
       "kit": "water-treatment",
       "title": "High lift pump skid",
-      "description": "Large pump skid with motor housing, volute body, discharge elbow and a broad foundation rail. Knobs: overall scale and asset color.",
+      "description": "Large pump skid with motor housing, volute body, discharge elbow and a broad foundation rail. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -227552,7 +228342,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/high-lift-pump-skid.kcad.ts",
       "preview": "/assets/water-treatment-high-lift-pump-skid.png",
-      "sourceSha256": "5d97e5e31fd75dd3af8df6c867eed0d372e4d07bfd13257a8283b6fa62040781",
+      "sourceSha256": "2a1c5fdc8159c01deb15a92e02cc15083de708c67f40db0b0aff1c7d7d7a7056",
       "triangleBudget": 2200,
       "params": [
         {
@@ -227565,17 +228355,40 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#64716e",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "structuralSteel": "#6e6b63",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "structuralSteel": "#505b60",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 180,
+        "triangles": 276,
         "sizeM": [
-          1.17,
+          1.16119,
           0.665,
           0.7
         ],
@@ -227584,18 +228397,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#64716e",
+          "name": "structuralSteel",
+          "color": "#68777b",
           "parts": [
             "base",
-            "motor",
-            "motor-cap",
-            "pump-body",
-            "discharge",
-            "suction",
             "coupling-guard"
           ],
-          "param": "color"
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#3d8589",
+          "parts": [
+            "motor",
+            "motor-cap",
+            "pump-body"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "discharge",
+            "suction"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -227603,7 +228430,7 @@
       "id": "horizontal-split-case-pump",
       "kit": "water-treatment",
       "title": "Horizontal split case pump",
-      "description": "Horizontal pump casing with paired suction-discharge ports, base rails and motor coupling. Knobs: overall scale and asset color.",
+      "description": "Horizontal pump casing with paired suction-discharge ports, base rails and motor coupling. Parameters: overall scale and coated equipment steel, structural steel, stainless steel, elastomer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -227622,7 +228449,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/horizontal-split-case-pump.kcad.ts",
       "preview": "/assets/water-treatment-horizontal-split-case-pump.png",
-      "sourceSha256": "238548fbe40113f450450dd90cf00cb983adfe104ad0054924954ad362b14b04",
+      "sourceSha256": "17c6fe07e38ee373b7335d0904654852aa9cb9f35936abe56e45543cfc632128",
       "triangleBudget": 2200,
       "params": [
         {
@@ -227635,15 +228462,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#65706d",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "elastomer",
+          "type": "color",
+          "default": "#343b3e",
+          "label": "Elastomer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "structuralSteel": "#6e6b63",
+          "stainlessSteel": "#9ca7a6",
+          "elastomer": "#3b3d3d"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "structuralSteel": "#505b60",
+          "stainlessSteel": "#e1ddd0",
+          "elastomer": "#282d30"
+        }
+      },
       "stats": {
-        "triangles": 236,
+        "triangles": 364,
         "sizeM": [
           1.05,
           0.395,
@@ -227654,20 +228512,41 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#65706d",
+          "name": "structuralSteel",
+          "color": "#68777b",
           "parts": [
             "base",
-            "pump-case",
-            "suction",
-            "discharge",
-            "motor",
-            "coupling",
             "foot--380",
             "foot-120",
             "foot-390"
           ],
-          "param": "color"
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#3d8589",
+          "parts": [
+            "pump-case",
+            "motor"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "suction",
+            "discharge"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "elastomer",
+          "color": "#343b3e",
+          "parts": [
+            "coupling"
+          ],
+          "param": "elastomer"
         }
       ]
     },
@@ -227675,7 +228554,7 @@
       "id": "intake-gate-hoist",
       "kit": "water-treatment",
       "title": "Intake gate hoist frame",
-      "description": "Compact lifting frame with paired uprights, crossbeam, drum and hanging gate chain. Knobs: overall scale and asset color.",
+      "description": "Compact lifting frame with paired uprights, crossbeam, drum and hanging gate chain. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -227694,7 +228573,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/intake-gate-hoist.kcad.ts",
       "preview": "/assets/water-treatment-intake-gate-hoist.png",
-      "sourceSha256": "af7f8817c7a4f2663852b43b9856c6c13d1fdca1acbbe3b354d115cf62d89d3e",
+      "sourceSha256": "c805e79bd2eecba1be727c21d8d189516b1266d307b894c0e505a428974d4dca",
       "triangleBudget": 2200,
       "params": [
         {
@@ -227707,15 +228586,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#555f60",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "structuralSteel": "#6e6b63",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "structuralSteel": "#505b60",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 128,
+        "triangles": 160,
         "sizeM": [
           1.01,
           0.99,
@@ -227726,19 +228628,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#555f60",
+          "name": "structuralSteel",
+          "color": "#68777b",
           "parts": [
             "base-left",
             "base-right",
+            "beam"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#3d8589",
+          "parts": [
             "upright-left",
             "upright-right",
-            "beam",
-            "drum",
+            "drum"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "chain",
             "gate-plate"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -227746,7 +228662,7 @@
       "id": "knife-gate-valve-assembly",
       "kit": "water-treatment",
       "title": "Knife gate valve assembly",
-      "description": "Process valve with square gate body, rising stem, handwheel and paired pipe flanges. Knobs: overall scale and asset color.",
+      "description": "Process valve with square gate body, rising stem, handwheel and paired pipe flanges. Parameters: overall scale and coated equipment steel, structural steel, stainless steel, safety amber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -227765,7 +228681,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/knife-gate-valve-assembly.kcad.ts",
       "preview": "/assets/water-treatment-knife-gate-valve-assembly.png",
-      "sourceSha256": "f0cbd7ebd6fd2d43a1cc27590b13674fe2938213ae00935fe77d2f3eddf417c3",
+      "sourceSha256": "692cbf948bcfa69a459e18b8ed029f92902899cc9c4a3e79d6db45f0c5939d36",
       "triangleBudget": 2200,
       "params": [
         {
@@ -227778,15 +228694,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#6d7772",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "warningAmber",
+          "type": "color",
+          "default": "#e8a936",
+          "label": "Safety amber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "structuralSteel": "#6e6b63",
+          "stainlessSteel": "#9ca7a6",
+          "warningAmber": "#c28e34"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "structuralSteel": "#505b60",
+          "stainlessSteel": "#e1ddd0",
+          "warningAmber": "#ffd138"
+        }
+      },
       "stats": {
-        "triangles": 212,
+        "triangles": 356,
         "sizeM": [
           0.38,
           0.685,
@@ -227797,18 +228744,39 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6d7772",
+          "name": "coatedSteel",
+          "color": "#3d8589",
           "parts": [
             "gate-body",
-            "pipe-left",
-            "pipe-right",
             "bonnet",
-            "stem",
-            "handwheel",
+            "stem"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "pipe-left",
+            "pipe-right"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "warningAmber",
+          "color": "#e8a936",
+          "parts": [
+            "handwheel"
+          ],
+          "param": "warningAmber"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#68777b",
+          "parts": [
             "mount-foot"
           ],
-          "param": "color"
+          "param": "structuralSteel"
         }
       ]
     },
@@ -227816,7 +228784,7 @@
       "id": "lamella-clarifier",
       "kit": "water-treatment",
       "title": "Lamella plate clarifier",
-      "description": "Rectangular clarifier frame with a sloped-look plate pack, inlet compartment and collection trough. Knobs: overall scale and asset color.",
+      "description": "Rectangular clarifier with inclined lamella plates supported by side rails, an inlet compartment, and a collection trough. Parameters: overall scale and concrete, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -227835,7 +228803,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/lamella-clarifier.kcad.ts",
       "preview": "/assets/water-treatment-lamella-clarifier.png",
-      "sourceSha256": "dda4a4f22feaf48f93bb578285d1ce75bfa0e85b656194b34bcbb9a38a1aaa3b",
+      "sourceSha256": "96b74661ca9590eff670aa921fc560f2a47ae58234c1df0b9171455d10621619",
       "triangleBudget": 2200,
       "params": [
         {
@@ -227848,18 +228816,41 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "concrete",
           "type": "color",
-          "default": "#65736f",
-          "label": "Asset color"
+          "default": "#b8b1a1",
+          "label": "Concrete"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "concrete": "#9b9587",
+          "structuralSteel": "#6e6b63",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "concrete": "#c6bdac",
+          "structuralSteel": "#505b60",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 144,
+        "triangles": 156,
         "sizeM": [
           1.1,
-          0.5,
+          0.498208,
           0.72
         ],
         "minUpM": 0,
@@ -227867,23 +228858,38 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#65736f",
+          "name": "concrete",
+          "color": "#b8b1a1",
           "parts": [
             "tank-floor",
             "wall-left",
             "wall-right",
-            "plate-pack",
+            "launder"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#68777b",
+          "parts": [
+            "plate-pack-side-left",
+            "plate-pack-side-right"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "plate-0",
             "plate-1",
             "plate-2",
             "plate-3",
             "plate-4",
             "plate-5",
-            "inlet-box",
-            "launder"
+            "inlet-box"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -227891,7 +228897,7 @@
       "id": "lime-slurry-tank",
       "kit": "water-treatment",
       "title": "Lime slurry mix tank",
-      "description": "Open mix tank with top rim, agitator motor, central shaft and two mixing paddles. Knobs: overall scale and asset color.",
+      "description": "Open mix tank with top rim, agitator motor, central shaft and two mixing paddles. Parameters: overall scale and coated equipment steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -227910,7 +228916,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/lime-slurry-tank.kcad.ts",
       "preview": "/assets/water-treatment-lime-slurry-tank.png",
-      "sourceSha256": "e53b3e49c1718f0ae5e1460a01541fdf14e0a9dab9a5de18c15ec14025fd89aa",
+      "sourceSha256": "65793d22c89092e519a93d99ec323fb4e81e871cbf28d20b40c89abc9c5c69b1",
       "triangleBudget": 2200,
       "params": [
         {
@@ -227923,15 +228929,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#888478",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 180,
+        "triangles": 308,
         "sizeM": [
           0.66,
           1.135,
@@ -227942,18 +228963,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#888478",
+          "name": "coatedSteel",
+          "color": "#3d8589",
           "parts": [
             "tank",
             "rim",
-            "shaft",
             "motor",
             "paddle-a",
-            "paddle-b",
+            "paddle-b"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "shaft",
             "outlet"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -227961,7 +228989,7 @@
       "id": "membrane-filtration-rack",
       "kit": "water-treatment",
       "title": "Membrane filtration rack",
-      "description": "Skid-mounted membrane rack with four horizontal pressure tubes and end manifold rails. Knobs: overall scale and asset color.",
+      "description": "Skid-mounted membrane rack with four horizontal pressure tubes and end manifold rails. Parameters: overall scale and coated equipment steel, structural steel, polymer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -227980,7 +229008,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/membrane-filtration-rack.kcad.ts",
       "preview": "/assets/water-treatment-membrane-filtration-rack.png",
-      "sourceSha256": "9961d5e36c07c6d6f359b78036273084773bcbc4c83c2a3bf694399a7f57afb6",
+      "sourceSha256": "fb23ffa9733bb9e041af81f48b2a84c5ee76fef8d3e453884c22d641efa78e15",
       "triangleBudget": 2200,
       "params": [
         {
@@ -227993,15 +229021,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#6c7975",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#719582",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "structuralSteel": "#6e6b63",
+          "polymer": "#718477"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "structuralSteel": "#505b60",
+          "polymer": "#e4bd43"
+        }
+      },
       "stats": {
-        "triangles": 248,
+        "triangles": 376,
         "sizeM": [
           1.03,
           0.715,
@@ -228012,21 +229063,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6c7975",
+          "name": "structuralSteel",
+          "color": "#68777b",
           "parts": [
             "base-left",
             "base-right",
-            "membrane-0",
-            "membrane-1",
-            "membrane-2",
-            "membrane-3",
-            "manifold-left",
-            "manifold-right",
             "post--430",
             "post-430"
           ],
-          "param": "color"
+          "param": "structuralSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#719582",
+          "parts": [
+            "membrane-0",
+            "membrane-1",
+            "membrane-2",
+            "membrane-3"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#3d8589",
+          "parts": [
+            "manifold-left",
+            "manifold-right"
+          ],
+          "param": "coatedSteel"
         }
       ]
     },
@@ -228034,7 +229099,7 @@
       "id": "pressure-reducing-valve-assembly",
       "kit": "water-treatment",
       "title": "Pressure reducing valve assembly",
-      "description": "Valve body with wide flanges, bonnet, actuator column and manual handwheel. Knobs: overall scale and asset color.",
+      "description": "Valve body with wide flanges, bonnet, actuator column and manual handwheel. Parameters: overall scale and coated equipment steel, stainless steel, safety amber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -228053,7 +229118,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/pressure-reducing-valve-assembly.kcad.ts",
       "preview": "/assets/water-treatment-pressure-reducing-valve-assembly.png",
-      "sourceSha256": "af738d0cc648ad92cb8b082516a747e106f28cfcd14428858dbd7216d78138f8",
+      "sourceSha256": "e1ed6f460253f0d6590dc2e1e3fb2e3f94beacb08cbaf71afda506516d5b35d7",
       "triangleBudget": 2200,
       "params": [
         {
@@ -228066,15 +229131,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#73796f",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "warningAmber",
+          "type": "color",
+          "default": "#e8a936",
+          "label": "Safety amber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "stainlessSteel": "#9ca7a6",
+          "warningAmber": "#c28e34"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "stainlessSteel": "#e1ddd0",
+          "warningAmber": "#ffd138"
+        }
+      },
       "stats": {
-        "triangles": 276,
+        "triangles": 532,
         "sizeM": [
           0.38,
           0.735,
@@ -228085,18 +229173,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#73796f",
+          "name": "coatedSteel",
+          "color": "#3d8589",
           "parts": [
             "body",
-            "flange-left",
-            "flange-right",
             "bonnet",
             "actuator",
-            "stem",
+            "stem"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "flange-left",
+            "flange-right"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "warningAmber",
+          "color": "#e8a936",
+          "parts": [
             "handwheel"
           ],
-          "param": "color"
+          "param": "warningAmber"
         }
       ]
     },
@@ -228104,7 +229206,7 @@
       "id": "pressure-sand-filter-vessel",
       "kit": "water-treatment",
       "title": "Pressure sand filter vessel",
-      "description": "Vertical pressure vessel with domed-look end caps, inspection manway and side pipe nozzles. Knobs: overall scale and asset color.",
+      "description": "Vertical pressure vessel with domed-look end caps, inspection manway and side pipe nozzles. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -228123,7 +229225,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/pressure-sand-filter-vessel.kcad.ts",
       "preview": "/assets/water-treatment-pressure-sand-filter-vessel.png",
-      "sourceSha256": "9ccabaaf8e513c286ab50f79ae4c69d6d632d3d046fa1babf43904cef5d4c07f",
+      "sourceSha256": "30d77511ba086265b66322d74859e4855250edd9b858fc9e3e3cecfda21dea4c",
       "triangleBudget": 2200,
       "params": [
         {
@@ -228136,15 +229238,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#6d7975",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "structuralSteel": "#6e6b63",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "structuralSteel": "#505b60",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 256,
+        "triangles": 464,
         "sizeM": [
           0.62,
           1.1,
@@ -228155,19 +229280,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6d7975",
+          "name": "coatedSteel",
+          "color": "#3d8589",
           "parts": [
             "shell",
             "top-head",
             "bottom-head",
-            "manway",
+            "manway"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "inlet",
-            "outlet",
+            "outlet"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#68777b",
+          "parts": [
             "foot--190",
             "foot-190"
           ],
-          "param": "color"
+          "param": "structuralSteel"
         }
       ]
     },
@@ -228175,7 +229314,7 @@
       "id": "pressure-transmitter-stand",
       "kit": "water-treatment",
       "title": "Pressure transmitter stand",
-      "description": "Instrument stand with pressure manifold, paired transmitter blocks and a protective top rail. Knobs: overall scale and asset color.",
+      "description": "Instrument stand with pressure manifold, paired transmitter blocks and a protective top rail. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -228194,7 +229333,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/pressure-transmitter-stand.kcad.ts",
       "preview": "/assets/water-treatment-pressure-transmitter-stand.png",
-      "sourceSha256": "e5845006f6e4bf6dea45a77aed07d5e98dc99eded090cf9117e743db1e24d3be",
+      "sourceSha256": "9598765590beff2191d255dec9003be17ec73aa2397dff93b7648d50d5fb1cd4",
       "triangleBudget": 2200,
       "params": [
         {
@@ -228207,15 +229346,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#727a74",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "structuralSteel": "#6e6b63",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "structuralSteel": "#505b60",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 192,
+        "triangles": 288,
         "sizeM": [
           0.43,
           0.715,
@@ -228226,19 +229388,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#727a74",
+          "name": "structuralSteel",
+          "color": "#68777b",
           "parts": [
             "base",
-            "post",
+            "post"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#3d8589",
+          "parts": [
             "crossbar",
             "manifold",
             "transmitter-0",
-            "transmitter-1",
+            "transmitter-1"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "tap-0",
             "tap-1"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -228246,7 +229422,7 @@
       "id": "process-pipe-rack",
       "kit": "water-treatment",
       "title": "Treatment process pipe rack",
-      "description": "Low pipe rack with four parallel process lines, portal supports and end cross braces. Knobs: overall scale and asset color.",
+      "description": "Low pipe rack with four parallel process lines, portal supports and end cross braces. Parameters: overall scale and structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -228265,7 +229441,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/process-pipe-rack.kcad.ts",
       "preview": "/assets/water-treatment-process-pipe-rack.png",
-      "sourceSha256": "b2b367c364c018e4c405b2f038651c5c7b355192aeeb27b1407ac5bf9c26055e",
+      "sourceSha256": "b25b7518079a26f8f051db0827934f7061f08ab8541978d90f0fafc0526be261",
       "triangleBudget": 2200,
       "params": [
         {
@@ -228278,15 +229454,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "structuralSteel",
           "type": "color",
-          "default": "#616c69",
-          "label": "Asset color"
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "structuralSteel": "#6e6b63",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "structuralSteel": "#505b60",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 236,
+        "triangles": 364,
         "sizeM": [
           1.115,
           1.515,
@@ -228297,20 +229488,27 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#616c69",
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
           "parts": [
             "pipe-0",
             "pipe-1",
             "pipe-2",
             "pipe-3",
+            "portal-top-a",
+            "portal-top-b"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#68777b",
+          "parts": [
             "portal-leg--520",
             "portal-leg-520",
-            "portal-top-a",
-            "portal-top-b",
             "cross-brace"
           ],
-          "param": "color"
+          "param": "structuralSteel"
         }
       ]
     },
@@ -228318,7 +229516,7 @@
       "id": "pump-station-control-panel",
       "kit": "water-treatment",
       "title": "Pump station control panel",
-      "description": "Floor-mounted pump control panel with rain hood, paired access doors and status lamps. Knobs: overall scale and asset color.",
+      "description": "Floor-mounted pump control panel with rain hood, paired access doors and status lamps. Parameters: overall scale and coated equipment steel, structural steel, instrument glass; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -228337,7 +229535,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/pump-station-control-panel.kcad.ts",
       "preview": "/assets/water-treatment-pump-station-control-panel.png",
-      "sourceSha256": "af99f5e2541afb1c8c7f0ef0bd721ed197099aeecf15aaa6d5e56a5b486c12df",
+      "sourceSha256": "2dbebf95f0af3320e9b100787baaade09d26fe02fff9d0592e325a853794c034",
       "triangleBudget": 2200,
       "params": [
         {
@@ -228350,15 +229548,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#737c76",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "instrumentGlass",
+          "type": "color",
+          "default": "#5eb5c1",
+          "label": "Instrument glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "structuralSteel": "#6e6b63",
+          "instrumentGlass": "#548b91"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "structuralSteel": "#505b60",
+          "instrumentGlass": "#43b4c8"
+        }
+      },
       "stats": {
-        "triangles": 204,
+        "triangles": 300,
         "sizeM": [
           0.62,
           1.375,
@@ -228369,20 +229590,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#737c76",
+          "name": "structuralSteel",
+          "color": "#68777b",
           "parts": [
-            "plinth",
+            "plinth"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#3d8589",
+          "parts": [
             "body",
             "hood",
             "door-left",
             "door-right",
-            "lamp-0",
-            "lamp-1",
-            "lamp-2",
             "handle"
           ],
-          "param": "color"
+          "param": "coatedSteel"
+        },
+        {
+          "name": "instrumentGlass",
+          "color": "#5eb5c1",
+          "parts": [
+            "lamp-0",
+            "lamp-1",
+            "lamp-2"
+          ],
+          "param": "instrumentGlass"
         }
       ]
     },
@@ -228390,7 +229625,7 @@
       "id": "rapid-sand-filter",
       "kit": "water-treatment",
       "title": "Rapid sand filter bed",
-      "description": "Open rectangular rapid filter with raised walls, underdrain header and removable cover beams. Knobs: overall scale and asset color.",
+      "description": "Open rectangular rapid filter with raised walls, underdrain header and removable cover beams. Parameters: overall scale and concrete, structural steel, stainless steel, filter media; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -228409,7 +229644,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/rapid-sand-filter.kcad.ts",
       "preview": "/assets/water-treatment-rapid-sand-filter.png",
-      "sourceSha256": "fce739e4d07cac6ca8a416c7267970a502be3bfa9892eab38538739a8ab25694",
+      "sourceSha256": "718fc049977aa5ec4494e9e98f7c25810f3e34dc19c605b8d42ea8047bf5666b",
       "triangleBudget": 2200,
       "params": [
         {
@@ -228422,15 +229657,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "concrete",
           "type": "color",
-          "default": "#718079",
-          "label": "Asset color"
+          "default": "#b8b1a1",
+          "label": "Concrete"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "filterMedia",
+          "type": "color",
+          "default": "#96744d",
+          "label": "Filter media"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "concrete": "#9b9587",
+          "structuralSteel": "#6e6b63",
+          "stainlessSteel": "#9ca7a6",
+          "filterMedia": "#866f52"
+        },
+        "highVisibility": {
+          "concrete": "#c6bdac",
+          "structuralSteel": "#505b60",
+          "stainlessSteel": "#e1ddd0",
+          "filterMedia": "#a07d4f"
+        }
+      },
       "stats": {
-        "triangles": 128,
+        "triangles": 160,
         "sizeM": [
           1,
           0.425,
@@ -228441,19 +229707,40 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#718079",
+          "name": "concrete",
+          "color": "#b8b1a1",
           "parts": [
             "bed",
             "wall-front",
             "wall-back",
             "wall-left",
-            "wall-right",
-            "media-layer",
-            "underdrain",
+            "wall-right"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "filterMedia",
+          "color": "#96744d",
+          "parts": [
+            "media-layer"
+          ],
+          "param": "filterMedia"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "underdrain"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#68777b",
+          "parts": [
             "cover-beam"
           ],
-          "param": "color"
+          "param": "structuralSteel"
         }
       ]
     },
@@ -228461,7 +229748,7 @@
       "id": "raw-water-intake-cage",
       "kit": "water-treatment",
       "title": "Raw water intake cage",
-      "description": "Protective intake cage with corner posts, horizontal rails and a perforated-look screen face. Knobs: overall scale and asset color.",
+      "description": "Protective intake cage with corner posts, horizontal rails and a perforated-look screen face. Parameters: overall scale and structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -228480,7 +229767,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/raw-water-intake-cage.kcad.ts",
       "preview": "/assets/water-treatment-raw-water-intake-cage.png",
-      "sourceSha256": "49782c8f832eb320bff5cf9d3065a51825fb164bbddf52f979674206c39f4f66",
+      "sourceSha256": "39b8fd44f6703725168d5c649271d81ea4a2ead9ea1e7d5289d10c1d709c4032",
       "triangleBudget": 2200,
       "params": [
         {
@@ -228493,13 +229780,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "structuralSteel",
           "type": "color",
-          "default": "#6d7b78",
-          "label": "Asset color"
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "structuralSteel": "#6e6b63",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "structuralSteel": "#505b60",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
         "triangles": 192,
         "sizeM": [
@@ -228512,8 +229814,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6d7b78",
+          "name": "structuralSteel",
+          "color": "#68777b",
           "parts": [
             "base",
             "post--360--300",
@@ -228522,7 +229824,14 @@
             "post-360-300",
             "rail-160",
             "rail-400",
-            "rail-640",
+            "rail-640"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "screen-0",
             "screen-1",
             "screen-2",
@@ -228532,7 +229841,7 @@
             "screen-6",
             "screen-7"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -228540,7 +229849,7 @@
       "id": "reverse-osmosis-skid",
       "kit": "water-treatment",
       "title": "Reverse osmosis skid",
-      "description": "Compact reverse-osmosis skid with membrane tubes, feed pump block and paired pipe headers. Knobs: overall scale and asset color.",
+      "description": "Compact reverse-osmosis skid with membrane tubes, feed pump block and paired pipe headers. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -228559,7 +229868,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/reverse-osmosis-skid.kcad.ts",
       "preview": "/assets/water-treatment-reverse-osmosis-skid.png",
-      "sourceSha256": "d40cdb9439f171c6f59cf2ec906502fbb5dd2a7f250370a11f728b4b2a3b89c2",
+      "sourceSha256": "9d11750dc729d388973332946d371ffc9f8adf1f80ad07c581106a6a73ab8145",
       "triangleBudget": 2200,
       "params": [
         {
@@ -228572,15 +229881,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#596d69",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "structuralSteel": "#6e6b63",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "structuralSteel": "#505b60",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 224,
+        "triangles": 352,
         "sizeM": [
           1.1,
           0.845,
@@ -228591,19 +229923,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#596d69",
+          "name": "structuralSteel",
+          "color": "#68777b",
           "parts": [
-            "skid",
+            "skid"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "pressure-tube-0",
             "pressure-tube-1",
             "pressure-tube-2",
             "header-front",
-            "header-back",
+            "header-back"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#3d8589",
+          "parts": [
             "feed-pump",
             "control-box"
           ],
-          "param": "color"
+          "param": "coatedSteel"
         }
       ]
     },
@@ -228611,7 +229957,7 @@
       "id": "sample-tap-station",
       "kit": "water-treatment",
       "title": "Water sample tap station",
-      "description": "Freestanding sampling point with cabinet, short spout, drip tray and two pipe supports. Knobs: overall scale and asset color.",
+      "description": "Freestanding sampling point with cabinet, short spout, drip tray and two pipe supports. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -228630,7 +229976,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/sample-tap-station.kcad.ts",
       "preview": "/assets/water-treatment-sample-tap-station.png",
-      "sourceSha256": "9878bfde803e32abd41ea8c8bc81744dcbaf6f6354a090001d4924f420b4b780",
+      "sourceSha256": "db23b96216227c603f1d2f69b7e500906dcd79a9446df947623a082c0a054a79",
       "triangleBudget": 2200,
       "params": [
         {
@@ -228643,15 +229989,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#83847a",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "structuralSteel": "#6e6b63",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "structuralSteel": "#505b60",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 180,
+        "triangles": 276,
         "sizeM": [
           0.46,
           0.865,
@@ -228662,18 +230031,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#83847a",
+          "name": "structuralSteel",
+          "color": "#68777b",
           "parts": [
             "base",
+            "drip-tray"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#3d8589",
+          "parts": [
             "cabinet",
             "hood",
-            "spout",
-            "drip-tray",
+            "spout"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "pipe-left",
             "pipe-right"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -228681,7 +230064,7 @@
       "id": "sludge-thickener-tank",
       "kit": "water-treatment",
       "title": "Sludge thickener tank",
-      "description": "Circular thickener tank with deep skirt, center feed well, bridge beam and scraper arm. Knobs: overall scale and asset color.",
+      "description": "Circular thickener tank with deep skirt, center feed well, bridge beam and scraper arm. Parameters: overall scale and concrete, structural steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -228700,7 +230083,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/sludge-thickener-tank.kcad.ts",
       "preview": "/assets/water-treatment-sludge-thickener-tank.png",
-      "sourceSha256": "5c2d54f210ce4c8db4e22a619836779a38e39d06985d61f04d023fe413c9fec4",
+      "sourceSha256": "679874876750c2f040868f2ca26e689df11cc0139518d62d23de27488be7d0ff",
       "triangleBudget": 2200,
       "params": [
         {
@@ -228713,15 +230096,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "concrete",
           "type": "color",
-          "default": "#6f7770",
-          "label": "Asset color"
+          "default": "#b8b1a1",
+          "label": "Concrete"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "concrete": "#9b9587",
+          "structuralSteel": "#6e6b63"
+        },
+        "highVisibility": {
+          "concrete": "#c6bdac",
+          "structuralSteel": "#505b60"
+        }
+      },
       "stats": {
-        "triangles": 212,
+        "triangles": 500,
         "sizeM": [
           1.07,
           0.74,
@@ -228732,18 +230130,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6f7770",
+          "name": "concrete",
+          "color": "#b8b1a1",
           "parts": [
             "tank",
             "rim",
             "feed-well",
-            "bridge",
             "drive",
             "scraper-arm",
             "skirt"
           ],
-          "param": "color"
+          "param": "concrete"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#68777b",
+          "parts": [
+            "bridge"
+          ],
+          "param": "structuralSteel"
         }
       ]
     },
@@ -228751,7 +230156,7 @@
       "id": "sodium-hypochlorite-cabinet",
       "kit": "water-treatment",
       "title": "Hypochlorite dosing cabinet",
-      "description": "Ventilated chemical cabinet with double doors, low spill tray and pipe stub pair. Knobs: overall scale and asset color.",
+      "description": "Ventilated chemical cabinet with double doors, low spill tray and pipe stub pair. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -228770,7 +230175,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/sodium-hypochlorite-cabinet.kcad.ts",
       "preview": "/assets/water-treatment-sodium-hypochlorite-cabinet.png",
-      "sourceSha256": "ad1cb04c2de241644fd5ab4e572985abfc8a71be2be0ce93824cf3de12efb208",
+      "sourceSha256": "7f045bc30b875e15728f7063665f60f8312b39087dc477f8b3d974685dfa164f",
       "triangleBudget": 2200,
       "params": [
         {
@@ -228783,15 +230188,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#d5d4c7",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "structuralSteel": "#6e6b63",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "structuralSteel": "#505b60",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 208,
+        "triangles": 272,
         "sizeM": [
           0.72,
           1.345,
@@ -228802,14 +230230,28 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d5d4c7",
+          "name": "structuralSteel",
+          "color": "#68777b",
           "parts": [
-            "base",
+            "base"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#3d8589",
+          "parts": [
             "cabinet",
             "roof",
             "door-left",
-            "door-right",
+            "door-right"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "vent-0",
             "vent-1",
             "vent-2",
@@ -228818,7 +230260,7 @@
             "pipe-left",
             "pipe-right"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -228826,7 +230268,7 @@
       "id": "static-mixer-spool",
       "kit": "water-treatment",
       "title": "Static mixer pipe spool",
-      "description": "Short process spool with two flanged ends and a protective central mixer housing. Knobs: overall scale and asset color.",
+      "description": "Short process spool with two flanged ends and a protective central mixer housing. Parameters: overall scale and coated equipment steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -228845,7 +230287,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/static-mixer-spool.kcad.ts",
       "preview": "/assets/water-treatment-static-mixer-spool.png",
-      "sourceSha256": "e152cc73cfb34fa8a162c4354672e4eec35d5b6d8b0aa4a82218f5f58b6eaa2f",
+      "sourceSha256": "8a9a459557304fcf07abd711d75291d0e09e682c7d9b107153c617aa1d51a5e5",
       "triangleBudget": 2200,
       "params": [
         {
@@ -228858,15 +230300,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#727a75",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 156,
+        "triangles": 300,
         "sizeM": [
           0.32,
           0.72,
@@ -228877,16 +230334,23 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#727a75",
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
           "parts": [
             "pipe",
             "flange-low",
-            "flange-high",
+            "flange-high"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#3d8589",
+          "parts": [
             "mixer-housing",
             "access-cover"
           ],
-          "param": "color"
+          "param": "coatedSteel"
         }
       ]
     },
@@ -228894,7 +230358,7 @@
       "id": "submersible-lift-station-pump",
       "kit": "water-treatment",
       "title": "Submersible lift station pump",
-      "description": "Vertical submersible pump with lifting handle, motor body, screened intake and cable tail. Knobs: overall scale and asset color.",
+      "description": "Vertical submersible pump with lifting handle, motor body, screened intake and cable tail. Parameters: overall scale and coated equipment steel, structural steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -228913,7 +230377,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/submersible-lift-station-pump.kcad.ts",
       "preview": "/assets/water-treatment-submersible-lift-station-pump.png",
-      "sourceSha256": "436053b956a41cc4db2aca56ac83a20a0aebb74ce27073ab8c72c2137aa99e67",
+      "sourceSha256": "3454bd0b5fc6903cfd9368baa8bed695d9d43a4d4eabf3515694372d91a07dec",
       "triangleBudget": 2200,
       "params": [
         {
@@ -228926,15 +230390,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#525f60",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "structuralSteel": "#6e6b63"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "structuralSteel": "#505b60"
+        }
+      },
       "stats": {
-        "triangles": 240,
+        "triangles": 368,
         "sizeM": [
           0.37,
           0.84,
@@ -228945,12 +230424,11 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#525f60",
+          "name": "coatedSteel",
+          "color": "#3d8589",
           "parts": [
             "motor-body",
             "pump-head",
-            "intake-base",
             "intake-slot-0",
             "intake-slot-1",
             "intake-slot-2",
@@ -228961,7 +230439,15 @@
             "handle-right",
             "cable"
           ],
-          "param": "color"
+          "param": "coatedSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#68777b",
+          "parts": [
+            "intake-base"
+          ],
+          "param": "structuralSteel"
         }
       ]
     },
@@ -228969,7 +230455,7 @@
       "id": "surface-aerator",
       "kit": "water-treatment",
       "title": "Surface aerator assembly",
-      "description": "Floating bridge aerator with twin pontoons, motor housing and a low polygon rotor guard. Knobs: overall scale and asset color.",
+      "description": "Floating bridge aerator with twin pontoons, motor housing and a low polygon rotor guard. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -228988,7 +230474,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/surface-aerator.kcad.ts",
       "preview": "/assets/water-treatment-surface-aerator.png",
-      "sourceSha256": "5576ebbcd5c7d2bf44921df2850e26b29b1912c3535351e564b28916c00f15c0",
+      "sourceSha256": "0c6d98e8bf77a92d3bc9e4b7de8c84818bead9cc28eff6eaa247fb217f45fc60",
       "triangleBudget": 2200,
       "params": [
         {
@@ -229001,15 +230487,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#657d7a",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "structuralSteel": "#6e6b63",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "structuralSteel": "#505b60",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 152,
+        "triangles": 184,
         "sizeM": [
           1.12,
           0.35,
@@ -229020,21 +230529,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#657d7a",
+          "name": "structuralSteel",
+          "color": "#68777b",
           "parts": [
             "pontoon-left",
             "pontoon-right",
             "bridge",
-            "motor",
-            "shaft",
             "guard",
             "guard-post--180--180",
             "guard-post--180-180",
             "guard-post-180--180",
             "guard-post-180-180"
           ],
-          "param": "color"
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#3d8589",
+          "parts": [
+            "motor"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "shaft"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -229042,7 +230565,7 @@
       "id": "turbidity-analyzer-panel",
       "kit": "water-treatment",
       "title": "Turbidity analyzer panel",
-      "description": "Wall-mount analyzer panel with display hood, sample cell housing and two service ports. Knobs: overall scale and asset color.",
+      "description": "Wall-mount analyzer panel with display hood, sample cell housing and two service ports. Parameters: overall scale and coated equipment steel, stainless steel, instrument glass; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -229061,7 +230584,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/turbidity-analyzer-panel.kcad.ts",
       "preview": "/assets/water-treatment-turbidity-analyzer-panel.png",
-      "sourceSha256": "e0786f30ca07bb662f35c0d153b65a6887c1d45801d950c298cae680a83e4bbf",
+      "sourceSha256": "ad903db536744c707645c5357202419e542db9d6594f625cf3effdb508312ecf",
       "triangleBudget": 2200,
       "params": [
         {
@@ -229074,15 +230597,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#d2d1c4",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "instrumentGlass",
+          "type": "color",
+          "default": "#5eb5c1",
+          "label": "Instrument glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "stainlessSteel": "#9ca7a6",
+          "instrumentGlass": "#548b91"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "stainlessSteel": "#e1ddd0",
+          "instrumentGlass": "#43b4c8"
+        }
+      },
       "stats": {
-        "triangles": 148,
+        "triangles": 212,
         "sizeM": [
           0.5,
           1.17,
@@ -229093,18 +230639,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d2d1c4",
+          "name": "coatedSteel",
+          "color": "#3d8589",
           "parts": [
             "panel",
             "hood",
-            "display",
-            "sample-cell",
-            "port-left",
-            "port-right",
             "label-strip"
           ],
-          "param": "color"
+          "param": "coatedSteel"
+        },
+        {
+          "name": "instrumentGlass",
+          "color": "#5eb5c1",
+          "parts": [
+            "display",
+            "sample-cell"
+          ],
+          "param": "instrumentGlass"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "port-left",
+            "port-right"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -229112,7 +230672,7 @@
       "id": "uv-disinfection-channel",
       "kit": "water-treatment",
       "title": "UV disinfection channel",
-      "description": "Covered UV channel with support frame, lamp cassette bars and service bridge. Knobs: overall scale and asset color.",
+      "description": "Covered UV channel with support frame, lamp cassette bars and service bridge. Parameters: overall scale and concrete, structural steel, instrument glass; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -229131,7 +230691,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/uv-disinfection-channel.kcad.ts",
       "preview": "/assets/water-treatment-uv-disinfection-channel.png",
-      "sourceSha256": "dcd84f75a23d01fd2b9cccb4f2e8d29f139bb8d5410b5d30baf626092e0bd28b",
+      "sourceSha256": "9a7c6af97e212b26da3978d07fd5dc100b44e8d2c77e42c0df2ceed800537ba0",
       "triangleBudget": 2200,
       "params": [
         {
@@ -229144,15 +230704,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "concrete",
           "type": "color",
-          "default": "#637774",
-          "label": "Asset color"
+          "default": "#b8b1a1",
+          "label": "Concrete"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "instrumentGlass",
+          "type": "color",
+          "default": "#5eb5c1",
+          "label": "Instrument glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "concrete": "#9b9587",
+          "structuralSteel": "#6e6b63",
+          "instrumentGlass": "#548b91"
+        },
+        "highVisibility": {
+          "concrete": "#c6bdac",
+          "structuralSteel": "#505b60",
+          "instrumentGlass": "#43b4c8"
+        }
+      },
       "stats": {
-        "triangles": 292,
+        "triangles": 452,
         "sizeM": [
           1.2,
           0.535,
@@ -229163,22 +230746,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#637774",
+          "name": "concrete",
+          "color": "#b8b1a1",
           "parts": [
             "channel-floor",
             "wall-front",
-            "wall-back",
+            "wall-back"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#68777b",
+          "parts": [
             "bridge",
+            "frame-post--520",
+            "frame-post-520"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "instrumentGlass",
+          "color": "#5eb5c1",
+          "parts": [
             "lamp-0",
             "lamp-1",
             "lamp-2",
             "lamp-3",
-            "lamp-4",
-            "frame-post--520",
-            "frame-post-520"
+            "lamp-4"
           ],
-          "param": "color"
+          "param": "instrumentGlass"
         }
       ]
     },
@@ -229186,7 +230783,7 @@
       "id": "vertical-turbine-pump",
       "kit": "water-treatment",
       "title": "Vertical turbine pump head",
-      "description": "Vertical turbine pump head with discharge elbow, column pipe, motor pedestal and support plate. Knobs: overall scale and asset color.",
+      "description": "Vertical turbine pump head with discharge elbow, column pipe, motor pedestal and support plate. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -229205,7 +230802,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/vertical-turbine-pump.kcad.ts",
       "preview": "/assets/water-treatment-vertical-turbine-pump.png",
-      "sourceSha256": "dd60ae6c0d3d571f71baf4e3a5af07a4c7e212cd09acdeb284551e8508f138ac",
+      "sourceSha256": "b349fc03969272ed5b8912e15fa480277629347b831fdd51528a75e197a444a7",
       "triangleBudget": 2200,
       "params": [
         {
@@ -229218,15 +230815,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#606d68",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "structuralSteel": "#6e6b63",
+          "stainlessSteel": "#9ca7a6"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "structuralSteel": "#505b60",
+          "stainlessSteel": "#e1ddd0"
+        }
+      },
       "stats": {
-        "triangles": 180,
+        "triangles": 276,
         "sizeM": [
           0.65,
           1.4,
@@ -229237,18 +230857,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#606d68",
+          "name": "structuralSteel",
+          "color": "#68777b",
           "parts": [
-            "base-plate",
+            "base-plate"
+          ],
+          "param": "structuralSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#3d8589",
+          "parts": [
             "column",
-            "discharge-elbow",
-            "outlet",
             "motor-pedestal",
             "motor",
             "coupling-cover"
           ],
-          "param": "color"
+          "param": "coatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
+            "discharge-elbow",
+            "outlet"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -229256,7 +230890,7 @@
       "id": "water-filter-cartridge-housing",
       "kit": "water-treatment",
       "title": "Water-treatment cartridge filter housing",
-      "description": "Short cartridge-filter housing with clamp lid, inlet outlet nozzles and a three-leg stand. Knobs: overall scale and asset color.",
+      "description": "Short cartridge-filter housing with clamp lid, inlet outlet nozzles and a three-leg stand. Parameters: overall scale and coated equipment steel, structural steel, stainless steel, instrument glass; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -229275,7 +230909,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/water-filter-cartridge-housing.kcad.ts",
       "preview": "/assets/water-treatment-water-filter-cartridge-housing.png",
-      "sourceSha256": "01c6fce19f9fc20cd6ea9fe3dd0afea38f00753f556298fcab976533ca2e0384",
+      "sourceSha256": "4f9daa87f8fc1558b10ec5ac7c62328f6ae8a14a624ba44f89149c3e8cc39045",
       "triangleBudget": 2200,
       "params": [
         {
@@ -229288,15 +230922,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coatedSteel",
           "type": "color",
-          "default": "#6a7474",
-          "label": "Asset color"
+          "default": "#3d8589",
+          "label": "Coated equipment steel"
+        },
+        {
+          "name": "structuralSteel",
+          "type": "color",
+          "default": "#68777b",
+          "label": "Structural steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c0",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "instrumentGlass",
+          "type": "color",
+          "default": "#5eb5c1",
+          "label": "Instrument glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "coatedSteel": "#687b78",
+          "structuralSteel": "#6e6b63",
+          "stainlessSteel": "#9ca7a6",
+          "instrumentGlass": "#548b91"
+        },
+        "highVisibility": {
+          "coatedSteel": "#e5682d",
+          "structuralSteel": "#505b60",
+          "stainlessSteel": "#e1ddd0",
+          "instrumentGlass": "#43b4c8"
+        }
+      },
       "stats": {
-        "triangles": 256,
+        "triangles": 464,
         "sizeM": [
           0.49,
           0.57,
@@ -229307,19 +230972,40 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6a7474",
+          "name": "coatedSteel",
+          "color": "#3d8589",
           "parts": [
             "canister",
-            "lid",
-            "clamp-ring",
+            "lid"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "instrumentGlass",
+          "color": "#5eb5c1",
+          "parts": [
+            "clamp-ring"
+          ],
+          "param": "instrumentGlass"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c0",
+          "parts": [
             "inlet",
-            "outlet",
+            "outlet"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#68777b",
+          "parts": [
             "leg--130",
             "leg-0",
             "leg-130"
           ],
-          "param": "color"
+          "param": "structuralSteel"
         }
       ]
     },
