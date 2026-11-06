@@ -1,4 +1,4 @@
-(node:3720001) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(node:3818663) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)
 {"id":"horizontal-split-case-pump","triangles":1548,"budget":3200,"sizeM":[1.1,0.41,0.455],"minUpM":0,"materials":1,"knobs":["scale:number","casingSize:choice","coatedSteel:color","structuralSteel:color","stainlessSteel:color","elastomer:color"],"palette":["structuralSteel=#68777b","coatedSteel=#3d8589","stainlessSteel=#b5c0c0","elastomer=#343b3e"]}
 wrote /home/andrii/worktrees/kernelCAD-web/catalog-2000/artifacts/catalog-demos/water-treatment-pump-geometry-20261106/asset-renders/horizontal-split-case-pump.png

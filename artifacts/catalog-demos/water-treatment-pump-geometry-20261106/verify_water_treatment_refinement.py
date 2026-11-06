@@ -6,10 +6,12 @@ import json
 import sys
 from pathlib import Path
 
-from scripts.checkCatalogQuality import passes, score
-
 BUNDLE = Path(__file__).resolve().parent
 ROOT = BUNDLE.parents[2]
+sys.path.insert(0, str(ROOT))
+
+from scripts.checkCatalogQuality import passes, score
+
 OUTPUT = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else None
 INDEX = json.loads((ROOT / "catalog/index.json").read_text(encoding="utf-8"))
 IDS = ("high-lift-pump-skid", "horizontal-split-case-pump", "reverse-osmosis-skid")
@@ -78,6 +80,26 @@ kit_pass = sum(passes(score(str(ROOT / asset["source"])), 2) for asset in ASSETS
 checks["waterTreatmentKitQuality50of50"] = kit_pass == 50
 catalog_pass = sum(passes(score(str(ROOT / asset["source"])), 2) for asset in INDEX["assets"])
 checks["catalogQuality2390of2390"] = catalog_pass == 2390 and len(INDEX["assets"]) == 2390
+
+# Include non-default geometry choices in the handoff gate too. This caught
+# the four-vessel RO option slightly exceeding its original triangle budget.
+variant_path = BUNDLE / "variant-renders.json"
+variants = json.loads(variant_path.read_text(encoding="utf-8")) if variant_path.is_file() else {"variants": []}
+expected_variants = 4
+checks["parametricVariantCount"] = len(variants.get("variants", [])) == expected_variants
+for index, variant in enumerate(variants.get("variants", []), 1):
+    kit, asset_id = variant["asset"].split("/", 1)
+    asset = ASSETS.get((kit, asset_id))
+    checks[f"variant{index}.indexedSourceHashMatches"] = bool(
+        asset and variant.get("sourceSha256") == asset.get("sourceSha256")
+    )
+    checks[f"variant{index}.underTriangleBudget"] = bool(
+        asset and variant.get("triangles", asset["triangleBudget"] + 1) <= asset["triangleBudget"]
+    )
+    checks[f"variant{index}.previewExists"] = (BUNDLE / variant.get("png", "missing.png")).is_file()
+checks["allParametricVariantsUnderBudget"] = all(
+    check for name, check in checks.items() if name.endswith(".underTriangleBudget")
+)
 if OUTPUT is not None:
     hub = OUTPUT / "catalog" / "index.html"
     checks["localHubListsWaterTreatment"] = hub.is_file() and "water-treatment" in hub.read_text(encoding="utf-8")
@@ -89,6 +111,7 @@ result = {
     "waterTreatmentQuality": {"passing": kit_pass, "total": water_count},
     "catalogQuality": {"passing": catalog_pass, "total": len(INDEX["assets"])},
     "assets": records,
+    "parametricVariants": variants.get("variants", []),
     "checks": checks,
     "passed": sum(checks.values()),
     "total": len(checks),

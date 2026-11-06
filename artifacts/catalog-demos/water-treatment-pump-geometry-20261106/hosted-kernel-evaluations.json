@@ -33,12 +33,14 @@
       "asset": "water-treatment/reverse-osmosis-skid",
       "ok": true,
       "valid": true,
-      "sourceSha256": "04719553ca952cdf3b90940a3aaa698277e8ef6fa1a6e274a4c1e077618fd1b8",
+      "sourceSha256": "56f106861a6270241ed81732288ed2448bf53bb6309b6cbea351b13a2cc30e66",
+      "sourceByteLength": 6521,
       "volumeMm3": 123324989.30342247,
       "faceCount": 1138,
       "bboxMm": [1280, 760, 325],
       "featureCount": 231,
       "partCount": 51,
+      "serverBuild": "0.1.0+eac2e3123b8c@2026-11-06T13:04:33.881Z",
       "errorDiagnostics": []
     }
   ],

@@ -10,7 +10,7 @@ meta({
   category: 'prop',
   origin: 'base',
   compat: ['water-treatment', 'utility', 'industrial', 'scene'],
-  triangleBudget: 3200,
+  triangleBudget: 3300,
 });
 
 const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });

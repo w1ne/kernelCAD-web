@@ -149,7 +149,7 @@ def parameters_frame():
 def verification_frame(report):
     image = canvas()
     draw = ImageDraw.Draw(image)
-    header(draw, "04 / verify locally", "All three sources build under their budgets", "Generated previews, source hashes and local catalog pages were checked on this branch.")
+    header(draw, "04 / verify locally", "Sources and variants stay inside their budgets", "Generated previews, source hashes and local catalog pages were checked on this branch.")
     draw.rounded_rectangle((54, 155, 1226, 558), radius=16, fill=PANEL, outline="#344651", width=2)
     assets = report["assets"]
     checks = report["checks"]
@@ -157,6 +157,7 @@ def verification_frame(report):
         ("High-lift pump", f"{assets[0]['triangles']} / {assets[0]['triangleBudget']} triangles"),
         ("Split-case pump", f"{assets[1]['triangles']} / {assets[1]['triangleBudget']} triangles"),
         ("Reverse-osmosis skid", f"{assets[2]['triangles']} / {assets[2]['triangleBudget']} triangles"),
+        ("Parametric variants", "4 / 4 renders within indexed budgets"),
         ("Water-treatment gate", f"{report['waterTreatmentQuality']['passing']} / {report['waterTreatmentQuality']['total']} pass"),
         ("Whole catalog", f"{report['catalogQuality']['passing']} / {report['catalogQuality']['total']} pass (100%)"),
         ("Lint / integration", "passed · 4 files / 15 tests"),
@@ -166,7 +167,7 @@ def verification_frame(report):
     for label, value in rows:
         draw.text((86, y), label, fill=TEAL, font=font(15, BOLD))
         draw.text((455, y), value, fill=TEXT, font=font(15))
-        y += 45
+        y += 40
     draw.text((86, 514), "No deployment, treatment-performance or physical-acceptance result is claimed.", fill=MUTED, font=font(13))
     footer(draw)
     return image

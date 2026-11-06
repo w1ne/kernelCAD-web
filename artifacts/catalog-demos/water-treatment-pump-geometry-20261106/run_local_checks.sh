@@ -17,11 +17,11 @@ for id in high-lift-pump-skid horizontal-split-case-pump reverse-osmosis-skid; d
 done
 
 npx tsx scripts/buildCatalogPages.ts "$SITE_OUT" > "$BUNDLE/catalog-pages-build-output.txt" 2>&1
+npx tsx "$BUNDLE/render_water_treatment_variants.ts" \
+  > "$BUNDLE/variant-render-output.txt" 2>&1
 PYTHONDONTWRITEBYTECODE=1 python3 \
   "$BUNDLE/verify_water_treatment_refinement.py" "$SITE_OUT" \
   > "$BUNDLE/local-verification-output.txt" 2>&1
-npx tsx "$BUNDLE/render_water_treatment_variants.ts" \
-  > "$BUNDLE/variant-render-output.txt" 2>&1
 PYTHONDONTWRITEBYTECODE=1 python3 "$BUNDLE/capture_water_treatment_demo.py" \
   > "$BUNDLE/demo-capture-output.txt" 2>&1
 PYTHONDONTWRITEBYTECODE=1 python3 "$BUNDLE/inspect_water_treatment_demo.py" \
