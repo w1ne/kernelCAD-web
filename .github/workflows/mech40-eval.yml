@@ -32,7 +32,7 @@ permissions:
 
 jobs:
   mech40:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 180
     env:
       ANTHROPIC_API_KEY: ${{ secrets.EVAL_ANTHROPIC_API_KEY }}
@@ -52,7 +52,7 @@ jobs:
         if: steps.key.outputs.skip == 'false'
       - uses: actions/setup-node@v4
         if: steps.key.outputs.skip == 'false'
-        with: { node-version: '22', cache: npm }
+        with: { node-version: '24', cache: npm }
       - name: Install
         if: steps.key.outputs.skip == 'false'
         run: npm ci
