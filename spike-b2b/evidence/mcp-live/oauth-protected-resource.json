@@ -1,0 +1,1 @@
+{"resource":"https://mcp.kernelcad.com/mcp","authorization_servers":["https://mcp.kernelcad.com"],"scopes_supported":["openid","offline_access"],"bearer_methods_supported":["header"]}
