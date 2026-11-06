@@ -10,6 +10,14 @@ indexed rendered preview.
 
 ## Quality promotion
 
+The [horizontal baler refinement handoff](../../../artifacts/catalog-demos/recycling-facility-baler-quality-20261106/README.md)
+records an in-place silhouette update to the existing `horizontal-baler` asset:
+the open press mouth now shows the ram, hydraulic drive, discharge belt, and a
+strapped cardboard bale. Its four editable material controls distinguish
+painted steel, stainless steel, rubber, and recovered cardboard; the existing
+`weathered` and `highVisibility` palettes remain. The export is 676 triangles
+under the existing 1,800-triangle budget. No asset IDs or kit counts changed.
+
 The [promotion demo bundle](../../../artifacts/catalog-demos/recycling-facility-promotion-20261104/README.md)
 contains the material assignment source, invocation settings, verification
 evidence, rendered preview comparisons, and inspected MP4. The

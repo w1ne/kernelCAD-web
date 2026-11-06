@@ -201711,7 +201711,7 @@
       "id": "horizontal-baler",
       "kit": "recycling-facility",
       "title": "Horizontal baler",
-      "description": "Horizontal baler: a press chamber, ram, upper gantry and clear discharge floor. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Open-front horizontal baler with a visible press ram, hydraulic drive, rubber discharge conveyor, and strapped cardboard bale. Low-poly visualization prop.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -201731,7 +201731,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/horizontal-baler.kcad.ts",
       "preview": "/assets/recycling-facility-horizontal-baler.png",
-      "sourceSha256": "f3f635257cd69c91654f87ca350b99ee4c10e27c3fd04b01fac31802787c2369",
+      "sourceSha256": "9fca920f5402ce6747f93496fe3824680c40b8b74be4c8f5c85b040b2fa8d913",
       "triangleBudget": 1800,
       "params": [
         {
@@ -201744,33 +201744,50 @@
           "step": 0.05
         },
         {
+          "name": "paintedSteel",
+          "type": "color",
+          "default": "#53798b",
+          "label": "Painted steel"
+        },
+        {
           "name": "stainlessSteel",
           "type": "color",
-          "default": "#a8b4b6",
+          "default": "#b7c0c1",
           "label": "Stainless steel"
         },
         {
-          "name": "paintedSteel",
+          "name": "rubber",
           "type": "color",
-          "default": "#6b7756",
-          "label": "Painted steel"
+          "default": "#303638",
+          "label": "Rubber"
+        },
+        {
+          "name": "recoveredMaterial",
+          "type": "color",
+          "default": "#b58b50",
+          "label": "Recovered cardboard"
         }
       ],
       "presets": {
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#6d7357"
+          "paintedSteel": "#5b665f",
+          "stainlessSteel": "#929b99",
+          "rubber": "#383b3a",
+          "recoveredMaterial": "#8f7754"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "paintedSteel": "#d77632",
+          "stainlessSteel": "#d0d5d3",
+          "rubber": "#292d2f",
+          "recoveredMaterial": "#c49b5b"
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 676,
         "sizeM": [
           1.4008,
-          1.252,
-          0.928
+          1.105,
+          1.198
         ],
         "minUpM": 0,
         "materials": 1
@@ -201778,26 +201795,58 @@
       "palette": [
         {
           "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "color": "#b7c0c1",
           "parts": [
             "base-skid",
+            "ram-platen",
+            "hydraulic-cylinder",
+            "hydraulic-rod",
+            "discharge-roller-front",
+            "discharge-roller-rear",
+            "bale-front-band--145",
+            "bale-top-band--145",
+            "bale-front-band-0",
+            "bale-top-band-0",
+            "bale-front-band-145",
+            "bale-top-band-145",
             "pressure-gauge"
           ],
           "param": "stainlessSteel"
         },
         {
           "name": "paintedSteel",
-          "color": "#6b7756",
+          "color": "#53798b",
           "parts": [
-            "press-chamber",
-            "front-door-frame",
-            "press-plate",
-            "upper-gantry",
-            "discharge-floor",
-            "control-cabinet",
-            "hydraulic-cylinder"
+            "chamber-side-left",
+            "chamber-side-right",
+            "chamber-rear-wall",
+            "chamber-roof",
+            "chamber-threshold",
+            "mouth-post-left",
+            "mouth-post-right",
+            "mouth-lintel",
+            "discharge-frame-left",
+            "discharge-frame-right",
+            "control-cabinet"
           ],
           "param": "paintedSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#303638",
+          "parts": [
+            "discharge-belt",
+            "control-display"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "recoveredMaterial",
+          "color": "#b58b50",
+          "parts": [
+            "bale-body"
+          ],
+          "param": "recoveredMaterial"
         }
       ]
     },

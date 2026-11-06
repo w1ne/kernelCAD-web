@@ -1,0 +1,34 @@
+{
+  "video": "horizontal-baler-refinement.mp4",
+  "probe": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "pix_fmt": "yuv420p",
+        "r_frame_rate": "30/1"
+      }
+    ],
+    "format": {
+      "duration": "12.000000",
+      "size": "164020"
+    }
+  },
+  "sampleTimesSeconds": [
+    0.8,
+    3.8,
+    6.8,
+    9.8,
+    11.5
+  ],
+  "decodedFrames": [
+    "video-review/frame-01.png",
+    "video-review/frame-02.png",
+    "video-review/frame-03.png",
+    "video-review/frame-04.png",
+    "video-review/frame-05.png"
+  ],
+  "contactSheet": "video-review/contact-sheet.png"
+}

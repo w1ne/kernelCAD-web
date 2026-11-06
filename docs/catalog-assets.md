@@ -8,6 +8,14 @@ from those sources and must be rebuilt in the same change.
 
 The catalog quality gate reports **2,390/2,390 assets passing (100.00%)**
 across 49 rich kits, with no failing assets. The latest round refined the
+existing recycling-facility `horizontal-baler`: its open press mouth now exposes
+the ram, hydraulic drive, rubber discharge belt and strapped cardboard bale,
+with four material controls and the existing two named palettes. Its refreshed
+preview shows 676 triangles under the unchanged 1,800-triangle budget. The
+[baler refinement handoff](../artifacts/catalog-demos/recycling-facility-baler-quality-20261106/README.md)
+contains the source-driven before/after demo, preview, index, local checks and
+inspected MP4. The kit and asset counts remain unchanged. The preceding round
+refined the
 existing 40-asset `medical` kit: generic shell/accent controls now name actual
 materials, the palette grew from 80 generic controls to 132 material controls
 (3.30 per asset), and five existing forms gained visible object details. The
@@ -353,6 +361,9 @@ The [recycling facility kit](../catalog/kits/recycling-facility/README.md) adds
 153 original low-poly props for inbound reception, material sorting, baling,
 glass and plastics recovery, organics processing, and residual management.
 Each source exposes scale and color controls and has an indexed preview. The
+[horizontal baler refinement handoff](../artifacts/catalog-demos/recycling-facility-baler-quality-20261106/README.md)
+records a clearer open-mouth press silhouette, ram, hydraulic drive, rubber
+discharge belt, strapped bale, refreshed preview, and regenerated index. The
 [wave demo and verification bundle](../artifacts/catalog-demos/recycling-facility-wave-20261103/README.md)
 records the source-to-preview workflow, full-catalog integration checks, local
 pages, and inspected MP4. These are visualization props; catalog checks do not

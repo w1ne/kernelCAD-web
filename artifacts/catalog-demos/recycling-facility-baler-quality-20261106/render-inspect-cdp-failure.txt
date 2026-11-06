@@ -1,0 +1,6 @@
+Command:
+PW_CDP_URL=http://127.0.0.1:9223 node dist/cli/index.js render inspect catalog/kits/recycling-facility/horizontal-baler.kcad.ts artifacts/catalog-demos/recycling-facility-baler-quality-20261106/render-inspect --width 720 --height 540 --channels rgb --views front,right,top,iso
+
+Outcome: Playwright connected to the existing Chrome WebSocket, then hit its 30-second CDP attach timeout. PW_CDP_URL requires the existing session and disables fresh-browser fallback. No duplicate Chrome was launched, and the user's Chrome process remained running.
+
+Visual fallback: the deterministic catalog software renderer produced the default preview and two renders from the exact source preset palettes; all three PNGs were opened and reviewed.
