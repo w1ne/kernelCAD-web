@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/home/andrii/worktrees/kernelCAD-web/catalog-2000/artifacts/catalog-demos/water-treatment-pump-geometry-20261106/verify_water_treatment_refinement.py", line 9, in <module>
+    from scripts.checkCatalogQuality import passes, score
+ModuleNotFoundError: No module named 'scripts'

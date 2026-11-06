@@ -466,3 +466,19 @@ records the source changes, local preview review, preset render, page generation
 lint and integration evidence. These are stylized scene props; the catalog does
 not establish RF performance, environmental ratings, installation suitability,
 regulatory compliance or hardware acceptance.
+
+## Water-treatment pump silhouettes
+
+The existing `high-lift-pump-skid`, `horizontal-split-case-pump` and
+`reverse-osmosis-skid` now show their machine-specific forms: scroll casings,
+flanged pump ports, finned motors, horizontal membrane vessels, end manifolds,
+support saddles and a control cabinet. Pump capacity and casing size, or the
+membrane vessel count, change the model geometry. Existing material-named
+controls and weathered/high-visibility presets remain available. The three
+previews were regenerated and the catalog index rebuilt. The water-treatment
+kit passes **50/50** the material-and-preset quality gate; the full catalog
+passes **2,390/2,390 (100.00%)**. The [geometry follow-up bundle](../artifacts/catalog-demos/water-treatment-pump-geometry-20261106/README.md)
+contains source snapshots, before/after and parameter-variant renders, local
+page checks, lint/integration output and the inspected MP4. These remain
+stylized visualization props; they do not establish process performance,
+pressure ratings, installation suitability, deployment or physical acceptance.

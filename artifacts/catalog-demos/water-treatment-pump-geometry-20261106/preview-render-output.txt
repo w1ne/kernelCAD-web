@@ -1,0 +1,5 @@
+(node:3608553) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+water-treatment/high-lift-pump-skid: 1628 tris
+water-treatment/horizontal-split-case-pump: 1548 tris
+water-treatment/reverse-osmosis-skid: 2660 tris

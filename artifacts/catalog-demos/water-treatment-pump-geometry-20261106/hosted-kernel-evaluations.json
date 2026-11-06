@@ -1,0 +1,46 @@
+{
+  "kind": "hosted OpenCascade geometry evaluation; mechanism checking was disabled because these are static visualization assets",
+  "kernel": "occt",
+  "version": "0.17.4",
+  "revision": "eac2e3123b8cd06be275b0d70312511b82db6f30",
+  "command": "evaluate_script({ code: <source>, skipMechanismCheck: true, intent: 'Evaluate static catalog visualization geometry only; do not test a kinematic mechanism.' })",
+  "results": [
+    {
+      "asset": "water-treatment/high-lift-pump-skid",
+      "ok": true,
+      "valid": true,
+      "sourceSha256": "3f0489f5f7f77b4d41aa465a40994270cbc9d3babed821f61158755575490a84",
+      "volumeMm3": 63566217.96959999,
+      "faceCount": 677,
+      "bboxMm": [1120, 640, 517],
+      "featureCount": 118,
+      "partCount": 26,
+      "errorDiagnostics": []
+    },
+    {
+      "asset": "water-treatment/horizontal-split-case-pump",
+      "ok": true,
+      "valid": true,
+      "sourceSha256": "876fb7769dcb8f27d4cd2d198a57ea18b478308d0770561880348a41bb940c5d",
+      "volumeMm3": 53076397.456000015,
+      "faceCount": 645,
+      "bboxMm": [1100, 455, 410],
+      "featureCount": 114,
+      "partCount": 26,
+      "errorDiagnostics": []
+    },
+    {
+      "asset": "water-treatment/reverse-osmosis-skid",
+      "ok": true,
+      "valid": true,
+      "sourceSha256": "04719553ca952cdf3b90940a3aaa698277e8ef6fa1a6e274a4c1e077618fd1b8",
+      "volumeMm3": 123324989.30342247,
+      "faceCount": 1138,
+      "bboxMm": [1280, 760, 325],
+      "featureCount": 231,
+      "partCount": 51,
+      "errorDiagnostics": []
+    }
+  ],
+  "limits": "These geometry-only evaluations do not validate pump operation, process performance, pressure ratings, deployment, or physical acceptance."
+}

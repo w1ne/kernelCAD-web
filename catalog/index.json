@@ -268602,7 +268602,7 @@
       "id": "high-lift-pump-skid",
       "kit": "water-treatment",
       "title": "High lift pump skid",
-      "description": "Large pump skid with motor housing, volute body, discharge elbow and a broad foundation rail. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
+      "description": "Horizontal centrifugal pump with a scroll casing, finned motor, guarded coupling, bolted base and stainless suction and discharge connections. Parameters: overall scale, pump capacity, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -268621,8 +268621,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/high-lift-pump-skid.kcad.ts",
       "preview": "/assets/water-treatment-high-lift-pump-skid.png",
-      "sourceSha256": "2a1c5fdc8159c01deb15a92e02cc15083de708c67f40db0b0aff1c7d7d7a7056",
-      "triangleBudget": 2200,
+      "sourceSha256": "3f0489f5f7f77b4d41aa465a40994270cbc9d3babed821f61158755575490a84",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -268632,6 +268632,17 @@
           "min": 0.7,
           "max": 1.3,
           "step": 0.05
+        },
+        {
+          "name": "pumpCapacity",
+          "type": "choice",
+          "default": "standard",
+          "label": "Pump capacity",
+          "choices": [
+            "compact",
+            "standard",
+            "highFlow"
+          ]
         },
         {
           "name": "coatedSteel",
@@ -268665,11 +268676,11 @@
         }
       },
       "stats": {
-        "triangles": 276,
+        "triangles": 1628,
         "sizeM": [
-          1.16119,
-          0.665,
-          0.7
+          1.12,
+          0.517,
+          0.64
         ],
         "minUpM": 0,
         "materials": 1
@@ -268679,7 +268690,16 @@
           "name": "structuralSteel",
           "color": "#68777b",
           "parts": [
-            "base",
+            "base-rail-front",
+            "base-rail-back",
+            "cross-member-left",
+            "cross-member-right",
+            "motor-cooling-rib-1",
+            "motor-cooling-rib-2",
+            "motor-cooling-rib-3",
+            "motor-cooling-rib-4",
+            "motor-cooling-rib-5",
+            "motor-cooling-rib-6",
             "coupling-guard"
           ],
           "param": "structuralSteel"
@@ -268688,9 +268708,13 @@
           "name": "coatedSteel",
           "color": "#3d8589",
           "parts": [
-            "motor",
-            "motor-cap",
-            "pump-body"
+            "motor-stator",
+            "motor-fan-cover",
+            "motor-foot-left",
+            "motor-foot-right",
+            "scroll-volute-casing",
+            "casing-foot-left",
+            "casing-foot-right"
           ],
           "param": "coatedSteel"
         },
@@ -268698,8 +268722,14 @@
           "name": "stainlessSteel",
           "color": "#b5c0c0",
           "parts": [
-            "discharge",
-            "suction"
+            "motor-drive-end-bell",
+            "shaft-coupling",
+            "impeller-cover",
+            "suction-neck",
+            "suction-flange",
+            "discharge-neck",
+            "discharge-flange",
+            "discharge-riser"
           ],
           "param": "stainlessSteel"
         }
@@ -268709,7 +268739,7 @@
       "id": "horizontal-split-case-pump",
       "kit": "water-treatment",
       "title": "Horizontal split case pump",
-      "description": "Horizontal pump casing with paired suction-discharge ports, base rails and motor coupling. Parameters: overall scale and coated equipment steel, structural steel, stainless steel, elastomer; weathered and highVisibility presets.",
+      "description": "Horizontal centrifugal pump with split volute casing, paired suction and discharge flanges, guarded coupling, finned motor, structural rails and stainless connections. Parameters: overall scale, casing size, coated equipment steel, structural steel, stainless steel, elastomer; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -268728,8 +268758,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/horizontal-split-case-pump.kcad.ts",
       "preview": "/assets/water-treatment-horizontal-split-case-pump.png",
-      "sourceSha256": "17c6fe07e38ee373b7335d0904654852aa9cb9f35936abe56e45543cfc632128",
-      "triangleBudget": 2200,
+      "sourceSha256": "876fb7769dcb8f27d4cd2d198a57ea18b478308d0770561880348a41bb940c5d",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -268739,6 +268769,17 @@
           "min": 0.7,
           "max": 1.3,
           "step": 0.05
+        },
+        {
+          "name": "casingSize",
+          "type": "choice",
+          "default": "standard",
+          "label": "Casing size",
+          "choices": [
+            "compact",
+            "standard",
+            "heavyDuty"
+          ]
         },
         {
           "name": "coatedSteel",
@@ -268780,11 +268821,11 @@
         }
       },
       "stats": {
-        "triangles": 364,
+        "triangles": 1548,
         "sizeM": [
-          1.05,
-          0.395,
-          0.61
+          1.1,
+          0.41,
+          0.455
         ],
         "minUpM": 0,
         "materials": 1
@@ -268794,10 +268835,16 @@
           "name": "structuralSteel",
           "color": "#68777b",
           "parts": [
-            "base",
-            "foot--380",
-            "foot-120",
-            "foot-390"
+            "base-rail-front",
+            "base-rail-back",
+            "cross-member-left",
+            "cross-member-right",
+            "coupling-guard",
+            "motor-cooling-rib-1",
+            "motor-cooling-rib-2",
+            "motor-cooling-rib-3",
+            "motor-cooling-rib-4",
+            "motor-cooling-rib-5"
           ],
           "param": "structuralSteel"
         },
@@ -268805,8 +268852,14 @@
           "name": "coatedSteel",
           "color": "#3d8589",
           "parts": [
-            "pump-case",
-            "motor"
+            "split-volute-casing",
+            "casing-foot-left",
+            "casing-foot-right",
+            "bearing-housing",
+            "motor-stator",
+            "motor-fan-cover",
+            "motor-foot-left",
+            "motor-foot-right"
           ],
           "param": "coatedSteel"
         },
@@ -268814,8 +268867,13 @@
           "name": "stainlessSteel",
           "color": "#b5c0c0",
           "parts": [
-            "suction",
-            "discharge"
+            "casing-cover",
+            "split-line",
+            "suction-riser",
+            "suction-flange",
+            "discharge-riser",
+            "discharge-flange",
+            "motor-drive-end-bell"
           ],
           "param": "stainlessSteel"
         },
@@ -268823,7 +268881,7 @@
           "name": "elastomer",
           "color": "#343b3e",
           "parts": [
-            "coupling"
+            "shaft-coupling"
           ],
           "param": "elastomer"
         }
@@ -270128,7 +270186,7 @@
       "id": "reverse-osmosis-skid",
       "kit": "water-treatment",
       "title": "Reverse osmosis skid",
-      "description": "Compact reverse-osmosis skid with membrane tubes, feed pump block and paired pipe headers. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
+      "description": "Reverse-osmosis equipment skid with selectable membrane-vessel count, paired end manifolds, a horizontal feed pump, support saddles and a local control cabinet. Parameters: overall scale, membrane vessel count, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -270147,8 +270205,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/reverse-osmosis-skid.kcad.ts",
       "preview": "/assets/water-treatment-reverse-osmosis-skid.png",
-      "sourceSha256": "9d11750dc729d388973332946d371ffc9f8adf1f80ad07c581106a6a73ab8145",
-      "triangleBudget": 2200,
+      "sourceSha256": "04719553ca952cdf3b90940a3aaa698277e8ef6fa1a6e274a4c1e077618fd1b8",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -270158,6 +270216,17 @@
           "min": 0.7,
           "max": 1.3,
           "step": 0.05
+        },
+        {
+          "name": "membraneVessels",
+          "type": "choice",
+          "default": "3",
+          "label": "Membrane vessels",
+          "choices": [
+            "2",
+            "3",
+            "4"
+          ]
         },
         {
           "name": "coatedSteel",
@@ -270191,11 +270260,11 @@
         }
       },
       "stats": {
-        "triangles": 352,
+        "triangles": 2660,
         "sizeM": [
-          1.1,
-          0.845,
-          0.675
+          1.28,
+          0.325,
+          0.76
         ],
         "minUpM": 0,
         "materials": 1
@@ -270205,7 +270274,24 @@
           "name": "structuralSteel",
           "color": "#68777b",
           "parts": [
-            "skid"
+            "skid-base",
+            "frame-rail-front",
+            "frame-rail-back",
+            "cross-member-left",
+            "cross-member-center",
+            "cross-member-right",
+            "vessel-band-left-1",
+            "vessel-band-right-1",
+            "vessel-band-left-2",
+            "vessel-band-right-2",
+            "vessel-band-left-3",
+            "vessel-band-right-3",
+            "feed-pump-fan-cover",
+            "pump-support-left",
+            "pump-support-right",
+            "operator-display",
+            "cabinet-foot-left",
+            "cabinet-foot-right"
           ],
           "param": "structuralSteel"
         },
@@ -270213,11 +270299,21 @@
           "name": "stainlessSteel",
           "color": "#b5c0c0",
           "parts": [
-            "pressure-tube-0",
-            "pressure-tube-1",
-            "pressure-tube-2",
-            "header-front",
-            "header-back"
+            "membrane-vessel-1",
+            "feed-branch-1",
+            "permeate-branch-1",
+            "membrane-vessel-2",
+            "feed-branch-2",
+            "permeate-branch-2",
+            "membrane-vessel-3",
+            "feed-branch-3",
+            "permeate-branch-3",
+            "feed-manifold",
+            "permeate-manifold",
+            "pump-coupling",
+            "pump-discharge-pipe",
+            "cabinet-door",
+            "status-lamp-green"
           ],
           "param": "stainlessSteel"
         },
@@ -270225,8 +270321,24 @@
           "name": "coatedSteel",
           "color": "#3d8589",
           "parts": [
-            "feed-pump",
-            "control-box"
+            "membrane-cap-left-1",
+            "membrane-cap-right-1",
+            "vessel-saddle-left-1",
+            "vessel-saddle-right-1",
+            "membrane-cap-left-2",
+            "membrane-cap-right-2",
+            "vessel-saddle-left-2",
+            "vessel-saddle-right-2",
+            "membrane-cap-left-3",
+            "membrane-cap-right-3",
+            "vessel-saddle-left-3",
+            "vessel-saddle-right-3",
+            "feed-isolation-valve",
+            "permeate-valve",
+            "feed-pump-motor",
+            "pump-volute",
+            "control-cabinet",
+            "status-lamp-red"
           ],
           "param": "coatedSteel"
         }

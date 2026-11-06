@@ -15,6 +15,13 @@ verification records, and an inspected MP4. The [original catalog wave
 bundle](../../../artifacts/catalog-demos/water-treatment-wave-20261103/README.md)
 retains the initial source generator and preview workflow.
 
+The [pump geometry follow-up](../../../artifacts/catalog-demos/water-treatment-pump-geometry-20261106/README.md)
+refines the high-lift pump, split-case pump and reverse-osmosis skid. Their
+previews now show the pump casings, motor and cooling ribs, pressure-vessel
+manifolds, supports and control cabinet. The pump assets add capacity or casing
+size choices; the reverse-osmosis skid offers two, three or four horizontal
+membrane vessels. Existing material controls and named presets remain editable.
+
 These are stylized visualization props. They do not specify flow rates,
 treatment performance, pressure capacity, chemical dosing accuracy, process
 safety, regulatory compliance, installation suitability, or physical
