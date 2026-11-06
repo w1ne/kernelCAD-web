@@ -224657,7 +224657,7 @@
       "id": "american-football",
       "kit": "sports",
       "title": "American football",
-      "description": "Elongated low-poly football with a pointed oval profile.",
+      "description": "Elongated pebbled football with pointed ends, contrasting end stripes and raised cross-laces across the crown. Material controls: pebbled leather, ivory lacing, end stripe paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224677,8 +224677,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/american-football.kcad.ts",
       "preview": "/assets/sports-american-football.png",
-      "sourceSha256": "cd48d4a79c00c50c2f1b47e978f5d39cf37901664bc0eaf768ea0a79eed26ed4",
-      "triangleBudget": 1800,
+      "sourceSha256": "854ab53efb387cebae3bb63860b0f7206f0a000a770806c9e0811f7a29b23215",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -224690,15 +224690,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "pebbledLeather",
           "type": "color",
           "default": "#98552f",
-          "label": "Asset color"
+          "label": "Pebbled leather"
+        },
+        {
+          "name": "ivoryLaces",
+          "type": "color",
+          "default": "#efe8d6",
+          "label": "Ivory lacing"
+        },
+        {
+          "name": "endStripePaint",
+          "type": "color",
+          "default": "#e9e1d0",
+          "label": "End stripe paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "pebbledLeather": "#39759a",
+          "ivoryLaces": "#f4d247"
+        }
+      },
       "stats": {
-        "triangles": 30,
+        "triangles": 126,
         "sizeM": [
           0.148759,
           0.07872,
@@ -224709,12 +224726,34 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "pebbledLeather",
           "color": "#98552f",
           "parts": [
             "ball"
           ],
-          "param": "color"
+          "param": "pebbledLeather"
+        },
+        {
+          "name": "ivoryLaces",
+          "color": "#efe8d6",
+          "parts": [
+            "lace-bar",
+            "lace-1",
+            "lace-2",
+            "lace-3",
+            "lace-4",
+            "lace-5"
+          ],
+          "param": "ivoryLaces"
+        },
+        {
+          "name": "endStripePaint",
+          "color": "#e9e1d0",
+          "parts": [
+            "end-stripe-front",
+            "end-stripe-back"
+          ],
+          "param": "endStripePaint"
         }
       ]
     },
@@ -224722,7 +224761,7 @@
       "id": "badminton-racket",
       "kit": "sports",
       "title": "Badminton racket",
-      "description": "Lightweight low-poly badminton racket with a slim shaft and oval head.",
+      "description": "Lightweight low-poly badminton racket with a slim shaft and oval head. Material controls: graphite frame, nylon strings, grip rubber.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224742,8 +224781,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/badminton-racket.kcad.ts",
       "preview": "/assets/sports-badminton-racket.png",
-      "sourceSha256": "e5d643aae668e19445a8b7ddb27d31f8e11989772b53d0bf52272a03ebc81d1b",
-      "triangleBudget": 1800,
+      "sourceSha256": "6d710aa8622f16df64c2c145d632798bc7d80e527b7289e82317c6f42bb3a2e0",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -224755,13 +224794,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "graphiteFrame",
           "type": "color",
           "default": "#596d62",
-          "label": "Asset color"
+          "label": "Graphite frame"
+        },
+        {
+          "name": "nylonStrings",
+          "type": "color",
+          "default": "#e8e4d8",
+          "label": "Nylon strings"
+        },
+        {
+          "name": "gripRubber",
+          "type": "color",
+          "default": "#343a38",
+          "label": "Grip rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "graphiteFrame": "#2d536f",
+          "nylonStrings": "#e8e4d8"
+        }
+      },
       "stats": {
         "triangles": 312,
         "sizeM": [
@@ -224774,13 +224830,27 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "graphiteFrame",
           "color": "#596d62",
           "parts": [
             "head-frame",
             "throat",
-            "shaft",
-            "grip",
+            "shaft"
+          ],
+          "param": "graphiteFrame"
+        },
+        {
+          "name": "gripRubber",
+          "color": "#343a38",
+          "parts": [
+            "grip"
+          ],
+          "param": "gripRubber"
+        },
+        {
+          "name": "nylonStrings",
+          "color": "#e8e4d8",
+          "parts": [
             "string-vertical-left",
             "string-vertical-centre",
             "string-vertical-right",
@@ -224789,7 +224859,7 @@
             "string-horizontal-3",
             "string-horizontal-4"
           ],
-          "param": "color"
+          "param": "nylonStrings"
         }
       ]
     },
@@ -224797,7 +224867,7 @@
       "id": "barbell",
       "kit": "sports",
       "title": "Barbell",
-      "description": "Low-poly barbell with a long horizontal shaft and stacked spherical plate forms.",
+      "description": "Low-poly barbell with a long horizontal shaft and stacked spherical plate forms. Material controls: chrome steel, bumper plate rubber, knurled grip steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224817,8 +224887,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/barbell.kcad.ts",
       "preview": "/assets/sports-barbell.png",
-      "sourceSha256": "1c37ac7fdccb00d7013ab947490734f4d459506a0eb6e656588e72ad8cb65041",
-      "triangleBudget": 1800,
+      "sourceSha256": "84502df3cdd94b181b5536948b6feeb610ec16767dec7f85923b5a1527c7a627",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -224830,15 +224900,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "chromedSteel",
           "type": "color",
-          "default": "#56636c",
-          "label": "Asset color"
+          "default": "#9da9ad",
+          "label": "Chrome steel"
+        },
+        {
+          "name": "bumperRubber",
+          "type": "color",
+          "default": "#30363a",
+          "label": "Bumper plate rubber"
+        },
+        {
+          "name": "knurlSteel",
+          "type": "color",
+          "default": "#c0c7c6",
+          "label": "Knurled grip steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "chromedSteel": "#9da9ad",
+          "bumperRubber": "#3b6b8b"
+        }
+      },
       "stats": {
-        "triangles": 188,
+        "triangles": 200,
         "sizeM": [
           0.68,
           0.148,
@@ -224849,16 +224936,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#56636c",
+          "name": "chromedSteel",
+          "color": "#9da9ad",
           "parts": [
-            "shaft",
+            "shaft"
+          ],
+          "param": "chromedSteel"
+        },
+        {
+          "name": "bumperRubber",
+          "color": "#30363a",
+          "parts": [
             "left-inner-plate",
             "left-outer-plate",
             "right-inner-plate",
             "right-outer-plate"
           ],
-          "param": "color"
+          "param": "bumperRubber"
+        },
+        {
+          "name": "knurlSteel",
+          "color": "#c0c7c6",
+          "parts": [
+            "knurl-grip-sleeve"
+          ],
+          "param": "knurlSteel"
         }
       ]
     },
@@ -224866,7 +224968,7 @@
       "id": "baseball-bat",
       "kit": "sports",
       "title": "Baseball bat",
-      "description": "Upright low-poly baseball bat with a narrow grip and widened barrel.",
+      "description": "Upright low-poly baseball bat with a narrow grip and widened barrel. Material controls: maple bat wood, grip tape, end-grain wood.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224886,8 +224988,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/baseball-bat.kcad.ts",
       "preview": "/assets/sports-baseball-bat.png",
-      "sourceSha256": "f37a4d08c4f3949dc522d92f624581f073dc23f9377d028ecf5a9acba3f31a9d",
-      "triangleBudget": 1800,
+      "sourceSha256": "be7214effaab0cfbb75c742c19d34874c1c00318aaebf953d0f1fd4e7c770ead",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -224899,13 +225001,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "mapleWood",
           "type": "color",
           "default": "#9b7046",
-          "label": "Asset color"
+          "label": "Maple bat wood"
+        },
+        {
+          "name": "gripTape",
+          "type": "color",
+          "default": "#30363a",
+          "label": "Grip tape"
+        },
+        {
+          "name": "endGrain",
+          "type": "color",
+          "default": "#c39a64",
+          "label": "End-grain wood"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "mapleWood": "#bd8b51",
+          "gripTape": "#c5443d"
+        }
+      },
       "stats": {
         "triangles": 176,
         "sizeM": [
@@ -224918,15 +225037,29 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "gripTape",
+          "color": "#30363a",
+          "parts": [
+            "grip"
+          ],
+          "param": "gripTape"
+        },
+        {
+          "name": "mapleWood",
           "color": "#9b7046",
           "parts": [
-            "grip",
             "taper",
-            "barrel",
+            "barrel"
+          ],
+          "param": "mapleWood"
+        },
+        {
+          "name": "endGrain",
+          "color": "#c39a64",
+          "parts": [
             "knob"
           ],
-          "param": "color"
+          "param": "endGrain"
         }
       ]
     },
@@ -224934,7 +225067,7 @@
       "id": "baseball-glove",
       "kit": "sports",
       "title": "Baseball glove",
-      "description": "Open mitt-shaped glove prop with a broad palm, wrist cuff and raised finger pads.",
+      "description": "Open mitt-shaped glove prop with a broad palm, wrist cuff and raised finger pads. Material controls: glove leather, palm lining, lace cord.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224954,8 +225087,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/baseball-glove.kcad.ts",
       "preview": "/assets/sports-baseball-glove.png",
-      "sourceSha256": "2a3e903221023b35699ac2b7633ae039d9d0211200fba40c67a562206c321459",
-      "triangleBudget": 1800,
+      "sourceSha256": "2f8b38dcf97e501316626f05ddcfa629d08fe759e218fef9c19c7565fc0e4344",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -224967,37 +225100,73 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "gloveLeather",
           "type": "color",
           "default": "#9a5938",
-          "label": "Asset color"
+          "label": "Glove leather"
+        },
+        {
+          "name": "palmLining",
+          "type": "color",
+          "default": "#6c4632",
+          "label": "Palm lining"
+        },
+        {
+          "name": "laceCord",
+          "type": "color",
+          "default": "#ddb987",
+          "label": "Lace cord"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "gloveLeather": "#73503e",
+          "palmLining": "#6c4632"
+        }
+      },
       "stats": {
-        "triangles": 386,
+        "triangles": 446,
         "sizeM": [
           0.170633,
           0.178,
-          0.097168
+          0.098084
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
+          "name": "gloveLeather",
           "color": "#9a5938",
           "parts": [
             "wrist-cuff",
-            "palm",
             "finger-one",
             "finger-two",
             "finger-three",
             "finger-four",
             "thumb"
           ],
-          "param": "color"
+          "param": "gloveLeather"
+        },
+        {
+          "name": "palmLining",
+          "color": "#6c4632",
+          "parts": [
+            "palm"
+          ],
+          "param": "palmLining"
+        },
+        {
+          "name": "laceCord",
+          "color": "#ddb987",
+          "parts": [
+            "palm-web-lace-1",
+            "palm-web-lace-2",
+            "palm-web-lace-3",
+            "palm-web-lace-4",
+            "palm-web-lace-5"
+          ],
+          "param": "laceCord"
         }
       ]
     },
@@ -225005,7 +225174,7 @@
       "id": "baseball",
       "kit": "sports",
       "title": "Baseball",
-      "description": "Compact low-poly baseball prop with a faceted spherical form.",
+      "description": "White faceted baseball with paired raised red seam lines tracing the familiar curved path. Material controls: ball cover, red stitching.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225025,8 +225194,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/baseball.kcad.ts",
       "preview": "/assets/sports-baseball.png",
-      "sourceSha256": "0801287efb39f53a82021dc0a490237cb045755d5b125407ef3a389ba9c7f838",
-      "triangleBudget": 1800,
+      "sourceSha256": "439a76bcfaa24275a1b9c8412f535a56ac9bff59a803a12acd18e454f75423af",
+      "triangleBudget": 800,
       "params": [
         {
           "name": "scale",
@@ -225038,17 +225207,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "coverLeather",
           "type": "color",
           "default": "#eee9dd",
-          "label": "Asset color"
+          "label": "Ball cover"
+        },
+        {
+          "name": "redStitching",
+          "type": "color",
+          "default": "#c73732",
+          "label": "Red stitching"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "coverLeather": "#f1eee5",
+          "redStitching": "#1e568c"
+        }
+      },
       "stats": {
-        "triangles": 78,
+        "triangles": 654,
         "sizeM": [
-          0.066336,
+          0.0687,
           0.068,
           0.063689
         ],
@@ -225057,12 +225237,21 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "coverLeather",
           "color": "#eee9dd",
           "parts": [
             "ball"
           ],
-          "param": "color"
+          "param": "coverLeather"
+        },
+        {
+          "name": "redStitching",
+          "color": "#c73732",
+          "parts": [
+            "red-seam-left",
+            "red-seam-right"
+          ],
+          "param": "redStitching"
         }
       ]
     },
@@ -225070,7 +225259,7 @@
       "id": "basketball-hoop",
       "kit": "sports",
       "title": "Basketball hoop",
-      "description": "Freestanding court hoop with backboard, support arm, hollow rim and weighted floor base.",
+      "description": "Freestanding basketball hoop with a weighted base, clear backboard, red rim and tapered hanging net cords. Material controls: powder-coated steel, backboard polycarbonate, rim steel, net nylon.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225090,8 +225279,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/basketball-hoop.kcad.ts",
       "preview": "/assets/sports-basketball-hoop.png",
-      "sourceSha256": "a2060e1809001fe1bb0dada519942b9c027c5d7e5ab492039a67cb69fd9ce95c",
-      "triangleBudget": 1800,
+      "sourceSha256": "749a3289ebca06a27cd79335dbfbf04c98568b201b17928de32d609b441eb981",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -225103,15 +225292,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
           "default": "#647987",
-          "label": "Asset color"
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "backboardPolycarbonate",
+          "type": "color",
+          "default": "#d8e3df",
+          "label": "Backboard polycarbonate"
+        },
+        {
+          "name": "rimSteel",
+          "type": "color",
+          "default": "#d34a3b",
+          "label": "Rim steel"
+        },
+        {
+          "name": "netNylon",
+          "type": "color",
+          "default": "#eee8d8",
+          "label": "Net nylon"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "powderCoat": "#496b52",
+          "backboardPolycarbonate": "#d8e3df"
+        }
+      },
       "stats": {
-        "triangles": 176,
+        "triangles": 704,
         "sizeM": [
           0.22,
           0.415,
@@ -225122,16 +225334,49 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "powderCoat",
           "color": "#647987",
           "parts": [
             "base",
             "upright",
-            "support-arm",
-            "backboard",
+            "support-arm"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "backboardPolycarbonate",
+          "color": "#d8e3df",
+          "parts": [
+            "backboard"
+          ],
+          "param": "backboardPolycarbonate"
+        },
+        {
+          "name": "rimSteel",
+          "color": "#d34a3b",
+          "parts": [
             "rim"
           ],
-          "param": "color"
+          "param": "rimSteel"
+        },
+        {
+          "name": "netNylon",
+          "color": "#eee8d8",
+          "parts": [
+            "net-cord-1",
+            "net-cord-2",
+            "net-cord-3",
+            "net-cord-4",
+            "net-cord-5",
+            "net-cord-6",
+            "net-cord-7",
+            "net-cord-8",
+            "net-cord-9",
+            "net-cord-10",
+            "net-cord-11",
+            "net-cord-12"
+          ],
+          "param": "netNylon"
         }
       ]
     },
@@ -225139,7 +225384,7 @@
       "id": "basketball",
       "kit": "sports",
       "title": "Basketball",
-      "description": "Low-poly basketball prop with a faceted spherical silhouette.",
+      "description": "Faceted orange basketball with two dark curved channel seams wrapping around the pebbled cover. Material controls: pebbled ball cover, channel rubber.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225159,8 +225404,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/basketball.kcad.ts",
       "preview": "/assets/sports-basketball.png",
-      "sourceSha256": "387cbb8db98b480cfba0f0e958a99d2b9d13c26a3c59c328458b7b8334862301",
-      "triangleBudget": 1800,
+      "sourceSha256": "2a00f927d515c8957ee51a244a1219fa7beaf32093e454f886ab6c362f94c124",
+      "triangleBudget": 800,
       "params": [
         {
           "name": "scale",
@@ -225172,31 +225417,51 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "pebbledCover",
           "type": "color",
           "default": "#d47a32",
-          "label": "Asset color"
+          "label": "Pebbled ball cover"
+        },
+        {
+          "name": "channelRubber",
+          "type": "color",
+          "default": "#302c29",
+          "label": "Channel rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "pebbledCover": "#3979a3",
+          "channelRubber": "#272d32"
+        }
+      },
       "stats": {
-        "triangles": 78,
+        "triangles": 654,
         "sizeM": [
-          0.120966,
-          0.124,
-          0.116139
+          0.1249,
+          0.12445,
+          0.1249
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
+          "name": "pebbledCover",
           "color": "#d47a32",
           "parts": [
             "ball"
           ],
-          "param": "color"
+          "param": "pebbledCover"
+        },
+        {
+          "name": "channelRubber",
+          "color": "#302c29",
+          "parts": [
+            "equator-channel",
+            "meridian-channel"
+          ],
+          "param": "channelRubber"
         }
       ]
     },
@@ -225204,7 +225469,7 @@
       "id": "batting-helmet",
       "kit": "sports",
       "title": "Batting helmet",
-      "description": "Protective batting helmet prop with a domed shell, face brim and side guards.",
+      "description": "Protective batting helmet prop with a domed shell, face brim and side guards. Material controls: helmet shell polymer, impact foam, face guard steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225224,8 +225489,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/batting-helmet.kcad.ts",
       "preview": "/assets/sports-batting-helmet.png",
-      "sourceSha256": "91866932e9502375d65e1f23182690a046e87bc664e540229bd3294fb36004be",
-      "triangleBudget": 1800,
+      "sourceSha256": "b38ad095f8c97abc62a5b434c66c2791e02d4bfa494e21bc3c28db54ce0c2a07",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -225237,15 +225502,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "helmetPolymer",
           "type": "color",
           "default": "#4c6f9d",
-          "label": "Asset color"
+          "label": "Helmet shell polymer"
+        },
+        {
+          "name": "impactFoam",
+          "type": "color",
+          "default": "#292e33",
+          "label": "Impact foam"
+        },
+        {
+          "name": "faceGuardSteel",
+          "type": "color",
+          "default": "#aab4b5",
+          "label": "Face guard steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "helmetPolymer": "#d74336",
+          "impactFoam": "#292e33"
+        }
+      },
       "stats": {
-        "triangles": 68,
+        "triangles": 92,
         "sizeM": [
           0.16964,
           0.11808,
@@ -225256,15 +225538,31 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "helmetPolymer",
           "color": "#4c6f9d",
           "parts": [
             "shell",
-            "brim",
+            "brim"
+          ],
+          "param": "helmetPolymer"
+        },
+        {
+          "name": "faceGuardSteel",
+          "color": "#aab4b5",
+          "parts": [
             "ear-guard-left",
             "ear-guard-right"
           ],
-          "param": "color"
+          "param": "faceGuardSteel"
+        },
+        {
+          "name": "impactFoam",
+          "color": "#292e33",
+          "parts": [
+            "left-temple-padding",
+            "right-temple-padding"
+          ],
+          "param": "impactFoam"
         }
       ]
     },
@@ -225272,7 +225570,7 @@
       "id": "cricket-bat",
       "kit": "sports",
       "title": "Cricket bat",
-      "description": "Low-poly cricket bat with a wide flat blade, shoulders and slim handle.",
+      "description": "Low-poly cricket bat with a wide flat blade, shoulders and slim handle. Material controls: willow bat wood, rubber grip, edge tape.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225292,8 +225590,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/cricket-bat.kcad.ts",
       "preview": "/assets/sports-cricket-bat.png",
-      "sourceSha256": "fed6a89b487571d964ac95a12e148dc0e9499941903f3ae1547af1963ce52115",
-      "triangleBudget": 1800,
+      "sourceSha256": "d7696a294ae0f46a4e3ad6e1fe2f2f08cbca01c8e0b3115d6913595f50c66820",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -225305,34 +225603,67 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "willowWood",
           "type": "color",
           "default": "#9a754d",
-          "label": "Asset color"
+          "label": "Willow bat wood"
+        },
+        {
+          "name": "rubberGrip",
+          "type": "color",
+          "default": "#303638",
+          "label": "Rubber grip"
+        },
+        {
+          "name": "edgeTape",
+          "type": "color",
+          "default": "#e6e1d4",
+          "label": "Edge tape"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "willowWood": "#bc985d",
+          "rubberGrip": "#d04d40"
+        }
+      },
       "stats": {
-        "triangles": 112,
+        "triangles": 136,
         "sizeM": [
-          0.082,
+          0.0822,
           0.378,
-          0.032
+          0.034
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
+          "name": "willowWood",
           "color": "#9a754d",
           "parts": [
             "blade",
             "shoulder",
-            "handle",
+            "handle"
+          ],
+          "param": "willowWood"
+        },
+        {
+          "name": "rubberGrip",
+          "color": "#303638",
+          "parts": [
             "grip-cap"
           ],
-          "param": "color"
+          "param": "rubberGrip"
+        },
+        {
+          "name": "edgeTape",
+          "color": "#e6e1d4",
+          "parts": [
+            "left-edge-tape",
+            "right-edge-tape"
+          ],
+          "param": "edgeTape"
         }
       ]
     },
@@ -225340,7 +225671,7 @@
       "id": "cricket-wicket",
       "kit": "sports",
       "title": "Cricket wicket",
-      "description": "Three-stump wicket set on a low ground plate with two cross bails.",
+      "description": "Three-stump wicket set on a low ground plate with two cross bails. Material controls: wicket timber, ground rubber, bail paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225360,8 +225691,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/cricket-wicket.kcad.ts",
       "preview": "/assets/sports-cricket-wicket.png",
-      "sourceSha256": "4acabc6ce95c82c296099e2857995c64ed12bc9167afce313861109ae5788420",
-      "triangleBudget": 1800,
+      "sourceSha256": "f16c4141001536b3e5de2b576d309da83ea182dfa1beb4f36b8633ba9b5dc9cd",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -225373,13 +225704,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "wicketTimber",
           "type": "color",
           "default": "#b18b5f",
-          "label": "Asset color"
+          "label": "Wicket timber"
+        },
+        {
+          "name": "groundRubber",
+          "type": "color",
+          "default": "#5b625d",
+          "label": "Ground rubber"
+        },
+        {
+          "name": "bailPaint",
+          "type": "color",
+          "default": "#e8e1d0",
+          "label": "Bail paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "wicketTimber": "#8f744f",
+          "groundRubber": "#5b625d"
+        }
+      },
       "stats": {
         "triangles": 168,
         "sizeM": [
@@ -225392,17 +225740,31 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "groundRubber",
+          "color": "#5b625d",
+          "parts": [
+            "ground-plate"
+          ],
+          "param": "groundRubber"
+        },
+        {
+          "name": "wicketTimber",
           "color": "#b18b5f",
           "parts": [
-            "ground-plate",
             "stump-left",
             "stump-middle",
-            "stump-right",
+            "stump-right"
+          ],
+          "param": "wicketTimber"
+        },
+        {
+          "name": "bailPaint",
+          "color": "#e8e1d0",
+          "parts": [
             "bail-left",
             "bail-right"
           ],
-          "param": "color"
+          "param": "bailPaint"
         }
       ]
     },
@@ -225410,7 +225772,7 @@
       "id": "dumbbell",
       "kit": "sports",
       "title": "Dumbbell",
-      "description": "Compact low-poly dumbbell with a horizontal handle and weighted ends.",
+      "description": "Compact low-poly dumbbell with a horizontal handle and weighted ends. Material controls: knurled handle steel, rubber weights.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225430,8 +225792,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/dumbbell.kcad.ts",
       "preview": "/assets/sports-dumbbell.png",
-      "sourceSha256": "dfa6ff31e604e3a2b83bce4ec3879bfc61a268611f4498fad176f6cdd21c5878",
-      "triangleBudget": 1800,
+      "sourceSha256": "7c400da6250e5d596f1941339aa6b90e980753a69b88953086167396ee93875c",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -225443,13 +225805,24 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "knurledSteel",
           "type": "color",
-          "default": "#69747a",
-          "label": "Asset color"
+          "default": "#aab4b8",
+          "label": "Knurled handle steel"
+        },
+        {
+          "name": "rubberWeight",
+          "type": "color",
+          "default": "#30363a",
+          "label": "Rubber weights"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "knurledSteel": "#aab4b8",
+          "rubberWeight": "#496f83"
+        }
+      },
       "stats": {
         "triangles": 88,
         "sizeM": [
@@ -225462,14 +225835,21 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#69747a",
+          "name": "knurledSteel",
+          "color": "#aab4b8",
           "parts": [
-            "handle",
+            "handle"
+          ],
+          "param": "knurledSteel"
+        },
+        {
+          "name": "rubberWeight",
+          "color": "#30363a",
+          "parts": [
             "left-weight",
             "right-weight"
           ],
-          "param": "color"
+          "param": "rubberWeight"
         }
       ]
     },
@@ -225477,7 +225857,7 @@
       "id": "exercise-ball",
       "kit": "sports",
       "title": "Exercise ball",
-      "description": "Large low-poly exercise ball for a studio or gym scene.",
+      "description": "Large vinyl fitness ball with raised reinforcing seams and a distinct inflation valve. Material controls: exercise ball vinyl, reinforced seam tape, valve polymer.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225497,8 +225877,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/exercise-ball.kcad.ts",
       "preview": "/assets/sports-exercise-ball.png",
-      "sourceSha256": "5e6a8dd3bd806b02da76d8e882af4980c9a314d42b3617fdf65fa3b3c03b3067",
-      "triangleBudget": 1800,
+      "sourceSha256": "f30ef621591ac5562960bdb4221ffa226531d4bbca8149d5ef9298c0716b2095",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -225510,15 +225890,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "vinylCover",
           "type": "color",
-          "default": "#5a9bb1",
-          "label": "Asset color"
+          "default": "#7c9ab2",
+          "label": "Exercise ball vinyl"
+        },
+        {
+          "name": "seamTape",
+          "type": "color",
+          "default": "#eee8dc",
+          "label": "Reinforced seam tape"
+        },
+        {
+          "name": "valvePolymer",
+          "type": "color",
+          "default": "#333b40",
+          "label": "Valve polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "vinylCover": "#ce5948",
+          "seamTape": "#eee8dc"
+        }
+      },
       "stats": {
-        "triangles": 78,
+        "triangles": 410,
         "sizeM": [
           0.210714,
           0.216,
@@ -225529,12 +225926,28 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#5a9bb1",
+          "name": "vinylCover",
+          "color": "#7c9ab2",
           "parts": [
             "ball"
           ],
-          "param": "color"
+          "param": "vinylCover"
+        },
+        {
+          "name": "seamTape",
+          "color": "#eee8dc",
+          "parts": [
+            "reinforced-seam"
+          ],
+          "param": "seamTape"
+        },
+        {
+          "name": "valvePolymer",
+          "color": "#333b40",
+          "parts": [
+            "inflation-valve"
+          ],
+          "param": "valvePolymer"
         }
       ]
     },
@@ -225542,7 +225955,7 @@
       "id": "foam-roller",
       "kit": "sports",
       "title": "Foam roller",
-      "description": "Low-poly cylindrical foam roller laid horizontally on the floor.",
+      "description": "Textured foam roller with a dark polymer core and contrasting end rings. Material controls: eva roller foam, core polymer.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225562,8 +225975,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/foam-roller.kcad.ts",
       "preview": "/assets/sports-foam-roller.png",
-      "sourceSha256": "51c55fe101360436e88cc8a314215565a543445f8702ded6c4c5ceb61b925750",
-      "triangleBudget": 1800,
+      "sourceSha256": "0ca8020eec2d1b970e82dd510332c663c6427bb55839177f12018874e5298268",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -225575,31 +225988,51 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "evaFoam",
           "type": "color",
-          "default": "#a16c60",
-          "label": "Asset color"
+          "default": "#537d78",
+          "label": "EVA roller foam"
+        },
+        {
+          "name": "corePolymer",
+          "type": "color",
+          "default": "#263135",
+          "label": "Core polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "evaFoam": "#cf7140",
+          "corePolymer": "#263135"
+        }
+      },
       "stats": {
-        "triangles": 44,
+        "triangles": 236,
         "sizeM": [
           0.1,
           0.1,
-          0.22
+          0.224
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a16c60",
+          "name": "evaFoam",
+          "color": "#537d78",
           "parts": [
             "roller"
           ],
-          "param": "color"
+          "param": "evaFoam"
+        },
+        {
+          "name": "corePolymer",
+          "color": "#263135",
+          "parts": [
+            "core-end-ring--106",
+            "core-end-ring-106"
+          ],
+          "param": "corePolymer"
         }
       ]
     },
@@ -225607,7 +226040,7 @@
       "id": "golf-bag",
       "kit": "sports",
       "title": "Golf bag",
-      "description": "Upright golf bag with a broad lower body, tapered-looking rim and club tops.",
+      "description": "Upright golf bag with a broad lower body, tapered-looking rim and club tops. Material controls: bag nylon fabric, rim aluminium, club steel, strap webbing.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225626,8 +226059,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/golf-bag.kcad.ts",
       "preview": "/assets/sports-golf-bag.png",
-      "sourceSha256": "2b4a5a36a2e96b22578fb533c60b1af5184f879e113ed1307fcf8c3a9fc5afdc",
-      "triangleBudget": 1800,
+      "sourceSha256": "1ca562d501459dd0c6f1976989b74b2d87b32827ea9c508975e7a578b0f6f33d",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -225639,15 +226072,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "nylonFabric",
           "type": "color",
           "default": "#42675d",
-          "label": "Asset color"
+          "label": "Bag nylon fabric"
+        },
+        {
+          "name": "rimAluminium",
+          "type": "color",
+          "default": "#aab4b5",
+          "label": "Rim aluminium"
+        },
+        {
+          "name": "clubSteel",
+          "type": "color",
+          "default": "#8b969a",
+          "label": "Club steel"
+        },
+        {
+          "name": "strapWebbing",
+          "type": "color",
+          "default": "#c2b9a3",
+          "label": "Strap webbing"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "nylonFabric": "#bd5e40",
+          "rimAluminium": "#aab4b5"
+        }
+      },
       "stats": {
-        "triangles": 276,
+        "triangles": 312,
         "sizeM": [
           0.152,
           0.587,
@@ -225658,18 +226114,42 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "nylonFabric",
           "color": "#42675d",
           "parts": [
             "bag-body",
-            "base",
-            "rim",
+            "base"
+          ],
+          "param": "nylonFabric"
+        },
+        {
+          "name": "rimAluminium",
+          "color": "#aab4b5",
+          "parts": [
+            "rim"
+          ],
+          "param": "rimAluminium"
+        },
+        {
+          "name": "clubSteel",
+          "color": "#8b969a",
+          "parts": [
             "club-a",
             "club-b",
             "club-c",
+            "club-head-1",
+            "club-head-2",
+            "club-head-3"
+          ],
+          "param": "clubSteel"
+        },
+        {
+          "name": "strapWebbing",
+          "color": "#c2b9a3",
+          "parts": [
             "strap"
           ],
-          "param": "color"
+          "param": "strapWebbing"
         }
       ]
     },
@@ -225677,7 +226157,7 @@
       "id": "golf-club",
       "kit": "sports",
       "title": "Golf club",
-      "description": "Low-poly golf club with a metal head, long shaft and top grip.",
+      "description": "Low-poly golf club with a metal head, long shaft and top grip. Material controls: club-head stainless steel, graphite shaft, grip rubber.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225696,8 +226176,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/golf-club.kcad.ts",
       "preview": "/assets/sports-golf-club.png",
-      "sourceSha256": "56d48e1e99ccc7d2d4845353bd82eb9b26cc1dcfc793a0599c14173ff12abbe3",
-      "triangleBudget": 1800,
+      "sourceSha256": "4f9e0d9b98b658ff55a5bf4b9db20d14c8fad19377ab9aa6bcd9c3a09e714da4",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -225709,13 +226189,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#77828a",
-          "label": "Asset color"
+          "default": "#abb6b9",
+          "label": "Club-head stainless steel"
+        },
+        {
+          "name": "graphiteShaft",
+          "type": "color",
+          "default": "#3c444a",
+          "label": "Graphite shaft"
+        },
+        {
+          "name": "gripRubber",
+          "type": "color",
+          "default": "#242d32",
+          "label": "Grip rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "stainlessSteel": "#abb6b9",
+          "graphiteShaft": "#3c444a"
+        }
+      },
       "stats": {
         "triangles": 100,
         "sizeM": [
@@ -225728,14 +226225,28 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#77828a",
+          "name": "stainlessSteel",
+          "color": "#abb6b9",
           "parts": [
-            "club-head",
-            "shaft",
+            "club-head"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "graphiteShaft",
+          "color": "#3c444a",
+          "parts": [
+            "shaft"
+          ],
+          "param": "graphiteShaft"
+        },
+        {
+          "name": "gripRubber",
+          "color": "#242d32",
+          "parts": [
             "grip"
           ],
-          "param": "color"
+          "param": "gripRubber"
         }
       ]
     },
@@ -225743,7 +226254,7 @@
       "id": "gym-bench",
       "kit": "sports",
       "title": "Gym bench",
-      "description": "Low-poly adjustable bench prop with padded top, support frame and floor feet.",
+      "description": "Low-poly adjustable bench prop with padded top, support frame and floor feet. Material controls: vinyl upholstery, frame steel, foot rubber.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225763,8 +226274,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/gym-bench.kcad.ts",
       "preview": "/assets/sports-gym-bench.png",
-      "sourceSha256": "d2c0ced3944f05d3bb0526f15cb5537638e558ab94db2716fcedb4cf6db0d53c",
-      "triangleBudget": 1800,
+      "sourceSha256": "4c0308a3527f08cf42ddf4dbb826705160d769b6493b3869185b11dc21518c9e",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -225776,13 +226287,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "vinylUpholstery",
           "type": "color",
-          "default": "#555e65",
-          "label": "Asset color"
+          "default": "#344f5c",
+          "label": "Vinyl upholstery"
+        },
+        {
+          "name": "frameSteel",
+          "type": "color",
+          "default": "#8e999d",
+          "label": "Frame steel"
+        },
+        {
+          "name": "footRubber",
+          "type": "color",
+          "default": "#30363a",
+          "label": "Foot rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "vinylUpholstery": "#87463d",
+          "frameSteel": "#8e999d"
+        }
+      },
       "stats": {
         "triangles": 72,
         "sizeM": [
@@ -225795,17 +226323,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#555e65",
+          "name": "vinylUpholstery",
+          "color": "#344f5c",
           "parts": [
-            "pad",
+            "pad"
+          ],
+          "param": "vinylUpholstery"
+        },
+        {
+          "name": "frameSteel",
+          "color": "#8e999d",
+          "parts": [
             "front-leg",
             "rear-leg",
-            "crossbar",
+            "crossbar"
+          ],
+          "param": "frameSteel"
+        },
+        {
+          "name": "footRubber",
+          "color": "#30363a",
+          "parts": [
             "front-foot",
             "rear-foot"
           ],
-          "param": "color"
+          "param": "footRubber"
         }
       ]
     },
@@ -225813,7 +226355,7 @@
       "id": "hockey-puck",
       "kit": "sports",
       "title": "Hockey puck",
-      "description": "Low-poly cylindrical ice hockey puck prop.",
+      "description": "Dense cylindrical hockey puck with a molded rubber sidewall and inset dark face band. Material controls: vulcanized puck rubber, face rubber.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225833,8 +226375,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/hockey-puck.kcad.ts",
       "preview": "/assets/sports-hockey-puck.png",
-      "sourceSha256": "58225e4ce5ba8843ad3e7b2130bdbabc3067c439cddd6a5337635b3b1804838f",
-      "triangleBudget": 1800,
+      "sourceSha256": "4027039ceb4cd3cb1394bd58eafc9e9ac96d1eadeb3329cbe6a224f65dd60db1",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -225846,15 +226388,26 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "vulcanizedRubber",
           "type": "color",
           "default": "#383d42",
-          "label": "Asset color"
+          "label": "Vulcanized puck rubber"
+        },
+        {
+          "name": "faceRubber",
+          "type": "color",
+          "default": "#252a2e",
+          "label": "Face rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "vulcanizedRubber": "#3b6682",
+          "faceRubber": "#252a2e"
+        }
+      },
       "stats": {
-        "triangles": 44,
+        "triangles": 140,
         "sizeM": [
           0.076,
           0.024,
@@ -225865,12 +226418,20 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "vulcanizedRubber",
           "color": "#383d42",
           "parts": [
             "puck"
           ],
-          "param": "color"
+          "param": "vulcanizedRubber"
+        },
+        {
+          "name": "faceRubber",
+          "color": "#252a2e",
+          "parts": [
+            "face-inset-ring"
+          ],
+          "param": "faceRubber"
         }
       ]
     },
@@ -225878,7 +226439,7 @@
       "id": "hockey-stick",
       "kit": "sports",
       "title": "Field hockey stick",
-      "description": "Low-poly field hockey stick with a long shaft and hooked blade.",
+      "description": "Low-poly field hockey stick with a long shaft and hooked blade. Material controls: composite shaft, blade tape, grip tape.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225898,8 +226459,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/hockey-stick.kcad.ts",
       "preview": "/assets/sports-hockey-stick.png",
-      "sourceSha256": "8205b121d4e415da8fd519b753909f40ed8650eeb46c3fb6a68fe2c3381a1400",
-      "triangleBudget": 1800,
+      "sourceSha256": "5d1e4407d65bb67a29a3dbb0437b8a305d6e7755d35c0983739c42a7e8c18664",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -225911,15 +226472,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "compositeShaft",
           "type": "color",
           "default": "#8a6844",
-          "label": "Asset color"
+          "label": "Composite shaft"
+        },
+        {
+          "name": "bladeTape",
+          "type": "color",
+          "default": "#e7e0d0",
+          "label": "Blade tape"
+        },
+        {
+          "name": "gripTape",
+          "type": "color",
+          "default": "#30363a",
+          "label": "Grip tape"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "compositeShaft": "#344c68",
+          "bladeTape": "#d54c3e"
+        }
+      },
       "stats": {
-        "triangles": 36,
+        "triangles": 84,
         "sizeM": [
           0.112,
           0.62,
@@ -225930,14 +226508,32 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "compositeShaft",
           "color": "#8a6844",
           "parts": [
-            "shaft",
+            "shaft"
+          ],
+          "param": "compositeShaft"
+        },
+        {
+          "name": "bladeTape",
+          "color": "#e7e0d0",
+          "parts": [
             "blade",
             "heel"
           ],
-          "param": "color"
+          "param": "bladeTape"
+        },
+        {
+          "name": "gripTape",
+          "color": "#30363a",
+          "parts": [
+            "grip-wrap-1",
+            "grip-wrap-2",
+            "grip-wrap-3",
+            "grip-wrap-4"
+          ],
+          "param": "gripTape"
         }
       ]
     },
@@ -225945,7 +226541,7 @@
       "id": "inline-skate",
       "kit": "sports",
       "title": "Inline skate",
-      "description": "Low-poly inline skate boot with a cuff, chassis and three aligned wheels.",
+      "description": "Low-poly inline skate boot with a cuff, chassis and three aligned wheels. Material controls: synthetic boot fabric, frame aluminium, urethane wheels, molded cuff polymer.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225965,8 +226561,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/inline-skate.kcad.ts",
       "preview": "/assets/sports-inline-skate.png",
-      "sourceSha256": "5941afb08470c26aa32855f9157bf74a9af9950e850b35492046854d29ea8127",
-      "triangleBudget": 1800,
+      "sourceSha256": "9cdb439a6664c82b3e061f5a03c33398b5d71c166c5738bacb3bc369e0c6635d",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -225978,13 +226574,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "syntheticBoot",
           "type": "color",
           "default": "#465c70",
-          "label": "Asset color"
+          "label": "Synthetic boot fabric"
+        },
+        {
+          "name": "aluminiumFrame",
+          "type": "color",
+          "default": "#9ea9ac",
+          "label": "Frame aluminium"
+        },
+        {
+          "name": "urethaneWheel",
+          "type": "color",
+          "default": "#d6d4ca",
+          "label": "Urethane wheels"
+        },
+        {
+          "name": "moldedCuff",
+          "type": "color",
+          "default": "#35424d",
+          "label": "Molded cuff polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "syntheticBoot": "#c04d40",
+          "aluminiumFrame": "#9ea9ac"
+        }
+      },
       "stats": {
         "triangles": 270,
         "sizeM": [
@@ -225997,17 +226616,38 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "syntheticBoot",
           "color": "#465c70",
           "parts": [
-            "boot",
-            "cuff",
-            "chassis",
+            "boot"
+          ],
+          "param": "syntheticBoot"
+        },
+        {
+          "name": "moldedCuff",
+          "color": "#35424d",
+          "parts": [
+            "cuff"
+          ],
+          "param": "moldedCuff"
+        },
+        {
+          "name": "aluminiumFrame",
+          "color": "#9ea9ac",
+          "parts": [
+            "chassis"
+          ],
+          "param": "aluminiumFrame"
+        },
+        {
+          "name": "urethaneWheel",
+          "color": "#d6d4ca",
+          "parts": [
             "wheel-front",
             "wheel-middle",
             "wheel-rear"
           ],
-          "param": "color"
+          "param": "urethaneWheel"
         }
       ]
     },
@@ -226015,7 +226655,7 @@
       "id": "jump-rope",
       "kit": "sports",
       "title": "Jump rope",
-      "description": "Jump rope prop with a low-poly loop and two upright grip handles.",
+      "description": "Jump rope prop with a low-poly loop and two upright grip handles. Material controls: braided nylon rope, handle polymer, grip foam.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226035,8 +226675,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/jump-rope.kcad.ts",
       "preview": "/assets/sports-jump-rope.png",
-      "sourceSha256": "65b189bd9db7df969a9302fcd6221ae1bfd1b9be88f966c8aafb379447b81e00",
-      "triangleBudget": 1800,
+      "sourceSha256": "e69e32360eb2fcdebf800cdda77a48bed825eb99ca8f72d8a180365337445396",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -226048,13 +226688,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "braidedNylon",
           "type": "color",
           "default": "#bd5c4b",
-          "label": "Asset color"
+          "label": "Braided nylon rope"
+        },
+        {
+          "name": "handlePolymer",
+          "type": "color",
+          "default": "#4d5557",
+          "label": "Handle polymer"
+        },
+        {
+          "name": "gripFoam",
+          "type": "color",
+          "default": "#d5c7a9",
+          "label": "Grip foam"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "braidedNylon": "#3875a0",
+          "handlePolymer": "#4d5557"
+        }
+      },
       "stats": {
         "triangles": 272,
         "sizeM": [
@@ -226067,16 +226724,30 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "braidedNylon",
           "color": "#bd5c4b",
           "parts": [
-            "rope-loop",
+            "rope-loop"
+          ],
+          "param": "braidedNylon"
+        },
+        {
+          "name": "handlePolymer",
+          "color": "#4d5557",
+          "parts": [
             "left-handle",
-            "right-handle",
+            "right-handle"
+          ],
+          "param": "handlePolymer"
+        },
+        {
+          "name": "gripFoam",
+          "color": "#d5c7a9",
+          "parts": [
             "left-grip",
             "right-grip"
           ],
-          "param": "color"
+          "param": "gripFoam"
         }
       ]
     },
@@ -226084,7 +226755,7 @@
       "id": "kettlebell",
       "kit": "sports",
       "title": "Kettlebell",
-      "description": "Low-poly kettlebell with a rounded body and raised ring handle.",
+      "description": "Low-poly kettlebell with a rounded body and raised ring handle. Material controls: cast iron body, handle steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226104,8 +226775,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/kettlebell.kcad.ts",
       "preview": "/assets/sports-kettlebell.png",
-      "sourceSha256": "bda6d6058089df8ed24eef33da2ea85c8ded3a958c932d15e561788cee4a578a",
-      "triangleBudget": 1800,
+      "sourceSha256": "6c52fde822541d03243b86a914047554fffe5d6d1f1e8aedea549a00fb931081",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -226117,13 +226788,24 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "castIron",
           "type": "color",
           "default": "#555e63",
-          "label": "Asset color"
+          "label": "Cast iron body"
+        },
+        {
+          "name": "handleSteel",
+          "type": "color",
+          "default": "#aab4b7",
+          "label": "Handle steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "castIron": "#3f687f",
+          "handleSteel": "#aab4b7"
+        }
+      },
       "stats": {
         "triangles": 290,
         "sizeM": [
@@ -226136,15 +226818,22 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "castIron",
           "color": "#555e63",
           "parts": [
-            "body",
+            "body"
+          ],
+          "param": "castIron"
+        },
+        {
+          "name": "handleSteel",
+          "color": "#aab4b7",
+          "parts": [
             "handle",
             "handle-foot-left",
             "handle-foot-right"
           ],
-          "param": "color"
+          "param": "handleSteel"
         }
       ]
     },
@@ -226152,7 +226841,7 @@
       "id": "lacrosse-stick",
       "kit": "sports",
       "title": "Lacrosse stick",
-      "description": "Low-poly lacrosse stick with a long shaft and broad oval head.",
+      "description": "Lacrosse stick with a long graphite shaft, molded open head and a visible crossed nylon pocket. Material controls: graphite shaft, head polymer, pocket nylon.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226172,8 +226861,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/lacrosse-stick.kcad.ts",
       "preview": "/assets/sports-lacrosse-stick.png",
-      "sourceSha256": "e55d24f80816a63ce16cbba768ec407ca7f66890b2ad1c880c6a1ef18932e77a",
-      "triangleBudget": 1800,
+      "sourceSha256": "cd229ab961de7b860bd9efa1fe4c211e7dbeab80772467767f6f1581d70ba73d",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -226185,33 +226874,76 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "graphiteShaft",
           "type": "color",
-          "default": "#78756c",
-          "label": "Asset color"
+          "default": "#59666b",
+          "label": "Graphite shaft"
+        },
+        {
+          "name": "headPolymer",
+          "type": "color",
+          "default": "#e4e1d8",
+          "label": "Head polymer"
+        },
+        {
+          "name": "pocketNylon",
+          "type": "color",
+          "default": "#d5d2c7",
+          "label": "Pocket nylon"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "graphiteShaft": "#3e6b8c",
+          "headPolymer": "#d4a02f"
+        }
+      },
       "stats": {
-        "triangles": 90,
+        "triangles": 334,
         "sizeM": [
-          0.073402,
-          0.62752,
-          0.123668
+          0.079959,
+          0.679834,
+          0.020489
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#78756c",
+          "name": "graphiteShaft",
+          "color": "#59666b",
           "parts": [
             "shaft",
-            "head",
             "throat"
           ],
-          "param": "color"
+          "param": "graphiteShaft"
+        },
+        {
+          "name": "headPolymer",
+          "color": "#e4e1d8",
+          "parts": [
+            "head"
+          ],
+          "param": "headPolymer"
+        },
+        {
+          "name": "pocketNylon",
+          "color": "#d5d2c7",
+          "parts": [
+            "pocket-longitudinal-1",
+            "pocket-longitudinal-2",
+            "pocket-longitudinal-3",
+            "pocket-longitudinal-4",
+            "pocket-longitudinal-5",
+            "pocket-longitudinal-6",
+            "pocket-longitudinal-7",
+            "pocket-cross-1",
+            "pocket-cross-2",
+            "pocket-cross-3",
+            "pocket-cross-4",
+            "pocket-cross-5"
+          ],
+          "param": "pocketNylon"
         }
       ]
     },
@@ -226219,7 +226951,7 @@
       "id": "shuttlecock",
       "kit": "sports",
       "title": "Shuttlecock",
-      "description": "Low-poly badminton shuttlecock with a rounded cork tip and flared skirt.",
+      "description": "Low-poly badminton shuttlecock with a rounded cork tip and flared skirt. Material controls: cork tip, skirt nylon, crown binding tape.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226239,8 +226971,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/shuttlecock.kcad.ts",
       "preview": "/assets/sports-shuttlecock.png",
-      "sourceSha256": "f01b5531d1ef4917fceae5963035d28af7ab8e10889bf6799735bfb0fa82d517",
-      "triangleBudget": 1800,
+      "sourceSha256": "2a613cb67f07f57e722375b6af97e400552b5057dfbde9dee0ec5a09956763f7",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -226252,13 +226984,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "cork",
+          "type": "color",
+          "default": "#b6945d",
+          "label": "Cork tip"
+        },
+        {
+          "name": "featherNylon",
           "type": "color",
           "default": "#e8e4d8",
-          "label": "Asset color"
+          "label": "Skirt nylon"
+        },
+        {
+          "name": "crownTape",
+          "type": "color",
+          "default": "#d9b94a",
+          "label": "Crown binding tape"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "cork": "#b6945d",
+          "featherNylon": "#d9e7e5"
+        }
+      },
       "stats": {
         "triangles": 160,
         "sizeM": [
@@ -226271,14 +227020,28 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "cork",
+          "color": "#b6945d",
+          "parts": [
+            "cork"
+          ],
+          "param": "cork"
+        },
+        {
+          "name": "featherNylon",
           "color": "#e8e4d8",
           "parts": [
-            "cork",
-            "skirt",
+            "skirt"
+          ],
+          "param": "featherNylon"
+        },
+        {
+          "name": "crownTape",
+          "color": "#d9b94a",
+          "parts": [
             "crown"
           ],
-          "param": "color"
+          "param": "crownTape"
         }
       ]
     },
@@ -226286,7 +227049,7 @@
       "id": "skateboard",
       "kit": "sports",
       "title": "Skateboard",
-      "description": "Low-poly skateboard deck with two trucks and four wheels.",
+      "description": "Low-poly skateboard deck with two trucks and four wheels. Material controls: maple deck, truck aluminium, urethane wheels.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226305,8 +227068,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/skateboard.kcad.ts",
       "preview": "/assets/sports-skateboard.png",
-      "sourceSha256": "00063352204f8e005fa9952b6e7505af9c869f796411ad277c5e791387c75ece",
-      "triangleBudget": 1800,
+      "sourceSha256": "d46a49db4149bdfa573af89ab159d182bf34208b1208bd996a98af32afb41cc3",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -226318,13 +227081,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "mapleDeck",
           "type": "color",
           "default": "#a75e3b",
-          "label": "Asset color"
+          "label": "Maple deck"
+        },
+        {
+          "name": "truckAluminium",
+          "type": "color",
+          "default": "#8d999d",
+          "label": "Truck aluminium"
+        },
+        {
+          "name": "urethaneWheel",
+          "type": "color",
+          "default": "#34383b",
+          "label": "Urethane wheels"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "mapleDeck": "#527c9c",
+          "truckAluminium": "#8d999d"
+        }
+      },
       "stats": {
         "triangles": 348,
         "sizeM": [
@@ -226337,18 +227117,32 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "mapleDeck",
           "color": "#a75e3b",
           "parts": [
-            "deck",
+            "deck"
+          ],
+          "param": "mapleDeck"
+        },
+        {
+          "name": "truckAluminium",
+          "color": "#8d999d",
+          "parts": [
             "front-truck",
-            "rear-truck",
+            "rear-truck"
+          ],
+          "param": "truckAluminium"
+        },
+        {
+          "name": "urethaneWheel",
+          "color": "#34383b",
+          "parts": [
             "wheel-front-left",
             "wheel-front-right",
             "wheel-rear-left",
             "wheel-rear-right"
           ],
-          "param": "color"
+          "param": "urethaneWheel"
         }
       ]
     },
@@ -226356,7 +227150,7 @@
       "id": "soccer-ball",
       "kit": "sports",
       "title": "Soccer ball",
-      "description": "Low-poly spherical ball prop for a football pitch or training scene.",
+      "description": "Ivory faceted soccer ball with contrasting pentagonal panel patches distributed over the spherical cover. Material controls: ball cover, panel polymer.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226376,8 +227170,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/soccer-ball.kcad.ts",
       "preview": "/assets/sports-soccer-ball.png",
-      "sourceSha256": "c466d58102430e87b813eec20f049d6c55e4ebde10f02ccc2055b6857db421b5",
-      "triangleBudget": 1800,
+      "sourceSha256": "868b4c1a12b4aacb23e7c695b526219edba1c5fad886d378bfefa0418e183480",
+      "triangleBudget": 800,
       "params": [
         {
           "name": "scale",
@@ -226389,15 +227183,26 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "ballCover",
           "type": "color",
           "default": "#ece8d6",
-          "label": "Asset color"
+          "label": "Ball cover"
+        },
+        {
+          "name": "panelPolymer",
+          "type": "color",
+          "default": "#272c30",
+          "label": "Panel polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "ballCover": "#e8e4d8",
+          "panelPolymer": "#cf4939"
+        }
+      },
       "stats": {
-        "triangles": 78,
+        "triangles": 274,
         "sizeM": [
           0.113161,
           0.116,
@@ -226408,12 +227213,24 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "ballCover",
           "color": "#ece8d6",
           "parts": [
             "ball"
           ],
-          "param": "color"
+          "param": "ballCover"
+        },
+        {
+          "name": "panelPolymer",
+          "color": "#272c30",
+          "parts": [
+            "pentagon-panel-1",
+            "pentagon-panel-2",
+            "pentagon-panel-3",
+            "pentagon-panel-4",
+            "pentagon-panel-5"
+          ],
+          "param": "panelPolymer"
         }
       ]
     },
@@ -226421,7 +227238,7 @@
       "id": "soccer-goal",
       "kit": "sports",
       "title": "Soccer goal",
-      "description": "Small freestanding soccer goal with posts, crossbar and a simplified open net frame.",
+      "description": "Portable soccer goal with an aluminium frame and an open knotted-looking net grid across its roof, sides and floor. Material controls: goal aluminium, net nylon, ground rubber.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226441,8 +227258,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/soccer-goal.kcad.ts",
       "preview": "/assets/sports-soccer-goal.png",
-      "sourceSha256": "57f78fc41cdc9b59cbca261a184fa80dc85755ea626136ebf593c1d33aec34ee",
-      "triangleBudget": 1800,
+      "sourceSha256": "a0ff2ad15029221e77dc1786baec11d78a9e4ee0b4817702f581215c266fd3bb",
+      "triangleBudget": 1400,
       "params": [
         {
           "name": "scale",
@@ -226454,37 +227271,158 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "goalAluminium",
           "type": "color",
-          "default": "#e5e9e7",
-          "label": "Asset color"
+          "default": "#dce2df",
+          "label": "Goal aluminium"
+        },
+        {
+          "name": "netNylon",
+          "type": "color",
+          "default": "#728078",
+          "label": "Net nylon"
+        },
+        {
+          "name": "groundRubber",
+          "type": "color",
+          "default": "#343b3e",
+          "label": "Ground rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "goalAluminium": "#dce2df",
+          "netNylon": "#e5e1d4"
+        }
+      },
       "stats": {
-        "triangles": 148,
+        "triangles": 1228,
         "sizeM": [
-          0.304,
+          0.332,
           0.217,
-          0.094
+          0.1132
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#e5e9e7",
+          "name": "goalAluminium",
+          "color": "#dce2df",
           "parts": [
             "left-post",
             "right-post",
-            "crossbar",
-            "net-roof",
-            "net-side-left",
-            "net-side-right",
-            "net-floor"
+            "crossbar"
           ],
-          "param": "color"
+          "param": "goalAluminium"
+        },
+        {
+          "name": "netNylon",
+          "color": "#728078",
+          "parts": [
+            "roof-mesh-long-1",
+            "floor-mesh-long-1",
+            "roof-mesh-long-2",
+            "floor-mesh-long-2",
+            "roof-mesh-long-3",
+            "floor-mesh-long-3",
+            "roof-mesh-long-4",
+            "floor-mesh-long-4",
+            "roof-mesh-long-5",
+            "floor-mesh-long-5",
+            "roof-mesh-long-6",
+            "floor-mesh-long-6",
+            "roof-mesh-long-7",
+            "floor-mesh-long-7",
+            "roof-mesh-long-8",
+            "floor-mesh-long-8",
+            "roof-mesh-long-9",
+            "floor-mesh-long-9",
+            "roof-mesh-long-10",
+            "floor-mesh-long-10",
+            "roof-mesh-cross-1",
+            "floor-mesh-cross-1",
+            "left-mesh-cross-1",
+            "right-mesh-cross-1",
+            "roof-mesh-cross-2",
+            "floor-mesh-cross-2",
+            "left-mesh-cross-2",
+            "right-mesh-cross-2",
+            "roof-mesh-cross-3",
+            "floor-mesh-cross-3",
+            "left-mesh-cross-3",
+            "right-mesh-cross-3",
+            "roof-mesh-cross-4",
+            "floor-mesh-cross-4",
+            "left-mesh-cross-4",
+            "right-mesh-cross-4",
+            "roof-mesh-cross-5",
+            "floor-mesh-cross-5",
+            "left-mesh-cross-5",
+            "right-mesh-cross-5",
+            "roof-mesh-cross-6",
+            "floor-mesh-cross-6",
+            "left-mesh-cross-6",
+            "right-mesh-cross-6",
+            "roof-mesh-cross-7",
+            "floor-mesh-cross-7",
+            "left-mesh-cross-7",
+            "right-mesh-cross-7",
+            "roof-mesh-cross-8",
+            "floor-mesh-cross-8",
+            "left-mesh-cross-8",
+            "right-mesh-cross-8",
+            "roof-mesh-cross-9",
+            "floor-mesh-cross-9",
+            "left-mesh-cross-9",
+            "right-mesh-cross-9",
+            "roof-mesh-cross-10",
+            "floor-mesh-cross-10",
+            "left-mesh-cross-10",
+            "right-mesh-cross-10",
+            "roof-mesh-cross-11",
+            "floor-mesh-cross-11",
+            "left-mesh-cross-11",
+            "right-mesh-cross-11",
+            "roof-mesh-cross-12",
+            "floor-mesh-cross-12",
+            "left-mesh-cross-12",
+            "right-mesh-cross-12",
+            "roof-mesh-cross-13",
+            "floor-mesh-cross-13",
+            "left-mesh-cross-13",
+            "right-mesh-cross-13",
+            "roof-mesh-cross-14",
+            "floor-mesh-cross-14",
+            "left-mesh-cross-14",
+            "right-mesh-cross-14",
+            "roof-mesh-cross-15",
+            "floor-mesh-cross-15",
+            "left-mesh-cross-15",
+            "right-mesh-cross-15",
+            "left-mesh-height-1",
+            "right-mesh-height-1",
+            "left-mesh-height-2",
+            "right-mesh-height-2",
+            "left-mesh-height-3",
+            "right-mesh-height-3",
+            "left-mesh-height-4",
+            "right-mesh-height-4",
+            "left-mesh-height-5",
+            "right-mesh-height-5",
+            "left-mesh-height-6",
+            "right-mesh-height-6"
+          ],
+          "param": "netNylon"
+        },
+        {
+          "name": "groundRubber",
+          "color": "#343b3e",
+          "parts": [
+            "left-ground-pad",
+            "right-ground-pad"
+          ],
+          "param": "groundRubber"
         }
       ]
     },
@@ -226492,7 +227430,7 @@
       "id": "sports-water-bottle",
       "kit": "sports",
       "title": "Sports water bottle",
-      "description": "Reusable sports bottle with tapered neck and screw cap.",
+      "description": "Reusable sports bottle with a brushed steel body, polymer cap and contrasting silicone grip band. Material controls: bottle stainless steel, cap polymer, silicone grip band.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226512,8 +227450,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/sports-water-bottle.kcad.ts",
       "preview": "/assets/sports-sports-water-bottle.png",
-      "sourceSha256": "1c2686d52c226c5a8e78c16e782394538740c714830dd90d8ac8ced09c7ba27a",
-      "triangleBudget": 1800,
+      "sourceSha256": "9345c17bc2d765ad485876e2de5f1399aa2a703417a2545cb660888f06d943f6",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -226525,34 +227463,66 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#4b8f9e",
-          "label": "Asset color"
+          "default": "#8fa1a6",
+          "label": "Bottle stainless steel"
+        },
+        {
+          "name": "capPolymer",
+          "type": "color",
+          "default": "#30393c",
+          "label": "Cap polymer"
+        },
+        {
+          "name": "siliconeGrip",
+          "type": "color",
+          "default": "#d34c3d",
+          "label": "Silicone grip band"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "stainlessSteel": "#3f8191",
+          "capPolymer": "#30393c"
+        }
+      },
       "stats": {
-        "triangles": 168,
+        "triangles": 264,
         "sizeM": [
-          0.076,
+          0.08,
           0.208,
-          0.076
+          0.08
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#4b8f9e",
+          "name": "stainlessSteel",
+          "color": "#8fa1a6",
           "parts": [
             "body",
             "shoulder",
-            "neck",
+            "neck"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "capPolymer",
+          "color": "#30393c",
+          "parts": [
             "cap"
           ],
-          "param": "color"
+          "param": "capPolymer"
+        },
+        {
+          "name": "siliconeGrip",
+          "color": "#d34c3d",
+          "parts": [
+            "silicone-grip-band"
+          ],
+          "param": "siliconeGrip"
         }
       ]
     },
@@ -226560,7 +227530,7 @@
       "id": "starting-block",
       "kit": "sports",
       "title": "Track starting block",
-      "description": "Track starting block prop with a low base rail and two angled-looking foot pads.",
+      "description": "Track starting block prop with a low base rail and two angled-looking foot pads. Material controls: anodized aluminium, pedal rubber, track mat.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226580,8 +227550,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/starting-block.kcad.ts",
       "preview": "/assets/sports-starting-block.png",
-      "sourceSha256": "791bc8352970d6dc1ff20994e831737bf8009945a6c20c96af338ff6e9b6b141",
-      "triangleBudget": 1800,
+      "sourceSha256": "b3d8dc890d20227a4d47f7dcad139a81ea9f4328a50f73a95ca5226959839590",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -226593,15 +227563,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "anodizedAluminium",
           "type": "color",
-          "default": "#5d6d79",
-          "label": "Asset color"
+          "default": "#8b989b",
+          "label": "Anodized aluminium"
+        },
+        {
+          "name": "pedalRubber",
+          "type": "color",
+          "default": "#344b5b",
+          "label": "Pedal rubber"
+        },
+        {
+          "name": "trackMat",
+          "type": "color",
+          "default": "#3a4042",
+          "label": "Track mat"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "anodizedAluminium": "#8b989b",
+          "pedalRubber": "#ba4d3f"
+        }
+      },
       "stats": {
-        "triangles": 60,
+        "triangles": 72,
         "sizeM": [
           0.255,
           0.095,
@@ -226612,16 +227599,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#5d6d79",
+          "name": "anodizedAluminium",
+          "color": "#8b989b",
           "parts": [
-            "base-rail",
+            "base-rail"
+          ],
+          "param": "anodizedAluminium"
+        },
+        {
+          "name": "pedalRubber",
+          "color": "#344b5b",
+          "parts": [
             "front-pedal",
             "rear-pedal",
             "front-heel-stop",
             "rear-heel-stop"
           ],
-          "param": "color"
+          "param": "pedalRubber"
+        },
+        {
+          "name": "trackMat",
+          "color": "#3a4042",
+          "parts": [
+            "track-grip-pad"
+          ],
+          "param": "trackMat"
         }
       ]
     },
@@ -226629,7 +227631,7 @@
       "id": "tennis-ball",
       "kit": "sports",
       "title": "Tennis ball",
-      "description": "Compact low-poly tennis ball prop.",
+      "description": "Compact felt tennis ball with a continuous curved ivory seam around its spherical surface. Material controls: felt cover, seam tape.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226649,8 +227651,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/tennis-ball.kcad.ts",
       "preview": "/assets/sports-tennis-ball.png",
-      "sourceSha256": "427794462962f3f2e12bc58dcee018d0265cb6e6202b0c541e589f3eba2a4c4a",
-      "triangleBudget": 1800,
+      "sourceSha256": "5500cca0310c7357422b5abc3c84257e6cca4b813e3dffff11777cebed432003",
+      "triangleBudget": 800,
       "params": [
         {
           "name": "scale",
@@ -226662,17 +227664,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "feltCover",
           "type": "color",
           "default": "#b6c84c",
-          "label": "Asset color"
+          "label": "Felt cover"
+        },
+        {
+          "name": "seamTape",
+          "type": "color",
+          "default": "#f0ebdf",
+          "label": "Seam tape"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "feltCover": "#d9a63a",
+          "seamTape": "#f0ebdf"
+        }
+      },
       "stats": {
-        "triangles": 78,
+        "triangles": 366,
         "sizeM": [
-          0.066336,
+          0.0689,
           0.068,
           0.063689
         ],
@@ -226681,12 +227694,20 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "feltCover",
           "color": "#b6c84c",
           "parts": [
             "ball"
           ],
-          "param": "color"
+          "param": "feltCover"
+        },
+        {
+          "name": "seamTape",
+          "color": "#f0ebdf",
+          "parts": [
+            "curved-seam"
+          ],
+          "param": "seamTape"
         }
       ]
     },
@@ -226694,7 +227715,7 @@
       "id": "tennis-net",
       "kit": "sports",
       "title": "Tennis net",
-      "description": "Practice tennis net with upright posts and a simplified rectangular mesh panel.",
+      "description": "Practice tennis net with taut vertical and horizontal mesh cords, a reinforced top band and grounded posts. Material controls: powder-coated steel, net nylon, base rubber.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226714,8 +227735,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/tennis-net.kcad.ts",
       "preview": "/assets/sports-tennis-net.png",
-      "sourceSha256": "0b707076ae396d25be0b7f9a6534549b3b6b8e5a95ebbf88e8a19f94fa6b22d4",
-      "triangleBudget": 1800,
+      "sourceSha256": "a5b5e52e932e1b976f603226f9b7877d7fa4d5eee27fad27c4c75617ed87f76a",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -226727,15 +227748,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
           "default": "#6d7471",
-          "label": "Asset color"
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "netNylon",
+          "type": "color",
+          "default": "#dddccf",
+          "label": "Net nylon"
+        },
+        {
+          "name": "baseRubber",
+          "type": "color",
+          "default": "#303638",
+          "label": "Base rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "powderCoat": "#526d56",
+          "netNylon": "#e6e1d4"
+        }
+      },
       "stats": {
-        "triangles": 136,
+        "triangles": 436,
         "sizeM": [
           0.512,
           0.151,
@@ -226746,17 +227784,56 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "powderCoat",
           "color": "#6d7471",
           "parts": [
             "left-post",
             "right-post",
-            "net-panel",
-            "top-band",
+            "top-band"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "baseRubber",
+          "color": "#303638",
+          "parts": [
             "base-left",
             "base-right"
           ],
-          "param": "color"
+          "param": "baseRubber"
+        },
+        {
+          "name": "netNylon",
+          "color": "#dddccf",
+          "parts": [
+            "mesh-vertical-1",
+            "mesh-vertical-2",
+            "mesh-vertical-3",
+            "mesh-vertical-4",
+            "mesh-vertical-5",
+            "mesh-vertical-6",
+            "mesh-vertical-7",
+            "mesh-vertical-8",
+            "mesh-vertical-9",
+            "mesh-vertical-10",
+            "mesh-vertical-11",
+            "mesh-vertical-12",
+            "mesh-vertical-13",
+            "mesh-vertical-14",
+            "mesh-vertical-15",
+            "mesh-vertical-16",
+            "mesh-vertical-17",
+            "mesh-vertical-18",
+            "mesh-vertical-19",
+            "mesh-horizontal-1",
+            "mesh-horizontal-2",
+            "mesh-horizontal-3",
+            "mesh-horizontal-4",
+            "mesh-horizontal-5",
+            "mesh-horizontal-6",
+            "mesh-horizontal-7"
+          ],
+          "param": "netNylon"
         }
       ]
     },
@@ -226764,7 +227841,7 @@
       "id": "tennis-racket",
       "kit": "sports",
       "title": "Tennis racket",
-      "description": "Low-poly tennis racket with an oval head and long handle.",
+      "description": "Low-poly tennis racket with an oval head and long handle. Material controls: graphite frame, nylon strings, grip tape.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226784,8 +227861,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/tennis-racket.kcad.ts",
       "preview": "/assets/sports-tennis-racket.png",
-      "sourceSha256": "7a5dbafe0cd6d0fed476b23d60d9fde7cb1a3909e9e559264225e0e165b32aef",
-      "triangleBudget": 1800,
+      "sourceSha256": "d13591332d8a530b107fc0671d38a7d0c346b6d4841e61e0dd66c6d730f50510",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -226797,13 +227874,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "graphiteFrame",
           "type": "color",
           "default": "#5b6870",
-          "label": "Asset color"
+          "label": "Graphite frame"
+        },
+        {
+          "name": "nylonStrings",
+          "type": "color",
+          "default": "#e7e3d7",
+          "label": "Nylon strings"
+        },
+        {
+          "name": "gripTape",
+          "type": "color",
+          "default": "#343a3d",
+          "label": "Grip tape"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "graphiteFrame": "#357394",
+          "nylonStrings": "#e7e3d7"
+        }
+      },
       "stats": {
         "triangles": 288,
         "sizeM": [
@@ -226816,13 +227910,27 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "graphiteFrame",
           "color": "#5b6870",
           "parts": [
             "head-frame",
-            "throat",
+            "throat"
+          ],
+          "param": "graphiteFrame"
+        },
+        {
+          "name": "gripTape",
+          "color": "#343a3d",
+          "parts": [
             "handle",
-            "butt-cap",
+            "butt-cap"
+          ],
+          "param": "gripTape"
+        },
+        {
+          "name": "nylonStrings",
+          "color": "#e7e3d7",
+          "parts": [
             "string-vertical-left-outer",
             "string-vertical-left-inner",
             "string-vertical-centre",
@@ -226834,7 +227942,7 @@
             "string-horizontal-4",
             "string-horizontal-5"
           ],
-          "param": "color"
+          "param": "nylonStrings"
         }
       ]
     },
@@ -226842,7 +227950,7 @@
       "id": "track-hurdle",
       "kit": "sports",
       "title": "Track hurdle",
-      "description": "Portable low-poly running hurdle with two feet, uprights and a crossbar.",
+      "description": "Portable low-poly running hurdle with two feet, uprights and a crossbar. Material controls: anodized aluminium, crossbar polymer, foot rubber.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226862,8 +227970,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/track-hurdle.kcad.ts",
       "preview": "/assets/sports-track-hurdle.png",
-      "sourceSha256": "aeb0ad4d202a4117ddb2c749dc176b251f7359e29c9b71c2fbd633b83dd1fa69",
-      "triangleBudget": 1800,
+      "sourceSha256": "cf6964b91445097112101618af6e4660a2bae041cb6cb18faaf8ab15fe8edecb",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -226875,13 +227983,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "anodizedAluminium",
           "type": "color",
-          "default": "#c95748",
-          "label": "Asset color"
+          "default": "#a5b0b2",
+          "label": "Anodized aluminium"
+        },
+        {
+          "name": "crossbarPolymer",
+          "type": "color",
+          "default": "#d9c554",
+          "label": "Crossbar polymer"
+        },
+        {
+          "name": "footRubber",
+          "type": "color",
+          "default": "#333a3d",
+          "label": "Foot rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "anodizedAluminium": "#a5b0b2",
+          "crossbarPolymer": "#d84b40"
+        }
+      },
       "stats": {
         "triangles": 124,
         "sizeM": [
@@ -226894,16 +228019,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#c95748",
+          "name": "anodizedAluminium",
+          "color": "#a5b0b2",
           "parts": [
             "left-upright",
-            "right-upright",
-            "crossbar",
+            "right-upright"
+          ],
+          "param": "anodizedAluminium"
+        },
+        {
+          "name": "crossbarPolymer",
+          "color": "#d9c554",
+          "parts": [
+            "crossbar"
+          ],
+          "param": "crossbarPolymer"
+        },
+        {
+          "name": "footRubber",
+          "color": "#333a3d",
+          "parts": [
             "left-foot",
             "right-foot"
           ],
-          "param": "color"
+          "param": "footRubber"
         }
       ]
     },
@@ -226911,7 +228050,7 @@
       "id": "treadmill",
       "kit": "sports",
       "title": "Treadmill",
-      "description": "Low-poly treadmill with running deck, front uprights, hand rails and console.",
+      "description": "Low-poly treadmill with running deck, front uprights, hand rails and console. Material controls: frame steel, running belt rubber, console glass.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -226931,8 +228070,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/treadmill.kcad.ts",
       "preview": "/assets/sports-treadmill.png",
-      "sourceSha256": "76c2febcbfcc1a53e3911f78be7fee65aa98fd8cede29b4cfa96a85fc9b2f4e1",
-      "triangleBudget": 1800,
+      "sourceSha256": "fd026e2178a576bc435a432b1d7d5f769715d3d4809cf19d3afbff9808bbc568",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -226944,13 +228083,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "frameSteel",
           "type": "color",
-          "default": "#46545c",
-          "label": "Asset color"
+          "default": "#5b676c",
+          "label": "Frame steel"
+        },
+        {
+          "name": "runningBeltRubber",
+          "type": "color",
+          "default": "#282d31",
+          "label": "Running belt rubber"
+        },
+        {
+          "name": "consoleGlass",
+          "type": "color",
+          "default": "#70a7b7",
+          "label": "Console glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "frameSteel": "#496b52",
+          "runningBeltRubber": "#282d31"
+        }
+      },
       "stats": {
         "triangles": 72,
         "sizeM": [
@@ -226963,17 +228119,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#46545c",
+          "name": "runningBeltRubber",
+          "color": "#282d31",
           "parts": [
-            "deck",
+            "deck"
+          ],
+          "param": "runningBeltRubber"
+        },
+        {
+          "name": "frameSteel",
+          "color": "#5b676c",
+          "parts": [
             "front-upright-left",
             "front-upright-right",
             "console",
-            "console-screen",
             "left-foot"
           ],
-          "param": "color"
+          "param": "frameSteel"
+        },
+        {
+          "name": "consoleGlass",
+          "color": "#70a7b7",
+          "parts": [
+            "console-screen"
+          ],
+          "param": "consoleGlass"
         }
       ]
     },
@@ -226981,7 +228151,7 @@
       "id": "trophy-cup",
       "kit": "sports",
       "title": "Trophy cup",
-      "description": "Low-poly award cup with an open bowl, stem, handles and stepped base.",
+      "description": "Low-poly award cup with an open bowl, stem, handles and stepped base. Material controls: gold-plated metal, walnut base, engraving inlay.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -227001,8 +228171,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/trophy-cup.kcad.ts",
       "preview": "/assets/sports-trophy-cup.png",
-      "sourceSha256": "3c944a95a02edb41e03d3c9d9f090ba625ac30e9f03ad81626b74ca3522ae840",
-      "triangleBudget": 1800,
+      "sourceSha256": "79a4d25250af22cc576923072f08d5204245de48a4c2649f21b0279179cd98cb",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -227014,13 +228184,30 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "goldPlating",
           "type": "color",
-          "default": "#c59a43",
-          "label": "Asset color"
+          "default": "#c6a640",
+          "label": "Gold-plated metal"
+        },
+        {
+          "name": "walnutBase",
+          "type": "color",
+          "default": "#765139",
+          "label": "Walnut base"
+        },
+        {
+          "name": "engravingInlay",
+          "type": "color",
+          "default": "#f0db88",
+          "label": "Engraving inlay"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "goldPlating": "#b9c1c1",
+          "walnutBase": "#765139"
+        }
+      },
       "stats": {
         "triangles": 320,
         "sizeM": [
@@ -227033,17 +228220,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#c59a43",
+          "name": "walnutBase",
+          "color": "#765139",
           "parts": [
-            "base",
+            "base"
+          ],
+          "param": "walnutBase"
+        },
+        {
+          "name": "goldPlating",
+          "color": "#c6a640",
+          "parts": [
             "stem",
             "bowl",
             "left-handle",
-            "right-handle",
+            "right-handle"
+          ],
+          "param": "goldPlating"
+        },
+        {
+          "name": "engravingInlay",
+          "color": "#f0db88",
+          "parts": [
             "top-rim"
           ],
-          "param": "color"
+          "param": "engravingInlay"
         }
       ]
     },
@@ -227051,7 +228252,7 @@
       "id": "volleyball-net",
       "kit": "sports",
       "title": "Volleyball net",
-      "description": "Portable volleyball net with posts, a broad mesh panel and ground feet.",
+      "description": "Portable volleyball net with a dense open cord grid, pale safety band and weighted ground feet. Material controls: powder-coated steel, mesh nylon, top safety band, base rubber.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -227071,8 +228272,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/volleyball-net.kcad.ts",
       "preview": "/assets/sports-volleyball-net.png",
-      "sourceSha256": "49bfe36e48782d6c887217ccceca99b67aba155ed9a35fa921761692064ba706",
-      "triangleBudget": 1800,
+      "sourceSha256": "8ae3e1e74b7a48cc1225a08e66185509931b9601aaff9a516cc286c5d309129a",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -227084,15 +228285,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
           "default": "#697573",
-          "label": "Asset color"
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "meshNylon",
+          "type": "color",
+          "default": "#dddccf",
+          "label": "Mesh nylon"
+        },
+        {
+          "name": "safetyBand",
+          "type": "color",
+          "default": "#f0eee3",
+          "label": "Top safety band"
+        },
+        {
+          "name": "baseRubber",
+          "type": "color",
+          "default": "#303638",
+          "label": "Base rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "powderCoat": "#526c55",
+          "meshNylon": "#e6e1d4"
+        }
+      },
       "stats": {
-        "triangles": 136,
+        "triangles": 472,
         "sizeM": [
           0.46,
           0.206,
@@ -227103,17 +228327,66 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "powderCoat",
           "color": "#697573",
           "parts": [
             "left-post",
-            "right-post",
-            "net-panel",
-            "top-band",
+            "right-post"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "safetyBand",
+          "color": "#f0eee3",
+          "parts": [
+            "top-band"
+          ],
+          "param": "safetyBand"
+        },
+        {
+          "name": "baseRubber",
+          "color": "#303638",
+          "parts": [
             "base-left",
             "base-right"
           ],
-          "param": "color"
+          "param": "baseRubber"
+        },
+        {
+          "name": "meshNylon",
+          "color": "#dddccf",
+          "parts": [
+            "mesh-vertical-1",
+            "mesh-vertical-2",
+            "mesh-vertical-3",
+            "mesh-vertical-4",
+            "mesh-vertical-5",
+            "mesh-vertical-6",
+            "mesh-vertical-7",
+            "mesh-vertical-8",
+            "mesh-vertical-9",
+            "mesh-vertical-10",
+            "mesh-vertical-11",
+            "mesh-vertical-12",
+            "mesh-vertical-13",
+            "mesh-vertical-14",
+            "mesh-vertical-15",
+            "mesh-vertical-16",
+            "mesh-vertical-17",
+            "mesh-vertical-18",
+            "mesh-vertical-19",
+            "mesh-horizontal-1",
+            "mesh-horizontal-2",
+            "mesh-horizontal-3",
+            "mesh-horizontal-4",
+            "mesh-horizontal-5",
+            "mesh-horizontal-6",
+            "mesh-horizontal-7",
+            "mesh-horizontal-8",
+            "mesh-horizontal-9",
+            "mesh-horizontal-10"
+          ],
+          "param": "meshNylon"
         }
       ]
     },
@@ -227121,7 +228394,7 @@
       "id": "volleyball",
       "kit": "sports",
       "title": "Volleyball",
-      "description": "Low-poly volleyball prop with a faceted spherical silhouette.",
+      "description": "Panelled volleyball with contrasting curved seam bands that divide its soft spherical cover. Material controls: ball panel fabric, seam tape, panel accent fabric.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -227140,8 +228413,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/volleyball.kcad.ts",
       "preview": "/assets/sports-volleyball.png",
-      "sourceSha256": "fd0150fa839942655437a230d1f5cfba3d872e523f5ec32d857a8dd79d88ce7f",
-      "triangleBudget": 1800,
+      "sourceSha256": "d9cbe83c6f5c1e7fd55f9990b9bf90cd5ee497d2608142934353de98a12f88df",
+      "triangleBudget": 800,
       "params": [
         {
           "name": "scale",
@@ -227153,31 +228426,64 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "panelFabric",
           "type": "color",
           "default": "#e7e2d6",
-          "label": "Asset color"
+          "label": "Ball panel fabric"
+        },
+        {
+          "name": "seamTape",
+          "type": "color",
+          "default": "#3e88a5",
+          "label": "Seam tape"
+        },
+        {
+          "name": "panelAccent",
+          "type": "color",
+          "default": "#d3b642",
+          "label": "Panel accent fabric"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "panelFabric": "#3976a0",
+          "seamTape": "#efe5d4"
+        }
+      },
       "stats": {
-        "triangles": 78,
+        "triangles": 654,
         "sizeM": [
-          0.113161,
-          0.116,
-          0.108647
+          0.1169,
+          0.11645,
+          0.1169
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
+          "name": "panelFabric",
           "color": "#e7e2d6",
           "parts": [
             "ball"
           ],
-          "param": "color"
+          "param": "panelFabric"
+        },
+        {
+          "name": "seamTape",
+          "color": "#3e88a5",
+          "parts": [
+            "panel-channel-a"
+          ],
+          "param": "seamTape"
+        },
+        {
+          "name": "panelAccent",
+          "color": "#d3b642",
+          "parts": [
+            "panel-channel-b"
+          ],
+          "param": "panelAccent"
         }
       ]
     },
@@ -227185,7 +228491,7 @@
       "id": "weight-plate",
       "kit": "sports",
       "title": "Weight plate",
-      "description": "Low-poly round gym weight plate with a central bore.",
+      "description": "Cast-iron gym plate with a central sleeved bore and a contrasting painted weight marker. Material controls: cast iron plate, bore sleeve steel, weight marking paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -227205,8 +228511,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/weight-plate.kcad.ts",
       "preview": "/assets/sports-weight-plate.png",
-      "sourceSha256": "8c0fabd1aabc208b7bc98b32be4a6c9235d8f5a195d0aa86fec5786e2bf7adbc",
-      "triangleBudget": 1800,
+      "sourceSha256": "a05a98956e1de9c456b2d9e860794bda15084366a9edde71f7748d5dc29f5be5",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -227218,15 +228524,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "castIron",
           "type": "color",
           "default": "#5b666b",
-          "label": "Asset color"
+          "label": "Cast iron plate"
+        },
+        {
+          "name": "boreSteel",
+          "type": "color",
+          "default": "#b4bdbe",
+          "label": "Bore sleeve steel"
+        },
+        {
+          "name": "markingPaint",
+          "type": "color",
+          "default": "#d5d0bf",
+          "label": "Weight marking paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "castIron": "#46667a",
+          "boreSteel": "#b4bdbe"
+        }
+      },
       "stats": {
-        "triangles": 96,
+        "triangles": 204,
         "sizeM": [
           0.164,
           0.022,
@@ -227237,12 +228560,28 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "castIron",
           "color": "#5b666b",
           "parts": [
             "plate"
           ],
-          "param": "color"
+          "param": "castIron"
+        },
+        {
+          "name": "boreSteel",
+          "color": "#b4bdbe",
+          "parts": [
+            "bore-sleeve"
+          ],
+          "param": "boreSteel"
+        },
+        {
+          "name": "markingPaint",
+          "color": "#d5d0bf",
+          "parts": [
+            "weight-mark"
+          ],
+          "param": "markingPaint"
         }
       ]
     },
@@ -227250,7 +228589,7 @@
       "id": "yoga-block",
       "kit": "sports",
       "title": "Yoga block",
-      "description": "Simple low-poly foam yoga block with a broad rectangular profile.",
+      "description": "Rectangular EVA yoga block with raised traction ribs across its broad support face. Material controls: eva foam, textured grip foam.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -227270,8 +228609,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/yoga-block.kcad.ts",
       "preview": "/assets/sports-yoga-block.png",
-      "sourceSha256": "fda4f946ed3ec855765775675d646dad5156a6d496a9ac1ea93aff5249747dab",
-      "triangleBudget": 1800,
+      "sourceSha256": "edd523a9df14f1eeac99647db137acf9a029733c910e61c28665ede2b8d68d5f",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -227283,18 +228622,29 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "evaFoam",
           "type": "color",
           "default": "#8c6b78",
-          "label": "Asset color"
+          "label": "EVA foam"
+        },
+        {
+          "name": "tractionFoam",
+          "type": "color",
+          "default": "#70535f",
+          "label": "Textured grip foam"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "evaFoam": "#587f75",
+          "tractionFoam": "#456a60"
+        }
+      },
       "stats": {
-        "triangles": 12,
+        "triangles": 72,
         "sizeM": [
           0.18,
-          0.065,
+          0.066,
           0.105
         ],
         "minUpM": 0,
@@ -227302,12 +228652,24 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "evaFoam",
           "color": "#8c6b78",
           "parts": [
             "block"
           ],
-          "param": "color"
+          "param": "evaFoam"
+        },
+        {
+          "name": "tractionFoam",
+          "color": "#70535f",
+          "parts": [
+            "traction-rib-1",
+            "traction-rib-2",
+            "traction-rib-3",
+            "traction-rib-4",
+            "traction-rib-5"
+          ],
+          "param": "tractionFoam"
         }
       ]
     },
@@ -227315,7 +228677,7 @@
       "id": "yoga-mat",
       "kit": "sports",
       "title": "Yoga mat",
-      "description": "Rolled yoga mat prop with a flat practice surface and cylindrical roll.",
+      "description": "Rolled yoga mat prop with a flat practice surface and cylindrical roll. Material controls: foam rubber mat, carry webbing, edge binding.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -227335,8 +228697,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/yoga-mat.kcad.ts",
       "preview": "/assets/sports-yoga-mat.png",
-      "sourceSha256": "09e2b9b2df631815ac02d64ecca8077175be19f0278a1f348f2218c8ef245b8b",
-      "triangleBudget": 1800,
+      "sourceSha256": "ba417ee909a73ac9548a290cf7fdcaa523bbc36bf2de473a130a1e11ebe3733a",
+      "triangleBudget": 600,
       "params": [
         {
           "name": "scale",
@@ -227348,15 +228710,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "foamRubber",
           "type": "color",
           "default": "#6b8978",
-          "label": "Asset color"
+          "label": "Foam rubber mat"
+        },
+        {
+          "name": "carryWebbing",
+          "type": "color",
+          "default": "#c2b49a",
+          "label": "Carry webbing"
+        },
+        {
+          "name": "edgeBinding",
+          "type": "color",
+          "default": "#3d534b",
+          "label": "Edge binding"
         }
       ],
-      "presets": {},
+      "presets": {
+        "clubColors": {
+          "foamRubber": "#587ca0",
+          "carryWebbing": "#d7c154"
+        }
+      },
       "stats": {
-        "triangles": 56,
+        "triangles": 104,
         "sizeM": [
           0.3,
           0.056,
@@ -227367,13 +228746,31 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "foamRubber",
           "color": "#6b8978",
           "parts": [
-            "mat",
-            "rolled-edge"
+            "mat"
           ],
-          "param": "color"
+          "param": "foamRubber"
+        },
+        {
+          "name": "edgeBinding",
+          "color": "#3d534b",
+          "parts": [
+            "rolled-edge",
+            "edge-binding-front",
+            "edge-binding-back"
+          ],
+          "param": "edgeBinding"
+        },
+        {
+          "name": "carryWebbing",
+          "color": "#c2b49a",
+          "parts": [
+            "carry-strap-left",
+            "carry-strap-right"
+          ],
+          "param": "carryWebbing"
         }
       ]
     },

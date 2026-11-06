@@ -1,0 +1,653 @@
+{
+  "kit": "sports",
+  "beforeAssetIds": 40,
+  "afterAssetIds": 40,
+  "assetIdsUnchanged": true,
+  "sourceHashesChecked": 40,
+  "previewsChecked": 40,
+  "materialColorParamsPerAsset": [
+    2,
+    4
+  ],
+  "presetEntries": 40,
+  "triangleBudgetsPassed": true,
+  "failures": [],
+  "assets": [
+    {
+      "id": "american-football",
+      "sourceSha256": "854ab53efb387cebae3bb63860b0f7206f0a000a770806c9e0811f7a29b23215",
+      "preview": "/assets/sports-american-football.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "pebbledLeather",
+        "ivoryLaces",
+        "endStripePaint"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 126,
+      "triangleBudget": 600
+    },
+    {
+      "id": "badminton-racket",
+      "sourceSha256": "6d710aa8622f16df64c2c145d632798bc7d80e527b7289e82317c6f42bb3a2e0",
+      "preview": "/assets/sports-badminton-racket.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "graphiteFrame",
+        "nylonStrings",
+        "gripRubber"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 312,
+      "triangleBudget": 600
+    },
+    {
+      "id": "barbell",
+      "sourceSha256": "84502df3cdd94b181b5536948b6feeb610ec16767dec7f85923b5a1527c7a627",
+      "preview": "/assets/sports-barbell.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "chromedSteel",
+        "bumperRubber",
+        "knurlSteel"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 200,
+      "triangleBudget": 600
+    },
+    {
+      "id": "baseball-bat",
+      "sourceSha256": "be7214effaab0cfbb75c742c19d34874c1c00318aaebf953d0f1fd4e7c770ead",
+      "preview": "/assets/sports-baseball-bat.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "mapleWood",
+        "gripTape",
+        "endGrain"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 176,
+      "triangleBudget": 600
+    },
+    {
+      "id": "baseball-glove",
+      "sourceSha256": "2f8b38dcf97e501316626f05ddcfa629d08fe759e218fef9c19c7565fc0e4344",
+      "preview": "/assets/sports-baseball-glove.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "gloveLeather",
+        "palmLining",
+        "laceCord"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 446,
+      "triangleBudget": 600
+    },
+    {
+      "id": "baseball",
+      "sourceSha256": "439a76bcfaa24275a1b9c8412f535a56ac9bff59a803a12acd18e454f75423af",
+      "preview": "/assets/sports-baseball.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "coverLeather",
+        "redStitching"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 654,
+      "triangleBudget": 800
+    },
+    {
+      "id": "basketball-hoop",
+      "sourceSha256": "749a3289ebca06a27cd79335dbfbf04c98568b201b17928de32d609b441eb981",
+      "preview": "/assets/sports-basketball-hoop.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "powderCoat",
+        "backboardPolycarbonate",
+        "rimSteel",
+        "netNylon"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 704,
+      "triangleBudget": 900
+    },
+    {
+      "id": "basketball",
+      "sourceSha256": "2a00f927d515c8957ee51a244a1219fa7beaf32093e454f886ab6c362f94c124",
+      "preview": "/assets/sports-basketball.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "pebbledCover",
+        "channelRubber"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 654,
+      "triangleBudget": 800
+    },
+    {
+      "id": "batting-helmet",
+      "sourceSha256": "b38ad095f8c97abc62a5b434c66c2791e02d4bfa494e21bc3c28db54ce0c2a07",
+      "preview": "/assets/sports-batting-helmet.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "helmetPolymer",
+        "impactFoam",
+        "faceGuardSteel"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 92,
+      "triangleBudget": 600
+    },
+    {
+      "id": "cricket-bat",
+      "sourceSha256": "d7696a294ae0f46a4e3ad6e1fe2f2f08cbca01c8e0b3115d6913595f50c66820",
+      "preview": "/assets/sports-cricket-bat.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "willowWood",
+        "rubberGrip",
+        "edgeTape"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 136,
+      "triangleBudget": 600
+    },
+    {
+      "id": "cricket-wicket",
+      "sourceSha256": "f16c4141001536b3e5de2b576d309da83ea182dfa1beb4f36b8633ba9b5dc9cd",
+      "preview": "/assets/sports-cricket-wicket.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "wicketTimber",
+        "groundRubber",
+        "bailPaint"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 168,
+      "triangleBudget": 600
+    },
+    {
+      "id": "dumbbell",
+      "sourceSha256": "7c400da6250e5d596f1941339aa6b90e980753a69b88953086167396ee93875c",
+      "preview": "/assets/sports-dumbbell.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "knurledSteel",
+        "rubberWeight"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 88,
+      "triangleBudget": 600
+    },
+    {
+      "id": "exercise-ball",
+      "sourceSha256": "f30ef621591ac5562960bdb4221ffa226531d4bbca8149d5ef9298c0716b2095",
+      "preview": "/assets/sports-exercise-ball.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "vinylCover",
+        "seamTape",
+        "valvePolymer"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 410,
+      "triangleBudget": 600
+    },
+    {
+      "id": "foam-roller",
+      "sourceSha256": "0ca8020eec2d1b970e82dd510332c663c6427bb55839177f12018874e5298268",
+      "preview": "/assets/sports-foam-roller.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "evaFoam",
+        "corePolymer"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 236,
+      "triangleBudget": 600
+    },
+    {
+      "id": "golf-bag",
+      "sourceSha256": "1ca562d501459dd0c6f1976989b74b2d87b32827ea9c508975e7a578b0f6f33d",
+      "preview": "/assets/sports-golf-bag.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "nylonFabric",
+        "rimAluminium",
+        "clubSteel",
+        "strapWebbing"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 312,
+      "triangleBudget": 600
+    },
+    {
+      "id": "golf-club",
+      "sourceSha256": "4f9e0d9b98b658ff55a5bf4b9db20d14c8fad19377ab9aa6bcd9c3a09e714da4",
+      "preview": "/assets/sports-golf-club.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "stainlessSteel",
+        "graphiteShaft",
+        "gripRubber"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 100,
+      "triangleBudget": 600
+    },
+    {
+      "id": "gym-bench",
+      "sourceSha256": "4c0308a3527f08cf42ddf4dbb826705160d769b6493b3869185b11dc21518c9e",
+      "preview": "/assets/sports-gym-bench.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "vinylUpholstery",
+        "frameSteel",
+        "footRubber"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 72,
+      "triangleBudget": 600
+    },
+    {
+      "id": "hockey-puck",
+      "sourceSha256": "4027039ceb4cd3cb1394bd58eafc9e9ac96d1eadeb3329cbe6a224f65dd60db1",
+      "preview": "/assets/sports-hockey-puck.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "vulcanizedRubber",
+        "faceRubber"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 140,
+      "triangleBudget": 600
+    },
+    {
+      "id": "hockey-stick",
+      "sourceSha256": "5d1e4407d65bb67a29a3dbb0437b8a305d6e7755d35c0983739c42a7e8c18664",
+      "preview": "/assets/sports-hockey-stick.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "compositeShaft",
+        "bladeTape",
+        "gripTape"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 84,
+      "triangleBudget": 600
+    },
+    {
+      "id": "inline-skate",
+      "sourceSha256": "9cdb439a6664c82b3e061f5a03c33398b5d71c166c5738bacb3bc369e0c6635d",
+      "preview": "/assets/sports-inline-skate.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "syntheticBoot",
+        "aluminiumFrame",
+        "urethaneWheel",
+        "moldedCuff"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 270,
+      "triangleBudget": 600
+    },
+    {
+      "id": "jump-rope",
+      "sourceSha256": "e69e32360eb2fcdebf800cdda77a48bed825eb99ca8f72d8a180365337445396",
+      "preview": "/assets/sports-jump-rope.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "braidedNylon",
+        "handlePolymer",
+        "gripFoam"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 272,
+      "triangleBudget": 600
+    },
+    {
+      "id": "kettlebell",
+      "sourceSha256": "6c52fde822541d03243b86a914047554fffe5d6d1f1e8aedea549a00fb931081",
+      "preview": "/assets/sports-kettlebell.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "castIron",
+        "handleSteel"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 290,
+      "triangleBudget": 600
+    },
+    {
+      "id": "lacrosse-stick",
+      "sourceSha256": "cd229ab961de7b860bd9efa1fe4c211e7dbeab80772467767f6f1581d70ba73d",
+      "preview": "/assets/sports-lacrosse-stick.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "graphiteShaft",
+        "headPolymer",
+        "pocketNylon"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 334,
+      "triangleBudget": 600
+    },
+    {
+      "id": "shuttlecock",
+      "sourceSha256": "2a613cb67f07f57e722375b6af97e400552b5057dfbde9dee0ec5a09956763f7",
+      "preview": "/assets/sports-shuttlecock.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "cork",
+        "featherNylon",
+        "crownTape"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 160,
+      "triangleBudget": 600
+    },
+    {
+      "id": "skateboard",
+      "sourceSha256": "d46a49db4149bdfa573af89ab159d182bf34208b1208bd996a98af32afb41cc3",
+      "preview": "/assets/sports-skateboard.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "mapleDeck",
+        "truckAluminium",
+        "urethaneWheel"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 348,
+      "triangleBudget": 600
+    },
+    {
+      "id": "soccer-ball",
+      "sourceSha256": "868b4c1a12b4aacb23e7c695b526219edba1c5fad886d378bfefa0418e183480",
+      "preview": "/assets/sports-soccer-ball.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "ballCover",
+        "panelPolymer"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 274,
+      "triangleBudget": 800
+    },
+    {
+      "id": "soccer-goal",
+      "sourceSha256": "a0ff2ad15029221e77dc1786baec11d78a9e4ee0b4817702f581215c266fd3bb",
+      "preview": "/assets/sports-soccer-goal.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "goalAluminium",
+        "netNylon",
+        "groundRubber"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 1228,
+      "triangleBudget": 1400
+    },
+    {
+      "id": "sports-water-bottle",
+      "sourceSha256": "9345c17bc2d765ad485876e2de5f1399aa2a703417a2545cb660888f06d943f6",
+      "preview": "/assets/sports-sports-water-bottle.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "stainlessSteel",
+        "capPolymer",
+        "siliconeGrip"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 264,
+      "triangleBudget": 600
+    },
+    {
+      "id": "starting-block",
+      "sourceSha256": "b3d8dc890d20227a4d47f7dcad139a81ea9f4328a50f73a95ca5226959839590",
+      "preview": "/assets/sports-starting-block.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "anodizedAluminium",
+        "pedalRubber",
+        "trackMat"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 72,
+      "triangleBudget": 600
+    },
+    {
+      "id": "tennis-ball",
+      "sourceSha256": "5500cca0310c7357422b5abc3c84257e6cca4b813e3dffff11777cebed432003",
+      "preview": "/assets/sports-tennis-ball.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "feltCover",
+        "seamTape"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 366,
+      "triangleBudget": 800
+    },
+    {
+      "id": "tennis-net",
+      "sourceSha256": "a5b5e52e932e1b976f603226f9b7877d7fa4d5eee27fad27c4c75617ed87f76a",
+      "preview": "/assets/sports-tennis-net.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "powderCoat",
+        "netNylon",
+        "baseRubber"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 436,
+      "triangleBudget": 600
+    },
+    {
+      "id": "tennis-racket",
+      "sourceSha256": "d13591332d8a530b107fc0671d38a7d0c346b6d4841e61e0dd66c6d730f50510",
+      "preview": "/assets/sports-tennis-racket.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "graphiteFrame",
+        "nylonStrings",
+        "gripTape"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 288,
+      "triangleBudget": 600
+    },
+    {
+      "id": "track-hurdle",
+      "sourceSha256": "cf6964b91445097112101618af6e4660a2bae041cb6cb18faaf8ab15fe8edecb",
+      "preview": "/assets/sports-track-hurdle.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "anodizedAluminium",
+        "crossbarPolymer",
+        "footRubber"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 124,
+      "triangleBudget": 600
+    },
+    {
+      "id": "treadmill",
+      "sourceSha256": "fd026e2178a576bc435a432b1d7d5f769715d3d4809cf19d3afbff9808bbc568",
+      "preview": "/assets/sports-treadmill.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "frameSteel",
+        "runningBeltRubber",
+        "consoleGlass"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 72,
+      "triangleBudget": 600
+    },
+    {
+      "id": "trophy-cup",
+      "sourceSha256": "79a4d25250af22cc576923072f08d5204245de48a4c2649f21b0279179cd98cb",
+      "preview": "/assets/sports-trophy-cup.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "goldPlating",
+        "walnutBase",
+        "engravingInlay"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 320,
+      "triangleBudget": 600
+    },
+    {
+      "id": "volleyball-net",
+      "sourceSha256": "8ae3e1e74b7a48cc1225a08e66185509931b9601aaff9a516cc286c5d309129a",
+      "preview": "/assets/sports-volleyball-net.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "powderCoat",
+        "meshNylon",
+        "safetyBand",
+        "baseRubber"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 472,
+      "triangleBudget": 600
+    },
+    {
+      "id": "volleyball",
+      "sourceSha256": "d9cbe83c6f5c1e7fd55f9990b9bf90cd5ee497d2608142934353de98a12f88df",
+      "preview": "/assets/sports-volleyball.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "panelFabric",
+        "seamTape",
+        "panelAccent"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 654,
+      "triangleBudget": 800
+    },
+    {
+      "id": "weight-plate",
+      "sourceSha256": "a05a98956e1de9c456b2d9e860794bda15084366a9edde71f7748d5dc29f5be5",
+      "preview": "/assets/sports-weight-plate.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "castIron",
+        "boreSteel",
+        "markingPaint"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 204,
+      "triangleBudget": 600
+    },
+    {
+      "id": "yoga-block",
+      "sourceSha256": "edd523a9df14f1eeac99647db137acf9a029733c910e61c28665ede2b8d68d5f",
+      "preview": "/assets/sports-yoga-block.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "evaFoam",
+        "tractionFoam"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 72,
+      "triangleBudget": 600
+    },
+    {
+      "id": "yoga-mat",
+      "sourceSha256": "ba417ee909a73ac9548a290cf7fdcaa523bbc36bf2de473a130a1e11ebe3733a",
+      "preview": "/assets/sports-yoga-mat.png",
+      "previewExists": true,
+      "materialColorParams": [
+        "foamRubber",
+        "carryWebbing",
+        "edgeBinding"
+      ],
+      "presets": [
+        "clubColors"
+      ],
+      "triangles": 104,
+      "triangleBudget": 600
+    }
+  ],
+  "passed": true
+}

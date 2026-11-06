@@ -1,0 +1,44 @@
+{
+  "date": "2026-11-05",
+  "kit": "sports",
+  "scope": "Promoted the 40 existing IDs in place; no assets were added, renamed, or duplicated.",
+  "materialControls": {
+    "namedControls": 115,
+    "perAssetRange": [2, 4]
+  },
+  "presets": {
+    "blocks": 40,
+    "entries": 40,
+    "name": "clubColors"
+  },
+  "defaultPreviews": {
+    "renderer": "scripts/renderCatalogPreviews.ts",
+    "targets": 40,
+    "parameters": "source defaults"
+  },
+  "presetReplay": {
+    "renderer": "render_sports_presets.ts",
+    "assets": ["basketball", "soccer-ball", "tennis-racket"],
+    "variantsPerAsset": 2,
+    "values": "read from source presets() and replayed as parameter defaults"
+  },
+  "demo": {
+    "storyboardFrames": 6,
+    "frameDurationSeconds": 3,
+    "resolution": [1280, 720],
+    "frameRate": 24,
+    "videoCodec": "libx264",
+    "crf": 22,
+    "pixelFormat": "yuv420p",
+    "caption": "Local catalog source and preview workflow; branch not deployed; no hardware acceptance claim."
+  },
+  "qualityBefore": {
+    "sports": "0/40",
+    "catalog": "2,091/2,390 (87.49%)"
+  },
+  "qualityAfter": {
+    "sports": "40/40 (100%)",
+    "catalog": "2,131/2,390 (89.16%)",
+    "thinRemaining": "259/2,390 (10.84%)"
+  }
+}
