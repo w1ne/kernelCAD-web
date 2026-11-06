@@ -262346,7 +262346,7 @@
       "id": "basket-muzzle",
       "kit": "vet-clinic",
       "title": "Basket muzzle",
-      "description": "Open-frame basket muzzle with nose band, side rails and a wider rear strap frame. Material controls: fabric straps, molded polymer, stainless steel. Presets: clinicClean and softTeal.",
+      "description": "Medium-dog basket muzzle: a tapered lattice of moulded hoops and twelve rails closing to a nose ring with a cross grille, a neoprene bridge pad on the rear rim, a chin bumper, and a nylon neck strap loop with side straps, D-rings and a steel buckle. Material controls: moulded basket, nylon straps, neoprene padding, steel hardware. Forehead-strap choice; clinicClean and softTeal presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -262355,6 +262355,7 @@
         "animal health",
         "basket",
         "muzzle",
+        "dog",
         "low poly",
         "CC0"
       ],
@@ -262368,8 +262369,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/basket-muzzle.kcad.ts",
       "preview": "/assets/vet-clinic-basket-muzzle.png",
-      "sourceSha256": "7941b7d3effb0a64c8e6b6e38a7d594177975cf24d507ec75b163b2cf1dd2d27",
-      "triangleBudget": 1800,
+      "sourceSha256": "9fe3dbeeea3ffa4066c3a306150c184a318cf959aa8d64ff53c0ac9bad338ee7",
+      "triangleBudget": 1600,
       "params": [
         {
           "name": "scale",
@@ -262381,39 +262382,60 @@
           "step": 0.05
         },
         {
+          "name": "forehead",
+          "type": "choice",
+          "default": "strap",
+          "label": "Forehead strap",
+          "choices": [
+            "strap",
+            "none"
+          ]
+        },
+        {
           "name": "polymerColor",
           "type": "color",
-          "default": "#d3dfdc",
-          "label": "Molded polymer"
+          "default": "#3b4447",
+          "label": "Moulded basket"
         },
         {
           "name": "fabricColor",
           "type": "color",
-          "default": "#b6a98e",
-          "label": "Fabric straps"
+          "default": "#b5523b",
+          "label": "Nylon straps"
+        },
+        {
+          "name": "paddingColor",
+          "type": "color",
+          "default": "#2f6f8c",
+          "label": "Neoprene padding"
         },
         {
           "name": "stainlessSteelColor",
           "type": "color",
           "default": "#bdc7c5",
-          "label": "Stainless steel"
+          "label": "Steel buckle and rings"
         }
       ],
       "presets": {
         "clinicClean": {
-          "polymerColor": "#e8ece8"
+          "polymerColor": "#e2e8e5",
+          "fabricColor": "#5d7d8a",
+          "paddingColor": "#9fb8bf",
+          "stainlessSteelColor": "#d5dcda"
         },
         "softTeal": {
-          "polymerColor": "#9bbfc0",
-          "fabricColor": "#6c9290"
+          "polymerColor": "#4d858d",
+          "fabricColor": "#2f4f55",
+          "paddingColor": "#c8d9d5",
+          "stainlessSteelColor": "#a9b5b3"
         }
       },
       "stats": {
-        "triangles": 180,
+        "triangles": 1260,
         "sizeM": [
-          0.330004,
-          0.272,
-          0.383
+          0.158,
+          0.168539,
+          0.196337
         ],
         "minUpM": 0,
         "materials": 1
@@ -262421,39 +262443,60 @@
       "palette": [
         {
           "name": "polymerColor",
-          "color": "#d3dfdc",
+          "color": "#3b4447",
           "parts": [
-            "front-rim-top"
+            "rear-rim",
+            "hoop-mid-rear",
+            "hoop-mid-front",
+            "nose-ring",
+            "rail-1",
+            "rail-2",
+            "rail-3",
+            "rail-4",
+            "rail-5",
+            "rail-6",
+            "rail-7",
+            "rail-8",
+            "rail-9",
+            "rail-10",
+            "rail-11",
+            "rail-12",
+            "nose-bar-vertical",
+            "nose-bar-horizontal",
+            "chin-bumper"
           ],
           "param": "polymerColor"
+        },
+        {
+          "name": "paddingColor",
+          "color": "#2f6f8c",
+          "parts": [
+            "bridge-pad"
+          ],
+          "param": "paddingColor"
+        },
+        {
+          "name": "fabricColor",
+          "color": "#b5523b",
+          "parts": [
+            "neck-strap",
+            "side-strap-left",
+            "side-strap-right",
+            "forehead-strap"
+          ],
+          "param": "fabricColor"
         },
         {
           "name": "stainlessSteelColor",
           "color": "#bdc7c5",
           "parts": [
-            "front-rim-bottom",
-            "front-rim-left",
-            "front-rim-right",
-            "rear-rim-top",
-            "rear-rim-bottom",
-            "rear-rim-left",
-            "rear-rim-right",
-            "upper-rail-left",
-            "upper-rail-right",
-            "lower-rail-left",
-            "lower-rail-right",
-            "basket-crossbar"
+            "d-ring-left",
+            "d-ring-right",
+            "buckle-frame",
+            "buckle-tongue",
+            "forehead-ring"
           ],
           "param": "stainlessSteelColor"
-        },
-        {
-          "name": "fabricColor",
-          "color": "#b6a98e",
-          "parts": [
-            "crown-strap",
-            "chin-strap"
-          ],
-          "param": "fabricColor"
         }
       ]
     },
@@ -263223,7 +263266,7 @@
       "id": "exam-step-stool",
       "kit": "vet-clinic",
       "title": "Veterinary exam step stool",
-      "description": "Two-tier non-slip step stool with a broad base and side support panels. Material controls: powder-coated steel, rubber, stainless steel. Presets: clinicClean and softTeal.",
+      "description": "Two-step exam stool: raked tubular steel side frames on rubber feet, a low front tread and higher rear tread as stainless pans with ribbed rubber mats and anti-slip nosing, cross braces, and an optional rear handrail. Material controls: powder-coated tube, stainless treads, rubber mats and feet, anti-slip nosing. Handrail choice; clinicClean and softTeal presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -263246,8 +263289,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/exam-step-stool.kcad.ts",
       "preview": "/assets/vet-clinic-exam-step-stool.png",
-      "sourceSha256": "b9ceb86544c3a1da4e8852dad247fcfc710032a140a242cc4b49f3d1cd35ffe4",
-      "triangleBudget": 1800,
+      "sourceSha256": "c749680addc981e3f1a4136ab19bebf1a662a9de778880d3a9c303803f22a6ee",
+      "triangleBudget": 1200,
       "params": [
         {
           "name": "scale",
@@ -263259,39 +263302,60 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteelColor",
-          "type": "color",
-          "default": "#6e8994",
-          "label": "Powder-coated steel"
+          "name": "handrail",
+          "type": "choice",
+          "default": "rail",
+          "label": "Handrail",
+          "choices": [
+            "rail",
+            "none"
+          ]
         },
         {
-          "name": "rubberColor",
+          "name": "paintedSteelColor",
           "type": "color",
-          "default": "#30383b",
-          "label": "Rubber"
+          "default": "#4f6f7c",
+          "label": "Powder-coated tube"
         },
         {
           "name": "stainlessSteelColor",
           "type": "color",
-          "default": "#bdc7c5",
-          "label": "Stainless steel"
+          "default": "#c3ccca",
+          "label": "Stainless treads"
+        },
+        {
+          "name": "rubberColor",
+          "type": "color",
+          "default": "#2b3234",
+          "label": "Rubber mats and feet"
+        },
+        {
+          "name": "nosingColor",
+          "type": "color",
+          "default": "#e2b53a",
+          "label": "Anti-slip nosing"
         }
       ],
       "presets": {
         "clinicClean": {
-          "paintedSteelColor": "#e4ebe7"
+          "paintedSteelColor": "#e4ebe7",
+          "stainlessSteelColor": "#d6dddb",
+          "rubberColor": "#4a5558",
+          "nosingColor": "#7fb7a6"
         },
         "softTeal": {
           "paintedSteelColor": "#4d858d",
-          "rubberColor": "#34464a"
+          "stainlessSteelColor": "#b4c1bf",
+          "rubberColor": "#26363a",
+          "nosingColor": "#f0d27a"
         }
       },
       "stats": {
-        "triangles": 96,
+        "triangles": 864,
         "sizeM": [
-          0.63,
-          0.3825,
-          0.565
+          0.53614,
+          0.931087,
+          0.58
         ],
         "minUpM": 0,
         "materials": 1
@@ -263299,32 +263363,71 @@
       "palette": [
         {
           "name": "paintedSteelColor",
-          "color": "#6e8994",
+          "color": "#4f6f7c",
           "parts": [
-            "lower-tread",
-            "upper-tread",
-            "front-riser",
-            "upper-riser"
+            "front-leg-left",
+            "rear-leg-left",
+            "top-rail-left",
+            "low-rail-left",
+            "low-strut-left",
+            "front-leg-right",
+            "rear-leg-right",
+            "top-rail-right",
+            "low-rail-right",
+            "low-strut-right",
+            "brace-rear-low",
+            "brace-front-low",
+            "brace-mid",
+            "rail-post-left",
+            "rail-post-right",
+            "rail-bar"
           ],
           "param": "paintedSteelColor"
         },
         {
-          "name": "stainlessSteelColor",
-          "color": "#bdc7c5",
+          "name": "rubberColor",
+          "color": "#2b3234",
           "parts": [
-            "left-support",
-            "right-support"
+            "foot-front-left",
+            "foot-rear-left",
+            "foot-front-right",
+            "foot-rear-right",
+            "lower-tread-mat",
+            "lower-tread-rib-1",
+            "lower-tread-rib-2",
+            "lower-tread-rib-3",
+            "lower-tread-rib-4",
+            "lower-tread-rib-5",
+            "upper-tread-mat",
+            "upper-tread-rib-1",
+            "upper-tread-rib-2",
+            "upper-tread-rib-3",
+            "upper-tread-rib-4",
+            "upper-tread-rib-5",
+            "rail-grip-left",
+            "rail-grip-right"
+          ],
+          "param": "rubberColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#c3ccca",
+          "parts": [
+            "lower-tread-pan",
+            "lower-tread-skirt",
+            "upper-tread-pan",
+            "upper-tread-skirt"
           ],
           "param": "stainlessSteelColor"
         },
         {
-          "name": "rubberColor",
-          "color": "#30383b",
+          "name": "nosingColor",
+          "color": "#e2b53a",
           "parts": [
-            "base-foot-left",
-            "base-foot-right"
+            "lower-tread-nosing",
+            "upper-tread-nosing"
           ],
-          "param": "rubberColor"
+          "param": "nosingColor"
         }
       ]
     },
@@ -263640,7 +263743,7 @@
       "id": "hard-sided-pet-carrier",
       "kit": "vet-clinic",
       "title": "Hard-sided pet carrier",
-      "description": "Portable carrier with a ventilated door, side walls, roof and carry handle. Material controls: molded polymer, rubber, stainless steel. Presets: clinicClean and softTeal.",
+      "description": "Airline-style hard pet carrier: a deep base tray and tapered top shell joined at a lipped seam with wing-nut bolts, vent slots along both sides, a recessed doorway with a chromed wire grille door and squeeze latch, and an arched carry handle. Material controls: top shell, base tray, chromed wire door, rubber handle and fittings. Size choice; clinicClean and softTeal presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -263650,6 +263753,7 @@
         "hard-sided",
         "pet",
         "carrier",
+        "crate",
         "low poly",
         "CC0"
       ],
@@ -263663,8 +263767,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/hard-sided-pet-carrier.kcad.ts",
       "preview": "/assets/vet-clinic-hard-sided-pet-carrier.png",
-      "sourceSha256": "84aa181cc4c0167a78face2e7f09646ae19d044e6f6de501c849692605b325f8",
-      "triangleBudget": 1800,
+      "sourceSha256": "662c50ad222412cbbaf96cf01a7ccb382c39de81f9df660bff1d8156aa8558e2",
+      "triangleBudget": 1400,
       "params": [
         {
           "name": "scale",
@@ -263676,67 +263780,103 @@
           "step": 0.05
         },
         {
+          "name": "size",
+          "type": "choice",
+          "default": "medium",
+          "label": "Carrier size",
+          "choices": [
+            "small",
+            "medium",
+            "large"
+          ]
+        },
+        {
           "name": "polymerColor",
           "type": "color",
-          "default": "#d3dfdc",
-          "label": "Molded polymer"
+          "default": "#d9dcd6",
+          "label": "Top shell"
+        },
+        {
+          "name": "baseColor",
+          "type": "color",
+          "default": "#5f6d72",
+          "label": "Base tray"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "type": "color",
+          "default": "#c3cbc9",
+          "label": "Chromed wire door"
         },
         {
           "name": "rubberColor",
           "type": "color",
           "default": "#30383b",
-          "label": "Rubber"
-        },
-        {
-          "name": "stainlessSteelColor",
-          "type": "color",
-          "default": "#bdc7c5",
-          "label": "Stainless steel"
+          "label": "Rubber handle and fittings"
         }
       ],
       "presets": {
         "clinicClean": {
-          "polymerColor": "#e8ece8"
+          "polymerColor": "#f1f3ef",
+          "baseColor": "#8fa3a8",
+          "stainlessSteelColor": "#d8dfdd",
+          "rubberColor": "#46545a"
         },
         "softTeal": {
           "polymerColor": "#9bbfc0",
-          "rubberColor": "#34464a"
+          "baseColor": "#3f6064",
+          "stainlessSteelColor": "#b7c2c0",
+          "rubberColor": "#263235"
         }
       },
       "stats": {
-        "triangles": 252,
+        "triangles": 1060,
         "sizeM": [
-          0.47,
-          0.445,
-          0.941
+          0.442,
+          0.439,
+          0.61
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymerColor",
-          "color": "#d3dfdc",
+          "name": "baseColor",
+          "color": "#5f6d72",
           "parts": [
-            "floor",
-            "rear-wall",
-            "left-wall",
-            "right-wall",
-            "roof",
-            "door-top",
-            "door-bottom",
-            "door-left",
-            "door-right"
+            "base-tray",
+            "seam-lip"
+          ],
+          "param": "baseColor"
+        },
+        {
+          "name": "polymerColor",
+          "color": "#d9dcd6",
+          "parts": [
+            "top-shell"
           ],
           "param": "polymerColor"
         },
         {
           "name": "stainlessSteelColor",
-          "color": "#bdc7c5",
+          "color": "#c3cbc9",
           "parts": [
-            "door-bar-a",
-            "door-bar-b",
-            "door-bar-c"
+            "door-frame-top",
+            "door-frame-bottom",
+            "door-frame-left",
+            "door-frame-right",
+            "door-wire-1",
+            "door-wire-2",
+            "door-wire-3",
+            "door-wire-4",
+            "door-wire-5",
+            "door-wire-6",
+            "door-wire-7",
+            "door-wire-8",
+            "door-wire-9",
+            "door-cross-130",
+            "door-cross-210",
+            "door-hinge-pin"
           ],
           "param": "stainlessSteelColor"
         },
@@ -263744,7 +263884,18 @@
           "name": "rubberColor",
           "color": "#30383b",
           "parts": [
-            "carry-handle"
+            "squeeze-latch",
+            "handle-1",
+            "handle-2",
+            "handle-3",
+            "handle-4",
+            "handle-5",
+            "handle-mount-front",
+            "handle-mount-rear",
+            "wing-nut-left-front",
+            "wing-nut-left-rear",
+            "wing-nut-right-front",
+            "wing-nut-right-rear"
           ],
           "param": "rubberColor"
         }
@@ -264091,9 +264242,9 @@
       "id": "kennel-bowl-rail",
       "kit": "vet-clinic",
       "title": "Kennel feeding bowl rail",
-      "description": "Wall-mounted feeding rail with three removable bowls and height-adjustable brackets. Material controls: powder-coated steel, stainless steel. Presets: clinicClean and softTeal.",
+      "description": "Height-adjustable kennel feeding rail: two slotted uprights on floor plates carrying a steel rail with wire holder rings and lift-out flared stainless bowls with rolled rims. Material controls: powder-coated steel, stainless bowls, wire holders, rubber feet. Bowl-count choice; clinicClean and softTeal presets.",
       "category": "prop",
-      "origin": "wall",
+      "origin": "base",
       "tags": [
         "veterinary",
         "animal clinic",
@@ -264102,6 +264253,7 @@
         "feeding",
         "bowl",
         "rail",
+        "dog",
         "low poly",
         "CC0"
       ],
@@ -264115,8 +264267,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/kennel-bowl-rail.kcad.ts",
       "preview": "/assets/vet-clinic-kennel-bowl-rail.png",
-      "sourceSha256": "a3c564b30923f90815eb049bd7f47d59ab3cd6e4086af4ea9ec5f04def9ed328",
-      "triangleBudget": 1800,
+      "sourceSha256": "8b11bd7ddec92ae8d50e9670ab291325674a7b04cf5c9c4d059df590e713b23a",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -264128,60 +264280,120 @@
           "step": 0.05
         },
         {
+          "name": "bowls",
+          "type": "choice",
+          "default": "three",
+          "label": "Bowl count",
+          "choices": [
+            "two",
+            "three",
+            "four"
+          ]
+        },
+        {
           "name": "paintedSteelColor",
           "type": "color",
-          "default": "#829687",
+          "default": "#58737a",
           "label": "Powder-coated steel"
         },
         {
           "name": "stainlessSteelColor",
           "type": "color",
-          "default": "#bdc7c5",
-          "label": "Stainless steel"
+          "default": "#c7d0ce",
+          "label": "Stainless bowls"
+        },
+        {
+          "name": "holderColor",
+          "type": "color",
+          "default": "#2f3a3d",
+          "label": "Wire bowl holders"
+        },
+        {
+          "name": "rubberColor",
+          "type": "color",
+          "default": "#22292b",
+          "label": "Rubber feet"
         }
       ],
       "presets": {
         "clinicClean": {
-          "paintedSteelColor": "#e4ebe7"
+          "paintedSteelColor": "#e4ebe7",
+          "stainlessSteelColor": "#d9e0de",
+          "holderColor": "#8a9a9c",
+          "rubberColor": "#4b5558"
         },
         "softTeal": {
           "paintedSteelColor": "#4d858d",
-          "stainlessSteelColor": "#8daeb0"
+          "stainlessSteelColor": "#b9c7c5",
+          "holderColor": "#24494e",
+          "rubberColor": "#1e2a2c"
         }
       },
       "stats": {
-        "triangles": 228,
+        "triangles": 1632,
         "sizeM": [
-          1.26,
-          0.308,
-          0.27
+          1.33,
+          0.742,
+          0.39
         ],
-        "minUpM": 0.236,
+        "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
           "name": "paintedSteelColor",
-          "color": "#829687",
+          "color": "#58737a",
           "parts": [
-            "wall-rail"
+            "upright-left",
+            "floor-plate-left",
+            "upright-right",
+            "floor-plate-right",
+            "rail-plate",
+            "rail-lip-top",
+            "rail-lip-bottom"
           ],
           "param": "paintedSteelColor"
         },
         {
-          "name": "stainlessSteelColor",
-          "color": "#bdc7c5",
+          "name": "rubberColor",
+          "color": "#22292b",
           "parts": [
-            "upper-channel",
-            "lower-channel",
+            "upright-cap-left",
+            "foot-front-left",
+            "foot-rear-left",
+            "upright-cap-right",
+            "foot-front-right",
+            "foot-rear-right"
+          ],
+          "param": "rubberColor"
+        },
+        {
+          "name": "holderColor",
+          "color": "#2f3a3d",
+          "parts": [
+            "rail-clamp-left",
+            "rail-clamp-right",
+            "holder-ring-1",
+            "holder-arm-1-a",
+            "holder-arm-1-b",
+            "holder-ring-2",
+            "holder-arm-2-a",
+            "holder-arm-2-b",
+            "holder-ring-3",
+            "holder-arm-3-a",
+            "holder-arm-3-b"
+          ],
+          "param": "holderColor"
+        },
+        {
+          "name": "stainlessSteelColor",
+          "color": "#c7d0ce",
+          "parts": [
+            "clamp-pin-left",
+            "clamp-pin-right",
             "bowl-1",
             "bowl-2",
-            "bowl-3",
-            "cup-bracket-1",
-            "cup-bracket-2",
-            "cup-bracket-3",
-            "adjuster-left",
-            "adjuster-right"
+            "bowl-3"
           ],
           "param": "stainlessSteelColor"
         }
@@ -265927,7 +266139,7 @@
       "id": "specimen-transport-cooler",
       "kit": "vet-clinic",
       "title": "Specimen transport cooler",
-      "description": "Insulated specimen case with a clamped lid, carry handle and temperature indicator. Material controls: tinted glass and displays, molded polymer, rubber, stainless steel. Presets: clinicClean and softTeal.",
+      "description": "Insulated specimen transport cooler: a rounded tapered moulded body on rubber feet with end grip pockets, a domed contrasting lid on a rubber gasket with two front draw latches, a recessed digital temperature display, and a swing bail handle or shoulder strap. Material controls: moulded body, moulded lid, display glass, rubber gasket and fittings. Carry choice; clinicClean and softTeal presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -265937,6 +266149,7 @@
         "specimen",
         "transport",
         "cooler",
+        "laboratory",
         "low poly",
         "CC0"
       ],
@@ -265950,8 +266163,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/vet-clinic/specimen-transport-cooler.kcad.ts",
       "preview": "/assets/vet-clinic-specimen-transport-cooler.png",
-      "sourceSha256": "f1a07d3bbd2f878e3d317e553279ee87d195c91c1b8b4d119aee3b9970ec78b8",
-      "triangleBudget": 1800,
+      "sourceSha256": "077e2ecd034f4a3cab3c1816503b247859ea64296030e2052287a23940d7a4e4",
+      "triangleBudget": 1000,
       "params": [
         {
           "name": "scale",
@@ -265963,85 +266176,114 @@
           "step": 0.05
         },
         {
+          "name": "carry",
+          "type": "choice",
+          "default": "bail",
+          "label": "Carry handle",
+          "choices": [
+            "bail",
+            "strap"
+          ]
+        },
+        {
           "name": "polymerColor",
           "type": "color",
-          "default": "#d3dfdc",
-          "label": "Molded polymer"
+          "default": "#e6ebe8",
+          "label": "Moulded body"
+        },
+        {
+          "name": "lidColor",
+          "type": "color",
+          "default": "#2f7fa8",
+          "label": "Moulded lid and handle"
         },
         {
           "name": "glassColor",
           "type": "color",
-          "default": "#4e8290",
-          "label": "Tinted glass and displays"
+          "default": "#1f3d47",
+          "label": "Display glass"
         },
         {
           "name": "rubberColor",
           "type": "color",
           "default": "#30383b",
-          "label": "Rubber"
-        },
-        {
-          "name": "stainlessSteelColor",
-          "type": "color",
-          "default": "#bdc7c5",
-          "label": "Stainless steel"
+          "label": "Rubber gasket and fittings"
         }
       ],
       "presets": {
         "clinicClean": {
-          "polymerColor": "#e8ece8"
+          "polymerColor": "#f4f6f3",
+          "lidColor": "#8fb7c4",
+          "glassColor": "#2a4e58",
+          "rubberColor": "#56646a"
         },
         "softTeal": {
           "polymerColor": "#9bbfc0",
-          "glassColor": "#3f7480"
+          "lidColor": "#2f5f66",
+          "glassColor": "#183238",
+          "rubberColor": "#263235"
         }
       },
       "stats": {
-        "triangles": 120,
+        "triangles": 744,
         "sizeM": [
-          0.694,
-          0.627,
-          0.4785
+          0.470478,
+          0.437168,
+          0.325
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymerColor",
-          "color": "#d3dfdc",
-          "parts": [
-            "cooler-body",
-            "lid"
-          ],
-          "param": "polymerColor"
-        },
-        {
-          "name": "stainlessSteelColor",
-          "color": "#bdc7c5",
-          "parts": [
-            "lid-rim",
-            "handle-left",
-            "handle-right",
-            "latch-front"
-          ],
-          "param": "stainlessSteelColor"
-        },
-        {
           "name": "rubberColor",
           "color": "#30383b",
           "parts": [
-            "carry-grip",
-            "side-grip-left",
-            "side-grip-right"
+            "foot-left-front",
+            "foot-right-front",
+            "foot-left-rear",
+            "foot-right-rear",
+            "gasket",
+            "latch-lever-left",
+            "latch-lever-right",
+            "display-bezel",
+            "bail-grip"
           ],
           "param": "rubberColor"
         },
         {
-          "name": "glassColor",
-          "color": "#4e8290",
+          "name": "polymerColor",
+          "color": "#e6ebe8",
           "parts": [
-            "temperature-window"
+            "body"
+          ],
+          "param": "polymerColor"
+        },
+        {
+          "name": "lidColor",
+          "color": "#2f7fa8",
+          "parts": [
+            "lid",
+            "latch-keeper-left",
+            "latch-keeper-right",
+            "display-button",
+            "pivot-left",
+            "pivot-right",
+            "bail-1",
+            "bail-2",
+            "bail-3",
+            "bail-4",
+            "bail-5",
+            "bail-6",
+            "bail-7"
+          ],
+          "param": "lidColor"
+        },
+        {
+          "name": "glassColor",
+          "color": "#1f3d47",
+          "parts": [
+            "display-glass"
           ],
           "param": "glassColor"
         }
