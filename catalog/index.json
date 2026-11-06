@@ -235972,7 +235972,7 @@
       "id": "soccer-ball",
       "kit": "sports",
       "title": "Soccer ball",
-      "description": "Ivory faceted soccer ball with contrasting pentagonal panel patches distributed over the spherical cover. Material controls: ball cover, panel polymer.",
+      "description": "Faceted ivory soccer ball with twelve dark pentagonal panels spaced around the spherical cover. Material controls: ball cover and panel polymer.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -235992,8 +235992,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/soccer-ball.kcad.ts",
       "preview": "/assets/sports-soccer-ball.png",
-      "sourceSha256": "868b4c1a12b4aacb23e7c695b526219edba1c5fad886d378bfefa0418e183480",
-      "triangleBudget": 800,
+      "sourceSha256": "265cb01990ffc3e1f9ef1d0d670316bc7ad0a5bd21b5795784d5b43f9de298f8",
+      "triangleBudget": 1000,
       "params": [
         {
           "name": "scale",
@@ -236024,11 +236024,11 @@
         }
       },
       "stats": {
-        "triangles": 274,
+        "triangles": 852,
         "sizeM": [
-          0.113161,
-          0.116,
-          0.108647
+          0.114666,
+          0.1164,
+          0.110459
         ],
         "minUpM": 0,
         "materials": 1
@@ -236038,7 +236038,7 @@
           "name": "ballCover",
           "color": "#ece8d6",
           "parts": [
-            "ball"
+            "ball-cover"
           ],
           "param": "ballCover"
         },
@@ -236050,7 +236050,14 @@
             "pentagon-panel-2",
             "pentagon-panel-3",
             "pentagon-panel-4",
-            "pentagon-panel-5"
+            "pentagon-panel-5",
+            "pentagon-panel-6",
+            "pentagon-panel-7",
+            "pentagon-panel-8",
+            "pentagon-panel-9",
+            "pentagon-panel-10",
+            "pentagon-panel-11",
+            "pentagon-panel-12"
           ],
           "param": "panelPolymer"
         }
