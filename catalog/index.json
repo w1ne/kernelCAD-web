@@ -272683,13 +272683,17 @@
       "id": "blade-transport-saddle",
       "kit": "wind-energy",
       "title": "Wind blade transport saddle",
-      "description": "Padded transport saddle with two curved-look support blocks and a broad trailer base. Controls: scale and structural steel, elastomer; weathered and high-visibility presets.",
+      "description": "Steel blade transport cradle with I-beam base, twin web plates cut to the blade underside, elastomer liner and ratchet tie-down straps over an optional blade section. Shape choices: airfoil mid-span or round root cradle, strapped load or empty. Material controls: structural steel, elastomer, strap webbing and blade composite; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "wind",
         "energy",
         "renewable",
+        "blade",
+        "transport",
+        "cradle",
+        "saddle",
         "low poly",
         "scene prop"
       ],
@@ -272702,8 +272706,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/blade-transport-saddle.kcad.ts",
       "preview": "/assets/wind-energy-blade-transport-saddle.png",
-      "sourceSha256": "41f08924a148abae82759a91db693099bc61a222d9487c4b44b4dd44561e9216",
-      "triangleBudget": 300,
+      "sourceSha256": "d930f9af4a7d913e2fc2019639badb953375e7ef8425c0ea8421a34948e7219e",
+      "triangleBudget": 1800,
       "params": [
         {
           "name": "scale",
@@ -272715,6 +272719,26 @@
           "step": 0.05
         },
         {
+          "name": "section",
+          "type": "choice",
+          "default": "midspan",
+          "label": "Cradle profile",
+          "choices": [
+            "midspan",
+            "root"
+          ]
+        },
+        {
+          "name": "load",
+          "type": "choice",
+          "default": "strapped",
+          "label": "Load",
+          "choices": [
+            "strapped",
+            "empty"
+          ]
+        },
+        {
           "name": "structuralSteel",
           "type": "color",
           "default": "#556971",
@@ -272724,24 +272748,41 @@
           "name": "elastomer",
           "type": "color",
           "default": "#30383a",
-          "label": "Elastomer"
+          "label": "Elastomer liner"
+        },
+        {
+          "name": "strapWebbing",
+          "type": "color",
+          "default": "#e08a1e",
+          "label": "Strap webbing"
+        },
+        {
+          "name": "bladeComposite",
+          "type": "color",
+          "default": "#e9ebe6",
+          "label": "Blade composite"
         }
       ],
       "presets": {
         "weathered": {
           "structuralSteel": "#425258",
-          "elastomer": "#343c3f"
+          "elastomer": "#343c3f",
+          "strapWebbing": "#a8743a",
+          "bladeComposite": "#cfd0c8"
         },
         "highVisibility": {
-          "structuralSteel": "#d8a62b"
+          "structuralSteel": "#d8a62b",
+          "elastomer": "#1f2426",
+          "strapWebbing": "#e4362b",
+          "bladeComposite": "#f4f5f1"
         }
       },
       "stats": {
-        "triangles": 72,
+        "triangles": 884,
         "sizeM": [
-          1,
-          0.285,
-          0.6
+          1.2,
+          0.646371,
+          1.54
         ],
         "minUpM": 0,
         "materials": 1
@@ -272751,10 +272792,23 @@
           "name": "structuralSteel",
           "color": "#556971",
           "parts": [
-            "base",
-            "strap-bar",
-            "foot--420",
-            "foot-420"
+            "bearer-front",
+            "bearer-rear",
+            "side-rail-left",
+            "lashing-lug-left-front",
+            "lashing-lug-left-rear",
+            "side-rail-right",
+            "lashing-lug-right-front",
+            "lashing-lug-right-rear",
+            "web-plate-front",
+            "web-gusset-front-left",
+            "web-gusset-front-right",
+            "web-plate-rear",
+            "web-gusset-rear-left",
+            "web-gusset-rear-right",
+            "cradle-shell",
+            "ratchet-buckle-front",
+            "ratchet-buckle-rear"
           ],
           "param": "structuralSteel"
         },
@@ -272762,10 +272816,26 @@
           "name": "elastomer",
           "color": "#30383a",
           "parts": [
-            "saddle-left",
-            "saddle-right"
+            "elastomer-liner"
           ],
           "param": "elastomer"
+        },
+        {
+          "name": "bladeComposite",
+          "color": "#e9ebe6",
+          "parts": [
+            "blade-section"
+          ],
+          "param": "bladeComposite"
+        },
+        {
+          "name": "strapWebbing",
+          "color": "#e08a1e",
+          "parts": [
+            "tie-down-strap-front",
+            "tie-down-strap-rear"
+          ],
+          "param": "strapWebbing"
         }
       ]
     },
@@ -274136,13 +274206,17 @@
       "id": "nacelle-transport-frame",
       "kit": "wind-energy",
       "title": "Nacelle transport frame",
-      "description": "Open transport frame with corner posts, support deck and two lifting crossbars. Controls: scale and structural steel, safety paint; weathered and high-visibility presets.",
+      "description": "Welded I-beam nacelle transport bed with twin main girders, cross bearers, X-bracing, a raised bolted yaw-adapter ring, corner lifting lugs with shackles and an optional nacelle load. Shape choices: loaded or empty, ground skids or storage trestles. Material controls: structural steel, safety paint, galvanized hardware and nacelle composite; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "wind",
         "energy",
         "renewable",
+        "nacelle",
+        "transport",
+        "frame",
+        "logistics",
         "low poly",
         "scene prop"
       ],
@@ -274155,8 +274229,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/nacelle-transport-frame.kcad.ts",
       "preview": "/assets/wind-energy-nacelle-transport-frame.png",
-      "sourceSha256": "35dcf47532acb8cbf3739c4d09e63d668378a1aa33e4d01f16e0f73feb60567b",
-      "triangleBudget": 300,
+      "sourceSha256": "cf9255329e24a292be66f048c353f98feee3cea2058c8fa13c00c22ae5269ac8",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -274168,6 +274242,26 @@
           "step": 0.05
         },
         {
+          "name": "load",
+          "type": "choice",
+          "default": "nacelle",
+          "label": "Load",
+          "choices": [
+            "nacelle",
+            "empty"
+          ]
+        },
+        {
+          "name": "feet",
+          "type": "choice",
+          "default": "skids",
+          "label": "Support",
+          "choices": [
+            "skids",
+            "trestle"
+          ]
+        },
+        {
           "name": "structuralSteel",
           "type": "color",
           "default": "#556971",
@@ -274177,25 +274271,41 @@
           "name": "safetyPaint",
           "type": "color",
           "default": "#efb532",
-          "label": "Safety paint"
+          "label": "Safety paint (lifting points)"
+        },
+        {
+          "name": "galvanizedHardware",
+          "type": "color",
+          "default": "#aab3b4",
+          "label": "Galvanized hardware"
+        },
+        {
+          "name": "nacelleComposite",
+          "type": "color",
+          "default": "#e6e8e3",
+          "label": "Nacelle composite"
         }
       ],
       "presets": {
         "weathered": {
           "structuralSteel": "#425258",
-          "safetyPaint": "#ffc336"
+          "safetyPaint": "#c99a3a",
+          "galvanizedHardware": "#878f8c",
+          "nacelleComposite": "#c9cbc4"
         },
         "highVisibility": {
+          "structuralSteel": "#4b5c63",
           "safetyPaint": "#f7c331",
-          "structuralSteel": "#4b5c63"
+          "galvanizedHardware": "#d2d8d9",
+          "nacelleComposite": "#f5f6f2"
         }
       },
       "stats": {
-        "triangles": 84,
+        "triangles": 1968,
         "sizeM": [
-          1.3,
-          0.83,
-          0.95
+          1.62,
+          1.344,
+          0.92
         ],
         "minUpM": 0,
         "materials": 1
@@ -274205,22 +274315,76 @@
           "name": "structuralSteel",
           "color": "#556971",
           "parts": [
-            "deck",
-            "post--560--380",
-            "post--560-380",
-            "post-560--380",
-            "post-560-380"
+            "main-girder-left",
+            "main-girder-right",
+            "cross-bearer-1",
+            "cross-bearer-2",
+            "cross-bearer-3",
+            "cross-bearer-4",
+            "plan-brace-a",
+            "plan-brace-b",
+            "adapter-deck",
+            "adapter-ring",
+            "skid-plate-front-left",
+            "skid-plate-front-right",
+            "skid-plate-rear-left",
+            "skid-plate-rear-right",
+            "roof-cooler"
           ],
           "param": "structuralSteel"
+        },
+        {
+          "name": "galvanizedHardware",
+          "color": "#aab3b4",
+          "parts": [
+            "flange-bolt-1",
+            "flange-bolt-2",
+            "flange-bolt-3",
+            "flange-bolt-4",
+            "flange-bolt-5",
+            "flange-bolt-6",
+            "flange-bolt-7",
+            "flange-bolt-8",
+            "flange-bolt-9",
+            "flange-bolt-10",
+            "flange-bolt-11",
+            "flange-bolt-12",
+            "flange-bolt-13",
+            "flange-bolt-14",
+            "flange-bolt-15",
+            "flange-bolt-16",
+            "shackle-front-left",
+            "shackle-front-right",
+            "shackle-rear-left",
+            "shackle-rear-right",
+            "main-shaft-flange",
+            "met-mast",
+            "met-mast-arm"
+          ],
+          "param": "galvanizedHardware"
         },
         {
           "name": "safetyPaint",
           "color": "#efb532",
           "parts": [
-            "cross-a",
-            "cross-b"
+            "lifting-lug-front-left",
+            "end-band-front-left",
+            "lifting-lug-front-right",
+            "end-band-front-right",
+            "lifting-lug-rear-left",
+            "end-band-rear-left",
+            "lifting-lug-rear-right",
+            "end-band-rear-right"
           ],
           "param": "safetyPaint"
+        },
+        {
+          "name": "nacelleComposite",
+          "color": "#e6e8e3",
+          "parts": [
+            "nacelle-housing"
+          ],
+          "param": "nacelleComposite"
         }
       ]
     },
@@ -274531,13 +274695,17 @@
       "id": "service-lift-cage",
       "kit": "wind-energy",
       "title": "Turbine service lift cage",
-      "description": "Rectangular service cage with platform floor, four uprights and overhead rail. Controls: scale and galvanized steel, safety paint; weathered and high-visibility presets.",
+      "description": "Two-person tower service lift with a mesh cage, sliding mesh door on a top track, roof-mounted traction hoist with wire and safety ropes, arrest device, control box and yellow obstruction plate. Shape choices: guide wires or ladder-guided trolleys, door closed or open. Material controls: galvanized steel, safety paint, drive unit and wire rope; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "wind",
         "energy",
         "renewable",
+        "service lift",
+        "tower",
+        "elevator",
+        "hoist",
         "low poly",
         "scene prop"
       ],
@@ -274550,8 +274718,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/service-lift-cage.kcad.ts",
       "preview": "/assets/wind-energy-service-lift-cage.png",
-      "sourceSha256": "0a798256d5aaa168e32905230007633fadffbfd092c5579f8cccd3ccfc3a0acd",
-      "triangleBudget": 300,
+      "sourceSha256": "4ac54f44d49f852949f79ae75163dcd57842d1275c167debb80d66a2867e49d6",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -274561,6 +274729,26 @@
           "min": 0.7,
           "max": 1.3,
           "step": 0.05
+        },
+        {
+          "name": "guidance",
+          "type": "choice",
+          "default": "wires",
+          "label": "Guide system",
+          "choices": [
+            "wires",
+            "ladder"
+          ]
+        },
+        {
+          "name": "door",
+          "type": "choice",
+          "default": "closed",
+          "label": "Door",
+          "choices": [
+            "closed",
+            "open"
+          ]
         },
         {
           "name": "galvanizedSteel",
@@ -274573,50 +274761,158 @@
           "type": "color",
           "default": "#efb532",
           "label": "Safety paint"
+        },
+        {
+          "name": "driveUnit",
+          "type": "color",
+          "default": "#2f3a40",
+          "label": "Drive unit"
+        },
+        {
+          "name": "wireRope",
+          "type": "color",
+          "default": "#5b6366",
+          "label": "Wire rope"
         }
       ],
       "presets": {
         "weathered": {
           "galvanizedSteel": "#6c7a7b",
-          "safetyPaint": "#ffc336"
+          "safetyPaint": "#c99a3a",
+          "driveUnit": "#3c4246",
+          "wireRope": "#6e5e4e"
         },
         "highVisibility": {
+          "galvanizedSteel": "#a9b6b8",
           "safetyPaint": "#f7c331",
-          "galvanizedSteel": "#7a898b"
+          "driveUnit": "#d6402c",
+          "wireRope": "#3e4547"
         }
       },
       "stats": {
-        "triangles": 96,
+        "triangles": 1388,
         "sizeM": [
-          0.65,
-          0.985,
-          0.62
+          0.96,
+          3.96,
+          0.74
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
+          "name": "safetyPaint",
+          "color": "#efb532",
+          "parts": [
+            "obstruction-plate",
+            "door-stile-left",
+            "door-stile-right",
+            "door-rail-bottom",
+            "door-rail-mid",
+            "door-rail-top",
+            "roof-hatch",
+            "arrest-device"
+          ],
+          "param": "safetyPaint"
+        },
+        {
           "name": "galvanizedSteel",
           "color": "#8b9c9e",
           "parts": [
-            "floor",
-            "post--280--260",
-            "post--280-260",
-            "post-280--260",
-            "post-280-260",
-            "top-rail",
-            "back-rail"
+            "base-frame",
+            "corner-post-left-front",
+            "corner-post-left-rear",
+            "corner-post-right-front",
+            "corner-post-right-rear",
+            "rail-rear-mid",
+            "rail-left-mid",
+            "rail-right-mid",
+            "rail-rear-top",
+            "rail-left-top",
+            "rail-right-top",
+            "rail-front-top",
+            "door-track",
+            "door-wire-v1",
+            "door-wire-v2",
+            "door-wire-v3",
+            "door-wire-v4",
+            "door-wire-v5",
+            "door-wire-v6",
+            "roof-plate",
+            "motor-fan-cover",
+            "traction-sheave",
+            "guide-roller-left-low",
+            "guide-roller-left-high",
+            "guide-roller-right-low",
+            "guide-roller-right-high"
           ],
           "param": "galvanizedSteel"
         },
         {
-          "name": "safetyPaint",
-          "color": "#efb532",
+          "name": "rear-mesh-wire-v1",
+          "color": "#cccccc",
           "parts": [
-            "gate"
+            "rear-mesh-wire-v1",
+            "rear-mesh-wire-v2",
+            "rear-mesh-wire-v3",
+            "rear-mesh-wire-v4",
+            "rear-mesh-wire-v5",
+            "rear-mesh-wire-v6",
+            "rear-mesh-wire-h1",
+            "rear-mesh-wire-h2",
+            "rear-mesh-wire-h3",
+            "rear-mesh-wire-h4",
+            "rear-mesh-wire-h5",
+            "rear-mesh-wire-h6",
+            "left-mesh-wire-v1",
+            "left-mesh-wire-v2",
+            "left-mesh-wire-v3",
+            "left-mesh-wire-v4",
+            "left-mesh-wire-v5",
+            "left-mesh-wire-h1",
+            "left-mesh-wire-h2",
+            "left-mesh-wire-h3",
+            "left-mesh-wire-h4",
+            "left-mesh-wire-h5",
+            "left-mesh-wire-h6",
+            "right-mesh-wire-v1",
+            "right-mesh-wire-v2",
+            "right-mesh-wire-v3",
+            "right-mesh-wire-v4",
+            "right-mesh-wire-v5",
+            "right-mesh-wire-h1",
+            "right-mesh-wire-h2",
+            "right-mesh-wire-h3",
+            "right-mesh-wire-h4",
+            "right-mesh-wire-h5",
+            "right-mesh-wire-h6"
+          ]
+        },
+        {
+          "name": "driveUnit",
+          "color": "#2f3a40",
+          "parts": [
+            "door-handle",
+            "hoist-gearbox",
+            "hoist-motor",
+            "control-box",
+            "guide-bracket-left-low",
+            "guide-bracket-left-high",
+            "guide-bracket-right-low",
+            "guide-bracket-right-high"
           ],
-          "param": "safetyPaint"
+          "param": "driveUnit"
+        },
+        {
+          "name": "wireRope",
+          "color": "#5b6366",
+          "parts": [
+            "hoist-wire-rope",
+            "safety-wire-rope",
+            "guide-wire-left",
+            "guide-wire-right"
+          ],
+          "param": "wireRope"
         }
       ]
     },
