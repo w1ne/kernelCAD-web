@@ -1,0 +1,80 @@
+
+ RUN  v4.0.18 /home/andrii/worktrees/kernelCAD-web/catalog-2000
+
+ ✓ tests/integration/catalog/assetModule.test.ts (4 tests) 738ms
+ ✓ tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 338ms
+ ❯ tests/integration/catalog/catalogStudioLink.test.ts (4 tests | 1 failed) 93539ms
+     ✓ nature/pine-tree opens with its five knobs at their defaults 161ms
+     ✓ characters/block-figure opens with its own knobs, not the first asset in the index 107ms
+     × every committed catalog asset opens with exactly the knobs its index row lists 92329ms
+     ✓ refuses refs that do not name a catalog row, and sources that no longer match the index  356ms
+ ❯ tests/integration/catalog/catalogIndex.test.ts (2 tests | 1 failed) 243875ms
+     × every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh 243342ms
+     ✓ every characters-kit asset ships a GLB rig with a pivot per joint 116ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/catalogIndex.test.ts > asset catalog > every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh
+AssertionError: run: npx tsx scripts/buildAssetCatalog.ts: expected '{\n  "schemaVersion": 1,\n  "kits": […' to be '{\n  "schemaVersion": 1,\n  "kits": […' // Object.is equality
+
+- Expected
++ Received
+
+@@ -146465,11 +146465,11 @@
+      },
+      {
+        "id": "erlenmeyer-flask",
+        "kit": "medical",
+        "title": "Erlenmeyer flask",
+-       "description": "Low-poly Erlenmeyer flask with a tapered body, narrow neck, visible liquid level and graduation marks. Material controls: Borosilicate glass, liquid solution, graduation ink.",
++       "description": "Low-poly Erlenmeyer flask built from stepped conical vessel bands and a narrow neck for laboratory scenes. Material controls: Borosilicate glass, Liquid solution, Graduation ink.",
+        "category": "item",
+        "origin": "base",
+        "tags": [
+          "erlenmeyer flask",
+          "laboratory glassware",
+@@ -146485,11 +146485,11 @@
+          "indoor"
+        ],
+        "license": "CC0-1.0",
+        "source": "catalog/kits/medical/erlenmeyer-flask.kcad.ts",
+        "preview": "/assets/medical-erlenmeyer-flask.png",
+-       "sourceSha256": "47579c8c2fcf24d88fc655bf8dc3499243c82c49283f3c854fe24a8b6a4a2140",
++       "sourceSha256": "adb27da33c1f240a8763a9695c540df85e4a28f4324084a22b252cd56e2cc228",
+        "triangleBudget": 260,
+        "params": [
+          {
+            "name": "borosilicateGlass",
+            "type": "color",
+
+ ❯ tests/integration/catalog/catalogIndex.test.ts:25:68
+     23|     const committed = readFileSync(join(repoRoot, 'catalog', 'index.js…
+     24|     CatalogIndexSchema.parse(JSON.parse(committed));
+     25|     expect(committed, 'run: npx tsx scripts/buildAssetCatalog.ts').toB…
+       |                                                                    ^
+     26|   }, 600_000);
+     27|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/integration/catalog/catalogStudioLink.test.ts > open a catalog asset in Studio by ?catalog=<kit>/<id> > every committed catalog asset opens with exactly the knobs its index row lists
+Error: Catalog source for medical/erlenmeyer-flask does not match the index (sha256 47579c8c2fcf24d88fc655bf8dc3499243c82c49283f3c854fe24a8b6a4a2140); rebuild catalog/index.json.
+ ❯ loadCatalogAsset src/shared/assets/catalogStudioLink.ts:87:11
+     85|   const sha = await sha256Hex(source);
+     86|   if (sha !== asset.sourceSha256) {
+     87|     throw new CatalogRefError(`Catalog source for ${ref.kit}/${ref.id}…
+       |           ^
+     88|   }
+     89|   return { asset, source, title: asset.title };
+ ❯ openInStudio tests/integration/catalog/catalogStudioLink.test.ts:40:18
+ ❯ tests/integration/catalog/catalogStudioLink.test.ts:96:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 2 passed (4)
+      Tests  2 failed | 13 passed (15)
+   Start at  07:41:43
+   Duration  248.77s (transform 14.65s, setup 403ms, import 19.77s, tests 338.49s, environment 1ms)
+
+exit=1

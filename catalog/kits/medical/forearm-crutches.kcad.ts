@@ -2,7 +2,7 @@ meta({
   "name": "forearm-crutches",
   "license": "CC0-1.0",
   "title": "Forearm crutches",
-  "description": "Pair of low-poly forearm crutches with cuffs, hand grips, narrow shafts and rubber tips for medical recovery scenes.",
+  "description": "Pair of low-poly forearm crutches with cuffs, hand grips, narrow shafts and rubber tips for medical recovery scenes. Material controls: Anodized aluminum, Molded cuff polymer, Silicone and rubber.",
   "tags": [
     "forearm crutches",
     "crutches",
@@ -24,11 +24,13 @@ meta({
   "triangleBudget": 350
 });
 
-const shell = param('shell', '#b8c3c8', { label: 'Shell' });
-const accent = param('accent', '#2d858d', { label: 'Accent' });
+// A forearm crutch pairs a long aluminum shaft with a molded cuff, hand grip and rubber tip.
+const anodizedAluminum = param('anodizedAluminum', '#b8c3c8', { label: 'Anodized aluminum' });
+const medicalPolymer = param('medicalPolymer', '#76a0a4', { label: 'Molded cuff polymer' });
+const siliconeRubber = param('siliconeRubber', '#2d858d', { label: 'Silicone and rubber' });
 presets({
-  clinic: { shell: '#f1f3f4', accent: '#2d9893' },
-  emergency: { shell: '#ebe8df', accent: '#c9413b' },
+  clinic: { anodizedAluminum: '#c5ced1', medicalPolymer: '#70a7a5', siliconeRubber: '#4b9295' },
+  emergency: { anodizedAluminum: '#b9b7b1', medicalPolymer: '#c9413b', siliconeRubber: '#a74942' },
 });
 const p = assembly('forearm-crutches');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
@@ -36,10 +38,10 @@ const c = (x: number, y: number, z: number, h: number, r: number, segments = 10)
 
 for (const side of [-1, 1]) {
   const x = side * 76;
-  p.part('shaft-' + side, c(x, 0, 0, 870, 12, 8).color(shell));
-  p.part('cuff-' + side, c(x, 0, 790, 92, 44, 10).color(accent));
-  p.part('grip-' + side, b(x, 0, 650, 68, 34, 24).color(accent));
-  p.part('tip-' + side, c(x, 0, 0, 24, 15, 8).color(accent));
+  p.part('shaft-' + side, c(x, 0, 0, 870, 12, 8).color(anodizedAluminum));
+  p.part('cuff-' + side, c(x, 0, 790, 92, 44, 10).color(medicalPolymer));
+  p.part('grip-' + side, b(x, 0, 650, 68, 34, 24).color(siliconeRubber));
+  p.part('tip-' + side, c(x, 0, 0, 24, 15, 8).color(siliconeRubber));
 }
 
 return p.model();

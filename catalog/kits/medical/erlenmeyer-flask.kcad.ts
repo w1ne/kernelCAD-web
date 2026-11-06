@@ -2,7 +2,7 @@ meta({
   "name": "erlenmeyer-flask",
   "license": "CC0-1.0",
   "title": "Erlenmeyer flask",
-  "description": "Low-poly Erlenmeyer flask built from stepped conical vessel bands and a narrow neck for laboratory scenes.",
+  "description": "Low-poly Erlenmeyer flask with a tapered body, narrow neck, visible liquid level and graduation marks. Material controls: Borosilicate glass, liquid solution, graduation ink.",
   "tags": [
     "erlenmeyer flask",
     "laboratory glassware",
@@ -23,19 +23,38 @@ meta({
   "triangleBudget": 260
 });
 
-const shell = param('shell', '#b8d6d1', { label: 'Shell' });
-const accent = param('accent', '#4b8790', { label: 'Accent' });
+// A laboratory flask has a broad conical body, narrow neck and visible liquid and graduation marks.
+const borosilicateGlass = param('borosilicateGlass', '#b8d6d1', { label: 'Borosilicate glass' });
+const solution = param('solution', '#4b8790', { label: 'Liquid solution' });
+const graduationInk = param('graduationInk', '#315357', { label: 'Graduation ink' });
 presets({
-  clinic: { shell: '#f1f3f4', accent: '#2d9893' },
-  emergency: { shell: '#ebe8df', accent: '#c9413b' },
+  clinic: { borosilicateGlass: '#c3dfda', solution: '#56a49b', graduationInk: '#43716d' },
+  emergency: { borosilicateGlass: '#c7d8d5', solution: '#cf7663', graduationInk: '#704f4b' },
 });
 const p = assembly('erlenmeyer-flask');
 const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
 
-p.part('lower-body', c(0, 0, 0, 30, 42, 10).color(shell));
-p.part('shoulder', c(0, 0, 28, 44, 32, 10).color(shell));
-p.part('upper-neck', c(0, 0, 68, 45, 14, 10).color(shell));
-p.part('rim', c(0, 0, 111, 8, 17, 10).color(accent));
-p.part('liquid-band', c(0, 0, 18, 4, 28, 10).color(accent));
+const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
+const levels = [0, 24, 68, 104, 110];
+const radii = [42, 42, 18, 14, 17];
+const profile = (r: number) => {
+  let shape = path().moveTo(r, 0);
+  for (let i = 1; i < 10; i++) {
+    const angle = (Math.PI * 2 * i) / 10;
+    shape = shape.lineTo(r * Math.cos(angle), r * Math.sin(angle));
+  }
+  return shape.close();
+};
+const profiles = radii.map(profile);
+const flaskBody = profiles[0].loft(profiles.slice(1), {
+  planes: levels.map((z) => ({ plane: 'XY' as const, origin: [0, 0, z] as [number, number, number] })),
+  ruled: true,
+});
+p.part('flask-body', flaskBody.color(borosilicateGlass));
+p.part('rim', c(0, 0, 111, 8, 17, 10).color(borosilicateGlass));
+p.part('liquid-window', b(0, -39, 20, 28, 2, 4).color(solution));
+for (const [z, y] of [[36, -33.7], [48, -27.8], [60, -21.5]]) {
+  p.part('graduation-' + z, b(0, y, z, 12, 2, 2).color(graduationInk));
+}
 
 return p.model();

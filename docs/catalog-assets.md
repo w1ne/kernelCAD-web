@@ -7,7 +7,14 @@ from those sources and must be rebuilt in the same change.
 ## Catalog quality snapshot (2026-11-06)
 
 The catalog quality gate reports **2,390/2,390 assets passing (100.00%)**
-across 49 rich kits, with no failing assets. This round brought `props` from
+across 49 rich kits, with no failing assets. The latest round refined the
+existing 40-asset `medical` kit: generic shell/accent controls now name actual
+materials, the palette grew from 80 generic controls to 132 material controls
+(3.30 per asset), and five existing forms gained visible object details. The
+[medical material handoff](../artifacts/catalog-demos/medical-materials-quality-20261106/README.md)
+contains the per-asset map, before/after previews, exact preset renders, source
+hashes, local checks and inspected MP4. The pass count remains 2,390/2,390
+(100.00%); this round adds no assets. The preceding round brought `props` from
 44/45 to 45/45 by exposing woven canvas, alternate canvas and stitching thread
 as material controls on the sandbags and adding visible closure seams. The
 [sandbags quality handoff](../artifacts/catalog-demos/props-sandbags-quality-20261106/README.md)
@@ -57,6 +64,25 @@ contains source-driven preset renders, source hashes, local page checks, lint,
 integration results and an inspected MP4. These are low-poly visualization
 assets; local checks do not establish flood performance, deployment or physical
 acceptance.
+
+## Medical assets
+
+The [medical kit](../catalog/kits/medical/README.md) retains its 40 clinic,
+hospital, first-aid and laboratory props. Generic `shell` and `accent`
+controls were replaced with two to four material-named controls per asset;
+the 132 controls now describe real model zones such as stainless steel,
+polymer, glass, upholstery, rubber, paper and cotton gauze. The clinic and
+emergency presets now set those materials independently. Existing choice
+controls remain available on the hospital bed, medical cart and specimen rack.
+The Erlenmeyer flask now has a tapered loft, visible liquid-level panel and
+graduation marks; the Petri dish and specimen cup gain sample details, the
+pulse oximeter has interior finger pads, and the syringe has a separate
+plunger seal. All 40 previews were rerendered and indexed. The [quality
+handoff](../artifacts/catalog-demos/medical-materials-quality-20261106/README.md)
+contains source-driven preset renders, before/after previews, local page checks,
+lint and integration output, and the inspected MP4. These remain stylized
+visualization props; local checks do not establish clinical device accuracy,
+manufacturing suitability, deployed behavior or physical acceptance.
 
 ## City-street assets
 

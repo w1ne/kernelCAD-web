@@ -145519,7 +145519,7 @@
       "id": "adhesive-bandage-box",
       "kit": "medical",
       "title": "Adhesive bandage box",
-      "description": "Small first-aid box with simple cross mark and an individual dressing shape for clinic and emergency scenes.",
+      "description": "Small first-aid box with simple cross mark and an individual dressing shape for clinic and emergency scenes. Material controls: Paperboard carton, Cotton gauze, Printed medical ink.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -145540,30 +145540,38 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/adhesive-bandage-box.kcad.ts",
       "preview": "/assets/medical-adhesive-bandage-box.png",
-      "sourceSha256": "d8b6e0c1df78017b9ba0e8e031637359addf79155d3d32d204cf8c9f639e38b3",
+      "sourceSha256": "466997176041e0ea8097930c593a3ac5d1f881a83a40839083ce03e500719e21",
       "triangleBudget": 260,
       "params": [
         {
-          "name": "shell",
+          "name": "paperboard",
           "type": "color",
           "default": "#f4f0e6",
-          "label": "Shell"
+          "label": "Paperboard carton"
         },
         {
-          "name": "accent",
+          "name": "cottonGauze",
+          "type": "color",
+          "default": "#e8ddc5",
+          "label": "Cotton gauze"
+        },
+        {
+          "name": "medicalInk",
           "type": "color",
           "default": "#c8403a",
-          "label": "Accent"
+          "label": "Printed medical ink"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "paperboard": "#f5f2ea",
+          "cottonGauze": "#f4eee0",
+          "medicalInk": "#2d8b84"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "paperboard": "#e8e0d1",
+          "cottonGauze": "#ded2bc",
+          "medicalInk": "#c9413b"
         }
       },
       "stats": {
@@ -145578,23 +145586,30 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "paperboard",
           "color": "#f4f0e6",
           "parts": [
-            "carton",
-            "pad"
+            "carton"
           ],
-          "param": "shell"
+          "param": "paperboard"
         },
         {
-          "name": "accent",
+          "name": "medicalInk",
           "color": "#c8403a",
           "parts": [
             "cross-vertical",
-            "cross-horizontal",
-            "dressing"
+            "cross-horizontal"
           ],
-          "param": "accent"
+          "param": "medicalInk"
+        },
+        {
+          "name": "cottonGauze",
+          "color": "#e8ddc5",
+          "parts": [
+            "dressing",
+            "pad"
+          ],
+          "param": "cottonGauze"
         }
       ]
     },
@@ -145602,7 +145617,7 @@
       "id": "bandage-roll",
       "kit": "medical",
       "title": "Bandage roll",
-      "description": "Rolled gauze bandage with a hollow core and wrapped end strip for first-aid or clinic scenes.",
+      "description": "Rolled gauze bandage with a hollow core and wrapped end strip for first-aid or clinic scenes. Material controls: Cotton gauze, Compression gauze, Cardboard core.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -145622,30 +145637,38 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/bandage-roll.kcad.ts",
       "preview": "/assets/medical-bandage-roll.png",
-      "sourceSha256": "2e7a096b41673d34b53880e201d86cd0f6a53497ba5731f284a8ac051150ee87",
+      "sourceSha256": "32c47e221338600fecc686a63d5cda55a415ad4dd1465a625a0abc79e667d2e7",
       "triangleBudget": 300,
       "params": [
         {
-          "name": "shell",
+          "name": "cottonGauze",
           "type": "color",
           "default": "#e8e1cf",
-          "label": "Shell"
+          "label": "Cotton gauze"
         },
         {
-          "name": "accent",
+          "name": "compressionWrap",
           "type": "color",
-          "default": "#bfa77b",
-          "label": "Accent"
+          "default": "#cbb994",
+          "label": "Compression gauze"
+        },
+        {
+          "name": "cardboard",
+          "type": "color",
+          "default": "#936b43",
+          "label": "Cardboard core"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "cottonGauze": "#f4f1e6",
+          "compressionWrap": "#d9cfb7",
+          "cardboard": "#a47e54"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "cottonGauze": "#e8e1cf",
+          "compressionWrap": "#cbb994",
+          "cardboard": "#855d3c"
         }
       },
       "stats": {
@@ -145660,21 +145683,28 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "cottonGauze",
           "color": "#e8e1cf",
           "parts": [
             "roll"
           ],
-          "param": "shell"
+          "param": "cottonGauze"
         },
         {
-          "name": "accent",
-          "color": "#bfa77b",
+          "name": "compressionWrap",
+          "color": "#cbb994",
           "parts": [
-            "wrap-end",
+            "wrap-end"
+          ],
+          "param": "compressionWrap"
+        },
+        {
+          "name": "cardboard",
+          "color": "#936b43",
+          "parts": [
             "inner-core"
           ],
-          "param": "accent"
+          "param": "cardboard"
         }
       ]
     },
@@ -145682,7 +145712,7 @@
       "id": "bedside-cabinet",
       "kit": "medical",
       "title": "Bedside cabinet",
-      "description": "Compact bedside cabinet with two drawer fronts, small pulls and a lower plinth for hospital room scenes.",
+      "description": "Compact bedside cabinet with two drawer fronts, small pulls and a lower plinth for hospital room scenes. Material controls: Painted steel, Laminate top, Stainless-steel pulls.",
       "category": "furniture",
       "origin": "base",
       "tags": [
@@ -145702,30 +145732,38 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/bedside-cabinet.kcad.ts",
       "preview": "/assets/medical-bedside-cabinet.png",
-      "sourceSha256": "7bc7e01358eb90c147d15ec7bc3e867cc47193e7f3c17322a87ce257cb1f5306",
+      "sourceSha256": "29a0c19504cfe50325f083d52a90d499cbf2de94f5b4ca74cc765ecbdee844f0",
       "triangleBudget": 500,
       "params": [
         {
-          "name": "shell",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#e8ecee",
-          "label": "Shell"
+          "label": "Painted steel"
         },
         {
-          "name": "accent",
+          "name": "laminate",
           "type": "color",
-          "default": "#5c7482",
-          "label": "Accent"
+          "default": "#d3c9b7",
+          "label": "Laminate top"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b7",
+          "label": "Stainless-steel pulls"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "paintedSteel": "#f1f3f4",
+          "laminate": "#d9d1c3",
+          "stainlessSteel": "#b7c0c2"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "paintedSteel": "#ebe8df",
+          "laminate": "#c6b9a5",
+          "stainlessSteel": "#aaaeb0"
         }
       },
       "stats": {
@@ -145740,25 +145778,32 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "paintedSteel",
           "color": "#e8ecee",
           "parts": [
             "cabinet-body",
             "drawer-300",
-            "drawer-120"
-          ],
-          "param": "shell"
-        },
-        {
-          "name": "accent",
-          "color": "#5c7482",
-          "parts": [
-            "top",
-            "pull-300",
-            "pull-120",
+            "drawer-120",
             "plinth"
           ],
-          "param": "accent"
+          "param": "paintedSteel"
+        },
+        {
+          "name": "laminate",
+          "color": "#d3c9b7",
+          "parts": [
+            "top"
+          ],
+          "param": "laminate"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aab4b7",
+          "parts": [
+            "pull-300",
+            "pull-120"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -145766,7 +145811,7 @@
       "id": "blood-collection-tube",
       "kit": "medical",
       "title": "Blood collection tube",
-      "description": "Single low-poly blood collection tube with colored cap and sample barrel for diagnostic laboratory scenes.",
+      "description": "Single low-poly blood collection tube with colored cap and sample barrel for diagnostic laboratory scenes. Material controls: Clear polymer, Rubber stopper, Label paper.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -145786,30 +145831,38 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/blood-collection-tube.kcad.ts",
       "preview": "/assets/medical-blood-collection-tube.png",
-      "sourceSha256": "b4abb10f10391cfdb869539eef201458d8b9146ec3f53bb0b723020b2549978a",
+      "sourceSha256": "033ac926e348c9d7de0ef13a9557d29392b40cbc9add680951266948614722ce",
       "triangleBudget": 240,
       "params": [
         {
-          "name": "shell",
+          "name": "clearPolymer",
           "type": "color",
           "default": "#d7e4e4",
-          "label": "Shell"
+          "label": "Clear polymer"
         },
         {
-          "name": "accent",
+          "name": "rubberStopper",
           "type": "color",
           "default": "#855b9a",
-          "label": "Accent"
+          "label": "Rubber stopper"
+        },
+        {
+          "name": "labelPaper",
+          "type": "color",
+          "default": "#f2eee3",
+          "label": "Label paper"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "clearPolymer": "#cde5e2",
+          "rubberStopper": "#4b8c88",
+          "labelPaper": "#f4f1e7"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "clearPolymer": "#d7e0e2",
+          "rubberStopper": "#c8403a",
+          "labelPaper": "#eee7dc"
         }
       },
       "stats": {
@@ -145824,22 +145877,29 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "clearPolymer",
           "color": "#d7e4e4",
           "parts": [
-            "tube",
-            "cap-ridge"
+            "tube"
           ],
-          "param": "shell"
+          "param": "clearPolymer"
         },
         {
-          "name": "accent",
+          "name": "rubberStopper",
           "color": "#855b9a",
           "parts": [
             "cap",
+            "cap-ridge"
+          ],
+          "param": "rubberStopper"
+        },
+        {
+          "name": "labelPaper",
+          "color": "#f2eee3",
+          "parts": [
             "label-band"
           ],
-          "param": "accent"
+          "param": "labelPaper"
         }
       ]
     },
@@ -145847,7 +145907,7 @@
       "id": "blood-pressure-monitor",
       "kit": "medical",
       "title": "Blood pressure monitor",
-      "description": "Portable blood pressure monitor with digital readout, control buttons, attached cuff and connecting tube for clinic scenes.",
+      "description": "Portable blood pressure monitor with digital readout, control buttons, attached cuff and connecting tube for clinic scenes. Material controls: Medical-grade polymer, Display glass, Cuff fabric, Silicone and rubber.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -145867,30 +145927,46 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/blood-pressure-monitor.kcad.ts",
       "preview": "/assets/medical-blood-pressure-monitor.png",
-      "sourceSha256": "491edf8da44a8b5b9027c40229d77c7862a20751fcc4384de99c26fba385f8ff",
+      "sourceSha256": "784a91866d08f8f3e9c9ad5b49a67e96c89daa73cca8eb6d4fd310c68e6bb019",
       "triangleBudget": 400,
       "params": [
         {
-          "name": "shell",
+          "name": "medicalPolymer",
           "type": "color",
           "default": "#e9eef0",
-          "label": "Shell"
+          "label": "Medical-grade polymer"
         },
         {
-          "name": "accent",
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#29484b",
+          "label": "Display glass"
+        },
+        {
+          "name": "cuffFabric",
           "type": "color",
           "default": "#397c86",
-          "label": "Accent"
+          "label": "Cuff fabric"
+        },
+        {
+          "name": "siliconeRubber",
+          "type": "color",
+          "default": "#66777b",
+          "label": "Silicone and rubber"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "medicalPolymer": "#f1f3f4",
+          "displayGlass": "#2b6564",
+          "cuffFabric": "#2d9893",
+          "siliconeRubber": "#708486"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "medicalPolymer": "#ebe8df",
+          "displayGlass": "#33474b",
+          "cuffFabric": "#c9413b",
+          "siliconeRubber": "#665f5e"
         }
       },
       "stats": {
@@ -145905,27 +145981,41 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "medicalPolymer",
           "color": "#e9eef0",
           "parts": [
             "monitor",
             "button--34",
             "button-0",
-            "button-34",
-            "tube"
+            "button-34"
           ],
-          "param": "shell"
+          "param": "medicalPolymer"
         },
         {
-          "name": "accent",
-          "color": "#397c86",
+          "name": "siliconeRubber",
+          "color": "#66777b",
           "parts": [
             "foot-left",
             "foot-right",
-            "screen",
+            "tube"
+          ],
+          "param": "siliconeRubber"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#29484b",
+          "parts": [
+            "screen"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "cuffFabric",
+          "color": "#397c86",
+          "parts": [
             "cuff"
           ],
-          "param": "accent"
+          "param": "cuffFabric"
         }
       ]
     },
@@ -145933,7 +146023,7 @@
       "id": "centrifuge",
       "kit": "medical",
       "title": "Laboratory centrifuge",
-      "description": "Compact bench-top centrifuge with lidded rotor housing, simple control panel and feet for laboratory scenes.",
+      "description": "Compact bench-top centrifuge with lidded rotor housing, simple control panel and feet for laboratory scenes. Material controls: Painted steel, Clear polycarbonate, Display glass, Rubber feet.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -145953,30 +146043,46 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/centrifuge.kcad.ts",
       "preview": "/assets/medical-centrifuge.png",
-      "sourceSha256": "f7a2a1cbd1a7c763c10405c3083733fa0696c87167462803c838fe6898501596",
+      "sourceSha256": "c51e7733568f1b774b8e7828f5380286fd87a40a2cae94a24a209a1428f56225",
       "triangleBudget": 400,
       "params": [
         {
-          "name": "shell",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#dfe5e6",
-          "label": "Shell"
+          "label": "Painted steel"
         },
         {
-          "name": "accent",
+          "name": "clearPolycarbonate",
           "type": "color",
-          "default": "#347c84",
-          "label": "Accent"
+          "default": "#75aeb0",
+          "label": "Clear polycarbonate"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#24494d",
+          "label": "Display glass"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#384347",
+          "label": "Rubber feet"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "paintedSteel": "#e9edee",
+          "clearPolycarbonate": "#83c3bd",
+          "displayGlass": "#2f7774",
+          "rubber": "#485356"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "paintedSteel": "#e6e1d9",
+          "clearPolycarbonate": "#8db3b1",
+          "displayGlass": "#415558",
+          "rubber": "#494748"
         }
       },
       "stats": {
@@ -145991,28 +146097,42 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "paintedSteel",
           "color": "#dfe5e6",
           "parts": [
             "base",
             "rotor-hub",
-            "display",
+            "panel",
             "button--34",
             "button-0",
             "button-34"
           ],
-          "param": "shell"
+          "param": "paintedSteel"
         },
         {
-          "name": "accent",
-          "color": "#347c84",
+          "name": "clearPolycarbonate",
+          "color": "#75aeb0",
           "parts": [
-            "lid",
-            "panel",
+            "lid"
+          ],
+          "param": "clearPolycarbonate"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#24494d",
+          "parts": [
+            "display"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "rubber",
+          "color": "#384347",
+          "parts": [
             "foot--70",
             "foot-70"
           ],
-          "param": "accent"
+          "param": "rubber"
         }
       ]
     },
@@ -146020,7 +146140,7 @@
       "id": "defibrillator",
       "kit": "medical",
       "title": "Automated defibrillator",
-      "description": "Portable AED case with carry handle, simple screen, control buttons and two pad shapes for emergency response scenes.",
+      "description": "Portable AED case with carry handle, simple screen, control buttons and two pad shapes for emergency response scenes. Material controls: Medical-grade polymer, Display glass, Silicone electrode pads.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -146040,30 +146160,38 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/defibrillator.kcad.ts",
       "preview": "/assets/medical-defibrillator.png",
-      "sourceSha256": "638da0b4533825655ece1cf2d0ff646c60b081e2ace072365fc32bdc3c41fd0a",
+      "sourceSha256": "b6581f53b7c59e52fbe8b215bf7fb813d649f724f4f61c2e98a3abb5da89c4e8",
       "triangleBudget": 450,
       "params": [
         {
-          "name": "shell",
+          "name": "medicalPolymer",
           "type": "color",
           "default": "#e9ecec",
-          "label": "Shell"
+          "label": "Medical-grade polymer"
         },
         {
-          "name": "accent",
+          "name": "displayGlass",
           "type": "color",
-          "default": "#d84b42",
-          "label": "Accent"
+          "default": "#214b50",
+          "label": "Display glass"
+        },
+        {
+          "name": "siliconeRubber",
+          "type": "color",
+          "default": "#c94d43",
+          "label": "Silicone electrode pads"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "medicalPolymer": "#f1f3f4",
+          "displayGlass": "#2d7772",
+          "siliconeRubber": "#2d9893"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "medicalPolymer": "#ebe8df",
+          "displayGlass": "#384c50",
+          "siliconeRubber": "#c9413b"
         }
       },
       "stats": {
@@ -146078,26 +146206,33 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "medicalPolymer",
           "color": "#e9ecec",
           "parts": [
-            "case"
-          ],
-          "param": "shell"
-        },
-        {
-          "name": "accent",
-          "color": "#d84b42",
-          "parts": [
+            "case",
             "handle-left",
             "handle-right",
-            "handle-grip",
-            "screen",
+            "handle-grip"
+          ],
+          "param": "medicalPolymer"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#214b50",
+          "parts": [
+            "screen"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "siliconeRubber",
+          "color": "#c94d43",
+          "parts": [
             "button",
             "pad-left",
             "pad-right"
           ],
-          "param": "accent"
+          "param": "siliconeRubber"
         }
       ]
     },
@@ -146105,7 +146240,7 @@
       "id": "diagnostic-monitor",
       "kit": "medical",
       "title": "Diagnostic monitor",
-      "description": "Freestanding patient monitor with display, control panel, upright support and broad base for clinic and ward scenes.",
+      "description": "Freestanding patient monitor with display, control panel, upright support and broad base for clinic and ward scenes. Material controls: Medical-grade polymer, Display glass, Anodized aluminum, Rubber controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -146125,30 +146260,46 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/diagnostic-monitor.kcad.ts",
       "preview": "/assets/medical-diagnostic-monitor.png",
-      "sourceSha256": "916c417f8183a08c5174297a0fd49a7d8775e5500cfe44f69359092927a06e18",
+      "sourceSha256": "b0522497deda577c990188f91891e1cda5352b242f0a168d1db8c362d3b6b7cc",
       "triangleBudget": 400,
       "params": [
         {
-          "name": "shell",
+          "name": "medicalPolymer",
           "type": "color",
           "default": "#4d5a62",
-          "label": "Shell"
+          "label": "Medical-grade polymer"
         },
         {
-          "name": "accent",
+          "name": "displayGlass",
           "type": "color",
-          "default": "#39a3a5",
-          "label": "Accent"
+          "default": "#21888d",
+          "label": "Display glass"
+        },
+        {
+          "name": "anodizedAluminum",
+          "type": "color",
+          "default": "#87969a",
+          "label": "Anodized aluminum"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30383c",
+          "label": "Rubber controls"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "medicalPolymer": "#edf1f2",
+          "displayGlass": "#2d9893",
+          "anodizedAluminum": "#a9b5b8",
+          "rubber": "#526368"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "medicalPolymer": "#e9e6de",
+          "displayGlass": "#c9413b",
+          "anodizedAluminum": "#9d9d97",
+          "rubber": "#54504c"
         }
       },
       "stats": {
@@ -146163,26 +146314,40 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "medicalPolymer",
           "color": "#4d5a62",
           "parts": [
             "base",
             "bezel",
             "control-strip"
           ],
-          "param": "shell"
+          "param": "medicalPolymer"
         },
         {
-          "name": "accent",
-          "color": "#39a3a5",
+          "name": "anodizedAluminum",
+          "color": "#87969a",
           "parts": [
-            "stem",
-            "screen",
+            "stem"
+          ],
+          "param": "anodizedAluminum"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#21888d",
+          "parts": [
+            "screen"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "rubber",
+          "color": "#30383c",
+          "parts": [
             "button--52",
             "button-0",
             "button-52"
           ],
-          "param": "accent"
+          "param": "rubber"
         }
       ]
     },
@@ -146190,7 +146355,7 @@
       "id": "digital-thermometer",
       "kit": "medical",
       "title": "Digital thermometer",
-      "description": "Slim digital thermometer with tapered probe, small display and cap detail for first-aid and clinic scenes.",
+      "description": "Slim digital thermometer with tapered probe, small display and cap detail for first-aid and clinic scenes. Material controls: Medical-grade polymer, Display glass, Stainless-steel probe, Silicone end cap.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -146210,30 +146375,46 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/digital-thermometer.kcad.ts",
       "preview": "/assets/medical-digital-thermometer.png",
-      "sourceSha256": "b4c21fd227993721215d5e59c6b4fe7295cd6956e124c4b0bb50c61fa26d6927",
+      "sourceSha256": "8725ca30d365244bcdbb612701eeec4b617c3f2b115713d1e27b309ab04c85da",
       "triangleBudget": 240,
       "params": [
         {
-          "name": "shell",
+          "name": "medicalPolymer",
           "type": "color",
           "default": "#e4e9eb",
-          "label": "Shell"
+          "label": "Medical-grade polymer"
         },
         {
-          "name": "accent",
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#315d62",
+          "label": "Display glass"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b7c0c2",
+          "label": "Stainless-steel probe"
+        },
+        {
+          "name": "silicone",
           "type": "color",
           "default": "#4d9ca0",
-          "label": "Accent"
+          "label": "Silicone end cap"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "medicalPolymer": "#f1f3f4",
+          "displayGlass": "#318884",
+          "stainlessSteel": "#c1c9cb",
+          "silicone": "#64aaa5"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "medicalPolymer": "#ebe8df",
+          "displayGlass": "#9c4f48",
+          "stainlessSteel": "#b7b9b7",
+          "silicone": "#c9413b"
         }
       },
       "stats": {
@@ -146248,23 +146429,37 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "medicalPolymer",
           "color": "#e4e9eb",
           "parts": [
             "body",
             "button"
           ],
-          "param": "shell"
+          "param": "medicalPolymer"
         },
         {
-          "name": "accent",
+          "name": "stainlessSteel",
+          "color": "#b7c0c2",
+          "parts": [
+            "probe"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#315d62",
+          "parts": [
+            "display"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "silicone",
           "color": "#4d9ca0",
           "parts": [
-            "probe",
-            "display",
             "end-cap"
           ],
-          "param": "accent"
+          "param": "silicone"
         }
       ]
     },
@@ -146272,7 +146467,7 @@
       "id": "erlenmeyer-flask",
       "kit": "medical",
       "title": "Erlenmeyer flask",
-      "description": "Low-poly Erlenmeyer flask built from stepped conical vessel bands and a narrow neck for laboratory scenes.",
+      "description": "Low-poly Erlenmeyer flask with a tapered body, narrow neck, visible liquid level and graduation marks. Material controls: Borosilicate glass, liquid solution, graduation ink.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -146292,61 +146487,77 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/erlenmeyer-flask.kcad.ts",
       "preview": "/assets/medical-erlenmeyer-flask.png",
-      "sourceSha256": "8d6dd164aba3caaca9e626df7e58bc9c6ddba91f561c55a1eab6049adb463f8a",
+      "sourceSha256": "47579c8c2fcf24d88fc655bf8dc3499243c82c49283f3c854fe24a8b6a4a2140",
       "triangleBudget": 260,
       "params": [
         {
-          "name": "shell",
+          "name": "borosilicateGlass",
           "type": "color",
           "default": "#b8d6d1",
-          "label": "Shell"
+          "label": "Borosilicate glass"
         },
         {
-          "name": "accent",
+          "name": "solution",
           "type": "color",
           "default": "#4b8790",
-          "label": "Accent"
+          "label": "Liquid solution"
+        },
+        {
+          "name": "graduationInk",
+          "type": "color",
+          "default": "#315357",
+          "label": "Graduation ink"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "borosilicateGlass": "#c3dfda",
+          "solution": "#56a49b",
+          "graduationInk": "#43716d"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "borosilicateGlass": "#c7d8d5",
+          "solution": "#cf7663",
+          "graduationInk": "#704f4b"
         }
       },
       "stats": {
-        "triangles": 220,
+        "triangles": 188,
         "sizeM": [
           0.084,
           0.119,
-          0.084
+          0.079944
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "borosilicateGlass",
           "color": "#b8d6d1",
           "parts": [
-            "lower-body",
-            "shoulder",
-            "upper-neck"
+            "flask-body",
+            "rim"
           ],
-          "param": "shell"
+          "param": "borosilicateGlass"
         },
         {
-          "name": "accent",
+          "name": "solution",
           "color": "#4b8790",
           "parts": [
-            "rim",
-            "liquid-band"
+            "liquid-window"
           ],
-          "param": "accent"
+          "param": "solution"
+        },
+        {
+          "name": "graduationInk",
+          "color": "#315357",
+          "parts": [
+            "graduation-36",
+            "graduation-48",
+            "graduation-60"
+          ],
+          "param": "graduationInk"
         }
       ]
     },
@@ -146354,7 +146565,7 @@
       "id": "exam-table",
       "kit": "medical",
       "title": "Examination table",
-      "description": "Low-poly examination table with padded top, adjustable-looking base and paper roll support for clinic scenes.",
+      "description": "Low-poly examination table with padded top, adjustable-looking base and paper roll support for clinic scenes. Material controls: Vinyl upholstery, Powder-coated steel, Stainless-steel paper bar.",
       "category": "furniture",
       "origin": "base",
       "tags": [
@@ -146374,30 +146585,38 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/exam-table.kcad.ts",
       "preview": "/assets/medical-exam-table.png",
-      "sourceSha256": "88dd0adbbb26a6dce49337a12e8c761d94be800b86ac9157d6872f023cb62171",
+      "sourceSha256": "d74d1eed72ab9384330e05da7163b288311c5fee1f19d7e54175a3eb1b8766b1",
       "triangleBudget": 600,
       "params": [
         {
-          "name": "shell",
+          "name": "vinylUpholstery",
           "type": "color",
           "default": "#edf0f2",
-          "label": "Shell"
+          "label": "Vinyl upholstery"
         },
         {
-          "name": "accent",
+          "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#2d9b91",
-          "label": "Accent"
+          "default": "#63727a",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aeb8ba",
+          "label": "Stainless-steel paper bar"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "vinylUpholstery": "#f4f4f0",
+          "powderCoatedSteel": "#78878c",
+          "stainlessSteel": "#bac3c5"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "vinylUpholstery": "#eee9e1",
+          "powderCoatedSteel": "#77736d",
+          "stainlessSteel": "#aeb2b2"
         }
       },
       "stats": {
@@ -146412,26 +146631,33 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "vinylUpholstery",
           "color": "#edf0f2",
           "parts": [
             "padded-top",
             "head-cushion"
           ],
-          "param": "shell"
+          "param": "vinylUpholstery"
         },
         {
-          "name": "accent",
-          "color": "#2d9b91",
+          "name": "powderCoatedSteel",
+          "color": "#63727a",
           "parts": [
             "underframe",
             "leg--235--62",
             "leg--235-62",
             "leg-235--62",
-            "leg-235-62",
+            "leg-235-62"
+          ],
+          "param": "powderCoatedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aeb8ba",
+          "parts": [
             "paper-bar"
           ],
-          "param": "accent"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -146439,7 +146665,7 @@
       "id": "examination-light",
       "kit": "medical",
       "title": "Examination light",
-      "description": "Clinic examination lamp with weighted base, tall support column, offset arm and broad low-poly lamp head.",
+      "description": "Clinic examination lamp with weighted base, tall support column, offset arm and broad low-poly lamp head. Material controls: Powder-coated steel, Rubber casters, Anodized-aluminum lamp head, Opal glass diffuser.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -146459,30 +146685,46 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/examination-light.kcad.ts",
       "preview": "/assets/medical-examination-light.png",
-      "sourceSha256": "7251b2a058f2175f289786141b716bca8c5fac6dd38808a05ca3fe2387303256",
+      "sourceSha256": "86c4aef9ae5c0ab1754e6c1f85eac8ece28cf000246536605e44502b8845598a",
       "triangleBudget": 450,
       "params": [
         {
-          "name": "shell",
+          "name": "powderCoatedSteel",
           "type": "color",
           "default": "#e5e9ea",
-          "label": "Shell"
+          "label": "Powder-coated steel"
         },
         {
-          "name": "accent",
+          "name": "rubber",
+          "type": "color",
+          "default": "#3a4244",
+          "label": "Rubber casters"
+        },
+        {
+          "name": "anodizedAluminum",
           "type": "color",
           "default": "#6b8f98",
-          "label": "Accent"
+          "label": "Anodized-aluminum lamp head"
+        },
+        {
+          "name": "opalGlass",
+          "type": "color",
+          "default": "#f0efe7",
+          "label": "Opal glass diffuser"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "powderCoatedSteel": "#eef1f2",
+          "rubber": "#4d5859",
+          "anodizedAluminum": "#7fa0a5",
+          "opalGlass": "#fff9e8"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "powderCoatedSteel": "#e8e4dc",
+          "rubber": "#514e4b",
+          "anodizedAluminum": "#8a8c86",
+          "opalGlass": "#f1e5d5"
         }
       },
       "stats": {
@@ -146497,7 +146739,7 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "powderCoatedSteel",
           "color": "#e5e9ea",
           "parts": [
             "base",
@@ -146506,21 +146748,35 @@
             "base-leg-x-1",
             "base-leg-y-1",
             "column",
-            "lamp-neck",
-            "light-face"
+            "arm",
+            "lamp-neck"
           ],
-          "param": "shell"
+          "param": "powderCoatedSteel"
         },
         {
-          "name": "accent",
-          "color": "#6b8f98",
+          "name": "rubber",
+          "color": "#3a4244",
           "parts": [
             "caster--1",
-            "caster-1",
-            "arm",
+            "caster-1"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "anodizedAluminum",
+          "color": "#6b8f98",
+          "parts": [
             "head"
           ],
-          "param": "accent"
+          "param": "anodizedAluminum"
+        },
+        {
+          "name": "opalGlass",
+          "color": "#f0efe7",
+          "parts": [
+            "light-face"
+          ],
+          "param": "opalGlass"
         }
       ]
     },
@@ -146528,7 +146784,7 @@
       "id": "first-aid-kit",
       "kit": "medical",
       "title": "First aid kit",
-      "description": "Portable first-aid case with carry handle, front latches and raised medical cross for emergency and clinic scenes.",
+      "description": "Portable first-aid case with carry handle, front latches and raised medical cross for emergency and clinic scenes. Material controls: Medical-grade polymer, Printed medical ink, Stainless-steel latches.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -146548,30 +146804,38 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/first-aid-kit.kcad.ts",
       "preview": "/assets/medical-first-aid-kit.png",
-      "sourceSha256": "bc34bc9d141569a0670cb742cdc4b475d0102cceb3fda8161bc3e39ed5ad5e52",
+      "sourceSha256": "9c422517df97e458ceab364c00be2da9f9268034d820480c6bafa81139e35c21",
       "triangleBudget": 350,
       "params": [
         {
-          "name": "shell",
+          "name": "medicalPolymer",
           "type": "color",
           "default": "#e8ecee",
-          "label": "Shell"
+          "label": "Medical-grade polymer"
         },
         {
-          "name": "accent",
+          "name": "medicalInk",
           "type": "color",
           "default": "#c8403a",
-          "label": "Accent"
+          "label": "Printed medical ink"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aab4b7",
+          "label": "Stainless-steel latches"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "medicalPolymer": "#f1f3f4",
+          "medicalInk": "#2d8b84",
+          "stainlessSteel": "#b7c0c2"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "medicalPolymer": "#ebe8df",
+          "medicalInk": "#c9413b",
+          "stainlessSteel": "#a8aaa8"
         }
       },
       "stats": {
@@ -146586,27 +146850,34 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "medicalPolymer",
           "color": "#e8ecee",
           "parts": [
             "case",
+            "lid",
             "handle-left",
             "handle-right",
             "handle-grip"
           ],
-          "param": "shell"
+          "param": "medicalPolymer"
         },
         {
-          "name": "accent",
+          "name": "medicalInk",
           "color": "#c8403a",
           "parts": [
-            "lid",
             "cross-vertical",
-            "cross-horizontal",
+            "cross-horizontal"
+          ],
+          "param": "medicalInk"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aab4b7",
+          "parts": [
             "latch-left",
             "latch-right"
           ],
-          "param": "accent"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -146614,7 +146885,7 @@
       "id": "forceps",
       "kit": "medical",
       "title": "Forceps",
-      "description": "Long low-poly forceps with tapered jaws and broad finger grips for a surgical tray or clinic instrument set.",
+      "description": "Long low-poly forceps with tapered jaws and broad finger grips for a surgical tray or clinic instrument set. Material controls: Stainless steel, Medical-grade grip polymer.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -146634,30 +146905,30 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/forceps.kcad.ts",
       "preview": "/assets/medical-forceps.png",
-      "sourceSha256": "b15739c5750befd8eb45a3d64d41b506df7158ca63f66581623bb794b643d20e",
+      "sourceSha256": "5b221d7c30ce95ae947ac54ff81d336a7b5acd658f8b090d275d8c1009ab788e",
       "triangleBudget": 300,
       "params": [
         {
-          "name": "shell",
+          "name": "stainlessSteel",
           "type": "color",
           "default": "#a5afb2",
-          "label": "Shell"
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "medicalPolymer",
           "type": "color",
           "default": "#56646a",
-          "label": "Accent"
+          "label": "Medical-grade grip polymer"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "stainlessSteel": "#b8c1c3",
+          "medicalPolymer": "#2d858d"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "stainlessSteel": "#b4aaa1",
+          "medicalPolymer": "#c9413b"
         }
       },
       "stats": {
@@ -146672,23 +146943,23 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "stainlessSteel",
           "color": "#a5afb2",
           "parts": [
             "left-arm",
-            "right-arm"
+            "right-arm",
+            "jaw"
           ],
-          "param": "shell"
+          "param": "stainlessSteel"
         },
         {
-          "name": "accent",
+          "name": "medicalPolymer",
           "color": "#56646a",
           "parts": [
             "grip-left",
-            "grip-right",
-            "jaw"
+            "grip-right"
           ],
-          "param": "accent"
+          "param": "medicalPolymer"
         }
       ]
     },
@@ -146696,7 +146967,7 @@
       "id": "forearm-crutches",
       "kit": "medical",
       "title": "Forearm crutches",
-      "description": "Pair of low-poly forearm crutches with cuffs, hand grips, narrow shafts and rubber tips for medical recovery scenes.",
+      "description": "Pair of low-poly forearm crutches with cuffs, hand grips, narrow shafts and rubber tips for medical recovery scenes. Material controls: Anodized aluminum, Molded cuff polymer, Silicone and rubber.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -146717,30 +146988,38 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/forearm-crutches.kcad.ts",
       "preview": "/assets/medical-forearm-crutches.png",
-      "sourceSha256": "1cfb2654da329d70e5c3bd43b770f9f69469354262fbfd0a9e20588c36a0d086",
+      "sourceSha256": "e6faa7d974a0e2ff0a70dae7d97f903b7c443e237cdce37ab9a799cf2eae0e6a",
       "triangleBudget": 350,
       "params": [
         {
-          "name": "shell",
+          "name": "anodizedAluminum",
           "type": "color",
           "default": "#b8c3c8",
-          "label": "Shell"
+          "label": "Anodized aluminum"
         },
         {
-          "name": "accent",
+          "name": "medicalPolymer",
+          "type": "color",
+          "default": "#76a0a4",
+          "label": "Molded cuff polymer"
+        },
+        {
+          "name": "siliconeRubber",
           "type": "color",
           "default": "#2d858d",
-          "label": "Accent"
+          "label": "Silicone and rubber"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "anodizedAluminum": "#c5ced1",
+          "medicalPolymer": "#70a7a5",
+          "siliconeRubber": "#4b9295"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "anodizedAluminum": "#b9b7b1",
+          "medicalPolymer": "#c9413b",
+          "siliconeRubber": "#a74942"
         }
       },
       "stats": {
@@ -146755,26 +147034,33 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "anodizedAluminum",
           "color": "#b8c3c8",
           "parts": [
             "shaft--1",
             "shaft-1"
           ],
-          "param": "shell"
+          "param": "anodizedAluminum"
         },
         {
-          "name": "accent",
-          "color": "#2d858d",
+          "name": "medicalPolymer",
+          "color": "#76a0a4",
           "parts": [
             "cuff--1",
+            "cuff-1"
+          ],
+          "param": "medicalPolymer"
+        },
+        {
+          "name": "siliconeRubber",
+          "color": "#2d858d",
+          "parts": [
             "grip--1",
             "tip--1",
-            "cuff-1",
             "grip-1",
             "tip-1"
           ],
-          "param": "accent"
+          "param": "siliconeRubber"
         }
       ]
     },
@@ -146782,7 +147068,7 @@
       "id": "gauze-pads",
       "kit": "medical",
       "title": "Gauze pads",
-      "description": "Stack of folded gauze pads with layered edges for a first-aid cabinet or clinic supply tray.",
+      "description": "Stack of folded gauze pads with layered edges for a first-aid cabinet or clinic supply tray. Material controls: Cotton gauze, Sterile mesh, Medical tape.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -146802,30 +147088,38 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/gauze-pads.kcad.ts",
       "preview": "/assets/medical-gauze-pads.png",
-      "sourceSha256": "633bc6ce5099e89d3b96d6fbdf83d1d704b0a9d3d18403125a6b8c089ee3424d",
+      "sourceSha256": "1e91bcc4c6e555b651af958cd8a94c711d64e377111f37c604f25975fcb8e643",
       "triangleBudget": 240,
       "params": [
         {
-          "name": "shell",
+          "name": "cottonGauze",
           "type": "color",
           "default": "#f1eee7",
-          "label": "Shell"
+          "label": "Cotton gauze"
         },
         {
-          "name": "accent",
+          "name": "sterileMesh",
           "type": "color",
           "default": "#c8d0d1",
-          "label": "Accent"
+          "label": "Sterile mesh"
+        },
+        {
+          "name": "medicalTape",
+          "type": "color",
+          "default": "#d5c9af",
+          "label": "Medical tape"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "cottonGauze": "#f8f5ec",
+          "sterileMesh": "#c8dcda",
+          "medicalTape": "#e0d3b8"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "cottonGauze": "#eee9df",
+          "sterileMesh": "#d1d2cc",
+          "medicalTape": "#d8c5a9"
         }
       },
       "stats": {
@@ -146840,7 +147134,7 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "cottonGauze",
           "color": "#f1eee7",
           "parts": [
             "pad-0",
@@ -146848,16 +147142,23 @@
             "pad-2",
             "pad-3"
           ],
-          "param": "shell"
+          "param": "cottonGauze"
         },
         {
-          "name": "accent",
+          "name": "sterileMesh",
           "color": "#c8d0d1",
           "parts": [
-            "woven-center",
+            "woven-center"
+          ],
+          "param": "sterileMesh"
+        },
+        {
+          "name": "medicalTape",
+          "color": "#d5c9af",
+          "parts": [
             "fold-band"
           ],
-          "param": "accent"
+          "param": "medicalTape"
         }
       ]
     },
@@ -146865,7 +147166,7 @@
       "id": "hospital-bed",
       "kit": "medical",
       "title": "Hospital bed",
-      "description": "Low-poly hospital bed with raised headboard, side rails, mattress, undercarriage and caster wheels for ward scenes.",
+      "description": "Low-poly hospital bed with raised headboard, side rails, mattress, undercarriage and caster wheels for ward scenes. Material controls: Vinyl upholstery, Painted steel, Molded rail polymer, Rubber casters.",
       "category": "furniture",
       "origin": "base",
       "tags": [
@@ -146885,20 +147186,32 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/hospital-bed.kcad.ts",
       "preview": "/assets/medical-hospital-bed.png",
-      "sourceSha256": "96c25f78b69c4d944036c173e60a8bb0d8c1a27db32f4854e4d3752362bc1697",
+      "sourceSha256": "d18b5b83987451ddf2df6dbb0f91b3525a8a395153ce6c6497fe2c59023f1f20",
       "triangleBudget": 600,
       "params": [
         {
-          "name": "shell",
+          "name": "vinylUpholstery",
           "type": "color",
           "default": "#eef1f2",
-          "label": "Shell"
+          "label": "Vinyl upholstery"
         },
         {
-          "name": "accent",
+          "name": "paintedSteel",
+          "type": "color",
+          "default": "#687880",
+          "label": "Painted steel"
+        },
+        {
+          "name": "medicalPolymer",
           "type": "color",
           "default": "#4c9c9b",
-          "label": "Accent"
+          "label": "Molded rail polymer"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#394245",
+          "label": "Rubber casters"
         },
         {
           "name": "rails",
@@ -146913,12 +147226,16 @@
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "vinylUpholstery": "#f5f4ef",
+          "paintedSteel": "#7d8b90",
+          "medicalPolymer": "#2d9893",
+          "rubber": "#4d5a5c"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "vinylUpholstery": "#efe9df",
+          "paintedSteel": "#78746e",
+          "medicalPolymer": "#c9413b",
+          "rubber": "#514d4a"
         }
       },
       "stats": {
@@ -146933,34 +147250,48 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "vinylUpholstery",
           "color": "#eef1f2",
           "parts": [
-            "mattress",
-            "rail--1-0",
-            "rail--1-1",
-            "rail-1-0",
-            "rail-1-1"
+            "mattress"
           ],
-          "param": "shell"
+          "param": "vinylUpholstery"
         },
         {
-          "name": "accent",
-          "color": "#4c9c9b",
+          "name": "paintedSteel",
+          "color": "#687880",
           "parts": [
             "frame",
             "headboard",
             "footboard",
             "support--300--96",
-            "caster--300--96",
             "support--300-96",
-            "caster--300-96",
             "support-300--96",
+            "support-300-96"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "medicalPolymer",
+          "color": "#4c9c9b",
+          "parts": [
+            "rail--1-0",
+            "rail--1-1",
+            "rail-1-0",
+            "rail-1-1"
+          ],
+          "param": "medicalPolymer"
+        },
+        {
+          "name": "rubber",
+          "color": "#394245",
+          "parts": [
+            "caster--300--96",
+            "caster--300-96",
             "caster-300--96",
-            "support-300-96",
             "caster-300-96"
           ],
-          "param": "accent"
+          "param": "rubber"
         }
       ]
     },
@@ -146968,7 +147299,7 @@
       "id": "instrument-trolley",
       "kit": "medical",
       "title": "Instrument trolley",
-      "description": "Narrow instrument trolley with a stainless-looking top tray, lower utility shelf, push handle and casters for clinic scenes.",
+      "description": "Narrow instrument trolley with a stainless-looking top tray, lower utility shelf, push handle and casters for clinic scenes. Material controls: Stainless steel, Molded tray bumper, Rubber casters.",
       "category": "furniture",
       "origin": "base",
       "tags": [
@@ -146988,30 +147319,38 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/instrument-trolley.kcad.ts",
       "preview": "/assets/medical-instrument-trolley.png",
-      "sourceSha256": "8d0a277de0ee499860172989244cf65e96928fa8c1c2caa1d72023c27fc025cd",
+      "sourceSha256": "9ef74532f8df2a661b9703be75a0e09fe3fbd45f96c75e52c7c4f0e41ee5150c",
       "triangleBudget": 500,
       "params": [
         {
-          "name": "shell",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#eef1f2",
-          "label": "Shell"
+          "default": "#dce2e4",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "medicalPolymer",
           "type": "color",
           "default": "#71838b",
-          "label": "Accent"
+          "label": "Molded tray bumper"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#343c40",
+          "label": "Rubber casters"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "stainlessSteel": "#e8ecec",
+          "medicalPolymer": "#5a9795",
+          "rubber": "#485356"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "stainlessSteel": "#e7e2d9",
+          "medicalPolymer": "#c9413b",
+          "rubber": "#4e4a47"
         }
       },
       "stats": {
@@ -147026,26 +147365,33 @@
       },
       "palette": [
         {
-          "name": "shell",
-          "color": "#eef1f2",
+          "name": "stainlessSteel",
+          "color": "#dce2e4",
           "parts": [
             "lower-shelf",
             "top-tray",
-            "wheel--160",
-            "wheel-160"
-          ],
-          "param": "shell"
-        },
-        {
-          "name": "accent",
-          "color": "#71838b",
-          "parts": [
-            "tray-lip",
             "upright--160",
             "upright-160",
             "handle"
           ],
-          "param": "accent"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "medicalPolymer",
+          "color": "#71838b",
+          "parts": [
+            "tray-lip"
+          ],
+          "param": "medicalPolymer"
+        },
+        {
+          "name": "rubber",
+          "color": "#343c40",
+          "parts": [
+            "wheel--160",
+            "wheel-160"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -147053,7 +147399,7 @@
       "id": "iv-stand",
       "kit": "medical",
       "title": "IV stand",
-      "description": "Mobile IV stand with weighted star base, upright pole, hanging hooks and a simple fluid bag for ward scenes.",
+      "description": "Mobile IV stand with weighted star base, upright pole, hanging hooks and a simple fluid bag for ward scenes. Material controls: Stainless steel, Fluid-bag polymer, Rubber casters.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -147073,30 +147419,38 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/iv-stand.kcad.ts",
       "preview": "/assets/medical-iv-stand.png",
-      "sourceSha256": "52a6f2e69fa59df7970bc5d6bd35a22c640b8970302ab7c39f65d376211263a5",
+      "sourceSha256": "99e6f6a9ddcbc164f58016fa3adf2e13cdaeb97508a002f76f45366681ea5231",
       "triangleBudget": 400,
       "params": [
         {
-          "name": "shell",
+          "name": "stainlessSteel",
           "type": "color",
           "default": "#b6c0c4",
-          "label": "Shell"
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "medicalPolymer",
           "type": "color",
-          "default": "#5da7ad",
-          "label": "Accent"
+          "default": "#dce9e8",
+          "label": "Fluid-bag polymer"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#3d474a",
+          "label": "Rubber casters"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "stainlessSteel": "#c6ced0",
+          "medicalPolymer": "#d6e9e6",
+          "rubber": "#515e60"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "stainlessSteel": "#bdbbb5",
+          "medicalPolymer": "#e9e0d6",
+          "rubber": "#554f4d"
         }
       },
       "stats": {
@@ -147111,7 +147465,7 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "stainlessSteel",
           "color": "#b6c0c4",
           "parts": [
             "base-hub",
@@ -147120,20 +147474,27 @@
             "base-leg-x-1",
             "base-leg-y-1",
             "pole",
-            "bag"
+            "hook-bar"
           ],
-          "param": "shell"
+          "param": "stainlessSteel"
         },
         {
-          "name": "accent",
-          "color": "#5da7ad",
+          "name": "rubber",
+          "color": "#3d474a",
           "parts": [
             "caster--1",
-            "caster-1",
-            "hook-bar",
+            "caster-1"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "medicalPolymer",
+          "color": "#dce9e8",
+          "parts": [
+            "bag",
             "bag-port"
           ],
-          "param": "accent"
+          "param": "medicalPolymer"
         }
       ]
     },
@@ -147141,7 +147502,7 @@
       "id": "lab-incubator",
       "kit": "medical",
       "title": "Laboratory incubator",
-      "description": "Small laboratory incubator with square chamber door, viewing panel, top controls and short feet for bench scenes.",
+      "description": "Small laboratory incubator with square chamber door, viewing panel, top controls and short feet for bench scenes. Material controls: Painted steel, Borosilicate viewing glass, Control polymer, Silicone seal and grip.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -147161,30 +147522,46 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/lab-incubator.kcad.ts",
       "preview": "/assets/medical-lab-incubator.png",
-      "sourceSha256": "e93e0f2475f5908c3b0ad6e5ba1c7a61ce93b20a39998f05aa9e5527bbff8abe",
+      "sourceSha256": "91bdf054cb469aa4195013e143f084bd703d32f316f9335fc00f5a70aa86533e",
       "triangleBudget": 500,
       "params": [
         {
-          "name": "shell",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#e6eaeb",
-          "label": "Shell"
+          "label": "Painted steel"
         },
         {
-          "name": "accent",
+          "name": "borosilicateGlass",
+          "type": "color",
+          "default": "#92bfbd",
+          "label": "Borosilicate viewing glass"
+        },
+        {
+          "name": "medicalPolymer",
           "type": "color",
           "default": "#4c8f93",
-          "label": "Accent"
+          "label": "Control polymer"
+        },
+        {
+          "name": "silicone",
+          "type": "color",
+          "default": "#56666b",
+          "label": "Silicone seal and grip"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "paintedSteel": "#eef1f2",
+          "borosilicateGlass": "#a9cfca",
+          "medicalPolymer": "#2d9893",
+          "silicone": "#6f7e80"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "paintedSteel": "#e9e5dc",
+          "borosilicateGlass": "#a8c2c1",
+          "medicalPolymer": "#c9413b",
+          "silicone": "#665d58"
         }
       },
       "stats": {
@@ -147199,26 +147576,40 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "paintedSteel",
           "color": "#e6eaeb",
           "parts": [
             "cabinet",
-            "window",
-            "handle",
-            "screen"
-          ],
-          "param": "shell"
-        },
-        {
-          "name": "accent",
-          "color": "#4c8f93",
-          "parts": [
             "door",
-            "control-panel",
             "foot--76",
             "foot-76"
           ],
-          "param": "accent"
+          "param": "paintedSteel"
+        },
+        {
+          "name": "borosilicateGlass",
+          "color": "#92bfbd",
+          "parts": [
+            "window",
+            "screen"
+          ],
+          "param": "borosilicateGlass"
+        },
+        {
+          "name": "silicone",
+          "color": "#56666b",
+          "parts": [
+            "handle"
+          ],
+          "param": "silicone"
+        },
+        {
+          "name": "medicalPolymer",
+          "color": "#4c8f93",
+          "parts": [
+            "control-panel"
+          ],
+          "param": "medicalPolymer"
         }
       ]
     },
@@ -147226,7 +147617,7 @@
       "id": "medical-cart",
       "kit": "medical",
       "title": "Medical cart",
-      "description": "Rolling medical cart with two shelves, corner posts, raised tray lips and four low-poly casters for treatment scenes.",
+      "description": "Rolling medical cart with two shelves, corner posts, raised tray lips and four low-poly casters for treatment scenes. Material controls: Stainless steel, Polymer shelf lips, Rubber casters.",
       "category": "furniture",
       "origin": "base",
       "tags": [
@@ -147246,20 +147637,26 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/medical-cart.kcad.ts",
       "preview": "/assets/medical-medical-cart.png",
-      "sourceSha256": "06da28a98b01f687a0296d8b362028b7e29ff92f367fa5ffb7221914fc7940a2",
+      "sourceSha256": "ffb33692bfa745c3165824dcf2a63d40990eb3cf9d78ab2c4c79546957389929",
       "triangleBudget": 600,
       "params": [
         {
-          "name": "shell",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#e9eef0",
-          "label": "Shell"
+          "default": "#dce3e4",
+          "label": "Stainless steel"
         },
         {
-          "name": "accent",
+          "name": "medicalPolymer",
           "type": "color",
           "default": "#3c7f87",
-          "label": "Accent"
+          "label": "Polymer shelf lips"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#343c40",
+          "label": "Rubber casters"
         },
         {
           "name": "shelves",
@@ -147274,12 +147671,14 @@
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "stainlessSteel": "#e8eeee",
+          "medicalPolymer": "#2d9893",
+          "rubber": "#485356"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "stainlessSteel": "#e6e1d9",
+          "medicalPolymer": "#c9413b",
+          "rubber": "#514d4a"
         }
       },
       "stats": {
@@ -147294,30 +147693,37 @@
       },
       "palette": [
         {
-          "name": "shell",
-          "color": "#e9eef0",
+          "name": "stainlessSteel",
+          "color": "#dce3e4",
           "parts": [
             "shelf-0",
             "shelf-1",
-            "wheel--185--125",
-            "wheel--185-125",
-            "wheel-185--125",
-            "wheel-185-125"
-          ],
-          "param": "shell"
-        },
-        {
-          "name": "accent",
-          "color": "#3c7f87",
-          "parts": [
-            "lip-0",
-            "lip-1",
             "post--185--125",
             "post--185-125",
             "post-185--125",
             "post-185-125"
           ],
-          "param": "accent"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "medicalPolymer",
+          "color": "#3c7f87",
+          "parts": [
+            "lip-0",
+            "lip-1"
+          ],
+          "param": "medicalPolymer"
+        },
+        {
+          "name": "rubber",
+          "color": "#343c40",
+          "parts": [
+            "wheel--185--125",
+            "wheel--185-125",
+            "wheel-185--125",
+            "wheel-185-125"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -147325,7 +147731,7 @@
       "id": "microscope",
       "kit": "medical",
       "title": "Microscope",
-      "description": "Compound microscope with base, upright arm, stage, objective cluster and angled eyepiece for a low-poly lab scene.",
+      "description": "Compound microscope with base, upright arm, stage, objective cluster and angled eyepiece for a low-poly lab scene. Material controls: Painted metal, Anodized stage hardware, Optical glass, Rubber eyecup.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -147345,30 +147751,46 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/microscope.kcad.ts",
       "preview": "/assets/medical-microscope.png",
-      "sourceSha256": "b68b447b3dae160087794d7cd031bbd711fbe9769e47cc485945cc8bcc7a8411",
+      "sourceSha256": "b3d6117b1e955e99a39559d6f3960610e9b35d0ffd8162b17a196384c49a4922",
       "triangleBudget": 500,
       "params": [
         {
-          "name": "shell",
+          "name": "paintedMetal",
           "type": "color",
           "default": "#56636a",
-          "label": "Shell"
+          "label": "Painted metal"
         },
         {
-          "name": "accent",
+          "name": "anodizedAluminum",
           "type": "color",
           "default": "#8bb5b4",
-          "label": "Accent"
+          "label": "Anodized stage hardware"
+        },
+        {
+          "name": "opticalGlass",
+          "type": "color",
+          "default": "#253f48",
+          "label": "Optical glass"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#303b40",
+          "label": "Rubber eyecup"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "paintedMetal": "#68777d",
+          "anodizedAluminum": "#93c2be",
+          "opticalGlass": "#326c70",
+          "rubber": "#536669"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "paintedMetal": "#736e68",
+          "anodizedAluminum": "#aeb7b5",
+          "opticalGlass": "#54585a",
+          "rubber": "#4f4b48"
         }
       },
       "stats": {
@@ -147383,29 +147805,43 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "paintedMetal",
           "color": "#56636a",
           "parts": [
             "base",
             "foot",
-            "stage",
+            "arm",
             "tube"
           ],
-          "param": "shell"
+          "param": "paintedMetal"
         },
         {
-          "name": "accent",
+          "name": "anodizedAluminum",
           "color": "#8bb5b4",
           "parts": [
-            "arm",
+            "stage",
             "stage-clip-left",
-            "stage-clip-right",
-            "eyepiece",
+            "stage-clip-right"
+          ],
+          "param": "anodizedAluminum"
+        },
+        {
+          "name": "rubber",
+          "color": "#303b40",
+          "parts": [
+            "eyepiece"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "opticalGlass",
+          "color": "#253f48",
+          "parts": [
             "objective--24",
             "objective-0",
             "objective-24"
           ],
-          "param": "accent"
+          "param": "opticalGlass"
         }
       ]
     },
@@ -147413,7 +147849,7 @@
       "id": "nebulizer",
       "kit": "medical",
       "title": "Nebulizer",
-      "description": "Compact tabletop nebulizer with compressor housing, airflow slots, control knob and medicine cup for respiratory care scenes.",
+      "description": "Compact tabletop nebulizer with compressor housing, airflow slots, control knob and medicine cup for respiratory care scenes. Material controls: Medical-grade polymer, Clear medicine-cup polymer, Silicone connector, Rubber controls.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -147433,30 +147869,46 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/nebulizer.kcad.ts",
       "preview": "/assets/medical-nebulizer.png",
-      "sourceSha256": "ab8e1418f5e6606d3ef74185de643f36c671a94b99379c92fddb967a7a715aa7",
+      "sourceSha256": "bd52c6038d7b12de9f95ba9174890d150c981ce754a7307bf0971a9f15a2d13d",
       "triangleBudget": 400,
       "params": [
         {
-          "name": "shell",
+          "name": "medicalPolymer",
           "type": "color",
           "default": "#e6eaeb",
-          "label": "Shell"
+          "label": "Medical-grade polymer"
         },
         {
-          "name": "accent",
+          "name": "clearPolycarbonate",
           "type": "color",
-          "default": "#56a0a5",
-          "label": "Accent"
+          "default": "#99c5c2",
+          "label": "Clear medicine-cup polymer"
+        },
+        {
+          "name": "siliconeTubing",
+          "type": "color",
+          "default": "#4e8790",
+          "label": "Silicone connector"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#374448",
+          "label": "Rubber controls"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "medicalPolymer": "#f1f3f4",
+          "clearPolycarbonate": "#a9d2cc",
+          "siliconeTubing": "#438d89",
+          "rubber": "#536166"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "medicalPolymer": "#ebe8df",
+          "clearPolycarbonate": "#bfd2cd",
+          "siliconeTubing": "#bd6258",
+          "rubber": "#5a514d"
         }
       },
       "stats": {
@@ -147471,28 +147923,42 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "medicalPolymer",
           "color": "#e6eaeb",
           "parts": [
             "compressor",
-            "medicine-cup"
+            "knob",
+            "cup-base",
+            "cup-cap"
           ],
-          "param": "shell"
+          "param": "medicalPolymer"
         },
         {
-          "name": "accent",
-          "color": "#56a0a5",
+          "name": "rubber",
+          "color": "#374448",
           "parts": [
             "vent-0",
             "vent-1",
             "vent-2",
-            "vent-3",
-            "knob",
-            "cup-base",
-            "cup-cap",
+            "vent-3"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "clearPolycarbonate",
+          "color": "#99c5c2",
+          "parts": [
+            "medicine-cup"
+          ],
+          "param": "clearPolycarbonate"
+        },
+        {
+          "name": "siliconeTubing",
+          "color": "#4e8790",
+          "parts": [
             "connector"
           ],
-          "param": "accent"
+          "param": "siliconeTubing"
         }
       ]
     },
@@ -147500,7 +147966,7 @@
       "id": "otoscope",
       "kit": "medical",
       "title": "Otoscope",
-      "description": "Handheld otoscope with a textured grip, narrow tapered head and removable-looking ear speculum for clinic scenes.",
+      "description": "Handheld otoscope with a textured grip, narrow tapered head and removable-looking ear speculum for clinic scenes. Material controls: Medical-grade polymer, Rubber grip band, Stainless-steel head, Optical glass.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -147520,30 +147986,46 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/otoscope.kcad.ts",
       "preview": "/assets/medical-otoscope.png",
-      "sourceSha256": "17f9fa9b8222b8b01137447d2a6f4e03790782cbf6e2af490486fd508d7beaa0",
+      "sourceSha256": "5aaefaa6be4028920e4b451989eb456ae3c50273de30282321d989da383b8cf4",
       "triangleBudget": 280,
       "params": [
         {
-          "name": "shell",
+          "name": "medicalPolymer",
           "type": "color",
           "default": "#50636b",
-          "label": "Shell"
+          "label": "Medical-grade polymer"
         },
         {
-          "name": "accent",
+          "name": "rubber",
           "type": "color",
-          "default": "#e9bc4b",
-          "label": "Accent"
+          "default": "#c49a32",
+          "label": "Rubber grip band"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#a8b2b4",
+          "label": "Stainless-steel head"
+        },
+        {
+          "name": "opticalGlass",
+          "type": "color",
+          "default": "#253f48",
+          "label": "Optical glass"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "medicalPolymer": "#60757b",
+          "rubber": "#d2b34d",
+          "stainlessSteel": "#bbc4c5",
+          "opticalGlass": "#4a7777"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "medicalPolymer": "#6b6862",
+          "rubber": "#c9413b",
+          "stainlessSteel": "#b2aaa0",
+          "opticalGlass": "#6b6661"
         }
       },
       "stats": {
@@ -147558,23 +148040,37 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "medicalPolymer",
           "color": "#50636b",
           "parts": [
-            "handle",
-            "head",
-            "lens-rim"
+            "handle"
           ],
-          "param": "shell"
+          "param": "medicalPolymer"
         },
         {
-          "name": "accent",
-          "color": "#e9bc4b",
+          "name": "rubber",
+          "color": "#c49a32",
           "parts": [
-            "grip-band",
+            "grip-band"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#a8b2b4",
+          "parts": [
+            "head",
             "speculum"
           ],
-          "param": "accent"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "opticalGlass",
+          "color": "#253f48",
+          "parts": [
+            "lens-rim"
+          ],
+          "param": "opticalGlass"
         }
       ]
     },
@@ -147582,7 +148078,7 @@
       "id": "oxygen-cylinder",
       "kit": "medical",
       "title": "Oxygen cylinder",
-      "description": "Portable oxygen cylinder with rounded-looking stepped body, valve neck and protective top guard for emergency scenes.",
+      "description": "Portable oxygen cylinder with rounded-looking stepped body, valve neck and protective top guard for emergency scenes. Material controls: Painted cylinder steel, Brass valve, Gauge glass, Rubber base ring.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -147602,30 +148098,46 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/oxygen-cylinder.kcad.ts",
       "preview": "/assets/medical-oxygen-cylinder.png",
-      "sourceSha256": "068c307d52d58698fdf5002d3ecbe93ab3402b3dc3cfcd720a779bd21fb3ebc8",
+      "sourceSha256": "ed730b6cba98745bf1a8a7984e1a4dbcfad5683342fc3d3e2eeb5c7e104a4b3b",
       "triangleBudget": 350,
       "params": [
         {
-          "name": "shell",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#7c9299",
-          "label": "Shell"
+          "label": "Painted cylinder steel"
         },
         {
-          "name": "accent",
+          "name": "brass",
           "type": "color",
-          "default": "#d35b54",
-          "label": "Accent"
+          "default": "#c29442",
+          "label": "Brass valve"
+        },
+        {
+          "name": "gaugeGlass",
+          "type": "color",
+          "default": "#e2e9e6",
+          "label": "Gauge glass"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#3b4548",
+          "label": "Rubber base ring"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "paintedSteel": "#668e94",
+          "brass": "#c7a35e",
+          "gaugeGlass": "#b8d9d4",
+          "rubber": "#4c595b"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "paintedSteel": "#e5e8e7",
+          "brass": "#d0a347",
+          "gaugeGlass": "#dfd5c7",
+          "rubber": "#504a47"
         }
       },
       "stats": {
@@ -147640,24 +148152,38 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "paintedSteel",
           "color": "#7c9299",
           "parts": [
             "tank",
-            "neck",
-            "gauge"
+            "neck"
           ],
-          "param": "shell"
+          "param": "paintedSteel"
         },
         {
-          "name": "accent",
-          "color": "#d35b54",
+          "name": "rubber",
+          "color": "#3b4548",
           "parts": [
-            "base-ring",
+            "base-ring"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "brass",
+          "color": "#c29442",
+          "parts": [
             "valve",
             "outlet"
           ],
-          "param": "accent"
+          "param": "brass"
+        },
+        {
+          "name": "gaugeGlass",
+          "color": "#e2e9e6",
+          "parts": [
+            "gauge"
+          ],
+          "param": "gaugeGlass"
         }
       ]
     },
@@ -147665,7 +148191,7 @@
       "id": "petri-dish",
       "kit": "medical",
       "title": "Petri dish",
-      "description": "Shallow low-poly Petri dish with separate-looking base and lid rims for biology and laboratory bench scenes.",
+      "description": "Shallow low-poly Petri dish with separate-looking base and lid rims for biology and laboratory bench scenes. Material controls: Clear dish polymer, Agar medium, Sample label paper.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -147685,34 +148211,42 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/petri-dish.kcad.ts",
       "preview": "/assets/medical-petri-dish.png",
-      "sourceSha256": "e3daae7cfdc05182d4313c3ca13e3ef94938a277015b34e0b0dbc3cb752874a6",
+      "sourceSha256": "4b1c9e985025b8c257d78c32171a44be4233a21eed34b0e7cc73db3aff480aaa",
       "triangleBudget": 240,
       "params": [
         {
-          "name": "shell",
+          "name": "clearPolymer",
           "type": "color",
           "default": "#e1e8e7",
-          "label": "Shell"
+          "label": "Clear dish polymer"
         },
         {
-          "name": "accent",
+          "name": "agar",
           "type": "color",
-          "default": "#9fc6c0",
-          "label": "Accent"
+          "default": "#80b8a0",
+          "label": "Agar medium"
+        },
+        {
+          "name": "labelPaper",
+          "type": "color",
+          "default": "#f2eee3",
+          "label": "Sample label paper"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "clearPolymer": "#d9e9e6",
+          "agar": "#73b89a",
+          "labelPaper": "#f4f1e7"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "clearPolymer": "#e4e4dd",
+          "agar": "#d08a68",
+          "labelPaper": "#eee3d6"
         }
       },
       "stats": {
-        "triangles": 176,
+        "triangles": 232,
         "sizeM": [
           0.092,
           0.021,
@@ -147723,22 +148257,31 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "clearPolymer",
           "color": "#e1e8e7",
           "parts": [
             "base",
-            "lid"
-          ],
-          "param": "shell"
-        },
-        {
-          "name": "accent",
-          "color": "#9fc6c0",
-          "parts": [
             "base-rim",
+            "lid",
             "lid-lip"
           ],
-          "param": "accent"
+          "param": "clearPolymer"
+        },
+        {
+          "name": "agar",
+          "color": "#80b8a0",
+          "parts": [
+            "culture-agar"
+          ],
+          "param": "agar"
+        },
+        {
+          "name": "labelPaper",
+          "color": "#f2eee3",
+          "parts": [
+            "sample-label"
+          ],
+          "param": "labelPaper"
         }
       ]
     },
@@ -147746,7 +148289,7 @@
       "id": "pill-blister-pack",
       "kit": "medical",
       "title": "Pill blister pack",
-      "description": "Flat blister pack with a foil backing and repeated raised tablet pockets for medication scene dressing.",
+      "description": "Flat blister pack with a foil backing and repeated raised tablet pockets for medication scene dressing. Material controls: Aluminum foil, Tablet coating, Blister polymer.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -147766,30 +148309,38 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/pill-blister-pack.kcad.ts",
       "preview": "/assets/medical-pill-blister-pack.png",
-      "sourceSha256": "6811a7efca7044af0b68b90d3d6729204b268be0ad59c20c1e78e4ee0cb35e37",
+      "sourceSha256": "3f9bd8648e95b1f4d23d2487b63728bec3874771a3a7fb72f60d547b81d4816f",
       "triangleBudget": 350,
       "params": [
         {
-          "name": "shell",
+          "name": "aluminumFoil",
           "type": "color",
           "default": "#bfc9cd",
-          "label": "Shell"
+          "label": "Aluminum foil"
         },
         {
-          "name": "accent",
+          "name": "tabletCoating",
           "type": "color",
           "default": "#d6b95f",
-          "label": "Accent"
+          "label": "Tablet coating"
+        },
+        {
+          "name": "blisterPolymer",
+          "type": "color",
+          "default": "#92b4b7",
+          "label": "Blister polymer"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "aluminumFoil": "#cbd3d5",
+          "tabletCoating": "#d9c77c",
+          "blisterPolymer": "#a5c9c8"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "aluminumFoil": "#b8b6b2",
+          "tabletCoating": "#c9413b",
+          "blisterPolymer": "#b8c6c4"
         }
       },
       "stats": {
@@ -147804,15 +148355,15 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "aluminumFoil",
           "color": "#bfc9cd",
           "parts": [
             "foil-card"
           ],
-          "param": "shell"
+          "param": "aluminumFoil"
         },
         {
-          "name": "accent",
+          "name": "tabletCoating",
           "color": "#d6b95f",
           "parts": [
             "tablet--42--24",
@@ -147820,10 +148371,17 @@
             "tablet-0--24",
             "tablet-0-24",
             "tablet-42--24",
-            "tablet-42-24",
+            "tablet-42-24"
+          ],
+          "param": "tabletCoating"
+        },
+        {
+          "name": "blisterPolymer",
+          "color": "#92b4b7",
+          "parts": [
             "edge-band"
           ],
-          "param": "accent"
+          "param": "blisterPolymer"
         }
       ]
     },
@@ -147831,7 +148389,7 @@
       "id": "pill-bottle",
       "kit": "medical",
       "title": "Pill bottle",
-      "description": "Small medicine bottle with screw cap, label band and broad stable base for pharmacy or bathroom props.",
+      "description": "Small medicine bottle with screw cap, label band and broad stable base for pharmacy or bathroom props. Material controls: Amber polymer, Label paper, Cap polymer.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -147851,30 +148409,38 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/pill-bottle.kcad.ts",
       "preview": "/assets/medical-pill-bottle.png",
-      "sourceSha256": "5eb14042427b6cbef2da8b345f6427658b6f445471e0712f58113ac1f526e425",
+      "sourceSha256": "8f0a31addf71dd236325a4d80dc929a1c9550a4d16c45035c6abd19b1767a243",
       "triangleBudget": 260,
       "params": [
         {
-          "name": "shell",
+          "name": "amberPolymer",
           "type": "color",
-          "default": "#f0f2ed",
-          "label": "Shell"
+          "default": "#c28d39",
+          "label": "Amber polymer"
         },
         {
-          "name": "accent",
+          "name": "labelPaper",
+          "type": "color",
+          "default": "#eee9dd",
+          "label": "Label paper"
+        },
+        {
+          "name": "medicalPolymer",
           "type": "color",
           "default": "#d8bd65",
-          "label": "Accent"
+          "label": "Cap polymer"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "amberPolymer": "#cc9b49",
+          "labelPaper": "#f4f1e8",
+          "medicalPolymer": "#73a29d"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "amberPolymer": "#bd8640",
+          "labelPaper": "#eee3d5",
+          "medicalPolymer": "#c9413b"
         }
       },
       "stats": {
@@ -147889,23 +148455,30 @@
       },
       "palette": [
         {
-          "name": "shell",
-          "color": "#f0f2ed",
+          "name": "amberPolymer",
+          "color": "#c28d39",
           "parts": [
             "bottle",
-            "neck",
-            "cap-rim"
+            "neck"
           ],
-          "param": "shell"
+          "param": "amberPolymer"
         },
         {
-          "name": "accent",
+          "name": "labelPaper",
+          "color": "#eee9dd",
+          "parts": [
+            "label"
+          ],
+          "param": "labelPaper"
+        },
+        {
+          "name": "medicalPolymer",
           "color": "#d8bd65",
           "parts": [
-            "label",
-            "cap"
+            "cap",
+            "cap-rim"
           ],
-          "param": "accent"
+          "param": "medicalPolymer"
         }
       ]
     },
@@ -147913,7 +148486,7 @@
       "id": "pulse-oximeter",
       "kit": "medical",
       "title": "Pulse oximeter",
-      "description": "Compact fingertip pulse oximeter with hinged clamp, display panel and simple control button for first-aid scenes.",
+      "description": "Compact fingertip pulse oximeter with hinged clamp, display panel and simple control button for first-aid scenes. Material controls: Medical-grade polymer, Stainless-steel hinge, Display glass, Silicone finger pad.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -147933,34 +148506,50 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/pulse-oximeter.kcad.ts",
       "preview": "/assets/medical-pulse-oximeter.png",
-      "sourceSha256": "1cd9b6d8dc168624c5c094a40ddabb0692b93c93f80b36b5d603d3e22959c554",
+      "sourceSha256": "c5a372041121e2917cbd32bcfb29ba9586c97bc29f20bec760c830c006bb344e",
       "triangleBudget": 300,
       "params": [
         {
-          "name": "shell",
+          "name": "medicalPolymer",
           "type": "color",
           "default": "#eef2f2",
-          "label": "Shell"
+          "label": "Medical-grade polymer"
         },
         {
-          "name": "accent",
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#9aa6a8",
+          "label": "Stainless-steel hinge"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#284c50",
+          "label": "Display glass"
+        },
+        {
+          "name": "silicone",
           "type": "color",
           "default": "#399da1",
-          "label": "Accent"
+          "label": "Silicone finger pad"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "medicalPolymer": "#f3f5f3",
+          "stainlessSteel": "#aab7b8",
+          "displayGlass": "#2c827c",
+          "silicone": "#54aaa2"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "medicalPolymer": "#ebe8df",
+          "stainlessSteel": "#b4aca4",
+          "displayGlass": "#c0473f",
+          "silicone": "#c9413b"
         }
       },
       "stats": {
-        "triangles": 124,
+        "triangles": 148,
         "sizeM": [
           0.092157,
           0.069907,
@@ -147971,23 +148560,39 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "medicalPolymer",
           "color": "#eef2f2",
           "parts": [
             "lower-jaw",
-            "upper-jaw",
-            "button"
+            "upper-jaw"
           ],
-          "param": "shell"
+          "param": "medicalPolymer"
         },
         {
-          "name": "accent",
-          "color": "#399da1",
+          "name": "stainlessSteel",
+          "color": "#9aa6a8",
           "parts": [
-            "hinge",
+            "hinge"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#284c50",
+          "parts": [
             "display"
           ],
-          "param": "accent"
+          "param": "displayGlass"
+        },
+        {
+          "name": "silicone",
+          "color": "#399da1",
+          "parts": [
+            "button",
+            "finger-pad-lower",
+            "finger-pad-upper"
+          ],
+          "param": "silicone"
         }
       ]
     },
@@ -147995,7 +148600,7 @@
       "id": "reflex-hammer",
       "kit": "medical",
       "title": "Reflex hammer",
-      "description": "Compact neurological reflex hammer with long handle and soft double-ended head for examination scenes.",
+      "description": "Compact neurological reflex hammer with long handle and soft double-ended head for examination scenes. Material controls: Anodized-aluminum handle, Stainless-steel head, Silicone percussion tips.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -148015,30 +148620,38 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/reflex-hammer.kcad.ts",
       "preview": "/assets/medical-reflex-hammer.png",
-      "sourceSha256": "0bcdfad000471c4c1eedf53bd604d8c86748119a4bdac3b57829d0497bfe7082",
+      "sourceSha256": "a3780389e18754159a11e74a86c43eb76161f549c8118321e10e34f342ce03cd",
       "triangleBudget": 220,
       "params": [
         {
-          "name": "shell",
+          "name": "anodizedAluminum",
           "type": "color",
           "default": "#a7b0b3",
-          "label": "Shell"
+          "label": "Anodized-aluminum handle"
         },
         {
-          "name": "accent",
+          "name": "stainlessSteel",
           "type": "color",
           "default": "#596a70",
-          "label": "Accent"
+          "label": "Stainless-steel head"
+        },
+        {
+          "name": "siliconeRubber",
+          "type": "color",
+          "default": "#37494f",
+          "label": "Silicone percussion tips"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "anodizedAluminum": "#b9c2c4",
+          "stainlessSteel": "#718186",
+          "siliconeRubber": "#546b6d"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "anodizedAluminum": "#b7b0a8",
+          "stainlessSteel": "#73716d",
+          "siliconeRubber": "#c9413b"
         }
       },
       "stats": {
@@ -148053,23 +148666,30 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "anodizedAluminum",
           "color": "#a7b0b3",
           "parts": [
-            "handle",
-            "tip-left",
-            "tip-right"
+            "handle"
           ],
-          "param": "shell"
+          "param": "anodizedAluminum"
         },
         {
-          "name": "accent",
+          "name": "stainlessSteel",
           "color": "#596a70",
           "parts": [
             "head-bar",
             "collar"
           ],
-          "param": "accent"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "siliconeRubber",
+          "color": "#37494f",
+          "parts": [
+            "tip-left",
+            "tip-right"
+          ],
+          "param": "siliconeRubber"
         }
       ]
     },
@@ -148077,7 +148697,7 @@
       "id": "sharps-container",
       "kit": "medical",
       "title": "Sharps container",
-      "description": "Rigid sharps disposal container with broad base, stepped lid and narrow drop slot for a clinic or laboratory scene.",
+      "description": "Rigid sharps disposal container with broad base, stepped lid and narrow drop slot for a clinic or laboratory scene. Material controls: Puncture-resistant polypropylene, Warning marking color, Stainless-steel carry tab.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -148097,30 +148717,38 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/sharps-container.kcad.ts",
       "preview": "/assets/medical-sharps-container.png",
-      "sourceSha256": "a49f3a11593ddb8499e2ef770c54cffff62fca467f4d92b387806365dd4e0bb5",
+      "sourceSha256": "98cbcc57651301b8c42d5779f874bccdde572517637eca349be7d0ed6004e497",
       "triangleBudget": 300,
       "params": [
         {
-          "name": "shell",
+          "name": "polypropylene",
           "type": "color",
           "default": "#f1b944",
-          "label": "Shell"
+          "label": "Puncture-resistant polypropylene"
         },
         {
-          "name": "accent",
+          "name": "medicalInk",
           "type": "color",
           "default": "#c9433d",
-          "label": "Accent"
+          "label": "Warning marking color"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#aeb8ba",
+          "label": "Stainless-steel carry tab"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "polypropylene": "#f5cf62",
+          "medicalInk": "#2d8b84",
+          "stainlessSteel": "#bdc6c7"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "polypropylene": "#e2b037",
+          "medicalInk": "#c9413b",
+          "stainlessSteel": "#b4aba2"
         }
       },
       "stats": {
@@ -148135,23 +148763,30 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "polypropylene",
           "color": "#f1b944",
           "parts": [
             "base",
             "lid"
           ],
-          "param": "shell"
+          "param": "polypropylene"
         },
         {
-          "name": "accent",
+          "name": "medicalInk",
           "color": "#c9433d",
           "parts": [
             "shoulder",
-            "slot",
+            "slot"
+          ],
+          "param": "medicalInk"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#aeb8ba",
+          "parts": [
             "handle-tab"
           ],
-          "param": "accent"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -148159,7 +148794,7 @@
       "id": "specimen-cup",
       "kit": "medical",
       "title": "Specimen cup",
-      "description": "Small specimen cup with screw lid, wide rim and tapered-looking base for a clinic or laboratory sample prop.",
+      "description": "Small specimen cup with screw lid, wide rim and tapered-looking base for a clinic or laboratory sample prop. Material controls: Polypropylene cup, Lid polymer, Identification label paper.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -148179,34 +148814,42 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/specimen-cup.kcad.ts",
       "preview": "/assets/medical-specimen-cup.png",
-      "sourceSha256": "0d5769b8e6de573332314f2d5e9e215e1337382cee94782deacef88cdf633f8e",
+      "sourceSha256": "86329156268425dad25f0ae86bfd82293e7177f7e3e4f8838c67d9442f3f0051",
       "triangleBudget": 300,
       "params": [
         {
-          "name": "shell",
+          "name": "polypropylene",
           "type": "color",
           "default": "#e8eceb",
-          "label": "Shell"
+          "label": "Polypropylene cup"
         },
         {
-          "name": "accent",
+          "name": "medicalPolymer",
           "type": "color",
           "default": "#e6ba54",
-          "label": "Accent"
+          "label": "Lid polymer"
+        },
+        {
+          "name": "labelPaper",
+          "type": "color",
+          "default": "#f6f0df",
+          "label": "Identification label paper"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "polypropylene": "#f0f2ed",
+          "medicalPolymer": "#6fa9a1",
+          "labelPaper": "#f4f1e7"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "polypropylene": "#ebe7df",
+          "medicalPolymer": "#c9413b",
+          "labelPaper": "#eee4d7"
         }
       },
       "stats": {
-        "triangles": 176,
+        "triangles": 188,
         "sizeM": [
           0.064,
           0.074,
@@ -148217,22 +148860,30 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "polypropylene",
           "color": "#e8eceb",
           "parts": [
             "cup",
-            "lid-rim"
+            "base-foot"
           ],
-          "param": "shell"
+          "param": "polypropylene"
         },
         {
-          "name": "accent",
+          "name": "medicalPolymer",
           "color": "#e6ba54",
           "parts": [
-            "base-foot",
-            "lid"
+            "lid",
+            "lid-rim"
           ],
-          "param": "accent"
+          "param": "medicalPolymer"
+        },
+        {
+          "name": "labelPaper",
+          "color": "#f6f0df",
+          "parts": [
+            "label"
+          ],
+          "param": "labelPaper"
         }
       ]
     },
@@ -148240,7 +148891,7 @@
       "id": "specimen-tube-rack",
       "kit": "medical",
       "title": "Specimen tube rack",
-      "description": "Bench-top tube rack with aligned sample tubes and contrasting caps for laboratory and blood-test scenes.",
+      "description": "Bench-top tube rack with aligned sample tubes and contrasting caps for laboratory and blood-test scenes. Material controls: Rack polymer, Clear tube polymer, Color-coded cap polymer.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -148260,20 +148911,26 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/specimen-tube-rack.kcad.ts",
       "preview": "/assets/medical-specimen-tube-rack.png",
-      "sourceSha256": "75f2936c1daaf6b4aea858d773c8e3483d7cd16077d109b7ca30b40c0fb7dbcd",
+      "sourceSha256": "f21e11eb72ca9cacc035e83324658ee1ff96357bb40544f39bac8b80a711a752",
       "triangleBudget": 500,
       "params": [
         {
-          "name": "shell",
+          "name": "medicalPolymer",
           "type": "color",
           "default": "#d7dedf",
-          "label": "Shell"
+          "label": "Rack polymer"
         },
         {
-          "name": "accent",
+          "name": "clearPolymer",
+          "type": "color",
+          "default": "#b5d1d0",
+          "label": "Clear tube polymer"
+        },
+        {
+          "name": "capPolymer",
           "type": "color",
           "default": "#508c98",
-          "label": "Accent"
+          "label": "Color-coded cap polymer"
         },
         {
           "name": "tubeCount",
@@ -148289,12 +148946,14 @@
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "medicalPolymer": "#e4e9e8",
+          "clearPolymer": "#b9ddd8",
+          "capPolymer": "#2d9893"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "medicalPolymer": "#e8e3db",
+          "clearPolymer": "#c2d2cf",
+          "capPolymer": "#c9413b"
         }
       },
       "stats": {
@@ -148309,28 +148968,35 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "medicalPolymer",
           "color": "#d7dedf",
           "parts": [
             "base",
+            "top-rail"
+          ],
+          "param": "medicalPolymer"
+        },
+        {
+          "name": "clearPolymer",
+          "color": "#b5d1d0",
+          "parts": [
             "tube-0",
             "tube-1",
             "tube-2",
             "tube-3"
           ],
-          "param": "shell"
+          "param": "clearPolymer"
         },
         {
-          "name": "accent",
+          "name": "capPolymer",
           "color": "#508c98",
           "parts": [
-            "top-rail",
             "cap-0",
             "cap-1",
             "cap-2",
             "cap-3"
           ],
-          "param": "accent"
+          "param": "capPolymer"
         }
       ]
     },
@@ -148338,7 +149004,7 @@
       "id": "stethoscope",
       "kit": "medical",
       "title": "Stethoscope",
-      "description": "Low-poly stethoscope with flexible Y-shaped tubing, paired earpieces and round chestpiece for a doctor or nurse prop.",
+      "description": "Low-poly stethoscope with flexible Y-shaped tubing, paired earpieces and round chestpiece for a doctor or nurse prop. Material controls: Silicone tubing, Rubber earpieces, Stainless-steel chestpiece.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -148358,30 +149024,38 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/stethoscope.kcad.ts",
       "preview": "/assets/medical-stethoscope.png",
-      "sourceSha256": "e8808c7a06b5c4f90f1d7ae2eb9b0ee87894e4da183153fcf9013512c2b5ca46",
+      "sourceSha256": "219fe521a306174f735bf56c60f78a5fe8f25fd7077b1b9407380c867a21ab3e",
       "triangleBudget": 350,
       "params": [
         {
-          "name": "shell",
+          "name": "siliconeTubing",
           "type": "color",
           "default": "#384b56",
-          "label": "Shell"
+          "label": "Silicone tubing"
         },
         {
-          "name": "accent",
+          "name": "rubber",
+          "type": "color",
+          "default": "#303b40",
+          "label": "Rubber earpieces"
+        },
+        {
+          "name": "stainlessSteel",
           "type": "color",
           "default": "#bfc8cb",
-          "label": "Accent"
+          "label": "Stainless-steel chestpiece"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "siliconeTubing": "#425b63",
+          "rubber": "#526568",
+          "stainlessSteel": "#c6d0d1"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "siliconeTubing": "#4e5050",
+          "rubber": "#594f4a",
+          "stainlessSteel": "#c2bbb2"
         }
       },
       "stats": {
@@ -148396,23 +149070,30 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "siliconeTubing",
           "color": "#384b56",
           "parts": [
-            "tubing",
-            "diaphragm"
+            "tubing"
           ],
-          "param": "shell"
+          "param": "siliconeTubing"
         },
         {
-          "name": "accent",
-          "color": "#bfc8cb",
+          "name": "rubber",
+          "color": "#303b40",
           "parts": [
             "earpiece-left",
-            "earpiece-right",
-            "chestpiece"
+            "earpiece-right"
           ],
-          "param": "accent"
+          "param": "rubber"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bfc8cb",
+          "parts": [
+            "chestpiece",
+            "diaphragm"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -148420,7 +149101,7 @@
       "id": "surgical-scissors",
       "kit": "medical",
       "title": "Surgical scissors",
-      "description": "Low-poly surgical scissors with two finger loops, central pivot and long straight blades for medical kit scenes.",
+      "description": "Low-poly surgical scissors with two finger loops, central pivot and long straight blades for medical kit scenes. Material controls: Grip polymer, Stainless-steel blades and pivot.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -148440,30 +149121,30 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/surgical-scissors.kcad.ts",
       "preview": "/assets/medical-surgical-scissors.png",
-      "sourceSha256": "e9b158c9533af35a1a051b075941e2dcdcca997f6aef7580611f57b5ec2eb970",
+      "sourceSha256": "d4f2cad79aa505e2a5ae47cfd6e6a47fab5ed1e4772c0a8228630cb882783123",
       "triangleBudget": 350,
       "params": [
         {
-          "name": "shell",
+          "name": "medicalPolymer",
           "type": "color",
           "default": "#99a4a8",
-          "label": "Shell"
+          "label": "Grip polymer"
         },
         {
-          "name": "accent",
+          "name": "stainlessSteel",
           "type": "color",
           "default": "#58656a",
-          "label": "Accent"
+          "label": "Stainless-steel blades and pivot"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "medicalPolymer": "#839397",
+          "stainlessSteel": "#758286"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "medicalPolymer": "#c9413b",
+          "stainlessSteel": "#b8b0a6"
         }
       },
       "stats": {
@@ -148478,23 +149159,23 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "medicalPolymer",
           "color": "#99a4a8",
           "parts": [
             "finger-loop-left",
             "finger-loop-right"
           ],
-          "param": "shell"
+          "param": "medicalPolymer"
         },
         {
-          "name": "accent",
+          "name": "stainlessSteel",
           "color": "#58656a",
           "parts": [
             "blade-left",
             "blade-right",
             "pivot"
           ],
-          "param": "accent"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -148502,7 +149183,7 @@
       "id": "syringe",
       "kit": "medical",
       "title": "Syringe",
-      "description": "Disposable syringe prop with graduated barrel bands, plunger thumb pad and fine needle, built as simple low-poly geometry.",
+      "description": "Disposable syringe prop with graduated barrel bands, plunger thumb pad and fine needle, built as simple low-poly geometry. Material controls: Clear barrel polymer, Silicone plunger seal, Stainless-steel needle, Graduation ink.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -148522,34 +149203,50 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/syringe.kcad.ts",
       "preview": "/assets/medical-syringe.png",
-      "sourceSha256": "1ee46115bbb7fbffc97a2a7a573b2aade982409eaa83617a75d4adab61885504",
+      "sourceSha256": "35a652af0450ec28eef00efafae47310110a1b99921f0b9f52c3b19984ae7357",
       "triangleBudget": 300,
       "params": [
         {
-          "name": "shell",
+          "name": "clearPolymer",
           "type": "color",
           "default": "#e9edef",
-          "label": "Shell"
+          "label": "Clear barrel polymer"
         },
         {
-          "name": "accent",
+          "name": "siliconeRubber",
+          "type": "color",
+          "default": "#303a3d",
+          "label": "Silicone plunger seal"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b7c1c3",
+          "label": "Stainless-steel needle"
+        },
+        {
+          "name": "graduationInk",
           "type": "color",
           "default": "#7eacb0",
-          "label": "Accent"
+          "label": "Graduation ink"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "clearPolymer": "#dcebea",
+          "siliconeRubber": "#445355",
+          "stainlessSteel": "#c2cbcd",
+          "graduationInk": "#358b87"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "clearPolymer": "#e7e4dd",
+          "siliconeRubber": "#544d49",
+          "stainlessSteel": "#bcb7b0",
+          "graduationInk": "#c9413b"
         }
       },
       "stats": {
-        "triangles": 248,
+        "triangles": 292,
         "sizeM": [
           0.05,
           0.201,
@@ -148560,28 +149257,43 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "clearPolymer",
           "color": "#e9edef",
           "parts": [
             "barrel",
+            "finger-flange",
             "plunger-rod",
-            "needle"
+            "thumb-pad"
           ],
-          "param": "shell"
+          "param": "clearPolymer"
         },
         {
-          "name": "accent",
+          "name": "stainlessSteel",
+          "color": "#b7c1c3",
+          "parts": [
+            "needle-hub",
+            "needle"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "graduationInk",
           "color": "#7eacb0",
           "parts": [
-            "finger-flange",
-            "thumb-pad",
-            "needle-hub",
             "mark-50",
             "mark-76",
             "mark-102",
             "mark-128"
           ],
-          "param": "accent"
+          "param": "graduationInk"
+        },
+        {
+          "name": "siliconeRubber",
+          "color": "#303a3d",
+          "parts": [
+            "plunger-seal"
+          ],
+          "param": "siliconeRubber"
         }
       ]
     },
@@ -148589,7 +149301,7 @@
       "id": "tongue-depressor-pack",
       "kit": "medical",
       "title": "Tongue depressor pack",
-      "description": "Neatly stacked low-poly tongue depressors in a simple paper sleeve for examination room scenes.",
+      "description": "Neatly stacked low-poly tongue depressors in a simple paper sleeve for examination room scenes. Material controls: Birch wood, Paper sleeve, Printed seal ink.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -148610,30 +149322,38 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/tongue-depressor-pack.kcad.ts",
       "preview": "/assets/medical-tongue-depressor-pack.png",
-      "sourceSha256": "6bc58f90b8e3d2fa9edb4b699c55d036d6618771f5336f931bfb097863325736",
+      "sourceSha256": "ac7429f633c47e6e5c9818cbdeec0e092d5b1ec1d249ab492871cce8aa0e1837",
       "triangleBudget": 240,
       "params": [
         {
-          "name": "shell",
+          "name": "birchWood",
           "type": "color",
           "default": "#d9c29a",
-          "label": "Shell"
+          "label": "Birch wood"
         },
         {
-          "name": "accent",
+          "name": "paperSleeve",
           "type": "color",
           "default": "#f1eee4",
-          "label": "Accent"
+          "label": "Paper sleeve"
+        },
+        {
+          "name": "medicalInk",
+          "type": "color",
+          "default": "#a86842",
+          "label": "Printed seal ink"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "birchWood": "#ddcba8",
+          "paperSleeve": "#f5f2e9",
+          "medicalInk": "#4d8c83"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "birchWood": "#d3b98c",
+          "paperSleeve": "#eee5d9",
+          "medicalInk": "#c9413b"
         }
       },
       "stats": {
@@ -148648,25 +149368,32 @@
       },
       "palette": [
         {
-          "name": "accent",
+          "name": "paperSleeve",
           "color": "#f1eee4",
           "parts": [
             "sleeve"
           ],
-          "param": "accent"
+          "param": "paperSleeve"
         },
         {
-          "name": "shell",
+          "name": "birchWood",
           "color": "#d9c29a",
           "parts": [
             "depressor-0",
             "depressor-1",
             "depressor-2",
             "depressor-3",
-            "depressor-4",
+            "depressor-4"
+          ],
+          "param": "birchWood"
+        },
+        {
+          "name": "medicalInk",
+          "color": "#a86842",
+          "parts": [
             "end-band"
           ],
-          "param": "shell"
+          "param": "medicalInk"
         }
       ]
     },
@@ -148674,7 +149401,7 @@
       "id": "walker-frame",
       "kit": "medical",
       "title": "Walker frame",
-      "description": "Lightweight walking frame with twin hand grips, four legs and front glides for a clinic or recovery scene.",
+      "description": "Lightweight walking frame with twin hand grips, four legs and front glides for a clinic or recovery scene. Material controls: Anodized aluminum, Silicone hand grips, Rubber floor glides.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -148695,30 +149422,38 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/walker-frame.kcad.ts",
       "preview": "/assets/medical-walker-frame.png",
-      "sourceSha256": "20b9fdaec285075aa2c2636f811d57ca1e6017e51f195095d037c6389b791a7d",
+      "sourceSha256": "540237ccb26878c85e7e8cbf807c6d01702fdb103b5ee25a013b8e1b1a59fe8d",
       "triangleBudget": 400,
       "params": [
         {
-          "name": "shell",
+          "name": "anodizedAluminum",
           "type": "color",
           "default": "#dce2e4",
-          "label": "Shell"
+          "label": "Anodized aluminum"
         },
         {
-          "name": "accent",
+          "name": "silicone",
           "type": "color",
           "default": "#4a8991",
-          "label": "Accent"
+          "label": "Silicone hand grips"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30383c",
+          "label": "Rubber floor glides"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "anodizedAluminum": "#c6d0d2",
+          "silicone": "#2d9893",
+          "rubber": "#4c595b"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "anodizedAluminum": "#c4c1bb",
+          "silicone": "#c9413b",
+          "rubber": "#504a47"
         }
       },
       "stats": {
@@ -148733,7 +149468,7 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "anodizedAluminum",
           "color": "#dce2e4",
           "parts": [
             "side-rail--1",
@@ -148744,18 +149479,25 @@
             "front-leg-1",
             "top-bar"
           ],
-          "param": "shell"
+          "param": "anodizedAluminum"
         },
         {
-          "name": "accent",
+          "name": "silicone",
           "color": "#4a8991",
           "parts": [
             "grip--1",
+            "grip-1"
+          ],
+          "param": "silicone"
+        },
+        {
+          "name": "rubber",
+          "color": "#30383c",
+          "parts": [
             "glide--1",
-            "grip-1",
             "glide-1"
           ],
-          "param": "accent"
+          "param": "rubber"
         }
       ]
     },
@@ -148763,7 +149505,7 @@
       "id": "walking-cane",
       "kit": "medical",
       "title": "Walking cane",
-      "description": "Simple walking cane with a long shaft, hooked handle and rubber foot for a medical or recovery scene.",
+      "description": "Simple walking cane with a long shaft, hooked handle and rubber foot for a medical or recovery scene. Material controls: Hardwood shaft, Molded hand grip, Rubber ferrule.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -148783,30 +149525,38 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/walking-cane.kcad.ts",
       "preview": "/assets/medical-walking-cane.png",
-      "sourceSha256": "0d7bc61dada4c4739b68e532d33a48b9e1896244cf1ede2caa7a870e04a674d5",
+      "sourceSha256": "9e3758347891b4c256ccd9861bef2a3fa82de1c0a075d0d6d26313e495c62887",
       "triangleBudget": 220,
       "params": [
         {
-          "name": "shell",
+          "name": "hardwood",
           "type": "color",
           "default": "#8a6748",
-          "label": "Shell"
+          "label": "Hardwood shaft"
         },
         {
-          "name": "accent",
+          "name": "medicalPolymer",
           "type": "color",
           "default": "#2a555d",
-          "label": "Accent"
+          "label": "Molded hand grip"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#303b3e",
+          "label": "Rubber ferrule"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "hardwood": "#957653",
+          "medicalPolymer": "#4b8c85",
+          "rubber": "#4b5658"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "hardwood": "#785a42",
+          "medicalPolymer": "#c9413b",
+          "rubber": "#514c49"
         }
       },
       "stats": {
@@ -148821,22 +149571,29 @@
       },
       "palette": [
         {
-          "name": "shell",
+          "name": "hardwood",
           "color": "#8a6748",
           "parts": [
             "shaft"
           ],
-          "param": "shell"
+          "param": "hardwood"
         },
         {
-          "name": "accent",
+          "name": "medicalPolymer",
           "color": "#2a555d",
           "parts": [
             "handle-stem",
-            "crook",
+            "crook"
+          ],
+          "param": "medicalPolymer"
+        },
+        {
+          "name": "rubber",
+          "color": "#303b3e",
+          "parts": [
             "foot"
           ],
-          "param": "accent"
+          "param": "rubber"
         }
       ]
     },
@@ -148844,7 +149601,7 @@
       "id": "wheelchair",
       "kit": "medical",
       "title": "Wheelchair",
-      "description": "Low-poly manual wheelchair with seat, backrest, armrests, footplates, large rear wheels and small front casters.",
+      "description": "Low-poly manual wheelchair with seat, backrest, armrests, footplates, large rear wheels and small front casters. Material controls: Anodized aluminum frame, Vinyl upholstery, Rubber tires and casters, Molded armrest polymer.",
       "category": "vehicle",
       "origin": "base",
       "tags": [
@@ -148864,30 +149621,46 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/medical/wheelchair.kcad.ts",
       "preview": "/assets/medical-wheelchair.png",
-      "sourceSha256": "3ae7b1aaa4d0215756eaadc5a71006a844f350edc777ae36520fe107c667d80a",
+      "sourceSha256": "3d72b40c35aa15d073212239f9085b620ac07bea6d48f86a669ef085a95690d6",
       "triangleBudget": 500,
       "params": [
         {
-          "name": "shell",
+          "name": "anodizedAluminum",
           "type": "color",
-          "default": "#e9edf0",
-          "label": "Shell"
+          "default": "#aeb9bd",
+          "label": "Anodized aluminum frame"
         },
         {
-          "name": "accent",
+          "name": "vinylUpholstery",
+          "type": "color",
+          "default": "#3d83a6",
+          "label": "Vinyl upholstery"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30363a",
+          "label": "Rubber tires and casters"
+        },
+        {
+          "name": "medicalPolymer",
           "type": "color",
           "default": "#367e8c",
-          "label": "Accent"
+          "label": "Molded armrest polymer"
         }
       ],
       "presets": {
         "clinic": {
-          "shell": "#f1f3f4",
-          "accent": "#2d9893"
+          "anodizedAluminum": "#c2cbcd",
+          "vinylUpholstery": "#3189b5",
+          "rubber": "#414c4f",
+          "medicalPolymer": "#2d9893"
         },
         "emergency": {
-          "shell": "#ebe8df",
-          "accent": "#c9413b"
+          "anodizedAluminum": "#bcb7b0",
+          "vinylUpholstery": "#ebe5dc",
+          "rubber": "#4e4946",
+          "medicalPolymer": "#c9413b"
         }
       },
       "stats": {
@@ -148902,35 +149675,49 @@
       },
       "palette": [
         {
-          "name": "shell",
-          "color": "#e9edf0",
+          "name": "vinylUpholstery",
+          "color": "#3d83a6",
           "parts": [
             "seat",
-            "backrest",
-            "rear-support--1",
-            "front-caster--1",
-            "foot-hanger--1",
-            "rear-support-1",
-            "front-caster-1",
-            "foot-hanger-1",
-            "cross-frame"
+            "backrest"
           ],
-          "param": "shell"
+          "param": "vinylUpholstery"
         },
         {
-          "name": "accent",
+          "name": "medicalPolymer",
           "color": "#367e8c",
           "parts": [
             "arm--1",
             "arm-support--1",
-            "rear-wheel--1",
-            "footplate--1",
             "arm-1",
-            "arm-support-1",
-            "rear-wheel-1",
-            "footplate-1"
+            "arm-support-1"
           ],
-          "param": "accent"
+          "param": "medicalPolymer"
+        },
+        {
+          "name": "rubber",
+          "color": "#30363a",
+          "parts": [
+            "rear-wheel--1",
+            "front-caster--1",
+            "rear-wheel-1",
+            "front-caster-1"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "anodizedAluminum",
+          "color": "#aeb9bd",
+          "parts": [
+            "rear-support--1",
+            "foot-hanger--1",
+            "footplate--1",
+            "rear-support-1",
+            "foot-hanger-1",
+            "footplate-1",
+            "cross-frame"
+          ],
+          "param": "anodizedAluminum"
         }
       ]
     },

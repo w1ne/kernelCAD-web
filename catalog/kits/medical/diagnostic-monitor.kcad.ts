@@ -2,7 +2,7 @@ meta({
   "name": "diagnostic-monitor",
   "license": "CC0-1.0",
   "title": "Diagnostic monitor",
-  "description": "Freestanding patient monitor with display, control panel, upright support and broad base for clinic and ward scenes.",
+  "description": "Freestanding patient monitor with display, control panel, upright support and broad base for clinic and ward scenes. Material controls: Medical-grade polymer, Display glass, Anodized aluminum, Rubber controls.",
   "tags": [
     "diagnostic monitor",
     "patient monitor",
@@ -23,21 +23,24 @@ meta({
   "triangleBudget": 400
 });
 
-const shell = param('shell', '#4d5a62', { label: 'Shell' });
-const accent = param('accent', '#39a3a5', { label: 'Accent' });
+// A patient monitor is identifiable by its wide glass display, upright metal stand and tactile controls.
+const medicalPolymer = param('medicalPolymer', '#4d5a62', { label: 'Medical-grade polymer' });
+const displayGlass = param('displayGlass', '#21888d', { label: 'Display glass' });
+const anodizedAluminum = param('anodizedAluminum', '#87969a', { label: 'Anodized aluminum' });
+const rubber = param('rubber', '#30383c', { label: 'Rubber controls' });
 presets({
-  clinic: { shell: '#f1f3f4', accent: '#2d9893' },
-  emergency: { shell: '#ebe8df', accent: '#c9413b' },
+  clinic: { medicalPolymer: '#edf1f2', displayGlass: '#2d9893', anodizedAluminum: '#a9b5b8', rubber: '#526368' },
+  emergency: { medicalPolymer: '#e9e6de', displayGlass: '#c9413b', anodizedAluminum: '#9d9d97', rubber: '#54504c' },
 });
 const p = assembly('diagnostic-monitor');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
 const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
 
-p.part('base', b(0, 0, 14, 160, 120, 28).color(shell));
-p.part('stem', c(0, 0, 28, 220, 11, 10).color(accent));
-p.part('bezel', b(0, 0, 204, 210, 44, 150).color(shell));
-p.part('screen', b(0, -24, 213, 178, 4, 114).color(accent));
-p.part('control-strip', b(0, -25, 133, 150, 4, 18).color(shell));
-for (const x of [-52, 0, 52]) p.part('button-' + x, c(x, -27, 133, 5, 7, 8).color(accent));
+p.part('base', b(0, 0, 14, 160, 120, 28).color(medicalPolymer));
+p.part('stem', c(0, 0, 28, 220, 11, 10).color(anodizedAluminum));
+p.part('bezel', b(0, 0, 204, 210, 44, 150).color(medicalPolymer));
+p.part('screen', b(0, -24, 213, 178, 4, 114).color(displayGlass));
+p.part('control-strip', b(0, -25, 133, 150, 4, 18).color(medicalPolymer));
+for (const x of [-52, 0, 52]) p.part('button-' + x, c(x, -27, 133, 5, 7, 8).color(rubber));
 
 return p.model();
