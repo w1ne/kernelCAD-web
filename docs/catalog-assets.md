@@ -6,11 +6,16 @@ from those sources and must be rebuilt in the same change.
 
 ## Catalog quality snapshot (2026-11-06)
 
-The catalog quality gate reports **2,389/2,390 assets passing (99.96%)** with
-one failing asset remaining in `props`; there are no fully thin kits. This
-round brought `nature` from 63/66 to 66/66 by making the cairn and pebble
-cluster's existing stone-color controls explicit to the gate and adding
-contrasting heartwood to the dead tree's broken branch ends. The [nature
+The catalog quality gate reports **2,390/2,390 assets passing (100.00%)**
+across 49 rich kits, with no failing assets. This round brought `props` from
+44/45 to 45/45 by exposing woven canvas, alternate canvas and stitching thread
+as material controls on the sandbags and adding visible closure seams. The
+[sandbags quality handoff](../artifacts/catalog-demos/props-sandbags-quality-20261106/README.md)
+records the source controls, refreshed previews, regenerated index, local page,
+checks and inspected MP4. The preceding round brought `nature` from 63/66 to
+66/66 by making the cairn and pebble cluster's existing stone-color controls
+explicit to the gate and adding contrasting heartwood to the dead tree's broken
+branch ends. The [nature
 quality handoff](../artifacts/catalog-demos/nature-quality-20261106/README.md)
 records the source controls, refreshed previews, regenerated index, local
 pages, checks, and inspected MP4. The previous [city-street quality
@@ -37,6 +42,21 @@ See the [Apiary quality handoff](../artifacts/catalog-demos/apiary-quality-promo
 and [airfield handoff](../artifacts/catalog-demos/airfield-quality-promotion-20261105/README.md)
 for source, preview, index, and verification evidence. These are local catalog
 checks and do not represent deployed behavior.
+
+## Props assets
+
+The [props kit](../catalog/kits/props/README.md) retains all 45 existing
+scene assets. The sandbag wall now exposes independent woven-canvas,
+alternate-canvas and stitching-thread colors; the existing `military` and
+`white` presets remain, and a `floodControl` palette was added. Two closure
+seams per bag clarify its pillowed silhouette without changing the staggered
+courses or straight/curved layout choice. Its default export is 748 triangles
+under a 900-triangle budget. All 45 props previews were refreshed and indexed.
+The [sandbags quality handoff](../artifacts/catalog-demos/props-sandbags-quality-20261106/README.md)
+contains source-driven preset renders, source hashes, local page checks, lint,
+integration results and an inspected MP4. These are low-poly visualization
+assets; local checks do not establish flood performance, deployment or physical
+acceptance.
 
 ## City-street assets
 

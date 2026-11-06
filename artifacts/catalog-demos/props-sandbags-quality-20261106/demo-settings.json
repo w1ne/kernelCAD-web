@@ -1,0 +1,73 @@
+{
+  "workflow": "existing props/sandbags source -> material controls and closure seams -> exact named preset renders plus curved layout -> rendered props previews -> local catalog and page checks",
+  "video": "artifacts/catalog-demos/props-sandbags-quality-20261106/sandbags-quality-demo.mp4",
+  "canvas": {
+    "width": 1280,
+    "height": 720
+  },
+  "frames": 5,
+  "durationSeconds": 15,
+  "ffmpeg": "ffmpeg -framerate 1/3 -c:v libx264 -r 24 -pix_fmt yuv420p -crf 24 -movflags +faststart",
+  "invocation": "python3 artifacts/catalog-demos/props-sandbags-quality-20261106/capture_sandbags_demo.py",
+  "variantInvocation": "npx tsx artifacts/catalog-demos/props-sandbags-quality-20261106/render_sandbags_variants.ts",
+  "previewInvocation": "npx tsx scripts/renderCatalogPreviews.ts <all 45 props asset ids>",
+  "indexInvocation": "npx tsx scripts/buildAssetCatalog.ts",
+  "checks": {
+    "previewRender": {
+      "command": "npx tsx scripts/renderCatalogPreviews.ts <all 45 props asset ids>",
+      "exitCode": 0,
+      "renderedAssets": 45,
+      "output": "preview-render-output.txt"
+    },
+    "catalogBuild": {
+      "command": "npx tsx scripts/buildAssetCatalog.ts",
+      "exitCode": 0,
+      "output": "catalog-build-output.txt"
+    },
+    "catalogIndexCheck": {
+      "command": "npx tsx scripts/buildAssetCatalog.ts --check",
+      "exitCode": 0,
+      "output": "catalog-check-output.txt"
+    },
+    "propsQuality": {
+      "command": "python3 scripts/checkCatalogQuality.py --kit props",
+      "exitCode": 0,
+      "passing": 45,
+      "total": 45,
+      "output": "props-quality-output.txt"
+    },
+    "catalogQuality": {
+      "command": "python3 scripts/checkCatalogQuality.py",
+      "exitCode": 0,
+      "passing": 2390,
+      "total": 2390,
+      "output": "catalog-quality-output.txt"
+    },
+    "eslint": {
+      "command": "npx eslint catalog/kits/props/",
+      "exitCode": 0,
+      "output": "eslint-output.txt"
+    },
+    "catalogIntegration": {
+      "command": "npx vitest run tests/integration/catalog/",
+      "exitCode": 0,
+      "files": 4,
+      "tests": 15,
+      "output": "integration-output.txt"
+    },
+    "localPages": {
+      "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-props-pages-20261106",
+      "exitCode": 0,
+      "pages": 2390,
+      "hubBuilt": true,
+      "output": "local-pages-output.txt"
+    },
+    "presetRenders": {
+      "command": "npx tsx artifacts/catalog-demos/props-sandbags-quality-20261106/render_sandbags_variants.ts",
+      "exitCode": 0,
+      "variants": 4,
+      "output": "preset-render-output.txt"
+    }
+  },
+  "provenance": "Source-driven local GLB renders of the checked-in default, exact presets and curved parameter choice. No live Studio session, deployed behavior or physical flood performance is shown."
+}

@@ -1,30 +1,43 @@
-// Original kernelCAD low-poly sandbag wall: pillow-shaped bags (bevelled
-// prisms, swollen in the middle) laid in staggered courses, straight or as
-// a curved emplacement. Millimetres, Z up, base on z = 0 centred on
-// x = y = 0, wall along X.
+// Original kernelCAD low-poly sandbag wall: pillow-shaped woven-canvas bags
+// with contrasting closure seams, laid in staggered courses, straight or as a
+// curved emplacement. Millimetres, Z up, base on z = 0 centred on x = y = 0.
 
 meta({
   name: 'sandbags',
   license: 'CC0-1.0',
   title: 'Sandbags',
-  description: 'Staggered wall of pillow-shaped sandbags for trenches, checkpoints and flood defences, straight or curved. Knobs: courses, bags per course, layout, bag and second bag colours.',
-  tags: ['sandbags', 'sandbag', 'barricade', 'cover', 'wall', 'military', 'trench', 'flood', 'bunker'],
+  description: 'Staggered wall of pillow-shaped woven-canvas sandbags with visible closure seams, for trenches, checkpoints and flood defences. Knobs: courses, bags per course, layout, canvas, alternate canvas and stitching-thread colours.',
+  tags: ['sandbags', 'sandbag', 'canvas', 'stitching', 'barricade', 'cover', 'wall', 'military', 'trench', 'flood', 'bunker'],
   kit: 'props',
   category: 'structure',
   origin: 'base',
   compat: ['outdoor', 'military', 'post-apocalyptic', 'street', 'beach', 'industrial'],
-  triangleBudget: 520,
+  triangleBudget: 900,
 });
 
 const courses = param('courses', '3', { choices: ['2', '3'], label: 'Courses' });
 const perCourse = param('perCourse', '4', { choices: ['3', '4'], label: 'Bags per course' });
 const layout = param('layout', 'straight', { choices: ['straight', 'curved'], label: 'Layout' });
-const bag = param('bag', '#b8a47a', { label: 'Bags' });
-const bag2 = param('bag2', '#97835a', { label: 'Second bag shade' });
+const canvasColor = param('canvasColor', '#b8a47a', { label: 'Woven canvas' });
+const alternateCanvasColor = param('alternateCanvasColor', '#97835a', { label: 'Alternate canvas' });
+const stitchingThreadColor = param('stitchingThreadColor', '#69583b', { label: 'Stitching thread' });
 
 presets({
-  military: { bag: '#7a7a52', bag2: '#626240' },
-  white: { bag: '#e4e0d4', bag2: '#c4bfac' },
+  military: {
+    canvasColor: '#7a7a52',
+    alternateCanvasColor: '#626240',
+    stitchingThreadColor: '#45452f',
+  },
+  white: {
+    canvasColor: '#e4e0d4',
+    alternateCanvasColor: '#c4bfac',
+    stitchingThreadColor: '#898372',
+  },
+  floodControl: {
+    canvasColor: '#c6ad7b',
+    alternateCanvasColor: '#a88e61',
+    stitchingThreadColor: '#6a5436',
+  },
 });
 
 const nc = Number(courses.value);
@@ -64,13 +77,21 @@ for (let c = 0; c < nc; c++) {
     const u = (i - (k - 1) / 2) * pitch;
     let b = pillow();
     const yaw = 2.5 * Math.sin(id * 1.9);
-    if (curved) {
-      const a = u / radius;
-      b = b.rotateZ(yaw + (a * 180) / Math.PI).translate(radius * Math.sin(a), radius * (1 - Math.cos(a)) - radius * 0.05, z);
-    } else {
-      b = b.rotateZ(yaw).translate(u, 0, z);
-    }
-    sb.part(`bag-${id}`, b.color(id % 3 === 0 ? bag2 : bag));
+    const a = curved ? u / radius : 0;
+    const rotation = yaw + (curved ? (a * 180) / Math.PI : 0);
+    const x = curved ? radius * Math.sin(a) : u;
+    const y = curved ? radius * (1 - Math.cos(a)) - radius * 0.05 : 0;
+    b = b.rotateZ(rotation).translate(x, y, z);
+    const stitchOffset = BL * 0.32;
+    const stitchTop = BH * (0.7 + 0.3 * (1 - stitchOffset / (BL / 2)));
+    const stitchA = box(8, BW * 0.64, 4, true).translate(-stitchOffset, 0, stitchTop - 2)
+      .rotateZ(rotation).translate(x, y, z);
+    const stitchB = box(8, BW * 0.64, 4, true).translate(stitchOffset, 0, stitchTop - 2)
+      .rotateZ(rotation).translate(x, y, z);
+    if (id % 3 === 0) sb.part(`bag-${id}`, b.color(alternateCanvasColor));
+    else sb.part(`bag-${id}`, b.color(canvasColor));
+    sb.part(`closure-stitch-${id}-a`, stitchA.color(stitchingThreadColor));
+    sb.part(`closure-stitch-${id}-b`, stitchB.color(stitchingThreadColor));
   }
 }
 

@@ -187168,12 +187168,14 @@
       "id": "sandbags",
       "kit": "props",
       "title": "Sandbags",
-      "description": "Staggered wall of pillow-shaped sandbags for trenches, checkpoints and flood defences, straight or curved. Knobs: courses, bags per course, layout, bag and second bag colours.",
+      "description": "Staggered wall of pillow-shaped woven-canvas sandbags with visible closure seams, for trenches, checkpoints and flood defences. Knobs: courses, bags per course, layout, canvas, alternate canvas and stitching-thread colours.",
       "category": "structure",
       "origin": "base",
       "tags": [
         "sandbags",
         "sandbag",
+        "canvas",
+        "stitching",
         "barricade",
         "cover",
         "wall",
@@ -187193,8 +187195,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/props/sandbags.kcad.ts",
       "preview": "/assets/props-sandbags.png",
-      "sourceSha256": "9f641b8e548a39d934573ee77af029a1622e9550e46818938c0d93d27238959d",
-      "triangleBudget": 520,
+      "sourceSha256": "6ff17580991eee7b3c471c7990d4b89922d6ac40e1e8680f90c4d906f257a7d4",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "courses",
@@ -187227,30 +187229,43 @@
           ]
         },
         {
-          "name": "bag",
+          "name": "canvasColor",
           "type": "color",
           "default": "#b8a47a",
-          "label": "Bags"
+          "label": "Woven canvas"
         },
         {
-          "name": "bag2",
+          "name": "alternateCanvasColor",
           "type": "color",
           "default": "#97835a",
-          "label": "Second bag shade"
+          "label": "Alternate canvas"
+        },
+        {
+          "name": "stitchingThreadColor",
+          "type": "color",
+          "default": "#69583b",
+          "label": "Stitching thread"
         }
       ],
       "presets": {
         "military": {
-          "bag": "#7a7a52",
-          "bag2": "#626240"
+          "canvasColor": "#7a7a52",
+          "alternateCanvasColor": "#626240",
+          "stitchingThreadColor": "#45452f"
         },
         "white": {
-          "bag": "#e4e0d4",
-          "bag2": "#c4bfac"
+          "canvasColor": "#e4e0d4",
+          "alternateCanvasColor": "#c4bfac",
+          "stitchingThreadColor": "#898372"
+        },
+        "floodControl": {
+          "canvasColor": "#c6ad7b",
+          "alternateCanvasColor": "#a88e61",
+          "stitchingThreadColor": "#6a5436"
         }
       },
       "stats": {
-        "triangles": 484,
+        "triangles": 748,
         "sizeM": [
           1.976292,
           0.546,
@@ -187261,7 +187276,7 @@
       },
       "palette": [
         {
-          "name": "bag",
+          "name": "canvasColor",
           "color": "#b8a47a",
           "parts": [
             "bag-1",
@@ -187273,17 +187288,46 @@
             "bag-10",
             "bag-11"
           ],
-          "param": "bag"
+          "param": "canvasColor"
         },
         {
-          "name": "bag2",
+          "name": "stitchingThreadColor",
+          "color": "#69583b",
+          "parts": [
+            "closure-stitch-1-a",
+            "closure-stitch-1-b",
+            "closure-stitch-2-a",
+            "closure-stitch-2-b",
+            "closure-stitch-3-a",
+            "closure-stitch-3-b",
+            "closure-stitch-4-a",
+            "closure-stitch-4-b",
+            "closure-stitch-5-a",
+            "closure-stitch-5-b",
+            "closure-stitch-6-a",
+            "closure-stitch-6-b",
+            "closure-stitch-7-a",
+            "closure-stitch-7-b",
+            "closure-stitch-8-a",
+            "closure-stitch-8-b",
+            "closure-stitch-9-a",
+            "closure-stitch-9-b",
+            "closure-stitch-10-a",
+            "closure-stitch-10-b",
+            "closure-stitch-11-a",
+            "closure-stitch-11-b"
+          ],
+          "param": "stitchingThreadColor"
+        },
+        {
+          "name": "alternateCanvasColor",
           "color": "#97835a",
           "parts": [
             "bag-3",
             "bag-6",
             "bag-9"
           ],
-          "param": "bag2"
+          "param": "alternateCanvasColor"
         }
       ]
     },

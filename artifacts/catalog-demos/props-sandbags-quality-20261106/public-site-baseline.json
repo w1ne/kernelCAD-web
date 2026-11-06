@@ -1,0 +1,19 @@
+{
+  "checkedAt": "2026-11-06",
+  "phase": "pre-deployment",
+  "branch": "feat/catalog-2000",
+  "featureDeployed": false,
+  "pages": [
+    {
+      "url": "https://kernelcad.com/",
+      "httpStatus": 200,
+      "meaning": "current public homepage baseline"
+    },
+    {
+      "url": "https://kernelcad.com/asset-library/",
+      "httpStatus": 200,
+      "meaning": "current public asset-library baseline"
+    }
+  ],
+  "postDeploymentCheck": "not performed; this feature branch is not deployed"
+}
