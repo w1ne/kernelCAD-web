@@ -1,0 +1,5 @@
+microwave-dish-antenna: 1486/1800 tris, size 0.636 x 1.442 x 0.804 m, minUp 0
+yagi-radio-antenna: 1232/1800 tris, size 1.478 x 1.68 x 0.58 m, minUp 0
+sector-panel-antenna: 1232/1800 tris, size 0.42 x 2.322 x 0.497 m, minUp 0
+dual-sector-panel-array: 2036/2600 tris, size 1.363468 x 2.624 x 0.657997 m, minUp 0
+remote-radio-unit: 1616/1800 tris, size 0.46 x 1.762 x 0.622 m, minUp 0
