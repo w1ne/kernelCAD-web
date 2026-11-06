@@ -239871,7 +239871,7 @@
       "id": "linear-guide-carriage",
       "kit": "standard-components",
       "title": "Linear guide carriage",
-      "description": "Block-shaped linear carriage with a recessed underside channel and raised top pad Knobs: model size, steel, cast iron.",
+      "description": "Steel guide carriage with a U-shaped underside channel, polymer end wipers, four top fastener wells, and a brass grease fitting. Knobs: model size, steel, polymer, brass.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -239889,8 +239889,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/linear-guide-carriage.kcad.ts",
       "preview": "/assets/standard-components-linear-guide-carriage.png",
-      "sourceSha256": "800526ad65ba66dd5b8691bf15abef7163341cccd40225210442dc1305762380",
-      "triangleBudget": 340,
+      "sourceSha256": "8b3f533436454ad9516cfe681bb3a5f26642eedbf7c2328e4373845cfc2a1726",
+      "triangleBudget": 460,
       "params": [
         {
           "name": "size",
@@ -239910,31 +239910,40 @@
           "label": "Steel"
         },
         {
-          "name": "castIron",
+          "name": "polymer",
           "type": "color",
-          "default": "#68747a",
-          "label": "Cast iron"
+          "default": "#34393d",
+          "label": "Engineering polymer"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#b28a4d",
+          "label": "Brass"
         }
       ],
       "presets": {
         "dark": {
           "steel": "#3e484e",
-          "castIron": "#3b4246"
+          "polymer": "#181c1e",
+          "brass": "#5a503d"
         },
         "brass": {
           "steel": "#646f75",
-          "castIron": "#69645b"
+          "polymer": "#244956",
+          "brass": "#d0a458"
         },
         "weathered": {
           "steel": "#665b4d",
-          "castIron": "#4d4b46"
+          "polymer": "#514438",
+          "brass": "#64734c"
         }
       },
       "stats": {
-        "triangles": 40,
+        "triangles": 408,
         "sizeM": [
-          0.044,
-          0.025,
+          0.046,
+          0.0292,
           0.04
         ],
         "minUpM": 0,
@@ -239942,20 +239951,35 @@
       },
       "palette": [
         {
-          "name": "castIron",
-          "color": "#68747a",
-          "parts": [
-            "shoe"
-          ],
-          "param": "castIron"
-        },
-        {
           "name": "steel",
           "color": "#85929a",
           "parts": [
-            "top-pad"
+            "steel-body",
+            "mounting-pad"
           ],
           "param": "steel"
+        },
+        {
+          "name": "polymer",
+          "color": "#34393d",
+          "parts": [
+            "left-wiper-front",
+            "left-wiper-back",
+            "left-wiper-bridge",
+            "right-wiper-front",
+            "right-wiper-back",
+            "right-wiper-bridge"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "brass",
+          "color": "#b28a4d",
+          "parts": [
+            "grease-fitting-base",
+            "grease-nipple"
+          ],
+          "param": "brass"
         }
       ]
     },

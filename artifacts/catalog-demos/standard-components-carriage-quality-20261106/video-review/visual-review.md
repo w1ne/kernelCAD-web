@@ -1,0 +1,3 @@
+# MP4 visual review — 2026-11-06
+
+Inspected the final H.264 MP4 through five decoded samples at 1.5, 4.5, 7.5, 10.5, and 13.5 seconds, plus the contact sheet. The first frame shows the size, steel, polymer, and brass source controls with all text inside its panel. The before/after frame changes from a gray block and pad to a carriage with an open U-channel, four mounting wells, dark wipers, and a brass fitting. The shared-scale size row shows compact, standard, and large bounds without cropping. The palette row distinguishes default, dark, brass, and weathered colors. The final frame accurately reports the local checks and says the branch is not deployed. No clipping or visible render defects found.

@@ -31,7 +31,7 @@ Each model keeps its compact / standard / large size choice and now exposes 2–
 | [`jaw-coupling`](jaw-coupling.kcad.ts) | Jaw coupling | Two jaw hubs with a visible flexible center spider between the shaft bores. | Steel, Engineering polymer | 236 | [PNG](previews/jaw-coupling.png) |
 | [`knurled-knob`](knurled-knob.kcad.ts) | Knurled knob | Compact control knob with a broad grip body, raised crown and center stem. | Steel, Aluminum, Engineering polymer | 228 | [PNG](previews/knurled-knob.png) |
 | [`leveling-foot`](leveling-foot.kcad.ts) | Leveling foot | Adjustable leveling foot with a wide circular pad and centered support stem. | Steel, Zinc-plated steel, Rubber | 132 | [PNG](previews/leveling-foot.png) |
-| [`linear-guide-carriage`](linear-guide-carriage.kcad.ts) | Linear guide carriage | Block-shaped linear carriage with a recessed underside channel and raised top pad. | Steel, Cast iron | 40 | [PNG](previews/linear-guide-carriage.png) |
+| [`linear-guide-carriage`](linear-guide-carriage.kcad.ts) | Linear guide carriage | Steel guide carriage with an open underside channel, polymer wiper end plates, four recessed top mounting wells, and a brass grease fitting. | Steel, Engineering polymer, Brass | 408 | [PNG](previews/linear-guide-carriage.png) |
 | [`linear-guide-rail`](linear-guide-rail.kcad.ts) | Linear guide rail | Compact linear motion rail with a broad mounting foot and raised central raceway. | Steel, Aluminum | 232 | [PNG](previews/linear-guide-rail.png) |
 | [`panel-clamp`](panel-clamp.kcad.ts) | Panel clamp | Small edge clamp with a broad base, upright jaw and adjustable pressure pad. | Steel, Zinc-plated steel, Rubber | 80 | [PNG](previews/panel-clamp.png) |
 | [`piano-hinge`](piano-hinge.kcad.ts) | Piano hinge | Long continuous hinge with two flat leaves, alternating knuckles, and a visible stainless hinge pin. | Steel, Stainless steel | 332 | [PNG](previews/piano-hinge.png) |
@@ -75,7 +75,7 @@ To render just this kit, pass the `previewAssetIDs` list from [`demo/settings.js
 
 ## Quality promotion handoff
 
-The [quality promotion handoff](QUALITY-PROMOTION.md) links the rendered demo, promotion metrics, generated previews, and check evidence. Demo source and settings are in [`demo/`](demo/).
+The [quality promotion handoff](QUALITY-PROMOTION.md) links the original kit promotion and the [2026-11-06 carriage detail follow-up](../../../artifacts/catalog-demos/standard-components-carriage-quality-20261106/README.md). The original kit demo source and settings are in [`demo/`](demo/).
 
 ## Licence
 
