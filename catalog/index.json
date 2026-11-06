@@ -134836,10 +134836,14 @@
       "id": "articulated-extraction-snorkel",
       "kit": "lab-infrastructure",
       "title": "Articulated extraction snorkel",
-      "description": "Bench-mounted local extraction arm with a pivot stack, horizontal reach and flared intake hood. Editable material controls: enamel coating, stainless steel, structural steel; presets: cleanroom and high visibility.",
+      "description": "Bench-mounted fume extraction arm: flanged mount with swivel and damper, two aluminium arm tubes joined by friction knuckles with tension knobs, clamp collars, and a clear flared bell hood. Material controls: joint enamel, arm tube aluminium, mount steel, hood acrylic, knob polymer. Reaching or folded pose; cleanroom and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "fume extraction arm",
+        "snorkel",
+        "extraction arm",
+        "local exhaust ventilation",
         "laboratory",
         "lab infrastructure",
         "research facility",
@@ -134855,7 +134859,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/lab-infrastructure/articulated-extraction-snorkel.kcad.ts",
       "preview": "/assets/lab-infrastructure-articulated-extraction-snorkel.png",
-      "sourceSha256": "3b31030dada46956c03b8aa56dbbeb904e6e5d7fd2af69d85b880795659f0d60",
+      "sourceSha256": "551552ff12b58116ecf3c1e0c85da3cc2cee57fd92daf278386fcd4aef7fdda2",
       "triangleBudget": 1800,
       "params": [
         {
@@ -134868,42 +134872,68 @@
           "step": 0.05
         },
         {
+          "name": "pose",
+          "type": "choice",
+          "default": "reaching",
+          "label": "Arm pose",
+          "choices": [
+            "reaching",
+            "folded"
+          ]
+        },
+        {
           "name": "enamel",
           "type": "color",
-          "default": "#c9dedc",
-          "label": "Enamel coating"
+          "default": "#f1f3f0",
+          "label": "Knuckle and swivel enamel"
         },
         {
           "name": "stainless",
           "type": "color",
-          "default": "#b8c7ca",
-          "label": "Stainless steel"
+          "default": "#c7d0d3",
+          "label": "Arm tube aluminium"
         },
         {
           "name": "steel",
           "type": "color",
           "default": "#53666e",
-          "label": "Structural steel"
+          "label": "Bench mount and damper steel"
+        },
+        {
+          "name": "acrylic",
+          "type": "color",
+          "default": "#8fd0dc",
+          "label": "Bell hood acrylic"
+        },
+        {
+          "name": "knob",
+          "type": "color",
+          "default": "#d9482b",
+          "label": "Tension knob polymer"
         }
       ],
       "presets": {
         "cleanroom": {
           "enamel": "#e7f0ed",
           "stainless": "#d0d9d8",
-          "steel": "#75888d"
+          "steel": "#75888d",
+          "acrylic": "#bfe6ea",
+          "knob": "#23a5a2"
         },
         "highVisibility": {
           "enamel": "#f0f2e8",
           "stainless": "#6f8488",
-          "steel": "#33464d"
+          "steel": "#33464d",
+          "acrylic": "#ffe36b",
+          "knob": "#1f2a30"
         }
       },
       "stats": {
-        "triangles": 212,
+        "triangles": 1284,
         "sizeM": [
-          1.095,
-          0.6485,
-          0.24
+          1.198038,
+          0.842,
+          0.352
         ],
         "minUpM": 0,
         "materials": 1
@@ -134913,29 +134943,57 @@
           "name": "steel",
           "color": "#53666e",
           "parts": [
-            "mounting-base",
-            "pedestal",
-            "intake-hood"
+            "bench-flange",
+            "damper-body"
           ],
           "param": "steel"
         },
         {
-          "name": "enamel",
-          "color": "#c9dedc",
+          "name": "stainless",
+          "color": "#c7d0d3",
           "parts": [
-            "pivot",
-            "intake-flare"
+            "stem",
+            "upper-arm",
+            "lower-arm"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "knob",
+          "color": "#d9482b",
+          "parts": [
+            "damper-lever",
+            "swivel-knuckle-knob",
+            "elbow-knuckle-knob"
+          ],
+          "param": "knob"
+        },
+        {
+          "name": "enamel",
+          "color": "#f1f3f0",
+          "parts": [
+            "swivel-collar",
+            "swivel-knuckle-cheek-a",
+            "swivel-knuckle-cheek-b",
+            "swivel-knuckle-hub",
+            "elbow-knuckle-cheek-a",
+            "elbow-knuckle-cheek-b",
+            "elbow-knuckle-hub",
+            "upper-collar-0",
+            "upper-collar-1",
+            "lower-collar-0",
+            "lower-collar-1",
+            "hood-rim"
           ],
           "param": "enamel"
         },
         {
-          "name": "stainless",
-          "color": "#b8c7ca",
+          "name": "acrylic",
+          "color": "#8fd0dc",
           "parts": [
-            "lower-arm",
-            "upper-arm"
+            "bell-hood"
           ],
-          "param": "stainless"
+          "param": "acrylic"
         }
       ]
     },
@@ -137182,10 +137240,16 @@
       "id": "cryogenic-dewar-storage-rack",
       "kit": "lab-infrastructure",
       "title": "Cryogenic dewar storage rack",
-      "description": "Floor rack for sample dewars with paired retaining hoops, shelves and anchor feet. Editable material controls: enamel coating, stainless steel, structural steel; presets: cleanroom and high visibility.",
+      "description": "Floor restraint rack for liquid-nitrogen sample dewars: squat aluminium dewars with rounded shoulder, slim neck tube, foam neck plug and lidded cap, each on a round roller base with casters, held by a steel restraint hoop with quick-release latch on a twin-rail frame with anchored feet. Material controls: dewar aluminium, rack steel, hoop and latch enamel, neck plug foam, caster rubber. Three or two bays; cleanroom and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "dewar",
+        "liquid nitrogen",
+        "ln2 storage",
+        "cryogenic",
+        "dewar rack",
+        "sample storage",
         "laboratory",
         "lab infrastructure",
         "research facility",
@@ -137201,8 +137265,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/lab-infrastructure/cryogenic-dewar-storage-rack.kcad.ts",
       "preview": "/assets/lab-infrastructure-cryogenic-dewar-storage-rack.png",
-      "sourceSha256": "c87562c534dc85415ceda6717e58362ed0e9cc43b80b5cb0ebe6e43052ff3cf4",
-      "triangleBudget": 1800,
+      "sourceSha256": "7e3e2705ee0408d6ceabb6f35968df9cde0f62e86061dbc1b6c2f92a0e698612",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "scale",
@@ -137214,42 +137278,68 @@
           "step": 0.05
         },
         {
+          "name": "bays",
+          "type": "choice",
+          "default": "three",
+          "label": "Dewar bays",
+          "choices": [
+            "three",
+            "two"
+          ]
+        },
+        {
           "name": "enamel",
           "type": "color",
-          "default": "#c9dedc",
-          "label": "Enamel coating"
+          "default": "#e0b524",
+          "label": "Restraint hoop and latch enamel"
         },
         {
           "name": "stainless",
           "type": "color",
-          "default": "#b8c7ca",
-          "label": "Stainless steel"
+          "default": "#c4cdd0",
+          "label": "Dewar aluminium"
         },
         {
           "name": "steel",
           "type": "color",
-          "default": "#53666e",
-          "label": "Structural steel"
+          "default": "#3f525a",
+          "label": "Rack frame steel"
+        },
+        {
+          "name": "foam",
+          "type": "color",
+          "default": "#2f6fb0",
+          "label": "Neck plug foam and cap"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#262b2e",
+          "label": "Caster rubber"
         }
       ],
       "presets": {
         "cleanroom": {
           "enamel": "#e7f0ed",
           "stainless": "#d0d9d8",
-          "steel": "#75888d"
+          "steel": "#75888d",
+          "foam": "#23a5a2",
+          "rubber": "#484f52"
         },
         "highVisibility": {
-          "enamel": "#f0f2e8",
-          "stainless": "#6f8488",
-          "steel": "#33464d"
+          "enamel": "#ffd000",
+          "stainless": "#9aa9ad",
+          "steel": "#22343b",
+          "foam": "#ff6a1f",
+          "rubber": "#171b1d"
         }
       },
       "stats": {
-        "triangles": 348,
+        "triangles": 2542,
         "sizeM": [
-          1,
-          1.45,
-          0.48
+          1.84,
+          0.9,
+          0.63
         ],
         "minUpM": 0,
         "materials": 1
@@ -137257,37 +137347,91 @@
       "palette": [
         {
           "name": "steel",
-          "color": "#53666e",
+          "color": "#3f525a",
           "parts": [
-            "base-frame",
-            "upright--420-0",
-            "upright-420-0",
-            "retaining-strap-0",
-            "retaining-strap-1",
-            "retaining-strap-2"
+            "upright--840",
+            "anchor-foot--840",
+            "gusset--840",
+            "upright-840",
+            "anchor-foot-840",
+            "gusset-840",
+            "rail-520",
+            "rail-820",
+            "roller-base-0",
+            "carry-handle-0",
+            "latch-lever-0",
+            "roller-base-1",
+            "carry-handle-1",
+            "latch-lever-1",
+            "roller-base-2",
+            "carry-handle-2",
+            "latch-lever-2"
           ],
           "param": "steel"
         },
         {
-          "name": "enamel",
-          "color": "#c9dedc",
+          "name": "rubber",
+          "color": "#262b2e",
           "parts": [
-            "top-retainer",
-            "dewar-neck-0",
-            "dewar-neck-1",
-            "dewar-neck-2"
+            "caster-0-0",
+            "caster-0-1",
+            "caster-0-2",
+            "caster-1-0",
+            "caster-1-1",
+            "caster-1-2",
+            "caster-2-0",
+            "caster-2-1",
+            "caster-2-2"
           ],
-          "param": "enamel"
+          "param": "rubber"
         },
         {
           "name": "stainless",
-          "color": "#b8c7ca",
+          "color": "#c4cdd0",
           "parts": [
             "dewar-body-0",
+            "dewar-neck-0",
+            "neck-collar-0",
             "dewar-body-1",
-            "dewar-body-2"
+            "dewar-neck-1",
+            "neck-collar-1",
+            "dewar-body-2",
+            "dewar-neck-2",
+            "neck-collar-2"
           ],
           "param": "stainless"
+        },
+        {
+          "name": "foam",
+          "color": "#2f6fb0",
+          "parts": [
+            "neck-plug-0",
+            "cap-0",
+            "label-band-0",
+            "neck-plug-1",
+            "cap-1",
+            "label-band-1",
+            "neck-plug-2",
+            "cap-2",
+            "label-band-2"
+          ],
+          "param": "foam"
+        },
+        {
+          "name": "enamel",
+          "color": "#e0b524",
+          "parts": [
+            "restraint-hoop-0",
+            "hoop-arm-0",
+            "latch-0",
+            "restraint-hoop-1",
+            "hoop-arm-1",
+            "latch-1",
+            "restraint-hoop-2",
+            "hoop-arm-2",
+            "latch-2"
+          ],
+          "param": "enamel"
         }
       ]
     },
@@ -138334,10 +138478,15 @@
       "id": "laboratory-faucet-set",
       "kit": "lab-infrastructure",
       "title": "Laboratory faucet set",
-      "description": "Bench-mounted faucet assembly with a tall neck, paired handles and a projecting spout. Editable material controls: polymer controls, stainless steel; presets: cleanroom and high visibility.",
+      "description": "Deck-mounted laboratory mixing faucet: round bench flange, riser and horizontal cross body with two valve bodies, high gooseneck spout with serrated hose-barb nozzle, wrist-blade or four-arm handles with hot and cold index buttons. Material controls: chrome-plated brass, handle polymer, hot index enamel, cold index enamel. Cleanroom and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "lab faucet",
+        "gooseneck faucet",
+        "laboratory tap",
+        "mixing faucet",
+        "hose barb",
         "laboratory",
         "lab infrastructure",
         "research facility",
@@ -138353,7 +138502,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/lab-infrastructure/laboratory-faucet-set.kcad.ts",
       "preview": "/assets/lab-infrastructure-laboratory-faucet-set.png",
-      "sourceSha256": "8dbcb29850232b84e6d4e2f005597c7fb154ce9d672de2e0e2d802577e0cb758",
+      "sourceSha256": "c10d241efc51d38640a28b4fadab7a8d096b05dde7ba7935303e8bbc23f4416a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -138366,34 +138515,60 @@
           "step": 0.05
         },
         {
-          "name": "polymer",
-          "type": "color",
-          "default": "#e5a331",
-          "label": "Polymer controls"
+          "name": "handles",
+          "type": "choice",
+          "default": "wrist-blade",
+          "label": "Handle style",
+          "choices": [
+            "wrist-blade",
+            "four-arm"
+          ]
         },
         {
           "name": "stainless",
           "type": "color",
-          "default": "#b8c7ca",
-          "label": "Stainless steel"
+          "default": "#c3cdd1",
+          "label": "Chrome-plated brass"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#2c3439",
+          "label": "Handle polymer"
+        },
+        {
+          "name": "hotIndex",
+          "type": "color",
+          "default": "#d2382c",
+          "label": "Hot index button enamel"
+        },
+        {
+          "name": "coldIndex",
+          "type": "color",
+          "default": "#2f6fc8",
+          "label": "Cold index button enamel"
         }
       ],
       "presets": {
         "cleanroom": {
-          "polymer": "#23a5a2",
-          "stainless": "#d0d9d8"
+          "stainless": "#d0d9d8",
+          "polymer": "#eef2ef",
+          "hotIndex": "#e06a5a",
+          "coldIndex": "#23a5a2"
         },
         "highVisibility": {
+          "stainless": "#6f8488",
           "polymer": "#ffe000",
-          "stainless": "#6f8488"
+          "hotIndex": "#ff3b1f",
+          "coldIndex": "#1f62ff"
         }
       },
       "stats": {
-        "triangles": 290,
+        "triangles": 1130,
         "sizeM": [
-          0.4,
-          0.3952,
-          0.2
+          0.414751,
+          0.399,
+          0.292
         ],
         "minUpM": 0,
         "materials": 1
@@ -138401,25 +138576,48 @@
       "palette": [
         {
           "name": "stainless",
-          "color": "#b8c7ca",
+          "color": "#c3cdd1",
           "parts": [
-            "mounting-deck",
+            "bench-flange",
             "riser",
-            "tap-stem--1",
-            "tap-stem-1",
-            "spout",
-            "spout-elbow"
+            "riser-collar",
+            "centre-body",
+            "cross-body",
+            "gooseneck",
+            "hose-barb",
+            "valve-body--1",
+            "valve-bonnet--1",
+            "valve-body-1",
+            "valve-bonnet-1"
           ],
           "param": "stainless"
         },
         {
           "name": "polymer",
-          "color": "#e5a331",
+          "color": "#2c3439",
           "parts": [
-            "tap-handle--1",
-            "tap-handle-1"
+            "handle-hub--1",
+            "wrist-blade--1",
+            "handle-hub-1",
+            "wrist-blade-1"
           ],
           "param": "polymer"
+        },
+        {
+          "name": "hotIndex",
+          "color": "#d2382c",
+          "parts": [
+            "index-button--1"
+          ],
+          "param": "hotIndex"
+        },
+        {
+          "name": "coldIndex",
+          "color": "#2f6fc8",
+          "parts": [
+            "index-button-1"
+          ],
+          "param": "coldIndex"
         }
       ]
     },
@@ -138906,10 +139104,15 @@
       "id": "laboratory-safety-shower",
       "kit": "lab-infrastructure",
       "title": "Laboratory safety shower",
-      "description": "Floor-mounted emergency shower fixture with pull rod, overhead spray head and eyewash bowls. Editable material controls: enamel coating, polymer controls, stainless steel; presets: cleanroom and high visibility.",
+      "description": "Combination emergency drench shower and eyewash: safety-yellow pipe column on a floor flange, top elbow and arm to a wide drench head, stay-open valve with hanging pull rod and triangle handle, waist-height bowl eyewash with twin capped spray heads and push flag, green first-aid sign. Material controls: pipe enamel, head and bowl stainless, cap and handle polymer, sign green. With or without eyewash; cleanroom and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "safety shower",
+        "emergency shower",
+        "drench shower",
+        "eyewash",
+        "combination station",
         "laboratory",
         "lab infrastructure",
         "research facility",
@@ -138925,7 +139128,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/lab-infrastructure/laboratory-safety-shower.kcad.ts",
       "preview": "/assets/lab-infrastructure-laboratory-safety-shower.png",
-      "sourceSha256": "f5df999cb7616ddde0d1a8eec8e76cd9a26aebd443a4e63610fabb6ad2dfe103",
+      "sourceSha256": "c30f7efe9d27b134090ab7ce3fc641a0bf8b5a8be79f122dc4c4e3d1c17d6951",
       "triangleBudget": 1800,
       "params": [
         {
@@ -138938,42 +139141,60 @@
           "step": 0.05
         },
         {
+          "name": "eyewash",
+          "type": "choice",
+          "default": "bowl",
+          "label": "Eyewash",
+          "choices": [
+            "bowl",
+            "none"
+          ]
+        },
+        {
           "name": "enamel",
           "type": "color",
-          "default": "#c9dedc",
-          "label": "Enamel coating"
+          "default": "#f2c418",
+          "label": "Pipe and fitting enamel"
         },
         {
           "name": "polymer",
           "type": "color",
-          "default": "#e5a331",
-          "label": "Polymer controls"
+          "default": "#e2622b",
+          "label": "Dust cap, push flag and handle polymer"
         },
         {
           "name": "stainless",
           "type": "color",
-          "default": "#b8c7ca",
-          "label": "Stainless steel"
+          "default": "#c6ced1",
+          "label": "Drench head and bowl stainless"
+        },
+        {
+          "name": "sign",
+          "type": "color",
+          "default": "#1d8a4c",
+          "label": "First-aid sign green"
         }
       ],
       "presets": {
         "cleanroom": {
           "enamel": "#e7f0ed",
           "polymer": "#23a5a2",
-          "stainless": "#d0d9d8"
+          "stainless": "#d0d9d8",
+          "sign": "#2a9a62"
         },
         "highVisibility": {
-          "enamel": "#f0f2e8",
-          "polymer": "#ffe000",
-          "stainless": "#6f8488"
+          "enamel": "#ffe000",
+          "polymer": "#1f2a30",
+          "stainless": "#6f8488",
+          "sign": "#0f7a3c"
         }
       },
       "stats": {
-        "triangles": 400,
+        "triangles": 1324,
         "sizeM": [
-          0.56,
-          2.205,
-          0.43
+          0.498954,
+          2.284,
+          0.92
         ],
         "minUpM": 0,
         "materials": 1
@@ -138981,36 +139202,62 @@
       "palette": [
         {
           "name": "enamel",
-          "color": "#c9dedc",
+          "color": "#f2c418",
           "parts": [
-            "base-plate",
-            "shower-column",
-            "eyewash-stand--1",
-            "eyewash-stand-1"
+            "floor-flange",
+            "column",
+            "top-elbow",
+            "shower-arm",
+            "ball-valve",
+            "valve-lever",
+            "head-elbow",
+            "head-nipple",
+            "eyewash-tee",
+            "eyewash-arm",
+            "bowl-drain",
+            "drain-elbow",
+            "drain-return"
           ],
           "param": "enamel"
         },
         {
           "name": "stainless",
-          "color": "#b8c7ca",
+          "color": "#c6ced1",
           "parts": [
-            "overhead-arm",
-            "shower-head"
+            "pull-rod",
+            "drench-head",
+            "sign-cross-v",
+            "sign-cross-h",
+            "eyewash-bowl",
+            "spray-riser--60",
+            "spray-head--60",
+            "spray-riser-60",
+            "spray-head-60",
+            "flag-stem"
           ],
           "param": "stainless"
         },
         {
           "name": "polymer",
-          "color": "#e5a331",
+          "color": "#e2622b",
           "parts": [
-            "pull-rod",
-            "pull-handle",
-            "eyewash-bowl--1",
-            "spray-head--1",
-            "eyewash-bowl-1",
-            "spray-head-1"
+            "pull-handle-0",
+            "pull-handle-1",
+            "pull-handle-2",
+            "head-diffuser",
+            "dust-cap--60",
+            "dust-cap-60",
+            "push-flag"
           ],
           "param": "polymer"
+        },
+        {
+          "name": "sign",
+          "color": "#1d8a4c",
+          "parts": [
+            "sign-plate"
+          ],
+          "param": "sign"
         }
       ]
     },
@@ -140790,10 +141037,14 @@
       "id": "ultra-low-temperature-freezer",
       "kit": "lab-infrastructure",
       "title": "Ultra-low-temperature freezer",
-      "description": "Upright deep-freezer enclosure with insulated paired doors, latch bars and a top display. Editable material controls: enamel coating, polymer controls, rubber and seals, stainless steel; presets: cleanroom and high visibility.",
+      "description": "Upright -80 C sample freezer: rounded insulated cabinet, single thick outer door with rubber gasket, tall lever latch with lock, sloped control cowl with touchscreen, louvred compressor grille, side access port and hinges on a steel base frame. Material controls: cabinet enamel, latch and trim polymer, gasket rubber, base and grille steel, display glass. Casters or levelling feet; cleanroom and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "ult freezer",
+        "minus 80 freezer",
+        "sample freezer",
+        "laboratory freezer",
         "laboratory",
         "lab infrastructure",
         "research facility",
@@ -140809,7 +141060,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/lab-infrastructure/ultra-low-temperature-freezer.kcad.ts",
       "preview": "/assets/lab-infrastructure-ultra-low-temperature-freezer.png",
-      "sourceSha256": "01f24f904b2388004596b27bb5f14ae2dc9baa12a353c15a8b6c4092ded69783",
+      "sourceSha256": "661806abd41aa0138c6e6e0ffaf5f68083926c3d9809db839dc0c92aed1ed263",
       "triangleBudget": 1800,
       "params": [
         {
@@ -140822,86 +141073,87 @@
           "step": 0.05
         },
         {
+          "name": "mount",
+          "type": "choice",
+          "default": "casters",
+          "label": "Base",
+          "choices": [
+            "casters",
+            "feet"
+          ]
+        },
+        {
           "name": "enamel",
           "type": "color",
-          "default": "#c9dedc",
-          "label": "Enamel coating"
+          "default": "#eef1ee",
+          "label": "Cabinet and door enamel"
         },
         {
           "name": "polymer",
           "type": "color",
-          "default": "#e5a331",
-          "label": "Polymer controls"
+          "default": "#2f6fa8",
+          "label": "Latch, cowl trim and port polymer"
         },
         {
           "name": "rubber",
           "type": "color",
           "default": "#30363a",
-          "label": "Rubber and seals"
+          "label": "Door gasket and caster rubber"
         },
         {
           "name": "stainless",
           "type": "color",
-          "default": "#b8c7ca",
-          "label": "Stainless steel"
+          "default": "#9aa6aa",
+          "label": "Base frame, hinges and grille steel"
+        },
+        {
+          "name": "display",
+          "type": "color",
+          "default": "#18242c",
+          "label": "Touchscreen glass"
         }
       ],
       "presets": {
         "cleanroom": {
-          "enamel": "#e7f0ed",
+          "enamel": "#f6f8f6",
           "polymer": "#23a5a2",
           "rubber": "#484f52",
-          "stainless": "#d0d9d8"
+          "stainless": "#d0d9d8",
+          "display": "#20343a"
         },
         "highVisibility": {
           "enamel": "#f0f2e8",
-          "polymer": "#ffe000",
+          "polymer": "#ffd000",
           "rubber": "#202528",
-          "stainless": "#6f8488"
+          "stainless": "#6f8488",
+          "display": "#0f1a20"
         }
       },
       "stats": {
-        "triangles": 252,
+        "triangles": 996,
         "sizeM": [
-          0.92,
-          2.641,
-          0.9665
+          0.943,
+          1.996,
+          1.042
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "enamel",
-          "color": "#c9dedc",
-          "parts": [
-            "insulated-cabinet",
-            "toe-kick",
-            "insulated-door-0",
-            "insulated-door-1",
-            "vent-0",
-            "vent-1",
-            "vent-2",
-            "vent-3",
-            "vent-4"
-          ],
-          "param": "enamel"
-        },
-        {
-          "name": "polymer",
-          "color": "#e5a331",
-          "parts": [
-            "latch-0",
-            "latch-1",
-            "controller"
-          ],
-          "param": "polymer"
-        },
-        {
           "name": "stainless",
-          "color": "#b8c7ca",
+          "color": "#9aa6aa",
           "parts": [
-            "compressor-grille"
+            "base-frame",
+            "caster-fork-0",
+            "caster-fork-1",
+            "caster-fork-2",
+            "caster-fork-3",
+            "hinge-550",
+            "hinge-1645",
+            "latch-base",
+            "lock-barrel",
+            "grille-frame"
           ],
           "param": "stainless"
         },
@@ -140909,16 +141161,49 @@
           "name": "rubber",
           "color": "#30363a",
           "parts": [
-            "door-seal-left-0",
-            "door-seal-right-0",
-            "door-seal-top-0",
-            "door-seal-bottom-0",
-            "door-seal-left-1",
-            "door-seal-right-1",
-            "door-seal-top-1",
-            "door-seal-bottom-1"
+            "caster-wheel-0",
+            "caster-wheel-1",
+            "caster-wheel-2",
+            "caster-wheel-3",
+            "door-gasket",
+            "grille-louvre-0",
+            "grille-louvre-1",
+            "grille-louvre-2",
+            "grille-louvre-3",
+            "grille-louvre-4",
+            "grille-louvre-5",
+            "port-plug"
           ],
           "param": "rubber"
+        },
+        {
+          "name": "enamel",
+          "color": "#eef1ee",
+          "parts": [
+            "insulated-cabinet",
+            "control-cowl",
+            "outer-door"
+          ],
+          "param": "enamel"
+        },
+        {
+          "name": "polymer",
+          "color": "#2f6fa8",
+          "parts": [
+            "cowl-trim",
+            "status-lamp",
+            "latch-lever",
+            "access-port"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "display",
+          "color": "#18242c",
+          "parts": [
+            "touchscreen"
+          ],
+          "param": "display"
         }
       ]
     },

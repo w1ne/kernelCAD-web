@@ -1,0 +1,336 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/lab-infrastructure-silhouette-20261106/render_variants.ts",
+  "exporter": "runAndExport(format=\"glb\", style=\"lowpoly\", maxTriangles=source triangleBudget)",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "sources": [
+    {
+      "source": "catalog/kits/lab-infrastructure/ultra-low-temperature-freezer.kcad.ts",
+      "sourceSha256": "661806abd41aa0138c6e6e0ffaf5f68083926c3d9809db839dc0c92aed1ed263",
+      "triangleBudget": 1800,
+      "presets": {
+        "cleanroom": {
+          "enamel": "#f6f8f6",
+          "polymer": "#23a5a2",
+          "rubber": "#484f52",
+          "stainless": "#d0d9d8",
+          "display": "#20343a"
+        },
+        "highVisibility": {
+          "enamel": "#f0f2e8",
+          "polymer": "#ffd000",
+          "rubber": "#202528",
+          "stainless": "#6f8488",
+          "display": "#0f1a20"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/lab-infrastructure/articulated-extraction-snorkel.kcad.ts",
+      "sourceSha256": "551552ff12b58116ecf3c1e0c85da3cc2cee57fd92daf278386fcd4aef7fdda2",
+      "triangleBudget": 1800,
+      "presets": {
+        "cleanroom": {
+          "enamel": "#e7f0ed",
+          "stainless": "#d0d9d8",
+          "steel": "#75888d",
+          "acrylic": "#bfe6ea",
+          "knob": "#23a5a2"
+        },
+        "highVisibility": {
+          "enamel": "#f0f2e8",
+          "stainless": "#6f8488",
+          "steel": "#33464d",
+          "acrylic": "#ffe36b",
+          "knob": "#1f2a30"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/lab-infrastructure/laboratory-safety-shower.kcad.ts",
+      "sourceSha256": "c30f7efe9d27b134090ab7ce3fc641a0bf8b5a8be79f122dc4c4e3d1c17d6951",
+      "triangleBudget": 1800,
+      "presets": {
+        "cleanroom": {
+          "enamel": "#e7f0ed",
+          "polymer": "#23a5a2",
+          "stainless": "#d0d9d8",
+          "sign": "#2a9a62"
+        },
+        "highVisibility": {
+          "enamel": "#ffe000",
+          "polymer": "#1f2a30",
+          "stainless": "#6f8488",
+          "sign": "#0f7a3c"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/lab-infrastructure/laboratory-faucet-set.kcad.ts",
+      "sourceSha256": "c10d241efc51d38640a28b4fadab7a8d096b05dde7ba7935303e8bbc23f4416a",
+      "triangleBudget": 1800,
+      "presets": {
+        "cleanroom": {
+          "stainless": "#d0d9d8",
+          "polymer": "#eef2ef",
+          "hotIndex": "#e06a5a",
+          "coldIndex": "#23a5a2"
+        },
+        "highVisibility": {
+          "stainless": "#6f8488",
+          "polymer": "#ffe000",
+          "hotIndex": "#ff3b1f",
+          "coldIndex": "#1f62ff"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/lab-infrastructure/cryogenic-dewar-storage-rack.kcad.ts",
+      "sourceSha256": "7e3e2705ee0408d6ceabb6f35968df9cde0f62e86061dbc1b6c2f92a0e698612",
+      "triangleBudget": 2600,
+      "presets": {
+        "cleanroom": {
+          "enamel": "#e7f0ed",
+          "stainless": "#d0d9d8",
+          "steel": "#75888d",
+          "foam": "#23a5a2",
+          "rubber": "#484f52"
+        },
+        "highVisibility": {
+          "enamel": "#ffd000",
+          "stainless": "#9aa9ad",
+          "steel": "#22343b",
+          "foam": "#ff6a1f",
+          "rubber": "#171b1d"
+        }
+      }
+    }
+  ],
+  "renders": [
+    {
+      "assetId": "ultra-low-temperature-freezer",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 996,
+      "png": "artifacts/catalog-demos/lab-infrastructure-silhouette-20261106/variants/ultra-low-temperature-freezer-default.png"
+    },
+    {
+      "assetId": "ultra-low-temperature-freezer",
+      "variant": "feet",
+      "view": "3/4",
+      "values": {
+        "mount": "feet"
+      },
+      "triangles": 1044,
+      "png": "artifacts/catalog-demos/lab-infrastructure-silhouette-20261106/variants/ultra-low-temperature-freezer-feet.png"
+    },
+    {
+      "assetId": "ultra-low-temperature-freezer",
+      "variant": "cleanroom",
+      "view": "3/4",
+      "values": {
+        "enamel": "#f6f8f6",
+        "polymer": "#23a5a2",
+        "rubber": "#484f52",
+        "stainless": "#d0d9d8",
+        "display": "#20343a"
+      },
+      "triangles": 996,
+      "png": "artifacts/catalog-demos/lab-infrastructure-silhouette-20261106/variants/ultra-low-temperature-freezer-cleanroom.png"
+    },
+    {
+      "assetId": "ultra-low-temperature-freezer",
+      "variant": "highVisibility",
+      "view": "3/4",
+      "values": {
+        "enamel": "#f0f2e8",
+        "polymer": "#ffd000",
+        "rubber": "#202528",
+        "stainless": "#6f8488",
+        "display": "#0f1a20"
+      },
+      "triangles": 996,
+      "png": "artifacts/catalog-demos/lab-infrastructure-silhouette-20261106/variants/ultra-low-temperature-freezer-highVisibility.png"
+    },
+    {
+      "assetId": "articulated-extraction-snorkel",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1284,
+      "png": "artifacts/catalog-demos/lab-infrastructure-silhouette-20261106/variants/articulated-extraction-snorkel-default.png"
+    },
+    {
+      "assetId": "articulated-extraction-snorkel",
+      "variant": "folded",
+      "view": "3/4",
+      "values": {
+        "pose": "folded"
+      },
+      "triangles": 1284,
+      "png": "artifacts/catalog-demos/lab-infrastructure-silhouette-20261106/variants/articulated-extraction-snorkel-folded.png"
+    },
+    {
+      "assetId": "articulated-extraction-snorkel",
+      "variant": "cleanroom",
+      "view": "3/4",
+      "values": {
+        "enamel": "#e7f0ed",
+        "stainless": "#d0d9d8",
+        "steel": "#75888d",
+        "acrylic": "#bfe6ea",
+        "knob": "#23a5a2"
+      },
+      "triangles": 1284,
+      "png": "artifacts/catalog-demos/lab-infrastructure-silhouette-20261106/variants/articulated-extraction-snorkel-cleanroom.png"
+    },
+    {
+      "assetId": "articulated-extraction-snorkel",
+      "variant": "highVisibility",
+      "view": "3/4",
+      "values": {
+        "enamel": "#f0f2e8",
+        "stainless": "#6f8488",
+        "steel": "#33464d",
+        "acrylic": "#ffe36b",
+        "knob": "#1f2a30"
+      },
+      "triangles": 1284,
+      "png": "artifacts/catalog-demos/lab-infrastructure-silhouette-20261106/variants/articulated-extraction-snorkel-highVisibility.png"
+    },
+    {
+      "assetId": "laboratory-safety-shower",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1324,
+      "png": "artifacts/catalog-demos/lab-infrastructure-silhouette-20261106/variants/laboratory-safety-shower-default.png"
+    },
+    {
+      "assetId": "laboratory-safety-shower",
+      "variant": "no-eyewash",
+      "view": "3/4",
+      "values": {
+        "eyewash": "none"
+      },
+      "triangles": 668,
+      "png": "artifacts/catalog-demos/lab-infrastructure-silhouette-20261106/variants/laboratory-safety-shower-no-eyewash.png"
+    },
+    {
+      "assetId": "laboratory-safety-shower",
+      "variant": "cleanroom",
+      "view": "3/4",
+      "values": {
+        "enamel": "#e7f0ed",
+        "polymer": "#23a5a2",
+        "stainless": "#d0d9d8",
+        "sign": "#2a9a62"
+      },
+      "triangles": 1324,
+      "png": "artifacts/catalog-demos/lab-infrastructure-silhouette-20261106/variants/laboratory-safety-shower-cleanroom.png"
+    },
+    {
+      "assetId": "laboratory-safety-shower",
+      "variant": "highVisibility",
+      "view": "3/4",
+      "values": {
+        "enamel": "#ffe000",
+        "polymer": "#1f2a30",
+        "stainless": "#6f8488",
+        "sign": "#0f7a3c"
+      },
+      "triangles": 1324,
+      "png": "artifacts/catalog-demos/lab-infrastructure-silhouette-20261106/variants/laboratory-safety-shower-highVisibility.png"
+    },
+    {
+      "assetId": "laboratory-faucet-set",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1130,
+      "png": "artifacts/catalog-demos/lab-infrastructure-silhouette-20261106/variants/laboratory-faucet-set-default.png"
+    },
+    {
+      "assetId": "laboratory-faucet-set",
+      "variant": "four-arm",
+      "view": "3/4",
+      "values": {
+        "handles": "four-arm"
+      },
+      "triangles": 1242,
+      "png": "artifacts/catalog-demos/lab-infrastructure-silhouette-20261106/variants/laboratory-faucet-set-four-arm.png"
+    },
+    {
+      "assetId": "laboratory-faucet-set",
+      "variant": "cleanroom",
+      "view": "3/4",
+      "values": {
+        "stainless": "#d0d9d8",
+        "polymer": "#eef2ef",
+        "hotIndex": "#e06a5a",
+        "coldIndex": "#23a5a2"
+      },
+      "triangles": 1130,
+      "png": "artifacts/catalog-demos/lab-infrastructure-silhouette-20261106/variants/laboratory-faucet-set-cleanroom.png"
+    },
+    {
+      "assetId": "laboratory-faucet-set",
+      "variant": "highVisibility",
+      "view": "3/4",
+      "values": {
+        "stainless": "#6f8488",
+        "polymer": "#ffe000",
+        "hotIndex": "#ff3b1f",
+        "coldIndex": "#1f62ff"
+      },
+      "triangles": 1130,
+      "png": "artifacts/catalog-demos/lab-infrastructure-silhouette-20261106/variants/laboratory-faucet-set-highVisibility.png"
+    },
+    {
+      "assetId": "cryogenic-dewar-storage-rack",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 2542,
+      "png": "artifacts/catalog-demos/lab-infrastructure-silhouette-20261106/variants/cryogenic-dewar-storage-rack-default.png"
+    },
+    {
+      "assetId": "cryogenic-dewar-storage-rack",
+      "variant": "two",
+      "view": "3/4",
+      "values": {
+        "bays": "two"
+      },
+      "triangles": 1724,
+      "png": "artifacts/catalog-demos/lab-infrastructure-silhouette-20261106/variants/cryogenic-dewar-storage-rack-two.png"
+    },
+    {
+      "assetId": "cryogenic-dewar-storage-rack",
+      "variant": "cleanroom",
+      "view": "3/4",
+      "values": {
+        "enamel": "#e7f0ed",
+        "stainless": "#d0d9d8",
+        "steel": "#75888d",
+        "foam": "#23a5a2",
+        "rubber": "#484f52"
+      },
+      "triangles": 2542,
+      "png": "artifacts/catalog-demos/lab-infrastructure-silhouette-20261106/variants/cryogenic-dewar-storage-rack-cleanroom.png"
+    },
+    {
+      "assetId": "cryogenic-dewar-storage-rack",
+      "variant": "highVisibility",
+      "view": "3/4",
+      "values": {
+        "enamel": "#ffd000",
+        "stainless": "#9aa9ad",
+        "steel": "#22343b",
+        "foam": "#ff6a1f",
+        "rubber": "#171b1d"
+      },
+      "triangles": 2542,
+      "png": "artifacts/catalog-demos/lab-infrastructure-silhouette-20261106/variants/cryogenic-dewar-storage-rack-highVisibility.png"
+    }
+  ]
+}
