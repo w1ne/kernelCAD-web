@@ -71095,13 +71095,18 @@
       "id": "ccs-combo-1-connector",
       "kit": "ev-charging-infrastructure",
       "title": "CCS Combo 1 connector",
-      "description": "Generic CCS Combo 1 plug body with a broad grip shell, lower contact block, and cable tail. Knobs: overall scale and engineering polymer and cable elastomer color controls.",
+      "description": "CCS Combo 1 DC fast-charging plug: round J1772 head with five recessed contacts above a separate DC shroud with two large pin sockets, tall pistol grip with overmoulded flanks, long latch lever with front hook and thumb button, heavy strain relief and DC cable. Material controls: housing, grip overmould, latch and contacts, cable. fleetReady and nightService presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "CCS1",
+        "CCS Combo 1",
+        "Combined Charging System",
+        "DC fast charging",
+        "EV plug",
+        "charging connector",
         "EV charging",
         "electric vehicle",
-        "charging station",
         "low poly",
         "scene prop",
         "CC0"
@@ -71116,8 +71121,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/ccs-combo-1-connector.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-ccs-combo-1-connector.png",
-      "sourceSha256": "83239859bfcb27a2ce92b1ab4baa2c815607160e45c90d1cc0a36d0b559a9ba6",
-      "triangleBudget": 2400,
+      "sourceSha256": "e5f2450cfc4846800eb7e99a619f44bbef03d5daf00d3a88288fae1c97bca14e",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -71129,59 +71134,118 @@
           "step": 0.05
         },
         {
-          "name": "engineeringPolymer",
+          "name": "housing",
           "type": "color",
-          "default": "#657f84",
-          "label": "Engineering polymer"
+          "default": "#2b3034",
+          "label": "Nose, DC shroud and body shell (engineering polymer)"
         },
         {
-          "name": "cableElastomer",
+          "name": "gripOvermold",
           "type": "color",
-          "default": "#1b2427",
-          "label": "Cable elastomer"
+          "default": "#596168",
+          "label": "Grip overmould and face inserts (soft-touch elastomer)"
+        },
+        {
+          "name": "latch",
+          "type": "color",
+          "default": "#d8dcdc",
+          "label": "Latch lever and thumb button"
+        },
+        {
+          "name": "contacts",
+          "type": "color",
+          "default": "#c9a14a",
+          "label": "Contact pins (plated brass)"
+        },
+        {
+          "name": "cable",
+          "type": "color",
+          "default": "#121517",
+          "label": "DC cable jacket and strain relief"
         }
       ],
       "presets": {
         "fleetReady": {
-          "engineeringPolymer": "#263a36",
-          "cableElastomer": "#1a2522"
+          "housing": "#263a36",
+          "gripOvermold": "#40564f",
+          "latch": "#e0b31f",
+          "contacts": "#c9a14a",
+          "cable": "#1a2522"
         },
         "nightService": {
-          "engineeringPolymer": "#222d32",
-          "cableElastomer": "#111719"
+          "housing": "#1a2226",
+          "gripOvermold": "#2c363b",
+          "latch": "#6f7b80",
+          "contacts": "#a88a45",
+          "cable": "#111719"
         }
       },
       "stats": {
-        "triangles": 180,
+        "triangles": 838,
         "sizeM": [
-          0.118,
-          0.153,
-          0.478
+          0.078,
+          0.348962,
+          0.296658
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "engineeringPolymer",
-          "color": "#657f84",
+          "name": "housing",
+          "color": "#2b3034",
           "parts": [
-            "hand-grip",
-            "front-coupling",
-            "connector-nose",
-            "grip-ridge-top",
-            "lower-contact-block"
+            "ac-nose",
+            "neck",
+            "dc-shroud",
+            "body",
+            "latch-guard"
           ],
-          "param": "engineeringPolymer"
+          "param": "housing"
         },
         {
-          "name": "cableElastomer",
-          "color": "#1b2427",
+          "name": "gripOvermold",
+          "color": "#596168",
+          "parts": [
+            "ac-face-insert",
+            "dc-socket--1",
+            "dc-socket-1",
+            "grip-panel--1",
+            "grip-panel-1"
+          ],
+          "param": "gripOvermold"
+        },
+        {
+          "name": "contacts",
+          "color": "#c9a14a",
+          "parts": [
+            "ac-contact-0",
+            "ac-contact-1",
+            "ac-contact-2",
+            "ac-contact-3",
+            "ac-contact-4",
+            "dc-pin--1",
+            "dc-pin-1"
+          ],
+          "param": "contacts"
+        },
+        {
+          "name": "latch",
+          "color": "#d8dcdc",
+          "parts": [
+            "latch-lever",
+            "thumb-button"
+          ],
+          "param": "latch"
+        },
+        {
+          "name": "cable",
+          "color": "#121517",
           "parts": [
             "strain-relief",
-            "cable-stub"
+            "cable"
           ],
-          "param": "cableElastomer"
+          "param": "cable"
         }
       ]
     },
@@ -71189,13 +71253,20 @@
       "id": "ccs-combo-2-connector",
       "kit": "ev-charging-infrastructure",
       "title": "CCS Combo 2 connector",
-      "description": "Generic CCS Combo 2 plug body with a shaped grip, strain relief, and cable tail. Knobs: overall scale and engineering polymer and cable elastomer color controls.",
+      "description": "CCS Combo 2 DC fast-charging plug: Type 2 head with a flat-topped face, locking notch and seven recessed contacts above a separate DC shroud with two large pin sockets, closed loop handle with release button and overmoulded grip, heavy strain relief and DC cable. Material controls: housing, grip overmould, release button and contacts, cable. fleetReady and nightService presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "CCS2",
+        "CCS Combo 2",
+        "Type 2",
+        "Mennekes",
+        "Combined Charging System",
+        "DC fast charging",
+        "EV plug",
+        "charging connector",
         "EV charging",
         "electric vehicle",
-        "charging station",
         "low poly",
         "scene prop",
         "CC0"
@@ -71210,8 +71281,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/ccs-combo-2-connector.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-ccs-combo-2-connector.png",
-      "sourceSha256": "760fd4124dfdd5c196e26e5808b22c251e06456320d7b70b2f3f0022e9474a70",
-      "triangleBudget": 2400,
+      "sourceSha256": "1eb61c8578debbe646a296d2c05191d8ea250a4b760dffffc47f857df0801158",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -71223,59 +71294,117 @@
           "step": 0.05
         },
         {
-          "name": "engineeringPolymer",
+          "name": "housing",
           "type": "color",
-          "default": "#657f84",
-          "label": "Engineering polymer"
+          "default": "#4a5157",
+          "label": "Nose, DC shroud and handle shell (engineering polymer)"
         },
         {
-          "name": "cableElastomer",
+          "name": "gripOvermold",
           "type": "color",
-          "default": "#1b2427",
-          "label": "Cable elastomer"
+          "default": "#16191b",
+          "label": "Grip overmould and face inserts (soft-touch elastomer)"
+        },
+        {
+          "name": "button",
+          "type": "color",
+          "default": "#e2632a",
+          "label": "Release button"
+        },
+        {
+          "name": "contacts",
+          "type": "color",
+          "default": "#c9a14a",
+          "label": "Contact pins (plated brass)"
+        },
+        {
+          "name": "cable",
+          "type": "color",
+          "default": "#121517",
+          "label": "DC cable jacket and strain relief"
         }
       ],
       "presets": {
         "fleetReady": {
-          "engineeringPolymer": "#263a36",
-          "cableElastomer": "#1a2522"
+          "housing": "#263a36",
+          "gripOvermold": "#141b19",
+          "button": "#e0b31f",
+          "contacts": "#c9a14a",
+          "cable": "#1a2522"
         },
         "nightService": {
-          "engineeringPolymer": "#222d32",
-          "cableElastomer": "#111719"
+          "housing": "#1a2226",
+          "gripOvermold": "#0f1416",
+          "button": "#5f6b70",
+          "contacts": "#a88a45",
+          "cable": "#111719"
         }
       },
       "stats": {
-        "triangles": 180,
+        "triangles": 956,
         "sizeM": [
-          0.112,
-          0.157,
-          0.472
+          0.08,
+          0.34882,
+          0.25869
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "engineeringPolymer",
-          "color": "#657f84",
+          "name": "housing",
+          "color": "#4a5157",
           "parts": [
-            "hand-grip",
-            "front-coupling",
-            "connector-nose",
-            "grip-ridge-top",
-            "lower-contact-block"
+            "ac-nose",
+            "neck",
+            "dc-shroud",
+            "handle"
           ],
-          "param": "engineeringPolymer"
+          "param": "housing"
         },
         {
-          "name": "cableElastomer",
-          "color": "#1b2427",
+          "name": "gripOvermold",
+          "color": "#16191b",
+          "parts": [
+            "ac-face-insert",
+            "dc-socket--1",
+            "dc-socket-1",
+            "grip-overmold"
+          ],
+          "param": "gripOvermold"
+        },
+        {
+          "name": "contacts",
+          "color": "#c9a14a",
+          "parts": [
+            "ac-contact-0",
+            "ac-contact-1",
+            "ac-contact-2",
+            "ac-contact-3",
+            "ac-contact-4",
+            "ac-contact-5",
+            "ac-contact-6",
+            "dc-pin--1",
+            "dc-pin-1"
+          ],
+          "param": "contacts"
+        },
+        {
+          "name": "button",
+          "color": "#e2632a",
+          "parts": [
+            "release-button"
+          ],
+          "param": "button"
+        },
+        {
+          "name": "cable",
+          "color": "#121517",
           "parts": [
             "strain-relief",
-            "cable-stub"
+            "cable"
           ],
-          "param": "cableElastomer"
+          "param": "cable"
         }
       ]
     },
@@ -71283,13 +71412,17 @@
       "id": "chademo-connector",
       "kit": "ev-charging-infrastructure",
       "title": "CHAdeMO connector",
-      "description": "Generic CHAdeMO plug with a rounded hand shell, broad coupling nose, and cable strain relief. Knobs: overall scale and engineering polymer and cable elastomer color controls.",
+      "description": "CHAdeMO DC fast-charging plug: fat round barrel with a ribbed coupling sleeve, large recessed face with two big DC pins in a ring of eight signal pins, long top locking lever with front latch and rear pull tab, pistol grip with trigger, strain relief and heavy cable. Material controls: barrel, grip and sleeve, lock lever and contacts, cable. fleetReady and nightService presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "CHAdeMO",
+        "DC fast charging",
+        "EV plug",
+        "charging connector",
+        "quick charger",
         "EV charging",
         "electric vehicle",
-        "charging station",
         "low poly",
         "scene prop",
         "CC0"
@@ -71304,8 +71437,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/chademo-connector.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-chademo-connector.png",
-      "sourceSha256": "c8325b9a47199b3cb840f1a799151d126a3dc87f5e09ad285e9b4e787ead8752",
-      "triangleBudget": 2400,
+      "sourceSha256": "3c085d75c743b12d18034d432cad7701b3a3191e75c5da094666d5078dcd72e0",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -71317,59 +71450,122 @@
           "step": 0.05
         },
         {
-          "name": "engineeringPolymer",
+          "name": "barrel",
           "type": "color",
-          "default": "#657f84",
-          "label": "Engineering polymer"
+          "default": "#d9dcda",
+          "label": "Barrel shell (engineering polymer)"
         },
         {
-          "name": "cableElastomer",
+          "name": "grip",
           "type": "color",
-          "default": "#1b2427",
-          "label": "Cable elastomer"
+          "default": "#25292c",
+          "label": "Coupling sleeve, face insert and pistol grip (rubberised)"
+        },
+        {
+          "name": "lever",
+          "type": "color",
+          "default": "#e07b24",
+          "label": "Locking lever and trigger"
+        },
+        {
+          "name": "contacts",
+          "type": "color",
+          "default": "#c9a14a",
+          "label": "Contact pins (plated brass)"
+        },
+        {
+          "name": "cable",
+          "type": "color",
+          "default": "#141719",
+          "label": "Cable jacket and strain relief"
         }
       ],
       "presets": {
         "fleetReady": {
-          "engineeringPolymer": "#263a36",
-          "cableElastomer": "#1a2522"
+          "barrel": "#263a36",
+          "grip": "#141b19",
+          "lever": "#e0b31f",
+          "contacts": "#c9a14a",
+          "cable": "#1a2522"
         },
         "nightService": {
-          "engineeringPolymer": "#222d32",
-          "cableElastomer": "#111719"
+          "barrel": "#222d32",
+          "grip": "#0f1416",
+          "lever": "#5f6b70",
+          "contacts": "#a88a45",
+          "cable": "#111719"
         }
       },
       "stats": {
-        "triangles": 180,
+        "triangles": 1120,
         "sizeM": [
-          0.128,
-          0.167,
-          0.494
+          0.116,
+          0.437547,
+          0.293543
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "engineeringPolymer",
-          "color": "#657f84",
+          "name": "grip",
+          "color": "#25292c",
           "parts": [
-            "hand-grip",
-            "front-coupling",
-            "connector-nose",
-            "grip-ridge-top",
-            "lower-contact-block"
+            "coupling-sleeve",
+            "sleeve-ring-22",
+            "sleeve-ring-36",
+            "sleeve-ring-50",
+            "face-insert",
+            "barrel-band",
+            "lever-pivot",
+            "pistol-grip",
+            "trigger-guard"
           ],
-          "param": "engineeringPolymer"
+          "param": "grip"
         },
         {
-          "name": "cableElastomer",
-          "color": "#1b2427",
+          "name": "contacts",
+          "color": "#c9a14a",
+          "parts": [
+            "dc-pin--1",
+            "dc-pin-1",
+            "signal-pin-30",
+            "signal-pin-60",
+            "signal-pin-90",
+            "signal-pin-120",
+            "signal-pin-150",
+            "signal-pin-210",
+            "signal-pin-270",
+            "signal-pin-330"
+          ],
+          "param": "contacts"
+        },
+        {
+          "name": "barrel",
+          "color": "#d9dcda",
+          "parts": [
+            "barrel",
+            "lever-rail"
+          ],
+          "param": "barrel"
+        },
+        {
+          "name": "lever",
+          "color": "#e07b24",
+          "parts": [
+            "lock-lever",
+            "trigger"
+          ],
+          "param": "lever"
+        },
+        {
+          "name": "cable",
+          "color": "#141719",
           "parts": [
             "strain-relief",
-            "cable-stub"
+            "cable"
           ],
-          "param": "cableElastomer"
+          "param": "cable"
         }
       ]
     },
@@ -74521,13 +74717,18 @@
       "id": "j1772-ac-connector",
       "kit": "ev-charging-infrastructure",
       "title": "J1772 AC connector",
-      "description": "Generic J1772 AC plug with a short tapered nose, hand grip, and rear cable stub. Knobs: overall scale and engineering polymer and cable elastomer color controls.",
+      "description": "SAE J1772 (Type 1) AC charging plug: round nose with a recessed five-contact face (two AC pins, ground pin, proximity and pilot pins), pistol grip with overmoulded hand area, long latch lever with a front hook and rear thumb button, strain relief and cable tail. Material controls: housing, grip overmould, latch and contacts, cable. fleetReady and nightService presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "J1772",
+        "Type 1",
+        "SAE J1772",
+        "EV plug",
+        "charging connector",
+        "Level 2",
         "EV charging",
         "electric vehicle",
-        "charging station",
         "low poly",
         "scene prop",
         "CC0"
@@ -74542,7 +74743,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/j1772-ac-connector.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-j1772-ac-connector.png",
-      "sourceSha256": "a237c71807f37aa5c9c3e0ddef375bbd4af553794c37ca2872f19253a179f6a6",
+      "sourceSha256": "fe88193c705aa2a6591d901e24435c5f0befad460ccba50e894e473d43a749b6",
       "triangleBudget": 2400,
       "params": [
         {
@@ -74555,58 +74756,113 @@
           "step": 0.05
         },
         {
-          "name": "engineeringPolymer",
+          "name": "housing",
           "type": "color",
-          "default": "#657f84",
-          "label": "Engineering polymer"
+          "default": "#e6e8e6",
+          "label": "Nose and body shell (engineering polymer)"
         },
         {
-          "name": "cableElastomer",
+          "name": "gripOvermold",
           "type": "color",
-          "default": "#1b2427",
-          "label": "Cable elastomer"
+          "default": "#2c3236",
+          "label": "Grip overmould and face insert (soft-touch elastomer)"
+        },
+        {
+          "name": "latch",
+          "type": "color",
+          "default": "#3f7fb8",
+          "label": "Latch lever and thumb button"
+        },
+        {
+          "name": "contacts",
+          "type": "color",
+          "default": "#c9a14a",
+          "label": "Contact pins (plated brass)"
+        },
+        {
+          "name": "cable",
+          "type": "color",
+          "default": "#16191b",
+          "label": "Cable jacket and strain relief"
         }
       ],
       "presets": {
         "fleetReady": {
-          "engineeringPolymer": "#263a36",
-          "cableElastomer": "#1a2522"
+          "housing": "#263a36",
+          "gripOvermold": "#141b19",
+          "latch": "#e0b31f",
+          "contacts": "#c9a14a",
+          "cable": "#1a2522"
         },
         "nightService": {
-          "engineeringPolymer": "#222d32",
-          "cableElastomer": "#111719"
+          "housing": "#222d32",
+          "gripOvermold": "#0f1416",
+          "latch": "#5f6b70",
+          "contacts": "#a88a45",
+          "cable": "#111719"
         }
       },
       "stats": {
-        "triangles": 168,
+        "triangles": 524,
         "sizeM": [
-          0.098,
-          0.143,
-          0.444
+          0.074,
+          0.320326,
+          0.275726
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "engineeringPolymer",
-          "color": "#657f84",
+          "name": "housing",
+          "color": "#e6e8e6",
           "parts": [
-            "hand-grip",
-            "front-coupling",
-            "connector-nose",
-            "grip-ridge-top"
+            "nose",
+            "nose-key",
+            "body",
+            "latch-guard"
           ],
-          "param": "engineeringPolymer"
+          "param": "housing"
         },
         {
-          "name": "cableElastomer",
-          "color": "#1b2427",
+          "name": "gripOvermold",
+          "color": "#2c3236",
+          "parts": [
+            "face-insert",
+            "grip-panel--1",
+            "grip-panel-1"
+          ],
+          "param": "gripOvermold"
+        },
+        {
+          "name": "contacts",
+          "color": "#c9a14a",
+          "parts": [
+            "contact-0",
+            "contact-1",
+            "contact-2",
+            "contact-3",
+            "contact-4"
+          ],
+          "param": "contacts"
+        },
+        {
+          "name": "latch",
+          "color": "#3f7fb8",
+          "parts": [
+            "latch-lever",
+            "thumb-button"
+          ],
+          "param": "latch"
+        },
+        {
+          "name": "cable",
+          "color": "#16191b",
           "parts": [
             "strain-relief",
-            "cable-stub"
+            "cable"
           ],
-          "param": "cableElastomer"
+          "param": "cable"
         }
       ]
     },
@@ -74974,13 +75230,18 @@
       "id": "nacs-connector",
       "kit": "ev-charging-infrastructure",
       "title": "NACS connector",
-      "description": "Compact generic NACS plug with a tapered nose, grip ribs, and flexible cable stub. Knobs: overall scale and engineering polymer and cable elastomer color controls.",
+      "description": "NACS (SAE J3400) charging plug: slim lofted wand that tapers from an oval head into a gently down-curved handle, recessed oval face with two large power pins and three small ground and signal pins, release button on top behind the head, strain relief and cable. Material controls: shell, face insert, button and contacts, cable. fleetReady and nightService presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "NACS",
+        "SAE J3400",
+        "North American Charging Standard",
+        "EV plug",
+        "charging connector",
+        "DC fast charging",
         "EV charging",
         "electric vehicle",
-        "charging station",
         "low poly",
         "scene prop",
         "CC0"
@@ -74995,7 +75256,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/ev-charging-infrastructure/nacs-connector.kcad.ts",
       "preview": "/assets/ev-charging-infrastructure-nacs-connector.png",
-      "sourceSha256": "0edc7fa342a25a3137bc5227a5a0216f5514035320884e92b3dca4e46694f629",
+      "sourceSha256": "7503fd9ff34efc5a9e1073ceccc265e7bed12d0d40b2a09b9af06eb4a659b5e3",
       "triangleBudget": 2400,
       "params": [
         {
@@ -75008,58 +75269,109 @@
           "step": 0.05
         },
         {
-          "name": "engineeringPolymer",
+          "name": "shell",
           "type": "color",
-          "default": "#657f84",
-          "label": "Engineering polymer"
+          "default": "#c9cdd0",
+          "label": "Head and handle shell (painted polymer)"
         },
         {
-          "name": "cableElastomer",
+          "name": "faceInsert",
           "type": "color",
-          "default": "#1b2427",
-          "label": "Cable elastomer"
+          "default": "#1b1f22",
+          "label": "Face insert and handle underside"
+        },
+        {
+          "name": "button",
+          "type": "color",
+          "default": "#3aa0d8",
+          "label": "Release button (lit)"
+        },
+        {
+          "name": "contacts",
+          "type": "color",
+          "default": "#c9a14a",
+          "label": "Contact pins (plated brass)"
+        },
+        {
+          "name": "cable",
+          "type": "color",
+          "default": "#1d2124",
+          "label": "Cable jacket and strain relief"
         }
       ],
       "presets": {
         "fleetReady": {
-          "engineeringPolymer": "#263a36",
-          "cableElastomer": "#1a2522"
+          "shell": "#263a36",
+          "faceInsert": "#141b19",
+          "button": "#e0b31f",
+          "contacts": "#c9a14a",
+          "cable": "#1a2522"
         },
         "nightService": {
-          "engineeringPolymer": "#222d32",
-          "cableElastomer": "#111719"
+          "shell": "#222d32",
+          "faceInsert": "#0f1416",
+          "button": "#5f6b70",
+          "contacts": "#a88a45",
+          "cable": "#111719"
         }
       },
       "stats": {
-        "triangles": 176,
+        "triangles": 964,
         "sizeM": [
-          0.084,
-          0.137,
-          0.438
+          0.048,
+          0.189254,
+          0.336033
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "engineeringPolymer",
-          "color": "#657f84",
+          "name": "shell",
+          "color": "#c9cdd0",
           "parts": [
-            "hand-grip",
-            "front-coupling",
-            "connector-nose",
-            "grip-ridge-top"
+            "shell"
           ],
-          "param": "engineeringPolymer"
+          "param": "shell"
         },
         {
-          "name": "cableElastomer",
-          "color": "#1b2427",
+          "name": "faceInsert",
+          "color": "#1b1f22",
+          "parts": [
+            "face-insert",
+            "grip-strip",
+            "button-bezel"
+          ],
+          "param": "faceInsert"
+        },
+        {
+          "name": "contacts",
+          "color": "#c9a14a",
+          "parts": [
+            "contact-0",
+            "contact-1",
+            "contact-2",
+            "contact-3",
+            "contact-4"
+          ],
+          "param": "contacts"
+        },
+        {
+          "name": "button",
+          "color": "#3aa0d8",
+          "parts": [
+            "button"
+          ],
+          "param": "button"
+        },
+        {
+          "name": "cable",
+          "color": "#1d2124",
           "parts": [
             "strain-relief",
-            "cable-stub"
+            "cable"
           ],
-          "param": "cableElastomer"
+          "param": "cable"
         }
       ]
     },
