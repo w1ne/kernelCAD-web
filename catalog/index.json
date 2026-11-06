@@ -176556,11 +176556,13 @@
       "id": "camera-tripod",
       "kit": "photo-video-studio",
       "title": "Camera tripod",
-      "description": "Three-section camera tripod with a quick-release head, center column, splayed legs and rubber feet. Knobs: overall scale and metal and rubber color controls. Presets: studioBlack and fieldRental.",
+      "description": "Three-section aluminium camera tripod: cast spider with hinged leg lugs, telescoping legs with flip-lock clamps and foam grips, rubber feet, centre column with lock collar and ballast hook, and a ball head with quick-release clamp or a pan-tilt head with pan handle. Material controls: tube metal, rubber, anodized accent. Head choice ball or pan-tilt; studioBlack and fieldRental presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "camera tripod",
+        "tripod",
+        "ball head",
         "photography",
         "video",
         "studio",
@@ -176577,8 +176579,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/camera-tripod.kcad.ts",
       "preview": "/assets/photo-video-studio-camera-tripod.png",
-      "sourceSha256": "c1034b748d1f68a9c285ff6b3aa8f1519e5a096e0fbd6c4fc65cb2342789262e",
-      "triangleBudget": 1800,
+      "sourceSha256": "c10ad0af1946c26a48bc36eec46efb234d64e8f33674ff38080f567c0f0df85d",
+      "triangleBudget": 2000,
       "params": [
         {
           "name": "scale",
@@ -176590,34 +176592,52 @@
           "step": 0.05
         },
         {
+          "name": "head",
+          "type": "choice",
+          "default": "ball",
+          "label": "Tripod head",
+          "choices": [
+            "ball",
+            "pan-tilt"
+          ]
+        },
+        {
           "name": "metal",
           "type": "color",
           "default": "#a9b5ba",
-          "label": "Metal"
+          "label": "Leg tube and casting metal"
         },
         {
           "name": "rubber",
           "type": "color",
           "default": "#1b2024",
-          "label": "Rubber"
+          "label": "Feet, grips and knobs rubber"
+        },
+        {
+          "name": "anodized",
+          "type": "color",
+          "default": "#c2412d",
+          "label": "Anodized clamps and plate"
         }
       ],
       "presets": {
         "studioBlack": {
-          "metal": "#a9b5ba",
-          "rubber": "#1b2024"
+          "metal": "#3a4045",
+          "rubber": "#1b2024",
+          "anodized": "#c2412d"
         },
         "fieldRental": {
           "metal": "#657780",
-          "rubber": "#292b2d"
+          "rubber": "#292b2d",
+          "anodized": "#3f7fc4"
         }
       },
       "stats": {
-        "triangles": 208,
+        "triangles": 1720,
         "sizeM": [
-          0.353987,
-          0.894,
-          0.36
+          0.989317,
+          1.424,
+          0.862133
         ],
         "minUpM": 0,
         "materials": 1
@@ -176627,25 +176647,68 @@
           "name": "metal",
           "color": "#a9b5ba",
           "parts": [
-            "center-column",
-            "head",
-            "quick-plate",
-            "leg-one",
-            "leg-two",
-            "leg-three",
-            "brace-one",
-            "brace-two",
-            "brace-three"
+            "spider",
+            "leg-0-hinge-lug",
+            "leg-0-upper",
+            "leg-0-middle",
+            "leg-0-lower",
+            "leg-1-hinge-lug",
+            "leg-1-upper",
+            "leg-1-middle",
+            "leg-1-lower",
+            "leg-2-hinge-lug",
+            "leg-2-upper",
+            "leg-2-middle",
+            "leg-2-lower",
+            "centre-column",
+            "ballast-hook-stem",
+            "ballast-hook",
+            "column-top-plate",
+            "ball-base",
+            "ball",
+            "ball-neck",
+            "quick-release-plate"
           ],
           "param": "metal"
+        },
+        {
+          "name": "anodized",
+          "color": "#c2412d",
+          "parts": [
+            "leg-0-hinge-pin",
+            "leg-0-lock-1",
+            "leg-0-lock-2",
+            "leg-0-lock-1-lever",
+            "leg-0-lock-2-lever",
+            "leg-1-hinge-pin",
+            "leg-1-lock-1",
+            "leg-1-lock-2",
+            "leg-1-lock-1-lever",
+            "leg-1-lock-2-lever",
+            "leg-2-hinge-pin",
+            "leg-2-lock-1",
+            "leg-2-lock-2",
+            "leg-2-lock-1-lever",
+            "leg-2-lock-2-lever",
+            "column-lock-collar",
+            "clamp-body",
+            "camera-screw"
+          ],
+          "param": "anodized"
         },
         {
           "name": "rubber",
           "color": "#1b2024",
           "parts": [
-            "foot-one",
-            "foot-two",
-            "foot-three"
+            "leg-0-foam-grip",
+            "leg-0-foot",
+            "leg-1-foam-grip",
+            "leg-1-foot",
+            "leg-2-foam-grip",
+            "leg-2-foot",
+            "column-lock-knob",
+            "ball-lock-knob",
+            "clamp-knob"
           ],
           "param": "rubber"
         }
@@ -176655,11 +176718,14 @@
       "id": "cinema-camera",
       "kit": "photo-video-studio",
       "title": "Cinema camera",
-      "description": "Box-style cinema camera with a matte box, lens rails, top handle and shoulder-mount plate. Knobs: overall scale and polymer, optical glass and metal color controls. Presets: studioBlack and fieldRental.",
+      "description": "Box-style cinema camera rig: chamfered sensor body with cooling fins, PL-mount cine prime with geared focus and iris rings, baseplate with 15 mm rods, lofted matte box with top flag and side wings, top handle with grip, offset EVF with eyecup, side operator screen and rear V-mount battery. Material controls: body polymer, grip rubber, optical glass, metal. Matte box fitted or bare lens; studioBlack and fieldRental presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "cinema camera",
+        "film camera",
+        "matte box",
+        "camera rig",
         "photography",
         "video",
         "studio",
@@ -176676,7 +176742,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/cinema-camera.kcad.ts",
       "preview": "/assets/photo-video-studio-cinema-camera.png",
-      "sourceSha256": "2158fa521839e5b5ca5054ced26d90a35b3068f057f1ed2c33925060c37a6b3d",
+      "sourceSha256": "31afeab5f80946aeea064db3cd3bb729d717f3c1d4d115afc22495c2734d3f6a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -176689,75 +176755,133 @@
           "step": 0.05
         },
         {
+          "name": "matteBox",
+          "type": "choice",
+          "default": "fitted",
+          "label": "Matte box",
+          "choices": [
+            "fitted",
+            "none"
+          ]
+        },
+        {
           "name": "polymer",
           "type": "color",
           "default": "#343c43",
-          "label": "Polymer"
+          "label": "Body, lens and matte box polymer"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1b2024",
+          "label": "Grip, eyecup and fin rubber"
         },
         {
           "name": "glass",
           "type": "color",
           "default": "#45a6c0",
-          "label": "Optical glass"
+          "label": "Lens, screen and filter glass"
         },
         {
           "name": "metal",
           "type": "color",
           "default": "#a9b5ba",
-          "label": "Metal"
+          "label": "Rods, gears, handle and plate metal"
         }
       ],
       "presets": {
         "studioBlack": {
           "polymer": "#343c43",
+          "rubber": "#1b2024",
           "glass": "#45a6c0",
           "metal": "#a9b5ba"
         },
         "fieldRental": {
           "polymer": "#c75a2e",
+          "rubber": "#292b2d",
           "glass": "#79d4e3",
           "metal": "#657780"
         }
       },
       "stats": {
-        "triangles": 192,
+        "triangles": 1466,
         "sizeM": [
-          0.375,
-          0.248,
-          0.275
+          0.237345,
+          0.201217,
+          0.570581
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
+          "name": "metal",
+          "color": "#a9b5ba",
+          "parts": [
+            "baseplate",
+            "body-riser",
+            "rod-clamp",
+            "rod-left",
+            "rod-right",
+            "menu-button-0",
+            "menu-button-1",
+            "pl-mount",
+            "focus-gear",
+            "iris-gear",
+            "filter-tray",
+            "matte-box-rod-bracket",
+            "handle-post-front",
+            "handle-post-rear",
+            "handle-bar",
+            "evf-arm",
+            "battery-plate"
+          ],
+          "param": "metal"
+        },
+        {
           "name": "polymer",
           "color": "#343c43",
           "parts": [
             "body",
+            "lens-barrel",
             "matte-box",
-            "matte-top-flag",
-            "top-handle"
+            "top-flag",
+            "side-wing-left",
+            "side-wing-right",
+            "evf-body"
           ],
           "param": "polymer"
+        },
+        {
+          "name": "rubber",
+          "color": "#1b2024",
+          "parts": [
+            "cooling-fin-0",
+            "cooling-fin-1",
+            "cooling-fin-2",
+            "cooling-fin-3",
+            "cooling-fin-4",
+            "cooling-fin-5",
+            "cooling-fin-6",
+            "side-screen-bezel",
+            "handle-grip",
+            "evf-eyecup",
+            "battery"
+          ],
+          "param": "rubber"
         },
         {
           "name": "glass",
           "color": "#45a6c0",
           "parts": [
-            "lens"
+            "side-screen",
+            "focus-scale-ring",
+            "front-element",
+            "matte-box-filter",
+            "evf-glass",
+            "battery-gauge"
           ],
           "param": "glass"
-        },
-        {
-          "name": "metal",
-          "color": "#a9b5ba",
-          "parts": [
-            "rail-left",
-            "rail-right",
-            "base-plate"
-          ],
-          "param": "metal"
         }
       ]
     },
@@ -176888,14 +177012,16 @@
       "id": "digital-slr-camera",
       "kit": "photo-video-studio",
       "title": "Digital SLR camera",
-      "description": "Interchangeable-lens DSLR with a deep grip, raised optical viewfinder, shutter dial and zoom lens. Knobs: overall scale and polymer, rubber, optical glass and metal color controls. Presets: studioBlack and fieldRental.",
+      "description": "Interchangeable-lens DSLR with a pentaprism viewfinder hump, hot shoe and eyecup, deep rubber grip with shutter button and command dial, mode dial and top LCD, bayonet mount and a revolved lens with ribbed zoom and focus rings. Material controls: body polymer, grip rubber, optical glass, metal. Lens choice kit zoom or 50 mm prime; studioBlack and fieldRental presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "digital slr camera",
+        "dslr",
         "photography",
         "video",
         "studio",
+        "camera",
         "low poly",
         "CC0"
       ],
@@ -176909,8 +177035,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/digital-slr-camera.kcad.ts",
       "preview": "/assets/photo-video-studio-digital-slr-camera.png",
-      "sourceSha256": "b177d573c9075c49438524c07cfe91c8d420d8c0a037f7d8ee67fce334701200",
-      "triangleBudget": 1800,
+      "sourceSha256": "9a2b560e514e55575e1d7408ab48169d741118f5c63cace6b9de2ab8a5399963",
+      "triangleBudget": 2000,
       "params": [
         {
           "name": "scale",
@@ -176922,28 +177048,38 @@
           "step": 0.05
         },
         {
+          "name": "lens",
+          "type": "choice",
+          "default": "kit-zoom",
+          "label": "Mounted lens",
+          "choices": [
+            "kit-zoom",
+            "prime-50"
+          ]
+        },
+        {
           "name": "polymer",
           "type": "color",
           "default": "#343c43",
-          "label": "Polymer"
+          "label": "Body and lens barrel polymer"
         },
         {
           "name": "rubber",
           "type": "color",
           "default": "#1b2024",
-          "label": "Rubber"
+          "label": "Grip, rings and eyecup rubber"
         },
         {
           "name": "glass",
           "type": "color",
           "default": "#45a6c0",
-          "label": "Optical glass"
+          "label": "Lens element and screen glass"
         },
         {
           "name": "metal",
           "type": "color",
           "default": "#a9b5ba",
-          "label": "Metal"
+          "label": "Mount, hot shoe and dial metal"
         }
       ],
       "presets": {
@@ -176961,11 +177097,11 @@
         }
       },
       "stats": {
-        "triangles": 224,
+        "triangles": 1732,
         "sizeM": [
-          0.271,
-          0.241,
-          0.241
+          0.146,
+          0.111,
+          0.166
         ],
         "minUpM": 0,
         "materials": 1
@@ -176976,7 +177112,11 @@
           "color": "#343c43",
           "parts": [
             "body",
-            "prism-hump"
+            "prism-hump",
+            "mode-dial-cap",
+            "front-command-dial",
+            "rear-command-dial",
+            "lens-barrel"
           ],
           "param": "polymer"
         },
@@ -176984,28 +177124,46 @@
           "name": "rubber",
           "color": "#1b2024",
           "parts": [
-            "grip"
+            "grip",
+            "grip-back-pad",
+            "eyepiece",
+            "eyecup",
+            "mirror-box",
+            "rear-screen-bezel",
+            "rear-thumb-pad",
+            "zoom-ring",
+            "focus-ring"
           ],
           "param": "rubber"
-        },
-        {
-          "name": "glass",
-          "color": "#45a6c0",
-          "parts": [
-            "viewfinder",
-            "lens-face"
-          ],
-          "param": "glass"
         },
         {
           "name": "metal",
           "color": "#a9b5ba",
           "parts": [
-            "lens-barrel",
-            "lens-ring",
-            "top-dial"
+            "hot-shoe",
+            "hot-shoe-rails",
+            "mode-dial",
+            "shutter-collar",
+            "shutter-button",
+            "mount-ring",
+            "lens-release",
+            "strap-lug-left",
+            "strap-lug-right",
+            "multi-controller",
+            "lens-index-band"
           ],
           "param": "metal"
+        },
+        {
+          "name": "glass",
+          "color": "#45a6c0",
+          "parts": [
+            "viewfinder-glass",
+            "top-lcd",
+            "rear-screen",
+            "front-element"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -179122,11 +179280,15 @@
       "id": "softbox-light",
       "kit": "photo-video-studio",
       "title": "Softbox light",
-      "description": "Square softbox with a broad front diffuser, tapered fabric body, rear mount and light stand. Knobs: overall scale and diffuser fabric, studio fabric, metal and rubber color controls. Presets: studioBlack and fieldRental.",
+      "description": "Studio softbox on a monolight: tapered fabric shell lofted from the speedring to a wide front, recessed white diffuser in a black rim, strobe head with control panel and grille, tilting umbrella bracket with lever, and a braced three-leg light stand with telescoping column and lock knobs. Material controls: diffuser fabric, shell fabric, metal, rubber. Shape choice rectangle, octabox or strip; studioBlack and fieldRental presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "softbox light",
+        "softbox",
+        "strobe",
+        "monolight",
+        "light stand",
         "photography",
         "video",
         "studio",
@@ -179143,8 +179305,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/softbox-light.kcad.ts",
       "preview": "/assets/photo-video-studio-softbox-light.png",
-      "sourceSha256": "55e5734f21658a8c89c81761c2c684133b95d01bd33fd7dccb6b6c717ce2706c",
-      "triangleBudget": 1800,
+      "sourceSha256": "fb748d88f762619ea9fd0a6326c2a78230e5d93b289b78f4f99de6fcb0efada9",
+      "triangleBudget": 1500,
       "params": [
         {
           "name": "scale",
@@ -179156,80 +179318,104 @@
           "step": 0.05
         },
         {
+          "name": "shape",
+          "type": "choice",
+          "default": "rectangle",
+          "label": "Softbox shape",
+          "choices": [
+            "rectangle",
+            "octabox",
+            "strip"
+          ]
+        },
+        {
           "name": "diffusionFabric",
           "type": "color",
           "default": "#fff7e8",
-          "label": "Diffuser fabric"
+          "label": "Front diffuser fabric"
         },
         {
           "name": "fabric",
           "type": "color",
-          "default": "#e5ddce",
-          "label": "Studio fabric"
+          "default": "#2a2d31",
+          "label": "Softbox shell fabric"
         },
         {
           "name": "metal",
           "type": "color",
           "default": "#a9b5ba",
-          "label": "Metal"
+          "label": "Stand and strobe metal"
         },
         {
           "name": "rubber",
           "type": "color",
           "default": "#1b2024",
-          "label": "Rubber"
+          "label": "Knobs, feet and panel rubber"
         }
       ],
       "presets": {
         "studioBlack": {
           "diffusionFabric": "#fff7e8",
-          "fabric": "#e5ddce",
+          "fabric": "#2a2d31",
           "metal": "#a9b5ba",
           "rubber": "#1b2024"
         },
         "fieldRental": {
           "diffusionFabric": "#fff0c8",
-          "fabric": "#d6b365",
+          "fabric": "#6f6a5c",
           "metal": "#657780",
           "rubber": "#292b2d"
         }
       },
       "stats": {
-        "triangles": 160,
+        "triangles": 1212,
         "sizeM": [
-          0.572718,
-          1.096597,
-          0.37
+          0.906025,
+          1.92,
+          1.064
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
+          "name": "fabric",
+          "color": "#2a2d31",
+          "parts": [
+            "softbox-shell"
+          ],
+          "param": "fabric"
+        },
+        {
           "name": "diffusionFabric",
           "color": "#fff7e8",
           "parts": [
-            "front-diffuser"
+            "front-diffuser",
+            "strobe-display"
           ],
           "param": "diffusionFabric"
-        },
-        {
-          "name": "fabric",
-          "color": "#e5ddce",
-          "parts": [
-            "side-left",
-            "side-right",
-            "top-side",
-            "bottom-side"
-          ],
-          "param": "fabric"
         },
         {
           "name": "metal",
           "color": "#a9b5ba",
           "parts": [
-            "rear-mount",
-            "stand-pole"
+            "speedring",
+            "strobe-body",
+            "bracket-yoke",
+            "bracket-tilt-hub",
+            "bracket-lever",
+            "bracket-socket",
+            "column-lower",
+            "column-middle",
+            "column-upper",
+            "leg-collar",
+            "brace-collar",
+            "leg-0",
+            "brace-0",
+            "leg-1",
+            "brace-1",
+            "leg-2",
+            "brace-2"
           ],
           "param": "metal"
         },
@@ -179237,7 +179423,18 @@
           "name": "rubber",
           "color": "#1b2024",
           "parts": [
-            "stand-base"
+            "strobe-grille",
+            "strobe-rear-panel",
+            "strobe-handle",
+            "bracket-lever-grip",
+            "column-collar-0",
+            "column-lock-knob-0",
+            "column-collar-1",
+            "column-lock-knob-1",
+            "brace-collar-knob",
+            "foot-0",
+            "foot-1",
+            "foot-2"
           ],
           "param": "rubber"
         }
@@ -179371,14 +179568,17 @@
       "id": "telephoto-lens",
       "kit": "photo-video-studio",
       "title": "Telephoto lens",
-      "description": "Long telephoto zoom lens with a tripod collar, broad hood rim and stepped focus bands. Knobs: overall scale and metal, rubber and optical glass color controls. Presets: studioBlack and fieldRental.",
+      "description": "Long telephoto zoom lens resting on its tripod collar foot: flared enamel barrel, ribbed zoom and focus rings, rotating collar with lock knob, AF/IS switch panel, bayonet mount, recessed front element and a deep hood. Material controls: barrel enamel, collar and mount metal, ring rubber, optical glass. Hood fitted, reversed or removed; studioBlack and fieldRental presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "telephoto lens",
+        "zoom lens",
         "photography",
         "video",
         "studio",
+        "wildlife",
+        "sport",
         "low poly",
         "CC0"
       ],
@@ -179392,7 +179592,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/telephoto-lens.kcad.ts",
       "preview": "/assets/photo-video-studio-telephoto-lens.png",
-      "sourceSha256": "ac4848fec00cd390471a4117ed7cedf116ee997bb306ddc9ab82b630e96b73b7",
+      "sourceSha256": "cd08b718544e4d978beeb07aa30c53c2be244402de64c80fe52bb26e178d7f7c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -179405,16 +179605,33 @@
           "step": 0.05
         },
         {
+          "name": "hood",
+          "type": "choice",
+          "default": "fitted",
+          "label": "Lens hood",
+          "choices": [
+            "fitted",
+            "reversed",
+            "none"
+          ]
+        },
+        {
+          "name": "enamel",
+          "type": "color",
+          "default": "#e4e1d8",
+          "label": "Barrel enamel"
+        },
+        {
           "name": "metal",
           "type": "color",
           "default": "#a9b5ba",
-          "label": "Metal"
+          "label": "Collar and mount metal"
         },
         {
           "name": "rubber",
           "type": "color",
           "default": "#1b2024",
-          "label": "Rubber"
+          "label": "Ring, hood and switch rubber"
         },
         {
           "name": "glass",
@@ -179425,22 +179642,24 @@
       ],
       "presets": {
         "studioBlack": {
+          "enamel": "#2e3337",
           "metal": "#a9b5ba",
           "rubber": "#1b2024",
           "glass": "#45a6c0"
         },
         "fieldRental": {
+          "enamel": "#c9c4a8",
           "metal": "#657780",
           "rubber": "#292b2d",
           "glass": "#79d4e3"
         }
       },
       "stats": {
-        "triangles": 320,
+        "triangles": 1414,
         "sizeM": [
-          0.134,
-          0.274,
-          0.134
+          0.308,
+          0.163,
+          0.142
         ],
         "minUpM": 0,
         "materials": 1
@@ -179450,20 +179669,39 @@
           "name": "metal",
           "color": "#a9b5ba",
           "parts": [
-            "main-barrel",
-            "mount",
-            "front-rim",
-            "collar",
-            "collar-foot"
+            "bayonet-mount",
+            "rear-contacts",
+            "collar-ring",
+            "collar-lock-knob",
+            "collar-pillar",
+            "foot-plate",
+            "switch-0",
+            "switch-1",
+            "switch-2",
+            "hood-bayonet-band",
+            "hood-lock"
           ],
           "param": "metal"
+        },
+        {
+          "name": "enamel",
+          "color": "#e4e1d8",
+          "parts": [
+            "rear-barrel",
+            "mid-barrel",
+            "front-barrel"
+          ],
+          "param": "enamel"
         },
         {
           "name": "rubber",
           "color": "#1b2024",
           "parts": [
-            "zoom-band",
-            "focus-band"
+            "zoom-ring",
+            "foot-pad",
+            "switch-panel",
+            "focus-ring",
+            "hood"
           ],
           "param": "rubber"
         },
@@ -179471,7 +179709,7 @@
           "name": "glass",
           "color": "#45a6c0",
           "parts": [
-            "front-glass"
+            "front-element"
           ],
           "param": "glass"
         }
