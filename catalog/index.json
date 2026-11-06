@@ -171759,8 +171759,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/office/scissors.kcad.ts",
       "preview": "/assets/office-scissors.png",
-      "sourceSha256": "86e69299570ea238c5096bee287aca369758364c5eed307e6e4faba7bce74694",
-      "triangleBudget": 280,
+      "sourceSha256": "7ba93a1efb5a6a335f26f4c39d8e7109ebd8dc5f20b20112b08d64ae0b28fd35",
+      "triangleBudget": 360,
       "params": [
         {
           "name": "stainlessSteel",
@@ -171804,7 +171804,7 @@
         }
       },
       "stats": {
-        "triangles": 260,
+        "triangles": 316,
         "sizeM": [
           0.19,
           0.009,
@@ -171827,6 +171827,8 @@
           "name": "polymer",
           "color": "#c95045",
           "parts": [
+            "lower-handle-tang",
+            "upper-handle-tang",
             "thumb-loop",
             "finger-loop"
           ],

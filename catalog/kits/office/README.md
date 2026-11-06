@@ -56,6 +56,11 @@ records the material mapping, before/after previews, source-driven preset
 renders, regenerated index, local checks, and inspected MP4. All 40 existing
 IDs were retained.
 
+The [scissors visual follow-up](../../../artifacts/catalog-demos/office-scissors-detail-20261106/README.md)
+repairs the default catalog view by joining each polymer finger loop to the
+brass pivot with a tapered handle tang. It retains the existing stainless-steel,
+polymer, and brass controls and both named palettes.
+
 ## Licence and provenance
 
 Every asset in this kit is dedicated to the public domain under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). The models are authored from scratch as parametric kernelCAD source; no downloaded, traced, converted or decimated mesh, texture or palette is included.

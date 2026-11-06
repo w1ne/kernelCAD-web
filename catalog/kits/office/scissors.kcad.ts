@@ -10,7 +10,7 @@ meta({
   category: 'item',
   origin: 'base',
   compat: ['office', 'interior', 'desktop'],
-  triangleBudget: 280,
+  triangleBudget: 360,
 });
 
 const stainlessSteel = param('stainlessSteel', '#aeb7ba', { label: 'Stainless steel' });
@@ -28,10 +28,21 @@ const office = assembly('scissors');
 
 const blade = (name: string, outline: [number, number][], z: number) =>
   office.part(name, extrudePolygon(outline, 3 * k).translate(0, 0, z * k).color(stainlessSteel));
+const handleTang = (name: string, side: 1 | -1, z: number) => {
+  const outline: [number, number][] = side === 1
+    ? [[24, -2], [42, 5], [51, 10], [58, 16], [55, 23], [49, 19], [42, 13], [26, 2]]
+    : [[24, 2], [42, -5], [51, -10], [58, -16], [55, -23], [49, -19], [42, -13], [26, -2]];
+  office.part(name, extrudePolygon(outline, 4 * k).translate(0, 0, z * k).color(polymer));
+};
 
 // The two blades open into a shallow V, with both finger loops behind the pivot.
 blade('lower-blade', [[27, -2], [-106, -31], [-85, -19], [27, 2]], 0);
 blade('upper-blade', [[27, 2], [-106, 31], [-85, 19], [27, -2]], 3);
+
+// Molded handle tangs bridge each finger loop back to the pivot, so the preview
+// reads as one usable pair of shears instead of disconnected rings and blades.
+handleTang('lower-handle-tang', -1, 0);
+handleTang('upper-handle-tang', 1, 4);
 
 const fingerLoop = (x: number, y: number) =>
   cylinder(8 * k, 19 * k).subtract(cylinder(10 * k, 11 * k)).translate(x * k, y * k, 0);

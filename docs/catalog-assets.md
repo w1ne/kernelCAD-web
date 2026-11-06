@@ -8,7 +8,15 @@ from those sources and must be rebuilt in the same change.
 
 The catalog quality gate reports **2,390/2,390 assets passing (100.00%)**
 across 49 rich kits, with no failing assets. The latest visual follow-up
-refined three existing `standard-components` defaults whose previews still read
+repaired the existing `office/scissors` default view by adding two polymer
+handle tangs between the finger loops and brass pivot. Its stainless-steel,
+polymer, and brass controls and `professional` / `classroom` presets remain;
+the model is 316 triangles under its 360-triangle budget. The [scissors
+detail handoff](../artifacts/catalog-demos/office-scissors-detail-20261106/README.md)
+records the before/after preview, preset variants, rebuilt index, generated
+local page checks and inspected MP4. The branch is not deployed; no live-site or
+physical acceptance is claimed. The preceding `standard-components` visual
+follow-up refined three existing defaults whose previews still read
 as primitives: the timing pulley now has a radial tooth crown, flange bolts
 and a keyed bore; the hinge now has upright leaves with alternating knuckles
 and visible mounting hardware; and the terminal block now shows copper cages,

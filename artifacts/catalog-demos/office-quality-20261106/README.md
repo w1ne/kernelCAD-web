@@ -17,10 +17,12 @@ acceptance.
 - Refreshed **80 named preset entries** as `professional` and `classroom`
   palettes, while preserving format and item-specific controls such as pages,
   shelves, rings, and tiers.
-- Improved key silhouettes: scissors now have two finger loops behind a brass
-  pivot and open tapered blades; the shredder has visible front casters; and
-  the laminator has exposed feed rollers. The other models retain their named
-  object parts such as clips, slots, trays, rails, handles, labels, and supports.
+- Improved key silhouettes: scissors have two finger loops behind a brass
+  pivot and open tapered blades; the [scissors detail follow-up](../office-scissors-detail-20261106/README.md)
+  connects the handles to that pivot. The shredder has visible front casters,
+  and the laminator has exposed feed rollers. The other models retain their
+  named object parts such as clips, slots, trays, rails, handles, labels, and
+  supports.
 - Re-rendered **40/40 office previews** and rebuilt `catalog/index.json`. The
   verification record checks every source SHA-256, indexed preview path,
   generated preview file, and triangle count against its budget.
