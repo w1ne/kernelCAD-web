@@ -1,0 +1,55 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/solar-energy-quality-20261106/render_solar_presets.ts",
+  "exporter": "runAndExport(format=\"glb\", options={ format: \"glb\", style: \"lowpoly\", lowpoly: { maxTriangles: 1800 } })",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "variants": [
+    {
+      "assetId": "solar-battery-container",
+      "preset": "fieldService",
+      "values": {
+        "powderCoat": "#7a807b",
+        "stainlessSteel": "#abb5b7"
+      },
+      "source": "catalog/kits/solar-energy/solar-battery-container.kcad.ts",
+      "sourceSha256": "01ec75b4444a972b9ef47ff4c44d3d61201fad1a7508e55b05cba2a3c28de6c5",
+      "png": "preset-variants/solar-battery-container-fieldService.png"
+    },
+    {
+      "assetId": "solar-battery-container",
+      "preset": "highVisibility",
+      "values": {
+        "powderCoat": "#d1722b",
+        "stainlessSteel": "#e0e5e4"
+      },
+      "source": "catalog/kits/solar-energy/solar-battery-container.kcad.ts",
+      "sourceSha256": "01ec75b4444a972b9ef47ff4c44d3d61201fad1a7508e55b05cba2a3c28de6c5",
+      "png": "preset-variants/solar-battery-container-highVisibility.png"
+    },
+    {
+      "assetId": "single-axis-solar-tracker",
+      "preset": "fieldService",
+      "values": {
+        "aluminum": "#a9b5b9",
+        "solarGlass": "#1e4668",
+        "galvanizedSteel": "#68787b",
+        "cellBusbar": "#e4e5df"
+      },
+      "source": "catalog/kits/solar-energy/single-axis-solar-tracker.kcad.ts",
+      "sourceSha256": "bbe68991cca49d7b9dd9efec7a377391d7fb9b444fd843d120068b5b22355d95",
+      "png": "preset-variants/single-axis-solar-tracker-fieldService.png"
+    },
+    {
+      "assetId": "single-axis-solar-tracker",
+      "preset": "highVisibility",
+      "values": {
+        "aluminum": "#d4dcdf",
+        "solarGlass": "#183a5b",
+        "galvanizedSteel": "#536367",
+        "cellBusbar": "#f2f2e9"
+      },
+      "source": "catalog/kits/solar-energy/single-axis-solar-tracker.kcad.ts",
+      "sourceSha256": "bbe68991cca49d7b9dd9efec7a377391d7fb9b444fd843d120068b5b22355d95",
+      "png": "preset-variants/single-axis-solar-tracker-highVisibility.png"
+    }
+  ]
+}

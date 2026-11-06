@@ -6,11 +6,13 @@ from those sources and must be rebuilt in the same change.
 
 ## Catalog quality snapshot (2026-11-06)
 
-The catalog quality gate reports **2,291/2,390 assets passing (95.9%)** with
-99 thin assets remaining. The latest round promoted all 40 existing
-photo/video-studio assets, increasing the workspace result from 2,251/2,390
-(94.2%); no IDs or kits were added. The [photo/video studio quality handoff](../artifacts/catalog-demos/photo-video-studio-quality-20261106/README.md)
+The catalog quality gate reports **2,331/2,390 assets passing (97.5%)** with
+59 thin assets remaining. The latest round promoted all 40 existing
+solar-energy assets, increasing the workspace result from 2,291/2,390 (95.9%);
+no IDs or kits were added. The [solar-energy quality handoff](../artifacts/catalog-demos/solar-energy-quality-20261106/README.md)
 records its source, preview, index, local-page, lint and integration evidence.
+The [photo/video studio quality handoff](../artifacts/catalog-demos/photo-video-studio-quality-20261106/README.md)
+records the previous round.
 The [music quality handoff](../artifacts/catalog-demos/music-quality-20261106/README.md)
 records the preceding round.
 See the [Apiary quality handoff](../artifacts/catalog-demos/apiary-quality-promotion-20261105/README.md),
@@ -25,6 +27,21 @@ See the [Apiary quality handoff](../artifacts/catalog-demos/apiary-quality-promo
 and [airfield handoff](../artifacts/catalog-demos/airfield-quality-promotion-20261105/README.md)
 for source, preview, index, and verification evidence. These are local catalog
 checks and do not represent deployed behavior.
+
+## Solar energy assets
+
+The [solar-energy kit](../catalog/kits/solar-energy/README.md) retains 40
+existing CC0 props for PV modules, mounting and tracking, power conversion,
+storage, and service. The round added 130 material-named controls and 80 named
+preset entries, and refreshed all 40 indexed previews. The tilted tracker now
+shows eight framed modules with cell divisions; the cleaner robot has visible
+idler wheels; the battery container separates paired access panels, vents,
+corrugation, and end-mounted cooling housings. The [quality handoff](../artifacts/catalog-demos/solar-energy-quality-20261106/README.md)
+contains the per-part material map, source hashes, preview and index checks,
+local page evidence, lint and integration results, and the inspected MP4. These
+are visualization assets; no electrical performance, installation suitability,
+manufacturing suitability, deployed behavior, or hardware acceptance is
+claimed.
 
 ## Music assets
 

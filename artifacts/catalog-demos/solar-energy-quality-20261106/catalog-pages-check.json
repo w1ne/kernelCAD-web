@@ -1,0 +1,289 @@
+{
+  "date": "2026-11-06",
+  "output": "/tmp/kernelcad-solar-pages-20261106",
+  "checkedAssets": 40,
+  "allHaveTitlePreviewAndMaterialControls": true,
+  "assets": [
+    {
+      "id": "ac-disconnect-switch",
+      "path": "catalog/solar-energy/ac-disconnect-switch/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "balcony-solar-panel",
+      "path": "catalog/solar-energy/balcony-solar-panel/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "battery-cabinet",
+      "path": "catalog/solar-energy/battery-cabinet/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "battery-rack",
+      "path": "catalog/solar-energy/battery-rack/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "bifacial-pv-module",
+      "path": "catalog/solar-energy/bifacial-pv-module/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "dc-disconnect-switch",
+      "path": "catalog/solar-energy/dc-disconnect-switch/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "flexible-solar-panel",
+      "path": "catalog/solar-energy/flexible-solar-panel/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "floating-solar-platform",
+      "path": "catalog/solar-energy/floating-solar-platform/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "ground-mount-pv-rack",
+      "path": "catalog/solar-energy/ground-mount-pv-rack/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "home-battery-wall",
+      "path": "catalog/solar-energy/home-battery-wall/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "hybrid-inverter",
+      "path": "catalog/solar-energy/hybrid-inverter/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "microinverter-unit",
+      "path": "catalog/solar-energy/microinverter-unit/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "pad-mount-transformer",
+      "path": "catalog/solar-energy/pad-mount-transformer/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "plane-of-array-irradiance-sensor",
+      "path": "catalog/solar-energy/plane-of-array-irradiance-sensor/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "pole-mount-transformer",
+      "path": "catalog/solar-energy/pole-mount-transformer/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "pv-ballast-block",
+      "path": "catalog/solar-energy/pv-ballast-block/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "pv-cable-tray",
+      "path": "catalog/solar-energy/pv-cable-tray/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "pv-combiner-box",
+      "path": "catalog/solar-energy/pv-combiner-box/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "pv-junction-box",
+      "path": "catalog/solar-energy/pv-junction-box/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "pv-module-microinverter",
+      "path": "catalog/solar-energy/pv-module-microinverter/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "pv-module-transport-cart",
+      "path": "catalog/solar-energy/pv-module-transport-cart/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "pv-panel-cleaning-robot",
+      "path": "catalog/solar-energy/pv-panel-cleaning-robot/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "roof-flashing-mount",
+      "path": "catalog/solar-energy/roof-flashing-mount/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "rooftop-pv-array",
+      "path": "catalog/solar-energy/rooftop-pv-array/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "rooftop-pv-module",
+      "path": "catalog/solar-energy/rooftop-pv-module/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "single-axis-solar-tracker",
+      "path": "catalog/solar-energy/single-axis-solar-tracker/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "solar-battery-container",
+      "path": "catalog/solar-energy/solar-battery-container/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "solar-carport-canopy",
+      "path": "catalog/solar-energy/solar-carport-canopy/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "solar-charge-controller",
+      "path": "catalog/solar-energy/solar-charge-controller/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "solar-data-logger",
+      "path": "catalog/solar-energy/solar-data-logger/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "solar-electric-meter",
+      "path": "catalog/solar-energy/solar-electric-meter/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "solar-main-panel",
+      "path": "catalog/solar-energy/solar-main-panel/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "solar-panel-end-clamp",
+      "path": "catalog/solar-energy/solar-panel-end-clamp/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "solar-panel-wash-cart",
+      "path": "catalog/solar-energy/solar-panel-wash-cart/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "solar-pergola-canopy",
+      "path": "catalog/solar-energy/solar-pergola-canopy/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "solar-roof-section",
+      "path": "catalog/solar-energy/solar-roof-section/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "solar-weather-station",
+      "path": "catalog/solar-energy/solar-weather-station/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "solar-wind-sensor-mast",
+      "path": "catalog/solar-energy/solar-wind-sensor-mast/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "string-inverter",
+      "path": "catalog/solar-energy/string-inverter/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    },
+    {
+      "id": "utility-inverter-station",
+      "path": "catalog/solar-energy/utility-inverter-station/index.html",
+      "htmlExists": true,
+      "previewExists": true,
+      "materialControlsVisible": true
+    }
+  ],
+  "limits": "Local generated pages only; no deployed page was changed or verified."
+}

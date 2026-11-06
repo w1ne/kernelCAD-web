@@ -222605,7 +222605,7 @@
       "id": "ac-disconnect-switch",
       "kit": "solar-energy",
       "title": "AC disconnect switch",
-      "description": "Utility-side isolation enclosure with external lever, cover seam and conduit stubs.",
+      "description": "Utility-side isolation enclosure with external lever, cover seam and conduit stubs. Material controls: stainless steel, powder-coated steel, safety paint, rubber.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -222626,7 +222626,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/ac-disconnect-switch.kcad.ts",
       "preview": "/assets/solar-energy-ac-disconnect-switch.png",
-      "sourceSha256": "050b3934349680315fc860d6c29033768b4b3256a6061e10a200c8505dee6ed5",
+      "sourceSha256": "7baf858ffd9b2b33919fb3bb766ea8489ae7b0a3c377584a2ebfd148c9c05039",
       "triangleBudget": 1800,
       "params": [
         {
@@ -222639,13 +222639,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#9d7145",
-          "label": "Asset color"
+          "default": "#c3caca",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#687c7c",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "warningPaint",
+          "type": "color",
+          "default": "#e5a032",
+          "label": "Safety paint"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#262c2e",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "stainlessSteel": "#abb5b7",
+          "powderCoat": "#7a807b",
+          "warningPaint": "#e79a2e",
+          "rubber": "#282d2e"
+        },
+        "highVisibility": {
+          "stainlessSteel": "#e0e5e4",
+          "powderCoat": "#d1722b",
+          "warningPaint": "#f1b431",
+          "rubber": "#232728"
+        }
+      },
       "stats": {
         "triangles": 216,
         "sizeM": [
@@ -222658,21 +222689,42 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#9d7145",
+          "name": "stainlessSteel",
+          "color": "#c3caca",
           "parts": [
             "disconnect-plinth",
-            "disconnect-body",
-            "disconnect-door-1",
             "disconnect-handle-1",
             "disconnect-vent-1",
             "disconnect-vent-2",
-            "disconnect-handle-base",
-            "disconnect-lever",
+            "disconnect-handle-base"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#687c7c",
+          "parts": [
+            "disconnect-body",
+            "disconnect-door-1"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "warningPaint",
+          "color": "#e5a032",
+          "parts": [
+            "disconnect-lever"
+          ],
+          "param": "warningPaint"
+        },
+        {
+          "name": "rubber",
+          "color": "#262c2e",
+          "parts": [
             "conduit-0",
             "conduit-1"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -222680,7 +222732,7 @@
       "id": "balcony-solar-panel",
       "kit": "solar-energy",
       "title": "Balcony solar panel",
-      "description": "Compact PV panel attached to a freestanding balcony rail and support brackets.",
+      "description": "Compact PV panel attached to a freestanding balcony rail and support brackets. Material controls: concrete, galvanized steel, frame aluminum, solar glass.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -222701,7 +222753,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/balcony-solar-panel.kcad.ts",
       "preview": "/assets/solar-energy-balcony-solar-panel.png",
-      "sourceSha256": "69b6a42bbfc4f884750f5438a04ce7cbf2607416cad4cbc7fe30749ed5460b66",
+      "sourceSha256": "7912f57ff90744f790eba19ffe64ad0ba53b4270b62945a33b4bce68543db0e5",
       "triangleBudget": 1800,
       "params": [
         {
@@ -222714,13 +222766,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "concrete",
           "type": "color",
-          "default": "#65808b",
-          "label": "Asset color"
+          "default": "#99968d",
+          "label": "Concrete"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#748184",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b7c1c4",
+          "label": "Frame aluminum"
+        },
+        {
+          "name": "solarGlass",
+          "type": "color",
+          "default": "#244a68",
+          "label": "Solar glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "concrete": "#8b8982",
+          "galvanizedSteel": "#68787b",
+          "aluminum": "#a9b5b9",
+          "solarGlass": "#1e4668"
+        },
+        "highVisibility": {
+          "concrete": "#77766f",
+          "galvanizedSteel": "#536367",
+          "aluminum": "#d4dcdf",
+          "solarGlass": "#183a5b"
+        }
+      },
       "stats": {
         "triangles": 132,
         "sizeM": [
@@ -222733,22 +222816,43 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#65808b",
+          "name": "concrete",
+          "color": "#99968d",
           "parts": [
-            "balcony-floor",
+            "balcony-floor"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#748184",
+          "parts": [
             "balcony-post-0",
             "balcony-post-1",
             "balcony-post-2",
             "balcony-post-3",
             "balcony-post-4",
             "balcony-top-rail",
-            "balcony-module-frame",
-            "balcony-module-surface",
             "balcony-bracket-0",
             "balcony-bracket-1"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b7c1c4",
+          "parts": [
+            "balcony-module-frame"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "solarGlass",
+          "color": "#244a68",
+          "parts": [
+            "balcony-module-surface"
+          ],
+          "param": "solarGlass"
         }
       ]
     },
@@ -222756,7 +222860,7 @@
       "id": "battery-cabinet",
       "kit": "solar-energy",
       "title": "Battery cabinet",
-      "description": "Floor-standing storage enclosure with double doors, vents and lower service panel.",
+      "description": "Floor-standing storage enclosure with double doors, vents and lower service panel. Material controls: stainless steel, powder-coated steel, safety paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -222777,7 +222881,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/battery-cabinet.kcad.ts",
       "preview": "/assets/solar-energy-battery-cabinet.png",
-      "sourceSha256": "26845d5bd1c346490b459a690de35da6c07208d3c2269e78b52eb25580406e26",
+      "sourceSha256": "885d9f8a4873d02a7b0051d18e89185733443d84f716cd60543ef33c7faa067d",
       "triangleBudget": 1800,
       "params": [
         {
@@ -222790,13 +222894,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#737d7c",
-          "label": "Asset color"
+          "default": "#c3caca",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#687c7c",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "warningPaint",
+          "type": "color",
+          "default": "#e5a032",
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "stainlessSteel": "#abb5b7",
+          "powderCoat": "#7a807b",
+          "warningPaint": "#e79a2e"
+        },
+        "highVisibility": {
+          "stainlessSteel": "#e0e5e4",
+          "powderCoat": "#d1722b",
+          "warningPaint": "#f1b431"
+        }
+      },
       "stats": {
         "triangles": 156,
         "sizeM": [
@@ -222809,24 +222936,38 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#737d7c",
+          "name": "stainlessSteel",
+          "color": "#c3caca",
           "parts": [
             "battery-cabinet-plinth",
-            "battery-cabinet-body",
-            "battery-cabinet-door-1",
             "battery-cabinet-handle-1",
-            "battery-cabinet-door-2",
             "battery-cabinet-handle-2",
             "battery-cabinet-vent-1",
             "battery-cabinet-vent-2",
             "battery-cabinet-vent-3",
             "battery-cabinet-vent-4",
             "battery-cabinet-vent-5",
-            "battery-cabinet-vent-6",
+            "battery-cabinet-vent-6"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#687c7c",
+          "parts": [
+            "battery-cabinet-body",
+            "battery-cabinet-door-1",
+            "battery-cabinet-door-2"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "warningPaint",
+          "color": "#e5a032",
+          "parts": [
             "service-label-plate"
           ],
-          "param": "color"
+          "param": "warningPaint"
         }
       ]
     },
@@ -222834,7 +222975,7 @@
       "id": "battery-rack",
       "kit": "solar-energy",
       "title": "Battery rack",
-      "description": "Open four-level equipment rack carrying six modular storage blocks.",
+      "description": "Open four-level equipment rack carrying six modular storage blocks. Material controls: galvanized steel, battery polymer.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -222855,7 +222996,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/battery-rack.kcad.ts",
       "preview": "/assets/solar-energy-battery-rack.png",
-      "sourceSha256": "cc3622fc55e7a868a62b2f13833b21252d0fd0a06e6a93c7c0ed8c2c00aaa012",
+      "sourceSha256": "1d5ca7dc25066e62487373f9591730e88fd1a7339c9050680eef2697ffbaadfd",
       "triangleBudget": 1800,
       "params": [
         {
@@ -222868,13 +223009,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#6d797a",
-          "label": "Asset color"
+          "default": "#748184",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "batteryPolymer",
+          "type": "color",
+          "default": "#3b5d65",
+          "label": "Battery polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "galvanizedSteel": "#68787b",
+          "batteryPolymer": "#354b51"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#536367",
+          "batteryPolymer": "#34745f"
+        }
+      },
       "stats": {
         "triangles": 168,
         "sizeM": [
@@ -222887,25 +223043,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6d797a",
+          "name": "galvanizedSteel",
+          "color": "#748184",
           "parts": [
             "rack-upright--369-6",
             "rack-upright-369-6",
             "rack-shelf-0",
+            "rack-shelf-1",
+            "rack-shelf-2",
+            "rack-shelf-3"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "batteryPolymer",
+          "color": "#3b5d65",
+          "parts": [
             "battery-0-0",
             "battery-0-1",
-            "rack-shelf-1",
             "battery-1-0",
             "battery-1-1",
-            "rack-shelf-2",
             "battery-2-0",
             "battery-2-1",
-            "rack-shelf-3",
             "battery-3-0",
             "battery-3-1"
           ],
-          "param": "color"
+          "param": "batteryPolymer"
         }
       ]
     },
@@ -222913,7 +223076,7 @@
       "id": "bifacial-pv-module",
       "kit": "solar-energy",
       "title": "Bifacial PV module",
-      "description": "Double-sided framed module on an open stand with visible rear cross-bracing.",
+      "description": "Double-sided framed module on an open stand with visible rear cross-bracing. Material controls: frame aluminum, solar glass, pv cell busbars, galvanized steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -222934,7 +223097,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/bifacial-pv-module.kcad.ts",
       "preview": "/assets/solar-energy-bifacial-pv-module.png",
-      "sourceSha256": "540f3522b216c38e34eb4877ff4ae2aa53d1a81cd45b9d1f6fab3140422927ae",
+      "sourceSha256": "7e3e4a4edeefa1f8b6d858744483fd3c157c4b3b06bf8beaeeb226ffd25d3a80",
       "triangleBudget": 1800,
       "params": [
         {
@@ -222947,13 +223110,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminum",
           "type": "color",
-          "default": "#5d7c89",
-          "label": "Asset color"
+          "default": "#b7c1c4",
+          "label": "Frame aluminum"
+        },
+        {
+          "name": "solarGlass",
+          "type": "color",
+          "default": "#244a68",
+          "label": "Solar glass"
+        },
+        {
+          "name": "cellBusbar",
+          "type": "color",
+          "default": "#d9dedd",
+          "label": "PV cell busbars"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#748184",
+          "label": "Galvanized steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "aluminum": "#a9b5b9",
+          "solarGlass": "#1e4668",
+          "cellBusbar": "#e4e5df",
+          "galvanizedSteel": "#68787b"
+        },
+        "highVisibility": {
+          "aluminum": "#d4dcdf",
+          "solarGlass": "#183a5b",
+          "cellBusbar": "#f2f2e9",
+          "galvanizedSteel": "#536367"
+        }
+      },
       "stats": {
         "triangles": 192,
         "sizeM": [
@@ -222966,27 +223160,48 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#5d7c89",
+          "name": "aluminum",
+          "color": "#b7c1c4",
           "parts": [
             "pv-frame",
-            "pv-surface",
+            "rear-center-brace"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "solarGlass",
+          "color": "#244a68",
+          "parts": [
+            "pv-surface"
+          ],
+          "param": "solarGlass"
+        },
+        {
+          "name": "cellBusbar",
+          "color": "#d9dedd",
+          "parts": [
             "pv-cell-bar-x-0",
             "pv-cell-bar-x-1",
             "pv-cell-bar-x-2",
             "pv-cell-bar-y-0",
             "pv-cell-bar-y-1",
-            "pv-cell-bar-y-2",
+            "pv-cell-bar-y-2"
+          ],
+          "param": "cellBusbar"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#748184",
+          "parts": [
             "rack-rail-left",
             "rack-rail-right",
             "rack-leg-0-0",
             "rack-leg-0-1",
             "rack-leg-1-0",
             "rack-leg-1-1",
-            "rear-crossbar",
-            "rear-center-brace"
+            "rear-crossbar"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -222994,7 +223209,7 @@
       "id": "dc-disconnect-switch",
       "kit": "solar-energy",
       "title": "DC disconnect switch",
-      "description": "Compact DC isolation cabinet with a projecting rotary handle and cable ports.",
+      "description": "Compact DC isolation cabinet with a projecting rotary handle and cable ports. Material controls: stainless steel, powder-coated steel, safety paint, rubber.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -223015,7 +223230,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/dc-disconnect-switch.kcad.ts",
       "preview": "/assets/solar-energy-dc-disconnect-switch.png",
-      "sourceSha256": "2a4ec39816036ba15cea2c79a1c597d783cb853aaf13339ac551550bb9bd0a22",
+      "sourceSha256": "324648146f098a5d021e99270afadc400a587ac883b00b19812f52992b000b52",
       "triangleBudget": 1800,
       "params": [
         {
@@ -223028,13 +223243,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#a47747",
-          "label": "Asset color"
+          "default": "#c3caca",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#687c7c",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "warningPaint",
+          "type": "color",
+          "default": "#e5a032",
+          "label": "Safety paint"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#262c2e",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "stainlessSteel": "#abb5b7",
+          "powderCoat": "#7a807b",
+          "warningPaint": "#e79a2e",
+          "rubber": "#282d2e"
+        },
+        "highVisibility": {
+          "stainlessSteel": "#e0e5e4",
+          "powderCoat": "#d1722b",
+          "warningPaint": "#f1b431",
+          "rubber": "#232728"
+        }
+      },
       "stats": {
         "triangles": 216,
         "sizeM": [
@@ -223047,21 +223293,42 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a47747",
+          "name": "stainlessSteel",
+          "color": "#c3caca",
           "parts": [
             "disconnect-plinth",
-            "disconnect-body",
-            "disconnect-door-1",
             "disconnect-handle-1",
             "disconnect-vent-1",
             "disconnect-vent-2",
-            "disconnect-handle-base",
-            "disconnect-lever",
+            "disconnect-handle-base"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#687c7c",
+          "parts": [
+            "disconnect-body",
+            "disconnect-door-1"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "warningPaint",
+          "color": "#e5a032",
+          "parts": [
+            "disconnect-lever"
+          ],
+          "param": "warningPaint"
+        },
+        {
+          "name": "rubber",
+          "color": "#262c2e",
+          "parts": [
             "conduit-0",
             "conduit-1"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -223069,7 +223336,7 @@
       "id": "flexible-solar-panel",
       "kit": "solar-energy",
       "title": "Flexible solar panel",
-      "description": "Thin flexible PV sheet with rounded low-profile border and edge grommets.",
+      "description": "Thin flexible PV sheet with rounded low-profile border and edge grommets. Material controls: solar glass, frame aluminum, rubber, pv cell busbars.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -223090,7 +223357,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/flexible-solar-panel.kcad.ts",
       "preview": "/assets/solar-energy-flexible-solar-panel.png",
-      "sourceSha256": "fb7576619d4cd551c9be0cf1a23b1829a8e19d8fc7781eeff02ab70e8fcc9d32",
+      "sourceSha256": "0f20efcba951c6995ce894cc012a941b9dab0ee8d389fae34d56e50277e4091a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -223103,13 +223370,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "solarGlass",
           "type": "color",
-          "default": "#536d7a",
-          "label": "Asset color"
+          "default": "#244a68",
+          "label": "Solar glass"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b7c1c4",
+          "label": "Frame aluminum"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#262c2e",
+          "label": "Rubber"
+        },
+        {
+          "name": "cellBusbar",
+          "type": "color",
+          "default": "#d9dedd",
+          "label": "PV cell busbars"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "solarGlass": "#1e4668",
+          "aluminum": "#a9b5b9",
+          "rubber": "#282d2e",
+          "cellBusbar": "#e4e5df"
+        },
+        "highVisibility": {
+          "solarGlass": "#183a5b",
+          "aluminum": "#d4dcdf",
+          "rubber": "#232728",
+          "cellBusbar": "#f2f2e9"
+        }
+      },
       "stats": {
         "triangles": 236,
         "sizeM": [
@@ -223122,20 +223420,41 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#536d7a",
+          "name": "solarGlass",
+          "color": "#244a68",
           "parts": [
-            "flexible-sheet",
-            "edge-border",
+            "flexible-sheet"
+          ],
+          "param": "solarGlass"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b7c1c4",
+          "parts": [
+            "edge-border"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "rubber",
+          "color": "#262c2e",
+          "parts": [
             "grommet-0-0",
             "grommet-0-1",
             "grommet-1-0",
-            "grommet-1-1",
+            "grommet-1-1"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "cellBusbar",
+          "color": "#d9dedd",
+          "parts": [
             "flex-cell-line-1",
             "flex-cell-line-2",
             "flex-cell-line-3"
           ],
-          "param": "color"
+          "param": "cellBusbar"
         }
       ]
     },
@@ -223143,7 +223462,7 @@
       "id": "floating-solar-platform",
       "kit": "solar-energy",
       "title": "Floating solar platform",
-      "description": "Four-module floating PV raft carried by long buoyant pontoons and cross ties.",
+      "description": "Four-module floating PV raft carried by long buoyant pontoons and cross ties. Material controls: polymer, solar glass, galvanized steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -223164,7 +223483,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/floating-solar-platform.kcad.ts",
       "preview": "/assets/solar-energy-floating-solar-platform.png",
-      "sourceSha256": "1b099976212dca3bb60ea22611ee999e328652dd0c0b2554e16718800c642f00",
+      "sourceSha256": "b98359482f123f1ebbb3798cb39c62935725e41b2e5cf4a9bc0dd5b555cb5fa7",
       "triangleBudget": 1800,
       "params": [
         {
@@ -223177,13 +223496,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#637e87",
-          "label": "Asset color"
+          "default": "#daddd7",
+          "label": "Polymer"
+        },
+        {
+          "name": "solarGlass",
+          "type": "color",
+          "default": "#244a68",
+          "label": "Solar glass"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#748184",
+          "label": "Galvanized steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "polymer": "#cdd2cb",
+          "solarGlass": "#1e4668",
+          "galvanizedSteel": "#68787b"
+        },
+        "highVisibility": {
+          "polymer": "#e6e0d1",
+          "solarGlass": "#183a5b",
+          "galvanizedSteel": "#536367"
+        }
+      },
       "stats": {
         "triangles": 208,
         "sizeM": [
@@ -223196,23 +223538,37 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#637e87",
+          "name": "polymer",
+          "color": "#daddd7",
           "parts": [
             "float-pontoon-0",
             "float-pontoon-1",
             "floating-module-0-0-frame",
-            "floating-module-0-0-surface",
             "floating-module-0-1-frame",
-            "floating-module-0-1-surface",
             "floating-module-1-0-frame",
+            "floating-module-1-1-frame"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "solarGlass",
+          "color": "#244a68",
+          "parts": [
+            "floating-module-0-0-surface",
+            "floating-module-0-1-surface",
             "floating-module-1-0-surface",
-            "floating-module-1-1-frame",
-            "floating-module-1-1-surface",
+            "floating-module-1-1-surface"
+          ],
+          "param": "solarGlass"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#748184",
+          "parts": [
             "raft-cross-tie-0",
             "raft-cross-tie-1"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -223220,7 +223576,7 @@
       "id": "ground-mount-pv-rack",
       "kit": "solar-energy",
       "title": "Ground-mount PV rack",
-      "description": "Tilted scene rack carrying a two-by-two group of framed solar modules.",
+      "description": "Tilted scene rack carrying a two-by-two group of framed solar modules. Material controls: frame aluminum, solar glass, galvanized steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -223241,7 +223597,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/ground-mount-pv-rack.kcad.ts",
       "preview": "/assets/solar-energy-ground-mount-pv-rack.png",
-      "sourceSha256": "562a7cb16cf5d43a5a7197f5d78dedccea956e324c832f72c635281da85291b7",
+      "sourceSha256": "b6890ec0281452b15ca1ce001b9f56a365fdc9880e747b9cceba4724e3c25fe9",
       "triangleBudget": 1800,
       "params": [
         {
@@ -223254,13 +223610,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminum",
           "type": "color",
-          "default": "#6c8790",
-          "label": "Asset color"
+          "default": "#b7c1c4",
+          "label": "Frame aluminum"
+        },
+        {
+          "name": "solarGlass",
+          "type": "color",
+          "default": "#244a68",
+          "label": "Solar glass"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#748184",
+          "label": "Galvanized steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "aluminum": "#a9b5b9",
+          "solarGlass": "#1e4668",
+          "galvanizedSteel": "#68787b"
+        },
+        "highVisibility": {
+          "aluminum": "#d4dcdf",
+          "solarGlass": "#183a5b",
+          "galvanizedSteel": "#536367"
+        }
+      },
       "stats": {
         "triangles": 128,
         "sizeM": [
@@ -223273,19 +223652,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6c8790",
+          "name": "aluminum",
+          "color": "#b7c1c4",
           "parts": [
             "rack-pv-frame",
-            "rack-pv-surface",
             "a-frame-foot-0",
             "a-frame-upright-0",
             "a-frame-foot-1",
-            "a-frame-upright-1",
+            "a-frame-upright-1"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "solarGlass",
+          "color": "#244a68",
+          "parts": [
+            "rack-pv-surface"
+          ],
+          "param": "solarGlass"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#748184",
+          "parts": [
             "tracker-axis",
             "drive-enclosure"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -223293,7 +223686,7 @@
       "id": "home-battery-wall",
       "kit": "solar-energy",
       "title": "Home battery wall unit",
-      "description": "Tall residential storage cabinet with segmented front cover and base plinth.",
+      "description": "Tall residential storage cabinet with segmented front cover and base plinth. Material controls: stainless steel, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -223314,7 +223707,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/home-battery-wall.kcad.ts",
       "preview": "/assets/solar-energy-home-battery-wall.png",
-      "sourceSha256": "b71a964f775a5cc7a4191ef6ae875a307cc87a804efe00f407f4538ad4533e1a",
+      "sourceSha256": "b0bd856bd16622abe291b6c403d88e6f72b961fc96453c669ab3564fe934dba8",
       "triangleBudget": 1800,
       "params": [
         {
@@ -223327,13 +223720,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#757e7d",
-          "label": "Asset color"
+          "default": "#c3caca",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#687c7c",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "stainlessSteel": "#abb5b7",
+          "powderCoat": "#7a807b"
+        },
+        "highVisibility": {
+          "stainlessSteel": "#e0e5e4",
+          "powderCoat": "#d1722b"
+        }
+      },
       "stats": {
         "triangles": 156,
         "sizeM": [
@@ -223346,12 +223754,10 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#757e7d",
+          "name": "stainlessSteel",
+          "color": "#c3caca",
           "parts": [
             "battery-plinth",
-            "battery-body",
-            "battery-door-1",
             "battery-handle-1",
             "battery-vent-1",
             "battery-vent-2",
@@ -223363,7 +223769,16 @@
             "battery-seam-2",
             "battery-seam-3"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#687c7c",
+          "parts": [
+            "battery-body",
+            "battery-door-1"
+          ],
+          "param": "powderCoat"
         }
       ]
     },
@@ -223371,7 +223786,7 @@
       "id": "hybrid-inverter",
       "kit": "solar-energy",
       "title": "Hybrid inverter",
-      "description": "Hybrid conversion cabinet with deep side fins, front display and paired lower ports.",
+      "description": "Hybrid conversion cabinet with deep side fins, front display and paired lower ports. Material controls: stainless steel, powder-coated steel, display glass, rubber.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -223392,7 +223807,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/hybrid-inverter.kcad.ts",
       "preview": "/assets/solar-energy-hybrid-inverter.png",
-      "sourceSha256": "5a04a3c065ce2bb678b227d89f7a4c88f0f9802fef8309b237dd61a2bc455c06",
+      "sourceSha256": "60ec2c5c5a75128c5f5a0a7594012251e19e0d8015345f18471f425cce126c77",
       "triangleBudget": 1800,
       "params": [
         {
@@ -223405,13 +223820,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#6f7f82",
-          "label": "Asset color"
+          "default": "#c3caca",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#687c7c",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#24515d",
+          "label": "Display glass"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#262c2e",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "stainlessSteel": "#abb5b7",
+          "powderCoat": "#7a807b",
+          "displayGlass": "#376a73",
+          "rubber": "#282d2e"
+        },
+        "highVisibility": {
+          "stainlessSteel": "#e0e5e4",
+          "powderCoat": "#d1722b",
+          "displayGlass": "#167d95",
+          "rubber": "#232728"
+        }
+      },
       "stats": {
         "triangles": 336,
         "sizeM": [
@@ -223424,12 +223870,10 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6f7f82",
+          "name": "stainlessSteel",
+          "color": "#c3caca",
           "parts": [
             "hybrid-plinth",
-            "hybrid-body",
-            "hybrid-door-1",
             "hybrid-handle-1",
             "hybrid-vent-1",
             "hybrid-vent-2",
@@ -223442,13 +223886,36 @@
             "hybrid-cooling-fin-3",
             "hybrid-cooling-fin-4",
             "hybrid-cooling-fin-5",
-            "hybrid-cooling-fin-6",
-            "hybrid-display",
+            "hybrid-cooling-fin-6"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#687c7c",
+          "parts": [
+            "hybrid-body",
+            "hybrid-door-1"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#24515d",
+          "parts": [
+            "hybrid-display"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "rubber",
+          "color": "#262c2e",
+          "parts": [
             "hybrid-cable-port-0",
             "hybrid-cable-port-1",
             "hybrid-cable-port-2"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -223456,7 +223923,7 @@
       "id": "microinverter-unit",
       "kit": "solar-energy",
       "title": "Microinverter unit",
-      "description": "Compact sealed microinverter case with mounting ears, cooling fins and cable ends.",
+      "description": "Compact sealed microinverter case with mounting ears, cooling fins and cable ends. Material controls: powder-coated steel, stainless steel, frame aluminum, rubber.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -223477,7 +223944,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/microinverter-unit.kcad.ts",
       "preview": "/assets/solar-energy-microinverter-unit.png",
-      "sourceSha256": "89992d0d7cca4290754af1a983f08b503a21467095d0737c3a8fbf972a82941e",
+      "sourceSha256": "8c49922a4a443f541d1ddc389310209fda893ec687a09043067f6c09044f928b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -223490,13 +223957,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#65777d",
-          "label": "Asset color"
+          "default": "#687c7c",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#c3caca",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b7c1c4",
+          "label": "Frame aluminum"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#262c2e",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "powderCoat": "#7a807b",
+          "stainlessSteel": "#abb5b7",
+          "aluminum": "#a9b5b9",
+          "rubber": "#282d2e"
+        },
+        "highVisibility": {
+          "powderCoat": "#d1722b",
+          "stainlessSteel": "#e0e5e4",
+          "aluminum": "#d4dcdf",
+          "rubber": "#232728"
+        }
+      },
       "stats": {
         "triangles": 184,
         "sizeM": [
@@ -223509,21 +224007,42 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#65777d",
+          "name": "powderCoat",
+          "color": "#687c7c",
           "parts": [
-            "microinverter-body",
+            "microinverter-body"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#c3caca",
+          "parts": [
             "heat-fin-0",
             "heat-fin-1",
             "heat-fin-2",
             "heat-fin-3",
-            "heat-fin-4",
+            "heat-fin-4"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b7c1c4",
+          "parts": [
             "mount-ear-0",
-            "mount-ear-1",
+            "mount-ear-1"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "rubber",
+          "color": "#262c2e",
+          "parts": [
             "lead-0",
             "lead-1"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -223531,7 +224050,7 @@
       "id": "pad-mount-transformer",
       "kit": "solar-energy",
       "title": "Pad-mount transformer",
-      "description": "Ground transformer cabinet with radiator fins, lifting lugs and porcelain bushings.",
+      "description": "Ground transformer cabinet with radiator fins, lifting lugs and porcelain bushings. Material controls: concrete, powder-coated steel, stainless steel, porcelain ceramic.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -223552,7 +224071,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/pad-mount-transformer.kcad.ts",
       "preview": "/assets/solar-energy-pad-mount-transformer.png",
-      "sourceSha256": "f121a5a6e10c11ed8a82690efdaf9cad44b3a71b629c0d81116b2f57074cea85",
+      "sourceSha256": "fba74521d18fbb696c33e6aa57dc72995d5c107529c5ae003b571cb4fd005056",
       "triangleBudget": 1800,
       "params": [
         {
@@ -223565,13 +224084,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "concrete",
           "type": "color",
-          "default": "#747e7a",
-          "label": "Asset color"
+          "default": "#99968d",
+          "label": "Concrete"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#687c7c",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#c3caca",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "ceramic",
+          "type": "color",
+          "default": "#eee8d8",
+          "label": "Porcelain ceramic"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "concrete": "#8b8982",
+          "powderCoat": "#7a807b",
+          "stainlessSteel": "#abb5b7",
+          "ceramic": "#e7e0ce"
+        },
+        "highVisibility": {
+          "concrete": "#77766f",
+          "powderCoat": "#d1722b",
+          "stainlessSteel": "#e0e5e4",
+          "ceramic": "#fff3d1"
+        }
+      },
       "stats": {
         "triangles": 660,
         "sizeM": [
@@ -223584,11 +224134,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#747e7a",
+          "name": "concrete",
+          "color": "#99968d",
           "parts": [
-            "transformer-pad",
-            "transformer-tank",
+            "transformer-pad"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#687c7c",
+          "parts": [
+            "transformer-tank"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#c3caca",
+          "parts": [
             "radiator-fin-front-0",
             "radiator-fin-back-0",
             "radiator-fin-front-1",
@@ -223608,18 +224172,25 @@
             "radiator-fin-front-8",
             "radiator-fin-back-8",
             "bushing-base-0",
-            "porcelain-bushing-0",
             "bushing-cap-0",
             "bushing-base-1",
-            "porcelain-bushing-1",
             "bushing-cap-1",
             "bushing-base-2",
-            "porcelain-bushing-2",
             "bushing-cap-2",
             "lifting-lug-left",
             "lifting-lug-right"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "ceramic",
+          "color": "#eee8d8",
+          "parts": [
+            "porcelain-bushing-0",
+            "porcelain-bushing-1",
+            "porcelain-bushing-2"
+          ],
+          "param": "ceramic"
         }
       ]
     },
@@ -223627,7 +224198,7 @@
       "id": "plane-of-array-irradiance-sensor",
       "kit": "solar-energy",
       "title": "Plane-of-array irradiance sensor",
-      "description": "Low sun-sensor head on an adjustable stand with a wide circular sensing plate.",
+      "description": "Low sun-sensor head on an adjustable stand with a wide circular sensing plate. Material controls: galvanized steel, display glass.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -223648,7 +224219,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/plane-of-array-irradiance-sensor.kcad.ts",
       "preview": "/assets/solar-energy-plane-of-array-irradiance-sensor.png",
-      "sourceSha256": "4e1bbc0c3ff9225e692e16b0f40f791f7ee78609d533e459b34310cc618a84ad",
+      "sourceSha256": "4ca874c36000772282367fe425095c2ce04c5c5a408aff7be64e290248e59005",
       "triangleBudget": 1800,
       "params": [
         {
@@ -223661,13 +224232,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#75817b",
-          "label": "Asset color"
+          "default": "#748184",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#24515d",
+          "label": "Display glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "galvanizedSteel": "#68787b",
+          "displayGlass": "#376a73"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#536367",
+          "displayGlass": "#167d95"
+        }
+      },
       "stats": {
         "triangles": 156,
         "sizeM": [
@@ -223680,16 +224266,23 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#75817b",
+          "name": "galvanizedSteel",
+          "color": "#748184",
           "parts": [
             "instrument-base",
             "instrument-mast",
-            "sensor-arm",
+            "sensor-arm"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#24515d",
+          "parts": [
             "sensor-disc",
             "sensor-cap"
           ],
-          "param": "color"
+          "param": "displayGlass"
         }
       ]
     },
@@ -223697,7 +224290,7 @@
       "id": "pole-mount-transformer",
       "kit": "solar-energy",
       "title": "Pole-mount transformer",
-      "description": "Utility pole carrying a cylindrical transformer tank and crossarm insulators.",
+      "description": "Utility pole carrying a cylindrical transformer tank and crossarm insulators. Material controls: treated wood, powder-coated steel, porcelain ceramic.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -223718,7 +224311,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/pole-mount-transformer.kcad.ts",
       "preview": "/assets/solar-energy-pole-mount-transformer.png",
-      "sourceSha256": "1a4edc32029147196b2c627e9b62019a372251f4b40a2d3037bac94c76fc728b",
+      "sourceSha256": "7b1db1df3d9ab4717cbd74e871a7a0b00aade979fe5145029cdd8f2619f1b0e4",
       "triangleBudget": 1800,
       "params": [
         {
@@ -223731,13 +224324,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "wood",
           "type": "color",
-          "default": "#78817a",
-          "label": "Asset color"
+          "default": "#856849",
+          "label": "Treated wood"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#687c7c",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "ceramic",
+          "type": "color",
+          "default": "#eee8d8",
+          "label": "Porcelain ceramic"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "wood": "#755b43",
+          "powderCoat": "#7a807b",
+          "ceramic": "#e7e0ce"
+        },
+        "highVisibility": {
+          "wood": "#8a6440",
+          "powderCoat": "#d1722b",
+          "ceramic": "#fff3d1"
+        }
+      },
       "stats": {
         "triangles": 232,
         "sizeM": [
@@ -223750,17 +224366,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#78817a",
+          "name": "wood",
+          "color": "#856849",
           "parts": [
             "utility-pole",
-            "transformer-tank",
-            "crossarm",
+            "crossarm"
+          ],
+          "param": "wood"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#687c7c",
+          "parts": [
+            "transformer-tank"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "ceramic",
+          "color": "#eee8d8",
+          "parts": [
             "insulator-0",
             "insulator-1",
             "insulator-2"
           ],
-          "param": "color"
+          "param": "ceramic"
         }
       ]
     },
@@ -223768,7 +224398,7 @@
       "id": "pv-ballast-block",
       "kit": "solar-energy",
       "title": "PV ballast block",
-      "description": "Pair of weighted support blocks with short rails for a flat-roof PV module.",
+      "description": "Pair of weighted support blocks with short rails for a flat-roof PV module. Material controls: concrete, frame aluminum, solar glass, galvanized steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -223789,7 +224419,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/pv-ballast-block.kcad.ts",
       "preview": "/assets/solar-energy-pv-ballast-block.png",
-      "sourceSha256": "8ee5bb9a9c826f4d1ca809fb2a355bdf4e4d758e5f53fbc86a79fa77cfcb28a4",
+      "sourceSha256": "bc4da8ee55b6b6bd462a54f9e3a71a851b29c023bb13d4ac353630511944c748",
       "triangleBudget": 1800,
       "params": [
         {
@@ -223802,13 +224432,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "concrete",
           "type": "color",
-          "default": "#827b6a",
-          "label": "Asset color"
+          "default": "#99968d",
+          "label": "Concrete"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b7c1c4",
+          "label": "Frame aluminum"
+        },
+        {
+          "name": "solarGlass",
+          "type": "color",
+          "default": "#244a68",
+          "label": "Solar glass"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#748184",
+          "label": "Galvanized steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "concrete": "#8b8982",
+          "aluminum": "#a9b5b9",
+          "solarGlass": "#1e4668",
+          "galvanizedSteel": "#68787b"
+        },
+        "highVisibility": {
+          "concrete": "#77766f",
+          "aluminum": "#d4dcdf",
+          "solarGlass": "#183a5b",
+          "galvanizedSteel": "#536367"
+        }
+      },
       "stats": {
         "triangles": 72,
         "sizeM": [
@@ -223821,17 +224482,38 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#827b6a",
+          "name": "concrete",
+          "color": "#99968d",
           "parts": [
             "ballast-left",
-            "ballast-right",
-            "ballast-pv-frame",
-            "ballast-pv-surface",
+            "ballast-right"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b7c1c4",
+          "parts": [
+            "ballast-pv-frame"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "solarGlass",
+          "color": "#244a68",
+          "parts": [
+            "ballast-pv-surface"
+          ],
+          "param": "solarGlass"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#748184",
+          "parts": [
             "ballast-rail--166-4",
             "ballast-rail-166-4"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -223839,7 +224521,7 @@
       "id": "pv-cable-tray",
       "kit": "solar-energy",
       "title": "PV cable tray section",
-      "description": "Straight open cable tray with side lips, floor rungs and end splice plates.",
+      "description": "Straight open cable tray with side lips, floor rungs and end splice plates. Material controls: galvanized steel, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -223860,7 +224542,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/pv-cable-tray.kcad.ts",
       "preview": "/assets/solar-energy-pv-cable-tray.png",
-      "sourceSha256": "0f71af35552defa9a9ee01e102a4c4076bc6da636ee775851657d7f7499e162b",
+      "sourceSha256": "f842b1e3f8dd3a6d8cd55caf4ee5f493ecdda91e0639dff118ed9fc7ecdbe99c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -223873,13 +224555,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#737e7b",
-          "label": "Asset color"
+          "default": "#748184",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#c3caca",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "galvanizedSteel": "#68787b",
+          "stainlessSteel": "#abb5b7"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#536367",
+          "stainlessSteel": "#e0e5e4"
+        }
+      },
       "stats": {
         "triangles": 156,
         "sizeM": [
@@ -223892,8 +224589,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#737e7b",
+          "name": "galvanizedSteel",
+          "color": "#748184",
           "parts": [
             "tray-floor",
             "tray-left-lip",
@@ -223905,11 +224602,18 @@
             "tray-rung-4",
             "tray-rung-5",
             "tray-rung-6",
-            "tray-rung-7",
+            "tray-rung-7"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#c3caca",
+          "parts": [
             "tray-end-splice--710-4",
             "tray-end-splice-710-4"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -223917,7 +224621,7 @@
       "id": "pv-combiner-box",
       "kit": "solar-energy",
       "title": "PV combiner box",
-      "description": "Weatherproof string combiner enclosure with front cover and top cable entries.",
+      "description": "Weatherproof string combiner enclosure with front cover and top cable entries. Material controls: stainless steel, powder-coated steel, rubber.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -223938,7 +224642,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/pv-combiner-box.kcad.ts",
       "preview": "/assets/solar-energy-pv-combiner-box.png",
-      "sourceSha256": "ab859d49cdccb77135b1fa1dd4e830c796cb15ed735821c5ba90b7a0137f71ab",
+      "sourceSha256": "83f2204ee1b14f65656ba63e97864ed48e0f10090bcace33a31de60374e354be",
       "triangleBudget": 1800,
       "params": [
         {
@@ -223951,13 +224655,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#78827e",
-          "label": "Asset color"
+          "default": "#c3caca",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#687c7c",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#262c2e",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "stainlessSteel": "#abb5b7",
+          "powderCoat": "#7a807b",
+          "rubber": "#282d2e"
+        },
+        "highVisibility": {
+          "stainlessSteel": "#e0e5e4",
+          "powderCoat": "#d1722b",
+          "rubber": "#232728"
+        }
+      },
       "stats": {
         "triangles": 260,
         "sizeM": [
@@ -223970,22 +224697,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#78827e",
+          "name": "stainlessSteel",
+          "color": "#c3caca",
           "parts": [
             "combiner-plinth",
-            "combiner-body",
-            "combiner-door-1",
             "combiner-handle-1",
             "combiner-vent-1",
             "combiner-vent-2",
-            "combiner-vent-3",
+            "combiner-vent-3"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#687c7c",
+          "parts": [
+            "combiner-body",
+            "combiner-door-1"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "rubber",
+          "color": "#262c2e",
+          "parts": [
             "cable-entry-0",
             "cable-entry-1",
             "cable-entry-2",
             "cable-entry-3"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -223993,7 +224734,7 @@
       "id": "pv-junction-box",
       "kit": "solar-energy",
       "title": "PV junction box",
-      "description": "Low-profile sealed junction enclosure with lid rim and four cable glands.",
+      "description": "Low-profile sealed junction enclosure with lid rim and four cable glands. Material controls: stainless steel, powder-coated steel, rubber.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224014,7 +224755,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/pv-junction-box.kcad.ts",
       "preview": "/assets/solar-energy-pv-junction-box.png",
-      "sourceSha256": "2d8590d87d03e43ed3c7a247d323fffa2a3c815171f5fd2e65ad245384ddd8c8",
+      "sourceSha256": "335d505bb35fd900e16a04a3cc00f6d75fc2e722fc64ffd56cfc1652bd9e94f9",
       "triangleBudget": 1800,
       "params": [
         {
@@ -224027,13 +224768,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#687b79",
-          "label": "Asset color"
+          "default": "#c3caca",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#687c7c",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#262c2e",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "stainlessSteel": "#abb5b7",
+          "powderCoat": "#7a807b",
+          "rubber": "#282d2e"
+        },
+        "highVisibility": {
+          "stainlessSteel": "#e0e5e4",
+          "powderCoat": "#d1722b",
+          "rubber": "#232728"
+        }
+      },
       "stats": {
         "triangles": 224,
         "sizeM": [
@@ -224046,19 +224810,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#687b79",
+          "name": "stainlessSteel",
+          "color": "#c3caca",
           "parts": [
             "junction-plinth",
+            "junction-handle-1"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#687c7c",
+          "parts": [
             "junction-body",
-            "junction-door-1",
-            "junction-handle-1",
+            "junction-door-1"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "rubber",
+          "color": "#262c2e",
+          "parts": [
             "junction-gland-0",
             "junction-gland-1",
             "junction-gland-2",
             "junction-gland-3"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -224066,7 +224844,7 @@
       "id": "pv-module-microinverter",
       "kit": "solar-energy",
       "title": "PV module with microinverter",
-      "description": "Single framed module with a compact inverter enclosure fixed beneath its back rail.",
+      "description": "Single framed module with a compact inverter enclosure fixed beneath its back rail. Material controls: frame aluminum, solar glass, galvanized steel, rubber.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224087,7 +224865,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/pv-module-microinverter.kcad.ts",
       "preview": "/assets/solar-energy-pv-module-microinverter.png",
-      "sourceSha256": "e3bcad050338bb7bbd52d6f749853f3cda0a3c0ca2573ed7e08bac480676cd75",
+      "sourceSha256": "29d44ae79609920954c5f688d6aaa7b172f2f1344f72a6740a64b67197901571",
       "triangleBudget": 1800,
       "params": [
         {
@@ -224100,13 +224878,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminum",
           "type": "color",
-          "default": "#557c94",
-          "label": "Asset color"
+          "default": "#b7c1c4",
+          "label": "Frame aluminum"
+        },
+        {
+          "name": "solarGlass",
+          "type": "color",
+          "default": "#244a68",
+          "label": "Solar glass"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#748184",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#262c2e",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "aluminum": "#a9b5b9",
+          "solarGlass": "#1e4668",
+          "galvanizedSteel": "#68787b",
+          "rubber": "#282d2e"
+        },
+        "highVisibility": {
+          "aluminum": "#d4dcdf",
+          "solarGlass": "#183a5b",
+          "galvanizedSteel": "#536367",
+          "rubber": "#232728"
+        }
+      },
       "stats": {
         "triangles": 268,
         "sizeM": [
@@ -224119,28 +224928,49 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#557c94",
+          "name": "aluminum",
+          "color": "#b7c1c4",
           "parts": [
             "pv-frame",
+            "microinverter-case"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "solarGlass",
+          "color": "#244a68",
+          "parts": [
             "pv-surface",
             "pv-cell-bar-x-0",
             "pv-cell-bar-x-1",
             "pv-cell-bar-x-2",
             "pv-cell-bar-y-0",
             "pv-cell-bar-y-1",
-            "pv-cell-bar-y-2",
+            "pv-cell-bar-y-2"
+          ],
+          "param": "solarGlass"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#748184",
+          "parts": [
             "rack-rail-left",
             "rack-rail-right",
             "rack-leg-0-0",
             "rack-leg-0-1",
             "rack-leg-1-0",
-            "rack-leg-1-1",
-            "microinverter-case",
+            "rack-leg-1-1"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#262c2e",
+          "parts": [
             "microinverter-port-left",
             "microinverter-port-right"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -224148,7 +224978,7 @@
       "id": "pv-module-transport-cart",
       "kit": "solar-energy",
       "title": "PV module transport cart",
-      "description": "Four-wheel A-frame trolley carrying two upright framed solar modules.",
+      "description": "Four-wheel A-frame trolley carrying two upright framed solar modules. Material controls: galvanized steel, rubber, solar glass.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224169,7 +224999,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/pv-module-transport-cart.kcad.ts",
       "preview": "/assets/solar-energy-pv-module-transport-cart.png",
-      "sourceSha256": "83958dcb7a0fa8f41c249a90423ec9fc9b29a0c9acc2df59799b6cae30994ebc",
+      "sourceSha256": "19a9e38b20fcd7f37c5f10f63399646f0276bcfb924a2246082041c9e784eddc",
       "triangleBudget": 1800,
       "params": [
         {
@@ -224182,13 +225012,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#777f78",
-          "label": "Asset color"
+          "default": "#748184",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#262c2e",
+          "label": "Rubber"
+        },
+        {
+          "name": "solarGlass",
+          "type": "color",
+          "default": "#244a68",
+          "label": "Solar glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "galvanizedSteel": "#68787b",
+          "rubber": "#282d2e",
+          "solarGlass": "#1e4668"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#536367",
+          "rubber": "#232728",
+          "solarGlass": "#183a5b"
+        }
+      },
       "stats": {
         "triangles": 184,
         "sizeM": [
@@ -224201,21 +225054,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#777f78",
+          "name": "galvanizedSteel",
+          "color": "#748184",
           "parts": [
             "cart-base",
-            "cart-wheel-0",
             "cart-frame-0",
-            "cart-wheel-1",
             "cart-frame-1",
             "cart-module-0-frame",
-            "cart-module-0-surface",
             "cart-module-1-frame",
-            "cart-module-1-surface",
             "cart-crossbar"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#262c2e",
+          "parts": [
+            "cart-wheel-0",
+            "cart-wheel-1"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "solarGlass",
+          "color": "#244a68",
+          "parts": [
+            "cart-module-0-surface",
+            "cart-module-1-surface"
+          ],
+          "param": "solarGlass"
         }
       ]
     },
@@ -224223,7 +225090,7 @@
       "id": "pv-panel-cleaning-robot",
       "kit": "solar-energy",
       "title": "PV panel cleaning robot",
-      "description": "Compact tracked cleaning carriage spanning two panel rails with a broad brush bar.",
+      "description": "Tracked panel-cleaning carriage with four idler wheels per side and a full-width brush shaft. Material controls: polymer, rubber, galvanized steel, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224244,7 +225111,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/pv-panel-cleaning-robot.kcad.ts",
       "preview": "/assets/solar-energy-pv-panel-cleaning-robot.png",
-      "sourceSha256": "52164606048d00ee5b47e5bfbd6fa2ec5e481a70cb95dd41fcd6a2ff50fb0a14",
+      "sourceSha256": "ec47eaabc77474d3d1d4584c36249bef098b9b195c6a6a746aada2a97e721b56",
       "triangleBudget": 1800,
       "params": [
         {
@@ -224257,36 +225124,96 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#a57b48",
-          "label": "Asset color"
+          "default": "#daddd7",
+          "label": "Polymer"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#262c2e",
+          "label": "Rubber"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#748184",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#c3caca",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "polymer": "#cdd2cb",
+          "rubber": "#282d2e",
+          "galvanizedSteel": "#68787b",
+          "stainlessSteel": "#abb5b7"
+        },
+        "highVisibility": {
+          "polymer": "#e6e0d1",
+          "rubber": "#232728",
+          "galvanizedSteel": "#536367",
+          "stainlessSteel": "#e0e5e4"
+        }
+      },
       "stats": {
-        "triangles": 104,
+        "triangles": 456,
         "sizeM": [
           0.5148,
           0.1912,
-          0.3112
+          0.3122
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a57b48",
+          "name": "polymer",
+          "color": "#daddd7",
           "parts": [
             "cleaning-robot-body",
+            "brush-bar"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "rubber",
+          "color": "#262c2e",
+          "parts": [
             "robot-track--138-6",
-            "robot-track-138-6",
+            "robot-track-138-6"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#748184",
+          "parts": [
             "brush-shaft",
-            "brush-bar",
             "handle-rail"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#c3caca",
+          "parts": [
+            "robot-idler-left-0",
+            "robot-idler-left-1",
+            "robot-idler-left-2",
+            "robot-idler-left-3",
+            "robot-idler-right-0",
+            "robot-idler-right-1",
+            "robot-idler-right-2",
+            "robot-idler-right-3"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -224294,7 +225221,7 @@
       "id": "roof-flashing-mount",
       "kit": "solar-energy",
       "title": "Roof flashing mount",
-      "description": "Low-profile roof foot with weather plate, standoff post and two mounting rails.",
+      "description": "Low-profile roof foot with weather plate, standoff post and two mounting rails. Material controls: galvanized steel, rubber, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224315,7 +225242,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/roof-flashing-mount.kcad.ts",
       "preview": "/assets/solar-energy-roof-flashing-mount.png",
-      "sourceSha256": "5f1f8965020df6ba6dbdadd703ddaada87bdc48e2c9376a75e7f1534fcf805c4",
+      "sourceSha256": "4ea1b4013f96efc87db3e634b350ad05b06a6027c6a7b7f2a32c0fc4f0b6cbc8",
       "triangleBudget": 1800,
       "params": [
         {
@@ -224328,13 +225255,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#8b8066",
-          "label": "Asset color"
+          "default": "#748184",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#262c2e",
+          "label": "Rubber"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#c3caca",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "galvanizedSteel": "#68787b",
+          "rubber": "#282d2e",
+          "stainlessSteel": "#abb5b7"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#536367",
+          "rubber": "#232728",
+          "stainlessSteel": "#e0e5e4"
+        }
+      },
       "stats": {
         "triangles": 72,
         "sizeM": [
@@ -224347,17 +225297,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8b8066",
+          "name": "galvanizedSteel",
+          "color": "#748184",
           "parts": [
             "flashing-plate",
-            "standoff",
             "mount-rail-0",
-            "mount-rail-1",
+            "mount-rail-1"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#262c2e",
+          "parts": [
+            "standoff"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#c3caca",
+          "parts": [
             "rail-clamp-0",
             "rail-clamp-1"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -224365,7 +225329,7 @@
       "id": "rooftop-pv-array",
       "kit": "solar-energy",
       "title": "Rooftop PV array",
-      "description": "Six framed modules arranged as a compact two-row rooftop array.",
+      "description": "Six framed modules arranged as a compact two-row rooftop array. Material controls: frame aluminum, solar glass, galvanized steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224386,7 +225350,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/rooftop-pv-array.kcad.ts",
       "preview": "/assets/solar-energy-rooftop-pv-array.png",
-      "sourceSha256": "86edd9e6a388669c78f4eb973937dd592c8c8e97f10ff44ab143938feb232618",
+      "sourceSha256": "d4343a5516b08c481d30fae83d08120008cd177932c74e5ae040c2125f4b0c38",
       "triangleBudget": 1800,
       "params": [
         {
@@ -224399,13 +225363,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminum",
           "type": "color",
-          "default": "#567d92",
-          "label": "Asset color"
+          "default": "#b7c1c4",
+          "label": "Frame aluminum"
+        },
+        {
+          "name": "solarGlass",
+          "type": "color",
+          "default": "#244a68",
+          "label": "Solar glass"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#748184",
+          "label": "Galvanized steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "aluminum": "#a9b5b9",
+          "solarGlass": "#1e4668",
+          "galvanizedSteel": "#68787b"
+        },
+        "highVisibility": {
+          "aluminum": "#d4dcdf",
+          "solarGlass": "#183a5b",
+          "galvanizedSteel": "#536367"
+        }
+      },
       "stats": {
         "triangles": 228,
         "sizeM": [
@@ -224418,21 +225405,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#567d92",
+          "name": "aluminum",
+          "color": "#b7c1c4",
           "parts": [
             "module-0-0-frame",
-            "module-0-0-surface",
             "module-0-1-frame",
-            "module-0-1-surface",
             "module-0-2-frame",
-            "module-0-2-surface",
             "module-1-0-frame",
-            "module-1-0-surface",
             "module-1-1-frame",
+            "module-1-2-frame"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "solarGlass",
+          "color": "#244a68",
+          "parts": [
+            "module-0-0-surface",
+            "module-0-1-surface",
+            "module-0-2-surface",
+            "module-1-0-surface",
             "module-1-1-surface",
-            "module-1-2-frame",
-            "module-1-2-surface",
+            "module-1-2-surface"
+          ],
+          "param": "solarGlass"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#748184",
+          "parts": [
             "array-rail--410-4",
             "array-rail-0",
             "array-rail-410-4",
@@ -224441,7 +225442,7 @@
             "array-post-668-8--432",
             "array-post-668-8-432"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -224449,7 +225450,7 @@
       "id": "rooftop-pv-module",
       "kit": "solar-energy",
       "title": "Rooftop PV module",
-      "description": "Single framed photovoltaic module with a raised cell grid and short roof rails.",
+      "description": "Single framed photovoltaic module with a raised cell grid and short roof rails. Material controls: frame aluminum, solar glass, pv cell busbars, galvanized steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224470,7 +225471,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/rooftop-pv-module.kcad.ts",
       "preview": "/assets/solar-energy-rooftop-pv-module.png",
-      "sourceSha256": "060a6285c67bedd9cd986e83b5d374e7f635d597c041952998f7b12bfbcbda33",
+      "sourceSha256": "e3d11ade9625c48978ada9740813f164bd2e8e2afea35c6656ef69e06d58f308",
       "triangleBudget": 1800,
       "params": [
         {
@@ -224483,13 +225484,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminum",
           "type": "color",
-          "default": "#557c94",
-          "label": "Asset color"
+          "default": "#b7c1c4",
+          "label": "Frame aluminum"
+        },
+        {
+          "name": "solarGlass",
+          "type": "color",
+          "default": "#244a68",
+          "label": "Solar glass"
+        },
+        {
+          "name": "cellBusbar",
+          "type": "color",
+          "default": "#d9dedd",
+          "label": "PV cell busbars"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#748184",
+          "label": "Galvanized steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "aluminum": "#a9b5b9",
+          "solarGlass": "#1e4668",
+          "cellBusbar": "#e4e5df",
+          "galvanizedSteel": "#68787b"
+        },
+        "highVisibility": {
+          "aluminum": "#d4dcdf",
+          "solarGlass": "#183a5b",
+          "cellBusbar": "#f2f2e9",
+          "galvanizedSteel": "#536367"
+        }
+      },
       "stats": {
         "triangles": 168,
         "sizeM": [
@@ -224502,17 +225534,38 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#557c94",
+          "name": "aluminum",
+          "color": "#b7c1c4",
           "parts": [
-            "pv-frame",
-            "pv-surface",
+            "pv-frame"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "solarGlass",
+          "color": "#244a68",
+          "parts": [
+            "pv-surface"
+          ],
+          "param": "solarGlass"
+        },
+        {
+          "name": "cellBusbar",
+          "color": "#d9dedd",
+          "parts": [
             "pv-cell-bar-x-0",
             "pv-cell-bar-x-1",
             "pv-cell-bar-x-2",
             "pv-cell-bar-y-0",
             "pv-cell-bar-y-1",
-            "pv-cell-bar-y-2",
+            "pv-cell-bar-y-2"
+          ],
+          "param": "cellBusbar"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#748184",
+          "parts": [
             "rack-rail-left",
             "rack-rail-right",
             "rack-leg-0-0",
@@ -224520,7 +225573,7 @@
             "rack-leg-1-0",
             "rack-leg-1-1"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -224528,7 +225581,7 @@
       "id": "single-axis-solar-tracker",
       "kit": "solar-energy",
       "title": "Single-axis solar tracker",
-      "description": "Long PV table on a central rotating shaft with end supports and drive box.",
+      "description": "Eight framed PV modules tilt together around a torque tube carried by three piers and a drive housing. Material controls: frame aluminum, solar glass, galvanized steel, pv cell busbars.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224549,7 +225602,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/single-axis-solar-tracker.kcad.ts",
       "preview": "/assets/solar-energy-single-axis-solar-tracker.png",
-      "sourceSha256": "2ef767b2c4e3894558f3d819367444a20dc672f773bde370d1dc778a61703c2e",
+      "sourceSha256": "bbe68991cca49d7b9dd9efec7a377391d7fb9b444fd843d120068b5b22355d95",
       "triangleBudget": 1800,
       "params": [
         {
@@ -224562,37 +225615,136 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminum",
           "type": "color",
-          "default": "#6c8790",
-          "label": "Asset color"
+          "default": "#b7c1c4",
+          "label": "Frame aluminum"
+        },
+        {
+          "name": "solarGlass",
+          "type": "color",
+          "default": "#244a68",
+          "label": "Solar glass"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#748184",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "cellBusbar",
+          "type": "color",
+          "default": "#d9dedd",
+          "label": "PV cell busbars"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "aluminum": "#a9b5b9",
+          "solarGlass": "#1e4668",
+          "galvanizedSteel": "#68787b",
+          "cellBusbar": "#e4e5df"
+        },
+        "highVisibility": {
+          "aluminum": "#d4dcdf",
+          "solarGlass": "#183a5b",
+          "galvanizedSteel": "#536367",
+          "cellBusbar": "#f2f2e9"
+        }
+      },
       "stats": {
-        "triangles": 116,
+        "triangles": 680,
         "sizeM": [
           1.89,
-          0.554,
-          0.5484
+          0.595612,
+          0.542522
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6c8790",
+          "name": "galvanizedSteel",
+          "color": "#748184",
           "parts": [
             "tracker-table-frame",
-            "tracker-table-surface",
             "torque-tube",
             "tracker-pier-0",
             "tracker-pier-1",
             "tracker-pier-2",
             "tracker-drive"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b7c1c4",
+          "parts": [
+            "tracker-module-0-0-frame",
+            "tracker-module-0-1-frame",
+            "tracker-module-1-0-frame",
+            "tracker-module-1-1-frame",
+            "tracker-module-2-0-frame",
+            "tracker-module-2-1-frame",
+            "tracker-module-3-0-frame",
+            "tracker-module-3-1-frame"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "solarGlass",
+          "color": "#244a68",
+          "parts": [
+            "tracker-module-0-0-surface",
+            "tracker-module-0-1-surface",
+            "tracker-module-1-0-surface",
+            "tracker-module-1-1-surface",
+            "tracker-module-2-0-surface",
+            "tracker-module-2-1-surface",
+            "tracker-module-3-0-surface",
+            "tracker-module-3-1-surface"
+          ],
+          "param": "solarGlass"
+        },
+        {
+          "name": "cellBusbar",
+          "color": "#d9dedd",
+          "parts": [
+            "tracker-module-0-0-busbar-x-0",
+            "tracker-module-0-0-busbar-x-1",
+            "tracker-module-0-0-busbar-y-0",
+            "tracker-module-0-0-busbar-y-1",
+            "tracker-module-0-1-busbar-x-0",
+            "tracker-module-0-1-busbar-x-1",
+            "tracker-module-0-1-busbar-y-0",
+            "tracker-module-0-1-busbar-y-1",
+            "tracker-module-1-0-busbar-x-0",
+            "tracker-module-1-0-busbar-x-1",
+            "tracker-module-1-0-busbar-y-0",
+            "tracker-module-1-0-busbar-y-1",
+            "tracker-module-1-1-busbar-x-0",
+            "tracker-module-1-1-busbar-x-1",
+            "tracker-module-1-1-busbar-y-0",
+            "tracker-module-1-1-busbar-y-1",
+            "tracker-module-2-0-busbar-x-0",
+            "tracker-module-2-0-busbar-x-1",
+            "tracker-module-2-0-busbar-y-0",
+            "tracker-module-2-0-busbar-y-1",
+            "tracker-module-2-1-busbar-x-0",
+            "tracker-module-2-1-busbar-x-1",
+            "tracker-module-2-1-busbar-y-0",
+            "tracker-module-2-1-busbar-y-1",
+            "tracker-module-3-0-busbar-x-0",
+            "tracker-module-3-0-busbar-x-1",
+            "tracker-module-3-0-busbar-y-0",
+            "tracker-module-3-0-busbar-y-1",
+            "tracker-module-3-1-busbar-x-0",
+            "tracker-module-3-1-busbar-x-1",
+            "tracker-module-3-1-busbar-y-0",
+            "tracker-module-3-1-busbar-y-1"
+          ],
+          "param": "cellBusbar"
         }
       ]
     },
@@ -224600,7 +225752,7 @@
       "id": "solar-battery-container",
       "kit": "solar-energy",
       "title": "Solar battery container",
-      "description": "Large storage enclosure with paired access doors, end vents and corner lifting blocks.",
+      "description": "Corrugated battery enclosure with paired service doors on both long faces, raised hinges, louvered vents, lifting corners and end-mounted cooling units. Material controls: powder-coated steel, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224621,7 +225773,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/solar-battery-container.kcad.ts",
       "preview": "/assets/solar-energy-solar-battery-container.png",
-      "sourceSha256": "32a32088e6433112522d39f89bda8144fd040ec854c1d9165391f6e0a5fd590a",
+      "sourceSha256": "01ec75b4444a972b9ef47ff4c44d3d61201fad1a7508e55b05cba2a3c28de6c5",
       "triangleBudget": 1800,
       "params": [
         {
@@ -224634,33 +225786,57 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#737d78",
-          "label": "Asset color"
+          "default": "#687c7c",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#c3caca",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "powderCoat": "#7a807b",
+          "stainlessSteel": "#abb5b7"
+        },
+        "highVisibility": {
+          "powderCoat": "#d1722b",
+          "stainlessSteel": "#e0e5e4"
+        }
+      },
       "stats": {
-        "triangles": 204,
+        "triangles": 816,
         "sizeM": [
-          1.594,
+          1.67,
           1.3112,
-          0.8326
+          0.838
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#737d78",
+          "name": "powderCoat",
+          "color": "#687c7c",
           "parts": [
             "battery-container-plinth",
             "battery-container-body",
             "battery-container-door-1",
-            "battery-container-handle-1",
             "battery-container-door-2",
+            "battery-container-rear-door-1",
+            "battery-container-rear-door-2"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#c3caca",
+          "parts": [
+            "battery-container-handle-1",
             "battery-container-handle-2",
             "battery-container-vent-1",
             "battery-container-vent-2",
@@ -224672,9 +225848,58 @@
             "lifting-corner-0",
             "lifting-corner-1",
             "cooling-unit-0",
-            "cooling-unit-1"
+            "cooling-unit-1",
+            "container-corrugation-rib-left-0",
+            "container-corrugation-rib-left-1",
+            "container-corrugation-rib-left-2",
+            "container-corrugation-rib-left-3",
+            "container-corrugation-rib-left-4",
+            "container-corrugation-rib-left-5",
+            "container-corrugation-rib-left-6",
+            "container-corrugation-rib-left-7",
+            "container-corrugation-rib-right-0",
+            "container-corrugation-rib-right-1",
+            "container-corrugation-rib-right-2",
+            "container-corrugation-rib-right-3",
+            "container-corrugation-rib-right-4",
+            "container-corrugation-rib-right-5",
+            "container-corrugation-rib-right-6",
+            "container-corrugation-rib-right-7",
+            "container-door-hinge-front-left--690-0",
+            "container-door-hinge-front-left--690-1",
+            "container-door-hinge-front-left--690-2",
+            "container-door-hinge-front-left--80-0",
+            "container-door-hinge-front-left--80-1",
+            "container-door-hinge-front-left--80-2",
+            "container-door-hinge-front-right-80-0",
+            "container-door-hinge-front-right-80-1",
+            "container-door-hinge-front-right-80-2",
+            "container-door-hinge-front-right-690-0",
+            "container-door-hinge-front-right-690-1",
+            "container-door-hinge-front-right-690-2",
+            "battery-container-rear-handle-1",
+            "battery-container-rear-handle-2",
+            "battery-container-rear-vent-1",
+            "battery-container-rear-vent-2",
+            "battery-container-rear-vent-3",
+            "battery-container-rear-vent-4",
+            "battery-container-rear-vent-5",
+            "battery-container-rear-vent-6",
+            "battery-container-rear-vent-7",
+            "container-door-hinge-rear-left--690-0",
+            "container-door-hinge-rear-left--690-1",
+            "container-door-hinge-rear-left--690-2",
+            "container-door-hinge-rear-left--80-0",
+            "container-door-hinge-rear-left--80-1",
+            "container-door-hinge-rear-left--80-2",
+            "container-door-hinge-rear-right-80-0",
+            "container-door-hinge-rear-right-80-1",
+            "container-door-hinge-rear-right-80-2",
+            "container-door-hinge-rear-right-690-0",
+            "container-door-hinge-rear-right-690-1",
+            "container-door-hinge-rear-right-690-2"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -224682,7 +225907,7 @@
       "id": "solar-carport-canopy",
       "kit": "solar-energy",
       "title": "Solar carport canopy",
-      "description": "Four-post parking canopy topped by a shallow six-module photovoltaic roof.",
+      "description": "Four-post parking canopy topped by a shallow six-module photovoltaic roof. Material controls: galvanized steel, frame aluminum, solar glass.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224703,7 +225928,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/solar-carport-canopy.kcad.ts",
       "preview": "/assets/solar-energy-solar-carport-canopy.png",
-      "sourceSha256": "7e44061f32eba4063a2a60050de8398a1287683efa1a5dfffba433a51ded5e8f",
+      "sourceSha256": "817813aeb7e46d10d98bfb3b951a670b03d721e3189296170e4df70f5e6eb64b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -224716,13 +225941,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#617c88",
-          "label": "Asset color"
+          "default": "#748184",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b7c1c4",
+          "label": "Frame aluminum"
+        },
+        {
+          "name": "solarGlass",
+          "type": "color",
+          "default": "#244a68",
+          "label": "Solar glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "galvanizedSteel": "#68787b",
+          "aluminum": "#a9b5b9",
+          "solarGlass": "#1e4668"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#536367",
+          "aluminum": "#d4dcdf",
+          "solarGlass": "#183a5b"
+        }
+      },
       "stats": {
         "triangles": 216,
         "sizeM": [
@@ -224735,29 +225983,43 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#617c88",
+          "name": "galvanizedSteel",
+          "color": "#748184",
           "parts": [
             "canopy-post-0-0",
             "canopy-post-0-1",
             "canopy-post-1-0",
             "canopy-post-1-1",
             "canopy-front-beam",
-            "canopy-back-beam",
+            "canopy-back-beam"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b7c1c4",
+          "parts": [
             "canopy-pv-0-0-frame",
-            "canopy-pv-0-0-surface",
             "canopy-pv-0-1-frame",
-            "canopy-pv-0-1-surface",
             "canopy-pv-1-0-frame",
-            "canopy-pv-1-0-surface",
             "canopy-pv-1-1-frame",
-            "canopy-pv-1-1-surface",
             "canopy-pv-2-0-frame",
+            "canopy-pv-2-1-frame"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "solarGlass",
+          "color": "#244a68",
+          "parts": [
+            "canopy-pv-0-0-surface",
+            "canopy-pv-0-1-surface",
+            "canopy-pv-1-0-surface",
+            "canopy-pv-1-1-surface",
             "canopy-pv-2-0-surface",
-            "canopy-pv-2-1-frame",
             "canopy-pv-2-1-surface"
           ],
-          "param": "color"
+          "param": "solarGlass"
         }
       ]
     },
@@ -224765,7 +226027,7 @@
       "id": "solar-charge-controller",
       "kit": "solar-energy",
       "title": "Solar charge controller",
-      "description": "Wall control unit with a raised display, button row and lower cable glands.",
+      "description": "Wall control unit with a raised display, button row and lower cable glands. Material controls: stainless steel, powder-coated steel, display glass, safety paint.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224786,7 +226048,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/solar-charge-controller.kcad.ts",
       "preview": "/assets/solar-energy-solar-charge-controller.png",
-      "sourceSha256": "aff834808520ef83207d843332b413aab3829e0c72ec72b536b4cfa00da4343d",
+      "sourceSha256": "0f589da287c2a31bef11e49e2fe1a1757bae2721c9ca96e01da3261d662182b2",
       "triangleBudget": 1800,
       "params": [
         {
@@ -224799,13 +226061,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#637e82",
-          "label": "Asset color"
+          "default": "#c3caca",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#687c7c",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#24515d",
+          "label": "Display glass"
+        },
+        {
+          "name": "warningPaint",
+          "type": "color",
+          "default": "#e5a032",
+          "label": "Safety paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "stainlessSteel": "#abb5b7",
+          "powderCoat": "#7a807b",
+          "displayGlass": "#376a73",
+          "warningPaint": "#e79a2e"
+        },
+        "highVisibility": {
+          "stainlessSteel": "#e0e5e4",
+          "powderCoat": "#d1722b",
+          "displayGlass": "#167d95",
+          "warningPaint": "#f1b431"
+        }
+      },
       "stats": {
         "triangles": 228,
         "sizeM": [
@@ -224818,22 +226111,43 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#637e82",
+          "name": "stainlessSteel",
+          "color": "#c3caca",
           "parts": [
             "controller-plinth",
-            "controller-body",
-            "controller-door-1",
             "controller-handle-1",
             "controller-vent-1",
             "controller-vent-2",
-            "controller-vent-3",
-            "controller-screen",
+            "controller-vent-3"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#687c7c",
+          "parts": [
+            "controller-body",
+            "controller-door-1"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#24515d",
+          "parts": [
+            "controller-screen"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "warningPaint",
+          "color": "#e5a032",
+          "parts": [
             "controller-button-0",
             "controller-button-1",
             "controller-button-2"
           ],
-          "param": "color"
+          "param": "warningPaint"
         }
       ]
     },
@@ -224841,7 +226155,7 @@
       "id": "solar-data-logger",
       "kit": "solar-energy",
       "title": "Solar data logger",
-      "description": "Small telemetry enclosure mounted to a short pedestal with antenna and status bar.",
+      "description": "Small telemetry enclosure mounted to a short pedestal with antenna and status bar. Material controls: stainless steel, powder-coated steel, galvanized steel, polymer.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224862,7 +226176,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/solar-data-logger.kcad.ts",
       "preview": "/assets/solar-energy-solar-data-logger.png",
-      "sourceSha256": "9e1de68d21b55f32b2e9c33ff4dcb3a4e62b689e7df77162fb1972cd9a11f011",
+      "sourceSha256": "30e440f4d51b8b3be83ff4da14cd808efb444cc3bbba558502cee9caea9a0e16",
       "triangleBudget": 1800,
       "params": [
         {
@@ -224875,13 +226189,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#71807e",
-          "label": "Asset color"
+          "default": "#c3caca",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#687c7c",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#748184",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#daddd7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "stainlessSteel": "#abb5b7",
+          "powderCoat": "#7a807b",
+          "galvanizedSteel": "#68787b",
+          "polymer": "#cdd2cb"
+        },
+        "highVisibility": {
+          "stainlessSteel": "#e0e5e4",
+          "powderCoat": "#d1722b",
+          "galvanizedSteel": "#536367",
+          "polymer": "#e6e0d1"
+        }
+      },
       "stats": {
         "triangles": 160,
         "sizeM": [
@@ -224894,19 +226239,40 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#71807e",
+          "name": "stainlessSteel",
+          "color": "#c3caca",
           "parts": [
             "logger-plinth",
-            "logger-body",
-            "logger-door-1",
             "logger-handle-1",
             "logger-vent-1",
-            "logger-vent-2",
-            "logger-mast",
+            "logger-vent-2"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#687c7c",
+          "parts": [
+            "logger-body",
+            "logger-door-1"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#748184",
+          "parts": [
+            "logger-mast"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#daddd7",
+          "parts": [
             "logger-antenna-cap"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -224914,7 +226280,7 @@
       "id": "solar-electric-meter",
       "kit": "solar-energy",
       "title": "Solar electric meter",
-      "description": "Meter pedestal with a round meter face, upper enclosure and conduit base.",
+      "description": "Meter pedestal with a round meter face, upper enclosure and conduit base. Material controls: galvanized steel, polymer, frame aluminum, display glass.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -224935,7 +226301,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/solar-electric-meter.kcad.ts",
       "preview": "/assets/solar-energy-solar-electric-meter.png",
-      "sourceSha256": "56ab73f6ca81c1aa0025c1fa0190311965b70ecdfb676be414862758b6d8776c",
+      "sourceSha256": "172d9a780c7b1c82bb1613ec2ca4fff2e9e7f128cd92dab9bbcad54aca02d67d",
       "triangleBudget": 1800,
       "params": [
         {
@@ -224948,13 +226314,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#77817d",
-          "label": "Asset color"
+          "default": "#748184",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#daddd7",
+          "label": "Polymer"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b7c1c4",
+          "label": "Frame aluminum"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#24515d",
+          "label": "Display glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "galvanizedSteel": "#68787b",
+          "polymer": "#cdd2cb",
+          "aluminum": "#a9b5b9",
+          "displayGlass": "#376a73"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#536367",
+          "polymer": "#e6e0d1",
+          "aluminum": "#d4dcdf",
+          "displayGlass": "#167d95"
+        }
+      },
       "stats": {
         "triangles": 156,
         "sizeM": [
@@ -224967,16 +226364,37 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#77817d",
+          "name": "galvanizedSteel",
+          "color": "#748184",
           "parts": [
             "instrument-base",
-            "instrument-mast",
-            "meter-enclosure",
-            "meter-ring",
+            "instrument-mast"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#daddd7",
+          "parts": [
+            "meter-enclosure"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b7c1c4",
+          "parts": [
+            "meter-ring"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#24515d",
+          "parts": [
             "meter-face"
           ],
-          "param": "color"
+          "param": "displayGlass"
         }
       ]
     },
@@ -224984,7 +226402,7 @@
       "id": "solar-main-panel",
       "kit": "solar-energy",
       "title": "Solar main breaker panel",
-      "description": "Tall electrical panel enclosure with a divided door and two rows of knockouts.",
+      "description": "Tall electrical panel enclosure with a divided door and two rows of knockouts. Material controls: stainless steel, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225005,7 +226423,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/solar-main-panel.kcad.ts",
       "preview": "/assets/solar-energy-solar-main-panel.png",
-      "sourceSha256": "dfebb4934febaa53adc62fa63ab5830dd0911883de1d0597b07141cc21c4990d",
+      "sourceSha256": "ab6e150cb6f2d96f6a26f6421340d8dda157ed2715d29bf2c1e58bd358bfc9f9",
       "triangleBudget": 1800,
       "params": [
         {
@@ -225018,13 +226436,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#767d7b",
-          "label": "Asset color"
+          "default": "#c3caca",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#687c7c",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "stainlessSteel": "#abb5b7",
+          "powderCoat": "#7a807b"
+        },
+        "highVisibility": {
+          "stainlessSteel": "#e0e5e4",
+          "powderCoat": "#d1722b"
+        }
+      },
       "stats": {
         "triangles": 180,
         "sizeM": [
@@ -225037,12 +226470,10 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#767d7b",
+          "name": "stainlessSteel",
+          "color": "#c3caca",
           "parts": [
             "main-panel-plinth",
-            "main-panel-body",
-            "main-panel-door-1",
             "main-panel-handle-1",
             "main-panel-vent-1",
             "main-panel-vent-2",
@@ -225056,7 +226487,16 @@
             "breaker-knockout-4",
             "breaker-knockout-5"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#687c7c",
+          "parts": [
+            "main-panel-body",
+            "main-panel-door-1"
+          ],
+          "param": "powderCoat"
         }
       ]
     },
@@ -225064,7 +226504,7 @@
       "id": "solar-panel-end-clamp",
       "kit": "solar-energy",
       "title": "Solar panel end clamp",
-      "description": "Small adjustable rail clamp with a slotted base and raised pressure jaw.",
+      "description": "Small adjustable rail clamp with a slotted base and raised pressure jaw. Material controls: galvanized steel, frame aluminum, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225085,7 +226525,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/solar-panel-end-clamp.kcad.ts",
       "preview": "/assets/solar-energy-solar-panel-end-clamp.png",
-      "sourceSha256": "9512c805c7bcc330a9395da7c068980348a37ec7af50d4837b8130462551b127",
+      "sourceSha256": "3d18058e5c94ccd9294066478b7a1497d5a643aa4a6517d7dc5ef400743b5a24",
       "triangleBudget": 1800,
       "params": [
         {
@@ -225098,13 +226538,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#7b817a",
-          "label": "Asset color"
+          "default": "#748184",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b7c1c4",
+          "label": "Frame aluminum"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#c3caca",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "galvanizedSteel": "#68787b",
+          "aluminum": "#a9b5b9",
+          "stainlessSteel": "#abb5b7"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#536367",
+          "aluminum": "#d4dcdf",
+          "stainlessSteel": "#e0e5e4"
+        }
+      },
       "stats": {
         "triangles": 92,
         "sizeM": [
@@ -225117,16 +226580,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7b817a",
+          "name": "galvanizedSteel",
+          "color": "#748184",
           "parts": [
             "clamp-base",
             "slotted-foot",
-            "clamp-jaw",
-            "pressure-cap",
+            "clamp-jaw"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b7c1c4",
+          "parts": [
+            "pressure-cap"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#c3caca",
+          "parts": [
             "clamp-bolt"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -225134,7 +226611,7 @@
       "id": "solar-panel-wash-cart",
       "kit": "solar-energy",
       "title": "Solar panel wash cart",
-      "description": "Two-wheel service cart with a water tank, hose reel, handle and cleaning wand.",
+      "description": "Two-wheel service cart with a water tank, hose reel, handle and cleaning wand. Material controls: galvanized steel, polymer, rubber.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225155,7 +226632,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/solar-panel-wash-cart.kcad.ts",
       "preview": "/assets/solar-energy-solar-panel-wash-cart.png",
-      "sourceSha256": "1773e7ee2e1a912c8d37eac39d9144ab94a190781eb4b19684ed2df15a8ac6c5",
+      "sourceSha256": "d985b068261647bbc59b83931004fff94ff43d4ced29ae7550d44680a334412f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -225168,13 +226645,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#7b846d",
-          "label": "Asset color"
+          "default": "#748184",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#daddd7",
+          "label": "Polymer"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#262c2e",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "galvanizedSteel": "#68787b",
+          "polymer": "#cdd2cb",
+          "rubber": "#282d2e"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#536367",
+          "polymer": "#e6e0d1",
+          "rubber": "#232728"
+        }
+      },
       "stats": {
         "triangles": 180,
         "sizeM": [
@@ -225187,18 +226687,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7b846d",
+          "name": "galvanizedSteel",
+          "color": "#748184",
           "parts": [
             "cart-platform",
+            "push-handle"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#daddd7",
+          "parts": [
             "water-tank",
-            "cart-wheel-0",
-            "cart-wheel-1",
-            "push-handle",
-            "hose-reel",
             "cleaning-wand"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "rubber",
+          "color": "#262c2e",
+          "parts": [
+            "cart-wheel-0",
+            "cart-wheel-1",
+            "hose-reel"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -225206,7 +226720,7 @@
       "id": "solar-pergola-canopy",
       "kit": "solar-energy",
       "title": "Solar pergola canopy",
-      "description": "Compact four-post garden pergola with a four-module panel roof.",
+      "description": "Compact four-post garden pergola with a four-module panel roof. Material controls: galvanized steel, frame aluminum, solar glass.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225227,7 +226741,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/solar-pergola-canopy.kcad.ts",
       "preview": "/assets/solar-energy-solar-pergola-canopy.png",
-      "sourceSha256": "840f9359eba15edcb47b1514683d246153117cc14e8b0d427f0b4b076f426bb8",
+      "sourceSha256": "9613c512382192c862a926e8a2eff2b5e2788e0ee65af6cc5f113dbfc9b668f2",
       "triangleBudget": 1800,
       "params": [
         {
@@ -225240,13 +226754,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#687f82",
-          "label": "Asset color"
+          "default": "#748184",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b7c1c4",
+          "label": "Frame aluminum"
+        },
+        {
+          "name": "solarGlass",
+          "type": "color",
+          "default": "#244a68",
+          "label": "Solar glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "galvanizedSteel": "#68787b",
+          "aluminum": "#a9b5b9",
+          "solarGlass": "#1e4668"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#536367",
+          "aluminum": "#d4dcdf",
+          "solarGlass": "#183a5b"
+        }
+      },
       "stats": {
         "triangles": 168,
         "sizeM": [
@@ -225259,25 +226796,39 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#687f82",
+          "name": "galvanizedSteel",
+          "color": "#748184",
           "parts": [
             "canopy-post-0-0",
             "canopy-post-0-1",
             "canopy-post-1-0",
             "canopy-post-1-1",
             "canopy-front-beam",
-            "canopy-back-beam",
+            "canopy-back-beam"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b7c1c4",
+          "parts": [
             "canopy-pv-0-0-frame",
-            "canopy-pv-0-0-surface",
             "canopy-pv-0-1-frame",
-            "canopy-pv-0-1-surface",
             "canopy-pv-1-0-frame",
+            "canopy-pv-1-1-frame"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "solarGlass",
+          "color": "#244a68",
+          "parts": [
+            "canopy-pv-0-0-surface",
+            "canopy-pv-0-1-surface",
             "canopy-pv-1-0-surface",
-            "canopy-pv-1-1-frame",
             "canopy-pv-1-1-surface"
           ],
-          "param": "color"
+          "param": "solarGlass"
         }
       ]
     },
@@ -225285,7 +226836,7 @@
       "id": "solar-roof-section",
       "kit": "solar-energy",
       "title": "Solar roof section",
-      "description": "Small pitched-roof display with framed panels, ridge cap and two mounting rails.",
+      "description": "Small pitched-roof display with framed panels, ridge cap and two mounting rails. Material controls: galvanized steel, frame aluminum, solar glass.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225306,7 +226857,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/solar-roof-section.kcad.ts",
       "preview": "/assets/solar-energy-solar-roof-section.png",
-      "sourceSha256": "9d77a304348dc3090422454a848acf86c020e78ce87fce5e318b83b5d1a3157a",
+      "sourceSha256": "c2f380f43e39dd813495b2d5c4df2db7354047fbfdaa09c59ec68f01286a2380",
       "triangleBudget": 1800,
       "params": [
         {
@@ -225319,13 +226870,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#7c7462",
-          "label": "Asset color"
+          "default": "#748184",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b7c1c4",
+          "label": "Frame aluminum"
+        },
+        {
+          "name": "solarGlass",
+          "type": "color",
+          "default": "#244a68",
+          "label": "Solar glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "galvanizedSteel": "#68787b",
+          "aluminum": "#a9b5b9",
+          "solarGlass": "#1e4668"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#536367",
+          "aluminum": "#d4dcdf",
+          "solarGlass": "#183a5b"
+        }
+      },
       "stats": {
         "triangles": 96,
         "sizeM": [
@@ -225338,19 +226912,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7c7462",
+          "name": "galvanizedSteel",
+          "color": "#748184",
           "parts": [
             "roof-deck",
             "ridge-cap",
-            "roof-module-0-frame",
-            "roof-module-0-surface",
-            "roof-module-1-frame",
-            "roof-module-1-surface",
             "roof-rail-0",
             "roof-rail-1"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b7c1c4",
+          "parts": [
+            "roof-module-0-frame",
+            "roof-module-1-frame"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "solarGlass",
+          "color": "#244a68",
+          "parts": [
+            "roof-module-0-surface",
+            "roof-module-1-surface"
+          ],
+          "param": "solarGlass"
         }
       ]
     },
@@ -225358,7 +226946,7 @@
       "id": "solar-weather-station",
       "kit": "solar-energy",
       "title": "Solar weather station",
-      "description": "Compact instrument mast with a crossarm, sensor housings and wind vane.",
+      "description": "Compact instrument mast with a crossarm, sensor housings and wind vane. Material controls: galvanized steel, frame aluminum, polymer.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225379,7 +226967,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/solar-weather-station.kcad.ts",
       "preview": "/assets/solar-energy-solar-weather-station.png",
-      "sourceSha256": "e5476facc4e27b1379c6b4d99c8d041e41c537e515ed5305ce39e477b5752233",
+      "sourceSha256": "8a6b174077c46ca2888fe539660ffd1f7ffd4cb231bf871362f423ea99d646b0",
       "triangleBudget": 1800,
       "params": [
         {
@@ -225392,13 +226980,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#687d7f",
-          "label": "Asset color"
+          "default": "#748184",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b7c1c4",
+          "label": "Frame aluminum"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#daddd7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "galvanizedSteel": "#68787b",
+          "aluminum": "#a9b5b9",
+          "polymer": "#cdd2cb"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#536367",
+          "aluminum": "#d4dcdf",
+          "polymer": "#e6e0d1"
+        }
+      },
       "stats": {
         "triangles": 116,
         "sizeM": [
@@ -225411,18 +227022,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#687d7f",
+          "name": "galvanizedSteel",
+          "color": "#748184",
           "parts": [
             "instrument-base",
-            "instrument-mast",
-            "weather-crossarm",
+            "instrument-mast"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b7c1c4",
+          "parts": [
+            "weather-crossarm"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "polymer",
+          "color": "#daddd7",
+          "parts": [
             "sensor-pod-0",
             "sensor-pod-1",
             "sensor-pod-2",
             "wind-vane-fin"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -225430,7 +227055,7 @@
       "id": "solar-wind-sensor-mast",
       "kit": "solar-energy",
       "title": "Solar wind sensor mast",
-      "description": "Slim mast with three-cup anemometer, wind vane and compact mounting base.",
+      "description": "Slim mast with three-cup anemometer, wind vane and compact mounting base. Material controls: galvanized steel, frame aluminum, polymer.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225451,7 +227076,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/solar-wind-sensor-mast.kcad.ts",
       "preview": "/assets/solar-energy-solar-wind-sensor-mast.png",
-      "sourceSha256": "cf05e281a5a64102058627d53304f26f47400581d7f6393a290377fff19fa833",
+      "sourceSha256": "3ebec949ec4e0961e02337b7065309e969eb25936191947d4de0f93221d54a53",
       "triangleBudget": 1800,
       "params": [
         {
@@ -225464,13 +227089,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#6d817e",
-          "label": "Asset color"
+          "default": "#748184",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#b7c1c4",
+          "label": "Frame aluminum"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#daddd7",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "galvanizedSteel": "#68787b",
+          "aluminum": "#a9b5b9",
+          "polymer": "#cdd2cb"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#536367",
+          "aluminum": "#d4dcdf",
+          "polymer": "#e6e0d1"
+        }
+      },
       "stats": {
         "triangles": 292,
         "sizeM": [
@@ -225483,13 +227131,27 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6d817e",
+          "name": "galvanizedSteel",
+          "color": "#748184",
           "parts": [
             "instrument-base",
-            "instrument-mast",
+            "instrument-mast"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b7c1c4",
+          "parts": [
             "wind-crossarm",
-            "anemometer-hub",
+            "anemometer-hub"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "polymer",
+          "color": "#daddd7",
+          "parts": [
             "anemometer-cup-arm-0",
             "anemometer-cup-0",
             "anemometer-cup-arm-1",
@@ -225498,7 +227160,7 @@
             "anemometer-cup-2",
             "wind-vane"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -225506,7 +227168,7 @@
       "id": "string-inverter",
       "kit": "solar-energy",
       "title": "String inverter",
-      "description": "Wall-mounted string inverter cabinet with cooling ribs, display and cable glands.",
+      "description": "Wall-mounted string inverter cabinet with cooling ribs, display and cable glands. Material controls: stainless steel, powder-coated steel, display glass, rubber.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225527,7 +227189,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/string-inverter.kcad.ts",
       "preview": "/assets/solar-energy-string-inverter.png",
-      "sourceSha256": "8ccb933ba5143797e48082dc0739e7c292d1a21ea1687eae50f4cc16b02e87ec",
+      "sourceSha256": "714284c24f5503e16951797682536fbf631cc7a5c27bbc6a5a1a4a33004c6c30",
       "triangleBudget": 1800,
       "params": [
         {
@@ -225540,13 +227202,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#78817f",
-          "label": "Asset color"
+          "default": "#c3caca",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#687c7c",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#24515d",
+          "label": "Display glass"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#262c2e",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "stainlessSteel": "#abb5b7",
+          "powderCoat": "#7a807b",
+          "displayGlass": "#376a73",
+          "rubber": "#282d2e"
+        },
+        "highVisibility": {
+          "stainlessSteel": "#e0e5e4",
+          "powderCoat": "#d1722b",
+          "displayGlass": "#167d95",
+          "rubber": "#232728"
+        }
+      },
       "stats": {
         "triangles": 336,
         "sizeM": [
@@ -225559,12 +227252,10 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#78817f",
+          "name": "stainlessSteel",
+          "color": "#c3caca",
           "parts": [
             "inverter-plinth",
-            "inverter-body",
-            "inverter-door-1",
             "inverter-handle-1",
             "inverter-vent-1",
             "inverter-vent-2",
@@ -225577,13 +227268,36 @@
             "inverter-cooling-fin-3",
             "inverter-cooling-fin-4",
             "inverter-cooling-fin-5",
-            "inverter-cooling-fin-6",
-            "inverter-display",
+            "inverter-cooling-fin-6"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#687c7c",
+          "parts": [
+            "inverter-body",
+            "inverter-door-1"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#24515d",
+          "parts": [
+            "inverter-display"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "rubber",
+          "color": "#262c2e",
+          "parts": [
             "inverter-cable-port-0",
             "inverter-cable-port-1",
             "inverter-cable-port-2"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -225591,7 +227305,7 @@
       "id": "utility-inverter-station",
       "kit": "solar-energy",
       "title": "Utility inverter station",
-      "description": "Containerized inverter station with service doors, ventilation louvers and cable plinth.",
+      "description": "Containerized inverter station with service doors, ventilation louvers and cable plinth. Material controls: stainless steel, powder-coated steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -225612,7 +227326,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/utility-inverter-station.kcad.ts",
       "preview": "/assets/solar-energy-utility-inverter-station.png",
-      "sourceSha256": "79880544c14d60dabc9c9fe5f3a0276bca447cdeaf0c037279c762255032e874",
+      "sourceSha256": "823dc583a9a181a9d5f8892068f8e82d31017f25aec0c6c9a65f600329837a80",
       "triangleBudget": 1800,
       "params": [
         {
@@ -225625,13 +227339,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#737d78",
-          "label": "Asset color"
+          "default": "#c3caca",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#687c7c",
+          "label": "Powder-coated steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "fieldService": {
+          "stainlessSteel": "#abb5b7",
+          "powderCoat": "#7a807b"
+        },
+        "highVisibility": {
+          "stainlessSteel": "#e0e5e4",
+          "powderCoat": "#d1722b"
+        }
+      },
       "stats": {
         "triangles": 180,
         "sizeM": [
@@ -225644,14 +227373,11 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#737d78",
+          "name": "stainlessSteel",
+          "color": "#c3caca",
           "parts": [
             "station-plinth",
-            "station-body",
-            "station-door-1",
             "station-handle-1",
-            "station-door-2",
             "station-handle-2",
             "station-vent-1",
             "station-vent-2",
@@ -225663,7 +227389,17 @@
             "station-end-vent-1",
             "station-cable-plinth"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#687c7c",
+          "parts": [
+            "station-body",
+            "station-door-1",
+            "station-door-2"
+          ],
+          "param": "powderCoat"
         }
       ]
     },
