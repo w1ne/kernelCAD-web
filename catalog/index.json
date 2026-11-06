@@ -258264,10 +258264,17 @@
       "id": "ellipsoidal-reflector-spotlight",
       "kit": "theatre-production",
       "title": "Ellipsoidal reflector spotlight",
-      "description": "Theatre profile fixture with a horizontal barrel, forward-facing lens, rear housing, yoke and focus control. Knobs: overall scale; powder-coated steel, aluminum, steel hardware, lens and display glass; houseShow and touring appearance presets.",
+      "description": "Theatre ellipsoidal profile spotlight hung from a C-clamp: bulbous reflector housing with rear lamp cap and knob, shutter barrel with four shutter handles and a gobo slot, a lens tube with focus knob (19, 26 or 50 degree length), front gel-frame holder with frame, and a flat-strap yoke with tilt-lock handles. Material controls: powder-coated body and yoke, cast-aluminium clamp, handles and gel frame, plated hardware, lens. houseShow and touring presets.",
       "category": "prop",
       "origin": "center",
       "tags": [
+        "ellipsoidal",
+        "ERS",
+        "profile spot",
+        "leko",
+        "source four",
+        "stage light",
+        "spotlight",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -258284,7 +258291,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/ellipsoidal-reflector-spotlight.kcad.ts",
       "preview": "/assets/theatre-production-ellipsoidal-reflector-spotlight.png",
-      "sourceSha256": "b4cab68ab5eec1a36e3a473e782c6ea35a2745940f14ecf0650c70fb707d7f6c",
+      "sourceSha256": "5b5aef7295805923d01d72fd67ce12b03230493da5aeedbe13ca80414a3b5167",
       "triangleBudget": 1800,
       "params": [
         {
@@ -258297,92 +258304,134 @@
           "step": 0.05
         },
         {
+          "name": "lensTube",
+          "type": "choice",
+          "default": "26deg",
+          "label": "Lens tube (beam angle)",
+          "choices": [
+            "19deg",
+            "26deg",
+            "50deg"
+          ]
+        },
+        {
           "name": "powderCoat",
           "type": "color",
-          "default": "#353b41",
-          "label": "Powder-coated steel"
+          "default": "#26292d",
+          "label": "Housing, lens tube and yoke (powder-coated)"
         },
         {
           "name": "aluminum",
           "type": "color",
-          "default": "#bac3c6",
-          "label": "Aluminum"
+          "default": "#b9c1c4",
+          "label": "C-clamp, shutter handles and gel frame (cast aluminium)"
         },
         {
           "name": "hardware",
           "type": "color",
           "default": "#c28f3e",
-          "label": "Steel hardware"
+          "label": "Knobs, tilt locks and bolts (plated steel)"
         },
         {
           "name": "glass",
           "type": "color",
           "default": "#f3e9bf",
-          "label": "Lens and display glass"
+          "label": "Front lens and gel"
         }
       ],
       "presets": {
         "houseShow": {
-          "powderCoat": "#272d33",
+          "powderCoat": "#1d2024",
           "aluminum": "#c7cecf",
           "hardware": "#c5a052",
           "glass": "#ffd15d"
         },
         "touring": {
-          "powderCoat": "#315465",
-          "aluminum": "#dce3e2",
+          "powderCoat": "#e8e8e2",
+          "aluminum": "#3a4148",
           "hardware": "#e2b347",
           "glass": "#31b9d2"
         }
       },
       "stats": {
-        "triangles": 304,
+        "triangles": 1442,
         "sizeM": [
-          0.4955,
-          0.48,
-          0.74
+          0.64,
+          0.578,
+          0.75599
         ],
-        "minUpM": 0,
+        "minUpM": -0.156,
         "materials": 1
       },
       "palette": [
         {
           "name": "powderCoat",
-          "color": "#353b41",
+          "color": "#26292d",
           "parts": [
-            "rear-housing",
-            "front-shutter-top",
-            "front-shutter-left",
-            "front-shutter-right",
-            "focus-knob"
+            "reflector-housing",
+            "rib-160",
+            "rib-215",
+            "rib-265",
+            "lamp-cap",
+            "lamp-cord",
+            "shutter-barrel",
+            "lens-tube",
+            "holder-plate",
+            "holder-runner-l",
+            "holder-runner-r",
+            "yoke-top",
+            "yoke-arm--1",
+            "tilt-boss--1",
+            "yoke-arm-1",
+            "tilt-boss-1"
           ],
           "param": "powderCoat"
-        },
-        {
-          "name": "aluminum",
-          "color": "#bac3c6",
-          "parts": [
-            "barrel"
-          ],
-          "param": "aluminum"
         },
         {
           "name": "hardware",
           "color": "#c28f3e",
           "parts": [
-            "yoke-left",
-            "yoke-right",
-            "yoke-crossbar",
-            "stirrup-eye"
+            "lamp-knob",
+            "focus-knob",
+            "tilt-lock--1",
+            "tilt-handle--1",
+            "tilt-lock-1",
+            "tilt-handle-1",
+            "clamp-stud",
+            "clamp-bolt",
+            "clamp-wing"
           ],
           "param": "hardware"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b9c1c4",
+          "parts": [
+            "shutter-handle-45",
+            "shutter-tab-45",
+            "shutter-handle-135",
+            "shutter-tab-135",
+            "shutter-handle-225",
+            "shutter-tab-225",
+            "shutter-handle-315",
+            "shutter-tab-315",
+            "gobo-slot",
+            "focus-slot",
+            "gel-frame-0",
+            "gel-frame-1",
+            "gel-frame-2",
+            "gel-frame-3",
+            "c-clamp",
+            "pipe-stub"
+          ],
+          "param": "aluminum"
         },
         {
           "name": "glass",
           "color": "#f3e9bf",
           "parts": [
-            "lens-rim",
-            "lens"
+            "lens",
+            "gel"
           ],
           "param": "glass"
         }
@@ -258724,10 +258773,14 @@
       "id": "fresnel-wash-fixture",
       "kit": "theatre-production",
       "title": "Fresnel wash fixture",
-      "description": "Compact Fresnel wash luminaire with a broad lens rim, rear vent body, yoke and clamp spigot. Knobs: overall scale; powder-coated steel, steel hardware, aluminum, lens and display glass; houseShow and touring appearance presets.",
+      "description": "Theatre Fresnel wash light hung from a C-clamp: short vented drum with a stepped Fresnel lens across the front, rear lamp cap with cooling louvres, focus slider underneath, gel-frame runners, strap yoke with tilt-lock handles, and an optional four-leaf barn door. Material controls: powder-coated drum and yoke, cast-aluminium clamp and barn-door ring, plated hardware, lens. houseShow and touring presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "fresnel",
+        "wash light",
+        "stage light",
+        "barn doors",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -258744,7 +258797,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/fresnel-wash-fixture.kcad.ts",
       "preview": "/assets/theatre-production-fresnel-wash-fixture.png",
-      "sourceSha256": "115b0ade8a817bd5a2764ba3ab446760ea9e58a93d8480ff8b1ca21c1b82c549",
+      "sourceSha256": "12726b921d9e6e67db897b06091e2cc3696556b1f18cbbb3844467d51d62573b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -258757,33 +258810,43 @@
           "step": 0.05
         },
         {
+          "name": "barnDoor",
+          "type": "choice",
+          "default": "fitted",
+          "label": "Barn door",
+          "choices": [
+            "fitted",
+            "none"
+          ]
+        },
+        {
           "name": "powderCoat",
           "type": "color",
-          "default": "#353b41",
-          "label": "Powder-coated steel"
+          "default": "#2b3035",
+          "label": "Drum, rear cap, yoke and barn-door leaves (powder-coated)"
         },
         {
           "name": "hardware",
           "type": "color",
           "default": "#c28f3e",
-          "label": "Steel hardware"
+          "label": "Tilt locks, focus knob and bolts (plated steel)"
         },
         {
           "name": "aluminum",
           "type": "color",
           "default": "#bac3c6",
-          "label": "Aluminum"
+          "label": "C-clamp, runners and barn-door ring (cast aluminium)"
         },
         {
           "name": "glass",
           "type": "color",
           "default": "#f3e9bf",
-          "label": "Lens and display glass"
+          "label": "Fresnel lens"
         }
       ],
       "presets": {
         "houseShow": {
-          "powderCoat": "#272d33",
+          "powderCoat": "#1f2428",
           "hardware": "#c5a052",
           "aluminum": "#c7cecf",
           "glass": "#ffd15d"
@@ -258796,11 +258859,11 @@
         }
       },
       "stats": {
-        "triangles": 216,
+        "triangles": 1144,
         "sizeM": [
-          0.485,
-          0.825,
-          0.393
+          0.68,
+          0.718451,
+          0.611259
         ],
         "minUpM": 0,
         "materials": 1
@@ -258808,41 +258871,67 @@
       "palette": [
         {
           "name": "powderCoat",
-          "color": "#353b41",
+          "color": "#2b3035",
           "parts": [
-            "rear-case",
-            "side-plate-left",
-            "side-plate-right"
+            "drum",
+            "bezel",
+            "rear-cap",
+            "louvre-0",
+            "louvre-1",
+            "louvre-2",
+            "louvre-3",
+            "louvre-cover",
+            "power-cord",
+            "leaf-top",
+            "leaf-bottom",
+            "leaf-left",
+            "leaf-right",
+            "yoke-top",
+            "yoke-arm--1",
+            "tilt-boss--1",
+            "yoke-arm-1",
+            "tilt-boss-1"
           ],
           "param": "powderCoat"
-        },
-        {
-          "name": "hardware",
-          "color": "#c28f3e",
-          "parts": [
-            "yoke-arm-left",
-            "yoke-arm-right",
-            "yoke-crossbar",
-            "spigot",
-            "focus-handle"
-          ],
-          "param": "hardware"
-        },
-        {
-          "name": "aluminum",
-          "color": "#bac3c6",
-          "parts": [
-            "barrel"
-          ],
-          "param": "aluminum"
         },
         {
           "name": "glass",
           "color": "#f3e9bf",
           "parts": [
-            "lens-rim"
+            "lens-step-0",
+            "lens-step-1",
+            "lens-step-2",
+            "lens-step-3"
           ],
           "param": "glass"
+        },
+        {
+          "name": "aluminum",
+          "color": "#bac3c6",
+          "parts": [
+            "focus-track",
+            "runner--1",
+            "runner-1",
+            "barn-ring",
+            "c-clamp",
+            "pipe-stub"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
+            "focus-knob",
+            "tilt-lock--1",
+            "tilt-handle--1",
+            "tilt-lock-1",
+            "tilt-handle-1",
+            "clamp-stud",
+            "clamp-bolt",
+            "clamp-wing"
+          ],
+          "param": "hardware"
         }
       ]
     },
@@ -259743,10 +259832,15 @@
       "id": "motorized-chain-hoist",
       "kit": "theatre-production",
       "title": "Motorized chain hoist",
-      "description": "Compact overhead hoist body with a motor cover, suspension bail, chain drop and lower hook block. Knobs: overall scale; painted steel, galvanized steel, rubber and isolation pads, steel hardware; houseShow and touring appearance presets.",
+      "description": "Electric chain hoist on a beam: round cast body with ribbed gear case, motor end cap, brake end and carry handle, swivel hook in a round sling round an I-beam stub, link chain to a latched load hook, canvas chain bag for the slack, and a control cable with multipin connector. Standard rig (motor on the beam) or climbing rig (chain hook on the beam, motor inverted on the chain). Material controls: painted body, galvanized chain and beam, black sling, cable and bag, plated hooks. houseShow and touring presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "chain hoist",
+        "chain motor",
+        "lodestar",
+        "rigging",
+        "truss motor",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -259763,8 +259857,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/motorized-chain-hoist.kcad.ts",
       "preview": "/assets/theatre-production-motorized-chain-hoist.png",
-      "sourceSha256": "269f63ac4e4da1fca47ff248a004ed0759bf1c509e46630887861de07054a9a7",
-      "triangleBudget": 1800,
+      "sourceSha256": "9b3c15ad9d0a0601800912684350e0c655753494f8a2025977135121c80eaab1",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -259776,89 +259870,144 @@
           "step": 0.05
         },
         {
+          "name": "rig",
+          "type": "choice",
+          "default": "standard",
+          "label": "Rig orientation",
+          "choices": [
+            "standard",
+            "climbing"
+          ]
+        },
+        {
           "name": "paintedSteel",
           "type": "color",
-          "default": "#454d54",
-          "label": "Painted steel"
+          "default": "#3c4349",
+          "label": "Hoist body, end caps and handle (painted cast steel)"
         },
         {
           "name": "galvanizedSteel",
           "type": "color",
           "default": "#aab5b9",
-          "label": "Galvanized steel"
+          "label": "Load chain and beam (galvanized steel)"
         },
         {
           "name": "rubber",
           "type": "color",
-          "default": "#272a2d",
-          "label": "Rubber and isolation pads"
+          "default": "#22262a",
+          "label": "Round sling, control cable and chain bag (black polyester and rubber)"
         },
         {
           "name": "hardware",
           "type": "color",
           "default": "#c28f3e",
-          "label": "Steel hardware"
+          "label": "Hooks, latches and connector (plated steel)"
         }
       ],
       "presets": {
         "houseShow": {
-          "paintedSteel": "#313940",
+          "paintedSteel": "#2b3137",
           "galvanizedSteel": "#c0c8ca",
-          "rubber": "#222629",
+          "rubber": "#1d2023",
           "hardware": "#c5a052"
         },
         "touring": {
           "paintedSteel": "#dda21f",
           "galvanizedSteel": "#dce2e2",
-          "rubber": "#25292c",
+          "rubber": "#5b2a7a",
           "hardware": "#e2b347"
         }
       },
       "stats": {
-        "triangles": 240,
+        "triangles": 1796,
         "sizeM": [
-          0.605,
-          1.475,
-          0.3925
+          0.931965,
+          1.938,
+          0.9
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#454d54",
-          "parts": [
-            "hoist-case",
-            "motor-cover",
-            "control-cover",
-            "suspension-bail-left",
-            "suspension-bail-right",
-            "bail-top"
-          ],
-          "param": "paintedSteel"
-        },
-        {
           "name": "galvanizedSteel",
           "color": "#aab5b9",
           "parts": [
-            "chain"
+            "beam",
+            "chain-0",
+            "chain-1",
+            "chain-2",
+            "chain-3",
+            "chain-4",
+            "chain-5",
+            "chain-6",
+            "chain-7",
+            "chain-8",
+            "chain-9",
+            "chain-10",
+            "chain-11",
+            "chain-12",
+            "chain-13",
+            "chain-14",
+            "chain-15",
+            "chain-16",
+            "chain-17",
+            "chain-18",
+            "chain-19",
+            "chain-20",
+            "chain-21",
+            "chain-22",
+            "chain-23"
           ],
           "param": "galvanizedSteel"
         },
         {
           "name": "rubber",
-          "color": "#272a2d",
+          "color": "#22262a",
           "parts": [
-            "chain-wheel"
+            "sling--1",
+            "sling-1",
+            "sling-top",
+            "chain-bag",
+            "bag-strap",
+            "control-cable-0",
+            "control-cable-1"
           ],
           "param": "rubber"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#3c4349",
+          "parts": [
+            "gear-case",
+            "motor-cover",
+            "motor-end-cap",
+            "brake-end",
+            "suspension-block",
+            "chain-guide",
+            "handle-l",
+            "handle-r",
+            "handle-grip",
+            "gear-rib--60",
+            "gear-rib--20",
+            "gear-rib-20",
+            "gear-rib-60",
+            "motor-fin-130",
+            "motor-fin-175",
+            "motor-fin-220"
+          ],
+          "param": "paintedSteel"
         },
         {
           "name": "hardware",
           "color": "#c28f3e",
           "parts": [
-            "hook-profile"
+            "connector",
+            "swivel",
+            "body-hook",
+            "body-hook-latch",
+            "load-hook",
+            "load-latch"
           ],
           "param": "hardware"
         }
@@ -260091,10 +260240,16 @@
       "id": "par-can-fixture",
       "kit": "theatre-production",
       "title": "PAR can fixture",
-      "description": "Compact PAR-style can with a cylindrical lamp body, lens rim, side yoke and clamp spigot. Knobs: overall scale; steel hardware, powder-coated steel, aluminum, lens and display glass; houseShow and touring appearance presets.",
+      "description": "PAR64 can light: long spun-metal tube with rolled beads, flat back cap with lamp socket and cord, front ring with spring-clipped gel frame, strap yoke with hand-wheel tilt locks; hung from a pipe on a C-clamp and tilted down, or stood on the floor on its yoke and tilted up. Material controls: can body, yoke and caps, cast-aluminium clamp and gel frame, plated hand wheels, lamp face. houseShow and touring presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "PAR can",
+        "PAR64",
+        "parcan",
+        "wash light",
+        "concert lighting",
+        "stage light",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -260111,7 +260266,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/par-can-fixture.kcad.ts",
       "preview": "/assets/theatre-production-par-can-fixture.png",
-      "sourceSha256": "c1252eb46467ea0a6add196d4f7f15a75918e7660eec3677cbbcf7776692fed6",
+      "sourceSha256": "10140127f87fd1a72c7467e7b9cc668246307e2867b1ccb3e7d9ea2b79183ffe",
       "triangleBudget": 1800,
       "params": [
         {
@@ -260124,75 +260279,80 @@
           "step": 0.05
         },
         {
+          "name": "mounting",
+          "type": "choice",
+          "default": "hung",
+          "label": "Mounting",
+          "choices": [
+            "hung",
+            "floor"
+          ]
+        },
+        {
           "name": "hardware",
           "type": "color",
           "default": "#c28f3e",
-          "label": "Steel hardware"
+          "label": "Hand-wheel tilt locks and bolts (plated steel)"
         },
         {
           "name": "powderCoat",
           "type": "color",
-          "default": "#353b41",
-          "label": "Powder-coated steel"
+          "default": "#2a2e33",
+          "label": "Can body, back cap and yoke (powder-coated)"
         },
         {
           "name": "aluminum",
           "type": "color",
           "default": "#bac3c6",
-          "label": "Aluminum"
+          "label": "Front ring, gel frame and C-clamp (aluminium)"
         },
         {
           "name": "glass",
           "type": "color",
           "default": "#f3e9bf",
-          "label": "Lens and display glass"
+          "label": "Lamp face and gel"
         }
       ],
       "presets": {
         "houseShow": {
           "hardware": "#c5a052",
-          "powderCoat": "#272d33",
+          "powderCoat": "#1d2125",
           "aluminum": "#c7cecf",
           "glass": "#ffd15d"
         },
         "touring": {
-          "hardware": "#e2b347",
-          "powderCoat": "#315465",
-          "aluminum": "#dce3e2",
-          "glass": "#31b9d2"
+          "hardware": "#2b2f33",
+          "powderCoat": "#cfd6d8",
+          "aluminum": "#8b969b",
+          "glass": "#d8327a"
         }
       },
       "stats": {
-        "triangles": 260,
+        "triangles": 1056,
         "sizeM": [
-          0.46,
-          0.635,
-          0.356
+          0.6,
+          0.685565,
+          0.698354
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "hardware",
-          "color": "#c28f3e",
-          "parts": [
-            "yoke-left",
-            "yoke-right",
-            "yoke-crossbar",
-            "spigot",
-            "lamp-door-tab",
-            "side-bolt-left",
-            "side-bolt-right"
-          ],
-          "param": "hardware"
-        },
-        {
           "name": "powderCoat",
-          "color": "#353b41",
+          "color": "#2a2e33",
           "parts": [
             "can-body",
-            "rear-cap"
+            "bead--200",
+            "bead--40",
+            "bead-110",
+            "back-cap",
+            "cord",
+            "tilt-boss-l",
+            "tilt-boss-r",
+            "yoke-top",
+            "yoke-arm--1",
+            "yoke-arm-1"
           ],
           "param": "powderCoat"
         },
@@ -260200,7 +260360,14 @@
           "name": "aluminum",
           "color": "#bac3c6",
           "parts": [
-            "front-rim"
+            "lamp-socket",
+            "front-ring",
+            "gel-frame-0",
+            "gel-frame-1",
+            "gel-frame-2",
+            "gel-frame-3",
+            "c-clamp",
+            "pipe-stub"
           ],
           "param": "aluminum"
         },
@@ -260208,9 +260375,25 @@
           "name": "glass",
           "color": "#f3e9bf",
           "parts": [
-            "lens"
+            "lamp-face",
+            "gel"
           ],
           "param": "glass"
+        },
+        {
+          "name": "hardware",
+          "color": "#c28f3e",
+          "parts": [
+            "spring-clip",
+            "hand-wheel--1",
+            "wheel-hub--1",
+            "hand-wheel-1",
+            "wheel-hub-1",
+            "clamp-stud",
+            "clamp-bolt",
+            "clamp-wing"
+          ],
+          "param": "hardware"
         }
       ]
     },
@@ -261520,11 +261703,16 @@
     {
       "id": "spotlight-followspot-stand",
       "kit": "theatre-production",
-      "title": "Followspot stand",
-      "description": "Tall followspot support with a weighted base, height mast, yoke saddle and paired adjustment knobs. Knobs: overall scale; powder-coated steel, steel hardware; houseShow and touring appearance presets.",
+      "title": "Followspot on stand",
+      "description": "Theatre followspot on its floor stand: 1.2 m barrel with front lens tube, colour-changer boomerang box with six gel levers, ventilated rear lamp house, sighting scope, rear operator handles and tilt locks on a yoke, standing on a castored tripod or a weighted pedestal. Material controls: powder-coated body and stand, plated levers and locks, lens, rubber grips and castors. houseShow and touring presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "followspot",
+        "follow spot",
+        "spotlight",
+        "stage light",
+        "spot booth",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -261541,8 +261729,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/spotlight-followspot-stand.kcad.ts",
       "preview": "/assets/theatre-production-spotlight-followspot-stand.png",
-      "sourceSha256": "0dfb0c96264abd4e6b81ba4da0f4179eb25584b145bbb90d471367583ff23820",
-      "triangleBudget": 1800,
+      "sourceSha256": "101ac1cee313f1dd5fb5050c4379b76f72e6170604e8f93d20c13d47b48a3709",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -261554,34 +261742,60 @@
           "step": 0.05
         },
         {
+          "name": "stand",
+          "type": "choice",
+          "default": "tripod",
+          "label": "Stand",
+          "choices": [
+            "tripod",
+            "pedestal"
+          ]
+        },
+        {
           "name": "powderCoat",
           "type": "color",
-          "default": "#353b41",
-          "label": "Powder-coated steel"
+          "default": "#2c3136",
+          "label": "Barrel, lamp house, yoke and stand (powder-coated)"
         },
         {
           "name": "hardware",
           "type": "color",
           "default": "#c28f3e",
-          "label": "Steel hardware"
+          "label": "Gel levers, tilt locks and clamps (plated steel)"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#f3e9bf",
+          "label": "Front lens and scope glass"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1b1d20",
+          "label": "Handle grips, castors and feet (rubber)"
         }
       ],
       "presets": {
         "houseShow": {
-          "powderCoat": "#272d33",
-          "hardware": "#c5a052"
+          "powderCoat": "#22272c",
+          "hardware": "#c5a052",
+          "glass": "#ffd15d",
+          "rubber": "#141618"
         },
         "touring": {
           "powderCoat": "#315465",
-          "hardware": "#e2b347"
+          "hardware": "#e2b347",
+          "glass": "#31b9d2",
+          "rubber": "#2a2d30"
         }
       },
       "stats": {
-        "triangles": 204,
+        "triangles": 2024,
         "sizeM": [
-          0.8,
-          1.66,
-          0.65
+          1.123872,
+          1.622,
+          1.457965
         ],
         "minUpM": 0,
         "materials": 1
@@ -261589,26 +261803,91 @@
       "palette": [
         {
           "name": "powderCoat",
-          "color": "#353b41",
+          "color": "#2c3136",
           "parts": [
-            "base",
-            "mast",
-            "crosshead",
-            "saddle",
-            "height-collar",
-            "left-adjuster",
-            "right-adjuster"
+            "lens-tube",
+            "boomerang",
+            "barrel",
+            "iris-ring",
+            "lamp-house",
+            "vent-rib-300",
+            "vent-rib-345",
+            "vent-rib-390",
+            "vent-rib-435",
+            "vent-rib-480",
+            "chimney",
+            "scope",
+            "handle-arm--1",
+            "handle-arm-1",
+            "yoke-base",
+            "yoke-arm--1",
+            "tilt-boss--1",
+            "yoke-arm-1",
+            "tilt-boss-1",
+            "pan-head",
+            "column",
+            "leg-hub",
+            "leg-0",
+            "brace-0",
+            "castor-fork-0",
+            "leg-1",
+            "brace-1",
+            "castor-fork-1",
+            "leg-2",
+            "brace-2",
+            "castor-fork-2"
           ],
           "param": "powderCoat"
+        },
+        {
+          "name": "glass",
+          "color": "#f3e9bf",
+          "parts": [
+            "front-lens",
+            "scope-glass"
+          ],
+          "param": "glass"
         },
         {
           "name": "hardware",
           "color": "#c28f3e",
           "parts": [
-            "left-yoke",
-            "right-yoke"
+            "gel-lever-0",
+            "gel-lever-1",
+            "gel-lever-2",
+            "gel-lever-3",
+            "gel-lever-4",
+            "gel-lever-5",
+            "iris-lever",
+            "scope-post-f",
+            "scope-post-r",
+            "tilt-lock--1",
+            "tilt-handle--1",
+            "tilt-lock-1",
+            "tilt-handle-1",
+            "pan-lock",
+            "height-clamp"
           ],
           "param": "hardware"
+        },
+        {
+          "name": "rubber",
+          "color": "#1b1d20",
+          "parts": [
+            "gel-knob-0",
+            "gel-knob-1",
+            "gel-knob-2",
+            "gel-knob-3",
+            "gel-knob-4",
+            "gel-knob-5",
+            "power-cord",
+            "handle-grip--1",
+            "handle-grip-1",
+            "castor-0",
+            "castor-1",
+            "castor-2"
+          ],
+          "param": "rubber"
         }
       ]
     },
