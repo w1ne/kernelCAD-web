@@ -4433,13 +4433,17 @@
       "id": "cargo-aircraft",
       "kit": "airfield",
       "title": "Cargo aircraft",
-      "description": "High-tail freighter with a broad fuselage, raised wing and four under-wing engines. Material controls: airframe paint, canopy glass, bare aluminium, tyre rubber. Appearance presets: weathered and high visibility.",
+      "description": "High-wing four-engine military freighter with a broad lofted fuselage, blunt nose, upswept rear with a loading ramp, anhedral shoulder wing, T-tail, gear sponsons with tandem main wheels and wraparound cockpit glass. Shape choices: turbofan pods or eight-blade turboprops; rear ramp closed or lowered. Material controls: airframe paint, marking paint, cockpit glass, bare metal and tyre rubber; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "airfield",
         "aviation",
         "airport",
+        "cargo aircraft",
+        "freighter",
+        "airlifter",
+        "military transport",
         "low poly",
         "scene prop",
         "CC0"
@@ -4454,8 +4458,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/cargo-aircraft.kcad.ts",
       "preview": "/assets/airfield-cargo-aircraft.png",
-      "sourceSha256": "f8bca41cb31eb06770c6c75bcb6d5c96228637152bac3c520206a242cd510518",
-      "triangleBudget": 1800,
+      "sourceSha256": "4c1390196551e06fb52fb87097ce770a73f009f707272c838f82c3db1f429564",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -4467,50 +4471,78 @@
           "step": 0.05
         },
         {
+          "name": "propulsion",
+          "type": "choice",
+          "default": "turbofan",
+          "label": "Engines",
+          "choices": [
+            "turbofan",
+            "turboprop"
+          ]
+        },
+        {
+          "name": "ramp",
+          "type": "choice",
+          "default": "closed",
+          "label": "Rear ramp",
+          "choices": [
+            "closed",
+            "open"
+          ]
+        },
+        {
           "name": "airframePaint",
           "type": "color",
-          "default": "#507a99",
+          "default": "#6f7f8c",
           "label": "Airframe paint"
+        },
+        {
+          "name": "liveryPaint",
+          "type": "color",
+          "default": "#4f5d68",
+          "label": "Marking paint (fin, nacelles, sponsons)"
         },
         {
           "name": "canopyGlass",
           "type": "color",
-          "default": "#76b6c0",
-          "label": "Canopy glass"
+          "default": "#253844",
+          "label": "Cockpit glass"
         },
         {
           "name": "bareMetal",
           "type": "color",
           "default": "#aab5b8",
-          "label": "Bare aluminium"
+          "label": "Bare metal"
         },
         {
           "name": "rubber",
           "type": "color",
           "default": "#292f32",
-          "label": "Tyre rubber"
+          "label": "Tyre rubber, fan faces and propellers"
         }
       ],
       "presets": {
         "weathered": {
           "airframePaint": "#596765",
-          "canopyGlass": "#315c69",
-          "bareMetal": "#536267",
+          "liveryPaint": "#46514f",
+          "canopyGlass": "#2c3a40",
+          "bareMetal": "#6f7b7e",
           "rubber": "#202528"
         },
         "highVisibility": {
-          "airframePaint": "#f0b52f",
-          "canopyGlass": "#82c8d0",
-          "bareMetal": "#aeb9bb",
+          "airframePaint": "#e9e8df",
+          "liveryPaint": "#d9482b",
+          "canopyGlass": "#1f3d4f",
+          "bareMetal": "#c0c9cb",
           "rubber": "#262b2e"
         }
       },
       "stats": {
-        "triangles": 458,
+        "triangles": 2812,
         "sizeM": [
-          1.479871,
-          0.33328,
-          1.6
+          1.588431,
+          0.59412,
+          1.45988
         ],
         "minUpM": 0,
         "materials": 1
@@ -4518,49 +4550,88 @@
       "palette": [
         {
           "name": "airframePaint",
-          "color": "#507a99",
+          "color": "#6f7f8c",
           "parts": [
             "fuselage",
-            "cargo-nose",
-            "main-wing",
-            "tailplane",
-            "vertical-tail"
+            "wing-starboard",
+            "wing-port",
+            "wing-fairing",
+            "pylon-inner-starboard",
+            "pylon-inner-port",
+            "pylon-outer-starboard",
+            "pylon-outer-port",
+            "tailplane-starboard",
+            "tailplane-port"
           ],
           "param": "airframePaint"
         },
         {
-          "name": "canopyGlass",
-          "color": "#76b6c0",
+          "name": "liveryPaint",
+          "color": "#4f5d68",
           "parts": [
-            "cockpit-canopy"
+            "ramp-seam",
+            "gear-sponson-starboard",
+            "gear-sponson-port",
+            "winglet-starboard",
+            "winglet-port",
+            "nacelle-inner-starboard",
+            "nacelle-inner-port",
+            "nacelle-outer-starboard",
+            "nacelle-outer-port",
+            "fin"
           ],
-          "param": "canopyGlass"
+          "param": "liveryPaint"
         },
         {
-          "name": "bareMetal",
-          "color": "#aab5b8",
+          "name": "canopyGlass",
+          "color": "#253844",
           "parts": [
-            "left-wing-strut",
-            "right-wing-strut",
-            "engine-1",
-            "engine-2",
-            "engine-3",
-            "engine-4",
-            "nose-gear-strut",
-            "left-main-gear-strut",
-            "right-main-gear-strut"
+            "cockpit-glass"
           ],
-          "param": "bareMetal"
+          "param": "canopyGlass"
         },
         {
           "name": "rubber",
           "color": "#292f32",
           "parts": [
-            "nose-wheel",
-            "left-main-wheel",
-            "right-main-wheel"
+            "fan-face-inner-starboard",
+            "fan-face-inner-port",
+            "fan-face-outer-starboard",
+            "fan-face-outer-port",
+            "nose-wheel-port",
+            "nose-wheel-starboard",
+            "main-wheel-starboard-1",
+            "main-wheel-starboard-2",
+            "main-wheel-starboard-3",
+            "main-wheel-port-1",
+            "main-wheel-port-2",
+            "main-wheel-port-3"
           ],
           "param": "rubber"
+        },
+        {
+          "name": "bareMetal",
+          "color": "#aab5b8",
+          "parts": [
+            "spinner-inner-starboard",
+            "exhaust-cone-inner-starboard",
+            "spinner-inner-port",
+            "exhaust-cone-inner-port",
+            "spinner-outer-starboard",
+            "exhaust-cone-outer-starboard",
+            "spinner-outer-port",
+            "exhaust-cone-outer-port",
+            "nose-gear-strut",
+            "nose-wheel-port-hub",
+            "nose-wheel-starboard-hub",
+            "main-wheel-starboard-1-hub",
+            "main-wheel-starboard-2-hub",
+            "main-wheel-starboard-3-hub",
+            "main-wheel-port-1-hub",
+            "main-wheel-port-2-hub",
+            "main-wheel-port-3-hub"
+          ],
+          "param": "bareMetal"
         }
       ]
     },
@@ -5214,13 +5285,16 @@
       "id": "narrowbody-airliner",
       "kit": "airfield",
       "title": "Narrowbody airliner",
-      "description": "Single-aisle airliner with swept wings, under-wing engines, tail fin and landing gear. Material controls: airframe paint, canopy glass, bare aluminium, tyre rubber. Appearance presets: weathered and high visibility.",
+      "description": "Single-aisle twinjet airliner with a lofted fuselage and upswept tail cone, low swept wing with dihedral, two pylon-mounted turbofans with open intakes, tall swept fin, wraparound cockpit glass, cabin window band and cheatline, and dual-wheel main gear. Shape choices: short, standard or stretched fuselage; sharklet or wingtip-fence tips. Material controls: airframe paint, livery paint, cockpit and cabin glass, bare aluminium and tyre rubber; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "airfield",
         "aviation",
         "airport",
+        "airliner",
+        "twinjet",
+        "single aisle",
         "low poly",
         "scene prop",
         "CC0"
@@ -5235,8 +5309,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/narrowbody-airliner.kcad.ts",
       "preview": "/assets/airfield-narrowbody-airliner.png",
-      "sourceSha256": "a50f0e62fdb5a899569ee5e87e20c546dc6d294f1d73e198f604637106415daf",
-      "triangleBudget": 1800,
+      "sourceSha256": "6da9385c9b0e8bca2fdc1b2ad503baefa1cd2adbb823af32567c6005492541a5",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -5248,16 +5322,43 @@
           "step": 0.05
         },
         {
+          "name": "variant",
+          "type": "choice",
+          "default": "standard",
+          "label": "Fuselage length",
+          "choices": [
+            "short",
+            "standard",
+            "stretch"
+          ]
+        },
+        {
+          "name": "wingtips",
+          "type": "choice",
+          "default": "sharklets",
+          "label": "Wingtip devices",
+          "choices": [
+            "sharklets",
+            "fences"
+          ]
+        },
+        {
           "name": "airframePaint",
           "type": "color",
-          "default": "#e9e8df",
+          "default": "#ecebe4",
           "label": "Airframe paint"
+        },
+        {
+          "name": "liveryPaint",
+          "type": "color",
+          "default": "#1f4f8f",
+          "label": "Livery paint (fin, nacelles, cheatline)"
         },
         {
           "name": "canopyGlass",
           "type": "color",
-          "default": "#76b6c0",
-          "label": "Canopy glass"
+          "default": "#253844",
+          "label": "Cockpit and cabin glass"
         },
         {
           "name": "bareMetal",
@@ -5269,29 +5370,31 @@
           "name": "rubber",
           "type": "color",
           "default": "#292f32",
-          "label": "Tyre rubber"
+          "label": "Tyre rubber and fan faces"
         }
       ],
       "presets": {
         "weathered": {
-          "airframePaint": "#596765",
-          "canopyGlass": "#315c69",
-          "bareMetal": "#536267",
+          "airframePaint": "#b9b8ad",
+          "liveryPaint": "#45576a",
+          "canopyGlass": "#2c3a40",
+          "bareMetal": "#6f7b7e",
           "rubber": "#202528"
         },
         "highVisibility": {
-          "airframePaint": "#f0b52f",
-          "canopyGlass": "#82c8d0",
-          "bareMetal": "#aeb9bb",
+          "airframePaint": "#f4f3ee",
+          "liveryPaint": "#e2541f",
+          "canopyGlass": "#1f3d4f",
+          "bareMetal": "#c0c9cb",
           "rubber": "#262b2e"
         }
       },
       "stats": {
-        "triangles": 340,
+        "triangles": 2080,
         "sizeM": [
-          1.329991,
-          0.295072,
-          1.43
+          1.258,
+          0.4,
+          1.20988
         ],
         "minUpM": 0,
         "materials": 1
@@ -5299,32 +5402,62 @@
       "palette": [
         {
           "name": "airframePaint",
-          "color": "#e9e8df",
+          "color": "#ecebe4",
           "parts": [
             "fuselage",
-            "main-wing",
-            "tailplane",
-            "vertical-tail"
+            "wing-starboard",
+            "wing-port",
+            "pylon-starboard",
+            "pylon-port",
+            "tailplane-starboard",
+            "tailplane-port"
           ],
           "param": "airframePaint"
         },
         {
           "name": "canopyGlass",
-          "color": "#76b6c0",
+          "color": "#253844",
           "parts": [
-            "cockpit-canopy"
+            "cockpit-glass",
+            "cabin-windows-starboard",
+            "cabin-windows-port"
           ],
           "param": "canopyGlass"
+        },
+        {
+          "name": "liveryPaint",
+          "color": "#1f4f8f",
+          "parts": [
+            "cheatline-starboard",
+            "cheatline-port",
+            "sharklet-starboard",
+            "sharklet-port",
+            "nacelle-starboard",
+            "nacelle-port",
+            "fin"
+          ],
+          "param": "liveryPaint"
         },
         {
           "name": "bareMetal",
           "color": "#aab5b8",
           "parts": [
-            "engine-1",
-            "engine-2",
+            "apu-exhaust",
+            "slat-starboard",
+            "slat-port",
+            "spinner-starboard",
+            "exhaust-cone-starboard",
+            "spinner-port",
+            "exhaust-cone-port",
             "nose-gear-strut",
-            "left-main-gear-strut",
-            "right-main-gear-strut"
+            "nose-wheel-port-hub",
+            "nose-wheel-starboard-hub",
+            "main-gear-strut-starboard",
+            "main-wheel-inner-starboard-hub",
+            "main-wheel-outer-starboard-hub",
+            "main-gear-strut-port",
+            "main-wheel-inner-port-hub",
+            "main-wheel-outer-port-hub"
           ],
           "param": "bareMetal"
         },
@@ -5332,9 +5465,14 @@
           "name": "rubber",
           "color": "#292f32",
           "parts": [
-            "nose-wheel",
-            "left-main-wheel",
-            "right-main-wheel"
+            "fan-face-starboard",
+            "fan-face-port",
+            "nose-wheel-port",
+            "nose-wheel-starboard",
+            "main-wheel-inner-starboard",
+            "main-wheel-outer-starboard",
+            "main-wheel-inner-port",
+            "main-wheel-outer-port"
           ],
           "param": "rubber"
         }
@@ -5683,13 +5821,16 @@
       "id": "private-jet",
       "kit": "airfield",
       "title": "Private jet",
-      "description": "Long-range business jet with a narrow cabin, swept wings and two rear-mounted engines. Material controls: airframe paint, canopy glass, bare aluminium, tyre rubber. Appearance presets: weathered and high visibility.",
+      "description": "Long-range business jet with a slim lofted fuselage, pointed nose and long tail cone, oval cabin windows, wraparound cockpit glass, clean swept wing with tall winglets, two rear-fuselage engine pods with open intakes, swept T-tail and short dual-wheel gear. Shape choices: T-tail or cruciform tail; winglets or plain tips. Material controls: airframe paint, livery paint, cockpit and cabin glass, bare aluminium and tyre rubber; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "airfield",
         "aviation",
         "airport",
+        "business jet",
+        "private jet",
+        "bizjet",
         "low poly",
         "scene prop",
         "CC0"
@@ -5704,8 +5845,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/private-jet.kcad.ts",
       "preview": "/assets/airfield-private-jet.png",
-      "sourceSha256": "28349fab5e132ce825cb86f2f1717b3f7820e85eb9d76401c8f956614f0d1e53",
-      "triangleBudget": 1800,
+      "sourceSha256": "440dfd3c9a637e1c46f6057e35d95cfb26d73a89346cccb678c1574c81e8c4b8",
+      "triangleBudget": 2800,
       "params": [
         {
           "name": "scale",
@@ -5717,16 +5858,42 @@
           "step": 0.05
         },
         {
+          "name": "tail",
+          "type": "choice",
+          "default": "t-tail",
+          "label": "Tail layout",
+          "choices": [
+            "t-tail",
+            "cruciform"
+          ]
+        },
+        {
+          "name": "wingtips",
+          "type": "choice",
+          "default": "winglets",
+          "label": "Wingtips",
+          "choices": [
+            "winglets",
+            "plain"
+          ]
+        },
+        {
           "name": "airframePaint",
           "type": "color",
           "default": "#ebe9e0",
           "label": "Airframe paint"
         },
         {
+          "name": "liveryPaint",
+          "type": "color",
+          "default": "#9a7a42",
+          "label": "Livery paint (fin, pods, cheatline)"
+        },
+        {
           "name": "canopyGlass",
           "type": "color",
-          "default": "#76b6c0",
-          "label": "Canopy glass"
+          "default": "#253844",
+          "label": "Cockpit and cabin glass"
         },
         {
           "name": "bareMetal",
@@ -5738,29 +5905,31 @@
           "name": "rubber",
           "type": "color",
           "default": "#292f32",
-          "label": "Tyre rubber"
+          "label": "Tyre rubber and fan faces"
         }
       ],
       "presets": {
         "weathered": {
-          "airframePaint": "#596765",
-          "canopyGlass": "#315c69",
-          "bareMetal": "#536267",
+          "airframePaint": "#b9b7ad",
+          "liveryPaint": "#5d5546",
+          "canopyGlass": "#2c3a40",
+          "bareMetal": "#6f7b7e",
           "rubber": "#202528"
         },
         "highVisibility": {
-          "airframePaint": "#f0b52f",
-          "canopyGlass": "#82c8d0",
-          "bareMetal": "#aeb9bb",
+          "airframePaint": "#f4f3ee",
+          "liveryPaint": "#d23a2a",
+          "canopyGlass": "#1f3d4f",
+          "bareMetal": "#c0c9cb",
           "rubber": "#262b2e"
         }
       },
       "stats": {
-        "triangles": 340,
+        "triangles": 2492,
         "sizeM": [
-          1.050016,
-          0.266416,
-          0.98
+          1.123152,
+          0.281,
+          1.05788
         ],
         "minUpM": 0,
         "materials": 1
@@ -5771,29 +5940,72 @@
           "color": "#ebe9e0",
           "parts": [
             "fuselage",
-            "main-wing",
-            "tailplane",
-            "vertical-tail"
+            "wing-starboard",
+            "wing-port",
+            "pylon-starboard",
+            "pylon-port",
+            "tailplane-starboard",
+            "tailplane-port"
           ],
           "param": "airframePaint"
         },
         {
           "name": "canopyGlass",
-          "color": "#76b6c0",
+          "color": "#253844",
           "parts": [
-            "cockpit-canopy"
+            "cockpit-glass",
+            "cabin-window-starboard-1",
+            "cabin-window-starboard-2",
+            "cabin-window-starboard-3",
+            "cabin-window-starboard-4",
+            "cabin-window-starboard-5",
+            "cabin-window-starboard-6",
+            "cabin-window-starboard-7",
+            "cabin-window-port-1",
+            "cabin-window-port-2",
+            "cabin-window-port-3",
+            "cabin-window-port-4",
+            "cabin-window-port-5",
+            "cabin-window-port-6",
+            "cabin-window-port-7"
           ],
           "param": "canopyGlass"
+        },
+        {
+          "name": "liveryPaint",
+          "color": "#9a7a42",
+          "parts": [
+            "cheatline-starboard",
+            "cheatline-port",
+            "winglet-starboard",
+            "winglet-port",
+            "engine-pod-starboard",
+            "engine-pod-port",
+            "fin",
+            "fin-bullet"
+          ],
+          "param": "liveryPaint"
         },
         {
           "name": "bareMetal",
           "color": "#aab5b8",
           "parts": [
-            "engine-1",
-            "engine-2",
+            "apu-exhaust",
+            "leading-edge-starboard",
+            "leading-edge-port",
+            "spinner-starboard",
+            "thrust-reverser-starboard",
+            "spinner-port",
+            "thrust-reverser-port",
             "nose-gear-strut",
-            "left-main-gear-strut",
-            "right-main-gear-strut"
+            "nose-wheel-port-hub",
+            "nose-wheel-starboard-hub",
+            "main-gear-strut-starboard",
+            "main-wheel-inner-starboard-hub",
+            "main-wheel-outer-starboard-hub",
+            "main-gear-strut-port",
+            "main-wheel-inner-port-hub",
+            "main-wheel-outer-port-hub"
           ],
           "param": "bareMetal"
         },
@@ -5801,9 +6013,14 @@
           "name": "rubber",
           "color": "#292f32",
           "parts": [
-            "nose-wheel",
-            "left-main-wheel",
-            "right-main-wheel"
+            "fan-face-starboard",
+            "fan-face-port",
+            "nose-wheel-port",
+            "nose-wheel-starboard",
+            "main-wheel-inner-starboard",
+            "main-wheel-outer-starboard",
+            "main-wheel-inner-port",
+            "main-wheel-outer-port"
           ],
           "param": "rubber"
         }
@@ -5942,13 +6159,17 @@
       "id": "regional-jet",
       "kit": "airfield",
       "title": "Regional jet",
-      "description": "Small passenger jet with swept wings, two under-wing engines and a three-wheel landing gear. Material controls: airframe paint, canopy glass, bare aluminium, tyre rubber. Appearance presets: weathered and high visibility.",
+      "description": "Short-haul regional twinjet with a slim lofted fuselage and upswept tail cone, swept wing with blended winglets, small turbofans with open intakes, wraparound cockpit glass, cabin window band and cheatline, and short dual-wheel gear. Shape choices: under-wing engines with a low tailplane or rear-fuselage engines with a T-tail; winglets or plain tips. Material controls: airframe paint, livery paint, cockpit and cabin glass, bare aluminium and tyre rubber; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "airfield",
         "aviation",
         "airport",
+        "airliner",
+        "regional jet",
+        "twinjet",
+        "short haul",
         "low poly",
         "scene prop",
         "CC0"
@@ -5963,8 +6184,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/regional-jet.kcad.ts",
       "preview": "/assets/airfield-regional-jet.png",
-      "sourceSha256": "fec54fa33000bd7bc582aaa11428865d472f607bbd1143875b8ba82fcc97e4be",
-      "triangleBudget": 1800,
+      "sourceSha256": "0089a883a9ed17d92d384ae1e95cc4facafadf69629c435671b68493b704bebd",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -5976,16 +6197,42 @@
           "step": 0.05
         },
         {
+          "name": "engineMount",
+          "type": "choice",
+          "default": "underwing",
+          "label": "Engine layout",
+          "choices": [
+            "underwing",
+            "rear"
+          ]
+        },
+        {
+          "name": "wingtips",
+          "type": "choice",
+          "default": "winglets",
+          "label": "Wingtips",
+          "choices": [
+            "winglets",
+            "plain"
+          ]
+        },
+        {
           "name": "airframePaint",
           "type": "color",
           "default": "#e9e8df",
           "label": "Airframe paint"
         },
         {
+          "name": "liveryPaint",
+          "type": "color",
+          "default": "#2a7a5a",
+          "label": "Livery paint (fin, nacelles, cheatline)"
+        },
+        {
           "name": "canopyGlass",
           "type": "color",
-          "default": "#76b6c0",
-          "label": "Canopy glass"
+          "default": "#253844",
+          "label": "Cockpit and cabin glass"
         },
         {
           "name": "bareMetal",
@@ -5997,29 +6244,31 @@
           "name": "rubber",
           "type": "color",
           "default": "#292f32",
-          "label": "Tyre rubber"
+          "label": "Tyre rubber and fan faces"
         }
       ],
       "presets": {
         "weathered": {
-          "airframePaint": "#596765",
-          "canopyGlass": "#315c69",
-          "bareMetal": "#536267",
+          "airframePaint": "#b7b6ab",
+          "liveryPaint": "#43594f",
+          "canopyGlass": "#2c3a40",
+          "bareMetal": "#6f7b7e",
           "rubber": "#202528"
         },
         "highVisibility": {
-          "airframePaint": "#f0b52f",
-          "canopyGlass": "#82c8d0",
-          "bareMetal": "#aeb9bb",
+          "airframePaint": "#f4f3ee",
+          "liveryPaint": "#7a2fb0",
+          "canopyGlass": "#1f3d4f",
+          "bareMetal": "#c0c9cb",
           "rubber": "#262b2e"
         }
       },
       "stats": {
-        "triangles": 340,
+        "triangles": 2080,
         "sizeM": [
-          1.079967,
-          0.275968,
-          1.18
+          1.086,
+          0.33,
+          0.90188
         ],
         "minUpM": 0,
         "materials": 1
@@ -6030,29 +6279,59 @@
           "color": "#e9e8df",
           "parts": [
             "fuselage",
-            "main-wing",
-            "tailplane",
-            "vertical-tail"
+            "wing-starboard",
+            "wing-port",
+            "pylon-starboard",
+            "pylon-port",
+            "tailplane-starboard",
+            "tailplane-port"
           ],
           "param": "airframePaint"
         },
         {
           "name": "canopyGlass",
-          "color": "#76b6c0",
+          "color": "#253844",
           "parts": [
-            "cockpit-canopy"
+            "cockpit-glass",
+            "cabin-windows-starboard",
+            "cabin-windows-port"
           ],
           "param": "canopyGlass"
+        },
+        {
+          "name": "liveryPaint",
+          "color": "#2a7a5a",
+          "parts": [
+            "cheatline-starboard",
+            "cheatline-port",
+            "winglet-starboard",
+            "winglet-port",
+            "nacelle-starboard",
+            "nacelle-port",
+            "fin"
+          ],
+          "param": "liveryPaint"
         },
         {
           "name": "bareMetal",
           "color": "#aab5b8",
           "parts": [
-            "engine-1",
-            "engine-2",
+            "apu-exhaust",
+            "slat-starboard",
+            "slat-port",
+            "spinner-starboard",
+            "exhaust-cone-starboard",
+            "spinner-port",
+            "exhaust-cone-port",
             "nose-gear-strut",
-            "left-main-gear-strut",
-            "right-main-gear-strut"
+            "nose-wheel-port-hub",
+            "nose-wheel-starboard-hub",
+            "main-gear-strut-starboard",
+            "main-wheel-inner-starboard-hub",
+            "main-wheel-outer-starboard-hub",
+            "main-gear-strut-port",
+            "main-wheel-inner-port-hub",
+            "main-wheel-outer-port-hub"
           ],
           "param": "bareMetal"
         },
@@ -6060,9 +6339,14 @@
           "name": "rubber",
           "color": "#292f32",
           "parts": [
-            "nose-wheel",
-            "left-main-wheel",
-            "right-main-wheel"
+            "fan-face-starboard",
+            "fan-face-port",
+            "nose-wheel-port",
+            "nose-wheel-starboard",
+            "main-wheel-inner-starboard",
+            "main-wheel-outer-starboard",
+            "main-wheel-inner-port",
+            "main-wheel-outer-port"
           ],
           "param": "rubber"
         }
@@ -7418,13 +7702,17 @@
       "id": "widebody-airliner",
       "kit": "airfield",
       "title": "Widebody airliner",
-      "description": "Wide-body passenger aircraft with a broad fuselage, four engine nacelles and a wide main wing. Material controls: airframe paint, canopy glass, bare aluminium, tyre rubber. Appearance presets: weathered and high visibility.",
+      "description": "Twin-aisle long-haul airliner with a broad lofted fuselage and upswept tail cone, long swept wing with dihedral, pylon-mounted turbofans with open intakes, very tall swept fin, wraparound cockpit glass, cabin window band and cheatline, and bogie main gear. Shape choices: four or two engines; upper-deck hump or none. Material controls: airframe paint, livery paint, cockpit and cabin glass, bare aluminium and tyre rubber; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "airfield",
         "aviation",
         "airport",
+        "airliner",
+        "widebody",
+        "jumbo jet",
+        "long haul",
         "low poly",
         "scene prop",
         "CC0"
@@ -7439,8 +7727,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/airfield/widebody-airliner.kcad.ts",
       "preview": "/assets/airfield-widebody-airliner.png",
-      "sourceSha256": "3aa516bf068b1ca94fff420a034cf4fa83c24dcbc529e3081983bf411ff4301f",
-      "triangleBudget": 1800,
+      "sourceSha256": "23a88ff16d2967a6bf93f0a027249b6a281a12abdeac0fca4e8979756fa37065",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -7452,16 +7740,42 @@
           "step": 0.05
         },
         {
+          "name": "engines",
+          "type": "choice",
+          "default": "quad",
+          "label": "Engines",
+          "choices": [
+            "quad",
+            "twin"
+          ]
+        },
+        {
+          "name": "upperDeck",
+          "type": "choice",
+          "default": "hump",
+          "label": "Upper deck",
+          "choices": [
+            "hump",
+            "none"
+          ]
+        },
+        {
           "name": "airframePaint",
           "type": "color",
           "default": "#e9e8df",
           "label": "Airframe paint"
         },
         {
+          "name": "liveryPaint",
+          "type": "color",
+          "default": "#b3262e",
+          "label": "Livery paint (fin, nacelles, cheatline)"
+        },
+        {
           "name": "canopyGlass",
           "type": "color",
-          "default": "#76b6c0",
-          "label": "Canopy glass"
+          "default": "#253844",
+          "label": "Cockpit and cabin glass"
         },
         {
           "name": "bareMetal",
@@ -7473,29 +7787,31 @@
           "name": "rubber",
           "type": "color",
           "default": "#292f32",
-          "label": "Tyre rubber"
+          "label": "Tyre rubber and fan faces"
         }
       ],
       "presets": {
         "weathered": {
-          "airframePaint": "#596765",
-          "canopyGlass": "#315c69",
-          "bareMetal": "#536267",
+          "airframePaint": "#b5b3a8",
+          "liveryPaint": "#6b3a3d",
+          "canopyGlass": "#2c3a40",
+          "bareMetal": "#6f7b7e",
           "rubber": "#202528"
         },
         "highVisibility": {
-          "airframePaint": "#f0b52f",
-          "canopyGlass": "#82c8d0",
-          "bareMetal": "#aeb9bb",
+          "airframePaint": "#f4f3ee",
+          "liveryPaint": "#f0b52f",
+          "canopyGlass": "#1f3d4f",
+          "bareMetal": "#c0c9cb",
           "rubber": "#262b2e"
         }
       },
       "stats": {
-        "triangles": 402,
+        "triangles": 3132,
         "sizeM": [
-          1.549927,
-          0.34124,
-          1.66
+          1.957999,
+          0.54,
+          1.74
         ],
         "minUpM": 0,
         "materials": 1
@@ -7506,31 +7822,76 @@
           "color": "#e9e8df",
           "parts": [
             "fuselage",
-            "main-wing",
-            "tailplane",
-            "vertical-tail"
+            "upper-deck",
+            "wing-starboard",
+            "wing-port",
+            "pylon-inner-starboard",
+            "pylon-inner-port",
+            "pylon-outer-starboard",
+            "pylon-outer-port",
+            "tailplane-starboard",
+            "tailplane-port"
           ],
           "param": "airframePaint"
         },
         {
           "name": "canopyGlass",
-          "color": "#76b6c0",
+          "color": "#253844",
           "parts": [
-            "cockpit-canopy"
+            "cockpit-glass",
+            "cabin-windows-starboard",
+            "upper-deck-windows-starboard",
+            "cabin-windows-port",
+            "upper-deck-windows-port"
           ],
           "param": "canopyGlass"
+        },
+        {
+          "name": "liveryPaint",
+          "color": "#b3262e",
+          "parts": [
+            "cheatline-starboard",
+            "cheatline-port",
+            "nacelle-inner-starboard",
+            "nacelle-inner-port",
+            "nacelle-outer-starboard",
+            "nacelle-outer-port",
+            "fin"
+          ],
+          "param": "liveryPaint"
         },
         {
           "name": "bareMetal",
           "color": "#aab5b8",
           "parts": [
-            "engine-1",
-            "engine-2",
-            "engine-3",
-            "engine-4",
+            "apu-exhaust",
+            "slat-starboard",
+            "slat-port",
+            "spinner-inner-starboard",
+            "exhaust-cone-inner-starboard",
+            "spinner-inner-port",
+            "exhaust-cone-inner-port",
+            "spinner-outer-starboard",
+            "exhaust-cone-outer-starboard",
+            "spinner-outer-port",
+            "exhaust-cone-outer-port",
             "nose-gear-strut",
-            "left-main-gear-strut",
-            "right-main-gear-strut"
+            "gear-leg-wing-starboard",
+            "bogie-beam-wing-starboard",
+            "axle-hub-wing-starboard-1",
+            "axle-hub-wing-starboard-2",
+            "gear-leg-body-starboard",
+            "bogie-beam-body-starboard",
+            "axle-hub-body-starboard-1",
+            "axle-hub-body-starboard-2",
+            "gear-leg-wing-port",
+            "bogie-beam-wing-port",
+            "axle-hub-wing-port-1",
+            "axle-hub-wing-port-2",
+            "gear-leg-body-port",
+            "bogie-beam-body-port",
+            "axle-hub-body-port-1",
+            "axle-hub-body-port-2"
           ],
           "param": "bareMetal"
         },
@@ -7538,9 +7899,20 @@
           "name": "rubber",
           "color": "#292f32",
           "parts": [
-            "nose-wheel",
-            "left-main-wheel",
-            "right-main-wheel"
+            "fan-face-inner-starboard",
+            "fan-face-inner-port",
+            "fan-face-outer-starboard",
+            "fan-face-outer-port",
+            "nose-wheel-port",
+            "nose-wheel-starboard",
+            "tyres-wing-starboard-1",
+            "tyres-wing-starboard-2",
+            "tyres-body-starboard-1",
+            "tyres-body-starboard-2",
+            "tyres-wing-port-1",
+            "tyres-wing-port-2",
+            "tyres-body-port-1",
+            "tyres-body-port-2"
           ],
           "param": "rubber"
         }

@@ -1,0 +1,358 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/airliner-silhouette-20261106/render_airliner_variants.ts",
+  "exporter": "runAndExport(format=\"glb\", style=\"lowpoly\", maxTriangles=source triangleBudget)",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "sources": [
+    {
+      "source": "catalog/kits/airfield/narrowbody-airliner.kcad.ts",
+      "sourceSha256": "6da9385c9b0e8bca2fdc1b2ad503baefa1cd2adbb823af32567c6005492541a5",
+      "triangleBudget": 2400,
+      "presets": {
+        "weathered": {
+          "airframePaint": "#b9b8ad",
+          "liveryPaint": "#45576a",
+          "canopyGlass": "#2c3a40",
+          "bareMetal": "#6f7b7e",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "airframePaint": "#f4f3ee",
+          "liveryPaint": "#e2541f",
+          "canopyGlass": "#1f3d4f",
+          "bareMetal": "#c0c9cb",
+          "rubber": "#262b2e"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/airfield/widebody-airliner.kcad.ts",
+      "sourceSha256": "23a88ff16d2967a6bf93f0a027249b6a281a12abdeac0fca4e8979756fa37065",
+      "triangleBudget": 3200,
+      "presets": {
+        "weathered": {
+          "airframePaint": "#b5b3a8",
+          "liveryPaint": "#6b3a3d",
+          "canopyGlass": "#2c3a40",
+          "bareMetal": "#6f7b7e",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "airframePaint": "#f4f3ee",
+          "liveryPaint": "#f0b52f",
+          "canopyGlass": "#1f3d4f",
+          "bareMetal": "#c0c9cb",
+          "rubber": "#262b2e"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/airfield/regional-jet.kcad.ts",
+      "sourceSha256": "0089a883a9ed17d92d384ae1e95cc4facafadf69629c435671b68493b704bebd",
+      "triangleBudget": 2400,
+      "presets": {
+        "weathered": {
+          "airframePaint": "#b7b6ab",
+          "liveryPaint": "#43594f",
+          "canopyGlass": "#2c3a40",
+          "bareMetal": "#6f7b7e",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "airframePaint": "#f4f3ee",
+          "liveryPaint": "#7a2fb0",
+          "canopyGlass": "#1f3d4f",
+          "bareMetal": "#c0c9cb",
+          "rubber": "#262b2e"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/airfield/private-jet.kcad.ts",
+      "sourceSha256": "440dfd3c9a637e1c46f6057e35d95cfb26d73a89346cccb678c1574c81e8c4b8",
+      "triangleBudget": 2800,
+      "presets": {
+        "weathered": {
+          "airframePaint": "#b9b7ad",
+          "liveryPaint": "#5d5546",
+          "canopyGlass": "#2c3a40",
+          "bareMetal": "#6f7b7e",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "airframePaint": "#f4f3ee",
+          "liveryPaint": "#d23a2a",
+          "canopyGlass": "#1f3d4f",
+          "bareMetal": "#c0c9cb",
+          "rubber": "#262b2e"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/airfield/cargo-aircraft.kcad.ts",
+      "sourceSha256": "4c1390196551e06fb52fb87097ce770a73f009f707272c838f82c3db1f429564",
+      "triangleBudget": 3200,
+      "presets": {
+        "weathered": {
+          "airframePaint": "#596765",
+          "liveryPaint": "#46514f",
+          "canopyGlass": "#2c3a40",
+          "bareMetal": "#6f7b7e",
+          "rubber": "#202528"
+        },
+        "highVisibility": {
+          "airframePaint": "#e9e8df",
+          "liveryPaint": "#d9482b",
+          "canopyGlass": "#1f3d4f",
+          "bareMetal": "#c0c9cb",
+          "rubber": "#262b2e"
+        }
+      }
+    }
+  ],
+  "renders": [
+    {
+      "assetId": "narrowbody-airliner",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 2080,
+      "png": "artifacts/catalog-demos/airliner-silhouette-20261106/variants/narrowbody-airliner-default.png"
+    },
+    {
+      "assetId": "narrowbody-airliner",
+      "variant": "stretch-fences",
+      "view": "3/4",
+      "values": {
+        "variant": "stretch",
+        "wingtips": "fences"
+      },
+      "triangles": 2080,
+      "png": "artifacts/catalog-demos/airliner-silhouette-20261106/variants/narrowbody-airliner-stretch-fences.png"
+    },
+    {
+      "assetId": "narrowbody-airliner",
+      "variant": "short",
+      "view": "3/4",
+      "values": {
+        "variant": "short"
+      },
+      "triangles": 2080,
+      "png": "artifacts/catalog-demos/airliner-silhouette-20261106/variants/narrowbody-airliner-short.png"
+    },
+    {
+      "assetId": "narrowbody-airliner",
+      "variant": "weathered",
+      "view": "3/4",
+      "values": {
+        "airframePaint": "#b9b8ad",
+        "liveryPaint": "#45576a",
+        "canopyGlass": "#2c3a40",
+        "bareMetal": "#6f7b7e",
+        "rubber": "#202528"
+      },
+      "triangles": 2080,
+      "png": "artifacts/catalog-demos/airliner-silhouette-20261106/variants/narrowbody-airliner-weathered.png"
+    },
+    {
+      "assetId": "narrowbody-airliner",
+      "variant": "highVisibility",
+      "view": "3/4",
+      "values": {
+        "airframePaint": "#f4f3ee",
+        "liveryPaint": "#e2541f",
+        "canopyGlass": "#1f3d4f",
+        "bareMetal": "#c0c9cb",
+        "rubber": "#262b2e"
+      },
+      "triangles": 2080,
+      "png": "artifacts/catalog-demos/airliner-silhouette-20261106/variants/narrowbody-airliner-highVisibility.png"
+    },
+    {
+      "assetId": "widebody-airliner",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 3132,
+      "png": "artifacts/catalog-demos/airliner-silhouette-20261106/variants/widebody-airliner-default.png"
+    },
+    {
+      "assetId": "widebody-airliner",
+      "variant": "twin-no-hump",
+      "view": "3/4",
+      "values": {
+        "engines": "twin",
+        "upperDeck": "none"
+      },
+      "triangles": 2128,
+      "png": "artifacts/catalog-demos/airliner-silhouette-20261106/variants/widebody-airliner-twin-no-hump.png"
+    },
+    {
+      "assetId": "widebody-airliner",
+      "variant": "weathered",
+      "view": "3/4",
+      "values": {
+        "airframePaint": "#b5b3a8",
+        "liveryPaint": "#6b3a3d",
+        "canopyGlass": "#2c3a40",
+        "bareMetal": "#6f7b7e",
+        "rubber": "#202528"
+      },
+      "triangles": 3132,
+      "png": "artifacts/catalog-demos/airliner-silhouette-20261106/variants/widebody-airliner-weathered.png"
+    },
+    {
+      "assetId": "widebody-airliner",
+      "variant": "highVisibility",
+      "view": "3/4",
+      "values": {
+        "airframePaint": "#f4f3ee",
+        "liveryPaint": "#f0b52f",
+        "canopyGlass": "#1f3d4f",
+        "bareMetal": "#c0c9cb",
+        "rubber": "#262b2e"
+      },
+      "triangles": 3132,
+      "png": "artifacts/catalog-demos/airliner-silhouette-20261106/variants/widebody-airliner-highVisibility.png"
+    },
+    {
+      "assetId": "regional-jet",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 2080,
+      "png": "artifacts/catalog-demos/airliner-silhouette-20261106/variants/regional-jet-default.png"
+    },
+    {
+      "assetId": "regional-jet",
+      "variant": "rear-engines",
+      "view": "3/4",
+      "values": {
+        "engineMount": "rear"
+      },
+      "triangles": 2080,
+      "png": "artifacts/catalog-demos/airliner-silhouette-20261106/variants/regional-jet-rear-engines.png"
+    },
+    {
+      "assetId": "regional-jet",
+      "variant": "weathered",
+      "view": "3/4",
+      "values": {
+        "airframePaint": "#b7b6ab",
+        "liveryPaint": "#43594f",
+        "canopyGlass": "#2c3a40",
+        "bareMetal": "#6f7b7e",
+        "rubber": "#202528"
+      },
+      "triangles": 2080,
+      "png": "artifacts/catalog-demos/airliner-silhouette-20261106/variants/regional-jet-weathered.png"
+    },
+    {
+      "assetId": "regional-jet",
+      "variant": "highVisibility",
+      "view": "3/4",
+      "values": {
+        "airframePaint": "#f4f3ee",
+        "liveryPaint": "#7a2fb0",
+        "canopyGlass": "#1f3d4f",
+        "bareMetal": "#c0c9cb",
+        "rubber": "#262b2e"
+      },
+      "triangles": 2080,
+      "png": "artifacts/catalog-demos/airliner-silhouette-20261106/variants/regional-jet-highVisibility.png"
+    },
+    {
+      "assetId": "private-jet",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 2492,
+      "png": "artifacts/catalog-demos/airliner-silhouette-20261106/variants/private-jet-default.png"
+    },
+    {
+      "assetId": "private-jet",
+      "variant": "cruciform-plain",
+      "view": "3/4",
+      "values": {
+        "tail": "cruciform",
+        "wingtips": "plain"
+      },
+      "triangles": 2384,
+      "png": "artifacts/catalog-demos/airliner-silhouette-20261106/variants/private-jet-cruciform-plain.png"
+    },
+    {
+      "assetId": "private-jet",
+      "variant": "weathered",
+      "view": "3/4",
+      "values": {
+        "airframePaint": "#b9b7ad",
+        "liveryPaint": "#5d5546",
+        "canopyGlass": "#2c3a40",
+        "bareMetal": "#6f7b7e",
+        "rubber": "#202528"
+      },
+      "triangles": 2492,
+      "png": "artifacts/catalog-demos/airliner-silhouette-20261106/variants/private-jet-weathered.png"
+    },
+    {
+      "assetId": "private-jet",
+      "variant": "highVisibility",
+      "view": "3/4",
+      "values": {
+        "airframePaint": "#f4f3ee",
+        "liveryPaint": "#d23a2a",
+        "canopyGlass": "#1f3d4f",
+        "bareMetal": "#c0c9cb",
+        "rubber": "#262b2e"
+      },
+      "triangles": 2492,
+      "png": "artifacts/catalog-demos/airliner-silhouette-20261106/variants/private-jet-highVisibility.png"
+    },
+    {
+      "assetId": "cargo-aircraft",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 2812,
+      "png": "artifacts/catalog-demos/airliner-silhouette-20261106/variants/cargo-aircraft-default.png"
+    },
+    {
+      "assetId": "cargo-aircraft",
+      "variant": "turboprop-ramp-open",
+      "view": "3/4",
+      "values": {
+        "propulsion": "turboprop",
+        "ramp": "open"
+      },
+      "triangles": 2726,
+      "png": "artifacts/catalog-demos/airliner-silhouette-20261106/variants/cargo-aircraft-turboprop-ramp-open.png"
+    },
+    {
+      "assetId": "cargo-aircraft",
+      "variant": "weathered",
+      "view": "3/4",
+      "values": {
+        "airframePaint": "#596765",
+        "liveryPaint": "#46514f",
+        "canopyGlass": "#2c3a40",
+        "bareMetal": "#6f7b7e",
+        "rubber": "#202528"
+      },
+      "triangles": 2812,
+      "png": "artifacts/catalog-demos/airliner-silhouette-20261106/variants/cargo-aircraft-weathered.png"
+    },
+    {
+      "assetId": "cargo-aircraft",
+      "variant": "highVisibility",
+      "view": "3/4",
+      "values": {
+        "airframePaint": "#e9e8df",
+        "liveryPaint": "#d9482b",
+        "canopyGlass": "#1f3d4f",
+        "bareMetal": "#c0c9cb",
+        "rubber": "#262b2e"
+      },
+      "triangles": 2812,
+      "png": "artifacts/catalog-demos/airliner-silhouette-20261106/variants/cargo-aircraft-highVisibility.png"
+    }
+  ]
+}
