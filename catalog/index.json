@@ -54278,7 +54278,7 @@
       "id": "concrete-batch-plant",
       "kit": "construction-equipment",
       "title": "Compact concrete batch plant",
-      "description": "Portable batch plant with aggregate bins, central mixer, cement silo and service ladder. Material controls: equipment enamel paint, exposed structural steel; weathered and highVisibility presets.",
+      "description": "Framed batching plant with selectable aggregate-bin count, tapered discharge chutes, transfer conveyor, mixer and configurable-height cement silo. Material controls: equipment enamel, structural steel, aggregate bins and cement silo; weathered and highVisibility presets.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -54297,7 +54297,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/construction-equipment/concrete-batch-plant.kcad.ts",
       "preview": "/assets/construction-equipment-concrete-batch-plant.png",
-      "sourceSha256": "066806c0cb62ba8fe1e389f21b45795e023a2156d26201cb2234e4c9737764b6",
+      "sourceSha256": "8b3d625a196277d9e72ce494494f63d92dfe040eb58c5c5791591a345bcc677b",
       "triangleBudget": 2200,
       "params": [
         {
@@ -54310,54 +54310,102 @@
           "step": 0.05
         },
         {
+          "name": "aggregateBinCount",
+          "type": "choice",
+          "default": "3",
+          "label": "Aggregate bins",
+          "choices": [
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        {
+          "name": "siloHeight",
+          "type": "choice",
+          "default": "1500",
+          "label": "Silo body height (mm)",
+          "choices": [
+            "1200",
+            "1500",
+            "1900"
+          ]
+        },
+        {
           "name": "equipmentPaintColor",
           "type": "color",
           "default": "#e1a31b",
-          "label": "Equipment enamel paint"
+          "label": "Equipment enamel"
         },
         {
           "name": "structuralSteelColor",
           "type": "color",
           "default": "#89969a",
-          "label": "Exposed structural steel"
+          "label": "Structural steel"
+        },
+        {
+          "name": "aggregateColor",
+          "type": "color",
+          "default": "#758266",
+          "label": "Aggregate-bin coating"
+        },
+        {
+          "name": "cementSiloColor",
+          "type": "color",
+          "default": "#c3c8c3",
+          "label": "Cement-silo coating"
         }
       ],
       "presets": {
         "weathered": {
           "equipmentPaintColor": "#a87b36",
-          "structuralSteelColor": "#716b61"
+          "structuralSteelColor": "#716b61",
+          "aggregateColor": "#6a7059",
+          "cementSiloColor": "#a8aaa4"
         },
         "highVisibility": {
           "equipmentPaintColor": "#f06b26",
-          "structuralSteelColor": "#c1c7c2"
+          "structuralSteelColor": "#c1c7c2",
+          "aggregateColor": "#d2a742",
+          "cementSiloColor": "#e2e5dc"
         }
       },
       "stats": {
-        "triangles": 220,
+        "triangles": 1500,
         "sizeM": [
-          1.456,
-          1.613,
-          1.1295
+          1.917,
+          2.176,
+          1.476402
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
+          "name": "aggregateColor",
+          "color": "#758266",
+          "parts": [
+            "aggregate-storage-bin-1",
+            "aggregate-discharge-hopper-1",
+            "aggregate-storage-bin-2",
+            "aggregate-discharge-hopper-2",
+            "aggregate-storage-bin-3",
+            "aggregate-discharge-hopper-3"
+          ],
+          "param": "aggregateColor"
+        },
+        {
           "name": "equipmentPaintColor",
           "color": "#e1a31b",
           "parts": [
-            "aggregate-bin-0",
-            "bin-top-rim-0",
-            "aggregate-bin-1",
-            "bin-top-rim-1",
-            "aggregate-bin-2",
-            "bin-top-rim-2",
-            "cement-silo",
-            "silo-roof",
-            "silo-leg--1",
-            "silo-leg-1",
-            "service-platform"
+            "aggregate-bin-top-rim-1",
+            "aggregate-bin-top-rim-2",
+            "aggregate-bin-top-rim-3",
+            "mixer-transfer-chute",
+            "mixer-drive-housing",
+            "mixer-safety-rail",
+            "silo-vent-cap",
+            "control-cabin-shell"
           ],
           "param": "equipmentPaintColor"
         },
@@ -54365,10 +54413,94 @@
           "name": "structuralSteelColor",
           "color": "#89969a",
           "parts": [
-            "batch-frame",
-            "mixer-drum"
+            "metering-gate-1",
+            "metering-outlet-1",
+            "bin-support-left-near-1",
+            "bin-support-left-far-1",
+            "bin-support-right-near-1",
+            "bin-support-right-far-1",
+            "bin-cross-brace-near-1",
+            "metering-gate-2",
+            "metering-outlet-2",
+            "bin-support-left-near-2",
+            "bin-support-left-far-2",
+            "bin-support-right-near-2",
+            "bin-support-right-far-2",
+            "bin-cross-brace-near-2",
+            "metering-gate-3",
+            "metering-outlet-3",
+            "bin-support-left-near-3",
+            "bin-support-left-far-3",
+            "bin-support-right-near-3",
+            "bin-support-right-far-3",
+            "bin-cross-brace-near-3",
+            "aggregate-conveyor-frame",
+            "conveyor-roller-1",
+            "conveyor-roller-2",
+            "conveyor-roller-3",
+            "conveyor-roller-4",
+            "mixer-platform-left",
+            "mixer-platform-right",
+            "central-mixer-drum",
+            "mixer-discharge-chute",
+            "silo-roof-ring",
+            "silo-filter-canister",
+            "silo-feed-screw",
+            "silo-leg-near-left",
+            "silo-leg-near-right",
+            "silo-leg-far-left",
+            "silo-leg-far-right",
+            "silo-access-ladder-left",
+            "silo-access-ladder-right",
+            "silo-ladder-rung-1",
+            "silo-ladder-rung-2",
+            "silo-ladder-rung-3",
+            "silo-ladder-rung-4",
+            "silo-ladder-rung-5",
+            "silo-ladder-rung-6",
+            "silo-ladder-rung-7",
+            "silo-ladder-rung-8",
+            "silo-ladder-rung-9",
+            "silo-ladder-rung-10",
+            "silo-ladder-rung-11",
+            "silo-ladder-rung-12",
+            "silo-ladder-rung-13",
+            "silo-ladder-rung-14",
+            "silo-ladder-rung-15",
+            "silo-ladder-rung-16",
+            "silo-ladder-rung-17",
+            "control-cabin-frame",
+            "control-cabin-console",
+            "plant-base-rail-front",
+            "plant-base-rail-back",
+            "plant-base-crossmember-left",
+            "plant-base-crossmember-right"
           ],
           "param": "structuralSteelColor"
+        },
+        {
+          "name": "aggregate-conveyor-belt",
+          "color": "#303638",
+          "parts": [
+            "aggregate-conveyor-belt"
+          ]
+        },
+        {
+          "name": "cementSiloColor",
+          "color": "#c3c8c3",
+          "parts": [
+            "silo-discharge-cone",
+            "cement-silo-shell",
+            "silo-top-cap"
+          ],
+          "param": "cementSiloColor"
+        },
+        {
+          "name": "control-cabin-window",
+          "color": "#8eb6ba",
+          "parts": [
+            "control-cabin-window"
+          ]
         }
       ]
     },
@@ -57689,7 +57821,7 @@
       "id": "ride-on-power-trowel",
       "kit": "construction-equipment",
       "title": "Ride-on power trowel",
-      "description": "Concrete finishing machine with twin guarded rotor pans, seat and control console. Material controls: equipment enamel paint, exposed structural steel; weathered and highVisibility presets.",
+      "description": "Rider concrete finisher with twin guarded rotors, visible blade shoes, engine, bucket seat and paired control levers. Material controls: equipment enamel, structural steel, rubber grips and seat vinyl; selectable rotor diameter and blade count; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -57708,7 +57840,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/construction-equipment/ride-on-power-trowel.kcad.ts",
       "preview": "/assets/construction-equipment-ride-on-power-trowel.png",
-      "sourceSha256": "351c384656e2896062037a36aa096125fea8dc144ddaa0e750563bc78e5c3705",
+      "sourceSha256": "a74ca976fef37316a3f3888dfac77bf127685402da0b30d8ae0da4ff614ad70e",
       "triangleBudget": 2200,
       "params": [
         {
@@ -57721,33 +57853,70 @@
           "step": 0.05
         },
         {
+          "name": "bladeCount",
+          "type": "choice",
+          "default": "6",
+          "label": "Blades per rotor",
+          "choices": [
+            "4",
+            "6"
+          ]
+        },
+        {
+          "name": "rotorSize",
+          "type": "choice",
+          "default": "standard",
+          "label": "Rotor diameter",
+          "choices": [
+            "compact",
+            "standard",
+            "wide"
+          ]
+        },
+        {
           "name": "equipmentPaintColor",
           "type": "color",
           "default": "#e1a31b",
-          "label": "Equipment enamel paint"
+          "label": "Equipment enamel"
         },
         {
           "name": "structuralSteelColor",
           "type": "color",
           "default": "#89969a",
-          "label": "Exposed structural steel"
+          "label": "Structural steel"
+        },
+        {
+          "name": "rubberColor",
+          "type": "color",
+          "default": "#303638",
+          "label": "Rubber grips"
+        },
+        {
+          "name": "seatVinylColor",
+          "type": "color",
+          "default": "#32383a",
+          "label": "Seat vinyl"
         }
       ],
       "presets": {
         "weathered": {
           "equipmentPaintColor": "#a87b36",
-          "structuralSteelColor": "#716b61"
+          "structuralSteelColor": "#716b61",
+          "rubberColor": "#3c403e",
+          "seatVinylColor": "#41403b"
         },
         "highVisibility": {
           "equipmentPaintColor": "#f06b26",
-          "structuralSteelColor": "#c1c7c2"
+          "structuralSteelColor": "#c1c7c2",
+          "rubberColor": "#292e31",
+          "seatVinylColor": "#252a2d"
         }
       },
       "stats": {
-        "triangles": 136,
+        "triangles": 1112,
         "sizeM": [
-          0.936,
-          0.545,
+          1.044,
+          0.544434,
           0.504
         ],
         "minUpM": 0,
@@ -57755,24 +57924,84 @@
       },
       "palette": [
         {
+          "name": "structuralSteelColor",
+          "color": "#89969a",
+          "parts": [
+            "rotor-guard-left",
+            "rotor-output-shaft-left",
+            "blade-shoe-left-1",
+            "blade-shoe-left-2",
+            "blade-shoe-left-3",
+            "blade-shoe-left-4",
+            "blade-shoe-left-5",
+            "blade-shoe-left-6",
+            "rotor-support-arm-left",
+            "rotor-guard-right",
+            "rotor-output-shaft-right",
+            "blade-shoe-right-1",
+            "blade-shoe-right-2",
+            "blade-shoe-right-3",
+            "blade-shoe-right-4",
+            "blade-shoe-right-5",
+            "blade-shoe-right-6",
+            "rotor-support-arm-right",
+            "chassis-crossmember-near",
+            "chassis-crossmember-far",
+            "engine-side-panel",
+            "engine-intake",
+            "exhaust-riser",
+            "exhaust-muffler",
+            "seat-post",
+            "seat-frame",
+            "console-display",
+            "steering-lever-near",
+            "steering-lever-far",
+            "operator-step"
+          ],
+          "param": "structuralSteelColor"
+        },
+        {
           "name": "equipmentPaintColor",
           "color": "#e1a31b",
           "parts": [
-            "operator-platform",
-            "seat-post",
-            "seat",
+            "rotor-gearbox-left",
+            "rotor-gearbox-right",
+            "central-chassis-spine",
+            "operator-footplate",
+            "rear-engine-housing",
+            "engine-vent-1",
+            "engine-vent-2",
+            "engine-vent-3",
+            "engine-vent-4",
+            "engine-vent-5",
+            "engine-vent-6",
+            "engine-vent-7",
             "control-console"
           ],
           "param": "equipmentPaintColor"
         },
         {
-          "name": "structuralSteelColor",
-          "color": "#89969a",
+          "name": "seatVinylColor",
+          "color": "#32383a",
           "parts": [
-            "rotor-guard--1",
-            "rotor-guard-1"
+            "seat-cushion",
+            "seat-back-shell",
+            "console-screen",
+            "rear-light"
           ],
-          "param": "structuralSteelColor"
+          "param": "seatVinylColor"
+        },
+        {
+          "name": "rubberColor",
+          "color": "#303638",
+          "parts": [
+            "seat-back-pad",
+            "steering-grip-near",
+            "footrest-near",
+            "steering-grip-far",
+            "footrest-far"
+          ],
+          "param": "rubberColor"
         }
       ]
     },
@@ -58809,7 +59038,7 @@
       "id": "towable-light-tower",
       "kit": "construction-equipment",
       "title": "Towable site light tower",
-      "description": "Mobile lighting mast with four floodlight heads, stabilizer legs and road trailer. Material controls: equipment enamel paint, exposed structural steel; weathered and highVisibility presets.",
+      "description": "Trailer-mounted generator enclosure with telescoping mast, selectable lamp bank and four stabilizer jacks. Material controls: equipment enamel, structural steel, rubber and light lenses; mast height and lamp count choices; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -58828,7 +59057,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/construction-equipment/towable-light-tower.kcad.ts",
       "preview": "/assets/construction-equipment-towable-light-tower.png",
-      "sourceSha256": "6d92179fd2e58df6c132063d3621c84a53b65b6645ee82265f16d9ecb5fef48c",
+      "sourceSha256": "1a6a8a75abf9c307a79531339cfd27346f4cb2d5c2e1bbdd7a5bb57c8a82f680",
       "triangleBudget": 2200,
       "params": [
         {
@@ -58841,62 +59070,164 @@
           "step": 0.05
         },
         {
+          "name": "mastHeight",
+          "type": "choice",
+          "default": "1800",
+          "label": "Mast extension (mm)",
+          "choices": [
+            "1200",
+            "1800",
+            "2400"
+          ]
+        },
+        {
+          "name": "lampCount",
+          "type": "choice",
+          "default": "4",
+          "label": "Lamp heads",
+          "choices": [
+            "2",
+            "4",
+            "6"
+          ]
+        },
+        {
           "name": "equipmentPaintColor",
           "type": "color",
           "default": "#e1a31b",
-          "label": "Equipment enamel paint"
+          "label": "Equipment enamel"
         },
         {
           "name": "structuralSteelColor",
           "type": "color",
           "default": "#89969a",
-          "label": "Exposed structural steel"
+          "label": "Structural steel"
+        },
+        {
+          "name": "tireRubberColor",
+          "type": "color",
+          "default": "#252a2d",
+          "label": "Tire rubber"
+        },
+        {
+          "name": "lampLensColor",
+          "type": "color",
+          "default": "#f2dfaa",
+          "label": "Light lenses"
         }
       ],
       "presets": {
         "weathered": {
           "equipmentPaintColor": "#a87b36",
-          "structuralSteelColor": "#716b61"
+          "structuralSteelColor": "#716b61",
+          "tireRubberColor": "#3a3a37",
+          "lampLensColor": "#dbc99a"
         },
         "highVisibility": {
           "equipmentPaintColor": "#f06b26",
-          "structuralSteelColor": "#c1c7c2"
+          "structuralSteelColor": "#c1c7c2",
+          "tireRubberColor": "#292e31",
+          "lampLensColor": "#fff1c4"
         }
       },
       "stats": {
-        "triangles": 152,
+        "triangles": 1328,
         "sizeM": [
-          1.2075,
-          1.9755,
-          0.9328
+          1.605,
+          2.562,
+          0.868
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
+          "name": "structuralSteelColor",
+          "color": "#89969a",
+          "parts": [
+            "trailer-deck",
+            "trailer-frame-front",
+            "trailer-frame-rear",
+            "enclosure-service-door",
+            "exhaust-stack",
+            "stack-cap",
+            "generator-control-box",
+            "wheel-hub-near",
+            "wheel-hub-far",
+            "tow-tongue",
+            "tow-coupler",
+            "safety-chain-left",
+            "safety-chain-right",
+            "stabilizer-outrigger-near",
+            "stabilizer-outrigger-far",
+            "jack-post-rear-near",
+            "jack-foot-rear-near",
+            "jack-post-rear-far",
+            "jack-foot-rear-far",
+            "jack-post-front-near",
+            "jack-foot-front-near",
+            "jack-post-front-far",
+            "jack-foot-front-far",
+            "mast-lower-section",
+            "mast-telescoping-section",
+            "mast-winching-drum",
+            "mast-crossbar",
+            "lamp-yoke-1",
+            "lamp-side-cap-1",
+            "lamp-yoke-2",
+            "lamp-side-cap-2",
+            "lamp-yoke-3",
+            "lamp-side-cap-3",
+            "lamp-yoke-4",
+            "lamp-side-cap-4"
+          ],
+          "param": "structuralSteelColor"
+        },
+        {
           "name": "equipmentPaintColor",
           "color": "#e1a31b",
           "parts": [
-            "skid-base",
-            "tower-base",
-            "light-bar",
-            "floodlight-0",
-            "floodlight-1",
-            "floodlight-2",
-            "floodlight-3",
-            "stabilizer--1",
-            "stabilizer-1"
+            "generator-enclosure",
+            "enclosure-vent-1",
+            "enclosure-vent-2",
+            "enclosure-vent-3",
+            "enclosure-vent-4",
+            "enclosure-vent-5",
+            "enclosure-vent-6",
+            "coupler-latch",
+            "jack-collar-rear-near",
+            "jack-collar-rear-far",
+            "jack-collar-front-near",
+            "jack-collar-front-far",
+            "mast-base-pedestal",
+            "mast-winch-handle",
+            "lamp-housing-1",
+            "lamp-housing-2",
+            "lamp-housing-3",
+            "lamp-housing-4"
           ],
           "param": "equipmentPaintColor"
         },
         {
-          "name": "structuralSteelColor",
-          "color": "#89969a",
+          "name": "lampLensColor",
+          "color": "#f2dfaa",
           "parts": [
-            "telescoping-mast"
+            "control-display",
+            "lamp-front-lens-1",
+            "lamp-front-lens-2",
+            "lamp-front-lens-3",
+            "lamp-front-lens-4"
           ],
-          "param": "structuralSteelColor"
+          "param": "lampLensColor"
+        },
+        {
+          "name": "tireRubberColor",
+          "color": "#252a2d",
+          "parts": [
+            "road-wheel-near",
+            "road-wheel-far"
+          ],
+          "param": "tireRubberColor"
         }
       ]
     },

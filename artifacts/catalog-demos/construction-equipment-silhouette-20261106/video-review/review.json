@@ -1,0 +1,36 @@
+{
+  "status": "decoded",
+  "video": "construction-equipment-silhouette-refinement.mp4",
+  "metadata": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "r_frame_rate": "30/1"
+      }
+    ],
+    "format": {
+      "duration": "21.000000",
+      "size": "416783"
+    }
+  },
+  "sampleCount": 7,
+  "samples": [
+    "sample-01.png",
+    "sample-02.png",
+    "sample-03.png",
+    "sample-04.png",
+    "sample-05.png",
+    "sample-06.png",
+    "sample-07.png"
+  ],
+  "contactSheet": "video-review/contact-sheet.png",
+  "visualNotes": [
+    "Before/after cards use the retained original previews and the final kit previews.",
+    "Palette cards show the highVisibility source preset in distinct material zones.",
+    "Shape-choice cards show the rendered mast/lamp, rotor, bin-count and silo-height changes.",
+    "The final frame distinguishes local source renders and checks from deployment and equipment acceptance."
+  ]
+}

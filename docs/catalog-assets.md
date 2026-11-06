@@ -8,6 +8,18 @@ from those sources and must be rebuilt in the same change.
 
 The catalog quality gate reports **2,390/2,390 assets passing (100.00%)**
 across 49 rich kits, with no failing assets. The latest visual follow-up
+refined three existing construction-equipment assets whose previews still read
+as stacked primitives. The towable tower now has a wheeled generator trailer,
+four screw jacks, a telescoping mast and a selectable lamp bank; the ride-on
+trowel separates its two open blade guards, engine, seat and paired controls;
+the batch plant shows its aggregate hoppers, feed conveyor, mixer and framed
+silo. Each asset retains two named palettes, adds four material controls and
+has two real shape choices beyond scale. The [construction-equipment
+silhouette handoff](../artifacts/catalog-demos/construction-equipment-silhouette-20261106/README.md)
+records source-driven variants, regenerated previews and index, local checks
+and the inspected MP4. It adds no asset IDs; the pass rate remains
+2,390/2,390 (100.00%). This branch is not deployed, so no live-site or
+equipment-acceptance claim is made.
 repaired the existing `office/scissors` default view by adding two polymer
 handle tangs between the finger loops and brass pivot. Its stainless-steel,
 polymer, and brass controls and `professional` / `classroom` presets remain;
