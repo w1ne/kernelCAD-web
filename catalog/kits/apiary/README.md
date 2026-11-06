@@ -10,6 +10,10 @@ regenerated indexed preview. The shade canopy now includes a canvas roof and
 steel corner brackets, hive frames show wax foundation, and honey handling
 props distinguish glass, honey, stainless steel, brass, paper, and polymer.
 
+The beekeeper veil hood, jacket, gloves, bee smoker and hive tool were later
+rebuilt from lofted, hooped and profiled geometry with shape choices; see the
+[silhouette rebuild handoff](../../../artifacts/catalog-demos/apiary-silhouette-20261106/README.md).
+
 These are generic scene assets rather than manufacturing drawings or beekeeping
 guidance. The [quality promotion handoff](../../../artifacts/catalog-demos/apiary-quality-promotion-20261105/README.md)
 records source, preview, index, quality, test, local-page and demo evidence. The
