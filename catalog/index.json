@@ -171439,7 +171439,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/outdoor-gear/binoculars.kcad.ts",
       "preview": "/assets/outdoor-gear-binoculars.png",
-      "sourceSha256": "51e749f4e2576cc4a7dafea615b57e3d1944443fb2053110694b2f2487bea21b",
+      "sourceSha256": "7de143f1950c0956b593cef1bc65175122063406c2dd788fecc09344a622a9e5",
       "triangleBudget": 500,
       "params": [
         {
@@ -171471,7 +171471,18 @@
           "label": "Lenses"
         }
       ],
-      "presets": {},
+      "presets": {
+        "field": {
+          "body": "#45564a",
+          "trim": "#c7b786",
+          "glass": "#557f91"
+        },
+        "alpine": {
+          "body": "#314657",
+          "trim": "#d6d2c3",
+          "glass": "#6db7c4"
+        }
+      },
       "stats": {
         "triangles": 408,
         "sizeM": [
@@ -171540,7 +171551,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/outdoor-gear/camp-chair.kcad.ts",
       "preview": "/assets/outdoor-gear-camp-chair.png",
-      "sourceSha256": "fa57edcfc7f66099d6d3db7ff45c8f17f97252e2e6974dc579ebf614ea999771",
+      "sourceSha256": "412c1eb0a10c90952e1f7a0f5e7f23d2779e8624e154fcef9b736b85d2ba4d96",
       "triangleBudget": 320,
       "params": [
         {
@@ -171566,7 +171577,16 @@
           "label": "Frame"
         }
       ],
-      "presets": {},
+      "presets": {
+        "trail": {
+          "fabric": "#b85b3d",
+          "frame": "#4b5252"
+        },
+        "highVisibility": {
+          "fabric": "#e2a43a",
+          "frame": "#3b4145"
+        }
+      },
       "stats": {
         "triangles": 96,
         "sizeM": [
@@ -171626,7 +171646,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/outdoor-gear/camp-stove.kcad.ts",
       "preview": "/assets/outdoor-gear-camp-stove.png",
-      "sourceSha256": "e2592f14ad96012b38dee016f638e197e486a532318cd1c44279a24714752e4c",
+      "sourceSha256": "fbaa1b5ab343318b532a916c7ae3708ed179449668b325bea059c6395f05a65a",
       "triangleBudget": 280,
       "params": [
         {
@@ -171658,7 +171678,18 @@
           "label": "Fuel canister"
         }
       ],
-      "presets": {},
+      "presets": {
+        "trail": {
+          "body": "#4b5154",
+          "burner": "#bcc4c3",
+          "fuel": "#c98336"
+        },
+        "highVisibility": {
+          "body": "#414a4c",
+          "burner": "#d0d1c9",
+          "fuel": "#d94b33"
+        }
+      },
       "stats": {
         "triangles": 200,
         "sizeM": [
@@ -171819,7 +171850,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/outdoor-gear/camping-hammock.kcad.ts",
       "preview": "/assets/outdoor-gear-camping-hammock.png",
-      "sourceSha256": "8f5d965aa5cac1ecce2cb205a3ff58b161a429bb4420d273aba66959d782fc12",
+      "sourceSha256": "c053bb1d16ed7395f3a609f3c369f9f98cafa1c223015e3f9688c98cd5614a78",
       "triangleBudget": 320,
       "params": [
         {
@@ -171851,7 +171882,18 @@
           "label": "End straps"
         }
       ],
-      "presets": {},
+      "presets": {
+        "forest": {
+          "fabric": "#54785a",
+          "frame": "#52595a",
+          "strap": "#2f3833"
+        },
+        "coastal": {
+          "fabric": "#d27755",
+          "frame": "#778083",
+          "strap": "#46464c"
+        }
+      },
       "stats": {
         "triangles": 168,
         "sizeM": [
@@ -171924,7 +171966,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/outdoor-gear/canteen.kcad.ts",
       "preview": "/assets/outdoor-gear-canteen.png",
-      "sourceSha256": "58b42ddf7cc36a577ad5fd6fed124facb87261832a126fdcc8469dfbbbf5b12c",
+      "sourceSha256": "0e1967cc725f0aa0ec54524fd0e71d070a666c9defd7062c00ac4c8ae8bfa80e",
       "triangleBudget": 200,
       "params": [
         {
@@ -171957,7 +171999,18 @@
           "label": "Carry loop"
         }
       ],
-      "presets": {},
+      "presets": {
+        "field": {
+          "flask": "#596f4e",
+          "cap": "#343b36",
+          "loop": "#b28a52"
+        },
+        "alpine": {
+          "flask": "#6c8da0",
+          "cap": "#37424a",
+          "loop": "#ded6bd"
+        }
+      },
       "stats": {
         "triangles": 180,
         "sizeM": [
@@ -172023,7 +172076,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/outdoor-gear/fishing-rod.kcad.ts",
       "preview": "/assets/outdoor-gear-fishing-rod.png",
-      "sourceSha256": "91730af36c9194eb8bb2018096c0c6f8b0b93f586a3000b21ac575593b89ae11",
+      "sourceSha256": "46ff748a0c2c1a0189ee4197b60abe50e1b297a55235c6900957f8e20d5325cb",
       "triangleBudget": 550,
       "params": [
         {
@@ -172056,7 +172109,18 @@
           "label": "Reel and guides"
         }
       ],
-      "presets": {},
+      "presets": {
+        "river": {
+          "shaft": "#4c6875",
+          "grip": "#aa7b4c",
+          "reel": "#3d4140"
+        },
+        "coastal": {
+          "shaft": "#246b77",
+          "grip": "#886247",
+          "reel": "#535e61"
+        }
+      },
       "stats": {
         "triangles": 496,
         "sizeM": [
@@ -172127,7 +172191,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/outdoor-gear/hiking-boots.kcad.ts",
       "preview": "/assets/outdoor-gear-hiking-boots.png",
-      "sourceSha256": "3032a57e1e5d1406bd2154c3933cd6e6752b72479deeb8aff5921ee15034ab04",
+      "sourceSha256": "367da9561aea290474d19c860609699f63b6b0f761f29b61d6bd353ec9f431f3",
       "triangleBudget": 380,
       "params": [
         {
@@ -172160,7 +172224,18 @@
           "label": "Laces"
         }
       ],
-      "presets": {},
+      "presets": {
+        "trail": {
+          "leather": "#91613b",
+          "sole": "#302e2b",
+          "laces": "#d5c6a5"
+        },
+        "alpine": {
+          "leather": "#794936",
+          "sole": "#272a2c",
+          "laces": "#e4dfcb"
+        }
+      },
       "stats": {
         "triangles": 244,
         "sizeM": [
@@ -172235,7 +172310,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/outdoor-gear/map-case.kcad.ts",
       "preview": "/assets/outdoor-gear-map-case.png",
-      "sourceSha256": "3ec85c60e556b8aa523482ed960ebb200a1c9723ea6e7604537c904a0a8f90f4",
+      "sourceSha256": "9b1501c3eb1f5233f7db57800f35d30da35c5144e885760326356b9dd9630f43",
       "triangleBudget": 260,
       "params": [
         {
@@ -172267,7 +172342,18 @@
           "label": "Strap"
         }
       ],
-      "presets": {},
+      "presets": {
+        "topographic": {
+          "pouch": "#66523d",
+          "map": "#e2d8b7",
+          "strap": "#3d4341"
+        },
+        "rescue": {
+          "pouch": "#c84e36",
+          "map": "#e8e2cc",
+          "strap": "#343a3a"
+        }
+      },
       "stats": {
         "triangles": 132,
         "sizeM": [
@@ -172337,7 +172423,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/outdoor-gear/sleeping-bag.kcad.ts",
       "preview": "/assets/outdoor-gear-sleeping-bag.png",
-      "sourceSha256": "70e0dc4915d935d8a21c82b466f50d36aefa4d3a7ee22331a86f3926ae83c17e",
+      "sourceSha256": "906f460e12866eb784589b8086c69e3985cee8011b1a28e23d9aa35486474ba9",
       "triangleBudget": 260,
       "params": [
         {
@@ -172369,7 +172455,18 @@
           "label": "Zipper"
         }
       ],
-      "presets": {},
+      "presets": {
+        "coldWeather": {
+          "shell": "#365b73",
+          "lining": "#c3b89d",
+          "zipper": "#e0d9c7"
+        },
+        "summer": {
+          "shell": "#d16b3f",
+          "lining": "#d9c6a0",
+          "zipper": "#f1e4cc"
+        }
+      },
       "stats": {
         "triangles": 108,
         "sizeM": [
@@ -172433,7 +172530,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/outdoor-gear/trail-compass.kcad.ts",
       "preview": "/assets/outdoor-gear-trail-compass.png",
-      "sourceSha256": "e120c50ca945a2d278342a500e2a23fb47d611439a1932fac492cc8db20f7da3",
+      "sourceSha256": "78d8d7e9423453f91365b02c2c0aacedfa553249542d8a8291c5233fb606e641",
       "triangleBudget": 220,
       "params": [
         {
@@ -172465,7 +172562,18 @@
           "label": "Needle"
         }
       ],
-      "presets": {},
+      "presets": {
+        "field": {
+          "caseColor": "#55755c",
+          "dial": "#e1ddc8",
+          "needle": "#bd4935"
+        },
+        "rescue": {
+          "caseColor": "#c84e35",
+          "dial": "#ebe6d6",
+          "needle": "#303b3f"
+        }
+      },
       "stats": {
         "triangles": 140,
         "sizeM": [
@@ -172531,7 +172639,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/outdoor-gear/trekking-poles.kcad.ts",
       "preview": "/assets/outdoor-gear-trekking-poles.png",
-      "sourceSha256": "2381f1e2c494d6d94bc92f157734f64f3b33c89c6a427ba395cf56ce7bc25530",
+      "sourceSha256": "a3ca4ae8135d93312bdbde8658b8f1f7018acae3030ec463215ce8566b67c794",
       "triangleBudget": 500,
       "params": [
         {
@@ -172564,7 +172672,18 @@
           "label": "Tips and baskets"
         }
       ],
-      "presets": {},
+      "presets": {
+        "alpine": {
+          "shaft": "#a64b35",
+          "grip": "#343739",
+          "tip": "#b7b8b5"
+        },
+        "forest": {
+          "shaft": "#487268",
+          "grip": "#363b3c",
+          "tip": "#c0b9a3"
+        }
+      },
       "stats": {
         "triangles": 464,
         "sizeM": [
