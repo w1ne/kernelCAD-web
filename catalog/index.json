@@ -32397,13 +32397,16 @@
       "id": "bottle-infeed-conveyor",
       "kit": "beverage-bottling-line",
       "title": "Bottle infeed conveyor",
-      "description": "Narrow belt with adjustable guides and a dead-plate transfer into the rinser. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
+      "description": "Tabletop-chain bottle infeed conveyor: stainless C-channel side frames, plastic chain round end sprockets, wear-strip guide rails on adjustable rod brackets holding a queue of PET bottles, hanging geared drive motor, dead plate, jam photo-eye, braced legs on adjustable feet. Material controls: stainless steel, painted drive, food-grade chain and wear strips, PET bottles. Single or double lane; sanitaryLine and legacyPlant presets.",
       "category": "structure",
       "origin": "base",
       "tags": [
         "beverage bottling",
         "packaging line",
         "food manufacturing",
+        "conveyor",
+        "tabletop chain",
+        "bottle",
         "low poly",
         "CC0"
       ],
@@ -32416,8 +32419,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/bottle-infeed-conveyor.kcad.ts",
       "preview": "/assets/beverage-bottling-line-bottle-infeed-conveyor.png",
-      "sourceSha256": "a2634ace223a4be2ee07de3251f5b977434d5563e8619fa290f5cecfc2129556",
-      "triangleBudget": 2200,
+      "sourceSha256": "0d8c365798c36192331c0327c9a8179111842c567096dd1307b8dd584c8b9668",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -32429,6 +32432,16 @@
           "step": 0.05
         },
         {
+          "name": "lanes",
+          "type": "choice",
+          "default": "single",
+          "label": "Bottle lanes",
+          "choices": [
+            "single",
+            "double"
+          ]
+        },
+        {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#aebdc1",
@@ -32438,70 +32451,124 @@
           "name": "powderCoat",
           "type": "color",
           "default": "#397e91",
-          "label": "Powder-coated steel"
+          "label": "Painted drive motor"
         },
         {
           "name": "foodPolymer",
           "type": "color",
           "default": "#3999a1",
-          "label": "Food-grade polymer"
+          "label": "Food-grade chain and wear strips"
+        },
+        {
+          "name": "petBottle",
+          "type": "color",
+          "default": "#b5e2ea",
+          "label": "PET bottles"
         }
       ],
       "presets": {
         "sanitaryLine": {
           "stainlessSteel": "#d2dfe1",
           "powderCoat": "#4b95a4",
-          "foodPolymer": "#2c828c"
+          "foodPolymer": "#2c828c",
+          "petBottle": "#a6dbe3"
         },
         "legacyPlant": {
           "stainlessSteel": "#858f91",
           "powderCoat": "#315b70",
-          "foodPolymer": "#286c75"
+          "foodPolymer": "#286c75",
+          "petBottle": "#5d9a72"
         }
       },
       "stats": {
-        "triangles": 208,
+        "triangles": 2300,
         "sizeM": [
-          1.585,
-          0.812,
-          0.34
+          1.969262,
+          1.132,
+          0.635
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
+          "parts": [
+            "side-frame-front",
+            "side-frame-back",
+            "leg-0-front",
+            "foot-0-front",
+            "leg-0-back",
+            "foot-0-back",
+            "leg-brace-0",
+            "leg-1-front",
+            "foot-1-front",
+            "leg-1-back",
+            "foot-1-back",
+            "leg-brace-1",
+            "leg-2-front",
+            "foot-2-front",
+            "leg-2-back",
+            "foot-2-back",
+            "leg-brace-2",
+            "leg-stretcher",
+            "guide-bracket-0-0",
+            "guide-arm-0-0",
+            "guide-bracket-0-1",
+            "guide-arm-0-1",
+            "guide-bracket-0-2",
+            "guide-arm-0-2",
+            "guide-bracket-1-0",
+            "guide-arm-1-0",
+            "guide-bracket-1-1",
+            "guide-arm-1-1",
+            "guide-bracket-1-2",
+            "guide-arm-1-2",
+            "dead-plate",
+            "photo-eye-post",
+            "drive-fan-cowl",
+            "drive-shaft"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
           "name": "foodPolymer",
           "color": "#3999a1",
           "parts": [
-            "belt",
-            "guide-front",
-            "guide-back"
+            "chain-carry",
+            "chain-return",
+            "chain-sprocket-0",
+            "chain-sprocket-1",
+            "guide-rail-0",
+            "guide-rail-1"
           ],
           "param": "foodPolymer"
+        },
+        {
+          "name": "petBottle",
+          "color": "#b5e2ea",
+          "parts": [
+            "bottle-0-0",
+            "bottle-0-1",
+            "bottle-0-2",
+            "bottle-0-3",
+            "bottle-0-4",
+            "bottle-0-5",
+            "bottle-0-6",
+            "bottle-0-7"
+          ],
+          "param": "petBottle"
         },
         {
           "name": "powderCoat",
           "color": "#397e91",
           "parts": [
-            "side-frame-front",
-            "side-frame-back",
-            "leg-0",
-            "leg-1",
-            "leg-2",
-            "leg-3",
-            "drive-roller-0",
-            "drive-roller-1"
+            "photo-eye",
+            "drive-gearbox",
+            "drive-motor"
           ],
           "param": "powderCoat"
-        },
-        {
-          "name": "stainlessSteel",
-          "color": "#aebdc1",
-          "parts": [
-            "transfer-plate"
-          ],
-          "param": "stainlessSteel"
         }
       ]
     },
@@ -33361,13 +33428,17 @@
       "id": "carbonation-vessel",
       "kit": "beverage-bottling-line",
       "title": "Beverage carbonation vessel",
-      "description": "Insulated pressure vessel with manway, sample valve, pressure gauge, and base ring. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
+      "description": "Sanitary carbonation pressure vessel: revolved stainless shell with dished top head and a dished or cone bottom, insulated jacket with stiffener rings, three splayed legs on ball feet, clamped manway, CO2 line to a sparger inlet, sight-glass level tube, dial pressure gauge and relief valve. Material controls: stainless steel, painted jacket, food-grade polymer, safety paint. Bottom-head choice; sanitaryLine and legacyPlant presets.",
       "category": "structure",
       "origin": "base",
       "tags": [
         "beverage bottling",
         "packaging line",
         "food manufacturing",
+        "pressure vessel",
+        "tank",
+        "carbonation",
+        "CO2",
         "low poly",
         "CC0"
       ],
@@ -33380,8 +33451,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/carbonation-vessel.kcad.ts",
       "preview": "/assets/beverage-bottling-line-carbonation-vessel.png",
-      "sourceSha256": "03ee63462577ec4cedfabedc2cbd5c50544819ab6c12b2e683f5b35e28a5eb35",
-      "triangleBudget": 2200,
+      "sourceSha256": "265eb5a08de7e96360f0f5d5f32acee0276fd5b1deb89346717f943fbeb40ce6",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -33393,6 +33464,16 @@
           "step": 0.05
         },
         {
+          "name": "bottom",
+          "type": "choice",
+          "default": "dished",
+          "label": "Bottom head",
+          "choices": [
+            "dished",
+            "cone"
+          ]
+        },
+        {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#aebdc1",
@@ -33402,33 +33483,41 @@
           "name": "powderCoat",
           "type": "color",
           "default": "#397e91",
-          "label": "Powder-coated steel"
+          "label": "Painted insulation jacket"
         },
         {
           "name": "foodPolymer",
           "type": "color",
           "default": "#3999a1",
-          "label": "Food-grade polymer"
+          "label": "Food-grade polymer: sight glass, gauge face, gaskets"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#e3a331",
+          "label": "Safety paint: CO2 line and relief valve"
         }
       ],
       "presets": {
         "sanitaryLine": {
           "stainlessSteel": "#d2dfe1",
           "powderCoat": "#4b95a4",
-          "foodPolymer": "#2c828c"
+          "foodPolymer": "#2c828c",
+          "safetyPaint": "#f0b336"
         },
         "legacyPlant": {
           "stainlessSteel": "#858f91",
           "powderCoat": "#315b70",
-          "foodPolymer": "#286c75"
+          "foodPolymer": "#286c75",
+          "safetyPaint": "#bd7b24"
         }
       },
       "stats": {
-        "triangles": 412,
+        "triangles": 2142,
         "sizeM": [
-          0.756,
-          1.55,
-          0.87
+          0.951051,
+          1.81091,
+          1.004
         ],
         "minUpM": 0,
         "materials": 1
@@ -33439,34 +33528,67 @@
           "color": "#aebdc1",
           "parts": [
             "shell",
-            "top-nozzle",
-            "carbon-dioxide-port",
-            "sample-valve",
+            "stiffener-ring-0",
+            "stiffener-ring-1",
+            "stiffener-ring-2",
+            "leg-0",
+            "leg-pad-0",
+            "ball-foot-0",
+            "leg-1",
+            "leg-pad-1",
+            "ball-foot-1",
+            "leg-2",
+            "leg-pad-2",
+            "ball-foot-2",
+            "bottom-outlet",
+            "outlet-valve",
+            "manway-neck",
+            "manway-lid",
+            "manway-handle",
+            "manway-handle-post-a",
+            "manway-handle-post-b",
+            "relief-valve-body",
+            "product-inlet",
+            "product-inlet-elbow",
+            "gauge-stem",
             "pressure-gauge",
+            "sight-glass-fitting-low",
+            "sight-glass-fitting-high",
+            "co2-regulator",
             "nameplate"
           ],
           "param": "stainlessSteel"
         },
         {
+          "name": "powderCoat",
+          "color": "#397e91",
+          "parts": [
+            "insulation-jacket"
+          ],
+          "param": "powderCoat"
+        },
+        {
           "name": "foodPolymer",
           "color": "#3999a1",
           "parts": [
-            "top-cap",
-            "bottom-cap"
+            "outlet-valve-handle",
+            "manway-gasket",
+            "gauge-face",
+            "sight-glass-tube",
+            "co2-regulator-dial"
           ],
           "param": "foodPolymer"
         },
         {
-          "name": "powderCoat",
-          "color": "#397e91",
+          "name": "safetyPaint",
+          "color": "#e3a331",
           "parts": [
-            "insulation-jacket",
-            "leg-0",
-            "leg-1",
-            "leg-2",
-            "leg-3"
+            "relief-valve-cap",
+            "co2-line-top",
+            "co2-line-drop",
+            "co2-sparger-inlet"
           ],
-          "param": "powderCoat"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -36070,13 +36192,16 @@
       "id": "rotary-filler",
       "kit": "beverage-bottling-line",
       "title": "Rotary bottle filler",
-      "description": "Filling carousel with a covered product bowl, dosing valves, guard skirt, and discharge deck. Knobs: overall scale and color controls for stainless steel, powder-coated steel, food-grade polymer, and safety paint.",
+      "description": "Rotary bottle filling carousel: revolved stainless plinth and filler table, ring product bowl on a central column with a circle of filling valves over PET bottles in star-wheel pockets, infeed and outfeed belts with star wheels, guard frame and operator HMI. Material controls: stainless steel, powder-coated steel, food-grade polymer, safety paint. Head-count choice; sanitaryLine and legacyPlant presets.",
       "category": "structure",
       "origin": "base",
       "tags": [
         "beverage bottling",
         "packaging line",
         "food manufacturing",
+        "filler",
+        "carousel",
+        "bottle",
         "low poly",
         "CC0"
       ],
@@ -36089,8 +36214,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/rotary-filler.kcad.ts",
       "preview": "/assets/beverage-bottling-line-rotary-filler.png",
-      "sourceSha256": "dd7513dd94ceab90148ada65712fbc1680cedf1ca78f27f0ac76587f0bd5d4d2",
-      "triangleBudget": 2800,
+      "sourceSha256": "05e6214ab84cc8e9cf18fa95ec05b9f24ca857d4064b872fe5e4e1fe72c8c1af",
+      "triangleBudget": 6800,
       "params": [
         {
           "name": "scale",
@@ -36100,6 +36225,17 @@
           "min": 0.65,
           "max": 1.3,
           "step": 0.05
+        },
+        {
+          "name": "heads",
+          "type": "choice",
+          "default": "12",
+          "label": "Filling heads",
+          "choices": [
+            "10",
+            "12",
+            "16"
+          ]
         },
         {
           "name": "stainlessSteel",
@@ -36117,7 +36253,7 @@
           "name": "foodPolymer",
           "type": "color",
           "default": "#3999a1",
-          "label": "Food-grade polymer"
+          "label": "Food-grade polymer and PET bottles"
         },
         {
           "name": "safetyPaint",
@@ -36141,11 +36277,11 @@
         }
       },
       "stats": {
-        "triangles": 2416,
+        "triangles": 5404,
         "sizeM": [
-          1.48,
-          1.015,
-          1.131
+          3,
+          1.84,
+          1.49668
         ],
         "minUpM": 0,
         "materials": 1
@@ -36155,12 +36291,19 @@
           "name": "powderCoat",
           "color": "#397e91",
           "parts": [
-            "base-skirt",
-            "center-drive",
-            "leg-0",
-            "leg-1",
-            "leg-2",
-            "leg-3"
+            "base-plinth",
+            "infeed-leg-a",
+            "infeed-leg-b",
+            "outfeed-leg-a",
+            "outfeed-leg-b",
+            "guard-post-0",
+            "guard-post-1",
+            "guard-post-2",
+            "guard-post-3",
+            "guard-post-5",
+            "guard-top-ring",
+            "hmi-arm",
+            "hmi-panel"
           ],
           "param": "powderCoat"
         },
@@ -36168,76 +36311,113 @@
           "name": "stainlessSteel",
           "color": "#aebdc1",
           "parts": [
+            "kick-band",
             "filler-table",
+            "carrier-hub",
+            "central-column",
             "product-bowl",
-            "top-cover",
-            "infeed-deck",
-            "outfeed-deck",
+            "bowl-hub",
+            "rotary-distributor",
+            "product-inlet-riser",
+            "product-inlet-elbow",
+            "valve-arm-0",
             "fill-valve-0",
+            "fill-nozzle-0",
+            "valve-arm-1",
             "fill-valve-1",
+            "fill-nozzle-1",
+            "valve-arm-2",
             "fill-valve-2",
+            "fill-nozzle-2",
+            "valve-arm-3",
             "fill-valve-3",
+            "fill-nozzle-3",
+            "valve-arm-4",
             "fill-valve-4",
+            "fill-nozzle-4",
+            "valve-arm-5",
             "fill-valve-5",
+            "fill-nozzle-5",
+            "valve-arm-6",
             "fill-valve-6",
+            "fill-nozzle-6",
+            "valve-arm-7",
             "fill-valve-7",
+            "fill-nozzle-7",
+            "valve-arm-8",
             "fill-valve-8",
+            "fill-nozzle-8",
+            "valve-arm-9",
             "fill-valve-9",
+            "fill-nozzle-9",
+            "valve-arm-10",
             "fill-valve-10",
-            "fill-valve-11"
+            "fill-nozzle-10",
+            "valve-arm-11",
+            "fill-valve-11",
+            "fill-nozzle-11",
+            "infeed-belt-frame",
+            "infeed-guide-front",
+            "infeed-guide-back",
+            "infeed-star-shaft",
+            "outfeed-belt-frame",
+            "outfeed-guide-front",
+            "outfeed-guide-back",
+            "outfeed-star-shaft"
           ],
           "param": "stainlessSteel"
-        },
-        {
-          "name": "safetyPaint",
-          "color": "#e3a331",
-          "parts": [
-            "operator-rail"
-          ],
-          "param": "safetyPaint"
         },
         {
           "name": "foodPolymer",
           "color": "#3999a1",
           "parts": [
-            "bottle-body-0",
-            "bottle-neck-0",
-            "bottle-cap-0",
-            "bottle-body-1",
-            "bottle-neck-1",
-            "bottle-cap-1",
-            "bottle-body-2",
-            "bottle-neck-2",
-            "bottle-cap-2",
-            "bottle-body-3",
-            "bottle-neck-3",
-            "bottle-cap-3",
-            "bottle-body-4",
-            "bottle-neck-4",
-            "bottle-cap-4",
-            "bottle-body-5",
-            "bottle-neck-5",
-            "bottle-cap-5",
-            "bottle-body-6",
-            "bottle-neck-6",
-            "bottle-cap-6",
-            "bottle-body-7",
-            "bottle-neck-7",
-            "bottle-cap-7",
-            "bottle-body-8",
-            "bottle-neck-8",
-            "bottle-cap-8",
-            "bottle-body-9",
-            "bottle-neck-9",
-            "bottle-cap-9",
-            "bottle-body-10",
-            "bottle-neck-10",
-            "bottle-cap-10",
-            "bottle-body-11",
-            "bottle-neck-11",
-            "bottle-cap-11"
+            "bottle-carrier-wheel",
+            "bowl-sight-glass",
+            "valve-actuator-0",
+            "bottle-0",
+            "valve-actuator-1",
+            "bottle-1",
+            "valve-actuator-2",
+            "bottle-2",
+            "valve-actuator-3",
+            "bottle-3",
+            "valve-actuator-4",
+            "bottle-4",
+            "valve-actuator-5",
+            "bottle-5",
+            "valve-actuator-6",
+            "bottle-6",
+            "valve-actuator-7",
+            "bottle-7",
+            "valve-actuator-8",
+            "bottle-8",
+            "valve-actuator-9",
+            "bottle-9",
+            "valve-actuator-10",
+            "bottle-10",
+            "valve-actuator-11",
+            "bottle-11",
+            "infeed-belt",
+            "infeed-star-wheel",
+            "infeed-bottle-0",
+            "infeed-bottle-1",
+            "outfeed-belt",
+            "outfeed-star-wheel",
+            "outfeed-bottle-0",
+            "outfeed-bottle-1",
+            "hmi-screen"
           ],
           "param": "foodPolymer"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#e3a331",
+          "parts": [
+            "guard-door-handle",
+            "emergency-stop",
+            "status-beacon"
+          ],
+          "param": "safetyPaint"
         }
       ]
     },
@@ -36344,13 +36524,17 @@
       "id": "sanitary-lobe-pump",
       "kit": "beverage-bottling-line",
       "title": "Sanitary rotary-lobe pump",
-      "description": "Low-shear lobe pump with polished casing, motor, coupling guard, and cleanable feet. Knobs: overall scale and color controls for stainless steel and powder-coated steel.",
+      "description": "Sanitary rotary-lobe pump set: oblong polished pump head with front cover and domed cap nuts, opposed tri-clamp ports, gearbox, coupling guard and finned TEFC motor with fan cowl and terminal box on a stainless baseplate with levelling feet. Material controls: stainless steel, painted drive, safety-yellow guard, food-grade gaskets. Port-orientation choice; sanitaryLine and legacyPlant presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "beverage bottling",
         "packaging line",
         "food manufacturing",
+        "pump",
+        "lobe pump",
+        "sanitary",
+        "motor",
         "low poly",
         "CC0"
       ],
@@ -36363,8 +36547,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/sanitary-lobe-pump.kcad.ts",
       "preview": "/assets/beverage-bottling-line-sanitary-lobe-pump.png",
-      "sourceSha256": "97bd54db0d8f50036d9dd91bc6eb478242b7c934630d7d88386987dae0c9f55f",
-      "triangleBudget": 2200,
+      "sourceSha256": "b91fc409e35e3d16c0d67fd70a6ba9aebf22a053f678ffcf73fe2bb61965174f",
+      "triangleBudget": 2000,
       "params": [
         {
           "name": "scale",
@@ -36376,6 +36560,16 @@
           "step": 0.05
         },
         {
+          "name": "ports",
+          "type": "choice",
+          "default": "horizontal",
+          "label": "Port orientation",
+          "choices": [
+            "horizontal",
+            "vertical"
+          ]
+        },
+        {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#aebdc1",
@@ -36385,55 +36579,103 @@
           "name": "powderCoat",
           "type": "color",
           "default": "#397e91",
-          "label": "Powder-coated steel"
+          "label": "Painted motor and gearbox"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#e3a331",
+          "label": "Safety-yellow coupling guard"
+        },
+        {
+          "name": "foodPolymer",
+          "type": "color",
+          "default": "#3999a1",
+          "label": "Food-grade gaskets and seals"
         }
       ],
       "presets": {
         "sanitaryLine": {
           "stainlessSteel": "#d2dfe1",
-          "powderCoat": "#4b95a4"
+          "powderCoat": "#4b95a4",
+          "safetyPaint": "#f0b336",
+          "foodPolymer": "#2c828c"
         },
         "legacyPlant": {
           "stainlessSteel": "#858f91",
-          "powderCoat": "#315b70"
+          "powderCoat": "#315b70",
+          "safetyPaint": "#bd7b24",
+          "foodPolymer": "#286c75"
         }
       },
       "stats": {
-        "triangles": 304,
+        "triangles": 1584,
         "sizeM": [
-          0.84,
-          0.445,
-          0.592
+          1.141,
+          0.557,
+          0.588
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
+          "parts": [
+            "baseplate",
+            "levelling-foot-0",
+            "levelling-foot-1",
+            "levelling-foot-2",
+            "levelling-foot-3",
+            "pump-pedestal",
+            "pump-casing",
+            "front-cover",
+            "cap-nut-0",
+            "cap-nut-1",
+            "inlet-pipe",
+            "inlet-ferrule",
+            "outlet-pipe",
+            "outlet-ferrule",
+            "gearbox-breather",
+            "drive-shaft",
+            "motor-cowl-grille"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "foodPolymer",
+          "color": "#3999a1",
+          "parts": [
+            "cover-seal",
+            "inlet-gasket",
+            "outlet-gasket",
+            "motor-cable-gland"
+          ],
+          "param": "foodPolymer"
+        },
+        {
           "name": "powderCoat",
           "color": "#397e91",
           "parts": [
-            "base",
-            "motor",
-            "coupling-guard",
-            "foot-0",
-            "foot-1",
-            "foot-2",
-            "foot-3"
+            "gearbox",
+            "gearbox-bearing-cover",
+            "motor-body",
+            "motor-end-shield-drive",
+            "motor-fan-cowl",
+            "motor-terminal-box",
+            "motor-feet",
+            "motor-foot-web"
           ],
           "param": "powderCoat"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#aebdc1",
+          "name": "safetyPaint",
+          "color": "#e3a331",
           "parts": [
-            "pump-casing",
-            "front-cover",
-            "inlet",
-            "outlet",
-            "gearbox"
+            "coupling-guard"
           ],
-          "param": "stainlessSteel"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -36878,13 +37120,17 @@
       "id": "stretch-wrapper",
       "kit": "beverage-bottling-line",
       "title": "Pallet stretch wrapper",
-      "description": "Turntable wrapper with film carriage, mast rollers, and adjustable load-height sensor. Knobs: overall scale and color controls for stainless steel, powder-coated steel, and food-grade polymer.",
+      "description": "Turntable pallet stretch wrapper: round turntable in a square base with a loading ramp, tall mast with a film carriage carrying a film roll and pre-stretch rollers, film web, control cabinet and load-height photo-eye; mid-cycle with a timber pallet of corrugated cases partly wrapped. Material controls: stainless steel, powder-coated steel, stretch film, timber pallet and cases. Load choice; sanitaryLine and legacyPlant presets.",
       "category": "structure",
       "origin": "base",
       "tags": [
         "beverage bottling",
         "packaging line",
         "food manufacturing",
+        "end of line",
+        "pallet",
+        "stretch wrap",
+        "turntable",
         "low poly",
         "CC0"
       ],
@@ -36892,13 +37138,14 @@
         "beverage-bottling-line",
         "factory",
         "food-manufacturing",
+        "warehouse",
         "scene"
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/beverage-bottling-line/stretch-wrapper.kcad.ts",
       "preview": "/assets/beverage-bottling-line-stretch-wrapper.png",
-      "sourceSha256": "e323605b883a65d8fedbee1067f3c246e5d5f177fec1feacba7050ee449dbd80",
-      "triangleBudget": 2200,
+      "sourceSha256": "a05cc2b96930e208818fc80092306f0bb142a020631058f77c772e8e2b8fde71",
+      "triangleBudget": 1200,
       "params": [
         {
           "name": "scale",
@@ -36910,10 +37157,20 @@
           "step": 0.05
         },
         {
+          "name": "load",
+          "type": "choice",
+          "default": "wrapping",
+          "label": "Load on turntable",
+          "choices": [
+            "wrapping",
+            "empty"
+          ]
+        },
+        {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#aebdc1",
-          "label": "Stainless steel"
+          "label": "Stainless rollers and trim"
         },
         {
           "name": "powderCoat",
@@ -36924,62 +37181,125 @@
         {
           "name": "foodPolymer",
           "type": "color",
-          "default": "#3999a1",
-          "label": "Food-grade polymer"
+          "default": "#c9dfe2",
+          "label": "Stretch film"
+        },
+        {
+          "name": "palletTimber",
+          "type": "color",
+          "default": "#b8895a",
+          "label": "Timber pallet and corrugated cases"
         }
       ],
       "presets": {
         "sanitaryLine": {
           "stainlessSteel": "#d2dfe1",
           "powderCoat": "#4b95a4",
-          "foodPolymer": "#2c828c"
+          "foodPolymer": "#dcebee",
+          "palletTimber": "#c99b68"
         },
         "legacyPlant": {
           "stainlessSteel": "#858f91",
           "powderCoat": "#315b70",
-          "foodPolymer": "#286c75"
+          "foodPolymer": "#9fbcc0",
+          "palletTimber": "#8f6a45"
         }
       },
       "stats": {
-        "triangles": 356,
+        "triangles": 1004,
         "sizeM": [
-          1.5,
-          1.8,
-          1.3
+          2.59,
+          2.77,
+          1.76
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#aebdc1",
-          "parts": [
-            "turntable",
-            "turntable-hub",
-            "mast",
-            "photoeye"
-          ],
-          "param": "stainlessSteel"
-        },
-        {
           "name": "powderCoat",
           "color": "#397e91",
           "parts": [
+            "base-frame",
+            "ramp-wedge",
+            "turntable",
             "mast-base",
-            "control-box"
+            "mast",
+            "mast-cap",
+            "control-cabinet",
+            "carriage-frame",
+            "carriage-top",
+            "carriage-back"
           ],
           "param": "powderCoat"
         },
         {
-          "name": "foodPolymer",
-          "color": "#3999a1",
+          "name": "stainlessSteel",
+          "color": "#aebdc1",
           "parts": [
-            "film-carriage",
+            "loading-ramp",
+            "turntable-deck",
+            "mast-guide-track",
+            "control-panel-face",
+            "prestretch-roller-0",
+            "prestretch-roller-1",
+            "photo-eye"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "palletTimber",
+          "color": "#b8895a",
+          "parts": [
+            "emergency-stop",
+            "film-core",
+            "pallet-bottom-board-0",
+            "pallet-bottom-board-1",
+            "pallet-bottom-board-2",
+            "pallet-stringer-0",
+            "pallet-stringer-1",
+            "pallet-stringer-2",
+            "pallet-deck-board-0",
+            "pallet-deck-board-1",
+            "pallet-deck-board-2",
+            "pallet-deck-board-3",
+            "pallet-deck-board-4",
+            "pallet-deck-board-5",
+            "pallet-deck-board-6",
+            "case-0-0-0",
+            "case-0-0-1",
+            "case-0-1-0",
+            "case-0-1-1",
+            "case-0-2-0",
+            "case-0-2-1",
+            "case-1-0-0",
+            "case-1-0-1",
+            "case-1-1-0",
+            "case-1-1-1",
+            "case-1-2-0",
+            "case-1-2-1",
+            "case-2-0-0",
+            "case-2-0-1",
+            "case-2-1-0",
+            "case-2-1-1",
+            "case-2-2-0",
+            "case-2-2-1",
+            "case-3-0-0",
+            "case-3-0-1",
+            "case-3-1-0",
+            "case-3-1-1",
+            "case-3-2-0",
+            "case-3-2-1"
+          ],
+          "param": "palletTimber"
+        },
+        {
+          "name": "foodPolymer",
+          "color": "#c9dfe2",
+          "parts": [
             "film-roll",
-            "film-roller-0",
-            "film-roller-1",
-            "film-roller-2"
+            "stretch-film-wrap",
+            "film-web"
           ],
           "param": "foodPolymer"
         }
