@@ -4,6 +4,8 @@ Sixty original low-poly agricultural scene assets spanning tractors, loader atta
 
 The [farm machinery wave demo bundle](../../../artifacts/catalog-demos/farm-machinery-wave-20261102/README.md) retains the original source generator, video settings and audit evidence. The [quality-promotion bundle](../../../artifacts/catalog-demos/farm-machinery-quality-promotion-20261105/README.md) records the material and silhouette improvements, rendered previews, checks and inspected walkthrough.
 
+The 2026-11-06 tillage silhouette refinement rebuilt three soil-preparation implements that still rendered as box stacks, without changing catalog IDs. The chisel plow now has staggered C-shaped spring shanks with coil cushions, selectable straight, twisted or sweep points, transport wheels and an A-frame tongue. The subsoiler now has a three-point mast, deep parabolic or straight shanks with shin guards, plain or winged points, rolling coulters and gauge wheels. The landscape rake now has a three-point headstock, swivel turntable, angle choice and curved spring-steel tines. Each has four material controls and is hand-edited, so rerunning the wave or promotion generator would overwrite it. The [tillage silhouette demo bundle](../../../artifacts/catalog-demos/farm-tillage-silhouette-20261106/README.md) includes before/after previews, variant renders, checks and an inspected MP4.
+
 | id | asset | description | knobs |
 | --- | --- | --- | --- |
 | `row-crop-tractor` | Row-crop tractor | Cabbed field tractor with tall rear tires, front axle, engine hood and three-point hitch. | scale · painted steel · rubber · cab glass · exposed steel |
@@ -17,18 +19,18 @@ The [farm machinery wave demo bundle](../../../artifacts/catalog-demos/farm-mach
 | `bale-spear-attachment` | Bale spear attachment | Three-point bale frame with three long horizontal spears and a reinforced back plate. | scale · painted steel · exposed steel |
 | `pallet-fork-attachment` | Tractor pallet-fork attachment | Quick-attach fork carriage with adjustable-looking tines and raised back guard. | scale · painted steel · exposed steel |
 | `root-grapple-attachment` | Root grapple attachment | Loader grapple bucket with lower scoop, split upper claws and hinge crossbar. | scale · painted steel · exposed steel |
-| `rear-landscape-rake` | Rear landscape rake | Three-point landscape rake with angled end plates, long toolbar and closely spaced tines. | scale · painted steel · exposed steel |
+| `rear-landscape-rake` | Rear landscape rake | Three-point landscape rake with A-frame headstock, hitch pins, swivel turntable, long rake bar, curved spring-steel tines and optional end gauge wheels. | scale · working width · rake angle · gauge wheels · frame paint · spring-steel tines · hitch hardware · tire rubber · weathered · highVisibility |
 | `tractor-box-blade` | Tractor box blade | Rear grading box blade with twin side plates, replaceable cutting edge and scarifier shanks. | scale · painted steel · exposed steel |
 | `three-point-hitch-frame` | Three-point hitch frame | Rear tractor hitch assembly with twin lower links, top link and implement pins. | scale · painted steel · exposed steel |
 | `tractor-drawbar-hitch` | Tractor drawbar hitch | Heavy drawbar with cross pin, stepped support plate and clevis coupling. | scale · painted steel · exposed steel |
 | `tractor-ballast-weight` | Tractor ballast weight | Rear-mounted counterweight block with mounting frame and raised lifting loop. | scale · painted steel · exposed steel |
 | `pto-shaft-guard` | PTO shaft guard | Protected power-take-off driveline cover with telescoping sections and end shields. | scale · painted steel · exposed steel |
 | `moldboard-plow` | Moldboard plow | Three-bottom moldboard plow with a heavy toolbar, curved-looking shares and gauge wheel. | scale · painted steel · exposed steel |
-| `chisel-plow` | Chisel plow | Wide chisel plow with a folding-looking frame, spring shanks and narrow soil points. | scale · painted steel · exposed steel |
+| `chisel-plow` | Chisel plow | Pull-type chisel plow with a two-rank frame, staggered C-shaped spring shanks, coil spring cushions, straight, twisted or sweep points, transport wheels and A-frame tongue. | scale · shanks · soil points · frame paint · wear steel · spring steel · tire rubber · weathered · highVisibility |
 | `offset-disc-harrow` | Offset disc harrow | Offset disc harrow with paired gangs, frame beam and transport wheels. | scale · painted steel · rubber · exposed steel |
 | `field-cultivator` | Field cultivator | Trailing field cultivator with a three-section toolbar, rows of tines and support wheels. | scale · painted steel · rubber · exposed steel |
 | `row-crop-cultivator` | Row-crop cultivator | Inter-row cultivator with adjustable row units, gauge wheels and protective shields. | scale · painted steel · rubber · exposed steel |
-| `subsoiler-implement` | Subsoiler implement | Deep-tillage subsoiler frame with reinforced standards, angled legs and replaceable points. | scale · painted steel · exposed steel |
+| `subsoiler-implement` | Subsoiler implement | Three-point deep subsoiler with A-frame mast, parabolic or straight shanks with shin guards, plain or winged points, rolling coulters and depth gauge wheels. | scale · shanks · shank shape · points · frame paint · wear steel · hitch and coulter hardware · tire rubber · weathered · highVisibility |
 | `land-leveling-scraper` | Land-leveling scraper | Tractor-pulled land scraper with a deep open bowl, side cheeks and cutting edge. | scale · painted steel · exposed steel |
 | `stone-picker-implement` | Stone picker implement | Field stone picker with a raised hopper, pickup reel guard and tandem support wheels. | scale · painted steel · rubber · exposed steel |
 | `seed-drill` | Seed drill | Compact seed drill with covered hoppers, metering row units and press wheels. | scale · painted steel · rubber · exposed steel |

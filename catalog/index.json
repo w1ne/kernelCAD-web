@@ -75719,13 +75719,15 @@
       "id": "chisel-plow",
       "kit": "farm-machinery",
       "title": "Chisel plow",
-      "description": "Wide chisel plow with a folding-looking frame, spring shanks and narrow soil points. Editable scale and painted steel, exposed steel controls with weathered and high-visibility presets.",
+      "description": "Pull-type chisel plow with a two-rank frame, staggered C-shaped spring shanks, coil spring cushions, selectable straight, twisted or sweep points, centre transport wheels and an A-frame hitch tongue. Material controls: frame paint, wear steel, spring steel and tire rubber; weathered and highVisibility presets.",
       "category": "structure",
       "origin": "base",
       "tags": [
         "farm machinery",
         "agriculture",
         "field equipment",
+        "tillage",
+        "chisel plow",
         "low poly",
         "CC0"
       ],
@@ -75738,8 +75740,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/chisel-plow.kcad.ts",
       "preview": "/assets/farm-machinery-chisel-plow.png",
-      "sourceSha256": "0b2154725460e380c727565184e8da8e2ce4dfb88a79b5382f51a03fc049b657",
-      "triangleBudget": 2200,
+      "sourceSha256": "6be682468942cc4a90a80baf22abd5de6978d45c1a5f2950b0705328bbc960cf",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -75751,34 +75753,72 @@
           "step": 0.05
         },
         {
+          "name": "shankCount",
+          "type": "choice",
+          "default": "9",
+          "label": "Shanks",
+          "choices": [
+            "7",
+            "9",
+            "11"
+          ]
+        },
+        {
+          "name": "pointStyle",
+          "type": "choice",
+          "default": "twisted",
+          "label": "Soil points",
+          "choices": [
+            "straight",
+            "twisted",
+            "sweep"
+          ]
+        },
+        {
           "name": "paintedSteelColor",
           "type": "color",
           "default": "#397747",
-          "label": "Painted steel"
+          "label": "Frame paint"
         },
         {
           "name": "steelColor",
           "type": "color",
           "default": "#929b9b",
-          "label": "Exposed steel"
+          "label": "Wear steel (points)"
+        },
+        {
+          "name": "springColor",
+          "type": "color",
+          "default": "#d9b43a",
+          "label": "Spring steel"
+        },
+        {
+          "name": "tireRubberColor",
+          "type": "color",
+          "default": "#26282a",
+          "label": "Tire rubber"
         }
       ],
       "presets": {
         "weathered": {
           "paintedSteelColor": "#53694d",
-          "steelColor": "#737d7b"
+          "steelColor": "#7c6a58",
+          "springColor": "#9a8650",
+          "tireRubberColor": "#3b3a37"
         },
         "highVisibility": {
           "paintedSteelColor": "#db762c",
-          "steelColor": "#abb2ad"
+          "steelColor": "#c3c9c4",
+          "springColor": "#f2d23c",
+          "tireRubberColor": "#1d1f21"
         }
       },
       "stats": {
-        "triangles": 192,
+        "triangles": 2076,
         "sizeM": [
-          2.2,
-          0.4324,
-          1.047
+          2.9,
+          0.856,
+          2.511984
         ],
         "minUpM": 0,
         "materials": 1
@@ -75788,31 +75828,97 @@
           "name": "paintedSteelColor",
           "color": "#397747",
           "parts": [
-            "main-toolbar",
-            "drawbar",
-            "chisel-point-0",
-            "chisel-point-1",
-            "chisel-point-2",
-            "chisel-point-3",
-            "chisel-point-4",
-            "chisel-point-5",
-            "chisel-point-6"
+            "front-rank-toolbar",
+            "rear-rank-toolbar",
+            "frame-rail-l1400",
+            "frame-rail-l450",
+            "frame-rail-r450",
+            "frame-rail-r1400",
+            "shank-clamp-1",
+            "spring-cap-1",
+            "shank-clamp-2",
+            "spring-cap-2",
+            "shank-clamp-3",
+            "spring-cap-3",
+            "shank-clamp-4",
+            "spring-cap-4",
+            "shank-clamp-5",
+            "spring-cap-5",
+            "shank-clamp-6",
+            "spring-cap-6",
+            "shank-clamp-7",
+            "spring-cap-7",
+            "shank-clamp-8",
+            "spring-cap-8",
+            "shank-clamp-9",
+            "spring-cap-9",
+            "wheel-fork-left-inner",
+            "wheel-fork-left-outer",
+            "wheel-rim-left",
+            "wheel-fork-right-inner",
+            "wheel-fork-right-outer",
+            "wheel-rim-right",
+            "tongue-rail-left",
+            "tongue-rail-right",
+            "tongue-centre-beam"
           ],
           "param": "paintedSteelColor"
+        },
+        {
+          "name": "springColor",
+          "color": "#d9b43a",
+          "parts": [
+            "c-shank-1",
+            "spring-cushion-1",
+            "c-shank-2",
+            "spring-cushion-2",
+            "c-shank-3",
+            "spring-cushion-3",
+            "c-shank-4",
+            "spring-cushion-4",
+            "c-shank-5",
+            "spring-cushion-5",
+            "c-shank-6",
+            "spring-cushion-6",
+            "c-shank-7",
+            "spring-cushion-7",
+            "c-shank-8",
+            "spring-cushion-8",
+            "c-shank-9",
+            "spring-cushion-9"
+          ],
+          "param": "springColor"
         },
         {
           "name": "steelColor",
           "color": "#929b9b",
           "parts": [
-            "standard-0",
-            "standard-1",
-            "standard-2",
-            "standard-3",
-            "standard-4",
-            "standard-5",
-            "standard-6"
+            "chisel-point-1",
+            "chisel-point-2",
+            "chisel-point-3",
+            "chisel-point-4",
+            "chisel-point-5",
+            "chisel-point-6",
+            "chisel-point-7",
+            "chisel-point-8",
+            "chisel-point-9",
+            "wheel-axle-left",
+            "wheel-axle-right",
+            "hitch-clevis",
+            "parking-jack",
+            "jack-foot",
+            "jack-crank"
           ],
           "param": "steelColor"
+        },
+        {
+          "name": "tireRubberColor",
+          "color": "#26282a",
+          "parts": [
+            "tire-left",
+            "tire-right"
+          ],
+          "param": "tireRubberColor"
         }
       ]
     },
@@ -79280,13 +79386,16 @@
       "id": "rear-landscape-rake",
       "kit": "farm-machinery",
       "title": "Rear landscape rake",
-      "description": "Three-point landscape rake with angled end plates, long toolbar and closely spaced tines. Editable scale and painted steel, exposed steel controls with weathered and high-visibility presets.",
+      "description": "Three-point landscape rake with an A-frame headstock, hitch pins, swivel turntable and a long rake bar carrying curved spring-steel tines. Selectable working width, rake angle and end gauge wheels. Material controls: frame paint, spring-steel tines, hitch hardware and tire rubber; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "farm machinery",
         "agriculture",
         "field equipment",
+        "landscaping",
+        "rake",
+        "three-point hitch",
         "low poly",
         "CC0"
       ],
@@ -79299,8 +79408,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/rear-landscape-rake.kcad.ts",
       "preview": "/assets/farm-machinery-rear-landscape-rake.png",
-      "sourceSha256": "845e69ae1c614836e1ce8f1d3b8b9b210195e3099b8bdcdacf638456cc47970f",
-      "triangleBudget": 2200,
+      "sourceSha256": "013187bbed27b5114c2612b3cff923db2b87ae7a8d34279fce0dcd63f341f8ff",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "scale",
@@ -79312,34 +79421,82 @@
           "step": 0.05
         },
         {
+          "name": "rakeWidth",
+          "type": "choice",
+          "default": "1800",
+          "label": "Working width (mm)",
+          "choices": [
+            "1500",
+            "1800",
+            "2100"
+          ]
+        },
+        {
+          "name": "rakeAngle",
+          "type": "choice",
+          "default": "0",
+          "label": "Rake angle (deg)",
+          "choices": [
+            "0",
+            "15",
+            "30"
+          ]
+        },
+        {
+          "name": "gaugeWheels",
+          "type": "choice",
+          "default": "yes",
+          "label": "Gauge wheels",
+          "choices": [
+            "yes",
+            "no"
+          ]
+        },
+        {
           "name": "paintedSteelColor",
           "type": "color",
           "default": "#397747",
-          "label": "Painted steel"
+          "label": "Frame paint"
         },
         {
           "name": "steelColor",
           "type": "color",
           "default": "#929b9b",
-          "label": "Exposed steel"
+          "label": "Spring-steel tines"
+        },
+        {
+          "name": "hardwareColor",
+          "type": "color",
+          "default": "#c7c2b4",
+          "label": "Hitch hardware"
+        },
+        {
+          "name": "tireRubberColor",
+          "type": "color",
+          "default": "#26282a",
+          "label": "Tire rubber"
         }
       ],
       "presets": {
         "weathered": {
           "paintedSteelColor": "#53694d",
-          "steelColor": "#737d7b"
+          "steelColor": "#7c6a58",
+          "hardwareColor": "#8d877a",
+          "tireRubberColor": "#3b3a37"
         },
         "highVisibility": {
           "paintedSteelColor": "#db762c",
-          "steelColor": "#abb2ad"
+          "steelColor": "#c3c9c4",
+          "hardwareColor": "#e8e3d2",
+          "tireRubberColor": "#1d1f21"
         }
       },
       "stats": {
-        "triangles": 192,
+        "triangles": 1580,
         "sizeM": [
-          1.35,
-          0.4644,
-          0.3742
+          2.162,
+          0.98,
+          1.26
         ],
         "minUpM": 0,
         "materials": 1
@@ -79349,31 +79506,72 @@
           "name": "paintedSteelColor",
           "color": "#397747",
           "parts": [
-            "mounting-frame",
-            "crossbar",
-            "rake-beam"
+            "lower-cross-tube",
+            "mast-plate-left",
+            "lower-link-bracket-left",
+            "mast-plate-right",
+            "lower-link-bracket-right",
+            "centre-beam",
+            "rake-bar",
+            "end-plate-left",
+            "gauge-arm-left",
+            "gauge-rim-left",
+            "end-plate-right",
+            "gauge-arm-right",
+            "gauge-rim-right"
           ],
           "param": "paintedSteelColor"
+        },
+        {
+          "name": "hardwareColor",
+          "color": "#c7c2b4",
+          "parts": [
+            "lower-hitch-pin-left",
+            "lower-hitch-pin-right",
+            "top-link-pin",
+            "swivel-turntable",
+            "swivel-lock-pin",
+            "gauge-axle-left",
+            "gauge-axle-right"
+          ],
+          "param": "hardwareColor"
         },
         {
           "name": "steelColor",
           "color": "#929b9b",
           "parts": [
-            "rake-tooth-0",
-            "rake-tooth-1",
-            "rake-tooth-2",
-            "rake-tooth-3",
-            "rake-tooth-4",
-            "rake-tooth-5",
-            "rake-tooth-6",
-            "rake-tooth-7",
-            "rake-tooth-8",
-            "rake-tooth-9",
-            "rake-tooth-10",
-            "rake-tooth-11",
-            "rake-tooth-12"
+            "tine-1",
+            "tine-2",
+            "tine-3",
+            "tine-4",
+            "tine-5",
+            "tine-6",
+            "tine-7",
+            "tine-8",
+            "tine-9",
+            "tine-10",
+            "tine-11",
+            "tine-12",
+            "tine-13",
+            "tine-14",
+            "tine-15",
+            "tine-16",
+            "tine-17",
+            "tine-18",
+            "tine-19",
+            "tine-20",
+            "tine-21"
           ],
           "param": "steelColor"
+        },
+        {
+          "name": "tireRubberColor",
+          "color": "#26282a",
+          "parts": [
+            "gauge-tire-left",
+            "gauge-tire-right"
+          ],
+          "param": "tireRubberColor"
         }
       ]
     },
@@ -80795,13 +80993,16 @@
       "id": "subsoiler-implement",
       "kit": "farm-machinery",
       "title": "Subsoiler implement",
-      "description": "Deep-tillage subsoiler frame with reinforced standards, angled legs and replaceable points. Editable scale and painted steel, exposed steel controls with weathered and high-visibility presets.",
+      "description": "Three-point-mounted deep subsoiler with an A-frame mast and hitch pins, selectable parabolic or straight shanks with shin guards, plain or winged points, rolling coulter discs and depth gauge wheels. Material controls: frame paint, wear steel, hitch and coulter hardware and tire rubber; weathered and highVisibility presets.",
       "category": "structure",
       "origin": "base",
       "tags": [
         "farm machinery",
         "agriculture",
         "field equipment",
+        "tillage",
+        "subsoiler",
+        "ripper",
         "low poly",
         "CC0"
       ],
@@ -80814,8 +81015,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/subsoiler-implement.kcad.ts",
       "preview": "/assets/farm-machinery-subsoiler-implement.png",
-      "sourceSha256": "93cef36d0102fcb84be3d311a76e5972147990a6ea02174c38addf2ab9b52182",
-      "triangleBudget": 2200,
+      "sourceSha256": "8cbbdb75b708cfd2f64dd10c03b5f63dbdae2eb674483caaa590afc6d04d9bb0",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "scale",
@@ -80827,34 +81028,81 @@
           "step": 0.05
         },
         {
+          "name": "shankCount",
+          "type": "choice",
+          "default": "5",
+          "label": "Shanks",
+          "choices": [
+            "3",
+            "5",
+            "7"
+          ]
+        },
+        {
+          "name": "shankStyle",
+          "type": "choice",
+          "default": "parabolic",
+          "label": "Shank shape",
+          "choices": [
+            "parabolic",
+            "straight"
+          ]
+        },
+        {
+          "name": "pointWings",
+          "type": "choice",
+          "default": "winged",
+          "label": "Points",
+          "choices": [
+            "plain",
+            "winged"
+          ]
+        },
+        {
           "name": "paintedSteelColor",
           "type": "color",
           "default": "#397747",
-          "label": "Painted steel"
+          "label": "Frame paint"
         },
         {
           "name": "steelColor",
           "type": "color",
           "default": "#929b9b",
-          "label": "Exposed steel"
+          "label": "Wear steel (points and shins)"
+        },
+        {
+          "name": "hardwareColor",
+          "type": "color",
+          "default": "#c7c2b4",
+          "label": "Hitch and coulter hardware"
+        },
+        {
+          "name": "tireRubberColor",
+          "type": "color",
+          "default": "#26282a",
+          "label": "Tire rubber"
         }
       ],
       "presets": {
         "weathered": {
           "paintedSteelColor": "#53694d",
-          "steelColor": "#737d7b"
+          "steelColor": "#7c6a58",
+          "hardwareColor": "#8d877a",
+          "tireRubberColor": "#3b3a37"
         },
         "highVisibility": {
           "paintedSteelColor": "#db762c",
-          "steelColor": "#abb2ad"
+          "steelColor": "#c3c9c4",
+          "hardwareColor": "#e8e3d2",
+          "tireRubberColor": "#1d1f21"
         }
       },
       "stats": {
-        "triangles": 204,
+        "triangles": 1808,
         "sizeM": [
+          3.552,
           1.5,
-          0.548,
-          0.96
+          1.11
         ],
         "minUpM": 0,
         "materials": 1
@@ -80865,31 +81113,88 @@
           "color": "#397747",
           "parts": [
             "main-toolbar",
-            "drawbar",
-            "subsoiler-leg-0",
-            "subsoiler-point-0",
-            "subsoiler-leg-1",
-            "subsoiler-point-1",
-            "subsoiler-leg-2",
-            "subsoiler-point-2",
-            "subsoiler-leg-3",
-            "subsoiler-point-3",
-            "subsoiler-leg-4",
-            "subsoiler-point-4"
+            "mast-plate-left",
+            "mast-brace-left",
+            "lower-hitch-bracket-left",
+            "mast-plate-right",
+            "mast-brace-right",
+            "lower-hitch-bracket-right",
+            "subsoiler-shank-1",
+            "coulter-arm-1",
+            "subsoiler-shank-2",
+            "coulter-arm-2",
+            "subsoiler-shank-3",
+            "coulter-arm-3",
+            "subsoiler-shank-4",
+            "coulter-arm-4",
+            "subsoiler-shank-5",
+            "coulter-arm-5",
+            "gauge-arm-left",
+            "gauge-rim-left",
+            "gauge-arm-right",
+            "gauge-rim-right"
           ],
           "param": "paintedSteelColor"
+        },
+        {
+          "name": "hardwareColor",
+          "color": "#c7c2b4",
+          "parts": [
+            "lower-hitch-pin-left",
+            "lower-hitch-pin-right",
+            "top-link-pin",
+            "shank-clamp-1",
+            "coulter-disc-1",
+            "coulter-hub-1",
+            "shank-clamp-2",
+            "coulter-disc-2",
+            "coulter-hub-2",
+            "shank-clamp-3",
+            "coulter-disc-3",
+            "coulter-hub-3",
+            "shank-clamp-4",
+            "coulter-disc-4",
+            "coulter-hub-4",
+            "shank-clamp-5",
+            "coulter-disc-5",
+            "coulter-hub-5",
+            "gauge-axle-left",
+            "depth-adjust-screw-left",
+            "gauge-axle-right",
+            "depth-adjust-screw-right"
+          ],
+          "param": "hardwareColor"
         },
         {
           "name": "steelColor",
           "color": "#929b9b",
           "parts": [
-            "standard-0",
-            "standard-1",
-            "standard-2",
-            "standard-3",
-            "standard-4"
+            "shin-guard-1",
+            "subsoiler-point-1",
+            "point-wings-1",
+            "shin-guard-2",
+            "subsoiler-point-2",
+            "point-wings-2",
+            "shin-guard-3",
+            "subsoiler-point-3",
+            "point-wings-3",
+            "shin-guard-4",
+            "subsoiler-point-4",
+            "point-wings-4",
+            "shin-guard-5",
+            "subsoiler-point-5",
+            "point-wings-5"
           ],
           "param": "steelColor"
+        },
+        {
+          "name": "tireRubberColor",
+          "color": "#26282a",
+          "parts": [
+            "gauge-tire-left",
+            "gauge-tire-right"
+          ],
+          "param": "tireRubberColor"
         }
       ]
     },
