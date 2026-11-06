@@ -141217,7 +141217,7 @@
       "id": "anchor-chain",
       "kit": "marine",
       "title": "Anchor chain",
-      "description": "Short anchor chain with linked oval chain plates and a large terminal shackle. Knobs: overall scale and asset color.",
+      "description": "Anchor chain: Articulated chain links lead to a terminal shackle. Low-poly visualization prop. Material controls: galvanized steel, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -141238,7 +141238,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/anchor-chain.kcad.ts",
       "preview": "/assets/marine-anchor-chain.png",
-      "sourceSha256": "ec92460c02f0ae5d122d2f67d4358e45c014984c5ac4bb5a1600a23e39e4c3ef",
+      "sourceSha256": "df6ded998de805322bcb3ee6641a5e07676be0d0b60be47368987ddfd1f88387",
       "triangleBudget": 1800,
       "params": [
         {
@@ -141251,13 +141251,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#53595d",
-          "label": "Asset color"
+          "default": "#929fa2",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#8a918e",
+          "stainlessSteel": "#a9b1af"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#d9a13a"
+        }
+      },
       "stats": {
         "triangles": 524,
         "sizeM": [
@@ -141270,17 +141284,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#53595d",
+          "name": "galvanizedSteel",
+          "color": "#929fa2",
           "parts": [
             "link-1",
             "link-2",
             "link-3",
             "link-4",
-            "link-5",
+            "link-5"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
+          "parts": [
             "terminal-shackle"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -141288,7 +141309,7 @@
       "id": "anchor-winch",
       "kit": "marine",
       "title": "Anchor winch",
-      "description": "Deck anchor winch with horizontal chain drum, paired support cheeks, crank and base plate. Knobs: overall scale and asset color.",
+      "description": "Anchor winch: Twin cheek plates hold a winding drum and hand crank. Low-poly visualization prop. Material controls: painted steel, stainless steel, rubber.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -141309,7 +141330,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/anchor-winch.kcad.ts",
       "preview": "/assets/marine-anchor-winch.png",
-      "sourceSha256": "c44f97a7deb93fb8e97140cb17878f8273144e616dc7af81fa3dc7f207a2aa9a",
+      "sourceSha256": "84ead59140f75f80e362c1ddd455b3b5efb01107371877a9c75b22c32428c3f2",
       "triangleBudget": 1800,
       "params": [
         {
@@ -141322,13 +141343,34 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#4e5458",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#303638",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#595b59",
+          "stainlessSteel": "#a9b1af",
+          "rubber": "#434542"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e39032"
+        }
+      },
       "stats": {
         "triangles": 224,
         "sizeM": [
@@ -141341,19 +141383,33 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#4e5458",
           "parts": [
             "base",
             "cheek-left",
             "cheek-right",
             "drum",
+            "crank-arm"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
+          "parts": [
             "drum-flange-left",
-            "drum-flange-right",
-            "crank-arm",
+            "drum-flange-right"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#303638",
+          "parts": [
             "crank-handle"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -141361,7 +141417,7 @@
       "id": "anchor",
       "kit": "marine",
       "title": "Marine anchor",
-      "description": "Stockless marine anchor with a long shank, transverse stock, broad flukes and crown. Knobs: overall scale and asset color.",
+      "description": "Marine anchor: A long shank, cross-stock, ring, and splayed flukes form the holding profile. Low-poly visualization prop. Material controls: galvanized steel, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -141382,7 +141438,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/anchor.kcad.ts",
       "preview": "/assets/marine-anchor.png",
-      "sourceSha256": "373bd5eb7a27311684c17ac4978eeaab3e3f12729edf3360b7fadd26f1088941",
+      "sourceSha256": "18542205c1e4883504a776eb1293892ef687473b9b0a27c933fddd0d7ae47ae5",
       "triangleBudget": 1800,
       "params": [
         {
@@ -141395,13 +141451,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#4a5054",
-          "label": "Asset color"
+          "default": "#929fa2",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#8a918e",
+          "stainlessSteel": "#a9b1af"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#d9a13a"
+        }
+      },
       "stats": {
         "triangles": 170,
         "sizeM": [
@@ -141414,17 +141484,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#4a5054",
+          "name": "galvanizedSteel",
+          "color": "#929fa2",
           "parts": [
             "shank",
             "stock",
             "crown",
             "fluke-left",
-            "fluke-right",
+            "fluke-right"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
+          "parts": [
             "ring"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -141432,7 +141509,7 @@
       "id": "bait-bucket",
       "kit": "marine",
       "title": "Bait bucket",
-      "description": "Marine bait bucket with tapered-looking tub, bail handle, lid and side grip. Knobs: overall scale and asset color.",
+      "description": "Bait bucket: A tapered bait tub has a fitted lid, rim, wire handles, and a grip. Low-poly visualization prop. Material controls: marine polymer, stainless steel, rubber.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -141453,7 +141530,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/bait-bucket.kcad.ts",
       "preview": "/assets/marine-bait-bucket.png",
-      "sourceSha256": "20d3c0e6c5dbf57f6a339b354e180d3e6f0eda40e5a411cb8c3b447f0525d9c2",
+      "sourceSha256": "97f55c2428af7f9f9aa6950cd412036cc8145c6c683f4360faeee58f84e5b783",
       "triangleBudget": 1800,
       "params": [
         {
@@ -141466,13 +141543,34 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "marinePolymer",
           "type": "color",
           "default": "#53606a",
-          "label": "Asset color"
+          "label": "Marine polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#303638",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "marinePolymer": "#5c6466",
+          "stainlessSteel": "#a9b1af",
+          "rubber": "#434542"
+        },
+        "highVisibility": {
+          "marinePolymer": "#eda338"
+        }
+      },
       "stats": {
         "triangles": 244,
         "sizeM": [
@@ -141485,18 +141583,32 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "marinePolymer",
           "color": "#53606a",
           "parts": [
             "tub",
             "base-band",
+            "lid"
+          ],
+          "param": "marinePolymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
+          "parts": [
             "rim",
-            "lid",
             "handle-left",
-            "handle-right",
+            "handle-right"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#303638",
+          "parts": [
             "handle-grip"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -141504,7 +141616,7 @@
       "id": "binnacle-compass",
       "kit": "marine",
       "title": "Binnacle compass",
-      "description": "Deck-mounted binnacle compass with a tapered pedestal, protective hood and broad mounting feet. Knobs: overall scale and asset color.",
+      "description": "Binnacle compass: A raised compass bowl and hood sit above a tapered pedestal and mounting feet. Low-poly visualization prop. Material controls: timber, brass, marine glass, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -141525,7 +141637,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/binnacle-compass.kcad.ts",
       "preview": "/assets/marine-binnacle-compass.png",
-      "sourceSha256": "99d3e35ca4f2556f0c4bc4f04eb755afac0505f434f504830790690478f635cb",
+      "sourceSha256": "da8830a4c7f6750b26266b441158d35ef817d09d1e6ca09ceddb996cc2669713",
       "triangleBudget": 1800,
       "params": [
         {
@@ -141538,13 +141650,41 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
           "default": "#6b5940",
-          "label": "Asset color"
+          "label": "Timber"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#c29b45",
+          "label": "Brass"
+        },
+        {
+          "name": "marineGlass",
+          "type": "color",
+          "default": "#55a4bb",
+          "label": "Marine glass"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "timber": "#6e5f48",
+          "brass": "#ac8e4b",
+          "marineGlass": "#5b9aaa",
+          "stainlessSteel": "#a9b1af"
+        },
+        "highVisibility": {
+          "timber": "#a87b3e"
+        }
+      },
       "stats": {
         "triangles": 238,
         "sizeM": [
@@ -141557,18 +141697,39 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "timber",
           "color": "#6b5940",
           "parts": [
             "base",
-            "pedestal",
+            "pedestal"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "brass",
+          "color": "#c29b45",
+          "parts": [
             "shoulder",
-            "compass-bowl",
-            "hood",
+            "compass-bowl"
+          ],
+          "param": "brass"
+        },
+        {
+          "name": "marineGlass",
+          "color": "#55a4bb",
+          "parts": [
+            "hood"
+          ],
+          "param": "marineGlass"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
+          "parts": [
             "mount-left",
             "mount-right"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -141576,7 +141737,7 @@
       "id": "boat-cleat",
       "kit": "marine",
       "title": "Boat cleat",
-      "description": "Low deck cleat with a raised center bridge, flared horns and two mounting feet. Knobs: overall scale and asset color.",
+      "description": "Boat cleat: Two raised horns bridge a deck plate with paired mounting feet. Low-poly visualization prop. Material controls: stainless steel, brass.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -141597,7 +141758,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/boat-cleat.kcad.ts",
       "preview": "/assets/marine-boat-cleat.png",
-      "sourceSha256": "1c05d9086799b64cdb18f2fcf6547921cf42f444b438cafc8756341203247524",
+      "sourceSha256": "ed8ba409018f4962aceb1cdd58686e62dd66ed536d75f8f3c63c7f0068567858",
       "triangleBudget": 1800,
       "params": [
         {
@@ -141610,13 +141771,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#777d80",
-          "label": "Asset color"
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#c29b45",
+          "label": "Brass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "stainlessSteel": "#a9b1af",
+          "brass": "#ac8e4b"
+        },
+        "highVisibility": {
+          "stainlessSteel": "#d7a342"
+        }
+      },
       "stats": {
         "triangles": 200,
         "sizeM": [
@@ -141629,17 +141804,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#777d80",
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
           "parts": [
             "base-plate",
             "bridge",
             "horn-left",
-            "horn-right",
+            "horn-right"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "brass",
+          "color": "#c29b45",
+          "parts": [
             "mount-left",
             "mount-right"
           ],
-          "param": "color"
+          "param": "brass"
         }
       ]
     },
@@ -141647,7 +141829,7 @@
       "id": "boat-fender",
       "kit": "marine",
       "title": "Boat fender",
-      "description": "Inflatable boat fender with rounded body, end eyes and a rope-through center opening. Knobs: overall scale and asset color.",
+      "description": "Boat fender: An inflated cylindrical fender has end caps and reinforced eye loops. Low-poly visualization prop. Material controls: rubber, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -141668,7 +141850,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/boat-fender.kcad.ts",
       "preview": "/assets/marine-boat-fender.png",
-      "sourceSha256": "f728928a5569ff3d506b63f3655883fea03814ee0f5b68f7d6dbcc4b1675f782",
+      "sourceSha256": "5cf1bb69353556cdd6ce968cce6c7b178a0f272288b5369e904176338c83817f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -141681,13 +141863,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "rubber",
           "type": "color",
-          "default": "#53616a",
-          "label": "Asset color"
+          "default": "#303638",
+          "label": "Rubber"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "rubber": "#434542",
+          "stainlessSteel": "#a9b1af"
+        },
+        "highVisibility": {
+          "rubber": "#675746"
+        }
+      },
       "stats": {
         "triangles": 314,
         "sizeM": [
@@ -141700,16 +141896,23 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#53616a",
+          "name": "rubber",
+          "color": "#303638",
           "parts": [
             "body",
-            "top-eye",
-            "bottom-eye",
             "cap-top",
             "cap-bottom"
           ],
-          "param": "color"
+          "param": "rubber"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
+          "parts": [
+            "top-eye",
+            "bottom-eye"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -141717,7 +141920,7 @@
       "id": "boat-hook",
       "kit": "marine",
       "title": "Boat hook",
-      "description": "Long boat hook with a tapered pole, curved pickup tip and short crossbar. Knobs: overall scale and asset color.",
+      "description": "Boat hook: A long pole ends in a guarded hook with a crossbar and ferrule. Low-poly visualization prop. Material controls: timber, stainless steel, safety amber lens.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -141738,7 +141941,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/boat-hook.kcad.ts",
       "preview": "/assets/marine-boat-hook.png",
-      "sourceSha256": "abe731af8b10882815687781caaf877f8103b45b6449ebb8982b921597853351",
+      "sourceSha256": "fbd678431d8da16ff8d1e9bec42b6466b422d34a66d4510a554f23da6ec7f156",
       "triangleBudget": 1800,
       "params": [
         {
@@ -141751,13 +141954,34 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
           "default": "#6b6250",
-          "label": "Asset color"
+          "label": "Timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "safetyAmber",
+          "type": "color",
+          "default": "#f2b536",
+          "label": "Safety amber lens"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "timber": "#6e6553",
+          "stainlessSteel": "#a9b1af",
+          "safetyAmber": "#cfa140"
+        },
+        "highVisibility": {
+          "timber": "#a87b3e"
+        }
+      },
       "stats": {
         "triangles": 190,
         "sizeM": [
@@ -141770,16 +141994,30 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "timber",
           "color": "#6b6250",
           "parts": [
-            "shaft",
+            "shaft"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
+          "parts": [
             "collar",
             "hook-spine",
-            "hook-tip",
             "crossbar"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "safetyAmber",
+          "color": "#f2b536",
+          "parts": [
+            "hook-tip"
+          ],
+          "param": "safetyAmber"
         }
       ]
     },
@@ -141787,7 +142025,7 @@
       "id": "boat-oar",
       "kit": "marine",
       "title": "Boat oar",
-      "description": "Single wooden boat oar with a long tapered-looking shaft, broad blade and hand grip. Knobs: overall scale and asset color.",
+      "description": "Boat oar: A tapered shaft connects a broad blade, hand grip, and collar. Low-poly visualization prop. Material controls: timber, rubber, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -141808,7 +142046,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/boat-oar.kcad.ts",
       "preview": "/assets/marine-boat-oar.png",
-      "sourceSha256": "a700cd664e81d29942c51e372cfdee9be5932f73fff04e38f804ef980bb4cb33",
+      "sourceSha256": "5bd6c526f64dea4d3a831d92865c842bb16f2b14e42f761bead21e5195fda4fb",
       "triangleBudget": 1800,
       "params": [
         {
@@ -141821,13 +142059,34 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
           "default": "#805d3d",
-          "label": "Asset color"
+          "label": "Timber"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#303638",
+          "label": "Rubber"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "timber": "#7d6145",
+          "rubber": "#434542",
+          "stainlessSteel": "#a9b1af"
+        },
+        "highVisibility": {
+          "timber": "#a87b3e"
+        }
+      },
       "stats": {
         "triangles": 144,
         "sizeM": [
@@ -141840,15 +142099,29 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "timber",
           "color": "#805d3d",
           "parts": [
             "shaft",
-            "blade",
-            "grip",
+            "blade"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "rubber",
+          "color": "#303638",
+          "parts": [
+            "grip"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
+          "parts": [
             "collar"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -141856,7 +142129,7 @@
       "id": "boat-paddle",
       "kit": "marine",
       "title": "Boat paddle",
-      "description": "Single-blade canoe paddle with a wide leaf-shaped blade, straight shaft and T-grip. Knobs: overall scale and asset color.",
+      "description": "Boat paddle: A long shaft carries a wide blade, reinforced neck, and T-grip. Low-poly visualization prop. Material controls: timber, stainless steel, rubber.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -141877,7 +142150,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/boat-paddle.kcad.ts",
       "preview": "/assets/marine-boat-paddle.png",
-      "sourceSha256": "60b3e0f7ff854f99029e7ad25db7eef43cb531036a47aab9d544521ba3e77455",
+      "sourceSha256": "0a738bb570f3d69c0a566ed7399ad2e5f04c874061a94fabf3e783c277cc5126",
       "triangleBudget": 1800,
       "params": [
         {
@@ -141890,13 +142163,34 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
           "default": "#75583d",
-          "label": "Asset color"
+          "label": "Timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#303638",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "timber": "#755e45",
+          "stainlessSteel": "#a9b1af",
+          "rubber": "#434542"
+        },
+        "highVisibility": {
+          "timber": "#a87b3e"
+        }
+      },
       "stats": {
         "triangles": 172,
         "sizeM": [
@@ -141909,15 +142203,29 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "timber",
           "color": "#75583d",
           "parts": [
             "shaft",
-            "blade",
-            "blade-neck",
+            "blade"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
+          "parts": [
+            "blade-neck"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#303638",
+          "parts": [
             "t-grip"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -141925,7 +142233,7 @@
       "id": "boat-trailer",
       "kit": "marine",
       "title": "Boat trailer",
-      "description": "Single-axle boat trailer with a winch post, keel rollers, twin bunks and road wheels. Knobs: overall scale and asset color.",
+      "description": "Boat trailer: A road trailer combines a long beam, axle, two wheels, bunks, and winch post. Low-poly visualization prop. Material controls: painted steel, galvanized steel, rubber, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -141946,7 +142254,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/boat-trailer.kcad.ts",
       "preview": "/assets/marine-boat-trailer.png",
-      "sourceSha256": "37240c865d6dec519437d85cc2720c57a59bca431bc3e23b98d76be747d225a7",
+      "sourceSha256": "cc6bc0959a0a16b2a0eb2bf647b1903c71924422cc3bf00b2fd2a35a97d966f5",
       "triangleBudget": 1800,
       "params": [
         {
@@ -141959,13 +142267,41 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#464b4f",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#929fa2",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#303638",
+          "label": "Rubber"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#535552",
+          "galvanizedSteel": "#8a918e",
+          "rubber": "#434542",
+          "stainlessSteel": "#a9b1af"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e39032"
+        }
+      },
       "stats": {
         "triangles": 324,
         "sizeM": [
@@ -141978,22 +142314,43 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#464b4f",
           "parts": [
             "main-beam",
-            "axle",
-            "wheel-left",
-            "wheel-right",
             "bunk-left",
             "bunk-right",
             "winch-post",
-            "winch-drum",
-            "coupler",
             "jack-post",
             "jack-foot"
           ],
-          "param": "color"
+          "param": "paintedSteel"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#929fa2",
+          "parts": [
+            "axle"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#303638",
+          "parts": [
+            "wheel-left",
+            "wheel-right"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
+          "parts": [
+            "winch-drum",
+            "coupler"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -142001,7 +142358,7 @@
       "id": "cargo-ship",
       "kit": "marine",
       "title": "Cargo ship",
-      "description": "Low-poly coastal cargo ship with a long hull, bridge, cargo deck and stacked container blocks. Knobs: overall scale and asset color.",
+      "description": "Cargo ship: A faceted hull carries six container blocks behind a raised bridge. Low-poly visualization prop. Material controls: painted hull coating, nonskid deck coating, stainless steel, cargo container coating.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -142022,7 +142379,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/cargo-ship.kcad.ts",
       "preview": "/assets/marine-cargo-ship.png",
-      "sourceSha256": "85a545052ffbc3357aa6b410bcfcd6383832090d4e0c888cd78538dca35bdcf1",
+      "sourceSha256": "248edaed67be100f9542977c0ddedb868c961793d82c05ba1ed81104b964c745",
       "triangleBudget": 1800,
       "params": [
         {
@@ -142035,13 +142392,41 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedHull",
           "type": "color",
           "default": "#4c5b60",
-          "label": "Asset color"
+          "label": "Painted hull coating"
+        },
+        {
+          "name": "nonskidCoating",
+          "type": "color",
+          "default": "#46575a",
+          "label": "Nonskid deck coating"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "cargoCoating",
+          "type": "color",
+          "default": "#b4563e",
+          "label": "Cargo container coating"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedHull": "#57605f",
+          "nonskidCoating": "#535d5a",
+          "stainlessSteel": "#a9b1af",
+          "cargoCoating": "#a25c46"
+        },
+        "highVisibility": {
+          "paintedHull": "#e56b38"
+        }
+      },
       "stats": {
         "triangles": 136,
         "sizeM": [
@@ -142054,13 +142439,34 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedHull",
           "color": "#4c5b60",
           "parts": [
             "hull",
-            "deck",
-            "bridge",
-            "bridge-top",
+            "bridge"
+          ],
+          "param": "paintedHull"
+        },
+        {
+          "name": "nonskidCoating",
+          "color": "#46575a",
+          "parts": [
+            "deck"
+          ],
+          "param": "nonskidCoating"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
+          "parts": [
+            "bridge-top"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "cargoCoating",
+          "color": "#b4563e",
+          "parts": [
             "container-1",
             "container-2",
             "container-3",
@@ -142068,7 +142474,7 @@
             "container-5",
             "container-6"
           ],
-          "param": "color"
+          "param": "cargoCoating"
         }
       ]
     },
@@ -142076,7 +142482,7 @@
       "id": "channel-marker-buoy",
       "kit": "marine",
       "title": "Channel marker buoy",
-      "description": "Tall channel marker buoy with a flared float, mast, top daymark and weighted foot. Knobs: overall scale and asset color.",
+      "description": "Channel marker buoy: A weighted float supports a marker mast, daymark, and top ball. Low-poly visualization prop. Material controls: safety vinyl, safety amber lens, galvanized steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -142097,7 +142503,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/channel-marker-buoy.kcad.ts",
       "preview": "/assets/marine-channel-marker-buoy.png",
-      "sourceSha256": "ac82a7d8e08620f67902ff3588c0e600bcdd40b082ca2801542f759585d1c1e0",
+      "sourceSha256": "b337c4a5d42f952563db820a49b517b4698259ce4ee8e4d00abd22edbae3c0f8",
       "triangleBudget": 1800,
       "params": [
         {
@@ -142110,13 +142516,34 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "safetyVinyl",
           "type": "color",
           "default": "#df4f39",
-          "label": "Asset color"
+          "label": "Safety vinyl"
+        },
+        {
+          "name": "safetyAmber",
+          "type": "color",
+          "default": "#f2b536",
+          "label": "Safety amber lens"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#929fa2",
+          "label": "Galvanized steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "safetyVinyl": "#c15743",
+          "safetyAmber": "#cfa140",
+          "galvanizedSteel": "#8a918e"
+        },
+        "highVisibility": {
+          "safetyVinyl": "#f17935"
+        }
+      },
       "stats": {
         "triangles": 266,
         "sizeM": [
@@ -142129,17 +142556,31 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "safetyVinyl",
           "color": "#df4f39",
           "parts": [
             "float",
+            "top-ball"
+          ],
+          "param": "safetyVinyl"
+        },
+        {
+          "name": "safetyAmber",
+          "color": "#f2b536",
+          "parts": [
             "float-cap",
+            "daymark"
+          ],
+          "param": "safetyAmber"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#929fa2",
+          "parts": [
             "mast",
-            "daymark",
-            "top-ball",
             "keel-weight"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -142147,7 +142588,7 @@
       "id": "coiled-mooring-rope",
       "kit": "marine",
       "title": "Coiled mooring rope",
-      "description": "Thick mooring rope arranged in three low coils with a short loose end and eye splice. Knobs: overall scale and asset color.",
+      "description": "Coiled mooring rope: Three rope turns lead into a loose end and spliced eye. Low-poly visualization prop. Material controls: rope fiber, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -142168,7 +142609,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/coiled-mooring-rope.kcad.ts",
       "preview": "/assets/marine-coiled-mooring-rope.png",
-      "sourceSha256": "37b10eedcd9934a99b2bee71eb0b2c9a3f4c5542c57b33189a7508493d6115fb",
+      "sourceSha256": "de528d750dc5f342c0c1a13ede989b92de8f87464ceeffaf126b2b6149842c04",
       "triangleBudget": 1800,
       "params": [
         {
@@ -142181,13 +142622,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "ropeFiber",
           "type": "color",
           "default": "#9c8258",
-          "label": "Asset color"
+          "label": "Rope fiber"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "ropeFiber": "#917c59",
+          "stainlessSteel": "#a9b1af"
+        },
+        "highVisibility": {
+          "ropeFiber": "#c19d53"
+        }
+      },
       "stats": {
         "triangles": 428,
         "sizeM": [
@@ -142200,16 +142655,23 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "ropeFiber",
           "color": "#9c8258",
           "parts": [
             "coil-outer",
             "coil-middle",
             "coil-inner",
-            "loose-end",
+            "loose-end"
+          ],
+          "param": "ropeFiber"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
+          "parts": [
             "eye-splice"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -142217,7 +142679,7 @@
       "id": "crab-trap",
       "kit": "marine",
       "title": "Crab trap",
-      "description": "Low round crab trap with circular base, hoop frame, mesh ribs and central bait cage. Knobs: overall scale and asset color.",
+      "description": "Crab trap: A ribbed trap frame surrounds a bait cage and lifting handle. Low-poly visualization prop. Material controls: galvanized steel, nylon netting, rope fiber.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -142238,7 +142700,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/crab-trap.kcad.ts",
       "preview": "/assets/marine-crab-trap.png",
-      "sourceSha256": "e907722fd3e1888975df09c441410be0d325fe253a44dd031660772910cfd876",
+      "sourceSha256": "e192e1b878ec51588e8cfccb51fcba4f06bdf07d029128cc3dd41ce11d979e0e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -142251,13 +142713,34 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#7a6547",
-          "label": "Asset color"
+          "default": "#929fa2",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "nylonNetting",
+          "type": "color",
+          "default": "#73674f",
+          "label": "Nylon netting"
+        },
+        {
+          "name": "ropeFiber",
+          "type": "color",
+          "default": "#a78a5d",
+          "label": "Rope fiber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#8a918e",
+          "nylonNetting": "#736952",
+          "ropeFiber": "#99825c"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#d9a13a"
+        }
+      },
       "stats": {
         "triangles": 264,
         "sizeM": [
@@ -142270,19 +142753,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7a6547",
+          "name": "galvanizedSteel",
+          "color": "#929fa2",
           "parts": [
             "base-ring",
             "top-ring",
             "rib-1",
             "rib-2",
             "rib-3",
-            "rib-4",
-            "bait-cage",
+            "rib-4"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "nylonNetting",
+          "color": "#73674f",
+          "parts": [
+            "bait-cage"
+          ],
+          "param": "nylonNetting"
+        },
+        {
+          "name": "ropeFiber",
+          "color": "#a78a5d",
+          "parts": [
             "handle"
           ],
-          "param": "color"
+          "param": "ropeFiber"
         }
       ]
     },
@@ -142290,7 +142787,7 @@
       "id": "dock-bollard",
       "kit": "marine",
       "title": "Dock bollard",
-      "description": "Short cast-iron dock bollard with a flared foot and wide twin-horn cap. Knobs: overall scale and asset color.",
+      "description": "Dock bollard: A flared foot and capped column support two opposing mooring horns. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -142311,7 +142808,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/dock-bollard.kcad.ts",
       "preview": "/assets/marine-dock-bollard.png",
-      "sourceSha256": "0cf895ff19340795ce6f44fb04b896f102057fab3388ff2cf92aa37fe9a9d232",
+      "sourceSha256": "049d7fa4ccc5107a7dda9f3a7ded13d4468d7fe79f903fbc7d4a28a33b30521a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -142324,13 +142821,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#4d5357",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#585a58",
+          "stainlessSteel": "#a9b1af"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e39032"
+        }
+      },
       "stats": {
         "triangles": 220,
         "sizeM": [
@@ -142343,16 +142854,23 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#4d5357",
           "parts": [
-            "foot",
+            "foot"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
+          "parts": [
             "column",
             "cap",
             "horn-left",
             "horn-right"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -142360,7 +142878,7 @@
       "id": "dock-ladder",
       "kit": "marine",
       "title": "Dock ladder",
-      "description": "Marine dock ladder with two long rails, five broad rungs and rounded lower ends. Knobs: overall scale and asset color.",
+      "description": "Dock ladder: Two tall side rails carry evenly spaced horizontal rungs. Low-poly visualization prop. Material controls: galvanized steel, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -142381,7 +142899,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/dock-ladder.kcad.ts",
       "preview": "/assets/marine-dock-ladder.png",
-      "sourceSha256": "ace550bb89db2dc60af55046b657098bc0fad9006dfb3eb55f96f2ee0afafd9f",
+      "sourceSha256": "a37e6cc50189cfe9bf10dde490209dc7a9e918f69804988093616747e2423250",
       "triangleBudget": 1800,
       "params": [
         {
@@ -142394,13 +142912,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#777c7e",
-          "label": "Asset color"
+          "default": "#929fa2",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#8a918e",
+          "stainlessSteel": "#a9b1af"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#d9a13a"
+        }
+      },
       "stats": {
         "triangles": 308,
         "sizeM": [
@@ -142413,18 +142945,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#777c7e",
+          "name": "galvanizedSteel",
+          "color": "#929fa2",
           "parts": [
             "rail-left",
-            "rail-right",
+            "rail-right"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
+          "parts": [
             "rung-1",
             "rung-2",
             "rung-3",
             "rung-4",
             "rung-5"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -142432,7 +142971,7 @@
       "id": "dock-piling",
       "kit": "marine",
       "title": "Dock piling",
-      "description": "Heavy timber dock piling with tapered cap, waterline collar and a broad base shoe. Knobs: overall scale and asset color.",
+      "description": "Dock piling: A timber pile has a protective cap, collar, and base shoe. Low-poly visualization prop. Material controls: timber, galvanized steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -142453,7 +142992,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/dock-piling.kcad.ts",
       "preview": "/assets/marine-dock-piling.png",
-      "sourceSha256": "7e82ad417e446cd78d294f900bf5a4a481c5cbaaede3f03cce937c8544c2dbe7",
+      "sourceSha256": "f854c8e30495a0f21003e79f8f96b1b93dc19aa8313f3d9a3ef9d6892e17a71b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -142466,13 +143005,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
           "default": "#70533a",
-          "label": "Asset color"
+          "label": "Timber"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#929fa2",
+          "label": "Galvanized steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "timber": "#715a43",
+          "galvanizedSteel": "#8a918e"
+        },
+        "highVisibility": {
+          "timber": "#a87b3e"
+        }
+      },
       "stats": {
         "triangles": 144,
         "sizeM": [
@@ -142485,15 +143038,22 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "timber",
           "color": "#70533a",
           "parts": [
-            "pile",
+            "pile"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#929fa2",
+          "parts": [
             "cap",
             "collar",
             "base-shoe"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -142501,7 +143061,7 @@
       "id": "fish-crate",
       "kit": "marine",
       "title": "Fish crate",
-      "description": "Ventilated fish crate with raised corner blocks, drainage slots and two hand openings. Knobs: overall scale and asset color.",
+      "description": "Fish crate: An open slatted crate has a solid base, perimeter rim, and corner plates. Low-poly visualization prop. Material controls: timber, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -142522,7 +143082,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/fish-crate.kcad.ts",
       "preview": "/assets/marine-fish-crate.png",
-      "sourceSha256": "e86310a83dd3cd4973fcd3c1f5cbb9f970ab5e856b674aeb8beabe8d7958c8e1",
+      "sourceSha256": "9e787b03ef56d3ac2333ab92c50c7dd5b17c8c36513ec8023590542ee3557665",
       "triangleBudget": 1800,
       "params": [
         {
@@ -142535,13 +143095,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
           "default": "#637057",
-          "label": "Asset color"
+          "label": "Timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "timber": "#686f58",
+          "stainlessSteel": "#a9b1af"
+        },
+        "highVisibility": {
+          "timber": "#a87b3e"
+        }
+      },
       "stats": {
         "triangles": 108,
         "sizeM": [
@@ -142554,20 +143128,27 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "timber",
           "color": "#637057",
           "parts": [
             "base",
             "long-side-front",
             "long-side-back",
             "end-left",
-            "end-right",
+            "end-right"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
+          "parts": [
             "rim-front",
             "rim-back",
             "corner-left",
             "corner-right"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -142575,7 +143156,7 @@
       "id": "fishing-boat",
       "kit": "marine",
       "title": "Fishing boat",
-      "description": "Small coastal fishing boat with a deep hull, wheelhouse, roof mast, deck rail and stern work area. Knobs: overall scale and asset color.",
+      "description": "Fishing boat: A faceted working hull carries a wheelhouse, glazed front, mast, and bow and stern rails. Low-poly visualization prop. Material controls: painted hull coating, nonskid deck coating, marine glass, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -142596,7 +143177,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/fishing-boat.kcad.ts",
       "preview": "/assets/marine-fishing-boat.png",
-      "sourceSha256": "e79c609328505804715aa49f8b67ee15062a179903f3e65ec19c816f2ef7e09f",
+      "sourceSha256": "36334c3857676e6df7d3cd612b9b2f1e47d10bb88a3791efd4268914978bb1f8",
       "triangleBudget": 1800,
       "params": [
         {
@@ -142609,13 +143190,41 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedHull",
           "type": "color",
           "default": "#465a62",
-          "label": "Asset color"
+          "label": "Painted hull coating"
+        },
+        {
+          "name": "nonskidCoating",
+          "type": "color",
+          "default": "#46575a",
+          "label": "Nonskid deck coating"
+        },
+        {
+          "name": "marineGlass",
+          "type": "color",
+          "default": "#55a4bb",
+          "label": "Marine glass"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedHull": "#535f60",
+          "nonskidCoating": "#535d5a",
+          "marineGlass": "#5b9aaa",
+          "stainlessSteel": "#a9b1af"
+        },
+        "highVisibility": {
+          "paintedHull": "#e56b38"
+        }
+      },
       "stats": {
         "triangles": 144,
         "sizeM": [
@@ -142628,19 +143237,40 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedHull",
           "color": "#465a62",
           "parts": [
             "hull",
-            "deck",
             "wheelhouse",
-            "front-window",
             "roof",
-            "mast",
+            "mast"
+          ],
+          "param": "paintedHull"
+        },
+        {
+          "name": "nonskidCoating",
+          "color": "#46575a",
+          "parts": [
+            "deck"
+          ],
+          "param": "nonskidCoating"
+        },
+        {
+          "name": "marineGlass",
+          "color": "#55a4bb",
+          "parts": [
+            "front-window"
+          ],
+          "param": "marineGlass"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
+          "parts": [
             "stern-rail",
             "bow-rail"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -142648,7 +143278,7 @@
       "id": "fishing-net",
       "kit": "marine",
       "title": "Fishing net",
-      "description": "Folded marine fishing net with a top float line, weighted lower edge and repeated net strands. Knobs: overall scale and asset color.",
+      "description": "Fishing net: Crossed net strands hang from reinforced side ropes and top and bottom lines. Low-poly visualization prop. Material controls: rope fiber, nylon netting.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -142669,7 +143299,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/fishing-net.kcad.ts",
       "preview": "/assets/marine-fishing-net.png",
-      "sourceSha256": "bf497dbf0f1e7587cf8eaf7ba36509b41f8895f89ca52e5e63504017055c4d9a",
+      "sourceSha256": "417f7383ee065aa0f97227ee1c4b2a323f5b058fb7b5c2ca8a13c175df3d1283",
       "triangleBudget": 1800,
       "params": [
         {
@@ -142682,13 +143312,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "ropeFiber",
           "type": "color",
           "default": "#72654d",
-          "label": "Asset color"
+          "label": "Rope fiber"
+        },
+        {
+          "name": "nylonNetting",
+          "type": "color",
+          "default": "#73674f",
+          "label": "Nylon netting"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "ropeFiber": "#736751",
+          "nylonNetting": "#736952"
+        },
+        "highVisibility": {
+          "ropeFiber": "#c19d53"
+        }
+      },
       "stats": {
         "triangles": 236,
         "sizeM": [
@@ -142701,20 +143345,27 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "ropeFiber",
           "color": "#72654d",
           "parts": [
             "top-rope",
             "bottom-rope",
             "side-left",
-            "side-right",
+            "side-right"
+          ],
+          "param": "ropeFiber"
+        },
+        {
+          "name": "nylonNetting",
+          "color": "#73674f",
+          "parts": [
             "net-1",
             "net-2",
             "net-3",
             "net-4",
             "net-5"
           ],
-          "param": "color"
+          "param": "nylonNetting"
         }
       ]
     },
@@ -142722,7 +143373,7 @@
       "id": "inflatable-life-raft",
       "kit": "marine",
       "title": "Inflatable life raft",
-      "description": "Open inflatable life raft with four buoyant side tubes, floor panel and corner grab lines. Knobs: overall scale and asset color.",
+      "description": "Inflatable life raft: An inflatable perimeter surrounds a raft floor beneath a raised canopy. Low-poly visualization prop. Material controls: safety vinyl, stainless steel, canvas.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -142743,7 +143394,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/inflatable-life-raft.kcad.ts",
       "preview": "/assets/marine-inflatable-life-raft.png",
-      "sourceSha256": "e91600f18604d78a7f492504df4412a8fc344a8985f0f7947c00930f425360f9",
+      "sourceSha256": "998da139b3e38b1df60898e99f8407a021dfb7f5290affb16618a9c303c351e1",
       "triangleBudget": 1800,
       "params": [
         {
@@ -142756,13 +143407,34 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "safetyVinyl",
           "type": "color",
           "default": "#d4b24e",
-          "label": "Asset color"
+          "label": "Safety vinyl"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "canvas",
+          "type": "color",
+          "default": "#ddd0a6",
+          "label": "Canvas"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "safetyVinyl": "#b99f52",
+          "stainlessSteel": "#a9b1af",
+          "canvas": "#c0b491"
+        },
+        "highVisibility": {
+          "safetyVinyl": "#f17935"
+        }
+      },
       "stats": {
         "triangles": 244,
         "sizeM": [
@@ -142775,18 +143447,32 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "safetyVinyl",
           "color": "#d4b24e",
           "parts": [
             "floor",
             "rail-front",
             "rail-back",
             "rail-left",
-            "rail-right",
-            "canopy-pole",
+            "rail-right"
+          ],
+          "param": "safetyVinyl"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
+          "parts": [
+            "canopy-pole"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "canvas",
+          "color": "#ddd0a6",
+          "parts": [
             "canopy"
           ],
-          "param": "color"
+          "param": "canvas"
         }
       ]
     },
@@ -142794,7 +143480,7 @@
       "id": "life-jacket",
       "kit": "marine",
       "title": "Life jacket",
-      "description": "Marine life jacket with two shoulder floats, broad chest panels, waist straps and a collar. Knobs: overall scale and asset color.",
+      "description": "Life jacket: A shaped torso has paired flotation panels, a collar, waist strap, and buckle. Low-poly visualization prop. Material controls: safety fabric, closed-cell safety foam, nylon webbing, marine hardware.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -142815,7 +143501,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/life-jacket.kcad.ts",
       "preview": "/assets/marine-life-jacket.png",
-      "sourceSha256": "7ba4e3926bdf4d36c529fa338f011b1a144879a188064649f04b6208ab06e551",
+      "sourceSha256": "a44e6143332f662346713318ce2443b3a31c7752e6bc4449fc8074c9b6674a8d",
       "triangleBudget": 1800,
       "params": [
         {
@@ -142828,13 +143514,41 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "safetyFabric",
           "type": "color",
           "default": "#e15a38",
-          "label": "Asset color"
+          "label": "Safety fabric"
+        },
+        {
+          "name": "safetyFoam",
+          "type": "color",
+          "default": "#f0bf3a",
+          "label": "Closed-cell safety foam"
+        },
+        {
+          "name": "nylonWebbing",
+          "type": "color",
+          "default": "#314954",
+          "label": "Nylon webbing"
+        },
+        {
+          "name": "marineHardware",
+          "type": "color",
+          "default": "#b1b9b7",
+          "label": "Marine hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "safetyFabric": "#c25f42",
+          "safetyFoam": "#cda843",
+          "nylonWebbing": "#445356",
+          "marineHardware": "#a0a49d"
+        },
+        "highVisibility": {
+          "safetyFabric": "#f17b39"
+        }
+      },
       "stats": {
         "triangles": 136,
         "sizeM": [
@@ -142847,18 +143561,39 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "safetyFabric",
           "color": "#e15a38",
           "parts": [
             "torso",
-            "left-flotation",
-            "right-flotation",
             "collar-left",
-            "collar-right",
-            "waist-strap",
+            "collar-right"
+          ],
+          "param": "safetyFabric"
+        },
+        {
+          "name": "safetyFoam",
+          "color": "#f0bf3a",
+          "parts": [
+            "left-flotation",
+            "right-flotation"
+          ],
+          "param": "safetyFoam"
+        },
+        {
+          "name": "nylonWebbing",
+          "color": "#314954",
+          "parts": [
+            "waist-strap"
+          ],
+          "param": "nylonWebbing"
+        },
+        {
+          "name": "marineHardware",
+          "color": "#b1b9b7",
+          "parts": [
             "buckle"
           ],
-          "param": "color"
+          "param": "marineHardware"
         }
       ]
     },
@@ -142866,7 +143601,7 @@
       "id": "life-raft-canister",
       "kit": "marine",
       "title": "Life raft canister",
-      "description": "Sealed marine life-raft canister with two shell halves, locking bands and deck cradles. Knobs: overall scale and asset color.",
+      "description": "Life raft canister: A cylindrical raft canister is retained by two straps in a paired cradle. Low-poly visualization prop. Material controls: painted fiberglass, nylon webbing, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -142887,7 +143622,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/life-raft-canister.kcad.ts",
       "preview": "/assets/marine-life-raft-canister.png",
-      "sourceSha256": "4b67c66e613d213c2abb3de3a2537254ac3246564054fe12611babd612ef51eb",
+      "sourceSha256": "61a502c37621b806e72388a3deb266933b31d85918aaa73d6dab110328393295",
       "triangleBudget": 1800,
       "params": [
         {
@@ -142900,13 +143635,34 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedFiberglass",
           "type": "color",
           "default": "#d6a849",
-          "label": "Asset color"
+          "label": "Painted fiberglass"
+        },
+        {
+          "name": "nylonWebbing",
+          "type": "color",
+          "default": "#314954",
+          "label": "Nylon webbing"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedFiberglass": "#bb974e",
+          "nylonWebbing": "#445356",
+          "stainlessSteel": "#a9b1af"
+        },
+        "highVisibility": {
+          "paintedFiberglass": "#e59b35"
+        }
+      },
       "stats": {
         "triangles": 248,
         "sizeM": [
@@ -142919,18 +143675,32 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedFiberglass",
           "color": "#d6a849",
           "parts": [
             "shell",
             "end-left",
-            "end-right",
+            "end-right"
+          ],
+          "param": "paintedFiberglass"
+        },
+        {
+          "name": "nylonWebbing",
+          "color": "#314954",
+          "parts": [
             "strap-left",
-            "strap-right",
+            "strap-right"
+          ],
+          "param": "nylonWebbing"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
+          "parts": [
             "cradle-left",
             "cradle-right"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -142938,7 +143708,7 @@
       "id": "life-ring",
       "kit": "marine",
       "title": "Life ring",
-      "description": "Traditional life ring with a thick circular body, four grip straps and a rope loop. Knobs: overall scale and asset color.",
+      "description": "Life ring: A buoyant ring is marked by four cross straps and a retrieval loop. Low-poly visualization prop. Material controls: closed-cell safety foam, nylon webbing, rope fiber.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -142959,7 +143729,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/life-ring.kcad.ts",
       "preview": "/assets/marine-life-ring.png",
-      "sourceSha256": "ddae30d210d5377b0cb043020e45906a24784322d05fe682229383227f3f2662",
+      "sourceSha256": "fe6cbc145246d7e5ba25fd8d14c477183811973393bf987aa177aecb006ab636",
       "triangleBudget": 1800,
       "params": [
         {
@@ -142972,13 +143742,34 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "safetyFoam",
           "type": "color",
           "default": "#d5503e",
-          "label": "Asset color"
+          "label": "Closed-cell safety foam"
+        },
+        {
+          "name": "nylonWebbing",
+          "type": "color",
+          "default": "#314954",
+          "label": "Nylon webbing"
+        },
+        {
+          "name": "ropeFiber",
+          "type": "color",
+          "default": "#a78a5d",
+          "label": "Rope fiber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "safetyFoam": "#ba5846",
+          "nylonWebbing": "#445356",
+          "ropeFiber": "#99825c"
+        },
+        "highVisibility": {
+          "safetyFoam": "#f17939"
+        }
+      },
       "stats": {
         "triangles": 240,
         "sizeM": [
@@ -142991,17 +143782,31 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "safetyFoam",
           "color": "#d5503e",
           "parts": [
-            "ring-body",
+            "ring-body"
+          ],
+          "param": "safetyFoam"
+        },
+        {
+          "name": "nylonWebbing",
+          "color": "#314954",
+          "parts": [
             "strap-1",
             "strap-2",
             "strap-3",
-            "strap-4",
+            "strap-4"
+          ],
+          "param": "nylonWebbing"
+        },
+        {
+          "name": "ropeFiber",
+          "color": "#a78a5d",
+          "parts": [
             "rope-loop"
           ],
-          "param": "color"
+          "param": "ropeFiber"
         }
       ]
     },
@@ -143009,7 +143814,7 @@
       "id": "lobster-pot",
       "kit": "marine",
       "title": "Lobster pot",
-      "description": "Rectangular lobster pot with a weighted base, frame rails, mesh panels and inward entry funnels. Knobs: overall scale and asset color.",
+      "description": "Lobster pot: A tapered pot frame has opposed entry funnels and a top handle. Low-poly visualization prop. Material controls: timber, nylon netting, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143030,7 +143835,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/lobster-pot.kcad.ts",
       "preview": "/assets/marine-lobster-pot.png",
-      "sourceSha256": "875b56862b3428d4b2ebc136d61973bb37063dc48047366fdb3eefa70a3e1917",
+      "sourceSha256": "fef0de28967bc4e58bb90b82c81c2cd5d882b68688957fae8969eb75d8bec8f1",
       "triangleBudget": 1800,
       "params": [
         {
@@ -143043,13 +143848,34 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
           "default": "#8b6340",
-          "label": "Asset color"
+          "label": "Timber"
+        },
+        {
+          "name": "nylonNetting",
+          "type": "color",
+          "default": "#73674f",
+          "label": "Nylon netting"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "timber": "#856648",
+          "nylonNetting": "#736952",
+          "stainlessSteel": "#a9b1af"
+        },
+        "highVisibility": {
+          "timber": "#a87b3e"
+        }
+      },
       "stats": {
         "triangles": 172,
         "sizeM": [
@@ -143062,7 +143888,7 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "timber",
           "color": "#8b6340",
           "parts": [
             "base",
@@ -143070,12 +143896,26 @@
             "post-left-front",
             "post-right-front",
             "post-left-back",
-            "post-right-back",
+            "post-right-back"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "nylonNetting",
+          "color": "#73674f",
+          "parts": [
             "entry-funnel-left",
-            "entry-funnel-right",
+            "entry-funnel-right"
+          ],
+          "param": "nylonNetting"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
+          "parts": [
             "handle"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -143083,7 +143923,7 @@
       "id": "magnetic-compass",
       "kit": "marine",
       "title": "Marine magnetic compass",
-      "description": "Handheld marine magnetic compass with a circular housing, raised bezel and direction card. Knobs: overall scale and asset color.",
+      "description": "Marine magnetic compass: A marked compass card sits inside a bezel with a lubber line and mounting ears. Low-poly visualization prop. Material controls: brass, stainless steel, printed paper card, safety amber lens.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143104,7 +143944,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/magnetic-compass.kcad.ts",
       "preview": "/assets/marine-magnetic-compass.png",
-      "sourceSha256": "cc18b2ca8a4a8c7735b218dbd9c45aac80bc767cfad7c32638814842d495f73e",
+      "sourceSha256": "d99b597ed420d234e636785f2daed17ea78ff305aa7b027c454b499e91f82b76",
       "triangleBudget": 1800,
       "params": [
         {
@@ -143117,13 +143957,41 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "brass",
           "type": "color",
           "default": "#ba9b51",
-          "label": "Asset color"
+          "label": "Brass"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "paperCard",
+          "type": "color",
+          "default": "#e9dda7",
+          "label": "Printed paper card"
+        },
+        {
+          "name": "safetyAmber",
+          "type": "color",
+          "default": "#f2b536",
+          "label": "Safety amber lens"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "brass": "#a68e54",
+          "stainlessSteel": "#a9b1af",
+          "paperCard": "#c8be92",
+          "safetyAmber": "#cfa140"
+        },
+        "highVisibility": {
+          "brass": "#d1a448"
+        }
+      },
       "stats": {
         "triangles": 168,
         "sizeM": [
@@ -143136,17 +144004,38 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "brass",
           "color": "#ba9b51",
           "parts": [
-            "housing",
+            "housing"
+          ],
+          "param": "brass"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
+          "parts": [
             "bezel",
-            "card",
-            "lubber-line",
             "mount-ear-left",
             "mount-ear-right"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "paperCard",
+          "color": "#e9dda7",
+          "parts": [
+            "card"
+          ],
+          "param": "paperCard"
+        },
+        {
+          "name": "safetyAmber",
+          "color": "#f2b536",
+          "parts": [
+            "lubber-line"
+          ],
+          "param": "safetyAmber"
         }
       ]
     },
@@ -143154,7 +144043,7 @@
       "id": "mooring-buoy",
       "kit": "marine",
       "title": "Mooring buoy",
-      "description": "Floating mooring buoy with broad body, top lifting eye and heavy chain attachment below. Knobs: overall scale and asset color.",
+      "description": "Mooring buoy: A buoyant float carries a lifting eye and a lower chain shackle. Low-poly visualization prop. Material controls: safety vinyl, galvanized steel, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143175,7 +144064,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/mooring-buoy.kcad.ts",
       "preview": "/assets/marine-mooring-buoy.png",
-      "sourceSha256": "f55a7c93bf8c1f4b432386e873277adcc05e42a4f3f69858d07a1bd82a81fbe3",
+      "sourceSha256": "714b258bb1e60674609cc0588d2c0ed3ccb0bdd7f93b6aaad99447f0ce71a168",
       "triangleBudget": 1800,
       "params": [
         {
@@ -143188,13 +144077,34 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "safetyVinyl",
           "type": "color",
           "default": "#c7503d",
-          "label": "Asset color"
+          "label": "Safety vinyl"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#929fa2",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "safetyVinyl": "#b05845",
+          "galvanizedSteel": "#8a918e",
+          "stainlessSteel": "#a9b1af"
+        },
+        "highVisibility": {
+          "safetyVinyl": "#f17935"
+        }
+      },
       "stats": {
         "triangles": 222,
         "sizeM": [
@@ -143207,15 +144117,29 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "safetyVinyl",
           "color": "#c7503d",
           "parts": [
             "float-body",
-            "top-cap",
-            "lifting-eye",
+            "top-cap"
+          ],
+          "param": "safetyVinyl"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#929fa2",
+          "parts": [
+            "lifting-eye"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
+          "parts": [
             "chain-shackle"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -143223,7 +144147,7 @@
       "id": "motorboat",
       "kit": "marine",
       "title": "Motorboat",
-      "description": "Open motorboat with a pointed planing hull, wraparound bow rail, windshield and rear outboard mount. Knobs: overall scale and asset color.",
+      "description": "Motorboat: A pointed hull supports a cockpit console, glazed screen, paired seats, and motor mount. Low-poly visualization prop. Material controls: painted hull coating, nonskid deck coating, marine glass, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143244,7 +144168,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/motorboat.kcad.ts",
       "preview": "/assets/marine-motorboat.png",
-      "sourceSha256": "7d1a8e83415fa051aaf68df93558ab5ac4778af46e96f8d564e7e847fb01b588",
+      "sourceSha256": "ab1b5b15b0893913914a4d2eb63afef4d846ea0c7acdc354211a0b8ff78f5b2b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -143257,13 +144181,41 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedHull",
           "type": "color",
           "default": "#4b6572",
-          "label": "Asset color"
+          "label": "Painted hull coating"
+        },
+        {
+          "name": "nonskidCoating",
+          "type": "color",
+          "default": "#46575a",
+          "label": "Nonskid deck coating"
+        },
+        {
+          "name": "marineGlass",
+          "type": "color",
+          "default": "#55a4bb",
+          "label": "Marine glass"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedHull": "#56676c",
+          "nonskidCoating": "#535d5a",
+          "marineGlass": "#5b9aaa",
+          "stainlessSteel": "#a9b1af"
+        },
+        "highVisibility": {
+          "paintedHull": "#e56b38"
+        }
+      },
       "stats": {
         "triangles": 100,
         "sizeM": [
@@ -143276,18 +144228,39 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedHull",
           "color": "#4b6572",
           "parts": [
             "hull",
-            "deck",
             "console",
-            "windshield",
             "seat-front",
-            "seat-rear",
+            "seat-rear"
+          ],
+          "param": "paintedHull"
+        },
+        {
+          "name": "nonskidCoating",
+          "color": "#46575a",
+          "parts": [
+            "deck"
+          ],
+          "param": "nonskidCoating"
+        },
+        {
+          "name": "marineGlass",
+          "color": "#55a4bb",
+          "parts": [
+            "windshield"
+          ],
+          "param": "marineGlass"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
+          "parts": [
             "motor-mount"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -143295,7 +144268,7 @@
       "id": "outboard-motor",
       "kit": "marine",
       "title": "Outboard motor",
-      "description": "Compact outboard boat motor with a powerhead, tiller handle, midsection and propeller skeg. Knobs: overall scale and asset color.",
+      "description": "Outboard motor: A cowled powerhead narrows through a leg to a skeg and three-blade propeller. Low-poly visualization prop. Material controls: painted aluminum, stainless steel, bronze, rubber.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143316,7 +144289,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/outboard-motor.kcad.ts",
       "preview": "/assets/marine-outboard-motor.png",
-      "sourceSha256": "14d770ada83a9d0d362de81513d36abcfb4b8bd8d56994c2f238f5375f6c7cb8",
+      "sourceSha256": "28e75f5cb96242260a6f58d8d1d541631141b28c596b461d27fbcb462788e098",
       "triangleBudget": 1800,
       "params": [
         {
@@ -143329,13 +144302,41 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedAluminum",
           "type": "color",
           "default": "#50565a",
-          "label": "Asset color"
+          "label": "Painted aluminum"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "bronze",
+          "type": "color",
+          "default": "#a97b3b",
+          "label": "Bronze"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#303638",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedAluminum": "#5a5c5a",
+          "stainlessSteel": "#a9b1af",
+          "bronze": "#9a7744",
+          "rubber": "#434542"
+        },
+        "highVisibility": {
+          "paintedAluminum": "#e29435"
+        }
+      },
       "stats": {
         "triangles": 230,
         "sizeM": [
@@ -143348,21 +144349,42 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedAluminum",
           "color": "#50565a",
           "parts": [
             "powerhead",
-            "top-cover",
+            "top-cover"
+          ],
+          "param": "paintedAluminum"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
+          "parts": [
             "midsection",
             "gearcase",
             "skeg",
             "prop-shaft",
-            "prop-blade-1",
-            "prop-blade-2",
-            "tiller",
             "clamp"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "bronze",
+          "color": "#a97b3b",
+          "parts": [
+            "prop-blade-1",
+            "prop-blade-2"
+          ],
+          "param": "bronze"
+        },
+        {
+          "name": "rubber",
+          "color": "#303638",
+          "parts": [
+            "tiller"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -143370,7 +144392,7 @@
       "id": "porthole",
       "kit": "marine",
       "title": "Ship porthole",
-      "description": "Round ship porthole with a raised circular frame, inner opening and four fastening lugs. Knobs: overall scale and asset color.",
+      "description": "Ship porthole: A glazed round opening is held by a thick frame and four mounting lugs. Low-poly visualization prop. Material controls: brass, marine glass, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143391,7 +144413,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/porthole.kcad.ts",
       "preview": "/assets/marine-porthole.png",
-      "sourceSha256": "51d2b023f8250a551a4eaafd0caecea0162e2c3e62bbc934abc58b8c2f6aa361",
+      "sourceSha256": "596cdd2d0b17eb584d097452a215d23e7c5c0fb3a774e1ef1683cc10c7d5a21d",
       "triangleBudget": 1800,
       "params": [
         {
@@ -143404,13 +144426,34 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "brass",
           "type": "color",
           "default": "#8a744a",
-          "label": "Asset color"
+          "label": "Brass"
+        },
+        {
+          "name": "marineGlass",
+          "type": "color",
+          "default": "#55a4bb",
+          "label": "Marine glass"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "brass": "#84724f",
+          "marineGlass": "#5b9aaa",
+          "stainlessSteel": "#a9b1af"
+        },
+        "highVisibility": {
+          "brass": "#d1a448"
+        }
+      },
       "stats": {
         "triangles": 316,
         "sizeM": [
@@ -143423,17 +144466,31 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "brass",
           "color": "#8a744a",
           "parts": [
-            "frame",
-            "inner-glass",
+            "frame"
+          ],
+          "param": "brass"
+        },
+        {
+          "name": "marineGlass",
+          "color": "#55a4bb",
+          "parts": [
+            "inner-glass"
+          ],
+          "param": "marineGlass"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
+          "parts": [
             "lug-top",
             "lug-bottom",
             "lug-left",
             "lug-right"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -143441,7 +144498,7 @@
       "id": "rescue-lifeboat",
       "kit": "marine",
       "title": "Rescue lifeboat",
-      "description": "Compact enclosed rescue lifeboat with pointed hull, cabin, observation windows and roof beacon. Knobs: overall scale and asset color.",
+      "description": "Rescue lifeboat: A deep rescue hull carries a raised cabin, glazed windows, and roof beacon. Low-poly visualization prop. Material controls: safety vinyl, nonskid deck coating, marine glass, safety amber lens.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143462,7 +144519,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/rescue-lifeboat.kcad.ts",
       "preview": "/assets/marine-rescue-lifeboat.png",
-      "sourceSha256": "08b3e84f797db26d4a38ccb83ad15ae023f232ca5adbdf9ea110ce80ad871476",
+      "sourceSha256": "5718230bb29dae55edaaa89b7c3c1ee6e461f2302828108ac215bbd89d663e84",
       "triangleBudget": 1800,
       "params": [
         {
@@ -143475,13 +144532,41 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "safetyVinyl",
           "type": "color",
           "default": "#e45c3a",
-          "label": "Asset color"
+          "label": "Safety vinyl"
+        },
+        {
+          "name": "nonskidCoating",
+          "type": "color",
+          "default": "#46575a",
+          "label": "Nonskid deck coating"
+        },
+        {
+          "name": "marineGlass",
+          "type": "color",
+          "default": "#55a4bb",
+          "label": "Marine glass"
+        },
+        {
+          "name": "safetyAmber",
+          "type": "color",
+          "default": "#f2b536",
+          "label": "Safety amber lens"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "safetyVinyl": "#c56143",
+          "nonskidCoating": "#535d5a",
+          "marineGlass": "#5b9aaa",
+          "safetyAmber": "#cfa140"
+        },
+        "highVisibility": {
+          "safetyVinyl": "#f17935"
+        }
+      },
       "stats": {
         "triangles": 132,
         "sizeM": [
@@ -143494,18 +144579,39 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "safetyVinyl",
           "color": "#e45c3a",
           "parts": [
             "hull",
-            "deck",
             "cabin",
+            "roof"
+          ],
+          "param": "safetyVinyl"
+        },
+        {
+          "name": "nonskidCoating",
+          "color": "#46575a",
+          "parts": [
+            "deck"
+          ],
+          "param": "nonskidCoating"
+        },
+        {
+          "name": "marineGlass",
+          "color": "#55a4bb",
+          "parts": [
             "front-window",
-            "side-window",
-            "roof",
+            "side-window"
+          ],
+          "param": "marineGlass"
+        },
+        {
+          "name": "safetyAmber",
+          "color": "#f2b536",
+          "parts": [
             "beacon"
           ],
-          "param": "color"
+          "param": "safetyAmber"
         }
       ]
     },
@@ -143513,7 +144619,7 @@
       "id": "sailboat",
       "kit": "marine",
       "title": "Sailboat",
-      "description": "Small daysailer with a pointed hull, centerboard, mast, triangular mainsail and cockpit bench. Knobs: overall scale and asset color.",
+      "description": "Sailboat: A narrow hull carries a mast, boom, triangular sail, and open cockpit. Low-poly visualization prop. Material controls: painted hull coating, nonskid deck coating, timber, canvas.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143534,7 +144640,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/sailboat.kcad.ts",
       "preview": "/assets/marine-sailboat.png",
-      "sourceSha256": "9c913c088898f62f007c7559a5d51102c4ab9cac21fea2724fb6b5f2f5a9f690",
+      "sourceSha256": "6667c8408079be8e0379d26c6d6ee2e0584670876c2bb0e1b7d2d6f154fb1801",
       "triangleBudget": 1800,
       "params": [
         {
@@ -143547,13 +144653,41 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedHull",
           "type": "color",
           "default": "#7a5840",
-          "label": "Asset color"
+          "label": "Painted hull coating"
+        },
+        {
+          "name": "nonskidCoating",
+          "type": "color",
+          "default": "#46575a",
+          "label": "Nonskid deck coating"
+        },
+        {
+          "name": "timber",
+          "type": "color",
+          "default": "#805d3d",
+          "label": "Timber"
+        },
+        {
+          "name": "canvas",
+          "type": "color",
+          "default": "#ddd0a6",
+          "label": "Canvas"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedHull": "#785e48",
+          "nonskidCoating": "#535d5a",
+          "timber": "#7d6145",
+          "canvas": "#c0b491"
+        },
+        "highVisibility": {
+          "paintedHull": "#e56b38"
+        }
+      },
       "stats": {
         "triangles": 164,
         "sizeM": [
@@ -143566,18 +144700,39 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedHull",
           "color": "#7a5840",
           "parts": [
             "hull",
-            "deck",
-            "mast",
-            "boom",
-            "main-sail",
             "cockpit",
             "seat"
           ],
-          "param": "color"
+          "param": "paintedHull"
+        },
+        {
+          "name": "nonskidCoating",
+          "color": "#46575a",
+          "parts": [
+            "deck"
+          ],
+          "param": "nonskidCoating"
+        },
+        {
+          "name": "timber",
+          "color": "#805d3d",
+          "parts": [
+            "mast",
+            "boom"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "canvas",
+          "color": "#ddd0a6",
+          "parts": [
+            "main-sail"
+          ],
+          "param": "canvas"
         }
       ]
     },
@@ -143585,7 +144740,7 @@
       "id": "sextant",
       "kit": "marine",
       "title": "Sextant",
-      "description": "Marine sextant with a framed arc, index arm, horizon mirror and small sighting telescope. Knobs: overall scale and asset color.",
+      "description": "Sextant: A graduated arc and index arm frame a telescope above a hand grip. Low-poly visualization prop. Material controls: brass, stainless steel, marine glass, timber.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143606,7 +144761,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/sextant.kcad.ts",
       "preview": "/assets/marine-sextant.png",
-      "sourceSha256": "f29d764a8bae0f353c28b601b9c61b66feb0c82ce271180b4c3afad3e911fb54",
+      "sourceSha256": "6296c53997d3f7f74d668345c1e5e32ccc56fa38b942edf8cade271aeedaf952",
       "triangleBudget": 1800,
       "params": [
         {
@@ -143619,13 +144774,41 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "brass",
           "type": "color",
           "default": "#a18b5d",
-          "label": "Asset color"
+          "label": "Brass"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "marineGlass",
+          "type": "color",
+          "default": "#55a4bb",
+          "label": "Marine glass"
+        },
+        {
+          "name": "timber",
+          "type": "color",
+          "default": "#805d3d",
+          "label": "Timber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "brass": "#94835c",
+          "stainlessSteel": "#a9b1af",
+          "marineGlass": "#5b9aaa",
+          "timber": "#7d6145"
+        },
+        "highVisibility": {
+          "brass": "#d1a448"
+        }
+      },
       "stats": {
         "triangles": 232,
         "sizeM": [
@@ -143638,18 +144821,39 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "brass",
           "color": "#a18b5d",
           "parts": [
             "arc",
             "frame-left",
-            "frame-right",
-            "index-arm",
+            "frame-right"
+          ],
+          "param": "brass"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
+          "parts": [
+            "index-arm"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "marineGlass",
+          "color": "#55a4bb",
+          "parts": [
             "telescope",
-            "eyepiece",
+            "eyepiece"
+          ],
+          "param": "marineGlass"
+        },
+        {
+          "name": "timber",
+          "color": "#805d3d",
+          "parts": [
             "handle"
           ],
-          "param": "color"
+          "param": "timber"
         }
       ]
     },
@@ -143657,7 +144861,7 @@
       "id": "ship-bell",
       "kit": "marine",
       "title": "Ship bell",
-      "description": "Ship bell with a flared bell body, crown loop, clapper and compact overhead bracket. Knobs: overall scale and asset color.",
+      "description": "Ship bell: A flared bell hangs from a crown and loop around a visible clapper. Low-poly visualization prop. Material controls: bronze, brass, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143678,7 +144882,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/ship-bell.kcad.ts",
       "preview": "/assets/marine-ship-bell.png",
-      "sourceSha256": "45588ec653347e02d98dec17d0de1e9bd7e06d543ec6d6f85d39f21c0f230f35",
+      "sourceSha256": "444a8d9890a697da00e3ce4fe63f50803fac9cfe7a697ad67dc6e388a53be5e1",
       "triangleBudget": 1800,
       "params": [
         {
@@ -143691,13 +144895,34 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "bronze",
           "type": "color",
           "default": "#887447",
-          "label": "Asset color"
+          "label": "Bronze"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#c29b45",
+          "label": "Brass"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "bronze": "#82724d",
+          "brass": "#ac8e4b",
+          "stainlessSteel": "#a9b1af"
+        },
+        "highVisibility": {
+          "bronze": "#bd8a3d"
+        }
+      },
       "stats": {
         "triangles": 310,
         "sizeM": [
@@ -143710,17 +144935,31 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "bronze",
           "color": "#887447",
           "parts": [
             "bell",
-            "skirt",
+            "skirt"
+          ],
+          "param": "bronze"
+        },
+        {
+          "name": "brass",
+          "color": "#c29b45",
+          "parts": [
             "stem",
             "crown",
-            "loop",
+            "loop"
+          ],
+          "param": "brass"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
+          "parts": [
             "clapper"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -143728,7 +144967,7 @@
       "id": "ship-horn",
       "kit": "marine",
       "title": "Ship horn",
-      "description": "Compact marine air horn with a hollow flared trumpet mouth, mounting base and support brackets. Knobs: overall scale and asset color.",
+      "description": "Ship horn: A trumpet body flares to a broad mouth above a supported mounting base. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143749,7 +144988,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/ship-horn.kcad.ts",
       "preview": "/assets/marine-ship-horn.png",
-      "sourceSha256": "0d94f35f39901d7d7ca82fb2f69657cd56fef29f1017c5fc107e06d5538d07e7",
+      "sourceSha256": "6df54ad0385741c748059081b733e1c11aab72a7f7fab60d70f35fed32900634",
       "triangleBudget": 1800,
       "params": [
         {
@@ -143762,13 +145001,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#5d6468",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#636764",
+          "stainlessSteel": "#a9b1af"
+        },
+        "highVisibility": {
+          "paintedSteel": "#e39032"
+        }
+      },
       "stats": {
         "triangles": 220,
         "sizeM": [
@@ -143781,17 +145034,24 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#5d6468",
           "parts": [
             "trumpet-body",
+            "mount-base"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
+          "parts": [
             "mouth",
             "rear-cap",
-            "mount-base",
             "support-left",
             "support-right"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -143799,7 +145059,7 @@
       "id": "ship-wheel",
       "kit": "marine",
       "title": "Ship wheel",
-      "description": "Traditional ship wheel with an open rim, central hub and eight radial handles. Knobs: overall scale and asset color.",
+      "description": "Ship wheel: A circular rim surrounds a hub with radial spokes and projecting handles. Low-poly visualization prop. Material controls: timber, brass.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143820,7 +145080,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/ship-wheel.kcad.ts",
       "preview": "/assets/marine-ship-wheel.png",
-      "sourceSha256": "b0ff84bfd485c7230acdf865527e61ac7b8fcf02cc7bff666c0c8f06a0d508b0",
+      "sourceSha256": "edc850bdd3077addafb592c7c2e80990cc527ccb6f1b001db50d5171915eac9f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -143833,13 +145093,27 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
           "default": "#72553a",
-          "label": "Asset color"
+          "label": "Timber"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#c29b45",
+          "label": "Brass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "timber": "#735c43",
+          "brass": "#ac8e4b"
+        },
+        "highVisibility": {
+          "timber": "#a87b3e"
+        }
+      },
       "stats": {
         "triangles": 308,
         "sizeM": [
@@ -143852,19 +145126,26 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "timber",
           "color": "#72553a",
           "parts": [
             "rim",
-            "hub",
             "spoke-1",
             "spoke-2",
-            "spoke-3",
+            "spoke-3"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "brass",
+          "color": "#c29b45",
+          "parts": [
+            "hub",
             "handle-top",
             "handle-left",
             "handle-right"
           ],
-          "param": "color"
+          "param": "brass"
         }
       ]
     },
@@ -143872,7 +145153,7 @@
       "id": "throw-rope-bag",
       "kit": "marine",
       "title": "Throw rope bag",
-      "description": "Floating rescue throw bag with a tapered fabric body, reinforced top collar and rope eye. Knobs: overall scale and asset color.",
+      "description": "Throw rope bag: A compact throw bag has a shoulder, grab loop, reinforced base, and side grip. Low-poly visualization prop. Material controls: safety fabric, rope fiber, nylon webbing, rubber.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143893,7 +145174,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/throw-rope-bag.kcad.ts",
       "preview": "/assets/marine-throw-rope-bag.png",
-      "sourceSha256": "2cab4dbcc635f6123f1e8129102fba915059925ee714bba7bed5b785c7e9fefe",
+      "sourceSha256": "6cd2cf9cd4db5989068266d468e4d628e0ac74326bde18be31519a29e536e7b7",
       "triangleBudget": 1800,
       "params": [
         {
@@ -143906,13 +145187,41 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "safetyFabric",
           "type": "color",
           "default": "#e6a744",
-          "label": "Asset color"
+          "label": "Safety fabric"
+        },
+        {
+          "name": "ropeFiber",
+          "type": "color",
+          "default": "#a78a5d",
+          "label": "Rope fiber"
+        },
+        {
+          "name": "nylonWebbing",
+          "type": "color",
+          "default": "#314954",
+          "label": "Nylon webbing"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#303638",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "safetyFabric": "#c6974a",
+          "ropeFiber": "#99825c",
+          "nylonWebbing": "#445356",
+          "rubber": "#434542"
+        },
+        "highVisibility": {
+          "safetyFabric": "#f17b39"
+        }
+      },
       "stats": {
         "triangles": 240,
         "sizeM": [
@@ -143925,16 +145234,37 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "safetyFabric",
           "color": "#e6a744",
           "parts": [
             "bag",
-            "shoulder",
-            "top-loop",
-            "base-band",
+            "shoulder"
+          ],
+          "param": "safetyFabric"
+        },
+        {
+          "name": "ropeFiber",
+          "color": "#a78a5d",
+          "parts": [
+            "top-loop"
+          ],
+          "param": "ropeFiber"
+        },
+        {
+          "name": "nylonWebbing",
+          "color": "#314954",
+          "parts": [
+            "base-band"
+          ],
+          "param": "nylonWebbing"
+        },
+        {
+          "name": "rubber",
+          "color": "#303638",
+          "parts": [
             "side-grip"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -143942,7 +145272,7 @@
       "id": "tugboat",
       "kit": "marine",
       "title": "Harbor tugboat",
-      "description": "Compact harbor tug with a sturdy hull, tall bridge cabin, twin exhaust stacks and a bow fender. Knobs: overall scale and asset color.",
+      "description": "Harbor tugboat: A low working hull carries a raised bridge, paired stacks, front glazing, and bow fender. Low-poly visualization prop. Material controls: painted hull coating, nonskid deck coating, marine glass, rubber.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -143963,7 +145293,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/tugboat.kcad.ts",
       "preview": "/assets/marine-tugboat.png",
-      "sourceSha256": "7ca1c325dd9bf539167c88a1846c602e647cdd0713f9d41803c6ad1e8422e70f",
+      "sourceSha256": "5d54f50fc71f5b3339a5a60fb03384525f8d762e323f373ea338e47acb7c081c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -143976,13 +145306,41 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedHull",
           "type": "color",
           "default": "#3f5965",
-          "label": "Asset color"
+          "label": "Painted hull coating"
+        },
+        {
+          "name": "nonskidCoating",
+          "type": "color",
+          "default": "#46575a",
+          "label": "Nonskid deck coating"
+        },
+        {
+          "name": "marineGlass",
+          "type": "color",
+          "default": "#55a4bb",
+          "label": "Marine glass"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#303638",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedHull": "#4e5f62",
+          "nonskidCoating": "#535d5a",
+          "marineGlass": "#5b9aaa",
+          "rubber": "#434542"
+        },
+        "highVisibility": {
+          "paintedHull": "#e56b38"
+        }
+      },
       "stats": {
         "triangles": 202,
         "sizeM": [
@@ -143995,19 +145353,40 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedHull",
           "color": "#3f5965",
           "parts": [
             "hull",
-            "deck",
             "cabin",
             "bridge",
-            "front-glass",
             "stack-one",
-            "stack-two",
+            "stack-two"
+          ],
+          "param": "paintedHull"
+        },
+        {
+          "name": "nonskidCoating",
+          "color": "#46575a",
+          "parts": [
+            "deck"
+          ],
+          "param": "nonskidCoating"
+        },
+        {
+          "name": "marineGlass",
+          "color": "#55a4bb",
+          "parts": [
+            "front-glass"
+          ],
+          "param": "marineGlass"
+        },
+        {
+          "name": "rubber",
+          "color": "#303638",
+          "parts": [
             "bow-fender"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -144015,7 +145394,7 @@
       "id": "yacht",
       "kit": "marine",
       "title": "Motor yacht",
-      "description": "Small motor yacht with a swept bow, two-level cabin, dark window band and swim platform. Knobs: overall scale and asset color.",
+      "description": "Motor yacht: A long white hull carries two cabin levels, a dark window band, swim platform, and bow rail. Low-poly visualization prop. Material controls: painted fiberglass, nonskid deck coating, marine glass, stainless steel.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -144036,7 +145415,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/yacht.kcad.ts",
       "preview": "/assets/marine-yacht.png",
-      "sourceSha256": "f9fb577ac52dd6db8b1f44910e09af4d98a92f4a6dd0b0d6f45a7693dcb67609",
+      "sourceSha256": "8a442736ac93455b597346ca0f94ad58e083a6533706df9eeed7ad4b6ce93f15",
       "triangleBudget": 1800,
       "params": [
         {
@@ -144049,13 +145428,41 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedFiberglass",
           "type": "color",
           "default": "#e2e0d4",
-          "label": "Asset color"
+          "label": "Painted fiberglass"
+        },
+        {
+          "name": "nonskidCoating",
+          "type": "color",
+          "default": "#46575a",
+          "label": "Nonskid deck coating"
+        },
+        {
+          "name": "marineGlass",
+          "type": "color",
+          "default": "#55a4bb",
+          "label": "Marine glass"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b5c0c1",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedFiberglass": "#c3c0b2",
+          "nonskidCoating": "#535d5a",
+          "marineGlass": "#5b9aaa",
+          "stainlessSteel": "#a9b1af"
+        },
+        "highVisibility": {
+          "paintedFiberglass": "#e59b35"
+        }
+      },
       "stats": {
         "triangles": 112,
         "sizeM": [
@@ -144068,19 +145475,40 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedFiberglass",
           "color": "#e2e0d4",
           "parts": [
             "hull",
-            "deck",
             "lower-cabin",
             "upper-cabin",
-            "window-band",
-            "roof",
-            "swim-platform",
+            "roof"
+          ],
+          "param": "paintedFiberglass"
+        },
+        {
+          "name": "nonskidCoating",
+          "color": "#46575a",
+          "parts": [
+            "deck",
+            "swim-platform"
+          ],
+          "param": "nonskidCoating"
+        },
+        {
+          "name": "marineGlass",
+          "color": "#55a4bb",
+          "parts": [
+            "window-band"
+          ],
+          "param": "marineGlass"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b5c0c1",
+          "parts": [
             "bow-rail"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
