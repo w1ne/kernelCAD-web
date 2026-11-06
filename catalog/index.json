@@ -172617,7 +172617,7 @@
       "id": "action-camera",
       "kit": "photo-video-studio",
       "title": "Action camera",
-      "description": "Compact rugged action camera with a wide lens, status screen and two-prong mounting foot. Knobs: overall scale and asset color.",
+      "description": "Compact rugged action camera with a wide lens, status screen and two-prong mounting foot. Knobs: overall scale and polymer, metal and optical glass color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -172638,7 +172638,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/action-camera.kcad.ts",
       "preview": "/assets/photo-video-studio-action-camera.png",
-      "sourceSha256": "8889d4789936aa3fa01f114804c3339cee6adc22c403f297f380080dd8c35d08",
+      "sourceSha256": "5cbe7592dc99f2b55aeba0898e906d29f58ba47d8bd24d10effca810bf67e32a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -172651,13 +172651,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#343a40",
-          "label": "Asset color"
+          "default": "#343c43",
+          "label": "Polymer"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#a9b5ba",
+          "label": "Metal"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#45a6c0",
+          "label": "Optical glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "metal": "#a9b5ba",
+          "glass": "#45a6c0"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "metal": "#657780",
+          "glass": "#79d4e3"
+        }
+      },
       "stats": {
         "triangles": 148,
         "sizeM": [
@@ -172670,18 +172693,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#343a40",
+          "name": "polymer",
+          "color": "#343c43",
           "parts": [
-            "body",
+            "body"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "metal",
+          "color": "#a9b5ba",
+          "parts": [
             "lens-barrel",
-            "lens-face",
-            "status-screen",
             "mount-neck",
             "mount-tab-left",
             "mount-tab-right"
           ],
-          "param": "color"
+          "param": "metal"
+        },
+        {
+          "name": "glass",
+          "color": "#45a6c0",
+          "parts": [
+            "lens-face",
+            "status-screen"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -172689,7 +172726,7 @@
       "id": "backdrop-frame",
       "kit": "photo-video-studio",
       "title": "Backdrop frame",
-      "description": "Portable backdrop frame with a wide crossbar, telescoping uprights, locking collars and feet. Knobs: overall scale and asset color.",
+      "description": "Portable backdrop frame with a wide crossbar, telescoping uprights, locking collars and feet. Knobs: overall scale and metal, polymer, rubber and studio fabric color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -172710,7 +172747,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/backdrop-frame.kcad.ts",
       "preview": "/assets/photo-video-studio-backdrop-frame.png",
-      "sourceSha256": "3d7cd157c3ec79b0da43e63ff2b59660a2d91d18a20517566d5ee6ac1270525e",
+      "sourceSha256": "55d1100cc69d710e4da75ab7d8c276b1a6423bca516af7b0e710e1824e65a4ed",
       "triangleBudget": 1800,
       "params": [
         {
@@ -172723,13 +172760,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "metal",
           "type": "color",
-          "default": "#535a60",
-          "label": "Asset color"
+          "default": "#a9b5ba",
+          "label": "Metal"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#343c43",
+          "label": "Polymer"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1b2024",
+          "label": "Rubber"
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#e5ddce",
+          "label": "Studio fabric"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "polymer": "#343c43",
+          "rubber": "#1b2024",
+          "fabric": "#e5ddce"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "polymer": "#c75a2e",
+          "rubber": "#292b2d",
+          "fabric": "#d6b365"
+        }
+      },
       "stats": {
         "triangles": 344,
         "sizeM": [
@@ -172742,21 +172810,42 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#535a60",
+          "name": "metal",
+          "color": "#a9b5ba",
           "parts": [
             "crossbar",
             "left-upright-lower",
             "left-upright-upper",
             "right-upright-lower",
-            "right-upright-upper",
+            "right-upright-upper"
+          ],
+          "param": "metal"
+        },
+        {
+          "name": "polymer",
+          "color": "#343c43",
+          "parts": [
             "left-lock",
-            "right-lock",
+            "right-lock"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "rubber",
+          "color": "#1b2024",
+          "parts": [
             "left-foot",
-            "right-foot",
+            "right-foot"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "fabric",
+          "color": "#e5ddce",
+          "parts": [
             "backdrop-panel"
           ],
-          "param": "color"
+          "param": "fabric"
         }
       ]
     },
@@ -172764,7 +172853,7 @@
       "id": "beauty-dish-light",
       "kit": "photo-video-studio",
       "title": "Beauty dish light",
-      "description": "Shallow beauty-dish reflector with a raised center deflector, rim and support yoke. Knobs: overall scale and asset color.",
+      "description": "Shallow beauty-dish reflector with a raised center deflector, rim and support yoke. Knobs: overall scale and metal, diffuser polycarbonate and rubber color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -172785,7 +172874,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/beauty-dish-light.kcad.ts",
       "preview": "/assets/photo-video-studio-beauty-dish-light.png",
-      "sourceSha256": "d40c17fb43fa528c5aa0961dd1f1b87ee2e3974c6000991464729adca8cf3d39",
+      "sourceSha256": "79ba344aec7348eb7307304da9adb628289b3911cc098d87caa22a04a9212a92",
       "triangleBudget": 1800,
       "params": [
         {
@@ -172798,13 +172887,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "metal",
           "type": "color",
-          "default": "#747b80",
-          "label": "Asset color"
+          "default": "#a9b5ba",
+          "label": "Metal"
+        },
+        {
+          "name": "polycarbonate",
+          "type": "color",
+          "default": "#d7e4e3",
+          "label": "Diffuser polycarbonate"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1b2024",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "polycarbonate": "#d7e4e3",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "polycarbonate": "#f0c75a",
+          "rubber": "#292b2d"
+        }
+      },
       "stats": {
         "triangles": 232,
         "sizeM": [
@@ -172817,19 +172929,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#747b80",
+          "name": "metal",
+          "color": "#a9b5ba",
           "parts": [
             "dish",
             "outer-rim",
-            "center-deflector",
             "stem",
             "yoke-left",
             "yoke-right",
-            "stand-pole",
+            "stand-pole"
+          ],
+          "param": "metal"
+        },
+        {
+          "name": "polycarbonate",
+          "color": "#d7e4e3",
+          "parts": [
+            "center-deflector"
+          ],
+          "param": "polycarbonate"
+        },
+        {
+          "name": "rubber",
+          "color": "#1b2024",
+          "parts": [
             "stand-foot"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -172837,7 +172963,7 @@
       "id": "c-stand",
       "kit": "photo-video-studio",
       "title": "C-stand",
-      "description": "C-stand with a weighted three-leg base, telescoping column, grip head and horizontal arm. Knobs: overall scale and asset color.",
+      "description": "C-stand with a weighted three-leg base, telescoping column, grip head and horizontal arm. Knobs: overall scale and metal and rubber color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -172858,7 +172984,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/c-stand.kcad.ts",
       "preview": "/assets/photo-video-studio-c-stand.png",
-      "sourceSha256": "845f4b9be4cfe347b026838068f5f3c2a251a26b1d8146ac711d5e7c78853493",
+      "sourceSha256": "90fdbde9299893a5da28319a155ebf09079df9c1b91d877d91fbf010b1ca8fff",
       "triangleBudget": 1800,
       "params": [
         {
@@ -172871,13 +172997,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "metal",
           "type": "color",
-          "default": "#51575b",
-          "label": "Asset color"
+          "default": "#a9b5ba",
+          "label": "Metal"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1b2024",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "rubber": "#292b2d"
+        }
+      },
       "stats": {
         "triangles": 268,
         "sizeM": [
@@ -172890,20 +173031,27 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#51575b",
+          "name": "metal",
+          "color": "#a9b5ba",
           "parts": [
             "column",
             "upper-column",
             "grip-head",
             "arm",
-            "arm-grip",
             "base-hub",
             "leg-one",
             "leg-two",
             "leg-three"
           ],
-          "param": "color"
+          "param": "metal"
+        },
+        {
+          "name": "rubber",
+          "color": "#1b2024",
+          "parts": [
+            "arm-grip"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -172911,7 +173059,7 @@
       "id": "camcorder",
       "kit": "photo-video-studio",
       "title": "Camcorder",
-      "description": "Handheld video camcorder with a long lens barrel, top handle, rear viewfinder and side hand strap. Knobs: overall scale and asset color.",
+      "description": "Handheld video camcorder with a long lens barrel, top handle, rear viewfinder and side hand strap. Knobs: overall scale and polymer, metal, optical glass and studio fabric color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -172932,7 +173080,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/camcorder.kcad.ts",
       "preview": "/assets/photo-video-studio-camcorder.png",
-      "sourceSha256": "615edfb0782c891bc32a84aef0d056bbd3fe31cb0dec1bbc6fd8158b9b4b1f8b",
+      "sourceSha256": "522864ff7c73472bcdca6e22649289c137c8841816b2dc70d264be6f830c7b4c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -172945,13 +173093,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#35424d",
-          "label": "Asset color"
+          "default": "#343c43",
+          "label": "Polymer"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#a9b5ba",
+          "label": "Metal"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#45a6c0",
+          "label": "Optical glass"
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#e5ddce",
+          "label": "Studio fabric"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "metal": "#a9b5ba",
+          "glass": "#45a6c0",
+          "fabric": "#e5ddce"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "metal": "#657780",
+          "glass": "#79d4e3",
+          "fabric": "#d6b365"
+        }
+      },
       "stats": {
         "triangles": 160,
         "sizeM": [
@@ -172964,19 +173143,40 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#35424d",
+          "name": "polymer",
+          "color": "#343c43",
           "parts": [
             "body",
-            "lens-barrel",
             "lens-front",
-            "top-handle",
+            "top-handle"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "metal",
+          "color": "#a9b5ba",
+          "parts": [
+            "lens-barrel",
             "handle-post-left",
-            "handle-post-right",
-            "viewfinder",
+            "handle-post-right"
+          ],
+          "param": "metal"
+        },
+        {
+          "name": "glass",
+          "color": "#45a6c0",
+          "parts": [
+            "viewfinder"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "fabric",
+          "color": "#e5ddce",
+          "parts": [
             "strap"
           ],
-          "param": "color"
+          "param": "fabric"
         }
       ]
     },
@@ -172984,7 +173184,7 @@
       "id": "camera-backpack",
       "kit": "photo-video-studio",
       "title": "Camera backpack",
-      "description": "Padded camera backpack with front flap, shoulder straps, side pockets and a top grab handle. Knobs: overall scale and asset color.",
+      "description": "Padded camera backpack with front flap, shoulder straps, side pockets and a top grab handle. Knobs: overall scale and studio fabric, polymer and rubber color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -173005,7 +173205,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/camera-backpack.kcad.ts",
       "preview": "/assets/photo-video-studio-camera-backpack.png",
-      "sourceSha256": "e43db5fb5bf00a27d402aa8f29444de01c043235f11c62c9a1582ec65c4f8686",
+      "sourceSha256": "701336700bba2e22512dea75e82c2d9e6d040080ac6f44121911644007915f23",
       "triangleBudget": 1800,
       "params": [
         {
@@ -173018,13 +173218,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "fabric",
           "type": "color",
-          "default": "#53614f",
-          "label": "Asset color"
+          "default": "#e5ddce",
+          "label": "Studio fabric"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#343c43",
+          "label": "Polymer"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1b2024",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "fabric": "#e5ddce",
+          "polymer": "#343c43",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "fabric": "#d6b365",
+          "polymer": "#c75a2e",
+          "rubber": "#292b2d"
+        }
+      },
       "stats": {
         "triangles": 96,
         "sizeM": [
@@ -173037,19 +173260,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#53614f",
+          "name": "fabric",
+          "color": "#e5ddce",
           "parts": [
             "main-pack",
-            "front-flap",
             "top-pocket",
-            "side-pocket-left",
-            "side-pocket-right",
             "strap-left",
-            "strap-right",
+            "strap-right"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "polymer",
+          "color": "#343c43",
+          "parts": [
+            "front-flap",
+            "side-pocket-left",
+            "side-pocket-right"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "rubber",
+          "color": "#1b2024",
+          "parts": [
             "grab-handle"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -173057,7 +173294,7 @@
       "id": "camera-cage",
       "kit": "photo-video-studio",
       "title": "Camera cage",
-      "description": "Open camera cage with top handle, side rails, accessory shoe and a wide quick-release base. Knobs: overall scale and asset color.",
+      "description": "Open camera cage with top handle, side rails, accessory shoe and a wide quick-release base. Knobs: overall scale and metal, polymer and rubber color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -173078,7 +173315,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/camera-cage.kcad.ts",
       "preview": "/assets/photo-video-studio-camera-cage.png",
-      "sourceSha256": "6f59b3d8c6e67e75db97c60f2c8248a352cca72baef15800b5b574602ff45ebf",
+      "sourceSha256": "90c71f56e565be19fb7996bf21f7ade29a47d58da805d799491b1caf467feb90",
       "triangleBudget": 1800,
       "params": [
         {
@@ -173091,13 +173328,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "metal",
           "type": "color",
-          "default": "#454b50",
-          "label": "Asset color"
+          "default": "#a9b5ba",
+          "label": "Metal"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#343c43",
+          "label": "Polymer"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1b2024",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "polymer": "#343c43",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "polymer": "#c75a2e",
+          "rubber": "#292b2d"
+        }
+      },
       "stats": {
         "triangles": 108,
         "sizeM": [
@@ -173110,20 +173370,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#454b50",
+          "name": "metal",
+          "color": "#a9b5ba",
           "parts": [
             "base-plate",
-            "camera-body",
             "left-rail",
             "right-rail",
             "top-rail",
             "top-handle",
-            "shoe-mount",
+            "shoe-mount"
+          ],
+          "param": "metal"
+        },
+        {
+          "name": "polymer",
+          "color": "#343c43",
+          "parts": [
+            "camera-body"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "rubber",
+          "color": "#1b2024",
+          "parts": [
             "left-grip",
             "right-grip"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -173131,7 +173405,7 @@
       "id": "camera-roller-case",
       "kit": "photo-video-studio",
       "title": "Camera roller case",
-      "description": "Protective wheeled camera case with reinforced corners, pull handle and four low-profile casters. Knobs: overall scale and asset color.",
+      "description": "Protective wheeled camera case with reinforced corners, pull handle and four low-profile casters. Knobs: overall scale and polymer, metal and rubber color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -173152,7 +173426,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/camera-roller-case.kcad.ts",
       "preview": "/assets/photo-video-studio-camera-roller-case.png",
-      "sourceSha256": "963387a6cc700015ea281cb4faa7dbcc6e9bbeba987f8df204db90210128f083",
+      "sourceSha256": "1afcf9bab1ebce6120be94ce6a048c14c2a3f88565c6b9ae25f3f4d428cabbd4",
       "triangleBudget": 1800,
       "params": [
         {
@@ -173165,13 +173439,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#41474c",
-          "label": "Asset color"
+          "default": "#343c43",
+          "label": "Polymer"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#a9b5ba",
+          "label": "Metal"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1b2024",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "metal": "#a9b5ba",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "metal": "#657780",
+          "rubber": "#292b2d"
+        }
+      },
       "stats": {
         "triangles": 260,
         "sizeM": [
@@ -173184,22 +173481,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#41474c",
+          "name": "polymer",
+          "color": "#343c43",
           "parts": [
             "case",
             "lid",
-            "handle",
+            "handle"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "metal",
+          "color": "#a9b5ba",
+          "parts": [
             "handle-post-left",
             "handle-post-right",
             "latch-left",
-            "latch-right",
+            "latch-right"
+          ],
+          "param": "metal"
+        },
+        {
+          "name": "rubber",
+          "color": "#1b2024",
+          "parts": [
             "wheel-left-front",
             "wheel-right-front",
             "wheel-left-back",
             "wheel-right-back"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -173207,7 +173518,7 @@
       "id": "camera-slider",
       "kit": "photo-video-studio",
       "title": "Camera slider",
-      "description": "Compact camera slider with twin guide rails, carriage plate, end stops and leveling feet. Knobs: overall scale and asset color.",
+      "description": "Compact camera slider with twin guide rails, carriage plate, end stops and leveling feet. Knobs: overall scale and metal, polymer and rubber color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -173228,7 +173539,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/camera-slider.kcad.ts",
       "preview": "/assets/photo-video-studio-camera-slider.png",
-      "sourceSha256": "2c3b9fcbfc38b5283ce521d85d3242a75535704d4de91e7d9bb2b265793310b9",
+      "sourceSha256": "cb1ebfd289079c1ef5629427bafe75038370c8ef14b630902aeebf76c1800d5b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -173241,13 +173552,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "metal",
           "type": "color",
-          "default": "#50575c",
-          "label": "Asset color"
+          "default": "#a9b5ba",
+          "label": "Metal"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#343c43",
+          "label": "Polymer"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1b2024",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "polymer": "#343c43",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "polymer": "#c75a2e",
+          "rubber": "#292b2d"
+        }
+      },
       "stats": {
         "triangles": 280,
         "sizeM": [
@@ -173260,21 +173594,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#50575c",
+          "name": "metal",
+          "color": "#a9b5ba",
           "parts": [
             "rail-left",
             "rail-right",
+            "mount"
+          ],
+          "param": "metal"
+        },
+        {
+          "name": "polymer",
+          "color": "#343c43",
+          "parts": [
             "carriage",
-            "mount",
             "end-left",
-            "end-right",
+            "end-right"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "rubber",
+          "color": "#1b2024",
+          "parts": [
             "foot-front-left",
             "foot-front-right",
             "foot-rear-left",
             "foot-rear-right"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -173282,7 +173630,7 @@
       "id": "camera-tripod",
       "kit": "photo-video-studio",
       "title": "Camera tripod",
-      "description": "Three-section camera tripod with a quick-release head, center column, splayed legs and rubber feet. Knobs: overall scale and asset color.",
+      "description": "Three-section camera tripod with a quick-release head, center column, splayed legs and rubber feet. Knobs: overall scale and metal and rubber color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -173303,7 +173651,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/camera-tripod.kcad.ts",
       "preview": "/assets/photo-video-studio-camera-tripod.png",
-      "sourceSha256": "c7cab749907ffa63c468d4498bbffc8729a3aac82ed86e1ee393107d0bd87884",
+      "sourceSha256": "c1034b748d1f68a9c285ff6b3aa8f1519e5a096e0fbd6c4fc65cb2342789262e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -173316,13 +173664,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "metal",
           "type": "color",
-          "default": "#464c51",
-          "label": "Asset color"
+          "default": "#a9b5ba",
+          "label": "Metal"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1b2024",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "rubber": "#292b2d"
+        }
+      },
       "stats": {
         "triangles": 208,
         "sizeM": [
@@ -173335,8 +173698,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#464c51",
+          "name": "metal",
+          "color": "#a9b5ba",
           "parts": [
             "center-column",
             "head",
@@ -173344,14 +173707,21 @@
             "leg-one",
             "leg-two",
             "leg-three",
-            "foot-one",
-            "foot-two",
-            "foot-three",
             "brace-one",
             "brace-two",
             "brace-three"
           ],
-          "param": "color"
+          "param": "metal"
+        },
+        {
+          "name": "rubber",
+          "color": "#1b2024",
+          "parts": [
+            "foot-one",
+            "foot-two",
+            "foot-three"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -173359,7 +173729,7 @@
       "id": "cinema-camera",
       "kit": "photo-video-studio",
       "title": "Cinema camera",
-      "description": "Box-style cinema camera with a matte box, lens rails, top handle and shoulder-mount plate. Knobs: overall scale and asset color.",
+      "description": "Box-style cinema camera with a matte box, lens rails, top handle and shoulder-mount plate. Knobs: overall scale and polymer, optical glass and metal color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -173380,7 +173750,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/cinema-camera.kcad.ts",
       "preview": "/assets/photo-video-studio-cinema-camera.png",
-      "sourceSha256": "d6e84ccd616002af2e05f685addf9a10eb7039cb1d94144aa28ddd4ade0b3223",
+      "sourceSha256": "2158fa521839e5b5ca5054ced26d90a35b3068f057f1ed2c33925060c37a6b3d",
       "triangleBudget": 1800,
       "params": [
         {
@@ -173393,13 +173763,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#34383c",
-          "label": "Asset color"
+          "default": "#343c43",
+          "label": "Polymer"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#45a6c0",
+          "label": "Optical glass"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#a9b5ba",
+          "label": "Metal"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "glass": "#45a6c0",
+          "metal": "#a9b5ba"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "glass": "#79d4e3",
+          "metal": "#657780"
+        }
+      },
       "stats": {
         "triangles": 192,
         "sizeM": [
@@ -173412,19 +173805,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#34383c",
+          "name": "polymer",
+          "color": "#343c43",
           "parts": [
             "body",
-            "lens",
             "matte-box",
             "matte-top-flag",
+            "top-handle"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "glass",
+          "color": "#45a6c0",
+          "parts": [
+            "lens"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "metal",
+          "color": "#a9b5ba",
+          "parts": [
             "rail-left",
             "rail-right",
-            "top-handle",
             "base-plate"
           ],
-          "param": "color"
+          "param": "metal"
         }
       ]
     },
@@ -173432,7 +173839,7 @@
       "id": "clapperboard",
       "kit": "photo-video-studio",
       "title": "Clapperboard",
-      "description": "Film slate with a striped hinged top stick, broad writing board and lower frame ledge. Knobs: overall scale and asset color.",
+      "description": "Film slate with a striped hinged top stick, broad writing board and lower frame ledge. Knobs: overall scale and polymer, matte paint, wood and metal color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -173453,7 +173860,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/clapperboard.kcad.ts",
       "preview": "/assets/photo-video-studio-clapperboard.png",
-      "sourceSha256": "7d87c437e20c16e5c4881dcee6ec788bd4f99b2ce518812458c1716c9f678da0",
+      "sourceSha256": "a5cc57a6d10b35f980e0c52d6c9026d8e2674c3fdac5ada95fdb6fe72c628e48",
       "triangleBudget": 1800,
       "params": [
         {
@@ -173466,13 +173873,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#25292c",
-          "label": "Asset color"
+          "default": "#343c43",
+          "label": "Polymer"
+        },
+        {
+          "name": "mattePaint",
+          "type": "color",
+          "default": "#333a3e",
+          "label": "Matte paint"
+        },
+        {
+          "name": "wood",
+          "type": "color",
+          "default": "#9a714d",
+          "label": "Wood"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#a9b5ba",
+          "label": "Metal"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "mattePaint": "#333a3e",
+          "wood": "#9a714d",
+          "metal": "#a9b5ba"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "mattePaint": "#e9e4d7",
+          "wood": "#c79a58",
+          "metal": "#657780"
+        }
+      },
       "stats": {
         "triangles": 136,
         "sizeM": [
@@ -173485,17 +173923,38 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#25292c",
+          "name": "polymer",
+          "color": "#343c43",
           "parts": [
             "board",
-            "face",
-            "top-stick",
-            "hinge-left",
-            "hinge-right",
             "lower-ledge"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "mattePaint",
+          "color": "#333a3e",
+          "parts": [
+            "face"
+          ],
+          "param": "mattePaint"
+        },
+        {
+          "name": "wood",
+          "color": "#9a714d",
+          "parts": [
+            "top-stick"
+          ],
+          "param": "wood"
+        },
+        {
+          "name": "metal",
+          "color": "#a9b5ba",
+          "parts": [
+            "hinge-left",
+            "hinge-right"
+          ],
+          "param": "metal"
         }
       ]
     },
@@ -173503,7 +173962,7 @@
       "id": "digital-slr-camera",
       "kit": "photo-video-studio",
       "title": "Digital SLR camera",
-      "description": "Interchangeable-lens DSLR with a deep grip, raised optical viewfinder, shutter dial and zoom lens. Knobs: overall scale and asset color.",
+      "description": "Interchangeable-lens DSLR with a deep grip, raised optical viewfinder, shutter dial and zoom lens. Knobs: overall scale and polymer, rubber, optical glass and metal color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -173524,7 +173983,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/digital-slr-camera.kcad.ts",
       "preview": "/assets/photo-video-studio-digital-slr-camera.png",
-      "sourceSha256": "3c29c979cb6082e3eb7b0e98dfa9e479b57b5ec3f819d667c75d3c08dcc14b92",
+      "sourceSha256": "b177d573c9075c49438524c07cfe91c8d420d8c0a037f7d8ee67fce334701200",
       "triangleBudget": 1800,
       "params": [
         {
@@ -173537,13 +173996,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#30353b",
-          "label": "Asset color"
+          "default": "#343c43",
+          "label": "Polymer"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1b2024",
+          "label": "Rubber"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#45a6c0",
+          "label": "Optical glass"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#a9b5ba",
+          "label": "Metal"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "rubber": "#1b2024",
+          "glass": "#45a6c0",
+          "metal": "#a9b5ba"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "rubber": "#292b2d",
+          "glass": "#79d4e3",
+          "metal": "#657780"
+        }
+      },
       "stats": {
         "triangles": 224,
         "sizeM": [
@@ -173556,19 +174046,40 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#30353b",
+          "name": "polymer",
+          "color": "#343c43",
           "parts": [
             "body",
-            "grip",
-            "prism-hump",
+            "prism-hump"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "rubber",
+          "color": "#1b2024",
+          "parts": [
+            "grip"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "glass",
+          "color": "#45a6c0",
+          "parts": [
             "viewfinder",
+            "lens-face"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "metal",
+          "color": "#a9b5ba",
+          "parts": [
             "lens-barrel",
             "lens-ring",
-            "lens-face",
             "top-dial"
           ],
-          "param": "color"
+          "param": "metal"
         }
       ]
     },
@@ -173576,7 +174087,7 @@
       "id": "disposable-camera",
       "kit": "photo-video-studio",
       "title": "Disposable film camera",
-      "description": "Simple single-use film camera with a view window, flash panel, shutter button and fixed lens. Knobs: overall scale and asset color.",
+      "description": "Simple single-use film camera with a view window, flash panel, shutter button and fixed lens. Knobs: overall scale and polymer, optical glass and metal color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -173597,7 +174108,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/disposable-camera.kcad.ts",
       "preview": "/assets/photo-video-studio-disposable-camera.png",
-      "sourceSha256": "67ef221895bd8f2bfaba5b7d91655375b4ac05b99cce411ae2cd21d4a97fe10a",
+      "sourceSha256": "f8a47c995e4f26bc15d0d95519ed48ef6a9cb9e3a46715e13c8a3bc42f846bd3",
       "triangleBudget": 1800,
       "params": [
         {
@@ -173610,13 +174121,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#85827a",
-          "label": "Asset color"
+          "default": "#343c43",
+          "label": "Polymer"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#45a6c0",
+          "label": "Optical glass"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#a9b5ba",
+          "label": "Metal"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "glass": "#45a6c0",
+          "metal": "#a9b5ba"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "glass": "#79d4e3",
+          "metal": "#657780"
+        }
+      },
       "stats": {
         "triangles": 168,
         "sizeM": [
@@ -173629,17 +174163,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#85827a",
+          "name": "polymer",
+          "color": "#343c43",
           "parts": [
             "shell",
-            "lens",
-            "lens-rim",
-            "flash",
-            "view-window",
             "shutter"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "glass",
+          "color": "#45a6c0",
+          "parts": [
+            "lens",
+            "flash",
+            "view-window"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "metal",
+          "color": "#a9b5ba",
+          "parts": [
+            "lens-rim"
+          ],
+          "param": "metal"
         }
       ]
     },
@@ -173647,7 +174195,7 @@
       "id": "film-rangefinder-camera",
       "kit": "photo-video-studio",
       "title": "Film rangefinder camera",
-      "description": "Vintage rangefinder body with paired front windows, a compact lens and top-mounted rewind controls. Knobs: overall scale and asset color.",
+      "description": "Vintage rangefinder body with paired front windows, a compact lens and top-mounted rewind controls. Knobs: overall scale and polymer, metal and optical glass color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -173668,7 +174216,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/film-rangefinder-camera.kcad.ts",
       "preview": "/assets/photo-video-studio-film-rangefinder-camera.png",
-      "sourceSha256": "ae16469441f44c45d589a42d11587f59cd624773cc21d2516f3ce27a6901fae0",
+      "sourceSha256": "1aacff13bdc69778dd817931cad64610aec4e58bc58b1d058956ca72eed38ea3",
       "triangleBudget": 1800,
       "params": [
         {
@@ -173681,13 +174229,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#6b5943",
-          "label": "Asset color"
+          "default": "#343c43",
+          "label": "Polymer"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#a9b5ba",
+          "label": "Metal"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#45a6c0",
+          "label": "Optical glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "metal": "#a9b5ba",
+          "glass": "#45a6c0"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "metal": "#657780",
+          "glass": "#79d4e3"
+        }
+      },
       "stats": {
         "triangles": 288,
         "sizeM": [
@@ -173700,19 +174271,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6b5943",
+          "name": "polymer",
+          "color": "#343c43",
           "parts": [
             "body",
+            "rewind-knob"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "metal",
+          "color": "#a9b5ba",
+          "parts": [
             "top-plate",
-            "lens",
             "lens-ring",
-            "rangefinder-window",
-            "view-window",
-            "rewind-knob",
             "advance-dial"
           ],
-          "param": "color"
+          "param": "metal"
+        },
+        {
+          "name": "glass",
+          "color": "#45a6c0",
+          "parts": [
+            "lens",
+            "rangefinder-window",
+            "view-window"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -173720,7 +174305,7 @@
       "id": "follow-focus-unit",
       "kit": "photo-video-studio",
       "title": "Follow focus unit",
-      "description": "Manual follow-focus control with a large side wheel, geared lens ring and adjustable support arm. Knobs: overall scale and asset color.",
+      "description": "Manual follow-focus control with a large side wheel, geared lens ring and adjustable support arm. Knobs: overall scale and metal and rubber color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -173741,7 +174326,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/follow-focus-unit.kcad.ts",
       "preview": "/assets/photo-video-studio-follow-focus-unit.png",
-      "sourceSha256": "845b56adc632565315c42dda08d9e4a0c57977171879a73e191c0d74d3722454",
+      "sourceSha256": "37588f20f67d1adb7919fd1a3200c953d789b6ba7ec792dbda47ec33ec926238",
       "triangleBudget": 1800,
       "params": [
         {
@@ -173754,13 +174339,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "metal",
           "type": "color",
-          "default": "#51575b",
-          "label": "Asset color"
+          "default": "#a9b5ba",
+          "label": "Metal"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1b2024",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "rubber": "#292b2d"
+        }
+      },
       "stats": {
         "triangles": 256,
         "sizeM": [
@@ -173773,19 +174373,26 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#51575b",
+          "name": "metal",
+          "color": "#a9b5ba",
           "parts": [
             "lens-barrel",
             "gear-ring",
             "front-rim",
             "support-arm",
-            "wheel-hub",
-            "focus-wheel",
-            "wheel-handle",
             "clamp"
           ],
-          "param": "color"
+          "param": "metal"
+        },
+        {
+          "name": "rubber",
+          "color": "#1b2024",
+          "parts": [
+            "wheel-hub",
+            "focus-wheel",
+            "wheel-handle"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -173793,7 +174400,7 @@
       "id": "gimbal-stabilizer",
       "kit": "photo-video-studio",
       "title": "Camera gimbal stabilizer",
-      "description": "Three-axis handheld gimbal with a camera cradle, side arms, control grip and small thumb wheel. Knobs: overall scale and asset color.",
+      "description": "Three-axis handheld gimbal with a camera cradle, side arms, control grip and small thumb wheel. Knobs: overall scale and rubber, polymer, metal and optical glass color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -173814,7 +174421,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/gimbal-stabilizer.kcad.ts",
       "preview": "/assets/photo-video-studio-gimbal-stabilizer.png",
-      "sourceSha256": "e1e928eb605acf18289a78f2ff395a401317b098b79cd2a54b5aa270ff4e59a9",
+      "sourceSha256": "78b818ffbe93942f9db2bb5b93498ced2b981b3d627278b9cf3925eff560ff34",
       "triangleBudget": 1800,
       "params": [
         {
@@ -173827,13 +174434,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "rubber",
           "type": "color",
-          "default": "#353b40",
-          "label": "Asset color"
+          "default": "#1b2024",
+          "label": "Rubber"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#343c43",
+          "label": "Polymer"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#a9b5ba",
+          "label": "Metal"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#45a6c0",
+          "label": "Optical glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "rubber": "#1b2024",
+          "polymer": "#343c43",
+          "metal": "#a9b5ba",
+          "glass": "#45a6c0"
+        },
+        "fieldRental": {
+          "rubber": "#292b2d",
+          "polymer": "#c75a2e",
+          "metal": "#657780",
+          "glass": "#79d4e3"
+        }
+      },
       "stats": {
         "triangles": 160,
         "sizeM": [
@@ -173846,19 +174484,40 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#353b40",
+          "name": "rubber",
+          "color": "#1b2024",
           "parts": [
-            "grip",
+            "grip"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "polymer",
+          "color": "#343c43",
+          "parts": [
             "control-panel",
             "upright-arm",
             "cross-arm",
+            "camera-body"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "metal",
+          "color": "#a9b5ba",
+          "parts": [
             "camera-plate",
-            "camera-body",
-            "lens",
             "side-wheel"
           ],
-          "param": "color"
+          "param": "metal"
+        },
+        {
+          "name": "glass",
+          "color": "#45a6c0",
+          "parts": [
+            "lens"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -173866,7 +174525,7 @@
       "id": "instant-camera",
       "kit": "photo-video-studio",
       "title": "Instant camera",
-      "description": "Instant-print camera with a square front lens, viewfinder windows and a broad picture ejection slot. Knobs: overall scale and asset color.",
+      "description": "Instant-print camera with a square front lens, viewfinder windows and a broad picture ejection slot. Knobs: overall scale and polymer, optical glass and metal color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -173887,7 +174546,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/instant-camera.kcad.ts",
       "preview": "/assets/photo-video-studio-instant-camera.png",
-      "sourceSha256": "44ef51b26b6351e819d88051fba80f5b54b3f86a6c1ad1d8e01ce3b9bb84bcc8",
+      "sourceSha256": "4de6b4a40f4545aa739b14e77b947a62f04e93c10c80e69626b5280d9bd85f32",
       "triangleBudget": 1800,
       "params": [
         {
@@ -173900,13 +174559,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#d9d1b8",
-          "label": "Asset color"
+          "default": "#343c43",
+          "label": "Polymer"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#45a6c0",
+          "label": "Optical glass"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#a9b5ba",
+          "label": "Metal"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "glass": "#45a6c0",
+          "metal": "#a9b5ba"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "glass": "#79d4e3",
+          "metal": "#657780"
+        }
+      },
       "stats": {
         "triangles": 148,
         "sizeM": [
@@ -173919,18 +174601,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d9d1b8",
+          "name": "polymer",
+          "color": "#343c43",
           "parts": [
             "body",
             "top-housing",
-            "lens",
-            "lens-rim",
-            "viewfinder-left",
-            "viewfinder-right",
             "eject-slot"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "glass",
+          "color": "#45a6c0",
+          "parts": [
+            "lens",
+            "viewfinder-left",
+            "viewfinder-right"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "metal",
+          "color": "#a9b5ba",
+          "parts": [
+            "lens-rim"
+          ],
+          "param": "metal"
         }
       ]
     },
@@ -173938,7 +174634,7 @@
       "id": "lantern-softbox",
       "kit": "photo-video-studio",
       "title": "Lantern softbox",
-      "description": "Lantern softbox with a circular diffuser, internal support ribs, pole adapter and compact stand. Knobs: overall scale and asset color.",
+      "description": "Lantern softbox with a circular diffuser, internal support ribs, pole adapter and compact stand. Knobs: overall scale and diffuser fabric, polymer, metal and rubber color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -173959,7 +174655,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/lantern-softbox.kcad.ts",
       "preview": "/assets/photo-video-studio-lantern-softbox.png",
-      "sourceSha256": "65a66d63f6f0bc2f6df229b6c0dc705cadbbc70ab85ca60800405d44ccf6b209",
+      "sourceSha256": "533ed8366fe609628a510a5fbe4b13a71d796cf771d0521c488e76a9afe7a851",
       "triangleBudget": 1800,
       "params": [
         {
@@ -173972,13 +174668,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "diffusionFabric",
           "type": "color",
-          "default": "#70777c",
-          "label": "Asset color"
+          "default": "#fff7e8",
+          "label": "Diffuser fabric"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#343c43",
+          "label": "Polymer"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#a9b5ba",
+          "label": "Metal"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1b2024",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "diffusionFabric": "#fff7e8",
+          "polymer": "#343c43",
+          "metal": "#a9b5ba",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "diffusionFabric": "#fff0c8",
+          "polymer": "#c75a2e",
+          "metal": "#657780",
+          "rubber": "#292b2d"
+        }
+      },
       "stats": {
         "triangles": 310,
         "sizeM": [
@@ -173991,24 +174718,45 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#70777c",
+          "name": "diffusionFabric",
+          "color": "#fff7e8",
           "parts": [
-            "diffuser",
+            "diffuser"
+          ],
+          "param": "diffusionFabric"
+        },
+        {
+          "name": "polymer",
+          "color": "#343c43",
+          "parts": [
             "top-cap",
-            "bottom-cap",
+            "bottom-cap"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "metal",
+          "color": "#a9b5ba",
+          "parts": [
             "rib-left",
             "rib-right",
             "stand-pole",
             "stand-hub",
             "stand-leg-one",
             "stand-leg-two",
-            "stand-leg-three",
+            "stand-leg-three"
+          ],
+          "param": "metal"
+        },
+        {
+          "name": "rubber",
+          "color": "#1b2024",
+          "parts": [
             "foot-one",
             "foot-two",
             "foot-three"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -174016,7 +174764,7 @@
       "id": "led-panel-light",
       "kit": "photo-video-studio",
       "title": "LED panel light",
-      "description": "Rectangular LED panel with a rear yoke, tilt knobs and compact floor stand. Knobs: overall scale and asset color.",
+      "description": "Rectangular LED panel with a rear yoke, tilt knobs and compact floor stand. Knobs: overall scale and polymer, diffuser polycarbonate and metal color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -174037,7 +174785,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/led-panel-light.kcad.ts",
       "preview": "/assets/photo-video-studio-led-panel-light.png",
-      "sourceSha256": "b69776e88c8c061b5b288ea1a4550b338fd0bde4d22077c34337a998cfcc6cb0",
+      "sourceSha256": "26db6501ad0223d2e7d6964c594965a388ee5e7c7dcf8740b721fb9a8356b525",
       "triangleBudget": 1800,
       "params": [
         {
@@ -174050,13 +174798,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#40464b",
-          "label": "Asset color"
+          "default": "#343c43",
+          "label": "Polymer"
+        },
+        {
+          "name": "polycarbonate",
+          "type": "color",
+          "default": "#d7e4e3",
+          "label": "Diffuser polycarbonate"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#a9b5ba",
+          "label": "Metal"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "polycarbonate": "#d7e4e3",
+          "metal": "#a9b5ba"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "polycarbonate": "#f0c75a",
+          "metal": "#657780"
+        }
+      },
       "stats": {
         "triangles": 184,
         "sizeM": [
@@ -174069,11 +174840,25 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#40464b",
+          "name": "polymer",
+          "color": "#343c43",
           "parts": [
-            "panel",
-            "diffuser-face",
+            "panel"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "polycarbonate",
+          "color": "#d7e4e3",
+          "parts": [
+            "diffuser-face"
+          ],
+          "param": "polycarbonate"
+        },
+        {
+          "name": "metal",
+          "color": "#a9b5ba",
+          "parts": [
             "yoke-crossbar",
             "yoke-left",
             "yoke-right",
@@ -174083,7 +174868,7 @@
             "stand-leg-two",
             "stand-leg-three"
           ],
-          "param": "color"
+          "param": "metal"
         }
       ]
     },
@@ -174091,7 +174876,7 @@
       "id": "lens-filter-set",
       "kit": "photo-video-studio",
       "title": "Lens filter set",
-      "description": "Stack of three circular photographic filters with stepped rims and a compact storage case. Knobs: overall scale and asset color.",
+      "description": "Stack of three circular photographic filters with stepped rims and a compact storage case. Knobs: overall scale and optical glass, metal and polymer color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -174112,7 +174897,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/lens-filter-set.kcad.ts",
       "preview": "/assets/photo-video-studio-lens-filter-set.png",
-      "sourceSha256": "2564c865d48a059de1935fb44199f8fc20a96c10d2cd790c26971ff619c4bfe0",
+      "sourceSha256": "cf01593e881c1095b4e11993cc12b14f5ee89bb2bf3c27d7f955334c4fbcdf29",
       "triangleBudget": 1800,
       "params": [
         {
@@ -174125,13 +174910,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "glass",
           "type": "color",
-          "default": "#6e767c",
-          "label": "Asset color"
+          "default": "#45a6c0",
+          "label": "Optical glass"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#a9b5ba",
+          "label": "Metal"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#343c43",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "glass": "#45a6c0",
+          "metal": "#a9b5ba",
+          "polymer": "#343c43"
+        },
+        "fieldRental": {
+          "glass": "#79d4e3",
+          "metal": "#657780",
+          "polymer": "#c75a2e"
+        }
+      },
       "stats": {
         "triangles": 276,
         "sizeM": [
@@ -174144,18 +174952,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6e767c",
+          "name": "glass",
+          "color": "#45a6c0",
           "parts": [
             "filter-one",
-            "filter-one-rim",
             "filter-two",
+            "filter-three"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "metal",
+          "color": "#a9b5ba",
+          "parts": [
+            "filter-one-rim",
             "filter-two-rim",
-            "filter-three",
-            "filter-three-rim",
+            "filter-three-rim"
+          ],
+          "param": "metal"
+        },
+        {
+          "name": "polymer",
+          "color": "#343c43",
+          "parts": [
             "case"
           ],
-          "param": "color"
+          "param": "polymer"
         }
       ]
     },
@@ -174163,7 +174985,7 @@
       "id": "lens-hood",
       "kit": "photo-video-studio",
       "title": "Lens hood",
-      "description": "Reversible petal-style lens hood with a wide opening, four shallow hood petals and a bayonet base. Knobs: overall scale and asset color.",
+      "description": "Reversible petal-style lens hood with a wide opening, four shallow hood petals and a bayonet base. Knobs: overall scale and polymer and metal color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -174184,7 +175006,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/lens-hood.kcad.ts",
       "preview": "/assets/photo-video-studio-lens-hood.png",
-      "sourceSha256": "62b5f36f45301c1bf090aabfca7a3e197075aececffb42886878a9cabbb1d7e7",
+      "sourceSha256": "a005ea2fa6de8c7158d0e6b210f8e0fbd8e22a0e03c98b146b8f58dc066c3bb5",
       "triangleBudget": 1800,
       "params": [
         {
@@ -174197,13 +175019,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#353b40",
-          "label": "Asset color"
+          "default": "#343c43",
+          "label": "Polymer"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#a9b5ba",
+          "label": "Metal"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "metal": "#a9b5ba"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "metal": "#657780"
+        }
+      },
       "stats": {
         "triangles": 228,
         "sizeM": [
@@ -174216,16 +175053,23 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#353b40",
+          "name": "polymer",
+          "color": "#343c43",
           "parts": [
             "tube",
-            "bayonet-ring",
             "petal-left",
             "petal-right",
             "petal-front"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "metal",
+          "color": "#a9b5ba",
+          "parts": [
+            "bayonet-ring"
+          ],
+          "param": "metal"
         }
       ]
     },
@@ -174233,7 +175077,7 @@
       "id": "light-stand",
       "kit": "photo-video-studio",
       "title": "Light stand",
-      "description": "Portable light stand with a three-foot base, nested riser sections, locking collars and spigot. Knobs: overall scale and asset color.",
+      "description": "Portable light stand with a three-foot base, nested riser sections, locking collars and spigot. Knobs: overall scale and metal and polymer color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -174254,7 +175098,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/light-stand.kcad.ts",
       "preview": "/assets/photo-video-studio-light-stand.png",
-      "sourceSha256": "4be4bc6b838bdce2ba6139e1cea70d37b231789578619fc519e39ce106f23fd5",
+      "sourceSha256": "b6842996a706dce0ba551df78f08c86092d485edac009cc8d3f39d214fd2eb77",
       "triangleBudget": 1800,
       "params": [
         {
@@ -174267,13 +175111,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "metal",
           "type": "color",
-          "default": "#4c5359",
-          "label": "Asset color"
+          "default": "#a9b5ba",
+          "label": "Metal"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#343c43",
+          "label": "Polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "polymer": "#343c43"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "polymer": "#c75a2e"
+        }
+      },
       "stats": {
         "triangles": 300,
         "sizeM": [
@@ -174286,20 +175145,27 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#4c5359",
+          "name": "metal",
+          "color": "#a9b5ba",
           "parts": [
             "lower-pole",
             "upper-pole",
             "spigot",
-            "lock-one",
-            "lock-two",
             "hub",
             "leg-one",
             "leg-two",
             "leg-three"
           ],
-          "param": "color"
+          "param": "metal"
+        },
+        {
+          "name": "polymer",
+          "color": "#343c43",
+          "parts": [
+            "lock-one",
+            "lock-two"
+          ],
+          "param": "polymer"
         }
       ]
     },
@@ -174307,7 +175173,7 @@
       "id": "macro-lens",
       "kit": "photo-video-studio",
       "title": "Macro lens",
-      "description": "Short macro lens with a broad focusing ring, close-focus scale band and front filter rim. Knobs: overall scale and asset color.",
+      "description": "Short macro lens with a broad focusing ring, close-focus scale band and front filter rim. Knobs: overall scale and metal, rubber and optical glass color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -174328,7 +175194,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/macro-lens.kcad.ts",
       "preview": "/assets/photo-video-studio-macro-lens.png",
-      "sourceSha256": "1a103850e7928865dff1899adacd86550d9597fbace1570688e13b150b2d8ae5",
+      "sourceSha256": "b8b3dcf9677080a55b24e3af037896267feab80cbdaf8f8ecd9b5fcb0d9c91bb",
       "triangleBudget": 1800,
       "params": [
         {
@@ -174341,13 +175207,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "metal",
           "type": "color",
-          "default": "#4d5459",
-          "label": "Asset color"
+          "default": "#a9b5ba",
+          "label": "Metal"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1b2024",
+          "label": "Rubber"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#45a6c0",
+          "label": "Optical glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "rubber": "#1b2024",
+          "glass": "#45a6c0"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "rubber": "#292b2d",
+          "glass": "#79d4e3"
+        }
+      },
       "stats": {
         "triangles": 232,
         "sizeM": [
@@ -174360,17 +175249,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#4d5459",
+          "name": "metal",
+          "color": "#a9b5ba",
           "parts": [
             "barrel",
             "mount",
-            "focus-ring",
             "front-rim",
-            "front-glass",
             "index-mark"
           ],
-          "param": "color"
+          "param": "metal"
+        },
+        {
+          "name": "rubber",
+          "color": "#1b2024",
+          "parts": [
+            "focus-ring"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "glass",
+          "color": "#45a6c0",
+          "parts": [
+            "front-glass"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -174378,7 +175281,7 @@
       "id": "mirrorless-camera",
       "kit": "photo-video-studio",
       "title": "Mirrorless camera",
-      "description": "Compact mirrorless camera with a flat-top body, electronic viewfinder, hand grip and interchangeable lens. Knobs: overall scale and asset color.",
+      "description": "Compact mirrorless camera with a flat-top body, electronic viewfinder, hand grip and interchangeable lens. Knobs: overall scale and polymer, rubber, optical glass and metal color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -174399,7 +175302,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/mirrorless-camera.kcad.ts",
       "preview": "/assets/photo-video-studio-mirrorless-camera.png",
-      "sourceSha256": "8708d89a4691b3a3537fa8b250decb3334994483733b09841fa367b65d98ce50",
+      "sourceSha256": "937f6b306f1424fa0c7c47139ab4db881fa7415d3bc55ccb38f40174a581dc3d",
       "triangleBudget": 1800,
       "params": [
         {
@@ -174412,13 +175315,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#37424a",
-          "label": "Asset color"
+          "default": "#343c43",
+          "label": "Polymer"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1b2024",
+          "label": "Rubber"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#45a6c0",
+          "label": "Optical glass"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#a9b5ba",
+          "label": "Metal"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "rubber": "#1b2024",
+          "glass": "#45a6c0",
+          "metal": "#a9b5ba"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "rubber": "#292b2d",
+          "glass": "#79d4e3",
+          "metal": "#657780"
+        }
+      },
       "stats": {
         "triangles": 180,
         "sizeM": [
@@ -174431,18 +175365,39 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#37424a",
+          "name": "polymer",
+          "color": "#343c43",
           "parts": [
-            "body",
-            "grip",
+            "body"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "rubber",
+          "color": "#1b2024",
+          "parts": [
+            "grip"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "glass",
+          "color": "#45a6c0",
+          "parts": [
             "viewfinder",
-            "lens",
+            "lens"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "metal",
+          "color": "#a9b5ba",
+          "parts": [
             "front-ring",
             "mode-dial",
             "hot-shoe"
           ],
-          "param": "color"
+          "param": "metal"
         }
       ]
     },
@@ -174450,7 +175405,7 @@
       "id": "monopod",
       "kit": "photo-video-studio",
       "title": "Camera monopod",
-      "description": "Single-leg camera monopod with a rubber foot, wrist strap, twist locks and compact tilt head. Knobs: overall scale and asset color.",
+      "description": "Single-leg camera monopod with a rubber foot, wrist strap, twist locks and compact tilt head. Knobs: overall scale and metal, polymer, studio fabric and rubber color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -174471,7 +175426,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/monopod.kcad.ts",
       "preview": "/assets/photo-video-studio-monopod.png",
-      "sourceSha256": "cec5b7a27f1ed4fcd01c704ac7d2faf8256ae577343ff3b075e566285418fd5d",
+      "sourceSha256": "f5f4ca1a6f50bf49ad88602a5006fe26f8015d43c69cdcf6d2717829146e86f1",
       "triangleBudget": 1800,
       "params": [
         {
@@ -174484,13 +175439,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "metal",
           "type": "color",
-          "default": "#4c5257",
-          "label": "Asset color"
+          "default": "#a9b5ba",
+          "label": "Metal"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#343c43",
+          "label": "Polymer"
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#e5ddce",
+          "label": "Studio fabric"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1b2024",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "polymer": "#343c43",
+          "fabric": "#e5ddce",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "polymer": "#c75a2e",
+          "fabric": "#d6b365",
+          "rubber": "#292b2d"
+        }
+      },
       "stats": {
         "triangles": 256,
         "sizeM": [
@@ -174503,19 +175489,40 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#4c5257",
+          "name": "metal",
+          "color": "#a9b5ba",
           "parts": [
             "lower-shaft",
             "upper-shaft",
-            "lock-one",
-            "lock-two",
             "tilt-head",
-            "quick-plate",
-            "wrist-loop",
+            "quick-plate"
+          ],
+          "param": "metal"
+        },
+        {
+          "name": "polymer",
+          "color": "#343c43",
+          "parts": [
+            "lock-one",
+            "lock-two"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "fabric",
+          "color": "#e5ddce",
+          "parts": [
+            "wrist-loop"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "rubber",
+          "color": "#1b2024",
+          "parts": [
             "rubber-foot"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -174523,7 +175530,7 @@
       "id": "pancake-lens",
       "kit": "photo-video-studio",
       "title": "Pancake lens",
-      "description": "Very short pancake lens with a wide front rim and thin knurled barrel rings. Knobs: overall scale and asset color.",
+      "description": "Very short pancake lens with a wide front rim and thin knurled barrel rings. Knobs: overall scale and metal, optical glass and rubber color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -174544,7 +175551,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/pancake-lens.kcad.ts",
       "preview": "/assets/photo-video-studio-pancake-lens.png",
-      "sourceSha256": "a5bdc73ca5752d5ece351692d5122411ab73432bb36f6ce95910bffe42dc2cdc",
+      "sourceSha256": "2936b333c0bc7ebc68ffe9ec8d2872f16df29cfc7aff1d577daf566da5b21194",
       "triangleBudget": 1800,
       "params": [
         {
@@ -174557,13 +175564,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "metal",
           "type": "color",
-          "default": "#4a5055",
-          "label": "Asset color"
+          "default": "#a9b5ba",
+          "label": "Metal"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#45a6c0",
+          "label": "Optical glass"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1b2024",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "glass": "#45a6c0",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "glass": "#79d4e3",
+          "rubber": "#292b2d"
+        }
+      },
       "stats": {
         "triangles": 220,
         "sizeM": [
@@ -174576,16 +175606,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#4a5055",
+          "name": "metal",
+          "color": "#a9b5ba",
           "parts": [
             "barrel",
             "mount",
-            "front-rim",
-            "front-glass",
+            "front-rim"
+          ],
+          "param": "metal"
+        },
+        {
+          "name": "glass",
+          "color": "#45a6c0",
+          "parts": [
+            "front-glass"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "rubber",
+          "color": "#1b2024",
+          "parts": [
             "focus-band"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -174593,7 +175637,7 @@
       "id": "pocket-digital-camera",
       "kit": "photo-video-studio",
       "title": "Pocket digital camera",
-      "description": "Small point-and-shoot camera with a telescoping lens, rear screen and compact wrist loop. Knobs: overall scale and asset color.",
+      "description": "Small point-and-shoot camera with a telescoping lens, rear screen and compact wrist loop. Knobs: overall scale and polymer, metal, optical glass and studio fabric color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -174614,7 +175658,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/pocket-digital-camera.kcad.ts",
       "preview": "/assets/photo-video-studio-pocket-digital-camera.png",
-      "sourceSha256": "d6a34663d5d0e7bc8834e1764d50bb918b5d7e254b623d9a064ae26d92076222",
+      "sourceSha256": "fa1296fcbc3fd02d856035ac6345dda1797fab68dec2023255e98b50c63c782f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -174627,13 +175671,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#4c606f",
-          "label": "Asset color"
+          "default": "#343c43",
+          "label": "Polymer"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#a9b5ba",
+          "label": "Metal"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#45a6c0",
+          "label": "Optical glass"
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#e5ddce",
+          "label": "Studio fabric"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "metal": "#a9b5ba",
+          "glass": "#45a6c0",
+          "fabric": "#e5ddce"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "metal": "#657780",
+          "glass": "#79d4e3",
+          "fabric": "#d6b365"
+        }
+      },
       "stats": {
         "triangles": 136,
         "sizeM": [
@@ -174646,17 +175721,38 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#4c606f",
+          "name": "polymer",
+          "color": "#343c43",
           "parts": [
-            "body",
-            "lens-barrel",
+            "body"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "metal",
+          "color": "#a9b5ba",
+          "parts": [
+            "lens-barrel"
+          ],
+          "param": "metal"
+        },
+        {
+          "name": "glass",
+          "color": "#45a6c0",
+          "parts": [
             "lens-face",
             "rear-screen",
-            "flash-window",
+            "flash-window"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "fabric",
+          "color": "#e5ddce",
+          "parts": [
             "wrist-loop"
           ],
-          "param": "color"
+          "param": "fabric"
         }
       ]
     },
@@ -174664,7 +175760,7 @@
       "id": "portrait-lens",
       "kit": "photo-video-studio",
       "title": "Portrait lens",
-      "description": "Medium portrait prime lens with a stepped barrel, focus ring and broad front element. Knobs: overall scale and asset color.",
+      "description": "Medium portrait prime lens with a stepped barrel, focus ring and broad front element. Knobs: overall scale and metal, rubber and optical glass color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -174685,7 +175781,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/portrait-lens.kcad.ts",
       "preview": "/assets/photo-video-studio-portrait-lens.png",
-      "sourceSha256": "626462ede16f6f73d1fec32f2a1930b652246a4cef1e570ff35cd49bc0e8bc2f",
+      "sourceSha256": "30ab48ac09d734e7ed4acef9ae956a588b7d402090d1835134b4f9abfa862a3a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -174698,13 +175794,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "metal",
           "type": "color",
-          "default": "#383f45",
-          "label": "Asset color"
+          "default": "#a9b5ba",
+          "label": "Metal"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1b2024",
+          "label": "Rubber"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#45a6c0",
+          "label": "Optical glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "rubber": "#1b2024",
+          "glass": "#45a6c0"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "rubber": "#292b2d",
+          "glass": "#79d4e3"
+        }
+      },
       "stats": {
         "triangles": 264,
         "sizeM": [
@@ -174717,17 +175836,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#383f45",
+          "name": "metal",
+          "color": "#a9b5ba",
           "parts": [
             "barrel",
             "mount",
+            "front-ring"
+          ],
+          "param": "metal"
+        },
+        {
+          "name": "rubber",
+          "color": "#1b2024",
+          "parts": [
             "focus-ring",
-            "front-ring",
-            "front-glass",
             "aperture-band"
           ],
-          "param": "color"
+          "param": "rubber"
+        },
+        {
+          "name": "glass",
+          "color": "#45a6c0",
+          "parts": [
+            "front-glass"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -174735,7 +175868,7 @@
       "id": "reflector-board",
       "kit": "photo-video-studio",
       "title": "Reflector board",
-      "description": "Foldable rectangular reflector panel with a hinged center and a rear support kickstand. Knobs: overall scale and asset color.",
+      "description": "Foldable rectangular reflector panel with a hinged center and a rear support kickstand. Knobs: overall scale and reflective film and metal color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -174756,7 +175889,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/reflector-board.kcad.ts",
       "preview": "/assets/photo-video-studio-reflector-board.png",
-      "sourceSha256": "c378201cc0216d658f0e2cd1920608eac0f6a79da61466f827ddc7fd4d1bfb49",
+      "sourceSha256": "7f4d3f0e290b52c6a337993b33b675b27af15921326e72c953d110444e59bbe0",
       "triangleBudget": 1800,
       "params": [
         {
@@ -174769,13 +175902,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "reflectiveFilm",
           "type": "color",
-          "default": "#b7b5aa",
-          "label": "Asset color"
+          "default": "#d0d7d7",
+          "label": "Reflective film"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#a9b5ba",
+          "label": "Metal"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "reflectiveFilm": "#d0d7d7",
+          "metal": "#a9b5ba"
+        },
+        "fieldRental": {
+          "reflectiveFilm": "#d3a64b",
+          "metal": "#657780"
+        }
+      },
       "stats": {
         "triangles": 92,
         "sizeM": [
@@ -174788,16 +175936,23 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b7b5aa",
+          "name": "reflectiveFilm",
+          "color": "#d0d7d7",
           "parts": [
             "left-panel",
-            "right-panel",
+            "right-panel"
+          ],
+          "param": "reflectiveFilm"
+        },
+        {
+          "name": "metal",
+          "color": "#a9b5ba",
+          "parts": [
             "hinge",
             "kickstand",
             "kickstand-foot"
           ],
-          "param": "color"
+          "param": "metal"
         }
       ]
     },
@@ -174805,7 +175960,7 @@
       "id": "ring-light",
       "kit": "photo-video-studio",
       "title": "Ring light",
-      "description": "Circular ring light on an adjustable pole with a tripod foot and central phone holder. Knobs: overall scale and asset color.",
+      "description": "Circular ring light on an adjustable pole with a tripod foot and central phone holder. Knobs: overall scale and diffuser polycarbonate, polymer, rubber and metal color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -174826,7 +175981,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/ring-light.kcad.ts",
       "preview": "/assets/photo-video-studio-ring-light.png",
-      "sourceSha256": "8271726e4cd03db390997b8fd3413e704ec72fd652cd9f758343c9729ca09b80",
+      "sourceSha256": "ea666924c20163294de86a6d10169de0128c3645aadbf914d9b0e94d86fffeb2",
       "triangleBudget": 1800,
       "params": [
         {
@@ -174839,13 +175994,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polycarbonate",
           "type": "color",
-          "default": "#454b50",
-          "label": "Asset color"
+          "default": "#d7e4e3",
+          "label": "Diffuser polycarbonate"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#343c43",
+          "label": "Polymer"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1b2024",
+          "label": "Rubber"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#a9b5ba",
+          "label": "Metal"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "polycarbonate": "#d7e4e3",
+          "polymer": "#343c43",
+          "rubber": "#1b2024",
+          "metal": "#a9b5ba"
+        },
+        "fieldRental": {
+          "polycarbonate": "#f0c75a",
+          "polymer": "#c75a2e",
+          "rubber": "#292b2d",
+          "metal": "#657780"
+        }
+      },
       "stats": {
         "triangles": 256,
         "sizeM": [
@@ -174858,20 +176044,41 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#454b50",
+          "name": "polycarbonate",
+          "color": "#d7e4e3",
           "parts": [
-            "light-ring",
-            "phone-grip",
+            "light-ring"
+          ],
+          "param": "polycarbonate"
+        },
+        {
+          "name": "polymer",
+          "color": "#343c43",
+          "parts": [
+            "phone-grip"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "rubber",
+          "color": "#1b2024",
+          "parts": [
             "phone-clamp-top",
-            "phone-clamp-bottom",
+            "phone-clamp-bottom"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "metal",
+          "color": "#a9b5ba",
+          "parts": [
             "pole",
             "hub",
             "leg-one",
             "leg-two",
             "leg-three"
           ],
-          "param": "color"
+          "param": "metal"
         }
       ]
     },
@@ -174879,7 +176086,7 @@
       "id": "shoulder-rig",
       "kit": "photo-video-studio",
       "title": "Shoulder camera rig",
-      "description": "Shoulder-mounted camera support with twin rods, rear shoulder pad, handgrips and front camera plate. Knobs: overall scale and asset color.",
+      "description": "Shoulder-mounted camera support with twin rods, rear shoulder pad, handgrips and front camera plate. Knobs: overall scale and metal, foam and rubber color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -174900,7 +176107,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/shoulder-rig.kcad.ts",
       "preview": "/assets/photo-video-studio-shoulder-rig.png",
-      "sourceSha256": "4101422c7f2e392507775a577125df73067cb90ed382958aa5d926ff01a8052a",
+      "sourceSha256": "72124fc1119943779d5fb44bb717f5bb202655aa344e1fea7814f9c684f70ef9",
       "triangleBudget": 1800,
       "params": [
         {
@@ -174913,13 +176120,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "metal",
           "type": "color",
-          "default": "#444a4f",
-          "label": "Asset color"
+          "default": "#a9b5ba",
+          "label": "Metal"
+        },
+        {
+          "name": "foam",
+          "type": "color",
+          "default": "#514844",
+          "label": "Foam"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1b2024",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "foam": "#514844",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "foam": "#596c53",
+          "rubber": "#292b2d"
+        }
+      },
       "stats": {
         "triangles": 224,
         "sizeM": [
@@ -174932,19 +176162,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#444a4f",
+          "name": "metal",
+          "color": "#a9b5ba",
           "parts": [
             "rail-left",
             "rail-right",
-            "shoulder-pad",
             "camera-plate",
-            "left-handgrip",
-            "right-handgrip",
             "crossbar",
             "rear-counterweight"
           ],
-          "param": "color"
+          "param": "metal"
+        },
+        {
+          "name": "foam",
+          "color": "#514844",
+          "parts": [
+            "shoulder-pad"
+          ],
+          "param": "foam"
+        },
+        {
+          "name": "rubber",
+          "color": "#1b2024",
+          "parts": [
+            "left-handgrip",
+            "right-handgrip"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -174952,7 +176196,7 @@
       "id": "softbox-light",
       "kit": "photo-video-studio",
       "title": "Softbox light",
-      "description": "Square softbox with a broad front diffuser, tapered fabric body, rear mount and light stand. Knobs: overall scale and asset color.",
+      "description": "Square softbox with a broad front diffuser, tapered fabric body, rear mount and light stand. Knobs: overall scale and diffuser fabric, studio fabric, metal and rubber color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -174973,7 +176217,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/softbox-light.kcad.ts",
       "preview": "/assets/photo-video-studio-softbox-light.png",
-      "sourceSha256": "9685bc499d23ee3b7b75fa9a40a464717f4ca5c3c6b05a41cfe2572bdf8499aa",
+      "sourceSha256": "55e5734f21658a8c89c81761c2c684133b95d01bd33fd7dccb6b6c717ce2706c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -174986,13 +176230,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "diffusionFabric",
           "type": "color",
-          "default": "#4b5359",
-          "label": "Asset color"
+          "default": "#fff7e8",
+          "label": "Diffuser fabric"
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#e5ddce",
+          "label": "Studio fabric"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#a9b5ba",
+          "label": "Metal"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1b2024",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "diffusionFabric": "#fff7e8",
+          "fabric": "#e5ddce",
+          "metal": "#a9b5ba",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "diffusionFabric": "#fff0c8",
+          "fabric": "#d6b365",
+          "metal": "#657780",
+          "rubber": "#292b2d"
+        }
+      },
       "stats": {
         "triangles": 160,
         "sizeM": [
@@ -175005,19 +176280,40 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#4b5359",
+          "name": "diffusionFabric",
+          "color": "#fff7e8",
           "parts": [
-            "front-diffuser",
+            "front-diffuser"
+          ],
+          "param": "diffusionFabric"
+        },
+        {
+          "name": "fabric",
+          "color": "#e5ddce",
+          "parts": [
             "side-left",
             "side-right",
             "top-side",
-            "bottom-side",
+            "bottom-side"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "metal",
+          "color": "#a9b5ba",
+          "parts": [
             "rear-mount",
-            "stand-pole",
+            "stand-pole"
+          ],
+          "param": "metal"
+        },
+        {
+          "name": "rubber",
+          "color": "#1b2024",
+          "parts": [
             "stand-base"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -175025,7 +176321,7 @@
       "id": "speedlight-flash",
       "kit": "photo-video-studio",
       "title": "Speedlight flash",
-      "description": "Hot-shoe flash unit with a tilting rectangular head, rear control panel and swivel foot. Knobs: overall scale and asset color.",
+      "description": "Hot-shoe flash unit with a tilting rectangular head, rear control panel and swivel foot. Knobs: overall scale and metal, polymer, diffuser polycarbonate and optical glass color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -175046,7 +176342,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/speedlight-flash.kcad.ts",
       "preview": "/assets/photo-video-studio-speedlight-flash.png",
-      "sourceSha256": "21c0933494f0100b316f4fecb396705c520ee74e7684158ecaf8f85953c62266",
+      "sourceSha256": "9feefb9a0d6eb118c49c841ea6cea58edec5c3f38621f3f3e4404e55a10ff368",
       "triangleBudget": 1800,
       "params": [
         {
@@ -175059,13 +176355,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "metal",
           "type": "color",
-          "default": "#343a40",
-          "label": "Asset color"
+          "default": "#a9b5ba",
+          "label": "Metal"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#343c43",
+          "label": "Polymer"
+        },
+        {
+          "name": "polycarbonate",
+          "type": "color",
+          "default": "#d7e4e3",
+          "label": "Diffuser polycarbonate"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#45a6c0",
+          "label": "Optical glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "polymer": "#343c43",
+          "polycarbonate": "#d7e4e3",
+          "glass": "#45a6c0"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "polymer": "#c75a2e",
+          "polycarbonate": "#f0c75a",
+          "glass": "#79d4e3"
+        }
+      },
       "stats": {
         "triangles": 116,
         "sizeM": [
@@ -175078,18 +176405,39 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#343a40",
+          "name": "metal",
+          "color": "#a9b5ba",
           "parts": [
             "base",
-            "foot",
+            "foot"
+          ],
+          "param": "metal"
+        },
+        {
+          "name": "polymer",
+          "color": "#343c43",
+          "parts": [
             "upright",
             "flash-head",
-            "diffuser",
-            "rear-screen",
             "control-dial"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "polycarbonate",
+          "color": "#d7e4e3",
+          "parts": [
+            "diffuser"
+          ],
+          "param": "polycarbonate"
+        },
+        {
+          "name": "glass",
+          "color": "#45a6c0",
+          "parts": [
+            "rear-screen"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -175097,7 +176445,7 @@
       "id": "telephoto-lens",
       "kit": "photo-video-studio",
       "title": "Telephoto lens",
-      "description": "Long telephoto zoom lens with a tripod collar, broad hood rim and stepped focus bands. Knobs: overall scale and asset color.",
+      "description": "Long telephoto zoom lens with a tripod collar, broad hood rim and stepped focus bands. Knobs: overall scale and metal, rubber and optical glass color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -175118,7 +176466,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/telephoto-lens.kcad.ts",
       "preview": "/assets/photo-video-studio-telephoto-lens.png",
-      "sourceSha256": "2e7fdddbc8f0caf997ae1d0aa88309d9ae60c70f3fbe22a8f643d6b742bfde1b",
+      "sourceSha256": "ac4848fec00cd390471a4117ed7cedf116ee997bb306ddc9ab82b630e96b73b7",
       "triangleBudget": 1800,
       "params": [
         {
@@ -175131,13 +176479,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "metal",
           "type": "color",
-          "default": "#343a3f",
-          "label": "Asset color"
+          "default": "#a9b5ba",
+          "label": "Metal"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1b2024",
+          "label": "Rubber"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#45a6c0",
+          "label": "Optical glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "rubber": "#1b2024",
+          "glass": "#45a6c0"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "rubber": "#292b2d",
+          "glass": "#79d4e3"
+        }
+      },
       "stats": {
         "triangles": 320,
         "sizeM": [
@@ -175150,19 +176521,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#343a3f",
+          "name": "metal",
+          "color": "#a9b5ba",
           "parts": [
             "main-barrel",
             "mount",
-            "zoom-band",
-            "focus-band",
             "front-rim",
-            "front-glass",
             "collar",
             "collar-foot"
           ],
-          "param": "color"
+          "param": "metal"
+        },
+        {
+          "name": "rubber",
+          "color": "#1b2024",
+          "parts": [
+            "zoom-band",
+            "focus-band"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "glass",
+          "color": "#45a6c0",
+          "parts": [
+            "front-glass"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -175170,7 +176555,7 @@
       "id": "umbrella-reflector",
       "kit": "photo-video-studio",
       "title": "Umbrella reflector",
-      "description": "Photographic umbrella reflector with a radial canopy, central shaft and short floor stand. Knobs: overall scale and asset color.",
+      "description": "Photographic umbrella reflector with a radial canopy, central shaft and short floor stand. Knobs: overall scale and studio fabric, polymer and metal color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -175191,7 +176576,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/umbrella-reflector.kcad.ts",
       "preview": "/assets/photo-video-studio-umbrella-reflector.png",
-      "sourceSha256": "570d5532af4734e6a06c533f8d8a9e35c9affa4967c43404fd70348de3afe955",
+      "sourceSha256": "058c90d6d4f75931f036575fd01f74e67c0161b576962ea031ccd5c20007d5e4",
       "triangleBudget": 1800,
       "params": [
         {
@@ -175204,13 +176589,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "fabric",
           "type": "color",
-          "default": "#555c62",
-          "label": "Asset color"
+          "default": "#e5ddce",
+          "label": "Studio fabric"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#343c43",
+          "label": "Polymer"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#a9b5ba",
+          "label": "Metal"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "fabric": "#e5ddce",
+          "polymer": "#343c43",
+          "metal": "#a9b5ba"
+        },
+        "fieldRental": {
+          "fabric": "#d6b365",
+          "polymer": "#c75a2e",
+          "metal": "#657780"
+        }
+      },
       "stats": {
         "triangles": 282,
         "sizeM": [
@@ -175223,22 +176631,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#555c62",
+          "name": "fabric",
+          "color": "#e5ddce",
           "parts": [
-            "canopy",
+            "canopy"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "polymer",
+          "color": "#343c43",
+          "parts": [
             "hub",
+            "stand-hub"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "metal",
+          "color": "#a9b5ba",
+          "parts": [
             "shaft",
             "rib-one",
             "rib-two",
             "rib-three",
             "rib-four",
-            "stand-hub",
             "stand-leg-one",
             "stand-leg-two",
             "stand-leg-three"
           ],
-          "param": "color"
+          "param": "metal"
         }
       ]
     },
@@ -175246,7 +176668,7 @@
       "id": "video-tripod",
       "kit": "photo-video-studio",
       "title": "Video tripod",
-      "description": "Heavy video tripod with a fluid head, long pan handle, center spreader, splayed legs and rubber feet. Knobs: overall scale and asset color.",
+      "description": "Heavy video tripod with a fluid head, long pan handle, center spreader, splayed legs and rubber feet. Knobs: overall scale and metal and rubber color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -175267,7 +176689,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/video-tripod.kcad.ts",
       "preview": "/assets/photo-video-studio-video-tripod.png",
-      "sourceSha256": "afb084f173b566c35e364a84b385ef9675cf57cfd32ee01b3adf236fcc60c031",
+      "sourceSha256": "4f7d32ddfa646fa95abe7e363faf0e1996560a6b87694fa27fca1a195be524fc",
       "triangleBudget": 1800,
       "params": [
         {
@@ -175280,13 +176702,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "metal",
           "type": "color",
-          "default": "#3d4449",
-          "label": "Asset color"
+          "default": "#a9b5ba",
+          "label": "Metal"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1b2024",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "rubber": "#292b2d"
+        }
+      },
       "stats": {
         "triangles": 284,
         "sizeM": [
@@ -175299,24 +176736,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#3d4449",
+          "name": "metal",
+          "color": "#a9b5ba",
           "parts": [
             "bowl-head",
             "fluid-head",
             "quick-plate",
             "pan-handle",
-            "handle-grip",
             "center-column",
             "leg-one",
             "leg-two",
             "leg-three",
-            "foot-one",
-            "foot-two",
-            "foot-three",
             "spreader"
           ],
-          "param": "color"
+          "param": "metal"
+        },
+        {
+          "name": "rubber",
+          "color": "#1b2024",
+          "parts": [
+            "handle-grip",
+            "foot-one",
+            "foot-two",
+            "foot-three"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -175324,7 +176768,7 @@
       "id": "webcam",
       "kit": "photo-video-studio",
       "title": "Webcam",
-      "description": "Compact clip-on webcam with a centered lens, side microphones and a folding monitor mount. Knobs: overall scale and asset color.",
+      "description": "Compact clip-on webcam with a centered lens, side microphones and a folding monitor mount. Knobs: overall scale and polymer, optical glass and metal color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -175345,7 +176789,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/webcam.kcad.ts",
       "preview": "/assets/photo-video-studio-webcam.png",
-      "sourceSha256": "1189dd1c004d1ad72f839379be8f928b9c8d30db96a305748e7defa9a888c32f",
+      "sourceSha256": "9ac865ae55f9d4d330b39036cd767386f7bd23caf6461fd212f488ba7ba85c12",
       "triangleBudget": 1800,
       "params": [
         {
@@ -175358,13 +176802,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymer",
           "type": "color",
-          "default": "#373a3d",
-          "label": "Asset color"
+          "default": "#343c43",
+          "label": "Polymer"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#45a6c0",
+          "label": "Optical glass"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#a9b5ba",
+          "label": "Metal"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "glass": "#45a6c0",
+          "metal": "#a9b5ba"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "glass": "#79d4e3",
+          "metal": "#657780"
+        }
+      },
       "stats": {
         "triangles": 180,
         "sizeM": [
@@ -175377,18 +176844,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#373a3d",
+          "name": "polymer",
+          "color": "#343c43",
           "parts": [
             "camera-body",
-            "lens",
-            "left-mic",
-            "right-mic",
             "neck",
             "monitor-clip",
             "clip-lip"
           ],
-          "param": "color"
+          "param": "polymer"
+        },
+        {
+          "name": "glass",
+          "color": "#45a6c0",
+          "parts": [
+            "lens"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "metal",
+          "color": "#a9b5ba",
+          "parts": [
+            "left-mic",
+            "right-mic"
+          ],
+          "param": "metal"
         }
       ]
     },
@@ -175396,7 +176877,7 @@
       "id": "wide-angle-lens",
       "kit": "photo-video-studio",
       "title": "Wide-angle lens",
-      "description": "Wide-angle prime lens with a short barrel and oversized front element ring. Knobs: overall scale and asset color.",
+      "description": "Wide-angle prime lens with a short barrel and oversized front element ring. Knobs: overall scale and metal, rubber and optical glass color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -175417,7 +176898,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/wide-angle-lens.kcad.ts",
       "preview": "/assets/photo-video-studio-wide-angle-lens.png",
-      "sourceSha256": "4e2daa492b351d670b4d7bf180693b35f7f5593941e5593a4e915437ad118a27",
+      "sourceSha256": "94228dced1fa6439f0b74e8ab03a68e5521a6e686e34854e8afc2c50e01067be",
       "triangleBudget": 1800,
       "params": [
         {
@@ -175430,13 +176911,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "metal",
           "type": "color",
-          "default": "#495057",
-          "label": "Asset color"
+          "default": "#a9b5ba",
+          "label": "Metal"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1b2024",
+          "label": "Rubber"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#45a6c0",
+          "label": "Optical glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "rubber": "#1b2024",
+          "glass": "#45a6c0"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "rubber": "#292b2d",
+          "glass": "#79d4e3"
+        }
+      },
       "stats": {
         "triangles": 220,
         "sizeM": [
@@ -175449,16 +176953,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#495057",
+          "name": "metal",
+          "color": "#a9b5ba",
           "parts": [
             "barrel",
             "mount",
-            "focus-ring",
-            "front-rim",
+            "front-rim"
+          ],
+          "param": "metal"
+        },
+        {
+          "name": "rubber",
+          "color": "#1b2024",
+          "parts": [
+            "focus-ring"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "glass",
+          "color": "#45a6c0",
+          "parts": [
             "front-glass"
           ],
-          "param": "color"
+          "param": "glass"
         }
       ]
     },
@@ -175466,7 +176984,7 @@
       "id": "zoom-lens",
       "kit": "photo-video-studio",
       "title": "Zoom lens",
-      "description": "General-purpose zoom lens with multiple telescoping barrel diameters and two raised control rings. Knobs: overall scale and asset color.",
+      "description": "General-purpose zoom lens with multiple telescoping barrel diameters and two raised control rings. Knobs: overall scale and metal, rubber and optical glass color controls. Presets: studioBlack and fieldRental.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -175487,7 +177005,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/photo-video-studio/zoom-lens.kcad.ts",
       "preview": "/assets/photo-video-studio-zoom-lens.png",
-      "sourceSha256": "2392b3062c713bad4c6d51df0a09b65d51c14fce288b2b0640eacce33af42326",
+      "sourceSha256": "54ea5b7d9ef79abd6a45b78ea3e1cac805f9062c12118d139c038b71ef94014d",
       "triangleBudget": 1800,
       "params": [
         {
@@ -175500,13 +177018,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "metal",
           "type": "color",
-          "default": "#444b50",
-          "label": "Asset color"
+          "default": "#a9b5ba",
+          "label": "Metal"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1b2024",
+          "label": "Rubber"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#45a6c0",
+          "label": "Optical glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "rubber": "#1b2024",
+          "glass": "#45a6c0"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "rubber": "#292b2d",
+          "glass": "#79d4e3"
+        }
+      },
       "stats": {
         "triangles": 352,
         "sizeM": [
@@ -175519,19 +177060,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#444b50",
+          "name": "metal",
+          "color": "#a9b5ba",
           "parts": [
             "mount",
             "rear-barrel",
             "zoom-ring",
             "middle-barrel",
-            "focus-ring",
             "front-barrel",
-            "front-rim",
+            "front-rim"
+          ],
+          "param": "metal"
+        },
+        {
+          "name": "rubber",
+          "color": "#1b2024",
+          "parts": [
+            "focus-ring"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "glass",
+          "color": "#45a6c0",
+          "parts": [
             "front-glass"
           ],
-          "param": "color"
+          "param": "glass"
         }
       ]
     },

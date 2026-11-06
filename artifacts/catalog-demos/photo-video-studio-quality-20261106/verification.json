@@ -1,0 +1,830 @@
+{
+  "baseCommit": "41232a82d",
+  "kit": "photo-video-studio",
+  "assetCountBefore": 40,
+  "assetCountAfter": 40,
+  "newIds": [],
+  "materialControls": 125,
+  "presetEntries": 80,
+  "previewCount": 40,
+  "sourceHashesMatchIndex": true,
+  "triangleBudgetsPassed": true,
+  "kitPassing": 40,
+  "catalogPassing": 2291,
+  "catalogTotal": 2390,
+  "catalogPassRate": "95.9%",
+  "catalogThinRemaining": 99,
+  "eslint": "passed",
+  "integrationFiles": 4,
+  "integrationTests": 15,
+  "localPagesPresent": true,
+  "deployedBehaviorVerified": false,
+  "physicalAcceptanceVerified": false,
+  "assets": [
+    {
+      "id": "action-camera",
+      "source": "catalog/kits/photo-video-studio/action-camera.kcad.ts",
+      "sourceSha256": "5cbe7592dc99f2b55aeba0898e906d29f58ba47d8bd24d10effca810bf67e32a",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "polymer",
+        "metal",
+        "glass"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-action-camera.png",
+      "previewExists": true,
+      "triangles": 148,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "backdrop-frame",
+      "source": "catalog/kits/photo-video-studio/backdrop-frame.kcad.ts",
+      "sourceSha256": "55d1100cc69d710e4da75ab7d8c276b1a6423bca516af7b0e710e1824e65a4ed",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "metal",
+        "polymer",
+        "rubber",
+        "fabric"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-backdrop-frame.png",
+      "previewExists": true,
+      "triangles": 344,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "beauty-dish-light",
+      "source": "catalog/kits/photo-video-studio/beauty-dish-light.kcad.ts",
+      "sourceSha256": "79ba344aec7348eb7307304da9adb628289b3911cc098d87caa22a04a9212a92",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "metal",
+        "polycarbonate",
+        "rubber"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-beauty-dish-light.png",
+      "previewExists": true,
+      "triangles": 232,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "c-stand",
+      "source": "catalog/kits/photo-video-studio/c-stand.kcad.ts",
+      "sourceSha256": "90fdbde9299893a5da28319a155ebf09079df9c1b91d877d91fbf010b1ca8fff",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "metal",
+        "rubber"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-c-stand.png",
+      "previewExists": true,
+      "triangles": 268,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "camcorder",
+      "source": "catalog/kits/photo-video-studio/camcorder.kcad.ts",
+      "sourceSha256": "522864ff7c73472bcdca6e22649289c137c8841816b2dc70d264be6f830c7b4c",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "polymer",
+        "metal",
+        "glass",
+        "fabric"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-camcorder.png",
+      "previewExists": true,
+      "triangles": 160,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "camera-backpack",
+      "source": "catalog/kits/photo-video-studio/camera-backpack.kcad.ts",
+      "sourceSha256": "701336700bba2e22512dea75e82c2d9e6d040080ac6f44121911644007915f23",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "fabric",
+        "polymer",
+        "rubber"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-camera-backpack.png",
+      "previewExists": true,
+      "triangles": 96,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "camera-cage",
+      "source": "catalog/kits/photo-video-studio/camera-cage.kcad.ts",
+      "sourceSha256": "90c71f56e565be19fb7996bf21f7ade29a47d58da805d799491b1caf467feb90",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "metal",
+        "polymer",
+        "rubber"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-camera-cage.png",
+      "previewExists": true,
+      "triangles": 108,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "camera-roller-case",
+      "source": "catalog/kits/photo-video-studio/camera-roller-case.kcad.ts",
+      "sourceSha256": "1afcf9bab1ebce6120be94ce6a048c14c2a3f88565c6b9ae25f3f4d428cabbd4",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "polymer",
+        "metal",
+        "rubber"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-camera-roller-case.png",
+      "previewExists": true,
+      "triangles": 260,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "camera-slider",
+      "source": "catalog/kits/photo-video-studio/camera-slider.kcad.ts",
+      "sourceSha256": "cb1ebfd289079c1ef5629427bafe75038370c8ef14b630902aeebf76c1800d5b",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "metal",
+        "polymer",
+        "rubber"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-camera-slider.png",
+      "previewExists": true,
+      "triangles": 280,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "camera-tripod",
+      "source": "catalog/kits/photo-video-studio/camera-tripod.kcad.ts",
+      "sourceSha256": "c1034b748d1f68a9c285ff6b3aa8f1519e5a096e0fbd6c4fc65cb2342789262e",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "metal",
+        "rubber"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-camera-tripod.png",
+      "previewExists": true,
+      "triangles": 208,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "cinema-camera",
+      "source": "catalog/kits/photo-video-studio/cinema-camera.kcad.ts",
+      "sourceSha256": "2158fa521839e5b5ca5054ced26d90a35b3068f057f1ed2c33925060c37a6b3d",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "polymer",
+        "glass",
+        "metal"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-cinema-camera.png",
+      "previewExists": true,
+      "triangles": 192,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "clapperboard",
+      "source": "catalog/kits/photo-video-studio/clapperboard.kcad.ts",
+      "sourceSha256": "a5cc57a6d10b35f980e0c52d6c9026d8e2674c3fdac5ada95fdb6fe72c628e48",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "polymer",
+        "mattePaint",
+        "wood",
+        "metal"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-clapperboard.png",
+      "previewExists": true,
+      "triangles": 136,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "digital-slr-camera",
+      "source": "catalog/kits/photo-video-studio/digital-slr-camera.kcad.ts",
+      "sourceSha256": "b177d573c9075c49438524c07cfe91c8d420d8c0a037f7d8ee67fce334701200",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "polymer",
+        "rubber",
+        "glass",
+        "metal"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-digital-slr-camera.png",
+      "previewExists": true,
+      "triangles": 224,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "disposable-camera",
+      "source": "catalog/kits/photo-video-studio/disposable-camera.kcad.ts",
+      "sourceSha256": "f8a47c995e4f26bc15d0d95519ed48ef6a9cb9e3a46715e13c8a3bc42f846bd3",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "polymer",
+        "glass",
+        "metal"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-disposable-camera.png",
+      "previewExists": true,
+      "triangles": 168,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "film-rangefinder-camera",
+      "source": "catalog/kits/photo-video-studio/film-rangefinder-camera.kcad.ts",
+      "sourceSha256": "1aacff13bdc69778dd817931cad64610aec4e58bc58b1d058956ca72eed38ea3",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "polymer",
+        "metal",
+        "glass"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-film-rangefinder-camera.png",
+      "previewExists": true,
+      "triangles": 288,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "follow-focus-unit",
+      "source": "catalog/kits/photo-video-studio/follow-focus-unit.kcad.ts",
+      "sourceSha256": "37588f20f67d1adb7919fd1a3200c953d789b6ba7ec792dbda47ec33ec926238",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "metal",
+        "rubber"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-follow-focus-unit.png",
+      "previewExists": true,
+      "triangles": 256,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "gimbal-stabilizer",
+      "source": "catalog/kits/photo-video-studio/gimbal-stabilizer.kcad.ts",
+      "sourceSha256": "78b818ffbe93942f9db2bb5b93498ced2b981b3d627278b9cf3925eff560ff34",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "rubber",
+        "polymer",
+        "metal",
+        "glass"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-gimbal-stabilizer.png",
+      "previewExists": true,
+      "triangles": 160,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "instant-camera",
+      "source": "catalog/kits/photo-video-studio/instant-camera.kcad.ts",
+      "sourceSha256": "4de6b4a40f4545aa739b14e77b947a62f04e93c10c80e69626b5280d9bd85f32",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "polymer",
+        "glass",
+        "metal"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-instant-camera.png",
+      "previewExists": true,
+      "triangles": 148,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "lantern-softbox",
+      "source": "catalog/kits/photo-video-studio/lantern-softbox.kcad.ts",
+      "sourceSha256": "533ed8366fe609628a510a5fbe4b13a71d796cf771d0521c488e76a9afe7a851",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "diffusionFabric",
+        "polymer",
+        "metal",
+        "rubber"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-lantern-softbox.png",
+      "previewExists": true,
+      "triangles": 310,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "led-panel-light",
+      "source": "catalog/kits/photo-video-studio/led-panel-light.kcad.ts",
+      "sourceSha256": "26db6501ad0223d2e7d6964c594965a388ee5e7c7dcf8740b721fb9a8356b525",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "polymer",
+        "polycarbonate",
+        "metal"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-led-panel-light.png",
+      "previewExists": true,
+      "triangles": 184,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "lens-filter-set",
+      "source": "catalog/kits/photo-video-studio/lens-filter-set.kcad.ts",
+      "sourceSha256": "cf01593e881c1095b4e11993cc12b14f5ee89bb2bf3c27d7f955334c4fbcdf29",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "glass",
+        "metal",
+        "polymer"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-lens-filter-set.png",
+      "previewExists": true,
+      "triangles": 276,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "lens-hood",
+      "source": "catalog/kits/photo-video-studio/lens-hood.kcad.ts",
+      "sourceSha256": "a005ea2fa6de8c7158d0e6b210f8e0fbd8e22a0e03c98b146b8f58dc066c3bb5",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "polymer",
+        "metal"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-lens-hood.png",
+      "previewExists": true,
+      "triangles": 228,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "light-stand",
+      "source": "catalog/kits/photo-video-studio/light-stand.kcad.ts",
+      "sourceSha256": "b6842996a706dce0ba551df78f08c86092d485edac009cc8d3f39d214fd2eb77",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "metal",
+        "polymer"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-light-stand.png",
+      "previewExists": true,
+      "triangles": 300,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "macro-lens",
+      "source": "catalog/kits/photo-video-studio/macro-lens.kcad.ts",
+      "sourceSha256": "b8b3dcf9677080a55b24e3af037896267feab80cbdaf8f8ecd9b5fcb0d9c91bb",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "metal",
+        "rubber",
+        "glass"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-macro-lens.png",
+      "previewExists": true,
+      "triangles": 232,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "mirrorless-camera",
+      "source": "catalog/kits/photo-video-studio/mirrorless-camera.kcad.ts",
+      "sourceSha256": "937f6b306f1424fa0c7c47139ab4db881fa7415d3bc55ccb38f40174a581dc3d",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "polymer",
+        "rubber",
+        "glass",
+        "metal"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-mirrorless-camera.png",
+      "previewExists": true,
+      "triangles": 180,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "monopod",
+      "source": "catalog/kits/photo-video-studio/monopod.kcad.ts",
+      "sourceSha256": "f5f4ca1a6f50bf49ad88602a5006fe26f8015d43c69cdcf6d2717829146e86f1",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "metal",
+        "polymer",
+        "fabric",
+        "rubber"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-monopod.png",
+      "previewExists": true,
+      "triangles": 256,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "pancake-lens",
+      "source": "catalog/kits/photo-video-studio/pancake-lens.kcad.ts",
+      "sourceSha256": "2936b333c0bc7ebc68ffe9ec8d2872f16df29cfc7aff1d577daf566da5b21194",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "metal",
+        "glass",
+        "rubber"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-pancake-lens.png",
+      "previewExists": true,
+      "triangles": 220,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "pocket-digital-camera",
+      "source": "catalog/kits/photo-video-studio/pocket-digital-camera.kcad.ts",
+      "sourceSha256": "fa1296fcbc3fd02d856035ac6345dda1797fab68dec2023255e98b50c63c782f",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "polymer",
+        "metal",
+        "glass",
+        "fabric"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-pocket-digital-camera.png",
+      "previewExists": true,
+      "triangles": 136,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "portrait-lens",
+      "source": "catalog/kits/photo-video-studio/portrait-lens.kcad.ts",
+      "sourceSha256": "30ab48ac09d734e7ed4acef9ae956a588b7d402090d1835134b4f9abfa862a3a",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "metal",
+        "rubber",
+        "glass"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-portrait-lens.png",
+      "previewExists": true,
+      "triangles": 264,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "reflector-board",
+      "source": "catalog/kits/photo-video-studio/reflector-board.kcad.ts",
+      "sourceSha256": "7f4d3f0e290b52c6a337993b33b675b27af15921326e72c953d110444e59bbe0",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "reflectiveFilm",
+        "metal"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-reflector-board.png",
+      "previewExists": true,
+      "triangles": 92,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "ring-light",
+      "source": "catalog/kits/photo-video-studio/ring-light.kcad.ts",
+      "sourceSha256": "ea666924c20163294de86a6d10169de0128c3645aadbf914d9b0e94d86fffeb2",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "polycarbonate",
+        "polymer",
+        "rubber",
+        "metal"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-ring-light.png",
+      "previewExists": true,
+      "triangles": 256,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "shoulder-rig",
+      "source": "catalog/kits/photo-video-studio/shoulder-rig.kcad.ts",
+      "sourceSha256": "72124fc1119943779d5fb44bb717f5bb202655aa344e1fea7814f9c684f70ef9",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "metal",
+        "foam",
+        "rubber"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-shoulder-rig.png",
+      "previewExists": true,
+      "triangles": 224,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "softbox-light",
+      "source": "catalog/kits/photo-video-studio/softbox-light.kcad.ts",
+      "sourceSha256": "55e5734f21658a8c89c81761c2c684133b95d01bd33fd7dccb6b6c717ce2706c",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "diffusionFabric",
+        "fabric",
+        "metal",
+        "rubber"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-softbox-light.png",
+      "previewExists": true,
+      "triangles": 160,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "speedlight-flash",
+      "source": "catalog/kits/photo-video-studio/speedlight-flash.kcad.ts",
+      "sourceSha256": "9feefb9a0d6eb118c49c841ea6cea58edec5c3f38621f3f3e4404e55a10ff368",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "metal",
+        "polymer",
+        "polycarbonate",
+        "glass"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-speedlight-flash.png",
+      "previewExists": true,
+      "triangles": 116,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "telephoto-lens",
+      "source": "catalog/kits/photo-video-studio/telephoto-lens.kcad.ts",
+      "sourceSha256": "ac4848fec00cd390471a4117ed7cedf116ee997bb306ddc9ab82b630e96b73b7",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "metal",
+        "rubber",
+        "glass"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-telephoto-lens.png",
+      "previewExists": true,
+      "triangles": 320,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "umbrella-reflector",
+      "source": "catalog/kits/photo-video-studio/umbrella-reflector.kcad.ts",
+      "sourceSha256": "058c90d6d4f75931f036575fd01f74e67c0161b576962ea031ccd5c20007d5e4",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "fabric",
+        "polymer",
+        "metal"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-umbrella-reflector.png",
+      "previewExists": true,
+      "triangles": 282,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "video-tripod",
+      "source": "catalog/kits/photo-video-studio/video-tripod.kcad.ts",
+      "sourceSha256": "4f7d32ddfa646fa95abe7e363faf0e1996560a6b87694fa27fca1a195be524fc",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "metal",
+        "rubber"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-video-tripod.png",
+      "previewExists": true,
+      "triangles": 284,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "webcam",
+      "source": "catalog/kits/photo-video-studio/webcam.kcad.ts",
+      "sourceSha256": "9ac865ae55f9d4d330b39036cd767386f7bd23caf6461fd212f488ba7ba85c12",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "polymer",
+        "glass",
+        "metal"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-webcam.png",
+      "previewExists": true,
+      "triangles": 180,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "wide-angle-lens",
+      "source": "catalog/kits/photo-video-studio/wide-angle-lens.kcad.ts",
+      "sourceSha256": "94228dced1fa6439f0b74e8ab03a68e5521a6e686e34854e8afc2c50e01067be",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "metal",
+        "rubber",
+        "glass"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-wide-angle-lens.png",
+      "previewExists": true,
+      "triangles": 220,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    },
+    {
+      "id": "zoom-lens",
+      "source": "catalog/kits/photo-video-studio/zoom-lens.kcad.ts",
+      "sourceSha256": "54ea5b7d9ef79abd6a45b78ea3e1cac805f9062c12118d139c038b71ef94014d",
+      "sourceHashMatchesIndex": true,
+      "materialControls": [
+        "metal",
+        "rubber",
+        "glass"
+      ],
+      "presets": [
+        "studioBlack",
+        "fieldRental"
+      ],
+      "preview": "/assets/photo-video-studio-zoom-lens.png",
+      "previewExists": true,
+      "triangles": 352,
+      "triangleBudget": 1800,
+      "triangleBudgetPassed": true
+    }
+  ]
+}

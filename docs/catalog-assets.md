@@ -6,11 +6,13 @@ from those sources and must be rebuilt in the same change.
 
 ## Catalog quality snapshot (2026-11-06)
 
-The catalog quality gate reports **2,251/2,390 assets passing (94.2%)** with
-139 thin assets remaining. The latest round promoted all 40 existing music
-assets, increasing the workspace result from 2,211/2,390 (92.5%); no IDs or kits
-were added. The [music quality handoff](../artifacts/catalog-demos/music-quality-20261106/README.md)
+The catalog quality gate reports **2,291/2,390 assets passing (95.9%)** with
+99 thin assets remaining. The latest round promoted all 40 existing
+photo/video-studio assets, increasing the workspace result from 2,251/2,390
+(94.2%); no IDs or kits were added. The [photo/video studio quality handoff](../artifacts/catalog-demos/photo-video-studio-quality-20261106/README.md)
 records its source, preview, index, local-page, lint and integration evidence.
+The [music quality handoff](../artifacts/catalog-demos/music-quality-20261106/README.md)
+records the preceding round.
 See the [Apiary quality handoff](../artifacts/catalog-demos/apiary-quality-promotion-20261105/README.md),
 [Alpine expedition quality handoff](../artifacts/catalog-demos/alpine-expedition-quality-promotion-20261105/README.md),
 [archaeology fieldwork quality handoff](../artifacts/catalog-demos/archaeology-fieldwork-quality-promotion-20261105/README.md),
@@ -38,6 +40,22 @@ before/after previews, actual preset renders, source hashes, local checks and an
 inspected MP4. These are visualization assets; no acoustic performance,
 instrument certification, manufacturing suitability, deployed behavior or
 physical acceptance is claimed.
+
+## Photo/video studio assets
+
+The [photo/video studio kit](../catalog/kits/photo-video-studio/README.md)
+retains its 40 existing cameras, lenses, lights, supports and production props.
+Each source keeps its scale control and now exposes two to four material-named
+color controls with `studioBlack` and `fieldRental` presets. The round adds 125
+material controls and 80 named preset entries, and re-renders all 40 previews
+before rebuilding the catalog index. Camera bodies separate polymer shells,
+rubber grips, metal hardware and optical glass; softboxes, lanterns and
+reflectors distinguish fabric or reflective surfaces from their frames and
+mounts. The [quality promotion handoff](../artifacts/catalog-demos/photo-video-studio-quality-20261106/README.md)
+contains the material map, before/after previews, source-driven preset renders,
+local checks and an inspected MP4. The assets are visualization props; checks
+do not establish optical performance, lighting output, manufacturing
+suitability, deployed behavior or hardware acceptance.
 
 ## Airfield assets
 

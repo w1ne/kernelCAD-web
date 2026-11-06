@@ -1,0 +1,29 @@
+{
+  "source": "catalog/kits/photo-video-studio/digital-slr-camera.kcad.ts",
+  "sourceSha256": "b177d573c9075c49438524c07cfe91c8d420d8c0a037f7d8ee67fce334701200",
+  "invocation": "npx tsx artifacts/catalog-demos/photo-video-studio-quality-20261106/render_photo_video_presets.ts",
+  "exporter": "runAndExport(format=\"glb\", options={ format: \"glb\", style: \"lowpoly\", lowpoly: { maxTriangles: 1800 } })",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "variants": [
+    {
+      "id": "studioBlack",
+      "values": {
+        "polymer": "#343c43",
+        "rubber": "#1b2024",
+        "glass": "#45a6c0",
+        "metal": "#a9b5ba"
+      },
+      "png": "preset-variants/studioBlack.png"
+    },
+    {
+      "id": "fieldRental",
+      "values": {
+        "polymer": "#c75a2e",
+        "rubber": "#292b2d",
+        "glass": "#79d4e3",
+        "metal": "#657780"
+      },
+      "png": "preset-variants/fieldRental.png"
+    }
+  ]
+}
