@@ -47208,7 +47208,7 @@
       "id": "crosswalk-tile",
       "kit": "city-street",
       "title": "Crosswalk tile",
-      "description": "4 m road tile with a zebra crosswalk and edge lines that matches road-tile. Knobs: bar count, asphalt, bar and edge-line colours.",
+      "description": "4 m two-lane road tile with a transverse zebra crossing and edge lines, sized to join road-tile. Knobs: bar count, asphalt, stripe-paint and edge-paint colours.",
       "category": "terrain",
       "origin": "base",
       "tags": [
@@ -47228,7 +47228,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/city-street/crosswalk-tile.kcad.ts",
       "preview": "/assets/city-street-crosswalk-tile.png",
-      "sourceSha256": "554e6b59fbf7ef9955e4d08aa30798e6ae1cb71cf7bf98a5f34bf8e5471464ed",
+      "sourceSha256": "e604f3c30f78085193fe22fb6feff5366d9d6483919480e7f2de401e063a8ae2",
       "triangleBudget": 400,
       "params": [
         {
@@ -47249,27 +47249,28 @@
           "label": "Asphalt"
         },
         {
-          "name": "bar",
+          "name": "stripePaint",
           "type": "color",
           "default": "#f2f1ea",
-          "label": "Zebra bars"
+          "label": "Crosswalk paint"
         },
         {
-          "name": "line",
+          "name": "edgePaint",
           "type": "color",
           "default": "#dcdbd2",
-          "label": "Edge lines"
+          "label": "Edge-line paint"
         }
       ],
       "presets": {
         "worn": {
           "asphalt": "#5a5c5f",
-          "bar": "#cfcdc4",
-          "line": "#c4c2ba"
+          "stripePaint": "#cfcdc4",
+          "edgePaint": "#c4c2ba"
         },
-        "painted": {
-          "asphalt": "#8a3a32",
-          "bar": "#f2f1ea"
+        "fresh": {
+          "asphalt": "#373b40",
+          "stripePaint": "#ffffff",
+          "edgePaint": "#e8e5dc"
         }
       },
       "stats": {
@@ -47287,41 +47288,41 @@
           "name": "asphalt",
           "color": "#45484c",
           "parts": [
-            "slab-1",
-            "slab-2",
-            "slab-5",
-            "slab-6",
-            "slab-7",
-            "slab-9",
-            "slab-11",
-            "slab-13",
-            "slab-15",
-            "slab-17",
-            "slab-19"
+            "asphalt-1",
+            "asphalt-2",
+            "asphalt-5",
+            "asphalt-6",
+            "asphalt-7",
+            "asphalt-9",
+            "asphalt-11",
+            "asphalt-13",
+            "asphalt-15",
+            "asphalt-17",
+            "asphalt-19"
           ],
           "param": "asphalt"
         },
         {
-          "name": "line",
+          "name": "edgePaint",
           "color": "#dcdbd2",
           "parts": [
-            "slab-3",
-            "slab-4"
+            "edge-paint-3",
+            "edge-paint-4"
           ],
-          "param": "line"
+          "param": "edgePaint"
         },
         {
-          "name": "bar",
+          "name": "stripePaint",
           "color": "#f2f1ea",
           "parts": [
-            "slab-8",
-            "slab-10",
-            "slab-12",
-            "slab-14",
-            "slab-16",
-            "slab-18"
+            "crosswalk-paint-8",
+            "crosswalk-paint-10",
+            "crosswalk-paint-12",
+            "crosswalk-paint-14",
+            "crosswalk-paint-16",
+            "crosswalk-paint-18"
           ],
-          "param": "bar"
+          "param": "stripePaint"
         }
       ]
     },
@@ -50256,7 +50257,7 @@
       "id": "playground-slide",
       "kit": "city-street",
       "title": "Playground slide",
-      "description": "Playground slide tower with ladder, roofed deck, railings and a trough chute with run-out. Knobs: roof, frame, deck, slide and roof colours.",
+      "description": "Roofed playground slide tower with ladder, deck, side rails and a supported U-trough chute. Knobs: roof presence, galvanized steel, HDPE deck, stainless-steel slide and roof-polyethylene colours.",
       "category": "structure",
       "origin": "base",
       "tags": [
@@ -50277,7 +50278,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/city-street/playground-slide.kcad.ts",
       "preview": "/assets/city-street-playground-slide.png",
-      "sourceSha256": "8c3e6f530fd1c1a46e8a17375abbc83acf1e6b77b6673b28018eb98f645a6660",
+      "sourceSha256": "f4e3be40e449f61357891ff2eaf9dfa624b5788e3c185536aac9142a7d52deac",
       "triangleBudget": 480,
       "params": [
         {
@@ -50291,40 +50292,42 @@
           ]
         },
         {
-          "name": "frame",
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#8d969e",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "hdpe",
           "type": "color",
           "default": "#2a7fc8",
-          "label": "Frame"
+          "label": "HDPE deck"
         },
         {
-          "name": "deck",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#b07a45",
-          "label": "Deck and rungs"
+          "default": "#c4c7ca",
+          "label": "Stainless-steel slide"
         },
         {
-          "name": "slide",
-          "type": "color",
-          "default": "#f2c418",
-          "label": "Slide"
-        },
-        {
-          "name": "roof",
+          "name": "roofPolyethylene",
           "type": "color",
           "default": "#c8352b",
-          "label": "Roof"
+          "label": "Roof polyethylene"
         }
       ],
       "presets": {
-        "green": {
-          "frame": "#2f7d4a",
-          "slide": "#e8432e",
-          "roof": "#f2c418"
+        "park": {
+          "galvanizedSteel": "#2f7d4a",
+          "hdpe": "#e7c78e",
+          "stainlessSteel": "#e8432e",
+          "roofPolyethylene": "#f2c418"
         },
-        "natural": {
-          "frame": "#8a5c33",
-          "slide": "#2a7fc8",
-          "roof": "#2f6b4a"
+        "coastal": {
+          "galvanizedSteel": "#455a64",
+          "hdpe": "#d8d4c9",
+          "stainlessSteel": "#2a7fc8",
+          "roofPolyethylene": "#f2f1ea"
         }
       },
       "stats": {
@@ -50339,8 +50342,8 @@
       },
       "palette": [
         {
-          "name": "frame",
-          "color": "#2a7fc8",
+          "name": "galvanizedSteel",
+          "color": "#8d969e",
           "parts": [
             "post-1",
             "post-2",
@@ -50352,38 +50355,38 @@
             "rail-r",
             "rail-mid-r",
             "ladder-rail-r",
-            "run-out-leg"
-          ],
-          "param": "frame"
-        },
-        {
-          "name": "deck",
-          "color": "#b07a45",
-          "parts": [
-            "deck",
             "rung-1",
             "rung-2",
             "rung-3",
-            "rung-4"
+            "rung-4",
+            "run-out-leg"
           ],
-          "param": "deck"
+          "param": "galvanizedSteel"
         },
         {
-          "name": "roof",
+          "name": "hdpe",
+          "color": "#2a7fc8",
+          "parts": [
+            "deck"
+          ],
+          "param": "hdpe"
+        },
+        {
+          "name": "roofPolyethylene",
           "color": "#c8352b",
           "parts": [
             "roof"
           ],
-          "param": "roof"
+          "param": "roofPolyethylene"
         },
         {
-          "name": "slide",
-          "color": "#f2c418",
+          "name": "stainlessSteel",
+          "color": "#c4c7ca",
           "parts": [
             "chute",
             "run-out"
           ],
-          "param": "slide"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -50900,7 +50903,7 @@
       "id": "road-tile",
       "kit": "city-street",
       "title": "Road tile",
-      "description": "4 m two-lane asphalt road tile with edge lines and a dashed, solid or stop-line end marking. Knobs: style, asphalt, line and centre-line colours.",
+      "description": "4 m two-lane asphalt road tile with edge stripes and dashed, stop-line or plain variants. Knobs: marking style, asphalt, edge-paint and centre-paint colours.",
       "category": "terrain",
       "origin": "base",
       "tags": [
@@ -50920,7 +50923,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/city-street/road-tile.kcad.ts",
       "preview": "/assets/city-street-road-tile.png",
-      "sourceSha256": "9166dfbc22e5e7ec1d767106a0c17b202bd182b6135d4c9f97c4987ae571fe70",
+      "sourceSha256": "81f3ce2a48088c14a805aaef24a5852f0db93716c02100eb5cc3b0081efff749",
       "triangleBudget": 300,
       "params": [
         {
@@ -50941,26 +50944,26 @@
           "label": "Asphalt"
         },
         {
-          "name": "line",
+          "name": "edgePaint",
           "type": "color",
           "default": "#ecebe4",
-          "label": "Edge lines"
+          "label": "Edge-line paint"
         },
         {
-          "name": "centre",
+          "name": "centrePaint",
           "type": "color",
           "default": "#f4f0dc",
-          "label": "Centre line"
+          "label": "Centre-line paint"
         }
       ],
       "presets": {
-        "american": {
-          "centre": "#f0c419"
+        "yellowCentre": {
+          "centrePaint": "#f0c419"
         },
         "worn": {
           "asphalt": "#5a5c5f",
-          "line": "#c9c8c0",
-          "centre": "#c9c8c0"
+          "edgePaint": "#c9c8c0",
+          "centrePaint": "#c9c8c0"
         }
       },
       "stats": {
@@ -50978,33 +50981,33 @@
           "name": "asphalt",
           "color": "#45484c",
           "parts": [
-            "slab-1",
-            "slab-2",
-            "slab-5",
-            "slab-6",
-            "slab-7",
-            "slab-9",
-            "slab-11"
+            "asphalt-1",
+            "asphalt-2",
+            "asphalt-5",
+            "asphalt-6",
+            "asphalt-7",
+            "asphalt-9",
+            "asphalt-11"
           ],
           "param": "asphalt"
         },
         {
-          "name": "line",
+          "name": "edgePaint",
           "color": "#ecebe4",
           "parts": [
-            "slab-3",
-            "slab-4"
+            "edge-paint-3",
+            "edge-paint-4"
           ],
-          "param": "line"
+          "param": "edgePaint"
         },
         {
-          "name": "centre",
+          "name": "centrePaint",
           "color": "#f4f0dc",
           "parts": [
-            "slab-8",
-            "slab-10"
+            "centre-paint-8",
+            "centre-paint-10"
           ],
-          "param": "centre"
+          "param": "centrePaint"
         }
       ]
     },
@@ -51400,7 +51403,7 @@
       "id": "sidewalk-tile",
       "kit": "city-street",
       "title": "Sidewalk tile",
-      "description": "4 m raised sidewalk tile with a kerb on the road side and a two-tone paving grid. Knobs: paving grid, kerb, paving and accent colours.",
+      "description": "4 m raised sidewalk tile with road-side concrete kerb stones and a two-tone paving-stone grid. Knobs: grid size, concrete, paving stone and accent-brick colours.",
       "category": "terrain",
       "origin": "base",
       "tags": [
@@ -51420,7 +51423,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/city-street/sidewalk-tile.kcad.ts",
       "preview": "/assets/city-street-sidewalk-tile.png",
-      "sourceSha256": "4f229f7c7065aaaceaf0850f35709b5129ba320a413d7c1c6144ab1a217c0637",
+      "sourceSha256": "d43eca4965774043403cb658674fe97a230ad33c161bbb25d37ae0e33fb93700",
       "triangleBudget": 400,
       "params": [
         {
@@ -51436,34 +51439,34 @@
           ]
         },
         {
-          "name": "kerb",
+          "name": "kerbConcrete",
           "type": "color",
           "default": "#8f8d88",
-          "label": "Kerb"
+          "label": "Kerb concrete"
         },
         {
-          "name": "paving",
+          "name": "pavingStone",
           "type": "color",
           "default": "#cfcac0",
-          "label": "Paving"
+          "label": "Paving stone"
         },
         {
-          "name": "accent",
+          "name": "accentBrick",
           "type": "color",
           "default": "#bdb7ab",
-          "label": "Accent paving"
+          "label": "Accent brick"
         }
       ],
       "presets": {
         "brick": {
-          "paving": "#b0644a",
-          "accent": "#9a553e",
-          "kerb": "#a8a6a0"
+          "pavingStone": "#b0644a",
+          "accentBrick": "#9a553e",
+          "kerbConcrete": "#a8a6a0"
         },
-        "dark": {
-          "paving": "#8d8f91",
-          "accent": "#7c7e80",
-          "kerb": "#c4c2bc"
+        "granite": {
+          "pavingStone": "#8d8f91",
+          "accentBrick": "#66686b",
+          "kerbConcrete": "#c4c2bc"
         }
       },
       "stats": {
@@ -51478,7 +51481,7 @@
       },
       "palette": [
         {
-          "name": "kerb",
+          "name": "kerbConcrete",
           "color": "#8f8d88",
           "parts": [
             "kerb-1",
@@ -51486,37 +51489,37 @@
             "kerb-3",
             "kerb-4"
           ],
-          "param": "kerb"
+          "param": "kerbConcrete"
         },
         {
-          "name": "paving",
+          "name": "pavingStone",
           "color": "#cfcac0",
           "parts": [
-            "slab-1-1",
-            "slab-1-3",
-            "slab-2-2",
-            "slab-2-4",
-            "slab-3-1",
-            "slab-3-3",
-            "slab-4-2",
-            "slab-4-4"
+            "paving-1-1",
+            "paving-1-3",
+            "paving-2-2",
+            "paving-2-4",
+            "paving-3-1",
+            "paving-3-3",
+            "paving-4-2",
+            "paving-4-4"
           ],
-          "param": "paving"
+          "param": "pavingStone"
         },
         {
-          "name": "accent",
+          "name": "accentBrick",
           "color": "#bdb7ab",
           "parts": [
-            "slab-1-2",
-            "slab-1-4",
-            "slab-2-1",
-            "slab-2-3",
-            "slab-3-2",
-            "slab-3-4",
-            "slab-4-1",
-            "slab-4-3"
+            "accent-1-2",
+            "accent-1-4",
+            "accent-2-1",
+            "accent-2-3",
+            "accent-3-2",
+            "accent-3-4",
+            "accent-4-1",
+            "accent-4-3"
           ],
-          "param": "accent"
+          "param": "accentBrick"
         }
       ]
     },

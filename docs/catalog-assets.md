@@ -6,10 +6,14 @@ from those sources and must be rebuilt in the same change.
 
 ## Catalog quality snapshot (2026-11-06)
 
-The catalog quality gate reports **2,371/2,390 assets passing (99.2%)** with
-19 thin assets remaining. The latest round promoted all 40 existing office
-assets, increasing the workspace result from 2,331/2,390 (97.5%); no IDs or
-kits were added. The [office quality handoff](../artifacts/catalog-demos/office-quality-20261106/README.md)
+The catalog quality gate reports **2,386/2,390 assets passing (99.8%)** with
+four thin assets remaining (three in `nature`, one in `props`). The latest
+round promoted the four remaining failing `city-street` assets, moving that kit
+from 61/65 to 65/65 and the whole catalog from 2,382/2,390 (99.7%) to
+2,386/2,390; no IDs or kits were added. The [city-street quality handoff](../artifacts/catalog-demos/city-street-quality-20261106/README.md)
+records the material controls, named looks, rendered previews, regenerated
+index, local pages, checks, and inspected MP4. The previous [office quality
+handoff](../artifacts/catalog-demos/office-quality-20261106/README.md)
 records its source, preview, index, local-page, lint and integration evidence.
 The [solar-energy quality handoff](../artifacts/catalog-demos/solar-energy-quality-20261106/README.md)
 records the previous round.
@@ -29,6 +33,23 @@ See the [Apiary quality handoff](../artifacts/catalog-demos/apiary-quality-promo
 and [airfield handoff](../artifacts/catalog-demos/airfield-quality-promotion-20261105/README.md)
 for source, preview, index, and verification evidence. These are local catalog
 checks and do not represent deployed behavior.
+
+## City-street assets
+
+The [city-street kit](../catalog/kits/city-street/README.md) keeps its 65
+existing road, sidewalk, street-furniture, vehicle, and playground assets. The
+four audited pavement and playground sources now expose 13 explicit
+material-named controls across asphalt, road-marking paint, concrete, paving
+stone, brick, galvanized steel, HDPE, stainless steel, and roof polyethylene;
+their eight named appearance presets remain available as distinct looks. The
+crosswalk and road tiles expose their flush markings, the sidewalk keeps its
+raised road-side kerb and paving grid, and the slide retains its guarded tower,
+ladder, roof, and trough chute. All four previews were regenerated and indexed.
+The [quality handoff](../artifacts/catalog-demos/city-street-quality-20261106/README.md)
+contains source-to-preset renders, source hashes, preview and index evidence,
+local page checks, lint and integration results, and an inspected MP4. These
+are visualization assets; local checks do not establish deployed behavior,
+traffic compliance, manufacturing suitability, or physical acceptance.
 
 ## Office assets
 
