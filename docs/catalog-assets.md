@@ -6,12 +6,16 @@ from those sources and must be rebuilt in the same change.
 
 ## Catalog quality snapshot (2026-11-06)
 
-The catalog quality gate reports **2,386/2,390 assets passing (99.8%)** with
-four thin assets remaining (three in `nature`, one in `props`). The latest
-round promoted the four remaining failing `city-street` assets, moving that kit
-from 61/65 to 65/65 and the whole catalog from 2,382/2,390 (99.7%) to
-2,386/2,390; no IDs or kits were added. The [city-street quality handoff](../artifacts/catalog-demos/city-street-quality-20261106/README.md)
-records the material controls, named looks, rendered previews, regenerated
+The catalog quality gate reports **2,389/2,390 assets passing (99.96%)** with
+one failing asset remaining in `props`; there are no fully thin kits. This
+round brought `nature` from 63/66 to 66/66 by making the cairn and pebble
+cluster's existing stone-color controls explicit to the gate and adding
+contrasting heartwood to the dead tree's broken branch ends. The [nature
+quality handoff](../artifacts/catalog-demos/nature-quality-20261106/README.md)
+records the source controls, refreshed previews, regenerated index, local
+pages, checks, and inspected MP4. The previous [city-street quality
+handoff](../artifacts/catalog-demos/city-street-quality-20261106/README.md)
+records its material controls, named looks, rendered previews, regenerated
 index, local pages, checks, and inspected MP4. The previous [office quality
 handoff](../artifacts/catalog-demos/office-quality-20261106/README.md)
 records its source, preview, index, local-page, lint and integration evidence.
@@ -50,6 +54,20 @@ contains source-to-preset renders, source hashes, preview and index evidence,
 local page checks, lint and integration results, and an inspected MP4. These
 are visualization assets; local checks do not establish deployed behavior,
 traffic compliance, manufacturing suitability, or physical acceptance.
+
+## Nature assets
+
+The [nature kit](../catalog/kits/nature/README.md) retains all 66 existing
+environmental assets. The cairn and pebble cluster already assigned distinct
+stone and accent colors across their faceted lofts; this round renamed those
+two parameter keys to `stoneColor` and `accentColor` so the material knobs are
+clear in Studio and the quality audit. The dead tree adds a `heartwood` control
+on the cut ends of its forked trunk and primary limbs, with charred and bleached
+presets updated for both bark and exposed wood. The 66 nature previews were
+refreshed and the index regenerated. The [quality handoff](../artifacts/catalog-demos/nature-quality-20261106/README.md)
+contains exact preset exports, source hashes, local-page checks, lint and
+integration results, and the inspected MP4. These are visualization assets;
+the local workflow does not establish deployed behavior or physical acceptance.
 
 ## Office assets
 

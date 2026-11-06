@@ -160277,7 +160277,7 @@
       "id": "cairn",
       "kit": "nature",
       "title": "Stone cairn",
-      "description": "Balanced stack of flat stones shrinking toward the top, a trail marker or zen garden piece. Knobs: stones, base width, stone and accent colours.",
+      "description": "Balanced stack of flat stones shrinking toward the top, a trail marker or zen garden piece. Knobs: stones, base width, stone and accent-stone colours.",
       "category": "nature",
       "origin": "base",
       "tags": [
@@ -160301,7 +160301,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/nature/cairn.kcad.ts",
       "preview": "/assets/nature-cairn.png",
-      "sourceSha256": "4a16821e23bbf8e33342f6528d2e825fb0c553954807c6a1884682d5c9171dfb",
+      "sourceSha256": "718d5eafa0808b16c48314abf9efa23b7c6df33f637e0d47b211b60bd3bccbf8",
       "triangleBudget": 340,
       "params": [
         {
@@ -160327,13 +160327,13 @@
           ]
         },
         {
-          "name": "stone",
+          "name": "stoneColor",
           "type": "color",
           "default": "#8e8e88",
           "label": "Stone"
         },
         {
-          "name": "accent",
+          "name": "accentColor",
           "type": "color",
           "default": "#b8b0a2",
           "label": "Accent stones"
@@ -160341,12 +160341,12 @@
       ],
       "presets": {
         "dark": {
-          "stone": "#4f545a",
-          "accent": "#6e747a"
+          "stoneColor": "#4f545a",
+          "accentColor": "#6e747a"
         },
         "sandstone": {
-          "stone": "#b88a62",
-          "accent": "#d4ae84"
+          "stoneColor": "#b88a62",
+          "accentColor": "#d4ae84"
         }
       },
       "stats": {
@@ -160361,7 +160361,7 @@
       },
       "palette": [
         {
-          "name": "stone",
+          "name": "stoneColor",
           "color": "#8e8e88",
           "parts": [
             "stone-1",
@@ -160369,16 +160369,16 @@
             "stone-4",
             "stone-6"
           ],
-          "param": "stone"
+          "param": "stoneColor"
         },
         {
-          "name": "accent",
+          "name": "accentColor",
           "color": "#b8b0a2",
           "parts": [
             "stone-2",
             "stone-5"
           ],
-          "param": "accent"
+          "param": "accentColor"
         }
       ]
     },
@@ -161274,7 +161274,7 @@
       "id": "dead-tree",
       "kit": "nature",
       "title": "Dead tree",
-      "description": "Bare leafless dead tree with a forked trunk, angular branches and twigs. Knobs: height, branch count, twigs on or off, bark colour.",
+      "description": "Bare dead tree with a forked trunk, angular branches, fine twigs and exposed pale wood at broken ends. Knobs: height, branch count, twigs on or off, bark and heartwood colours.",
       "category": "nature",
       "origin": "base",
       "tags": [
@@ -161296,7 +161296,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/nature/dead-tree.kcad.ts",
       "preview": "/assets/nature-dead-tree.png",
-      "sourceSha256": "b85e5f2747e2df3e8eed236b834fd58e5ea64a821bd906344afe32e7d79fd5d1",
+      "sourceSha256": "7c249c6b05fe78234f28f7e1f1dcc8a7d248925431d89f9d089600dcbdcef9f7",
       "triangleBudget": 400,
       "params": [
         {
@@ -161337,18 +161337,26 @@
           "type": "color",
           "default": "#6e6259",
           "label": "Bark"
+        },
+        {
+          "name": "heartwood",
+          "type": "color",
+          "default": "#b18b63",
+          "label": "Exposed heartwood"
         }
       ],
       "presets": {
         "charred": {
-          "bark": "#2f2a27"
+          "bark": "#2f2a27",
+          "heartwood": "#634a37"
         },
         "bleached": {
-          "bark": "#b9b1a3"
+          "bark": "#b9b1a3",
+          "heartwood": "#d9c7a7"
         }
       },
       "stats": {
-        "triangles": 256,
+        "triangles": 336,
         "sizeM": [
           3.286286,
           4.728285,
@@ -161380,6 +161388,18 @@
             "limb-16"
           ],
           "param": "bark"
+        },
+        {
+          "name": "heartwood",
+          "color": "#b18b63",
+          "parts": [
+            "heartwood-3",
+            "heartwood-5",
+            "heartwood-8",
+            "heartwood-11",
+            "heartwood-14"
+          ],
+          "param": "heartwood"
         }
       ]
     },
@@ -163934,7 +163954,7 @@
       "id": "pebble-cluster",
       "kit": "nature",
       "title": "Pebble cluster",
-      "description": "Scatter of flattened river pebbles in mixed sizes and two tones, for riverbanks, beaches and garden paths. Knobs: pebble count, spread, stone and accent colours.",
+      "description": "Scatter of flattened river pebbles in mixed sizes and two tones, for riverbanks, beaches and garden paths. Knobs: pebble count, spread, stone and accent-stone colours.",
       "category": "nature",
       "origin": "base",
       "tags": [
@@ -163959,7 +163979,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/nature/pebble-cluster.kcad.ts",
       "preview": "/assets/nature-pebble-cluster.png",
-      "sourceSha256": "2d808daaf414f12dbd12ff1cf5d47945e73f2ba83aa4598439f56a0173fce4e1",
+      "sourceSha256": "592e862b9c896073994d4da9b3a95893e1b041c9caf5878ff99f0335315f047d",
       "triangleBudget": 400,
       "params": [
         {
@@ -163985,13 +164005,13 @@
           ]
         },
         {
-          "name": "stone",
+          "name": "stoneColor",
           "type": "color",
           "default": "#9a9a94",
           "label": "Stone"
         },
         {
-          "name": "accent",
+          "name": "accentColor",
           "type": "color",
           "default": "#c8bca8",
           "label": "Accent stones"
@@ -163999,16 +164019,16 @@
       ],
       "presets": {
         "beach": {
-          "stone": "#d8c8a8",
-          "accent": "#f0e8d8"
+          "stoneColor": "#d8c8a8",
+          "accentColor": "#f0e8d8"
         },
         "dark": {
-          "stone": "#5a5e62",
-          "accent": "#8a8e92"
+          "stoneColor": "#5a5e62",
+          "accentColor": "#8a8e92"
         },
         "red": {
-          "stone": "#a86a4a",
-          "accent": "#c89a7a"
+          "stoneColor": "#a86a4a",
+          "accentColor": "#c89a7a"
         }
       },
       "stats": {
@@ -164023,7 +164043,7 @@
       },
       "palette": [
         {
-          "name": "stone",
+          "name": "stoneColor",
           "color": "#9a9a94",
           "parts": [
             "pebble-1",
@@ -164032,17 +164052,17 @@
             "pebble-6",
             "pebble-7"
           ],
-          "param": "stone"
+          "param": "stoneColor"
         },
         {
-          "name": "accent",
+          "name": "accentColor",
           "color": "#c8bca8",
           "parts": [
             "pebble-2",
             "pebble-5",
             "pebble-8"
           ],
-          "param": "accent"
+          "param": "accentColor"
         }
       ]
     },

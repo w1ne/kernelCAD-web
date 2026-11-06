@@ -1,0 +1,52 @@
+{
+  "video": "nature-quality-demo.mp4",
+  "probe": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "r_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "18.000000"
+    }
+  },
+  "decodedFrames": [
+    {
+      "timeSeconds": 1,
+      "path": "frame-01.png",
+      "size": 104163
+    },
+    {
+      "timeSeconds": 4,
+      "path": "frame-02.png",
+      "size": 197477
+    },
+    {
+      "timeSeconds": 7,
+      "path": "frame-03.png",
+      "size": 172020
+    },
+    {
+      "timeSeconds": 10,
+      "path": "frame-04.png",
+      "size": 153060
+    },
+    {
+      "timeSeconds": 13,
+      "path": "frame-05.png",
+      "size": 131752
+    },
+    {
+      "timeSeconds": 16,
+      "path": "frame-06.png",
+      "size": 136956
+    }
+  ],
+  "contactSheet": "video-review/contact-sheet.png",
+  "manualVisualInspection": "Passed: reviewed the source/control frame, all three asset/preset comparison frames, the verification frame, and the 18-second H.264 contact sheet at 1280x720.",
+  "visualReviewFile": "video-review/visual-review.md"
+}

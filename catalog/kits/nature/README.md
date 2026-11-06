@@ -8,7 +8,7 @@ Low-poly trees, plants, rocks, wood and 2 m terrain tiles at real-world scale. E
 | oak-tree | Broad oak with stout trunk, limbs and a lumpy clustered crown | heightM, lumps, crown, bark, leaves | 288 |
 | birch-tree | Slender white-barked birch with dark bands and a narrow crown | heightM, blobs, bark, bands, leaves | 212 |
 | palm-tree | Coconut palm with curved ringed trunk, drooping fronds, coconuts | heightM, fronds, lean, trunk, frond, coconut | 338 |
-| dead-tree | Bare dead tree with forked trunk, root flare, branches and twigs | heightM, branches, twigs, bark | 256 |
+| dead-tree | Bare dead tree with forked trunk, root flare, branches, twigs and exposed heartwood ends | heightM, branches, twigs, bark, heartwood | 336 |
 | bush | Rounded shrub of clustered faceted lumps, optional berries | size, lumps, berries, leaves, berry | 184 |
 | fern | Fern rosette with arching three-piece fronds | size, fronds, frond, stalk | 240 |
 | flower-patch | Wildflower clump with star-shaped heads on thin stems | count, heightM, petals, centre, leaves | 276 |
@@ -49,9 +49,9 @@ Low-poly trees, plants, rocks, wood and 2 m terrain tiles at real-world scale. E
 | rose-bush | Leafy mound dotted with open rose blooms | size, blooms, rose, centre, leaves | 444 |
 | clover-patch | Low mat of three-leaf clovers with round blossoms | count, flowers, leaf, base, blossom | 436 |
 | wheat-sheaf | Tied harvest bundle of straw crowned by grain ears | heightM, ears, straw, ear, band | 338 |
-| pebble-cluster | Scatter of flat river pebbles in two tones | count, spread, stone, accent | 256 |
+| pebble-cluster | Scatter of flat river pebbles in two tones | count, spread, stoneColor, accentColor | 256 |
 | crystal-cluster | Hexagonal pointed crystals on a rock bed | heightM, count, crystal, rock | 262 |
-| cairn | Balanced stack of flat stones | stones, size, stone, accent | 228 |
+| cairn | Balanced stack of flat stones | stones, size, stoneColor, accentColor | 228 |
 | hollow-log | Fallen hollow log with cut ends and moss patch | lengthM, diameter, moss, bark, wood, hollow, mossColor | 284 |
 | agave | Spiky agave rosette with optional flowering stalk | size, count, bloom, leaf, stalk, flower | 216 |
 | prickly-pear-cactus | Opuntia of branching flat pads with red fruit | tiers, fruits, pad, fruit | 272 |
@@ -70,6 +70,14 @@ Low-poly trees, plants, rocks, wood and 2 m terrain tiles at real-world scale. E
 | bird-nest | Woven twig nest with a hollow cup and eggs | size, eggs, nest, twig, egg | 284 |
 | seashells | Beach scatter of scallops, conches and a starfish on sand | count, starfish, sand, shell, conch, star, sandColor | 228 |
 | bramble | Blackberry thicket with arching canes, leaves and berries | size, canes, cane, leaf, ripe, unripe | 498 |
+
+## Quality promotion (2026-11-06)
+
+The cairn and pebble cluster expose their existing two-tone stone controls as
+`stoneColor` and `accentColor`. The dead tree adds contrasting heartwood at its
+broken trunk and primary branch ends. All 66 nature previews were rendered and
+the generated index was rebuilt. See the [quality handoff](../../../artifacts/catalog-demos/nature-quality-20261106/README.md)
+for preset renders, source hashes, local checks and the inspected MP4.
 
 ## Licence
 
