@@ -1,0 +1,56 @@
+{
+  "video": "office-quality-demo.mp4",
+  "probe": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "r_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "21.000000"
+    }
+  },
+  "decodedFrames": [
+    {
+      "timeSeconds": 1,
+      "path": "frame-01.png",
+      "size": 113593
+    },
+    {
+      "timeSeconds": 4,
+      "path": "frame-02.png",
+      "size": 151777
+    },
+    {
+      "timeSeconds": 7,
+      "path": "frame-03.png",
+      "size": 112875
+    },
+    {
+      "timeSeconds": 10,
+      "path": "frame-04.png",
+      "size": 108467
+    },
+    {
+      "timeSeconds": 13,
+      "path": "frame-05.png",
+      "size": 114824
+    },
+    {
+      "timeSeconds": 16,
+      "path": "frame-06.png",
+      "size": 185367
+    },
+    {
+      "timeSeconds": 19,
+      "path": "frame-07.png",
+      "size": 142257
+    }
+  ],
+  "contactSheet": "video-review/contact-sheet.png",
+  "manualVisualInspection": "Reviewed final 21-second video on 2026-11-06 from all seven decoded frames and the contact sheet. The before/after labels are separated; source, palette variants, scissors silhouette and validation values are legible. Three final catalog previews were also reviewed."
+}

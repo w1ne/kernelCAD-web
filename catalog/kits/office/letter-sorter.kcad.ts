@@ -1,8 +1,10 @@
+// Letter sorter: Upright desktop sorter with two or three stepped compartments for incoming papers. Material controls: timber, letter paper, powder-coated steel.
+
 meta({
   name: 'letter-sorter',
   license: 'CC0-1.0',
   title: 'Letter sorter',
-  description: 'Upright desktop sorter with two or three stepped compartments for incoming papers. Knobs: shelf count, compact or standard format, body, accent and detail colours.',
+  description: "Upright desktop sorter with two or three stepped compartments for incoming papers. Controls: timber, letter paper, powder-coated steel.",
   tags: ['letter sorter', 'paper organizer', 'document organizer', 'office', 'stationery'],
   kit: 'office',
   category: 'item',
@@ -11,15 +13,15 @@ meta({
   triangleBudget: 260,
 });
 
-const body = param('body', '#e4e0d4', { label: 'Body' });
-const accent = param('accent', '#416b8b', { label: 'Accent' });
-const detail = param('detail', '#333c45', { label: 'Detail' });
+const timber = param('timber', '#aa7d4f', { label: 'Timber' });
+const paper = param('paper', '#f0e6d1', { label: 'Letter paper' });
+const powderCoatedSteel = param('powderCoatedSteel', '#3f5967', { label: 'Powder-coated steel' });
 const format = param('format', 'standard', { choices: ['compact', 'standard'], label: 'Format' });
 const k = format.value === 'compact' ? 0.8 : 1;
 
 presets({
-  clean: { body: '#e8e7df', accent: '#66829a', detail: '#454b50' },
-  warm: { body: '#c8a875', accent: '#557581', detail: '#493c34' },
+  professional: { timber: '#aa7d4f', paper: '#f0e6d1', powderCoatedSteel: '#3f5967' },
+  classroom: { timber: '#4b7784', paper: '#e4cf72', powderCoatedSteel: '#d3664c' },
 });
 
 const shelves = param('shelves', '3', { choices: ['2', '3'], label: 'Compartments' });
@@ -27,17 +29,20 @@ const shelfCount = Number(shelves.value);
 
 const office = assembly('letter-sorter');
 
-const addBox = (name: string, x: number, y: number, z: number, w: number, d: number, h: number, colour: typeof body) => {
-  office.part(name, box(w * k, d * k, h * k, true).translate(x * k, y * k, (z + h / 2) * k).color(colour));
+const addBox = (name: string, x: number, y: number, z: number, w: number, d: number, h: number, colour: typeof timber | typeof paper | typeof powderCoatedSteel) => {
+  const partShape = box(w * k, d * k, h * k, true).translate(x * k, y * k, (z + h / 2) * k);
+  if (colour === timber) office.part(name, partShape.color(timber));
+  else if (colour === paper) office.part(name, partShape.color(paper));
+  else office.part(name, partShape.color(powderCoatedSteel));
 };
 
-addBox('base', 0, 0, 0, 230, 120, 12, body);
+addBox('base', 0, 0, 0, 230, 120, 12, timber);
 for (let i = 0; i < shelfCount; i++) {
   const y = -38 + i * 34;
   const z = 24 + i * 37;
-  addBox(`divider-${i + 1}`, 0, y, z, 210, 12, 76, accent);
-  addBox(`floor-${i + 1}`, 0, y - 15, z - 8, 210, 48, 8, body);
+  addBox(`divider-${i + 1}`, 0, y, z, 210, 12, 76, paper);
+  addBox(`floor-${i + 1}`, 0, y - 15, z - 8, 210, 48, 8, timber);
 }
-addBox('back-panel', 0, 52, 22, 230, 12, 150, detail);
+addBox('back-panel', 0, 52, 22, 230, 12, 150, powderCoatedSteel);
 
 return office.model();

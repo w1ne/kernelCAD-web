@@ -1,6 +1,6 @@
 # Office kit
 
-Original low-poly office supplies, desk accessories and small workstation equipment. Models use millimetres, Z up, a `base` origin, and CC0 metadata. Each source has compact/standard format and body, accent and detail colour knobs; several items also expose useful counts such as pages, shelves, rings or tiers.
+Original low-poly office supplies, desk accessories and small workstation equipment. Models use millimetres, Z up, a `base` origin, and CC0 metadata. Each source has compact/standard format, material-specific color controls and `professional` / `classroom` appearance presets; several items also expose useful counts such as pages, shelves, rings or tiers.
 
 | id | asset |
 | --- | --- |
@@ -47,7 +47,14 @@ Original low-poly office supplies, desk accessories and small workstation equipm
 
 ## Use
 
-Open any `.kcad.ts` source in kernelCAD to inspect its parameters, change its format or palette, and export a GLB. For example, `catalog/kits/office/desk-organizer.kcad.ts` produces a desktop organizer with editable colours and proportions.
+Open any `.kcad.ts` source in kernelCAD to inspect its parameters, change its format or palette, and export a GLB. For example, `catalog/kits/office/desk-organizer.kcad.ts` produces a timber-and-steel desktop organizer with editable proportions and material colors.
+
+## Quality promotion
+
+The [office quality handoff](../../../artifacts/catalog-demos/office-quality-20261106/README.md)
+records the material mapping, before/after previews, source-driven preset
+renders, regenerated index, local checks, and inspected MP4. All 40 existing
+IDs were retained.
 
 ## Licence and provenance
 

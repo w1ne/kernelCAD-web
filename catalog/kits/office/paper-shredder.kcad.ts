@@ -1,40 +1,48 @@
+// Paper shredder: Compact office paper shredder with a feed slot, control panel and removable collection bin. Material controls: housing polymer, cutter steel, bin window glass.
+
 meta({
   name: 'paper-shredder',
   license: 'CC0-1.0',
   title: 'Paper shredder',
-  description: 'Compact office paper shredder with a feed slot, control panel and removable collection bin. Knobs: compact or standard format, housing, controls and panel colours.',
+  description: "Compact office paper shredder with a feed slot, control panel and removable collection bin. Controls: housing polymer, cutter steel, bin window glass.",
   tags: ['paper shredder', 'office machine', 'document disposal', 'office', 'equipment'],
   kit: 'office',
   category: 'prop',
   origin: 'base',
   compat: ['office', 'interior', 'desktop'],
-  triangleBudget: 180,
+  triangleBudget: 240,
 });
 
-const body = param('body', '#c4c7c5', { label: 'Body' });
-const accent = param('accent', '#41494e', { label: 'Accent' });
-const detail = param('detail', '#677d88', { label: 'Detail' });
+const polymer = param('polymer', '#b9c4c4', { label: 'Housing polymer' });
+const steel = param('steel', '#464b4d', { label: 'Cutter steel' });
+const glass = param('glass', '#73948b', { label: 'Bin window glass' });
 const format = param('format', 'standard', { choices: ['compact', 'standard'], label: 'Format' });
 const k = format.value === 'compact' ? 0.8 : 1;
 
 presets({
-  clean: { body: '#e8e7df', accent: '#66829a', detail: '#454b50' },
-  warm: { body: '#c8a875', accent: '#557581', detail: '#493c34' },
+  professional: { polymer: '#b9c4c4', steel: '#464b4d', glass: '#73948b' },
+  classroom: { polymer: '#4e758c', steel: '#d25e49', glass: '#d4b24d' },
 });
 
 const office = assembly('paper-shredder');
 
-const addBox = (name: string, x: number, y: number, z: number, w: number, d: number, h: number, colour: typeof body) => {
-  office.part(name, box(w * k, d * k, h * k, true).translate(x * k, y * k, (z + h / 2) * k).color(colour));
+const addBox = (name: string, x: number, y: number, z: number, w: number, d: number, h: number, colour: typeof polymer | typeof steel | typeof glass) => {
+  const partShape = box(w * k, d * k, h * k, true).translate(x * k, y * k, (z + h / 2) * k);
+  if (colour === polymer) office.part(name, partShape.color(polymer));
+  else if (colour === steel) office.part(name, partShape.color(steel));
+  else office.part(name, partShape.color(glass));
 };
 
-addBox('cabinet', 0, 0, 0, 300, 250, 420, body);
-addBox('top-cap', 0, 0, 420, 312, 260, 18, accent);
-addBox('feed-slot', 0, 0, 438, 190, 7, 3, detail);
-addBox('control-panel', 107, -72, 360, 62, 28, 44, accent);
-addBox('power-button', 107, -87, 380, 20, 4, 12, detail);
-addBox('bin-window', 0, -127, 230, 118, 4, 92, detail);
-addBox('left-foot', -118, 0, 0, 24, 220, 16, accent);
-addBox('right-foot', 118, 0, 0, 24, 220, 16, accent);
+addBox('cabinet', 0, 0, 0, 300, 250, 420, polymer);
+addBox('top-cap', 0, 0, 420, 312, 260, 18, steel);
+addBox('feed-slot', 0, 0, 438, 190, 7, 3, glass);
+addBox('control-panel', 107, -72, 360, 62, 28, 44, steel);
+addBox('power-button', 107, -87, 380, 20, 4, 12, glass);
+addBox('bin-window', 0, -127, 230, 118, 4, 92, glass);
+addBox('left-foot', -118, 0, 0, 24, 220, 16, steel);
+addBox('right-foot', 118, 0, 0, 24, 220, 16, steel);
+// The paired wheels make the tall collection cabinet read as a mobile shredder.
+office.part('front-caster-left', cylinder(20, 15).rotateX(90).translate(-116, -124, 17).color(steel));
+office.part('front-caster-right', cylinder(20, 15).rotateX(90).translate(116, -124, 17).color(steel));
 
 return office.model();

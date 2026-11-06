@@ -6,11 +6,13 @@ from those sources and must be rebuilt in the same change.
 
 ## Catalog quality snapshot (2026-11-06)
 
-The catalog quality gate reports **2,331/2,390 assets passing (97.5%)** with
-59 thin assets remaining. The latest round promoted all 40 existing
-solar-energy assets, increasing the workspace result from 2,291/2,390 (95.9%);
-no IDs or kits were added. The [solar-energy quality handoff](../artifacts/catalog-demos/solar-energy-quality-20261106/README.md)
+The catalog quality gate reports **2,371/2,390 assets passing (99.2%)** with
+19 thin assets remaining. The latest round promoted all 40 existing office
+assets, increasing the workspace result from 2,331/2,390 (97.5%); no IDs or
+kits were added. The [office quality handoff](../artifacts/catalog-demos/office-quality-20261106/README.md)
 records its source, preview, index, local-page, lint and integration evidence.
+The [solar-energy quality handoff](../artifacts/catalog-demos/solar-energy-quality-20261106/README.md)
+records the previous round.
 The [photo/video studio quality handoff](../artifacts/catalog-demos/photo-video-studio-quality-20261106/README.md)
 records the previous round.
 The [music quality handoff](../artifacts/catalog-demos/music-quality-20261106/README.md)
@@ -27,6 +29,20 @@ See the [Apiary quality handoff](../artifacts/catalog-demos/apiary-quality-promo
 and [airfield handoff](../artifacts/catalog-demos/airfield-quality-promotion-20261105/README.md)
 for source, preview, index, and verification evidence. These are local catalog
 checks and do not represent deployed behavior.
+
+## Office assets
+
+The [office kit](../catalog/kits/office/README.md) retains all 40 existing
+stationery, desk accessory, and workstation IDs. Their 120 generic body/accent/
+detail controls now name actual materials such as paperboard, polymer, steel,
+glass, rubber, timber, cork, and fabric. The 80 appearance entries now expose
+`professional` and `classroom` palettes. Feed openings, output lips, shredder
+casters, laminator rollers, stepped supports, and the scissors' tapered blades
+help the models read as their intended desk objects. All 40 previews were
+refreshed and indexed. The [quality handoff](../artifacts/catalog-demos/office-quality-20261106/README.md)
+contains the mappings, before/after images, actual preset renders, local checks,
+and inspected MP4. These are visualization assets; the local workflow does not
+establish deployed behavior, product specifications, or physical acceptance.
 
 ## Solar energy assets
 

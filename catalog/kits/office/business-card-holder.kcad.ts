@@ -1,8 +1,10 @@
+// Business card holder: Angled desktop business-card holder with a visible card stack and front stop. Material controls: anodized aluminum, card stock, rubber feet.
+
 meta({
   name: 'business-card-holder',
   license: 'CC0-1.0',
   title: 'Business card holder',
-  description: 'Angled desktop business-card holder with a visible card stack and front stop. Knobs: compact or standard format, holder, card and trim colours.',
+  description: "Angled desktop business-card holder with a visible card stack and front stop. Controls: anodized aluminum, card stock, rubber feet.",
   tags: ['business card holder', 'card holder', 'office', 'stationery', 'desk accessory'],
   kit: 'office',
   category: 'item',
@@ -11,27 +13,30 @@ meta({
   triangleBudget: 130,
 });
 
-const body = param('body', '#90989d', { label: 'Body' });
-const accent = param('accent', '#eeeae0', { label: 'Accent' });
-const detail = param('detail', '#3e464b', { label: 'Detail' });
+const anodizedAluminum = param('anodizedAluminum', '#a6afb2', { label: 'Anodized aluminum' });
+const cardStock = param('cardStock', '#f1ece1', { label: 'Card stock' });
+const rubber = param('rubber', '#343c40', { label: 'Rubber feet' });
 const format = param('format', 'standard', { choices: ['compact', 'standard'], label: 'Format' });
 const k = format.value === 'compact' ? 0.8 : 1;
 
 presets({
-  clean: { body: '#e8e7df', accent: '#66829a', detail: '#454b50' },
-  warm: { body: '#c8a875', accent: '#557581', detail: '#493c34' },
+  professional: { anodizedAluminum: '#a6afb2', cardStock: '#f1ece1', rubber: '#343c40' },
+  classroom: { anodizedAluminum: '#446c8c', cardStock: '#f4c66b', rubber: '#c6564d' },
 });
 
 const office = assembly('business-card-holder');
 
-const addBox = (name: string, x: number, y: number, z: number, w: number, d: number, h: number, colour: typeof body) => {
-  office.part(name, box(w * k, d * k, h * k, true).translate(x * k, y * k, (z + h / 2) * k).color(colour));
+const addBox = (name: string, x: number, y: number, z: number, w: number, d: number, h: number, colour: typeof anodizedAluminum | typeof cardStock | typeof rubber) => {
+  const partShape = box(w * k, d * k, h * k, true).translate(x * k, y * k, (z + h / 2) * k);
+  if (colour === anodizedAluminum) office.part(name, partShape.color(anodizedAluminum));
+  else if (colour === cardStock) office.part(name, partShape.color(cardStock));
+  else office.part(name, partShape.color(rubber));
 };
 
-addBox('base', 0, 0, 0, 125, 85, 8, body);
-addBox('back-rest', 0, 31, 8, 125, 12, 75, body);
-addBox('card-stack', 0, 5, 13, 104, 55, 16, accent);
-addBox('front-stop', 0, -35, 8, 125, 10, 28, body);
-addBox('front-mark', 0, -41, 16, 58, 3, 8, detail);
+addBox('base', 0, 0, 0, 125, 85, 8, anodizedAluminum);
+addBox('back-rest', 0, 31, 8, 125, 12, 75, anodizedAluminum);
+addBox('card-stack', 0, 5, 13, 104, 55, 16, cardStock);
+addBox('front-stop', 0, -35, 8, 125, 10, 28, anodizedAluminum);
+addBox('front-mark', 0, -41, 16, 58, 3, 8, rubber);
 
 return office.model();

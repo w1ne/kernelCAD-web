@@ -1,8 +1,10 @@
+// Ring binder: Standing ring binder with a spine label, cover boards and a choice of two to four visible rings. Material controls: cover polypropylene, paper, ring steel.
+
 meta({
   name: 'ring-binder',
   license: 'CC0-1.0',
   title: 'Ring binder',
-  description: 'Standing ring binder with a spine label, cover boards and a choice of two to four visible rings. Knobs: ring count, compact or standard format, cover, paper and hardware colours.',
+  description: "Standing ring binder with a spine label, cover boards and a choice of two to four visible rings. Controls: cover polypropylene, paper, ring steel.",
   tags: ['ring binder', 'binder', 'office folder', 'document storage', 'office'],
   kit: 'office',
   category: 'item',
@@ -11,15 +13,15 @@ meta({
   triangleBudget: 260,
 });
 
-const body = param('body', '#315d7b', { label: 'Body' });
-const accent = param('accent', '#e6e4dc', { label: 'Accent' });
-const detail = param('detail', '#bbc2c7', { label: 'Detail' });
+const polypropylene = param('polypropylene', '#4a6c8a', { label: 'Cover polypropylene' });
+const paper = param('paper', '#eee9db', { label: 'Paper' });
+const steel = param('steel', '#b0b6b8', { label: 'Ring steel' });
 const format = param('format', 'standard', { choices: ['compact', 'standard'], label: 'Format' });
 const k = format.value === 'compact' ? 0.8 : 1;
 
 presets({
-  clean: { body: '#e8e7df', accent: '#66829a', detail: '#454b50' },
-  warm: { body: '#c8a875', accent: '#557581', detail: '#493c34' },
+  professional: { polypropylene: '#4a6c8a', paper: '#eee9db', steel: '#b0b6b8' },
+  classroom: { polypropylene: '#d6644c', paper: '#f0de83', steel: '#d0a449' },
 });
 
 const rings = param('rings', '3', { choices: ['2', '3', '4'], label: 'Ring count' });
@@ -27,21 +29,27 @@ const ringCount = Number(rings.value);
 
 const office = assembly('ring-binder');
 
-const addBox = (name: string, x: number, y: number, z: number, w: number, d: number, h: number, colour: typeof body) => {
-  office.part(name, box(w * k, d * k, h * k, true).translate(x * k, y * k, (z + h / 2) * k).color(colour));
+const addBox = (name: string, x: number, y: number, z: number, w: number, d: number, h: number, colour: typeof polypropylene | typeof paper | typeof steel) => {
+  const partShape = box(w * k, d * k, h * k, true).translate(x * k, y * k, (z + h / 2) * k);
+  if (colour === polypropylene) office.part(name, partShape.color(polypropylene));
+  else if (colour === paper) office.part(name, partShape.color(paper));
+  else office.part(name, partShape.color(steel));
 };
-const addCylinder = (name: string, h: number, r: number, x: number, y: number, z: number, colour: typeof body) => {
-  office.part(name, cylinder(h * k, r * k).translate(x * k, y * k, z * k).color(colour));
+const addCylinder = (name: string, h: number, r: number, x: number, y: number, z: number, colour: typeof polypropylene | typeof paper | typeof steel) => {
+  const partShape = cylinder(h * k, r * k).translate(x * k, y * k, z * k);
+  if (colour === polypropylene) office.part(name, partShape.color(polypropylene));
+  else if (colour === paper) office.part(name, partShape.color(paper));
+  else office.part(name, partShape.color(steel));
 };
 
-addBox('back-cover', 0, 0, 0, 225, 285, 12, body);
-addBox('front-cover', 0, -24, 12, 225, 236, 8, body);
-addBox('spine', -108, -10, 12, 22, 262, 12, body);
-addBox('label-window', -108, -10, 25, 13, 100, 3, accent);
-addBox('paper-block', 0, 0, 12, 196, 226, 15, accent);
+addBox('back-cover', 0, 0, 0, 225, 285, 12, polypropylene);
+addBox('front-cover', 0, -24, 12, 225, 236, 8, polypropylene);
+addBox('spine', -108, -10, 12, 22, 262, 12, polypropylene);
+addBox('label-window', -108, -10, 25, 13, 100, 3, paper);
+addBox('paper-block', 0, 0, 12, 196, 226, 15, paper);
 for (let i = 0; i < ringCount; i++) {
   const y = -70 + i * (140 / Math.max(1, ringCount - 1));
-  addCylinder(`ring-${i + 1}`, 13, 5, -72, y, 28, detail);
+  addCylinder(`ring-${i + 1}`, 13, 5, -72, y, 28, steel);
 }
 
 return office.model();
