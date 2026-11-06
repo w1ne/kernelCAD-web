@@ -227547,13 +227547,15 @@
       "id": "pole-mount-transformer",
       "kit": "solar-energy",
       "title": "Pole-mount transformer",
-      "description": "Utility pole carrying a cylindrical transformer tank and crossarm insulators. Material controls: treated wood, powder-coated steel, porcelain ceramic.",
+      "description": "Overhead distribution transformer on a tapered timber pole: braced crossarm with porcelain pin insulators and line conductors, fused cutout with jumpers, round tank with domed lid, stiffener ring, hanger bracket, lid HV bushing, side LV bushings with service drop, nameplate and pole ground wire. Material controls: treated wood, tank paint, porcelain, galvanized hardware. Tank size 25, 50 or 100 kVA; fieldService and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "pole-mount transformer",
+        "distribution transformer",
+        "utility pole",
+        "grid tie",
         "solar energy",
-        "photovoltaic",
-        "renewable energy",
         "low poly",
         "scene prop",
         "CC0"
@@ -227568,8 +227570,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/pole-mount-transformer.kcad.ts",
       "preview": "/assets/solar-energy-pole-mount-transformer.png",
-      "sourceSha256": "7b1db1df3d9ab4717cbd74e871a7a0b00aade979fe5145029cdd8f2619f1b0e4",
-      "triangleBudget": 1800,
+      "sourceSha256": "5ab15c344538761fb4b7a85b1fcfdf6ab7e6e8ad993f125d02d4a83f77b0ea53",
+      "triangleBudget": 2000,
       "params": [
         {
           "name": "scale",
@@ -227581,42 +227583,61 @@
           "step": 0.05
         },
         {
+          "name": "rating",
+          "type": "choice",
+          "default": "50kva",
+          "label": "Tank size",
+          "choices": [
+            "25kva",
+            "50kva",
+            "100kva"
+          ]
+        },
+        {
           "name": "wood",
           "type": "color",
           "default": "#856849",
-          "label": "Treated wood"
+          "label": "Treated wood pole and crossarm"
         },
         {
           "name": "powderCoat",
           "type": "color",
-          "default": "#687c7c",
-          "label": "Powder-coated steel"
+          "default": "#8f9a98",
+          "label": "Transformer tank paint"
         },
         {
           "name": "ceramic",
           "type": "color",
           "default": "#eee8d8",
-          "label": "Porcelain ceramic"
+          "label": "Porcelain insulators and bushings"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#5c6366",
+          "label": "Galvanized brackets, braces and wires"
         }
       ],
       "presets": {
         "fieldService": {
           "wood": "#755b43",
           "powderCoat": "#7a807b",
-          "ceramic": "#e7e0ce"
+          "ceramic": "#e7e0ce",
+          "hardware": "#4f5659"
         },
         "highVisibility": {
           "wood": "#8a6440",
-          "powderCoat": "#d1722b",
-          "ceramic": "#fff3d1"
+          "powderCoat": "#a9b8b4",
+          "ceramic": "#8a4b2c",
+          "hardware": "#6c7477"
         }
       },
       "stats": {
-        "triangles": 232,
+        "triangles": 1848,
         "sizeM": [
-          0.44,
-          1.468,
-          0.264
+          3.203399,
+          7.801794,
+          3.2
         ],
         "minUpM": 0,
         "materials": 1
@@ -227632,12 +227653,36 @@
           "param": "wood"
         },
         {
-          "name": "powderCoat",
-          "color": "#687c7c",
+          "name": "hardware",
+          "color": "#5c6366",
           "parts": [
-            "transformer-tank"
+            "pole-top-cap",
+            "crossarm-through-bolt",
+            "crossarm-brace-left",
+            "crossarm-brace-right",
+            "insulator-0-pin",
+            "line-conductor-0",
+            "insulator-1-pin",
+            "line-conductor-1",
+            "insulator-2-pin",
+            "line-conductor-2",
+            "hanger-bracket",
+            "hanger-bolt-upper",
+            "hanger-bolt-lower",
+            "drain-valve",
+            "hv-terminal",
+            "cutout-bracket",
+            "cutout-top-jumper",
+            "cutout-to-bushing-jumper",
+            "arrester-bracket",
+            "lv-terminal-0",
+            "lv-terminal-1",
+            "lv-terminal-2",
+            "service-drop",
+            "ground-wire",
+            "ground-wire-guard"
           ],
-          "param": "powderCoat"
+          "param": "hardware"
         },
         {
           "name": "ceramic",
@@ -227645,9 +227690,32 @@
           "parts": [
             "insulator-0",
             "insulator-1",
-            "insulator-2"
+            "insulator-2",
+            "nameplate",
+            "hv-bushing",
+            "cutout-body",
+            "surge-arrester",
+            "surge-arrester-shed-0",
+            "surge-arrester-shed-1",
+            "surge-arrester-shed-2",
+            "lv-bushing-0",
+            "lv-bushing-0-skirt",
+            "lv-bushing-1",
+            "lv-bushing-1-skirt",
+            "lv-bushing-2",
+            "lv-bushing-2-skirt"
           ],
           "param": "ceramic"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#8f9a98",
+          "parts": [
+            "transformer-tank",
+            "tank-stiffener-ring",
+            "cutout-fuse-tube"
+          ],
+          "param": "powderCoat"
         }
       ]
     },
@@ -228347,13 +228415,16 @@
       "id": "pv-panel-cleaning-robot",
       "kit": "solar-energy",
       "title": "PV panel cleaning robot",
-      "description": "Tracked panel-cleaning carriage with four idler wheels per side and a full-width brush shaft. Material controls: polymer, rubber, galvanized steel, stainless steel.",
+      "description": "Autonomous waterless PV row cleaning robot: full-height aluminium beam, bristle brush roll under a curved hood, top and bottom drive carriages with wheels riding the module frames, PV charging panel and control box with antenna, shown on a tilted three-module row section with purlins, torque tube and posts or parked on the ground. Material controls: hood polymer, wheel and brush rubber, galvanized steel, aluminium and stainless, solar glass. Placement on-row or parked; fieldService and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
-        "solar energy",
+        "solar panel cleaning robot",
+        "PV cleaning",
+        "brush robot",
+        "O&M",
         "photovoltaic",
-        "renewable energy",
+        "solar energy",
         "low poly",
         "scene prop",
         "CC0"
@@ -228368,7 +228439,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/pv-panel-cleaning-robot.kcad.ts",
       "preview": "/assets/solar-energy-pv-panel-cleaning-robot.png",
-      "sourceSha256": "ec47eaabc77474d3d1d4584c36249bef098b9b195c6a6a746aada2a97e721b56",
+      "sourceSha256": "581f691a56c4cd00a0d46c8f2ba87e4870d099b1c6d6bbeeebd1b3e6d79482f5",
       "triangleBudget": 1800,
       "params": [
         {
@@ -228381,96 +228452,145 @@
           "step": 0.05
         },
         {
+          "name": "placement",
+          "type": "choice",
+          "default": "on-row",
+          "label": "Placement",
+          "choices": [
+            "on-row",
+            "parked"
+          ]
+        },
+        {
           "name": "polymer",
           "type": "color",
-          "default": "#daddd7",
-          "label": "Polymer"
+          "default": "#f0b429",
+          "label": "Hood and carriage polymer"
         },
         {
           "name": "rubber",
           "type": "color",
           "default": "#262c2e",
-          "label": "Rubber"
+          "label": "Wheel and brush rubber"
         },
         {
           "name": "galvanizedSteel",
           "type": "color",
           "default": "#748184",
-          "label": "Galvanized steel"
+          "label": "Galvanized row posts, tube and purlins"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#c3caca",
-          "label": "Stainless steel"
+          "label": "Aluminium beam, module frames and axles"
+        },
+        {
+          "name": "solarGlass",
+          "type": "color",
+          "default": "#244a68",
+          "label": "Solar glass"
         }
       ],
       "presets": {
         "fieldService": {
-          "polymer": "#cdd2cb",
+          "polymer": "#e7e9e4",
           "rubber": "#282d2e",
           "galvanizedSteel": "#68787b",
-          "stainlessSteel": "#abb5b7"
+          "stainlessSteel": "#abb5b7",
+          "solarGlass": "#1e4668"
         },
         "highVisibility": {
-          "polymer": "#e6e0d1",
+          "polymer": "#ef6c1f",
           "rubber": "#232728",
           "galvanizedSteel": "#536367",
-          "stainlessSteel": "#e0e5e4"
+          "stainlessSteel": "#e0e5e4",
+          "solarGlass": "#183a5b"
         }
       },
       "stats": {
-        "triangles": 456,
+        "triangles": 872,
         "sizeM": [
-          0.5148,
-          0.1912,
-          0.3122
+          3.48,
+          2.455322,
+          2.407114
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#daddd7",
+          "name": "stainlessSteel",
+          "color": "#c3caca",
           "parts": [
-            "cleaning-robot-body",
-            "brush-bar"
+            "robot-beam",
+            "beam-top-rib",
+            "brush-axle",
+            "lower-wheel-rear-hub",
+            "lower-wheel-front-hub",
+            "upper-wheel-rear-hub",
+            "upper-wheel-front-hub",
+            "charging-panel-frame",
+            "module-0-frame",
+            "module-0-seam",
+            "module-1-frame",
+            "module-1-seam",
+            "module-2-frame",
+            "module-2-seam"
           ],
-          "param": "polymer"
+          "param": "stainlessSteel"
         },
         {
           "name": "rubber",
           "color": "#262c2e",
           "parts": [
-            "robot-track--138-6",
-            "robot-track-138-6"
+            "brush-roll",
+            "lower-wheel-rear",
+            "lower-wheel-front",
+            "upper-wheel-rear",
+            "upper-wheel-front",
+            "antenna"
           ],
           "param": "rubber"
+        },
+        {
+          "name": "polymer",
+          "color": "#f0b429",
+          "parts": [
+            "brush-hood",
+            "lower-carriage",
+            "lower-carriage-cover",
+            "upper-carriage",
+            "upper-carriage-cover",
+            "control-box"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "solarGlass",
+          "color": "#244a68",
+          "parts": [
+            "charging-panel-glass",
+            "status-led",
+            "module-0-glass",
+            "module-1-glass",
+            "module-2-glass"
+          ],
+          "param": "solarGlass"
         },
         {
           "name": "galvanizedSteel",
           "color": "#748184",
           "parts": [
-            "brush-shaft",
-            "handle-rail"
+            "purlin-lower",
+            "purlin-upper",
+            "torque-tube",
+            "post-left",
+            "bearing-left",
+            "post-right",
+            "bearing-right"
           ],
           "param": "galvanizedSteel"
-        },
-        {
-          "name": "stainlessSteel",
-          "color": "#c3caca",
-          "parts": [
-            "robot-idler-left-0",
-            "robot-idler-left-1",
-            "robot-idler-left-2",
-            "robot-idler-left-3",
-            "robot-idler-right-0",
-            "robot-idler-right-1",
-            "robot-idler-right-2",
-            "robot-idler-right-3"
-          ],
-          "param": "stainlessSteel"
         }
       ]
     },
@@ -229164,13 +229284,16 @@
       "id": "solar-carport-canopy",
       "kit": "solar-energy",
       "title": "Solar carport canopy",
-      "description": "Four-post parking canopy topped by a shallow six-module photovoltaic roof. Material controls: galvanized steel, frame aluminum, solar glass.",
+      "description": "Two-stall solar carport: I-section steel columns on concrete piers, sloped I-beam girders and C-purlins carrying fifteen framed PV modules in portrait, drip gutter, knee braces, wheel stops and a column-mounted EV charger. Material controls: galvanized steel, frame aluminum, solar glass, concrete, charger housing. Structure four-post or cantilever; fieldService and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
-        "solar energy",
+        "solar carport",
+        "carport",
+        "parking canopy",
         "photovoltaic",
-        "renewable energy",
+        "EV charging",
+        "solar energy",
         "low poly",
         "scene prop",
         "CC0"
@@ -229185,7 +229308,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/solar-carport-canopy.kcad.ts",
       "preview": "/assets/solar-energy-solar-carport-canopy.png",
-      "sourceSha256": "817813aeb7e46d10d98bfb3b951a670b03d721e3189296170e4df70f5e6eb64b",
+      "sourceSha256": "ffb6db0a815574936decf20af37719c759b3542bd61bd0f34561d30ceb96848c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -229198,42 +229321,68 @@
           "step": 0.05
         },
         {
+          "name": "structure",
+          "type": "choice",
+          "default": "four-post",
+          "label": "Structure",
+          "choices": [
+            "four-post",
+            "cantilever"
+          ]
+        },
+        {
           "name": "galvanizedSteel",
           "type": "color",
           "default": "#748184",
-          "label": "Galvanized steel"
+          "label": "Galvanized steel columns, girders and purlins"
         },
         {
           "name": "aluminum",
           "type": "color",
           "default": "#b7c1c4",
-          "label": "Frame aluminum"
+          "label": "Module frame and gutter aluminum"
         },
         {
           "name": "solarGlass",
           "type": "color",
           "default": "#244a68",
           "label": "Solar glass"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#b3ada2",
+          "label": "Concrete piers and wheel stops"
+        },
+        {
+          "name": "chargerPlastic",
+          "type": "color",
+          "default": "#2f8f6a",
+          "label": "EV charger housing"
         }
       ],
       "presets": {
         "fieldService": {
           "galvanizedSteel": "#68787b",
           "aluminum": "#a9b5b9",
-          "solarGlass": "#1e4668"
+          "solarGlass": "#1e4668",
+          "concrete": "#a39d92",
+          "chargerPlastic": "#3a6f9c"
         },
         "highVisibility": {
           "galvanizedSteel": "#536367",
           "aluminum": "#d4dcdf",
-          "solarGlass": "#183a5b"
+          "solarGlass": "#183a5b",
+          "concrete": "#c4beb2",
+          "chargerPlastic": "#e0a31f"
         }
       },
       "stats": {
-        "triangles": 216,
+        "triangles": 1504,
         "sizeM": [
-          1.9,
-          0.922,
-          1.1208
+          5.9,
+          3.645655,
+          5.432878
         ],
         "minUpM": 0,
         "materials": 1
@@ -229243,12 +229392,34 @@
           "name": "galvanizedSteel",
           "color": "#748184",
           "parts": [
-            "canopy-post-0-0",
-            "canopy-post-0-1",
-            "canopy-post-1-0",
-            "canopy-post-1-1",
-            "canopy-front-beam",
-            "canopy-back-beam"
+            "girder-left",
+            "girder-right",
+            "purlin-0",
+            "purlin-1",
+            "purlin-2",
+            "purlin-3",
+            "purlin-4",
+            "purlin-5",
+            "base-plate-left-rear",
+            "column-left-rear",
+            "column-cap-left-rear",
+            "knee-brace-left-rear",
+            "base-plate-left-front",
+            "column-left-front",
+            "column-cap-left-front",
+            "knee-brace-left-front",
+            "base-plate-right-rear",
+            "column-right-rear",
+            "column-cap-right-rear",
+            "knee-brace-right-rear",
+            "base-plate-right-front",
+            "column-right-front",
+            "column-cap-right-front",
+            "knee-brace-right-front",
+            "ev-charger-holster",
+            "ev-charger-cable-0",
+            "ev-charger-cable-1",
+            "ev-charger-cable-2"
           ],
           "param": "galvanizedSteel"
         },
@@ -229256,12 +229427,37 @@
           "name": "aluminum",
           "color": "#b7c1c4",
           "parts": [
-            "canopy-pv-0-0-frame",
-            "canopy-pv-0-1-frame",
-            "canopy-pv-1-0-frame",
-            "canopy-pv-1-1-frame",
-            "canopy-pv-2-0-frame",
-            "canopy-pv-2-1-frame"
+            "drip-gutter",
+            "module-0-0-frame",
+            "module-0-0-seam",
+            "module-0-1-frame",
+            "module-0-1-seam",
+            "module-0-2-frame",
+            "module-0-2-seam",
+            "module-0-3-frame",
+            "module-0-3-seam",
+            "module-0-4-frame",
+            "module-0-4-seam",
+            "module-1-0-frame",
+            "module-1-0-seam",
+            "module-1-1-frame",
+            "module-1-1-seam",
+            "module-1-2-frame",
+            "module-1-2-seam",
+            "module-1-3-frame",
+            "module-1-3-seam",
+            "module-1-4-frame",
+            "module-1-4-seam",
+            "module-2-0-frame",
+            "module-2-0-seam",
+            "module-2-1-frame",
+            "module-2-1-seam",
+            "module-2-2-frame",
+            "module-2-2-seam",
+            "module-2-3-frame",
+            "module-2-3-seam",
+            "module-2-4-frame",
+            "module-2-4-seam"
           ],
           "param": "aluminum"
         },
@@ -229269,14 +229465,45 @@
           "name": "solarGlass",
           "color": "#244a68",
           "parts": [
-            "canopy-pv-0-0-surface",
-            "canopy-pv-0-1-surface",
-            "canopy-pv-1-0-surface",
-            "canopy-pv-1-1-surface",
-            "canopy-pv-2-0-surface",
-            "canopy-pv-2-1-surface"
+            "module-0-0-glass",
+            "module-0-1-glass",
+            "module-0-2-glass",
+            "module-0-3-glass",
+            "module-0-4-glass",
+            "module-1-0-glass",
+            "module-1-1-glass",
+            "module-1-2-glass",
+            "module-1-3-glass",
+            "module-1-4-glass",
+            "module-2-0-glass",
+            "module-2-1-glass",
+            "module-2-2-glass",
+            "module-2-3-glass",
+            "module-2-4-glass",
+            "ev-charger-screen"
           ],
           "param": "solarGlass"
+        },
+        {
+          "name": "concrete",
+          "color": "#b3ada2",
+          "parts": [
+            "pier-left-rear",
+            "pier-left-front",
+            "pier-right-rear",
+            "pier-right-front",
+            "wheel-stop-left",
+            "wheel-stop-right"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "chargerPlastic",
+          "color": "#2f8f6a",
+          "parts": [
+            "ev-charger-housing"
+          ],
+          "param": "chargerPlastic"
         }
       ]
     },
@@ -230203,13 +230430,16 @@
       "id": "solar-weather-station",
       "kit": "solar-energy",
       "title": "Solar weather station",
-      "description": "Compact instrument mast with a crossarm, sensor housings and wind vane. Material controls: galvanized steel, frame aluminum, polymer.",
+      "description": "PV plant meteorological station on a tripod mast: two glass-domed pyranometers (global horizontal and plane-of-array), stacked-plate temperature radiation shield, rain gauge, logger enclosure with its own PV charging panel, crossarm with cup anemometer and wind vane or ultrasonic wind sensor, lightning rod. Material controls: galvanized steel, aluminum, white polymer, dome glass. Wind sensor cups-vane or ultrasonic; fieldService and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "weather station",
+        "pyranometer",
+        "irradiance",
+        "anemometer",
+        "meteorological mast",
         "solar energy",
-        "photovoltaic",
-        "renewable energy",
         "low poly",
         "scene prop",
         "CC0"
@@ -230224,7 +230454,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/solar-weather-station.kcad.ts",
       "preview": "/assets/solar-energy-solar-weather-station.png",
-      "sourceSha256": "8a6b174077c46ca2888fe539660ffd1f7ffd4cb231bf871362f423ea99d646b0",
+      "sourceSha256": "99bbeb6635ccaadc373ce556ed57ec3a7d21ef3ff537c5d274d31a48b5cc5329",
       "triangleBudget": 1800,
       "params": [
         {
@@ -230237,42 +230467,60 @@
           "step": 0.05
         },
         {
+          "name": "wind",
+          "type": "choice",
+          "default": "cups-vane",
+          "label": "Wind sensor",
+          "choices": [
+            "cups-vane",
+            "ultrasonic"
+          ]
+        },
+        {
           "name": "galvanizedSteel",
           "type": "color",
           "default": "#748184",
-          "label": "Galvanized steel"
+          "label": "Galvanized mast and tripod steel"
         },
         {
           "name": "aluminum",
           "type": "color",
           "default": "#b7c1c4",
-          "label": "Frame aluminum"
+          "label": "Aluminum arms and crossarm"
         },
         {
           "name": "polymer",
           "type": "color",
-          "default": "#daddd7",
-          "label": "Polymer"
+          "default": "#e9ebe6",
+          "label": "White sensor and enclosure polymer"
+        },
+        {
+          "name": "domeGlass",
+          "type": "color",
+          "default": "#2b5878",
+          "label": "Pyranometer dome and PV glass"
         }
       ],
       "presets": {
         "fieldService": {
           "galvanizedSteel": "#68787b",
           "aluminum": "#a9b5b9",
-          "polymer": "#cdd2cb"
+          "polymer": "#cdd2cb",
+          "domeGlass": "#244e6e"
         },
         "highVisibility": {
           "galvanizedSteel": "#536367",
           "aluminum": "#d4dcdf",
-          "polymer": "#e6e0d1"
+          "polymer": "#f2ece0",
+          "domeGlass": "#1c6c94"
         }
       },
       "stats": {
-        "triangles": 116,
+        "triangles": 1752,
         "sizeM": [
-          0.504,
-          1.3022,
-          0.288
+          1.864012,
+          3.2,
+          1.614282
         ],
         "minUpM": 0,
         "materials": 1
@@ -230282,29 +230530,80 @@
           "name": "galvanizedSteel",
           "color": "#748184",
           "parts": [
-            "instrument-base",
-            "instrument-mast"
+            "mast",
+            "tripod-collar",
+            "tripod-leg-0",
+            "tripod-foot-0",
+            "tripod-strut-0",
+            "tripod-leg-1",
+            "tripod-foot-1",
+            "tripod-strut-1",
+            "tripod-leg-2",
+            "tripod-foot-2",
+            "tripod-strut-2",
+            "mast-foot",
+            "logger-glands",
+            "lightning-rod"
           ],
           "param": "galvanizedSteel"
+        },
+        {
+          "name": "polymer",
+          "color": "#e9ebe6",
+          "parts": [
+            "logger-enclosure",
+            "shield-plate-0",
+            "shield-plate-1",
+            "shield-plate-2",
+            "shield-plate-3",
+            "shield-plate-4",
+            "shield-plate-5",
+            "shield-plate-6",
+            "shield-cap",
+            "ghi-pyranometer-sunshade",
+            "ghi-pyranometer-body",
+            "poa-pyranometer-sunshade",
+            "poa-pyranometer-body",
+            "rain-gauge",
+            "anemometer-housing",
+            "anemometer-cup-0",
+            "anemometer-cup-1",
+            "anemometer-cup-2",
+            "vane-pivot",
+            "vane-counterweight",
+            "vane-tail-fin"
+          ],
+          "param": "polymer"
         },
         {
           "name": "aluminum",
           "color": "#b7c1c4",
           "parts": [
-            "weather-crossarm"
+            "logger-door-seam",
+            "logger-latch",
+            "charging-panel-frame",
+            "charging-panel-arm",
+            "shield-arm",
+            "pyranometer-arm",
+            "pyranometer-arm-stub",
+            "rain-gauge-arm",
+            "crossarm",
+            "anemometer-arm-0",
+            "anemometer-arm-1",
+            "anemometer-arm-2",
+            "vane-boom"
           ],
           "param": "aluminum"
         },
         {
-          "name": "polymer",
-          "color": "#daddd7",
+          "name": "domeGlass",
+          "color": "#2b5878",
           "parts": [
-            "sensor-pod-0",
-            "sensor-pod-1",
-            "sensor-pod-2",
-            "wind-vane-fin"
+            "charging-panel-glass",
+            "ghi-pyranometer-dome",
+            "poa-pyranometer-dome"
           ],
-          "param": "polymer"
+          "param": "domeGlass"
         }
       ]
     },
@@ -230425,13 +230724,16 @@
       "id": "string-inverter",
       "kit": "solar-energy",
       "title": "String inverter",
-      "description": "Wall-mounted string inverter cabinet with cooling ribs, display and cable glands. Material controls: stainless steel, powder-coated steel, display glass, rubber.",
+      "description": "Field-mounted PV string inverter on a galvanized two-post strut stand: chamfered sealed enclosure, finned rear heat sink, sun and rain hood, LED status strip and display, paired MC4 string connectors, DC isolator knobs, cable glands and cables to a ground conduit. Material controls: stainless and galvanized steel, enclosure powder coat, display glass, rubber, isolator polymer. Rating commercial or utility; fieldService and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
-        "solar energy",
+        "string inverter",
+        "solar inverter",
+        "PV inverter",
+        "MC4",
         "photovoltaic",
-        "renewable energy",
+        "solar energy",
         "low poly",
         "scene prop",
         "CC0"
@@ -230446,7 +230748,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/string-inverter.kcad.ts",
       "preview": "/assets/solar-energy-string-inverter.png",
-      "sourceSha256": "714284c24f5503e16951797682536fbf631cc7a5c27bbc6a5a1a4a33004c6c30",
+      "sourceSha256": "12c93adddde74a658a7640ce655a4c5adfac2e0aac1ab15347879512cd7f03fc",
       "triangleBudget": 1800,
       "params": [
         {
@@ -230459,50 +230761,68 @@
           "step": 0.05
         },
         {
+          "name": "rating",
+          "type": "choice",
+          "default": "utility",
+          "label": "Inverter rating",
+          "choices": [
+            "commercial",
+            "utility"
+          ]
+        },
+        {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#c3caca",
-          "label": "Stainless steel"
+          "label": "Stainless hood, heat sink and galvanized stand"
         },
         {
           "name": "powderCoat",
           "type": "color",
-          "default": "#687c7c",
-          "label": "Powder-coated steel"
+          "default": "#dfe3e1",
+          "label": "Enclosure powder coat"
         },
         {
           "name": "displayGlass",
           "type": "color",
           "default": "#24515d",
-          "label": "Display glass"
+          "label": "Display and LED strip glass"
         },
         {
           "name": "rubber",
           "type": "color",
           "default": "#262c2e",
-          "label": "Rubber"
+          "label": "Cables, glands and connectors rubber"
+        },
+        {
+          "name": "isolatorPolymer",
+          "type": "color",
+          "default": "#c8352b",
+          "label": "DC isolator knob polymer"
         }
       ],
       "presets": {
         "fieldService": {
           "stainlessSteel": "#abb5b7",
-          "powderCoat": "#7a807b",
+          "powderCoat": "#c9cec9",
           "displayGlass": "#376a73",
-          "rubber": "#282d2e"
+          "rubber": "#282d2e",
+          "isolatorPolymer": "#c8352b"
         },
         "highVisibility": {
           "stainlessSteel": "#e0e5e4",
           "powderCoat": "#d1722b",
           "displayGlass": "#167d95",
-          "rubber": "#232728"
+          "rubber": "#232728",
+          "isolatorPolymer": "#f2c230"
         }
       },
       "stats": {
-        "triangles": 336,
+        "triangles": 1252,
         "sizeM": [
-          0.4588,
-          0.6408,
-          0.2106
+          1.15,
+          1.696,
+          0.575
         ],
         "minUpM": 0,
         "materials": 1
@@ -230512,29 +230832,45 @@
           "name": "stainlessSteel",
           "color": "#c3caca",
           "parts": [
-            "inverter-plinth",
-            "inverter-handle-1",
-            "inverter-vent-1",
-            "inverter-vent-2",
-            "inverter-vent-3",
-            "inverter-vent-4",
-            "inverter-vent-5",
-            "inverter-cooling-fin-0",
-            "inverter-cooling-fin-1",
-            "inverter-cooling-fin-2",
-            "inverter-cooling-fin-3",
-            "inverter-cooling-fin-4",
-            "inverter-cooling-fin-5",
-            "inverter-cooling-fin-6"
+            "stand-foot-left",
+            "stand-post-left",
+            "stand-brace-left",
+            "stand-foot-right",
+            "stand-post-right",
+            "stand-brace-right",
+            "stand-rail-upper",
+            "stand-rail-lower",
+            "heat-sink-base",
+            "heat-sink-fin-0",
+            "heat-sink-fin-1",
+            "heat-sink-fin-2",
+            "heat-sink-fin-3",
+            "heat-sink-fin-4",
+            "heat-sink-fin-5",
+            "heat-sink-fin-6",
+            "heat-sink-fin-7",
+            "heat-sink-fin-8",
+            "heat-sink-fin-9",
+            "heat-sink-fin-10",
+            "heat-sink-fin-11",
+            "heat-sink-fin-12",
+            "heat-sink-fin-13",
+            "heat-sink-fin-14",
+            "logo-band",
+            "rain-hood",
+            "rain-hood-lip",
+            "rain-hood-arm-left",
+            "rain-hood-arm-right",
+            "ground-conduit"
           ],
           "param": "stainlessSteel"
         },
         {
           "name": "powderCoat",
-          "color": "#687c7c",
+          "color": "#dfe3e1",
           "parts": [
             "inverter-body",
-            "inverter-door-1"
+            "front-cover"
           ],
           "param": "powderCoat"
         },
@@ -230542,7 +230878,8 @@
           "name": "displayGlass",
           "color": "#24515d",
           "parts": [
-            "inverter-display"
+            "led-status-strip",
+            "display-window"
           ],
           "param": "displayGlass"
         },
@@ -230550,11 +230887,40 @@
           "name": "rubber",
           "color": "#262c2e",
           "parts": [
-            "inverter-cable-port-0",
-            "inverter-cable-port-1",
-            "inverter-cable-port-2"
+            "mc4-plus-0",
+            "mc4-minus-0",
+            "mc4-plus-1",
+            "mc4-minus-1",
+            "mc4-plus-2",
+            "mc4-minus-2",
+            "mc4-plus-3",
+            "mc4-minus-3",
+            "mc4-plus-4",
+            "mc4-minus-4",
+            "mc4-plus-5",
+            "mc4-minus-5",
+            "mc4-plus-6",
+            "mc4-minus-6",
+            "mc4-plus-7",
+            "mc4-minus-7",
+            "ac-gland",
+            "comms-gland",
+            "ac-cable",
+            "string-cable-drop",
+            "string-cable-run"
           ],
           "param": "rubber"
+        },
+        {
+          "name": "isolatorPolymer",
+          "color": "#c8352b",
+          "parts": [
+            "dc-isolator-0",
+            "dc-isolator-0-handle",
+            "dc-isolator-1",
+            "dc-isolator-1-handle"
+          ],
+          "param": "isolatorPolymer"
         }
       ]
     },

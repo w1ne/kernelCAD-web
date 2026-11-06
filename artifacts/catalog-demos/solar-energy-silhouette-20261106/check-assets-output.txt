@@ -1,0 +1,5 @@
+pole-mount-transformer: 1848/2000 tris, size 3.203399 x 7.801794 x 3.2 m, minUp 0
+solar-carport-canopy: 1504/1800 tris, size 5.9 x 3.645655 x 5.432878 m, minUp 0
+string-inverter: 1252/1800 tris, size 1.15 x 1.696 x 0.575 m, minUp 0
+solar-weather-station: 1752/1800 tris, size 1.864012 x 3.2 x 1.614282 m, minUp 0
+pv-panel-cleaning-robot: 872/1800 tris, size 3.48 x 2.455322 x 2.407114 m, minUp 0
