@@ -1,0 +1,113 @@
+{
+  "date": "2026-11-06",
+  "scope": "visual quality follow-up for three existing standard-components assets; no new assets or kits",
+  "featuredAssets": [
+    "timing-belt-pulley",
+    "door-hinge",
+    "din-rail-terminal-block"
+  ],
+  "materialControls": {
+    "timing-belt-pulley": [
+      "aluminum",
+      "steel",
+      "hardware"
+    ],
+    "door-hinge": [
+      "steel",
+      "brass",
+      "fasteners"
+    ],
+    "din-rail-terminal-block": [
+      "polymer",
+      "steel",
+      "copper"
+    ]
+  },
+  "presets": [
+    "dark",
+    "brass",
+    "weathered"
+  ],
+  "sizeChoices": [
+    "compact",
+    "standard",
+    "large"
+  ],
+  "triangleBudgets": {
+    "timing-belt-pulley": 1380,
+    "door-hinge": 1600,
+    "din-rail-terminal-block": 500
+  },
+  "previewRenderer": "scripts/renderCatalogPreviews.ts; deterministic low-poly GLB software render at the default parameter values",
+  "previewAssetIDs": [
+    "angle-bracket",
+    "base-mounting-plate",
+    "beam-coupling",
+    "blind-flange",
+    "bulkhead-adapter",
+    "cable-clamp",
+    "cable-gland",
+    "caster-wheel",
+    "clevis-pin",
+    "din-rail",
+    "din-rail-end-stop",
+    "din-rail-terminal-block",
+    "door-hinge",
+    "drawer-slide-channel",
+    "flange-bearing-housing",
+    "flat-joining-plate",
+    "gusset-bracket",
+    "handle-pull",
+    "handwheel",
+    "hose-barb-adapter",
+    "jaw-coupling",
+    "knurled-knob",
+    "leveling-foot",
+    "linear-guide-carriage",
+    "linear-guide-rail",
+    "panel-clamp",
+    "piano-hinge",
+    "pillow-block-housing",
+    "pipe-coupling",
+    "pipe-elbow-45",
+    "pipe-elbow-90",
+    "pipe-flange",
+    "pipe-reducer",
+    "pipe-saddle-clamp",
+    "pipe-tee",
+    "pipe-union",
+    "retaining-ring",
+    "rubber-bumper",
+    "shaft-collar",
+    "shaft-coupling",
+    "shim-pack",
+    "split-shaft-collar",
+    "square-mounting-flange",
+    "t-slot-angle-bracket",
+    "t-slot-end-cap",
+    "timing-belt-pulley",
+    "tube-clamp",
+    "tubular-spacer",
+    "u-bracket",
+    "v-belt-pulley"
+  ],
+  "catalogPreviewInvocation": "npx tsx scripts/renderCatalogPreviews.ts angle-bracket base-mounting-plate beam-coupling blind-flange bulkhead-adapter cable-clamp cable-gland caster-wheel clevis-pin din-rail din-rail-end-stop din-rail-terminal-block door-hinge drawer-slide-channel flange-bearing-housing flat-joining-plate gusset-bracket handle-pull handwheel hose-barb-adapter jaw-coupling knurled-knob leveling-foot linear-guide-carriage linear-guide-rail panel-clamp piano-hinge pillow-block-housing pipe-coupling pipe-elbow-45 pipe-elbow-90 pipe-flange pipe-reducer pipe-saddle-clamp pipe-tee pipe-union retaining-ring rubber-bumper shaft-collar shaft-coupling shim-pack split-shaft-collar square-mounting-flange t-slot-angle-bracket t-slot-end-cap timing-belt-pulley tube-clamp tubular-spacer u-bracket v-belt-pulley",
+  "variantInvocation": "npx tsx artifacts/catalog-demos/standard-components-visible-details-20261106/render_visible_details_variants.ts",
+  "assetCheckInvocation": "npx tsx scripts/checkCatalogAsset.ts catalog/kits/standard-components/<id>.kcad.ts --png artifacts/catalog-demos/standard-components-visible-details-20261106/asset-renders/<id>.png",
+  "catalogBuildInvocation": "npx tsx scripts/buildAssetCatalog.ts",
+  "qualityGateInvocation": "python3 scripts/checkCatalogQuality.py && python3 scripts/checkCatalogQuality.py --kit standard-components",
+  "lintInvocation": "npx eslint catalog/kits/standard-components/",
+  "integrationInvocation": "npx vitest run tests/integration/catalog/",
+  "catalogPagesInvocation": "npm run catalog:pages",
+  "caption": "Local geometry evaluation, material preset replay, preview rendering, generated index and local page checks only. The branch is not deployed; no vendor-standard dimensions, manufacturing suitability or physical acceptance are claimed.",
+  "video": "artifacts/catalog-demos/standard-components-visible-details-20261106/standard-components-visible-details.mp4",
+  "captureInvocation": "python3 artifacts/catalog-demos/standard-components-visible-details-20261106/capture_visible_details_demo.py",
+  "canvas": {
+    "width": 1280,
+    "height": 720
+  },
+  "frames": 6,
+  "durationSeconds": 18,
+  "ffmpeg": "ffmpeg -framerate 1/3 -c:v libx264 -r 24 -pix_fmt yuv420p -crf 23 -movflags +faststart",
+  "provenance": "Frames use the checked-in .kcad.ts sources, source-declared material presets, generated kit previews and local verification evidence. Deployment and hardware acceptance are not shown."
+}

@@ -7,8 +7,17 @@ from those sources and must be rebuilt in the same change.
 ## Catalog quality snapshot (2026-11-06)
 
 The catalog quality gate reports **2,390/2,390 assets passing (100.00%)**
-across 49 rich kits, with no failing assets. The latest round refined the
-existing recycling-facility `horizontal-baler`: its open press mouth now exposes
+across 49 rich kits, with no failing assets. The latest visual follow-up
+refined three existing `standard-components` defaults whose previews still read
+as primitives: the timing pulley now has a radial tooth crown, flange bolts
+and a keyed bore; the hinge now has upright leaves with alternating knuckles
+and visible mounting hardware; and the terminal block now shows copper cages,
+slotted screws and an undercut clip foot. Their three new material controls
+extend the existing named presets. No asset IDs or kits were added. The
+[pulley, hinge and terminal-block handoff](../artifacts/catalog-demos/standard-components-visible-details-20261106/README.md)
+records the source-driven previews, presets, local checks and inspected MP4.
+The preceding round refined the existing recycling-facility `horizontal-baler`:
+its open press mouth now exposes
 the ram, hydraulic drive, rubber discharge belt and strapped cardboard bale,
 with four material controls and the existing two named palettes. Its refreshed
 preview shows 676 triangles under the unchanged 1,800-triangle budget. The

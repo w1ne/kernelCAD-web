@@ -84,3 +84,29 @@ with a dark open channel and brass fitting; the jaw coupling shows two steel
 hubs around its orange polymer spider; the caster shows its fork and black
 wheel. The branch is not deployed, so live-page behavior and physical hardware
 acceptance are not claimed.
+
+## Pulley, hinge and terminal-block visual follow-up — 2026-11-06
+
+The [visible-details handoff](../../../artifacts/catalog-demos/standard-components-visible-details-20261106/README.md)
+records a source-led review of three defaults whose previews still read as
+primitives: the timing pulley was a plain flanged cylinder, the butt hinge had
+horizontal leaves without alternating knuckles, and the terminal block was an
+undetailed housing cube.
+
+- Updated three existing assets; no kit or ID was added.
+- Added one visible material control to each asset: flange hardware on the
+  pulley, fasteners on the hinge, and copper contacts on the terminal block.
+  Existing `dark`, `brass`, and `weathered` presets now vary all three zones;
+  no new preset names were introduced.
+- The pulley now has a 20-tooth radial crown, keyed bore, bolted retaining
+  flanges and three material controls (1,236 triangles / 1,380 budget). The
+  hinge has upright perforated leaves, five alternating knuckles, a brass pin
+  and twelve visible fasteners (1,440 / 1,600). The terminal block has two
+  copper cages visible from both sides, slotted clamp screws and an undercut
+  steel clip foot (444 / 500).
+- All 50 kit previews were regenerated and the catalog index was rebuilt from
+  source. The kit and full catalog remain **50/50** and **2,390/2,390 passing
+  (100%)** under `checkCatalogQuality.py`; the asset count did not change.
+- Local catalog pages, lint and catalog integration were verified. The branch
+  was not deployed; no vendor-standard, manufacturing or physical acceptance
+  is claimed.

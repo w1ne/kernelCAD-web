@@ -238604,7 +238604,7 @@
       "id": "din-rail-terminal-block",
       "kit": "standard-components",
       "title": "DIN rail terminal block",
-      "description": "Single terminal block body with top access wells and a stepped rail foot Knobs: model size, steel, engineering polymer.",
+      "description": "Polymer DIN terminal block with paired screw wells, exposed copper clamp windows and an undercut steel clip foot. Knobs: model size, polymer, steel and copper.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -238622,8 +238622,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/din-rail-terminal-block.kcad.ts",
       "preview": "/assets/standard-components-din-rail-terminal-block.png",
-      "sourceSha256": "45e767a3a936b2bffb292e97933cfc548e0471beeb1196e4a895df4a6b88515f",
-      "triangleBudget": 320,
+      "sourceSha256": "3e57448c2ed3c278aa0a402d8f2fc3445b2c215e428fbde8782017ff681f9dc1",
+      "triangleBudget": 500,
       "params": [
         {
           "name": "size",
@@ -238639,7 +238639,7 @@
         {
           "name": "steel",
           "type": "color",
-          "default": "#85929a",
+          "default": "#b9c4c9",
           "label": "Steel"
         },
         {
@@ -238647,24 +238647,33 @@
           "type": "color",
           "default": "#e46b3c",
           "label": "Engineering polymer"
+        },
+        {
+          "name": "copper",
+          "type": "color",
+          "default": "#d9a344",
+          "label": "Copper contacts"
         }
       ],
       "presets": {
         "dark": {
-          "steel": "#3e484e",
-          "polymer": "#244956"
+          "steel": "#77858b",
+          "polymer": "#244956",
+          "copper": "#8a5331"
         },
         "brass": {
-          "steel": "#646f75",
-          "polymer": "#1d5364"
+          "steel": "#aeb8bd",
+          "polymer": "#1d5364",
+          "copper": "#e0b356"
         },
         "weathered": {
-          "steel": "#665b4d",
-          "polymer": "#96734f"
+          "steel": "#8e8578",
+          "polymer": "#96734f",
+          "copper": "#806747"
         }
       },
       "stats": {
-        "triangles": 120,
+        "triangles": 444,
         "sizeM": [
           0.028,
           0.033,
@@ -238678,15 +238687,29 @@
           "name": "polymer",
           "color": "#e46b3c",
           "parts": [
-            "body"
+            "polymer-housing"
           ],
           "param": "polymer"
         },
         {
-          "name": "steel",
-          "color": "#85929a",
+          "name": "copper",
+          "color": "#d9a344",
           "parts": [
-            "rail-foot"
+            "copper-clamp-left",
+            "copper-clamp-right"
+          ],
+          "param": "copper"
+        },
+        {
+          "name": "steel",
+          "color": "#b9c4c9",
+          "parts": [
+            "steel-clamp-screw-shank-left",
+            "steel-clamp-screw-head-left",
+            "steel-clamp-screw-shank-right",
+            "steel-clamp-screw-head-right",
+            "formed-steel-clip-foot",
+            "retaining-spring"
           ],
           "param": "steel"
         }
@@ -238806,7 +238829,7 @@
       "id": "door-hinge",
       "kit": "standard-components",
       "title": "Door hinge",
-      "description": "Two-leaf butt hinge with a full-height hinge barrel and alternating knuckle bands Knobs: model size, steel, brass.",
+      "description": "Upright butt hinge with alternating barrel knuckles, a brass pivot pin and visible leaf fasteners. Knobs: model size, steel, brass and fasteners.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -238824,8 +238847,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/door-hinge.kcad.ts",
       "preview": "/assets/standard-components-door-hinge.png",
-      "sourceSha256": "eb81bb9acafd468d8236e5e52578930a79bdcf222b204fa65e0c42b8a36d5ae8",
-      "triangleBudget": 360,
+      "sourceSha256": "7ae4ede97e2ca6cb77152bfa8551387cb35befeaca03a857253e30c122996385",
+      "triangleBudget": 1600,
       "params": [
         {
           "name": "size",
@@ -238841,36 +238864,45 @@
         {
           "name": "steel",
           "type": "color",
-          "default": "#85929a",
+          "default": "#52778e",
           "label": "Steel"
         },
         {
           "name": "brass",
           "type": "color",
-          "default": "#b28a4d",
+          "default": "#c38b3d",
           "label": "Brass"
+        },
+        {
+          "name": "fasteners",
+          "type": "color",
+          "default": "#d1d7d9",
+          "label": "Fasteners"
         }
       ],
       "presets": {
         "dark": {
           "steel": "#3e484e",
-          "brass": "#725938"
+          "brass": "#725938",
+          "fasteners": "#20272b"
         },
         "brass": {
           "steel": "#646f75",
-          "brass": "#c0944d"
+          "brass": "#c0944d",
+          "fasteners": "#b0804d"
         },
         "weathered": {
           "steel": "#665b4d",
-          "brass": "#8c734d"
+          "brass": "#8c734d",
+          "fasteners": "#51473b"
         }
       },
       "stats": {
-        "triangles": 244,
+        "triangles": 1440,
         "sizeM": [
-          0.056,
+          0.064,
           0.04,
-          0.036
+          0.01
         ],
         "minUpM": 0,
         "materials": 1
@@ -238878,22 +238910,42 @@
       "palette": [
         {
           "name": "steel",
-          "color": "#85929a",
+          "color": "#52778e",
           "parts": [
-            "leaf-left",
-            "leaf-right",
-            "knuckle-0",
-            "knuckle-10",
-            "knuckle-20",
-            "knuckle-30"
+            "left-leaf",
+            "right-leaf",
+            "left-knuckle-1",
+            "left-knuckle-2",
+            "left-knuckle-3",
+            "right-knuckle-1",
+            "right-knuckle-2"
           ],
           "param": "steel"
         },
         {
-          "name": "brass",
-          "color": "#b28a4d",
+          "name": "fasteners",
+          "color": "#d1d7d9",
           "parts": [
-            "pin"
+            "left-fastener-1-1",
+            "left-fastener-1-2",
+            "left-fastener-1-3",
+            "left-fastener-2-1",
+            "left-fastener-2-2",
+            "left-fastener-2-3",
+            "right-fastener-1-1",
+            "right-fastener-1-2",
+            "right-fastener-1-3",
+            "right-fastener-2-1",
+            "right-fastener-2-2",
+            "right-fastener-2-3"
+          ],
+          "param": "fasteners"
+        },
+        {
+          "name": "brass",
+          "color": "#c38b3d",
+          "parts": [
+            "brass-pivot-pin"
           ],
           "param": "brass"
         }
@@ -242044,7 +242096,7 @@
       "id": "timing-belt-pulley",
       "kit": "standard-components",
       "title": "Timing belt pulley",
-      "description": "Toothed low-poly belt pulley with two retaining flanges and a centered shaft bore Knobs: model size, steel, aluminum.",
+      "description": "Timing pulley with a faceted tooth crown, paired retaining flanges, and a centered keyed shaft bore. Knobs: model size, aluminum, steel and flange hardware.",
       "category": "attachment",
       "origin": "base",
       "tags": [
@@ -242062,8 +242114,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/standard-components/timing-belt-pulley.kcad.ts",
       "preview": "/assets/standard-components-timing-belt-pulley.png",
-      "sourceSha256": "b84b6fe4f4648661a97b2b417782ef8e117dc89d9816f049ad187473b06dd85b",
-      "triangleBudget": 340,
+      "sourceSha256": "fe95e0c69268bb962747fab7870f653f044dddc6d7da9510befdc9da6a984815",
+      "triangleBudget": 1380,
       "params": [
         {
           "name": "size",
@@ -242077,37 +242129,46 @@
           ]
         },
         {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#6fabc3",
+          "label": "Aluminum"
+        },
+        {
           "name": "steel",
           "type": "color",
-          "default": "#85929a",
+          "default": "#c8cfd2",
           "label": "Steel"
         },
         {
-          "name": "aluminum",
+          "name": "hardware",
           "type": "color",
-          "default": "#aebac0",
-          "label": "Aluminum"
+          "default": "#29363e",
+          "label": "Flange hardware"
         }
       ],
       "presets": {
         "dark": {
+          "aluminum": "#365461",
           "steel": "#3e484e",
-          "aluminum": "#586970"
+          "hardware": "#20272b"
         },
         "brass": {
+          "aluminum": "#4a8a99",
           "steel": "#646f75",
-          "aluminum": "#aab8bc"
+          "hardware": "#c0944d"
         },
         "weathered": {
+          "aluminum": "#677d75",
           "steel": "#665b4d",
-          "aluminum": "#788177"
+          "hardware": "#51473b"
         }
       },
       "stats": {
-        "triangles": 288,
+        "triangles": 1236,
         "sizeM": [
           0.048,
-          0.026,
+          0.02615,
           0.048
         ],
         "minUpM": 0,
@@ -242116,20 +242177,36 @@
       "palette": [
         {
           "name": "aluminum",
-          "color": "#aebac0",
+          "color": "#6fabc3",
           "parts": [
-            "core"
+            "toothed-aluminum-crown"
           ],
           "param": "aluminum"
         },
         {
           "name": "steel",
-          "color": "#85929a",
+          "color": "#c8cfd2",
           "parts": [
-            "lower-flange",
-            "upper-flange"
+            "lower-retaining-flange",
+            "upper-retaining-flange",
+            "shaft-key"
           ],
           "param": "steel"
+        },
+        {
+          "name": "hardware",
+          "color": "#29363e",
+          "parts": [
+            "lower-flange-bolt-1",
+            "lower-flange-bolt-2",
+            "lower-flange-bolt-3",
+            "lower-flange-bolt-4",
+            "upper-flange-bolt-1",
+            "upper-flange-bolt-2",
+            "upper-flange-bolt-3",
+            "upper-flange-bolt-4"
+          ],
+          "param": "hardware"
         }
       ]
     },

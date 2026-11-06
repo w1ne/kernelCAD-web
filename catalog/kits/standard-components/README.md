@@ -19,8 +19,8 @@ Each model keeps its compact / standard / large size choice and now exposes 2–
 | [`clevis-pin`](clevis-pin.kcad.ts) | Clevis pin | Round headed clevis pin with a straight shank and cross-hole collar. | Steel, Stainless steel | 156 | [PNG](previews/clevis-pin.png) |
 | [`din-rail`](din-rail.kcad.ts) | DIN rail | Short symmetric top-hat rail profile with a flat web and raised edge lips. | Steel, Stainless steel, Aluminum | 48 | [PNG](previews/din-rail.png) |
 | [`din-rail-end-stop`](din-rail-end-stop.kcad.ts) | DIN rail end stop | Small rail-end stop with a raised clamp block and front-facing tightening boss. | Steel, Zinc-plated steel | 80 | [PNG](previews/din-rail-end-stop.png) |
-| [`din-rail-terminal-block`](din-rail-terminal-block.kcad.ts) | DIN rail terminal block | Single terminal block body with top access wells and a stepped rail foot. | Steel, Engineering polymer | 120 | [PNG](previews/din-rail-terminal-block.png) |
-| [`door-hinge`](door-hinge.kcad.ts) | Door hinge | Two-leaf butt hinge with a full-height hinge barrel and alternating knuckle bands. | Steel, Brass | 244 | [PNG](previews/door-hinge.png) |
+| [`din-rail-terminal-block`](din-rail-terminal-block.kcad.ts) | DIN rail terminal block | Insulated housing with slotted clamp screws, visible copper cages and an undercut rail clip. | Engineering polymer, Steel, Copper | 444 | [PNG](previews/din-rail-terminal-block.png) |
+| [`door-hinge`](door-hinge.kcad.ts) | Door hinge | Upright two-leaf butt hinge with alternating barrel knuckles, a brass pin and visible fasteners. | Steel, Brass, Fasteners | 1440 | [PNG](previews/door-hinge.png) |
 | [`drawer-slide-channel`](drawer-slide-channel.kcad.ts) | Drawer slide channel | Nested low-poly slide rails with C-channel lips for a telescoping drawer track. | Steel, Stainless steel | 60 | [PNG](previews/drawer-slide-channel.png) |
 | [`flange-bearing-housing`](flange-bearing-housing.kcad.ts) | Flange bearing housing | Square two-hole bearing mount with a raised round boss and a centered shaft opening. | Cast iron, Bronze | 212 | [PNG](previews/flange-bearing-housing.png) |
 | [`flat-joining-plate`](flat-joining-plate.kcad.ts) | Flat joining plate | Flat strap plate with four zinc-plated fastener heads seated in its mounting holes for joining two parts in line. | Steel, Zinc-plated steel | 572 | [PNG](previews/flat-joining-plate.png) |
@@ -53,7 +53,7 @@ Each model keeps its compact / standard / large size choice and now exposes 2–
 | [`square-mounting-flange`](square-mounting-flange.kcad.ts) | Square mounting flange | Square flange with a centered through bore, four corner holes and a short neck. | Stainless steel, Cast iron | 316 | [PNG](previews/square-mounting-flange.png) |
 | [`t-slot-angle-bracket`](t-slot-angle-bracket.kcad.ts) | T-slot angle bracket | Compact external corner bracket for joining two perpendicular framing profiles. | Steel, Aluminum | 40 | [PNG](previews/t-slot-angle-bracket.png) |
 | [`t-slot-end-cap`](t-slot-end-cap.kcad.ts) | T-slot end cap | Polymer end cap with locating ribs seated in a short grooved aluminum extrusion profile. | Aluminum, Engineering polymer | 156 | [PNG](previews/t-slot-end-cap.png) |
-| [`timing-belt-pulley`](timing-belt-pulley.kcad.ts) | Timing belt pulley | Toothed low-poly belt pulley with two retaining flanges and a centered shaft bore. | Steel, Aluminum | 288 | [PNG](previews/timing-belt-pulley.png) |
+| [`timing-belt-pulley`](timing-belt-pulley.kcad.ts) | Timing belt pulley | Twenty-tooth crown with paired bolted retaining flanges and a keyed shaft bore. | Aluminum, Steel, Flange hardware | 1236 | [PNG](previews/timing-belt-pulley.png) |
 | [`tube-clamp`](tube-clamp.kcad.ts) | Tube clamp | Two-hole clamp with a semicircular lined saddle, paired side cheeks, and a raised retainer bridge. | Steel, Zinc-plated steel, Rubber | 164 | [PNG](previews/tube-clamp.png) |
 | [`tubular-spacer`](tubular-spacer.kcad.ts) | Tubular spacer | Short hollow steel spacer with a thin polymer isolation sleeve lining its centered clearance bore. | Steel, Engineering polymer | 192 | [PNG](previews/tubular-spacer.png) |
 | [`u-bracket`](u-bracket.kcad.ts) | U bracket | Open-top channel mounting bracket with a flat back and two parallel side ears. | Steel, Stainless steel | 80 | [PNG](previews/u-bracket.png) |
@@ -75,7 +75,7 @@ To render just this kit, pass the `previewAssetIDs` list from [`demo/settings.js
 
 ## Quality promotion handoff
 
-The [quality promotion handoff](QUALITY-PROMOTION.md) links the original kit promotion and the [2026-11-06 carriage detail follow-up](../../../artifacts/catalog-demos/standard-components-carriage-quality-20261106/README.md). The original kit demo source and settings are in [`demo/`](demo/).
+The [quality promotion handoff](QUALITY-PROMOTION.md) links the original kit promotion, the [2026-11-06 carriage detail follow-up](../../../artifacts/catalog-demos/standard-components-carriage-quality-20261106/README.md), and the [2026-11-06 pulley, hinge and terminal-block detail follow-up](../../../artifacts/catalog-demos/standard-components-visible-details-20261106/README.md). The original kit demo source and settings are in [`demo/`](demo/).
 
 ## Licence
 
