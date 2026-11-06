@@ -143230,11 +143230,13 @@
       "id": "cargo-ship",
       "kit": "marine",
       "title": "Cargo ship",
-      "description": "Cargo ship: A faceted hull carries six container blocks behind a raised bridge. Low-poly visualization prop. Material controls: painted hull coating, nonskid deck coating, stainless steel, cargo container coating.",
+      "description": "Container feeder ship with a lofted hull and bulbous bow, red antifouling below the waterline, aft white accommodation block with bridge wings and funnel, hatch coamings and mixed-colour container stacks. Shape choices: full, partial or empty deck load; gearless or with deck cranes. Material controls: painted hull, antifouling, superstructure paint and container steel; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "cargo ship",
+        "container ship",
+        "feeder",
         "marine",
         "nautical",
         "harbor",
@@ -143251,8 +143253,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/cargo-ship.kcad.ts",
       "preview": "/assets/marine-cargo-ship.png",
-      "sourceSha256": "248edaed67be100f9542977c0ddedb868c961793d82c05ba1ed81104b964c745",
-      "triangleBudget": 1800,
+      "sourceSha256": "2dc0053d3858ac3a7cacf18bdaea29aea7b03215e2702f007639178e962389bc",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -143264,47 +143266,71 @@
           "step": 0.05
         },
         {
+          "name": "load",
+          "type": "choice",
+          "default": "full",
+          "label": "Deck load",
+          "choices": [
+            "full",
+            "partial",
+            "empty"
+          ]
+        },
+        {
+          "name": "gear",
+          "type": "choice",
+          "default": "gearless",
+          "label": "Cargo gear",
+          "choices": [
+            "gearless",
+            "cranes"
+          ]
+        },
+        {
           "name": "paintedHull",
           "type": "color",
-          "default": "#4c5b60",
-          "label": "Painted hull coating"
+          "default": "#24466b",
+          "label": "Painted hull (topsides)"
         },
         {
-          "name": "nonskidCoating",
+          "name": "antifouling",
           "type": "color",
-          "default": "#46575a",
-          "label": "Nonskid deck coating"
+          "default": "#a8382c",
+          "label": "Antifouling and red-oxide deck"
         },
         {
-          "name": "stainlessSteel",
+          "name": "superstructurePaint",
           "type": "color",
-          "default": "#b5c0c1",
-          "label": "Stainless steel"
+          "default": "#e8ebe8",
+          "label": "Superstructure paint"
         },
         {
           "name": "cargoCoating",
           "type": "color",
-          "default": "#b4563e",
-          "label": "Cargo container coating"
+          "default": "#c9692f",
+          "label": "Container steel"
         }
       ],
       "presets": {
         "weathered": {
-          "paintedHull": "#57605f",
-          "nonskidCoating": "#535d5a",
-          "stainlessSteel": "#a9b1af",
-          "cargoCoating": "#a25c46"
+          "paintedHull": "#34495a",
+          "antifouling": "#7d3f34",
+          "superstructurePaint": "#c9c8bd",
+          "cargoCoating": "#9a5b3c"
         },
         "highVisibility": {
-          "paintedHull": "#e56b38"
+          "paintedHull": "#e56b38",
+          "antifouling": "#9b2b24",
+          "superstructurePaint": "#f6f7f4",
+          "cargoCoating": "#2f7fb8"
         }
       },
       "stats": {
-        "triangles": 136,
+        "triangles": 1662,
         "sizeM": [
-          2.02,
-          0.877,
-          0.7
+          2.438673,
+          0.932,
+          0.64
         ],
         "minUpM": 0,
         "materials": 1
@@ -143312,39 +143338,148 @@
       "palette": [
         {
           "name": "paintedHull",
-          "color": "#4c5b60",
+          "color": "#24466b",
           "parts": [
             "hull",
-            "bridge"
+            "forecastle",
+            "hatch-coaming-1",
+            "hatch-coaming-2",
+            "hatch-coaming-3",
+            "hatch-coaming-4",
+            "hatch-coaming-5",
+            "hatch-coaming-6",
+            "hatch-coaming-7",
+            "hatch-coaming-8",
+            "bridge-windows",
+            "wing-window-port",
+            "wing-window-starboard",
+            "funnel-top",
+            "container-b1-r1-t2",
+            "container-b1-r3-t2",
+            "container-b2-r2-t1",
+            "container-b2-r4-t1",
+            "container-b3-r1-t3",
+            "container-b3-r3-t3",
+            "container-b4-r2-t2",
+            "container-b4-r4-t2",
+            "container-b5-r1-t1",
+            "container-b5-r3-t1",
+            "container-b6-r2-t3",
+            "container-b6-r4-t3",
+            "container-b7-r1-t2",
+            "container-b7-r3-t2",
+            "container-b8-r2-t1",
+            "container-b8-r4-t1"
           ],
           "param": "paintedHull"
         },
         {
-          "name": "nonskidCoating",
-          "color": "#46575a",
+          "name": "antifouling",
+          "color": "#a8382c",
           "parts": [
-            "deck"
+            "antifouling",
+            "bulbous-bow",
+            "weather-deck",
+            "container-b1-r2-t2",
+            "container-b1-r4-t2",
+            "container-b2-r1-t1",
+            "container-b2-r3-t1",
+            "container-b3-r2-t3",
+            "container-b3-r4-t3",
+            "container-b4-r1-t2",
+            "container-b4-r3-t2",
+            "container-b5-r2-t1",
+            "container-b5-r4-t1",
+            "container-b6-r1-t3",
+            "container-b6-r3-t3",
+            "container-b7-r2-t2",
+            "container-b7-r4-t2",
+            "container-b8-r1-t1",
+            "container-b8-r3-t1"
           ],
-          "param": "nonskidCoating"
+          "param": "antifouling"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b5c0c1",
+          "name": "superstructurePaint",
+          "color": "#e8ebe8",
           "parts": [
-            "bridge-top"
+            "foremast",
+            "foremast-yard",
+            "accommodation",
+            "house-upper",
+            "bridge-deck",
+            "bridge-roof",
+            "radar-mast",
+            "radar-scanner",
+            "funnel",
+            "container-b1-r2-t1",
+            "container-b1-r4-t1",
+            "container-b2-r1-t3",
+            "container-b2-r3-t3",
+            "container-b3-r2-t2",
+            "container-b3-r4-t2",
+            "container-b4-r1-t1",
+            "container-b4-r3-t1",
+            "container-b5-r2-t3",
+            "container-b5-r4-t3",
+            "container-b6-r1-t2",
+            "container-b6-r3-t2",
+            "container-b7-r2-t1",
+            "container-b7-r4-t1"
           ],
-          "param": "stainlessSteel"
+          "param": "superstructurePaint"
         },
         {
           "name": "cargoCoating",
-          "color": "#b4563e",
+          "color": "#c9692f",
           "parts": [
-            "container-1",
-            "container-2",
-            "container-3",
-            "container-4",
-            "container-5",
-            "container-6"
+            "funnel-band",
+            "container-b1-r1-t1",
+            "container-b1-r1-t3",
+            "container-b1-r2-t3",
+            "container-b1-r3-t1",
+            "container-b1-r3-t3",
+            "container-b1-r4-t3",
+            "container-b2-r1-t2",
+            "container-b2-r2-t2",
+            "container-b2-r2-t3",
+            "container-b2-r3-t2",
+            "container-b2-r4-t2",
+            "container-b2-r4-t3",
+            "container-b3-r1-t1",
+            "container-b3-r1-t2",
+            "container-b3-r2-t1",
+            "container-b3-r3-t1",
+            "container-b3-r3-t2",
+            "container-b3-r4-t1",
+            "container-b4-r1-t3",
+            "container-b4-r2-t1",
+            "container-b4-r2-t3",
+            "container-b4-r3-t3",
+            "container-b4-r4-t1",
+            "container-b4-r4-t3",
+            "container-b5-r1-t2",
+            "container-b5-r1-t3",
+            "container-b5-r2-t2",
+            "container-b5-r3-t2",
+            "container-b5-r3-t3",
+            "container-b5-r4-t2",
+            "container-b6-r1-t1",
+            "container-b6-r2-t1",
+            "container-b6-r2-t2",
+            "container-b6-r3-t1",
+            "container-b6-r4-t1",
+            "container-b6-r4-t2",
+            "container-b7-r1-t1",
+            "container-b7-r1-t3",
+            "container-b7-r2-t3",
+            "container-b7-r3-t1",
+            "container-b7-r3-t3",
+            "container-b7-r4-t3",
+            "container-b8-r1-t2",
+            "container-b8-r2-t2",
+            "container-b8-r3-t2",
+            "container-b8-r4-t2"
           ],
           "param": "cargoCoating"
         }
@@ -144028,11 +144163,13 @@
       "id": "fishing-boat",
       "kit": "marine",
       "title": "Fishing boat",
-      "description": "Fishing boat: A faceted working hull carries a wheelhouse, glazed front, mast, and bow and stern rails. Low-poly visualization prop. Material controls: painted hull coating, nonskid deck coating, marine glass, stainless steel.",
+      "description": "Inshore fishing boat with a lofted displacement hull and flared bow, red antifouling below the waterline, bulwarked working deck, wheelhouse with raked windows, roof radar mast and deck gear. Shape choices: stern trawl gantry with net drum or creel stack with pot hauler; wheelhouse forward or aft. Material controls: painted hull, antifouling and deck paint, cabin paint and marine glass; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "fishing boat",
+        "trawler",
+        "workboat",
         "marine",
         "nautical",
         "harbor",
@@ -144049,8 +144186,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/fishing-boat.kcad.ts",
       "preview": "/assets/marine-fishing-boat.png",
-      "sourceSha256": "36334c3857676e6df7d3cd612b9b2f1e47d10bb88a3791efd4268914978bb1f8",
-      "triangleBudget": 1800,
+      "sourceSha256": "224a63b70d6e07c87faff4669a2ef4d358dc72943069985654006b62915ab503",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -144062,47 +144199,70 @@
           "step": 0.05
         },
         {
-          "name": "paintedHull",
-          "type": "color",
-          "default": "#465a62",
-          "label": "Painted hull coating"
+          "name": "gear",
+          "type": "choice",
+          "default": "trawl",
+          "label": "Fishing gear",
+          "choices": [
+            "trawl",
+            "pots"
+          ]
         },
         {
-          "name": "nonskidCoating",
+          "name": "wheelhouse",
+          "type": "choice",
+          "default": "forward",
+          "label": "Wheelhouse position",
+          "choices": [
+            "forward",
+            "aft"
+          ]
+        },
+        {
+          "name": "paintedHull",
           "type": "color",
-          "default": "#46575a",
-          "label": "Nonskid deck coating"
+          "default": "#2c5f4a",
+          "label": "Painted hull (topsides)"
+        },
+        {
+          "name": "antifouling",
+          "type": "color",
+          "default": "#a33a2c",
+          "label": "Antifouling and deck paint"
+        },
+        {
+          "name": "cabinPaint",
+          "type": "color",
+          "default": "#ecece6",
+          "label": "Cabin and gantry paint"
         },
         {
           "name": "marineGlass",
           "type": "color",
-          "default": "#55a4bb",
+          "default": "#4f8fa6",
           "label": "Marine glass"
-        },
-        {
-          "name": "stainlessSteel",
-          "type": "color",
-          "default": "#b5c0c1",
-          "label": "Stainless steel"
         }
       ],
       "presets": {
         "weathered": {
-          "paintedHull": "#535f60",
-          "nonskidCoating": "#535d5a",
-          "marineGlass": "#5b9aaa",
-          "stainlessSteel": "#a9b1af"
+          "paintedHull": "#3f5a4e",
+          "antifouling": "#7a4134",
+          "cabinPaint": "#cbc8b8",
+          "marineGlass": "#56808c"
         },
         "highVisibility": {
-          "paintedHull": "#e56b38"
+          "paintedHull": "#e56b38",
+          "antifouling": "#9b2b24",
+          "cabinPaint": "#f6f7f4",
+          "marineGlass": "#6cbfd8"
         }
       },
       "stats": {
-        "triangles": 144,
+        "triangles": 838,
         "sizeM": [
-          1.48,
-          1.094,
-          0.6
+          1.574,
+          0.928,
+          0.652
         ],
         "minUpM": 0,
         "materials": 1
@@ -144110,39 +144270,56 @@
       "palette": [
         {
           "name": "paintedHull",
-          "color": "#465a62",
+          "color": "#2c5f4a",
           "parts": [
             "hull",
-            "wheelhouse",
-            "roof",
-            "mast"
+            "net-drum"
           ],
           "param": "paintedHull"
         },
         {
-          "name": "nonskidCoating",
-          "color": "#46575a",
+          "name": "antifouling",
+          "color": "#a33a2c",
           "parts": [
-            "deck"
+            "antifouling",
+            "deck",
+            "rubbing-strake",
+            "radar-scanner",
+            "trawl-door-port",
+            "trawl-door-starboard"
           ],
-          "param": "nonskidCoating"
+          "param": "antifouling"
+        },
+        {
+          "name": "cabinPaint",
+          "color": "#ecece6",
+          "parts": [
+            "bulwark-cap",
+            "wheelhouse",
+            "wheelhouse-roof",
+            "mast",
+            "radar-arm",
+            "mast-light",
+            "gantry-leg-port",
+            "gantry-sheave-port",
+            "gantry-leg-starboard",
+            "gantry-sheave-starboard",
+            "gantry-beam",
+            "drum-flange-port",
+            "drum-flange-starboard",
+            "drum-stand"
+          ],
+          "param": "cabinPaint"
         },
         {
           "name": "marineGlass",
-          "color": "#55a4bb",
+          "color": "#4f8fa6",
           "parts": [
-            "front-window"
+            "front-windows",
+            "side-window-port",
+            "side-window-starboard"
           ],
           "param": "marineGlass"
-        },
-        {
-          "name": "stainlessSteel",
-          "color": "#b5c0c1",
-          "parts": [
-            "stern-rail",
-            "bow-rail"
-          ],
-          "param": "stainlessSteel"
         }
       ]
     },
@@ -145019,11 +145196,14 @@
       "id": "motorboat",
       "kit": "marine",
       "title": "Motorboat",
-      "description": "Motorboat: A pointed hull supports a cockpit console, glazed screen, paired seats, and motor mount. Low-poly visualization prop. Material controls: painted hull coating, nonskid deck coating, marine glass, stainless steel.",
+      "description": "Centre-console motorboat with a lofted deep-V planing hull, open cockpit, white gelcoat foredeck and bottom, console with raked windscreen and wheel, leaning-post seat, stainless bow rail and transom-hung outboard. Shape choices: single or twin outboards; open or T-top canopy. Material controls: painted hull, white gelcoat, marine glass and stainless steel; weathered and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "motorboat",
+        "center console",
+        "runabout",
+        "outboard",
         "marine",
         "nautical",
         "harbor",
@@ -145040,8 +145220,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/marine/motorboat.kcad.ts",
       "preview": "/assets/marine-motorboat.png",
-      "sourceSha256": "ab1b5b15b0893913914a4d2eb63afef4d846ea0c7acdc354211a0b8ff78f5b2b",
-      "triangleBudget": 1800,
+      "sourceSha256": "a519c077989e946463aaf9487afabebf8183d3a56a7c576d4863bb9db288744f",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -145053,47 +145233,70 @@
           "step": 0.05
         },
         {
-          "name": "paintedHull",
-          "type": "color",
-          "default": "#4b6572",
-          "label": "Painted hull coating"
+          "name": "engines",
+          "type": "choice",
+          "default": "single",
+          "label": "Outboards",
+          "choices": [
+            "single",
+            "twin"
+          ]
         },
         {
-          "name": "nonskidCoating",
+          "name": "canopy",
+          "type": "choice",
+          "default": "open",
+          "label": "Canopy",
+          "choices": [
+            "open",
+            "t-top"
+          ]
+        },
+        {
+          "name": "paintedHull",
           "type": "color",
-          "default": "#46575a",
-          "label": "Nonskid deck coating"
+          "default": "#24527e",
+          "label": "Painted hull (topsides, cowling)"
+        },
+        {
+          "name": "gelcoat",
+          "type": "color",
+          "default": "#ecebe4",
+          "label": "White gelcoat (deck, bottom, console)"
         },
         {
           "name": "marineGlass",
           "type": "color",
-          "default": "#55a4bb",
+          "default": "#6fb6c9",
           "label": "Marine glass"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
-          "default": "#b5c0c1",
+          "default": "#c3cbcd",
           "label": "Stainless steel"
         }
       ],
       "presets": {
         "weathered": {
-          "paintedHull": "#56676c",
-          "nonskidCoating": "#535d5a",
-          "marineGlass": "#5b9aaa",
-          "stainlessSteel": "#a9b1af"
+          "paintedHull": "#3d5466",
+          "gelcoat": "#cfcabb",
+          "marineGlass": "#6a98a3",
+          "stainlessSteel": "#9da5a4"
         },
         "highVisibility": {
-          "paintedHull": "#e56b38"
+          "paintedHull": "#e56b38",
+          "gelcoat": "#f7f7f2",
+          "marineGlass": "#7ccbe0",
+          "stainlessSteel": "#d8dee0"
         }
       },
       "stats": {
-        "triangles": 100,
+        "triangles": 1184,
         "sizeM": [
-          1.36,
-          0.585814,
-          0.62
+          1.505,
+          0.518792,
+          0.618
         ],
         "minUpM": 0,
         "materials": 1
@@ -145101,36 +145304,64 @@
       "palette": [
         {
           "name": "paintedHull",
-          "color": "#4b6572",
+          "color": "#24527e",
           "parts": [
             "hull",
-            "console",
-            "seat-front",
-            "seat-rear"
+            "console-dash",
+            "leaning-cushion",
+            "bow-cushion",
+            "cowling",
+            "midsection",
+            "cavitation-plate",
+            "lower-unit",
+            "skeg"
           ],
           "param": "paintedHull"
         },
         {
-          "name": "nonskidCoating",
-          "color": "#46575a",
+          "name": "gelcoat",
+          "color": "#ecebe4",
           "parts": [
-            "deck"
+            "hull-bottom",
+            "foredeck",
+            "cockpit-sole",
+            "console",
+            "leaning-post"
           ],
-          "param": "nonskidCoating"
+          "param": "gelcoat"
         },
         {
           "name": "marineGlass",
-          "color": "#55a4bb",
+          "color": "#6fb6c9",
           "parts": [
-            "windshield"
+            "windscreen"
           ],
           "param": "marineGlass"
         },
         {
           "name": "stainlessSteel",
-          "color": "#b5c0c1",
+          "color": "#c3cbcd",
           "parts": [
-            "motor-mount"
+            "steering-wheel",
+            "grab-rail",
+            "rail-stanchion-1-port",
+            "rail-stanchion-2-port",
+            "bow-rail-1-port",
+            "rail-stanchion-3-port",
+            "bow-rail-2-port",
+            "rail-stanchion-4-port",
+            "bow-rail-3-port",
+            "rail-stanchion-1-starboard",
+            "rail-stanchion-2-starboard",
+            "bow-rail-1-starboard",
+            "rail-stanchion-3-starboard",
+            "bow-rail-2-starboard",
+            "rail-stanchion-4-starboard",
+            "bow-rail-3-starboard",
+            "bow-pulpit",
+            "bow-cleat",
+            "transom-bracket",
+            "propeller"
           ],
           "param": "stainlessSteel"
         }

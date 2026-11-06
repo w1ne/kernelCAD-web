@@ -1,0 +1,193 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' artifacts/catalog-demos/marine-hull-silhouette-20261106/render_marine_hull_variants.ts
+(node:400717) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{
+  "invocation": "npx tsx artifacts/catalog-demos/marine-hull-silhouette-20261106/render_marine_hull_variants.ts",
+  "exporter": "runAndExport(format=\"glb\", style=\"lowpoly\", maxTriangles=source triangleBudget)",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "sources": [
+    {
+      "source": "catalog/kits/marine/cargo-ship.kcad.ts",
+      "sourceSha256": "2dc0053d3858ac3a7cacf18bdaea29aea7b03215e2702f007639178e962389bc",
+      "triangleBudget": 2400,
+      "presets": {
+        "weathered": {
+          "paintedHull": "#34495a",
+          "antifouling": "#7d3f34",
+          "superstructurePaint": "#c9c8bd",
+          "cargoCoating": "#9a5b3c"
+        },
+        "highVisibility": {
+          "paintedHull": "#e56b38",
+          "antifouling": "#9b2b24",
+          "superstructurePaint": "#f6f7f4",
+          "cargoCoating": "#2f7fb8"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/marine/motorboat.kcad.ts",
+      "sourceSha256": "a519c077989e946463aaf9487afabebf8183d3a56a7c576d4863bb9db288744f",
+      "triangleBudget": 2400,
+      "presets": {
+        "weathered": {
+          "paintedHull": "#3d5466",
+          "gelcoat": "#cfcabb",
+          "marineGlass": "#6a98a3",
+          "stainlessSteel": "#9da5a4"
+        },
+        "highVisibility": {
+          "paintedHull": "#e56b38",
+          "gelcoat": "#f7f7f2",
+          "marineGlass": "#7ccbe0",
+          "stainlessSteel": "#d8dee0"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/marine/fishing-boat.kcad.ts",
+      "sourceSha256": "224a63b70d6e07c87faff4669a2ef4d358dc72943069985654006b62915ab503",
+      "triangleBudget": 2400,
+      "presets": {
+        "weathered": {
+          "paintedHull": "#3f5a4e",
+          "antifouling": "#7a4134",
+          "cabinPaint": "#cbc8b8",
+          "marineGlass": "#56808c"
+        },
+        "highVisibility": {
+          "paintedHull": "#e56b38",
+          "antifouling": "#9b2b24",
+          "cabinPaint": "#f6f7f4",
+          "marineGlass": "#6cbfd8"
+        }
+      }
+    }
+  ],
+  "renders": [
+    {
+      "assetId": "cargo-ship",
+      "variant": "default",
+      "values": {},
+      "triangles": 1662,
+      "png": "artifacts/catalog-demos/marine-hull-silhouette-20261106/variants/cargo-ship-default.png"
+    },
+    {
+      "assetId": "cargo-ship",
+      "variant": "partial-cranes",
+      "values": {
+        "load": "partial",
+        "gear": "cranes"
+      },
+      "triangles": 1126,
+      "png": "artifacts/catalog-demos/marine-hull-silhouette-20261106/variants/cargo-ship-partial-cranes.png"
+    },
+    {
+      "assetId": "cargo-ship",
+      "variant": "weathered",
+      "values": {
+        "paintedHull": "#34495a",
+        "antifouling": "#7d3f34",
+        "superstructurePaint": "#c9c8bd",
+        "cargoCoating": "#9a5b3c"
+      },
+      "triangles": 1662,
+      "png": "artifacts/catalog-demos/marine-hull-silhouette-20261106/variants/cargo-ship-weathered.png"
+    },
+    {
+      "assetId": "cargo-ship",
+      "variant": "highVisibility",
+      "values": {
+        "paintedHull": "#e56b38",
+        "antifouling": "#9b2b24",
+        "superstructurePaint": "#f6f7f4",
+        "cargoCoating": "#2f7fb8"
+      },
+      "triangles": 1662,
+      "png": "artifacts/catalog-demos/marine-hull-silhouette-20261106/variants/cargo-ship-highVisibility.png"
+    },
+    {
+      "assetId": "motorboat",
+      "variant": "default",
+      "values": {},
+      "triangles": 1184,
+      "png": "artifacts/catalog-demos/marine-hull-silhouette-20261106/variants/motorboat-default.png"
+    },
+    {
+      "assetId": "motorboat",
+      "variant": "twin-ttop",
+      "values": {
+        "engines": "twin",
+        "canopy": "t-top"
+      },
+      "triangles": 1524,
+      "png": "artifacts/catalog-demos/marine-hull-silhouette-20261106/variants/motorboat-twin-ttop.png"
+    },
+    {
+      "assetId": "motorboat",
+      "variant": "weathered",
+      "values": {
+        "paintedHull": "#3d5466",
+        "gelcoat": "#cfcabb",
+        "marineGlass": "#6a98a3",
+        "stainlessSteel": "#9da5a4"
+      },
+      "triangles": 1184,
+      "png": "artifacts/catalog-demos/marine-hull-silhouette-20261106/variants/motorboat-weathered.png"
+    },
+    {
+      "assetId": "motorboat",
+      "variant": "highVisibility",
+      "values": {
+        "paintedHull": "#e56b38",
+        "gelcoat": "#f7f7f2",
+        "marineGlass": "#7ccbe0",
+        "stainlessSteel": "#d8dee0"
+      },
+      "triangles": 1184,
+      "png": "artifacts/catalog-demos/marine-hull-silhouette-20261106/variants/motorboat-highVisibility.png"
+    },
+    {
+      "assetId": "fishing-boat",
+      "variant": "default",
+      "values": {},
+      "triangles": 838,
+      "png": "artifacts/catalog-demos/marine-hull-silhouette-20261106/variants/fishing-boat-default.png"
+    },
+    {
+      "assetId": "fishing-boat",
+      "variant": "pots-aft-house",
+      "values": {
+        "gear": "pots",
+        "wheelhouse": "aft"
+      },
+      "triangles": 806,
+      "png": "artifacts/catalog-demos/marine-hull-silhouette-20261106/variants/fishing-boat-pots-aft-house.png"
+    },
+    {
+      "assetId": "fishing-boat",
+      "variant": "weathered",
+      "values": {
+        "paintedHull": "#3f5a4e",
+        "antifouling": "#7a4134",
+        "cabinPaint": "#cbc8b8",
+        "marineGlass": "#56808c"
+      },
+      "triangles": 838,
+      "png": "artifacts/catalog-demos/marine-hull-silhouette-20261106/variants/fishing-boat-weathered.png"
+    },
+    {
+      "assetId": "fishing-boat",
+      "variant": "highVisibility",
+      "values": {
+        "paintedHull": "#e56b38",
+        "antifouling": "#9b2b24",
+        "cabinPaint": "#f6f7f4",
+        "marineGlass": "#6cbfd8"
+      },
+      "triangles": 838,
+      "png": "artifacts/catalog-demos/marine-hull-silhouette-20261106/variants/fishing-boat-highVisibility.png"
+    }
+  ]
+}
