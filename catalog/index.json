@@ -154464,7 +154464,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/accordion.kcad.ts",
       "preview": "/assets/music-accordion.png",
-      "sourceSha256": "f873e13d99286421ebe3e43026075414b0b48530f608e5ebf4368f129cef533e",
+      "sourceSha256": "4851ed50d8600e1a6631840d5c02fbe25864defdfe9af63e155f9496bfdddcd5",
       "triangleBudget": 1800,
       "params": [
         {
@@ -154477,13 +154477,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "lacquer",
           "type": "color",
-          "default": "#704c39",
-          "label": "Asset color"
+          "default": "#b83b47",
+          "label": "Case lacquer"
+        },
+        {
+          "name": "bellows",
+          "type": "color",
+          "default": "#302b34",
+          "label": "Bellows fabric"
+        },
+        {
+          "name": "ivory",
+          "type": "color",
+          "default": "#eee2c6",
+          "label": "Ivory keys"
+        },
+        {
+          "name": "nickel",
+          "type": "color",
+          "default": "#b6c0c4",
+          "label": "Nickel buttons"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "lacquer": "#25617a"
+        },
+        "vintage": {
+          "lacquer": "#71323d"
+        }
+      },
       "stats": {
         "triangles": 204,
         "sizeM": [
@@ -154496,10 +154521,18 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#704c39",
+          "name": "lacquer",
+          "color": "#b83b47",
           "parts": [
             "left-end",
+            "right-end"
+          ],
+          "param": "lacquer"
+        },
+        {
+          "name": "bellows",
+          "color": "#302b34",
+          "parts": [
             "bellows",
             "fold-01",
             "fold-02",
@@ -154507,17 +154540,30 @@
             "fold-04",
             "fold-05",
             "fold-06",
-            "fold-07",
-            "right-end",
+            "fold-07"
+          ],
+          "param": "bellows"
+        },
+        {
+          "name": "ivory",
+          "color": "#eee2c6",
+          "parts": [
             "keyboard",
             "key-one",
             "key-two",
             "key-three",
             "key-four",
-            "key-five",
+            "key-five"
+          ],
+          "param": "ivory"
+        },
+        {
+          "name": "nickel",
+          "color": "#b6c0c4",
+          "parts": [
             "button-row"
           ],
-          "param": "color"
+          "param": "nickel"
         }
       ]
     },
@@ -154545,7 +154591,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/acoustic-guitar.kcad.ts",
       "preview": "/assets/music-acoustic-guitar.png",
-      "sourceSha256": "d803746641544fe740d952ee5926385394b04c9162869dbf2d464e06df115f04",
+      "sourceSha256": "18ea72ac6920e90c3ed18bff50d934d196688c9476053d506106c4177e906c0d",
       "triangleBudget": 1800,
       "params": [
         {
@@ -154558,36 +154604,82 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "spruce",
           "type": "color",
-          "default": "#9a6842",
-          "label": "Asset color"
+          "default": "#d7a466",
+          "label": "Spruce soundboard"
+        },
+        {
+          "name": "mahogany",
+          "type": "color",
+          "default": "#71452f",
+          "label": "Mahogany tonewood"
+        },
+        {
+          "name": "ebony",
+          "type": "color",
+          "default": "#26201d",
+          "label": "Ebony fingerboard"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#bac5ca",
+          "label": "Steel strings"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "spruce": "#e4b873"
+        },
+        "vintage": {
+          "spruce": "#ab7044"
+        }
+      },
       "stats": {
-        "triangles": 176,
+        "triangles": 180,
         "sizeM": [
-          0.247884,
+          0.224,
           0.595,
-          0.069104
+          0.0325
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#9a6842",
+          "name": "spruce",
+          "color": "#d7a466",
           "parts": [
-            "body",
-            "upper-bout",
+            "body"
+          ],
+          "param": "spruce"
+        },
+        {
+          "name": "mahogany",
+          "color": "#71452f",
+          "parts": [
             "neck",
             "head",
-            "bridge",
+            "bridge"
+          ],
+          "param": "mahogany"
+        },
+        {
+          "name": "ebony",
+          "color": "#26201d",
+          "parts": [
+            "fingerboard"
+          ],
+          "param": "ebony"
+        },
+        {
+          "name": "steel",
+          "color": "#bac5ca",
+          "parts": [
             "string-set"
           ],
-          "param": "color"
+          "param": "steel"
         }
       ]
     },
@@ -154615,7 +154707,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/alto-saxophone.kcad.ts",
       "preview": "/assets/music-alto-saxophone.png",
-      "sourceSha256": "3b5d371aea6811f9426abc1aef51c9a2d7e97ff00bb0548919689c7c9c9381a7",
+      "sourceSha256": "d78980852748138221b3cc80efa8db711be611fb555ad95d9fe37be12472fe5c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -154628,39 +154720,72 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "brass",
           "type": "color",
-          "default": "#a18a4b",
-          "label": "Asset color"
+          "default": "#c08a32",
+          "label": "Lacquered brass"
+        },
+        {
+          "name": "nickel",
+          "type": "color",
+          "default": "#c1c9ce",
+          "label": "Nickel keywork"
+        },
+        {
+          "name": "ebonite",
+          "type": "color",
+          "default": "#292830",
+          "label": "Ebonite mouthpiece"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "brass": "#e2b346"
+        },
+        "vintage": {
+          "brass": "#a76d2d"
+        }
+      },
       "stats": {
-        "triangles": 222,
+        "triangles": 214,
         "sizeM": [
-          0.145997,
-          0.39436,
-          0.132229
+          0.143165,
+          0.42,
+          0.116
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a18a4b",
+          "name": "brass",
+          "color": "#c08a32",
           "parts": [
             "body",
             "lower-body",
             "bell",
-            "crook",
-            "neck",
+            "crook"
+          ],
+          "param": "brass"
+        },
+        {
+          "name": "ebonite",
+          "color": "#292830",
+          "parts": [
+            "mouthpiece"
+          ],
+          "param": "ebonite"
+        },
+        {
+          "name": "nickel",
+          "color": "#c1c9ce",
+          "parts": [
             "key-rail",
             "keys",
             "keys-upper",
             "keys-top"
           ],
-          "param": "color"
+          "param": "nickel"
         }
       ]
     },
@@ -154688,7 +154813,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/banjo.kcad.ts",
       "preview": "/assets/music-banjo.png",
-      "sourceSha256": "b2698188f49b405cc90da1a194929a2930daba5f0dfcf1620e81960a3e082255",
+      "sourceSha256": "c2ed5d5bf98a64e76eeccfb46dedb3ef891f4d9672c7a7ec16f685fe81bbef35",
       "triangleBudget": 1800,
       "params": [
         {
@@ -154701,15 +154826,40 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "maple",
           "type": "color",
-          "default": "#806c55",
-          "label": "Asset color"
+          "default": "#bf8a4b",
+          "label": "Maple neck"
+        },
+        {
+          "name": "parchment",
+          "type": "color",
+          "default": "#e4d7b7",
+          "label": "Parchment head"
+        },
+        {
+          "name": "nickel",
+          "type": "color",
+          "default": "#bcc5ca",
+          "label": "Nickel hardware"
+        },
+        {
+          "name": "ebony",
+          "type": "color",
+          "default": "#29221f",
+          "label": "Ebony fingerboard"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "maple": "#d8a45e"
+        },
+        "vintage": {
+          "maple": "#8f5b34"
+        }
+      },
       "stats": {
-        "triangles": 188,
+        "triangles": 244,
         "sizeM": [
           0.164,
           0.404,
@@ -154720,17 +154870,40 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#806c55",
+          "name": "maple",
+          "color": "#bf8a4b",
           "parts": [
             "resonator",
-            "rim",
             "neck",
             "head",
-            "bridge",
+            "bridge"
+          ],
+          "param": "maple"
+        },
+        {
+          "name": "nickel",
+          "color": "#bcc5ca",
+          "parts": [
+            "rim",
             "strings"
           ],
-          "param": "color"
+          "param": "nickel"
+        },
+        {
+          "name": "parchment",
+          "color": "#e4d7b7",
+          "parts": [
+            "head-skin"
+          ],
+          "param": "parchment"
+        },
+        {
+          "name": "ebony",
+          "color": "#29221f",
+          "parts": [
+            "fingerboard"
+          ],
+          "param": "ebony"
         }
       ]
     },
@@ -154758,7 +154931,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/bass-drum.kcad.ts",
       "preview": "/assets/music-bass-drum.png",
-      "sourceSha256": "20193aa6f313409c2fb63c332960f7a7ab9655044e3057c1f79e4290fe9c7504",
+      "sourceSha256": "85851e6faa3e0f880e6689da612abb9011c1243a46b745e66d12b37a33c5ccb0",
       "triangleBudget": 1800,
       "params": [
         {
@@ -154771,13 +154944,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "lacquer",
           "type": "color",
-          "default": "#8b6745",
-          "label": "Asset color"
+          "default": "#9e343d",
+          "label": "Shell lacquer"
+        },
+        {
+          "name": "calfskin",
+          "type": "color",
+          "default": "#e9dfc9",
+          "label": "Calfskin heads"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#67747d",
+          "label": "Cradle steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "lacquer": "#23627a"
+        },
+        "vintage": {
+          "lacquer": "#6c3435"
+        }
+      },
       "stats": {
         "triangles": 168,
         "sizeM": [
@@ -154790,17 +154982,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8b6745",
+          "name": "lacquer",
+          "color": "#9e343d",
           "parts": [
-            "shell",
+            "shell"
+          ],
+          "param": "lacquer"
+        },
+        {
+          "name": "calfskin",
+          "color": "#e9dfc9",
+          "parts": [
             "front-head",
-            "rear-head",
+            "rear-head"
+          ],
+          "param": "calfskin"
+        },
+        {
+          "name": "steel",
+          "color": "#67747d",
+          "parts": [
             "cradle-left",
             "cradle-right",
             "cradle-bar"
           ],
-          "param": "color"
+          "param": "steel"
         }
       ]
     },
@@ -154828,7 +155034,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/bass-guitar.kcad.ts",
       "preview": "/assets/music-bass-guitar.png",
-      "sourceSha256": "8d5f1998443e5a3f23fd53791f2b11e8d463f9fa217777e31cdf285ad042f9a6",
+      "sourceSha256": "3d173ddebe3eef4c5d9f7e5bd867cf21f452f0998823dda78a5f3f09fab81907",
       "triangleBudget": 1800,
       "params": [
         {
@@ -154841,37 +155047,84 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "lacquer",
           "type": "color",
-          "default": "#5b6d66",
-          "label": "Asset color"
+          "default": "#315f77",
+          "label": "Body lacquer"
+        },
+        {
+          "name": "maple",
+          "type": "color",
+          "default": "#c99a61",
+          "label": "Maple neck"
+        },
+        {
+          "name": "ebony",
+          "type": "color",
+          "default": "#27221f",
+          "label": "Ebony fingerboard"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#b7c1c7",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "lacquer": "#bf463d"
+        },
+        "vintage": {
+          "lacquer": "#654335"
+        }
+      },
       "stats": {
-        "triangles": 104,
+        "triangles": 152,
         "sizeM": [
-          0.207772,
+          0.208,
           0.708,
-          0.057262
+          0.0365
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#5b6d66",
+          "name": "lacquer",
+          "color": "#315f77",
           "parts": [
-            "body",
+            "body"
+          ],
+          "param": "lacquer"
+        },
+        {
+          "name": "maple",
+          "color": "#c99a61",
+          "parts": [
             "neck",
-            "head",
-            "bridge",
+            "head"
+          ],
+          "param": "maple"
+        },
+        {
+          "name": "ebony",
+          "color": "#27221f",
+          "parts": [
+            "fingerboard",
             "pickup-one",
-            "pickup-two",
+            "pickup-two"
+          ],
+          "param": "ebony"
+        },
+        {
+          "name": "steel",
+          "color": "#b7c1c7",
+          "parts": [
+            "bridge",
             "strings"
           ],
-          "param": "color"
+          "param": "steel"
         }
       ]
     },
@@ -154899,7 +155152,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/bassoon.kcad.ts",
       "preview": "/assets/music-bassoon.png",
-      "sourceSha256": "2ab69e4ddea465f321729e6ebfad026059d914274c6b4e48cd8d51df04f187cd",
+      "sourceSha256": "c18d2e4763fe168b4af35e1615dafc89c7d20a2ccfb9a379ba823ade46b3c639",
       "triangleBudget": 1800,
       "params": [
         {
@@ -154912,18 +155165,37 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "maple",
           "type": "color",
-          "default": "#7d5a3c",
-          "label": "Asset color"
+          "default": "#8c552f",
+          "label": "Maple body"
+        },
+        {
+          "name": "silver",
+          "type": "color",
+          "default": "#b9c5cb",
+          "label": "Silver keywork"
+        },
+        {
+          "name": "ebonite",
+          "type": "color",
+          "default": "#27272a",
+          "label": "Ebonite reed"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "maple": "#a46938"
+        },
+        "vintage": {
+          "maple": "#603d2d"
+        }
+      },
       "stats": {
-        "triangles": 228,
+        "triangles": 240,
         "sizeM": [
           0.104,
-          0.508,
+          0.557,
           0.116105
         ],
         "minUpM": 0,
@@ -154931,20 +155203,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#7d5a3c",
+          "name": "maple",
+          "color": "#8c552f",
           "parts": [
             "long-joint",
             "wing-joint",
             "boot-joint",
-            "bell-joint",
+            "bell-joint"
+          ],
+          "param": "maple"
+        },
+        {
+          "name": "silver",
+          "color": "#b9c5cb",
+          "parts": [
             "bocal",
             "key-rail",
             "key-low",
             "key-mid",
             "key-high"
           ],
-          "param": "color"
+          "param": "silver"
+        },
+        {
+          "name": "ebonite",
+          "color": "#27272a",
+          "parts": [
+            "reed"
+          ],
+          "param": "ebonite"
         }
       ]
     },
@@ -154972,7 +155259,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/bongos.kcad.ts",
       "preview": "/assets/music-bongos.png",
-      "sourceSha256": "44e933e6d62e6a3361e448dc9a1d8080eab1190ecf230341cf81a1e04e3b8ec7",
+      "sourceSha256": "407dae15460e4a8ca9f7addfe7faa288233ee416ca43e9f6a10dc3198f0fa167",
       "triangleBudget": 1800,
       "params": [
         {
@@ -154985,13 +155272,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "maple",
           "type": "color",
-          "default": "#9a704d",
-          "label": "Asset color"
+          "default": "#b77943",
+          "label": "Maple shells"
+        },
+        {
+          "name": "calfskin",
+          "type": "color",
+          "default": "#e6d7b5",
+          "label": "Calfskin heads"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#68747b",
+          "label": "Steel bridge"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "maple": "#ce914e"
+        },
+        "vintage": {
+          "maple": "#805032"
+        }
+      },
       "stats": {
         "triangles": 200,
         "sizeM": [
@@ -155004,17 +155310,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#9a704d",
+          "name": "maple",
+          "color": "#b77943",
           "parts": [
             "left-shell",
-            "right-shell",
+            "right-shell"
+          ],
+          "param": "maple"
+        },
+        {
+          "name": "calfskin",
+          "color": "#e6d7b5",
+          "parts": [
             "left-head",
-            "right-head",
+            "right-head"
+          ],
+          "param": "calfskin"
+        },
+        {
+          "name": "steel",
+          "color": "#68747b",
+          "parts": [
             "bridge",
             "base"
           ],
-          "param": "color"
+          "param": "steel"
         }
       ]
     },
@@ -155042,7 +155362,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/cajon.kcad.ts",
       "preview": "/assets/music-cajon.png",
-      "sourceSha256": "6cc9a363a8babf207ccb94e2747aea7eb0dfe80816b4d253bf9fec73922339bd",
+      "sourceSha256": "280176d603d4b6f25b2cd2078a053cf550ffc5e70644e94e19bce98496d475a5",
       "triangleBudget": 1800,
       "params": [
         {
@@ -155055,13 +155375,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "birch",
           "type": "color",
-          "default": "#a67545",
-          "label": "Asset color"
+          "default": "#ba8248",
+          "label": "Birch cabinet"
+        },
+        {
+          "name": "rosewood",
+          "type": "color",
+          "default": "#8a482f",
+          "label": "Rosewood striking panel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292a2c",
+          "label": "Rubber feet"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "birch": "#d39a58"
+        },
+        "vintage": {
+          "birch": "#845334"
+        }
+      },
       "stats": {
         "triangles": 60,
         "sizeM": [
@@ -155074,16 +155413,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a67545",
+          "name": "birch",
+          "color": "#ba8248",
           "parts": [
             "body",
-            "front-panel",
-            "top-seat",
+            "top-seat"
+          ],
+          "param": "birch"
+        },
+        {
+          "name": "rosewood",
+          "color": "#8a482f",
+          "parts": [
+            "front-panel"
+          ],
+          "param": "rosewood"
+        },
+        {
+          "name": "rubber",
+          "color": "#292a2c",
+          "parts": [
             "foot-left",
             "foot-right"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -155111,7 +155464,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/cello.kcad.ts",
       "preview": "/assets/music-cello.png",
-      "sourceSha256": "9b96886c639b8c7eccdd8e93179cbc1cecc6d17e1506e6ee5cd0e8e16ab2a4f6",
+      "sourceSha256": "aea50b196de1f0857b717b7dd1b44cd0c6aaac3058691fef02a88081d23c7772",
       "triangleBudget": 1800,
       "params": [
         {
@@ -155124,37 +155477,83 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "maple",
           "type": "color",
-          "default": "#96653d",
-          "label": "Asset color"
+          "default": "#a96c3e",
+          "label": "Maple body"
+        },
+        {
+          "name": "ebony",
+          "type": "color",
+          "default": "#25201f",
+          "label": "Ebony fingerboard"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#bbc5ca",
+          "label": "Steel strings"
+        },
+        {
+          "name": "nickel",
+          "type": "color",
+          "default": "#858f94",
+          "label": "Nickel endpin"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "maple": "#c8894e"
+        },
+        "vintage": {
+          "maple": "#79482e"
+        }
+      },
       "stats": {
-        "triangles": 222,
+        "triangles": 238,
         "sizeM": [
-          0.270064,
+          0.27,
           0.682,
-          0.06949
+          0.050577
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#96653d",
+          "name": "maple",
+          "color": "#a96c3e",
           "parts": [
-            "lower-bout",
-            "upper-bout",
+            "body",
+            "bridge"
+          ],
+          "param": "maple"
+        },
+        {
+          "name": "ebony",
+          "color": "#25201f",
+          "parts": [
             "neck",
-            "scroll",
-            "bridge",
-            "endpin",
+            "fingerboard",
+            "scroll"
+          ],
+          "param": "ebony"
+        },
+        {
+          "name": "nickel",
+          "color": "#858f94",
+          "parts": [
+            "endpin"
+          ],
+          "param": "nickel"
+        },
+        {
+          "name": "steel",
+          "color": "#bbc5ca",
+          "parts": [
             "strings"
           ],
-          "param": "color"
+          "param": "steel"
         }
       ]
     },
@@ -155182,7 +155581,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/clarinet.kcad.ts",
       "preview": "/assets/music-clarinet.png",
-      "sourceSha256": "09ee5ccf067b55b0ff1c08a4df6e451c69ea51f97b2f7a45181a89a3ba95d6f0",
+      "sourceSha256": "27ee3bf431fb0afec7ca04759ee8e127fc9ad9d70284e4364a4aaaefceacee7d",
       "triangleBudget": 1800,
       "params": [
         {
@@ -155195,15 +155594,34 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "grenadilla",
           "type": "color",
-          "default": "#343c44",
-          "label": "Asset color"
+          "default": "#292626",
+          "label": "Grenadilla wood"
+        },
+        {
+          "name": "silver",
+          "type": "color",
+          "default": "#bcc6cb",
+          "label": "Silver keywork"
+        },
+        {
+          "name": "ivory",
+          "type": "color",
+          "default": "#e5d8b9",
+          "label": "Ivory rings"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "grenadilla": "#343039"
+        },
+        "vintage": {
+          "grenadilla": "#211d1d"
+        }
+      },
       "stats": {
-        "triangles": 482,
+        "triangles": 674,
         "sizeM": [
           0.064539,
           0.573,
@@ -155214,19 +155632,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#343c44",
+          "name": "grenadilla",
+          "color": "#292626",
           "parts": [
             "barrel",
             "bell",
-            "mouthpiece",
+            "mouthpiece"
+          ],
+          "param": "grenadilla"
+        },
+        {
+          "name": "ivory",
+          "color": "#e5d8b9",
+          "parts": [
+            "ivory-ring-low",
+            "ivory-ring-high"
+          ],
+          "param": "ivory"
+        },
+        {
+          "name": "silver",
+          "color": "#bcc6cb",
+          "parts": [
             "key-one",
             "key-two",
             "key-three",
             "key-four",
             "key-five"
           ],
-          "param": "color"
+          "param": "silver"
         }
       ]
     },
@@ -155254,7 +155688,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/concert-flute.kcad.ts",
       "preview": "/assets/music-concert-flute.png",
-      "sourceSha256": "4abc4d500de7058f444237febcaf48a416c12dabf1f33b44784ae083e25a8f3c",
+      "sourceSha256": "f9838f156895b163cc42637ebd910489c7c777932dde928aa19e79d88244bf82",
       "triangleBudget": 1800,
       "params": [
         {
@@ -155267,13 +155701,26 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "silver",
           "type": "color",
-          "default": "#a4a9a4",
-          "label": "Asset color"
+          "default": "#aebbc2",
+          "label": "Silver tube"
+        },
+        {
+          "name": "nickel",
+          "type": "color",
+          "default": "#d0d7d9",
+          "label": "Nickel keywork"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "silver": "#dce4e8"
+        },
+        "vintage": {
+          "silver": "#a49b8b"
+        }
+      },
       "stats": {
         "triangles": 264,
         "sizeM": [
@@ -155286,17 +155733,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a4a9a4",
+          "name": "silver",
+          "color": "#aebbc2",
           "parts": [
             "tube",
-            "head-joint",
+            "head-joint"
+          ],
+          "param": "silver"
+        },
+        {
+          "name": "nickel",
+          "color": "#d0d7d9",
+          "parts": [
             "key-one",
             "key-two",
             "key-three",
             "key-four"
           ],
-          "param": "color"
+          "param": "nickel"
         }
       ]
     },
@@ -155324,7 +155778,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/concert-harp.kcad.ts",
       "preview": "/assets/music-concert-harp.png",
-      "sourceSha256": "a8054306ed585b3f8f24e39c0fe2958e87a11d40d7c395b891b731eadfc6e5d8",
+      "sourceSha256": "df4edeafd0e6c9b8cc129e91ae81cd078fc8bb864cb8f24363415e4e0b87f9a9",
       "triangleBudget": 1800,
       "params": [
         {
@@ -155337,13 +155791,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "maple",
           "type": "color",
-          "default": "#b29354",
-          "label": "Asset color"
+          "default": "#c19151",
+          "label": "Maple frame"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#b78331",
+          "label": "Brass neck fittings"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#bac5ca",
+          "label": "Steel strings"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "maple": "#d5a562"
+        },
+        "vintage": {
+          "maple": "#855331"
+        }
+      },
       "stats": {
         "triangles": 144,
         "sizeM": [
@@ -155356,13 +155829,27 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b29354",
+          "name": "maple",
+          "color": "#c19151",
           "parts": [
             "soundboard",
             "pillar",
-            "neck",
-            "base",
+            "base"
+          ],
+          "param": "maple"
+        },
+        {
+          "name": "brass",
+          "color": "#b78331",
+          "parts": [
+            "neck"
+          ],
+          "param": "brass"
+        },
+        {
+          "name": "steel",
+          "color": "#bac5ca",
+          "parts": [
             "string-01",
             "string-02",
             "string-03",
@@ -155372,7 +155859,7 @@
             "string-07",
             "string-08"
           ],
-          "param": "color"
+          "param": "steel"
         }
       ]
     },
@@ -155400,7 +155887,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/conductor-podium.kcad.ts",
       "preview": "/assets/music-conductor-podium.png",
-      "sourceSha256": "a92ab63582cb8bf56851d5123afb5a596ce56051cf8f47cbb2ee342b643417fd",
+      "sourceSha256": "aff4f458e847a5e85c9070fdfb21cfa2dfc6b2366109c230b860a8d4dd2fa079",
       "triangleBudget": 1800,
       "params": [
         {
@@ -155413,13 +155900,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "oak",
           "type": "color",
-          "default": "#92734f",
-          "label": "Asset color"
+          "default": "#93603b",
+          "label": "Oak platform"
+        },
+        {
+          "name": "paint",
+          "type": "color",
+          "default": "#334d5e",
+          "label": "Enamel riser"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#272b2e",
+          "label": "Rubber tread"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "oak": "#b57a48"
+        },
+        "vintage": {
+          "oak": "#68452f"
+        }
+      },
       "stats": {
         "triangles": 48,
         "sizeM": [
@@ -155432,15 +155938,29 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#92734f",
+          "name": "oak",
+          "color": "#93603b",
           "parts": [
             "platform",
-            "upper-deck",
-            "front-step",
+            "upper-deck"
+          ],
+          "param": "oak"
+        },
+        {
+          "name": "rubber",
+          "color": "#272b2e",
+          "parts": [
+            "front-step"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "paint",
+          "color": "#334d5e",
+          "parts": [
             "back-rail"
           ],
-          "param": "color"
+          "param": "paint"
         }
       ]
     },
@@ -155468,7 +155988,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/conga-drums.kcad.ts",
       "preview": "/assets/music-conga-drums.png",
-      "sourceSha256": "4c10c2136f689238e1140c7ad8863ca3741f9fff85e83c3549409e3c4f8384b3",
+      "sourceSha256": "9980190fcd5da0b0f8a2bd33f4cfc665a374ae736d88b601ee4c11e4dcefc1a9",
       "triangleBudget": 1800,
       "params": [
         {
@@ -155481,13 +156001,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "maple",
           "type": "color",
-          "default": "#956a43",
-          "label": "Asset color"
+          "default": "#b8753f",
+          "label": "Maple shells"
+        },
+        {
+          "name": "calfskin",
+          "type": "color",
+          "default": "#e6d6b4",
+          "label": "Calfskin heads"
+        },
+        {
+          "name": "chrome",
+          "type": "color",
+          "default": "#818e94",
+          "label": "Chrome fittings"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "maple": "#ce914d"
+        },
+        "vintage": {
+          "maple": "#825032"
+        }
+      },
       "stats": {
         "triangles": 276,
         "sizeM": [
@@ -155500,18 +156039,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#956a43",
+          "name": "maple",
+          "color": "#b8753f",
           "parts": [
             "left-shell",
-            "right-shell",
+            "right-shell"
+          ],
+          "param": "maple"
+        },
+        {
+          "name": "calfskin",
+          "color": "#e6d6b4",
+          "parts": [
             "left-head",
-            "right-head",
+            "right-head"
+          ],
+          "param": "calfskin"
+        },
+        {
+          "name": "chrome",
+          "color": "#818e94",
+          "parts": [
             "left-foot",
             "right-foot",
             "cross-brace"
           ],
-          "param": "color"
+          "param": "chrome"
         }
       ]
     },
@@ -155539,7 +156092,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/double-bass.kcad.ts",
       "preview": "/assets/music-double-bass.png",
-      "sourceSha256": "9c012d6f7334868d80f4e7ae671adc0857b3d2e5a2ae2796b86af6de211bcb48",
+      "sourceSha256": "7892baa0d1b9ab472264edfe77e6626927ab9a2ad62d67e15a5277455928d4ca",
       "triangleBudget": 1800,
       "params": [
         {
@@ -155552,37 +156105,83 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "maple",
           "type": "color",
-          "default": "#755137",
-          "label": "Asset color"
+          "default": "#9a6139",
+          "label": "Maple body"
+        },
+        {
+          "name": "ebony",
+          "type": "color",
+          "default": "#25201f",
+          "label": "Ebony fingerboard"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#bbc5ca",
+          "label": "Steel strings"
+        },
+        {
+          "name": "nickel",
+          "type": "color",
+          "default": "#8d979c",
+          "label": "Nickel endpin"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "maple": "#bd7c47"
+        },
+        "vintage": {
+          "maple": "#6c432d"
+        }
+      },
       "stats": {
-        "triangles": 222,
+        "triangles": 238,
         "sizeM": [
-          0.323997,
+          0.33,
           0.99,
-          0.087157
+          0.063689
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#755137",
+          "name": "maple",
+          "color": "#9a6139",
           "parts": [
-            "lower-bout",
-            "upper-bout",
+            "body",
+            "bridge"
+          ],
+          "param": "maple"
+        },
+        {
+          "name": "ebony",
+          "color": "#25201f",
+          "parts": [
             "neck",
-            "scroll",
-            "bridge",
-            "endpin",
+            "fingerboard",
+            "scroll"
+          ],
+          "param": "ebony"
+        },
+        {
+          "name": "nickel",
+          "color": "#8d979c",
+          "parts": [
+            "endpin"
+          ],
+          "param": "nickel"
+        },
+        {
+          "name": "steel",
+          "color": "#bbc5ca",
+          "parts": [
             "strings"
           ],
-          "param": "color"
+          "param": "steel"
         }
       ]
     },
@@ -155610,7 +156209,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/drum-kit.kcad.ts",
       "preview": "/assets/music-drum-kit.png",
-      "sourceSha256": "134f0122ee96e482807fbe97d84639f045cf4fbda24a346f66f19a0e315c4cb8",
+      "sourceSha256": "c858fa6248e4fb8eb5d3c30a482793b730d9437d47badbc655f74790f98ed0e5",
       "triangleBudget": 1800,
       "params": [
         {
@@ -155623,46 +156222,98 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "lacquer",
           "type": "color",
-          "default": "#8b6a46",
-          "label": "Asset color"
+          "default": "#a9323d",
+          "label": "Drum lacquer"
+        },
+        {
+          "name": "calfskin",
+          "type": "color",
+          "default": "#e8dfcb",
+          "label": "Drumhead skin"
+        },
+        {
+          "name": "chrome",
+          "type": "color",
+          "default": "#86949a",
+          "label": "Chrome hardware"
+        },
+        {
+          "name": "bronze",
+          "type": "color",
+          "default": "#bf8d36",
+          "label": "Bronze cymbals"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "lacquer": "#286582"
+        },
+        "vintage": {
+          "lacquer": "#6b3935"
+        }
+      },
       "stats": {
-        "triangles": 560,
+        "triangles": 824,
         "sizeM": [
           0.419998,
           0.26484,
-          0.128
+          0.132
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8b6a46",
+          "name": "lacquer",
+          "color": "#a9323d",
           "parts": [
             "bass-drum",
             "snare",
-            "snare-stand-post",
-            "snare-stand-foot",
             "floor-tom",
             "rack-tom-left",
             "rack-tom-right",
             "tom-support",
-            "cymbal-one",
-            "cymbal-two",
+            "stool-seat"
+          ],
+          "param": "lacquer"
+        },
+        {
+          "name": "calfskin",
+          "color": "#e8dfcb",
+          "parts": [
+            "bass-head-front",
+            "bass-head-rear",
+            "snare-head",
+            "floor-tom-head",
+            "rack-tom-left-head",
+            "rack-tom-right-head"
+          ],
+          "param": "calfskin"
+        },
+        {
+          "name": "chrome",
+          "color": "#86949a",
+          "parts": [
+            "snare-stand-post",
+            "snare-stand-foot",
             "cymbal-stand-left",
             "cymbal-stand-right",
             "cymbal-foot-left",
             "cymbal-foot-right",
-            "stool-seat",
             "stool-post"
           ],
-          "param": "color"
+          "param": "chrome"
+        },
+        {
+          "name": "bronze",
+          "color": "#bf8d36",
+          "parts": [
+            "cymbal-one",
+            "cymbal-two"
+          ],
+          "param": "bronze"
         }
       ]
     },
@@ -155690,7 +156341,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/electric-guitar.kcad.ts",
       "preview": "/assets/music-electric-guitar.png",
-      "sourceSha256": "bbbc5215aef072c30ccbe0210620744db1e334a1e2983ee4d3a968f7f16648ae",
+      "sourceSha256": "5652754fcf97507c58573450cf4e2c4ea896ccb9660be6615fb30e2f4e840935",
       "triangleBudget": 1800,
       "params": [
         {
@@ -155703,38 +156354,84 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polyLacquer",
           "type": "color",
-          "default": "#455c78",
-          "label": "Asset color"
+          "default": "#426784",
+          "label": "Polyurethane body lacquer"
+        },
+        {
+          "name": "maple",
+          "type": "color",
+          "default": "#c49861",
+          "label": "Maple neck"
+        },
+        {
+          "name": "ebony",
+          "type": "color",
+          "default": "#28221f",
+          "label": "Ebony fingerboard"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#b9c4ca",
+          "label": "Steel hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "polyLacquer": "#c64238"
+        },
+        "vintage": {
+          "polyLacquer": "#593c32"
+        }
+      },
       "stats": {
-        "triangles": 136,
+        "triangles": 152,
         "sizeM": [
-          0.179512,
+          0.16,
           0.584,
-          0.053971
+          0.034
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#455c78",
+          "name": "polyLacquer",
+          "color": "#426784",
           "parts": [
-            "lower-body",
-            "upper-body",
+            "body"
+          ],
+          "param": "polyLacquer"
+        },
+        {
+          "name": "maple",
+          "color": "#c49861",
+          "parts": [
             "neck",
             "head",
+            "neck-pickup"
+          ],
+          "param": "maple"
+        },
+        {
+          "name": "ebony",
+          "color": "#28221f",
+          "parts": [
+            "fingerboard",
+            "bridge-pickup"
+          ],
+          "param": "ebony"
+        },
+        {
+          "name": "steel",
+          "color": "#b9c4ca",
+          "parts": [
             "bridge",
-            "neck-pickup",
-            "bridge-pickup",
             "strings"
           ],
-          "param": "color"
+          "param": "steel"
         }
       ]
     },
@@ -155762,7 +156459,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/french-horn.kcad.ts",
       "preview": "/assets/music-french-horn.png",
-      "sourceSha256": "ec7dc9731565c106eff5d7ee73c6501e2515ef2f0698b9e34634f7c468a10645",
+      "sourceSha256": "a3b03770790abbd329e8a8639ba05789df2be254c186dcfb31db5bb56848f486",
       "triangleBudget": 1800,
       "params": [
         {
@@ -155775,13 +156472,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "brass",
           "type": "color",
-          "default": "#a28b4f",
-          "label": "Asset color"
+          "default": "#c18c35",
+          "label": "Lacquered brass"
+        },
+        {
+          "name": "nickel",
+          "type": "color",
+          "default": "#bdc7cc",
+          "label": "Nickel slides"
+        },
+        {
+          "name": "ebonite",
+          "type": "color",
+          "default": "#28292c",
+          "label": "Ebonite mouthpiece"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "brass": "#e3b54b"
+        },
+        "vintage": {
+          "brass": "#a86f2d"
+        }
+      },
       "stats": {
         "triangles": 416,
         "sizeM": [
@@ -155794,19 +156510,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a28b4f",
+          "name": "brass",
+          "color": "#c18c35",
           "parts": [
             "outer-loop",
             "inner-loop",
-            "bell",
+            "bell"
+          ],
+          "param": "brass"
+        },
+        {
+          "name": "nickel",
+          "color": "#bdc7cc",
+          "parts": [
             "valve-block",
             "valve-one",
             "valve-two",
-            "valve-three",
+            "valve-three"
+          ],
+          "param": "nickel"
+        },
+        {
+          "name": "ebonite",
+          "color": "#28292c",
+          "parts": [
             "mouthpiece"
           ],
-          "param": "color"
+          "param": "ebonite"
         }
       ]
     },
@@ -155834,7 +156564,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/harmonica.kcad.ts",
       "preview": "/assets/music-harmonica.png",
-      "sourceSha256": "ac2ca00f20b2804e6f48d010c1bdb4bb4a944c13e78954998c7dbc27f14aec64",
+      "sourceSha256": "1e29df2f19ab5cba3fa236be0394e271cea3b0a3aafc4e38ba44e2e0fa223176",
       "triangleBudget": 1800,
       "params": [
         {
@@ -155847,13 +156577,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "stainless",
           "type": "color",
-          "default": "#888f91",
-          "label": "Asset color"
+          "default": "#aab6bc",
+          "label": "Stainless covers"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#bd8731",
+          "label": "Brass reed plates"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#282d33",
+          "label": "Polymer comb"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "stainless": "#d5dfe2"
+        },
+        "vintage": {
+          "stainless": "#888f8d"
+        }
+      },
       "stats": {
         "triangles": 120,
         "sizeM": [
@@ -155866,12 +156615,26 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#888f91",
+          "name": "polymer",
+          "color": "#282d33",
           "parts": [
-            "body",
+            "body"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "stainless",
+          "color": "#aab6bc",
+          "parts": [
             "top-cover",
-            "bottom-cover",
+            "bottom-cover"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "brass",
+          "color": "#bd8731",
+          "parts": [
             "reed-one",
             "reed-two",
             "reed-three",
@@ -155880,7 +156643,7 @@
             "reed-six",
             "reed-seven"
           ],
-          "param": "color"
+          "param": "brass"
         }
       ]
     },
@@ -155908,7 +156671,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/maracas.kcad.ts",
       "preview": "/assets/music-maracas.png",
-      "sourceSha256": "9a92795b1f8106cb66dad91029ab79ebe3858a7b7f200381b3a4b9c5a991f890",
+      "sourceSha256": "3d48918df057e815ca68bb9317a47441deb8093a9a2deb96c5624682ee632d33",
       "triangleBudget": 1800,
       "params": [
         {
@@ -155921,13 +156684,26 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paint",
           "type": "color",
-          "default": "#a47642",
-          "label": "Asset color"
+          "default": "#d5a82e",
+          "label": "Painted gourd shells"
+        },
+        {
+          "name": "maple",
+          "type": "color",
+          "default": "#a86a36",
+          "label": "Maple handles"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "paint": "#dd6532"
+        },
+        "vintage": {
+          "paint": "#9b4b2e"
+        }
+      },
       "stats": {
         "triangles": 332,
         "sizeM": [
@@ -155940,17 +156716,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a47642",
+          "name": "paint",
+          "color": "#d5a82e",
           "parts": [
             "left-head",
-            "right-head",
+            "right-head"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "maple",
+          "color": "#a86a36",
+          "parts": [
             "left-handle",
             "right-handle",
             "left-neck",
             "right-neck"
           ],
-          "param": "color"
+          "param": "maple"
         }
       ]
     },
@@ -155978,7 +156761,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/marimba.kcad.ts",
       "preview": "/assets/music-marimba.png",
-      "sourceSha256": "ad01750260476a5d03e25b0a50a9c3523682c087668566b5cf2554439d5e44fa",
+      "sourceSha256": "c5645ba48ce76b351f93b4dd5a4ce7f62e5bc1a04140f9e6bdef7054f33cde94",
       "triangleBudget": 1800,
       "params": [
         {
@@ -155991,13 +156774,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "rosewood",
           "type": "color",
-          "default": "#92653f",
-          "label": "Asset color"
+          "default": "#844c30",
+          "label": "Rosewood bars"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#9eabb2",
+          "label": "Aluminum resonators"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#343c42",
+          "label": "Steel frame"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "rosewood": "#a45d37"
+        },
+        "vintage": {
+          "rosewood": "#603b2d"
+        }
+      },
       "stats": {
         "triangles": 228,
         "sizeM": [
@@ -156010,22 +156812,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#92653f",
+          "name": "rosewood",
+          "color": "#844c30",
           "parts": [
             "bar-low",
             "bar-mid-low",
             "bar-mid",
             "bar-mid-high",
             "bar-high",
-            "resonator-low",
-            "resonator-mid",
-            "resonator-high",
-            "frame-left",
-            "frame-right",
             "legs"
           ],
-          "param": "color"
+          "param": "rosewood"
+        },
+        {
+          "name": "aluminum",
+          "color": "#9eabb2",
+          "parts": [
+            "resonator-low",
+            "resonator-mid",
+            "resonator-high"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "steel",
+          "color": "#343c42",
+          "parts": [
+            "frame-left",
+            "frame-right"
+          ],
+          "param": "steel"
         }
       ]
     },
@@ -156053,7 +156869,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/mechanical-metronome.kcad.ts",
       "preview": "/assets/music-mechanical-metronome.png",
-      "sourceSha256": "d8a01894669e143b1758ade227c7490b928ea5eb7d4ac57f36c921de82508ea4",
+      "sourceSha256": "d1791c7b9e7891ec490badea95867b4469ffed1f302215236da43aede84aa1fd",
       "triangleBudget": 1800,
       "params": [
         {
@@ -156066,13 +156882,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "walnut",
           "type": "color",
-          "default": "#876b4a",
-          "label": "Asset color"
+          "default": "#71462f",
+          "label": "Walnut case"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#c19137",
+          "label": "Brass pendulum"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#aeb9be",
+          "label": "Steel slider"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "walnut": "#8b5736"
+        },
+        "vintage": {
+          "walnut": "#50362d"
+        }
+      },
       "stats": {
         "triangles": 162,
         "sizeM": [
@@ -156085,19 +156920,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#876b4a",
+          "name": "walnut",
+          "color": "#71462f",
           "parts": [
             "lower-case",
             "upper-step-one",
             "upper-step-two",
             "upper-step-three",
-            "top-cap",
-            "pendulum-rod",
-            "slider-weight",
             "base"
           ],
-          "param": "color"
+          "param": "walnut"
+        },
+        {
+          "name": "brass",
+          "color": "#c19137",
+          "parts": [
+            "top-cap"
+          ],
+          "param": "brass"
+        },
+        {
+          "name": "steel",
+          "color": "#aeb9be",
+          "parts": [
+            "pendulum-rod",
+            "slider-weight"
+          ],
+          "param": "steel"
         }
       ]
     },
@@ -156125,7 +156974,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/microphone-stand.kcad.ts",
       "preview": "/assets/music-microphone-stand.png",
-      "sourceSha256": "0b7c9dc01c2ea134868204f81325b9df3eb888ef5797725ce5281111c4ba64ae",
+      "sourceSha256": "117f010bfbe6857b4cf6d4a334a56d3158c90197ee94a11d11996c8dd314a09e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -156138,13 +156987,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "steel",
           "type": "color",
-          "default": "#69757a",
-          "label": "Asset color"
+          "default": "#4b565d",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#252a2e",
+          "label": "Microphone polymer"
+        },
+        {
+          "name": "silver",
+          "type": "color",
+          "default": "#b8c3c8",
+          "label": "Silver grille"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "steel": "#385f70"
+        },
+        "vintage": {
+          "steel": "#34383a"
+        }
+      },
       "stats": {
         "triangles": 266,
         "sizeM": [
@@ -156157,8 +157025,8 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#69757a",
+          "name": "steel",
+          "color": "#4b565d",
           "parts": [
             "base-post",
             "base-foot-one",
@@ -156166,11 +157034,25 @@
             "base-foot-three",
             "boom",
             "boom-joint",
-            "microphone-body",
-            "microphone-grille",
             "clip"
           ],
-          "param": "color"
+          "param": "steel"
+        },
+        {
+          "name": "polymer",
+          "color": "#252a2e",
+          "parts": [
+            "microphone-body"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "silver",
+          "color": "#b8c3c8",
+          "parts": [
+            "microphone-grille"
+          ],
+          "param": "silver"
         }
       ]
     },
@@ -156198,7 +157080,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/music-stand.kcad.ts",
       "preview": "/assets/music-music-stand.png",
-      "sourceSha256": "ed86a2cfcc855ed9c8fa48a91fa3e66012a419857a620e513af453d84f39db28",
+      "sourceSha256": "a10a19c59f8b123e38f23f07a273f629a27d1a13ea7422896feb0b9f861f47d1",
       "triangleBudget": 1800,
       "params": [
         {
@@ -156211,13 +157093,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "steel",
           "type": "color",
-          "default": "#66747b",
-          "label": "Asset color"
+          "default": "#3b525f",
+          "label": "Powder-coated steel"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#7d8d95",
+          "label": "Aluminum tray"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#25292c",
+          "label": "Rubber feet"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "steel": "#b23d3d"
+        },
+        "vintage": {
+          "steel": "#33383b"
+        }
+      },
       "stats": {
         "triangles": 148,
         "sizeM": [
@@ -156230,18 +157131,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#66747b",
+          "name": "aluminum",
+          "color": "#7d8d95",
           "parts": [
             "tray",
-            "tray-lip",
+            "tray-lip"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "steel",
+          "color": "#3b525f",
+          "parts": [
             "stem",
-            "collar",
+            "collar"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "rubber",
+          "color": "#25292c",
+          "parts": [
             "foot-one",
             "foot-two",
             "foot-three"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -156269,7 +157184,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/oboe.kcad.ts",
       "preview": "/assets/music-oboe.png",
-      "sourceSha256": "4dc6626fcc6e394703f75b43cd0b92543f8ea45a10776a50874f2251bdec688a",
+      "sourceSha256": "e5d768c7162f6597b865e77af9a2f9e8184d4946951afd3a0df14fd49a77e1fb",
       "triangleBudget": 1800,
       "params": [
         {
@@ -156282,13 +157197,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "grenadilla",
           "type": "color",
-          "default": "#8e5b34",
-          "label": "Asset color"
+          "default": "#342824",
+          "label": "Grenadilla wood"
+        },
+        {
+          "name": "silver",
+          "type": "color",
+          "default": "#bbc5ca",
+          "label": "Silver keywork"
+        },
+        {
+          "name": "reed",
+          "type": "color",
+          "default": "#c99860",
+          "label": "Cane reed"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "grenadilla": "#4d3329"
+        },
+        "vintage": {
+          "grenadilla": "#292120"
+        }
+      },
       "stats": {
         "triangles": 526,
         "sizeM": [
@@ -156301,20 +157235,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8e5b34",
+          "name": "grenadilla",
+          "color": "#342824",
           "parts": [
             "body",
             "bell",
-            "reed",
-            "upper-joint",
+            "upper-joint"
+          ],
+          "param": "grenadilla"
+        },
+        {
+          "name": "reed",
+          "color": "#c99860",
+          "parts": [
+            "reed"
+          ],
+          "param": "reed"
+        },
+        {
+          "name": "silver",
+          "color": "#bbc5ca",
+          "parts": [
             "key-one",
             "key-two",
             "key-three",
             "key-four",
             "key-five"
           ],
-          "param": "color"
+          "param": "silver"
         }
       ]
     },
@@ -156342,7 +157290,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/orchestral-cymbals.kcad.ts",
       "preview": "/assets/music-orchestral-cymbals.png",
-      "sourceSha256": "4894965a73307938d1ba8f04c83de9b47a0494edfb6e6b97936eb696664453b7",
+      "sourceSha256": "ad7264a2462220fd880b876c19884c729c0b34702fc852e7d3efe4dee717e3ee",
       "triangleBudget": 1800,
       "params": [
         {
@@ -156355,13 +157303,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "bronze",
           "type": "color",
-          "default": "#b29b56",
-          "label": "Asset color"
+          "default": "#c18d34",
+          "label": "B20 bronze"
+        },
+        {
+          "name": "leather",
+          "type": "color",
+          "default": "#57392b",
+          "label": "Leather hand straps"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#9da9ae",
+          "label": "Steel bosses"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "bronze": "#e1b44b"
+        },
+        "vintage": {
+          "bronze": "#a66b2f"
+        }
+      },
       "stats": {
         "triangles": 316,
         "sizeM": [
@@ -156374,17 +157341,31 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b29b56",
+          "name": "bronze",
+          "color": "#c18d34",
           "parts": [
             "upper-cymbal",
-            "lower-cymbal",
+            "lower-cymbal"
+          ],
+          "param": "bronze"
+        },
+        {
+          "name": "steel",
+          "color": "#9da9ae",
+          "parts": [
             "upper-boss",
-            "lower-boss",
+            "lower-boss"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "leather",
+          "color": "#57392b",
+          "parts": [
             "upper-grip",
             "lower-grip"
           ],
-          "param": "color"
+          "param": "leather"
         }
       ]
     },
@@ -156412,7 +157393,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/orchestral-triangle.kcad.ts",
       "preview": "/assets/music-orchestral-triangle.png",
-      "sourceSha256": "7651bb30a9418b029e120323ef70f7ed91e081ea9c2857458e6db8fbd3da7207",
+      "sourceSha256": "f63636e4d2fced26fbab3955f93432c468d096ad9b9267674680414b2c28166f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -156425,13 +157406,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "steel",
           "type": "color",
-          "default": "#a9a69a",
-          "label": "Asset color"
+          "default": "#b7c2c8",
+          "label": "Polished steel"
+        },
+        {
+          "name": "maple",
+          "type": "color",
+          "default": "#ae7745",
+          "label": "Maple striker"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#292c2e",
+          "label": "Striker grip polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "steel": "#dce4e7"
+        },
+        "vintage": {
+          "steel": "#998f81"
+        }
+      },
       "stats": {
         "triangles": 158,
         "sizeM": [
@@ -156444,16 +157444,30 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a9a69a",
+          "name": "steel",
+          "color": "#b7c2c8",
           "parts": [
             "left-side",
             "right-side",
-            "top-bar",
-            "striker",
+            "top-bar"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "maple",
+          "color": "#ae7745",
+          "parts": [
+            "striker"
+          ],
+          "param": "maple"
+        },
+        {
+          "name": "rubber",
+          "color": "#292c2e",
+          "parts": [
             "striker-grip"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -156481,7 +157495,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/snare-drum.kcad.ts",
       "preview": "/assets/music-snare-drum.png",
-      "sourceSha256": "bfb6c76cfe10a4c25ea45bda2d5f25b7bd4bd563a5c3f3ec57aec53e1258f277",
+      "sourceSha256": "3c165eb11fd91e35fa94c232335c00111d8c97225126ae3586a2e3740b52acab",
       "triangleBudget": 1800,
       "params": [
         {
@@ -156494,15 +157508,34 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "lacquer",
           "type": "color",
-          "default": "#9b7b55",
-          "label": "Asset color"
+          "default": "#a7383c",
+          "label": "Shell lacquer"
+        },
+        {
+          "name": "calfskin",
+          "type": "color",
+          "default": "#e8dfca",
+          "label": "Drumhead skin"
+        },
+        {
+          "name": "chrome",
+          "type": "color",
+          "default": "#879399",
+          "label": "Chrome hoops and stand"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "lacquer": "#2e637d"
+        },
+        "vintage": {
+          "lacquer": "#6e4037"
+        }
+      },
       "stats": {
-        "triangles": 304,
+        "triangles": 348,
         "sizeM": [
           0.164,
           0.16,
@@ -156513,17 +157546,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#9b7b55",
+          "name": "lacquer",
+          "color": "#a7383c",
           "parts": [
-            "shell",
+            "shell"
+          ],
+          "param": "lacquer"
+        },
+        {
+          "name": "calfskin",
+          "color": "#e8dfca",
+          "parts": [
+            "head"
+          ],
+          "param": "calfskin"
+        },
+        {
+          "name": "chrome",
+          "color": "#879399",
+          "parts": [
             "top-hoop",
             "bottom-hoop",
             "stand-post",
             "stand-foot-one",
             "stand-foot-two"
           ],
-          "param": "color"
+          "param": "chrome"
         }
       ]
     },
@@ -156551,7 +157599,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/tambourine.kcad.ts",
       "preview": "/assets/music-tambourine.png",
-      "sourceSha256": "cb43c03cbae873fb6f477791c744b12de0dab10cb88dcef96879715357a9a29b",
+      "sourceSha256": "83136117f0c81bbf7985b2f550fb42b4d7d058b790f247b1119752f523058742",
       "triangleBudget": 1800,
       "params": [
         {
@@ -156564,13 +157612,26 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "maple",
           "type": "color",
-          "default": "#9e8050",
-          "label": "Asset color"
+          "default": "#ad7441",
+          "label": "Maple frame"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#c18b32",
+          "label": "Brass jingles"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "maple": "#c58b4b"
+        },
+        "vintage": {
+          "maple": "#754b31"
+        }
+      },
       "stats": {
         "triangles": 286,
         "sizeM": [
@@ -156583,17 +157644,24 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#9e8050",
+          "name": "maple",
+          "color": "#ad7441",
           "parts": [
-            "ring",
+            "ring"
+          ],
+          "param": "maple"
+        },
+        {
+          "name": "brass",
+          "color": "#c18b32",
+          "parts": [
             "jingle-one",
             "jingle-two",
             "jingle-three",
             "jingle-four",
             "jingle-five"
           ],
-          "param": "color"
+          "param": "brass"
         }
       ]
     },
@@ -156621,7 +157689,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/tenor-saxophone.kcad.ts",
       "preview": "/assets/music-tenor-saxophone.png",
-      "sourceSha256": "37444f8b03ec467db38cdc761f3428e1539b9e6acf339d8f94e4b854fd1c3e78",
+      "sourceSha256": "5802f0dafe3d40c306b93801877cff915d5e06fb1cbd5ce39cb1f5f20973a56a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -156634,39 +157702,72 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "brass",
           "type": "color",
-          "default": "#9a8345",
-          "label": "Asset color"
+          "default": "#bb842e",
+          "label": "Lacquered brass"
+        },
+        {
+          "name": "nickel",
+          "type": "color",
+          "default": "#bdc7cc",
+          "label": "Nickel keywork"
+        },
+        {
+          "name": "ebonite",
+          "type": "color",
+          "default": "#29292b",
+          "label": "Ebonite mouthpiece"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "brass": "#dfae3f"
+        },
+        "vintage": {
+          "brass": "#a2692a"
+        }
+      },
       "stats": {
-        "triangles": 222,
+        "triangles": 214,
         "sizeM": [
-          0.169997,
-          0.46572,
-          0.152158
+          0.167165,
+          0.496,
+          0.132
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#9a8345",
+          "name": "brass",
+          "color": "#bb842e",
           "parts": [
             "body",
             "lower-body",
             "bell",
-            "crook",
-            "neck",
+            "crook"
+          ],
+          "param": "brass"
+        },
+        {
+          "name": "ebonite",
+          "color": "#29292b",
+          "parts": [
+            "mouthpiece"
+          ],
+          "param": "ebonite"
+        },
+        {
+          "name": "nickel",
+          "color": "#bdc7cc",
+          "parts": [
             "key-rail",
             "keys-low",
             "keys-mid",
             "keys-high"
           ],
-          "param": "color"
+          "param": "nickel"
         }
       ]
     },
@@ -156694,7 +157795,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/timpani.kcad.ts",
       "preview": "/assets/music-timpani.png",
-      "sourceSha256": "6ead11c7560e869947bb70788c6518b7a54cb0985653dc3d89f117d55c2555ea",
+      "sourceSha256": "8dfe0989e9a5cac9526db48f93238071c5b6edac025963705b65dbf6772a8b8a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -156707,13 +157808,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "copper",
           "type": "color",
-          "default": "#a18a56",
-          "label": "Asset color"
+          "default": "#a95f37",
+          "label": "Copper bowl"
+        },
+        {
+          "name": "calfskin",
+          "type": "color",
+          "default": "#e6dcc5",
+          "label": "Drumhead skin"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#68757d",
+          "label": "Steel legs and pedal"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "copper": "#c27a45"
+        },
+        "vintage": {
+          "copper": "#78442f"
+        }
+      },
       "stats": {
         "triangles": 226,
         "sizeM": [
@@ -156726,18 +157846,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a18a56",
+          "name": "copper",
+          "color": "#a95f37",
           "parts": [
-            "bowl",
+            "bowl"
+          ],
+          "param": "copper"
+        },
+        {
+          "name": "calfskin",
+          "color": "#e6dcc5",
+          "parts": [
             "head-rim",
-            "head",
+            "head"
+          ],
+          "param": "calfskin"
+        },
+        {
+          "name": "steel",
+          "color": "#68757d",
+          "parts": [
             "leg-one",
             "leg-two",
             "leg-three",
             "pedal"
           ],
-          "param": "color"
+          "param": "steel"
         }
       ]
     },
@@ -156765,7 +157899,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/trombone.kcad.ts",
       "preview": "/assets/music-trombone.png",
-      "sourceSha256": "29a980d28acceeafdade915700c1c545ba63f10c4e756c3f22aff7e9fe9fd6f9",
+      "sourceSha256": "4ccf651b937006e6071a5b9cdd221ab5a4fe698f6c614981d0ec5a5a1433a57e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -156778,13 +157912,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "brass",
           "type": "color",
-          "default": "#a28a4e",
-          "label": "Asset color"
+          "default": "#c18b34",
+          "label": "Lacquered brass bell"
+        },
+        {
+          "name": "nickel",
+          "type": "color",
+          "default": "#bbc5ca",
+          "label": "Nickel slide tubes"
+        },
+        {
+          "name": "ebonite",
+          "type": "color",
+          "default": "#292a2d",
+          "label": "Ebonite mouthpiece"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "brass": "#e1b144"
+        },
+        "vintage": {
+          "brass": "#a56c2b"
+        }
+      },
       "stats": {
         "triangles": 314,
         "sizeM": [
@@ -156797,19 +157950,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a28a4e",
+          "name": "brass",
+          "color": "#c18b34",
           "parts": [
             "bell",
-            "bell-pipe",
+            "bell-pipe"
+          ],
+          "param": "brass"
+        },
+        {
+          "name": "nickel",
+          "color": "#bbc5ca",
+          "parts": [
             "inner-slide-left",
             "inner-slide-right",
             "outer-slide-left",
             "outer-slide-right",
-            "slide-crossbar",
+            "slide-crossbar"
+          ],
+          "param": "nickel"
+        },
+        {
+          "name": "ebonite",
+          "color": "#292a2d",
+          "parts": [
             "mouthpiece"
           ],
-          "param": "color"
+          "param": "ebonite"
         }
       ]
     },
@@ -156837,7 +158004,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/trumpet.kcad.ts",
       "preview": "/assets/music-trumpet.png",
-      "sourceSha256": "f05ace8a88a1ae437c1d95acb52ab828372f9a2dd38b69ddec8a185a12036352",
+      "sourceSha256": "c20a9da4cabb709801f9a26933b011dc80b5f142d7c82321469fd443a395b3fc",
       "triangleBudget": 1800,
       "params": [
         {
@@ -156850,13 +158017,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "brass",
           "type": "color",
-          "default": "#a89152",
-          "label": "Asset color"
+          "default": "#c18b34",
+          "label": "Lacquered brass"
+        },
+        {
+          "name": "nickel",
+          "type": "color",
+          "default": "#aeb9bf",
+          "label": "Nickel valve casing"
+        },
+        {
+          "name": "ebonite",
+          "type": "color",
+          "default": "#292a2c",
+          "label": "Ebonite valve buttons"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "brass": "#e2b44a"
+        },
+        "vintage": {
+          "brass": "#a66d2c"
+        }
+      },
       "stats": {
         "triangles": 268,
         "sizeM": [
@@ -156869,18 +158055,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a89152",
+          "name": "brass",
+          "color": "#c18b34",
           "parts": [
             "main-pipe",
-            "bell",
+            "bell"
+          ],
+          "param": "brass"
+        },
+        {
+          "name": "nickel",
+          "color": "#aeb9bf",
+          "parts": [
             "valve-one",
             "valve-two",
             "valve-three",
-            "valve-caps",
             "mouthpiece"
           ],
-          "param": "color"
+          "param": "nickel"
+        },
+        {
+          "name": "ebonite",
+          "color": "#292a2c",
+          "parts": [
+            "valve-caps"
+          ],
+          "param": "ebonite"
         }
       ]
     },
@@ -156908,7 +158108,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/tuba.kcad.ts",
       "preview": "/assets/music-tuba.png",
-      "sourceSha256": "cdd78c61d0958cda57003ccaf87405e726ac39004224592e9cd327f592428009",
+      "sourceSha256": "a91d5a73b26c765c76f95de1698e702d4af627c3294619ef0204b494183456b9",
       "triangleBudget": 1800,
       "params": [
         {
@@ -156921,15 +158121,34 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "brass",
           "type": "color",
-          "default": "#988148",
-          "label": "Asset color"
+          "default": "#bd8730",
+          "label": "Lacquered brass"
+        },
+        {
+          "name": "nickel",
+          "type": "color",
+          "default": "#aeb9bf",
+          "label": "Nickel valve casing"
+        },
+        {
+          "name": "ebonite",
+          "type": "color",
+          "default": "#292a2c",
+          "label": "Ebonite valve buttons"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "brass": "#e2b247"
+        },
+        "vintage": {
+          "brass": "#a2692b"
+        }
+      },
       "stats": {
-        "triangles": 340,
+        "triangles": 480,
         "sizeM": [
           0.208419,
           0.295,
@@ -156940,18 +158159,35 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#988148",
+          "name": "brass",
+          "color": "#bd8730",
           "parts": [
             "main-bell",
             "bell-neck",
             "lower-loop",
-            "body",
+            "body"
+          ],
+          "param": "brass"
+        },
+        {
+          "name": "nickel",
+          "color": "#aeb9bf",
+          "parts": [
             "valve-one",
             "valve-two",
             "valve-three"
           ],
-          "param": "color"
+          "param": "nickel"
+        },
+        {
+          "name": "ebonite",
+          "color": "#292a2c",
+          "parts": [
+            "valve-button-one",
+            "valve-button-two",
+            "valve-button-three"
+          ],
+          "param": "ebonite"
         }
       ]
     },
@@ -156979,7 +158215,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/ukulele.kcad.ts",
       "preview": "/assets/music-ukulele.png",
-      "sourceSha256": "e7e3ab715de665da2a966fa5c7e075cc27c2e3d50c559d5c50e89227fc8f1f89",
+      "sourceSha256": "a78fbbe8e12877ff8b4505354c2dfd9fa2b8f2f8c650c3ac18bbcadad3d76dec",
       "triangleBudget": 1800,
       "params": [
         {
@@ -156992,37 +158228,83 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "koa",
           "type": "color",
-          "default": "#b5834f",
-          "label": "Asset color"
+          "default": "#c7894d",
+          "label": "Koa soundboard"
+        },
+        {
+          "name": "ebony",
+          "type": "color",
+          "default": "#29211e",
+          "label": "Ebony fingerboard"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#bcc6cb",
+          "label": "Steel strings"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#bd8732",
+          "label": "Brass tuning hardware"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "koa": "#dfa562"
+        },
+        "vintage": {
+          "koa": "#86502f"
+        }
+      },
       "stats": {
-        "triangles": 208,
+        "triangles": 276,
         "sizeM": [
-          0.169163,
+          0.164,
           0.3455,
-          0.044756
+          0.027
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#b5834f",
+          "name": "koa",
+          "color": "#c7894d",
           "parts": [
             "body",
-            "upper-bout",
             "neck",
-            "head",
-            "bridge",
-            "sound-hole",
+            "head"
+          ],
+          "param": "koa"
+        },
+        {
+          "name": "ebony",
+          "color": "#29211e",
+          "parts": [
+            "fingerboard",
+            "sound-hole"
+          ],
+          "param": "ebony"
+        },
+        {
+          "name": "brass",
+          "color": "#bd8732",
+          "parts": [
+            "bridge"
+          ],
+          "param": "brass"
+        },
+        {
+          "name": "steel",
+          "color": "#bcc6cb",
+          "parts": [
             "strings"
           ],
-          "param": "color"
+          "param": "steel"
         }
       ]
     },
@@ -157050,7 +158332,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/vibraphone.kcad.ts",
       "preview": "/assets/music-vibraphone.png",
-      "sourceSha256": "80449031171d5f520603e008465fc92deab24f939fc16f02b81afa0fbed84b29",
+      "sourceSha256": "55f3979a81e4904d17e130b446d069918e2561e40940759b67d2647a509b4b54",
       "triangleBudget": 1800,
       "params": [
         {
@@ -157063,13 +158345,32 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "aluminum",
           "type": "color",
-          "default": "#9f8751",
-          "label": "Asset color"
+          "default": "#aebbc2",
+          "label": "Aluminum bars"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3b464d",
+          "label": "Steel frame"
+        },
+        {
+          "name": "resonator",
+          "type": "color",
+          "default": "#646b70",
+          "label": "Dark resonator tubes"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "aluminum": "#dce4e7"
+        },
+        "vintage": {
+          "aluminum": "#94948e"
+        }
+      },
       "stats": {
         "triangles": 304,
         "sizeM": [
@@ -157082,23 +158383,37 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#9f8751",
+          "name": "aluminum",
+          "color": "#aebbc2",
           "parts": [
             "bar-one",
             "bar-two",
             "bar-three",
             "bar-four",
             "bar-five",
+            "crossbar"
+          ],
+          "param": "aluminum"
+        },
+        {
+          "name": "resonator",
+          "color": "#646b70",
+          "parts": [
             "resonator-one",
             "resonator-two",
             "resonator-three",
             "resonator-four",
-            "resonator-five",
-            "crossbar",
+            "resonator-five"
+          ],
+          "param": "resonator"
+        },
+        {
+          "name": "steel",
+          "color": "#3b464d",
+          "parts": [
             "legs"
           ],
-          "param": "color"
+          "param": "steel"
         }
       ]
     },
@@ -157126,7 +158441,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/viola.kcad.ts",
       "preview": "/assets/music-viola.png",
-      "sourceSha256": "2088b4f8f48f965b3dfe639e412710491b136b9ea3f4aa434c9278ef4a434c9e",
+      "sourceSha256": "ac19b6dcde3068a822686b0277818bb6177107c2cd8320c3a42d2d85e1cad22f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -157139,17 +158454,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "maple",
           "type": "color",
-          "default": "#92633f",
-          "label": "Asset color"
+          "default": "#a66c3d",
+          "label": "Maple body"
+        },
+        {
+          "name": "ebony",
+          "type": "color",
+          "default": "#25201e",
+          "label": "Ebony fingerboard"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#bcc6cb",
+          "label": "Steel strings"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "maple": "#c1834b"
+        },
+        "vintage": {
+          "maple": "#75472e"
+        }
+      },
       "stats": {
-        "triangles": 178,
+        "triangles": 330,
         "sizeM": [
-          0.173342,
+          0.205,
           0.403,
           0.037464
         ],
@@ -157158,17 +158492,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#92633f",
+          "name": "maple",
+          "color": "#a66c3d",
           "parts": [
-            "lower-bout",
-            "upper-bout",
+            "body",
             "neck",
             "scroll",
-            "bridge",
+            "bridge"
+          ],
+          "param": "maple"
+        },
+        {
+          "name": "ebony",
+          "color": "#25201e",
+          "parts": [
+            "fingerboard",
+            "f-hole-left",
+            "f-hole-right"
+          ],
+          "param": "ebony"
+        },
+        {
+          "name": "steel",
+          "color": "#bcc6cb",
+          "parts": [
             "strings"
           ],
-          "param": "color"
+          "param": "steel"
         }
       ]
     },
@@ -157196,7 +158546,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/violin.kcad.ts",
       "preview": "/assets/music-violin.png",
-      "sourceSha256": "c8252ae6b82d5b325d72c91511372d9624e5ad3432e5c09aeeaf2faacfe8f91d",
+      "sourceSha256": "0b43a0cf89822550fce4147478407637dc0f2182cee1c5a4c2dfa743aab0a234",
       "triangleBudget": 1800,
       "params": [
         {
@@ -157209,17 +158559,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "maple",
           "type": "color",
-          "default": "#a46e3f",
-          "label": "Asset color"
+          "default": "#b47a45",
+          "label": "Maple body"
+        },
+        {
+          "name": "ebony",
+          "type": "color",
+          "default": "#25201e",
+          "label": "Ebony fingerboard"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#bbc5ca",
+          "label": "Steel strings"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "maple": "#d09150"
+        },
+        "vintage": {
+          "maple": "#7d4d30"
+        }
+      },
       "stats": {
-        "triangles": 178,
+        "triangles": 338,
         "sizeM": [
-          0.150057,
+          0.18,
           0.368,
           0.035591
         ],
@@ -157228,17 +158597,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a46e3f",
+          "name": "maple",
+          "color": "#b47a45",
           "parts": [
-            "lower-bout",
-            "upper-bout",
+            "body",
             "neck",
             "scroll",
-            "bridge",
+            "bridge"
+          ],
+          "param": "maple"
+        },
+        {
+          "name": "ebony",
+          "color": "#25201e",
+          "parts": [
+            "fingerboard",
+            "f-hole-left",
+            "f-hole-right"
+          ],
+          "param": "ebony"
+        },
+        {
+          "name": "steel",
+          "color": "#bbc5ca",
+          "parts": [
             "strings"
           ],
-          "param": "color"
+          "param": "steel"
         }
       ]
     },
@@ -157266,7 +158651,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/xylophone.kcad.ts",
       "preview": "/assets/music-xylophone.png",
-      "sourceSha256": "b8dd819b9c843bec637a1c09ccfd44721bf8b027a02f298e64e5daf794f3883a",
+      "sourceSha256": "9d78c738c93a322bef08a42149d5a4d4b2e0b382d6bb463fc830f90f45457448",
       "triangleBudget": 1800,
       "params": [
         {
@@ -157279,13 +158664,26 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "rosewood",
           "type": "color",
-          "default": "#a16e43",
-          "label": "Asset color"
+          "default": "#945631",
+          "label": "Rosewood bars"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#39444a",
+          "label": "Steel frame"
         }
       ],
-      "presets": {},
+      "presets": {
+        "concert": {
+          "rosewood": "#b16b39"
+        },
+        "vintage": {
+          "rosewood": "#633c2c"
+        }
+      },
       "stats": {
         "triangles": 152,
         "sizeM": [
@@ -157298,21 +158696,28 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a16e43",
+          "name": "rosewood",
+          "color": "#945631",
           "parts": [
             "bar-one",
             "bar-two",
             "bar-three",
             "bar-four",
             "bar-five",
+            "mallet"
+          ],
+          "param": "rosewood"
+        },
+        {
+          "name": "steel",
+          "color": "#39444a",
+          "parts": [
             "frame-left",
             "frame-right",
             "leg-left",
-            "leg-right",
-            "mallet"
+            "leg-right"
           ],
-          "param": "color"
+          "param": "steel"
         }
       ]
     },

@@ -4,12 +4,13 @@ Reusable catalog sources live in `catalog/kits/<kit>/`. Each `.kcad.ts` file
 declares its metadata and parameter knobs; `catalog/index.json` is generated
 from those sources and must be rebuilt in the same change.
 
-## Catalog quality snapshot (2026-11-05)
+## Catalog quality snapshot (2026-11-06)
 
-The catalog quality gate reports **2,091/2,390 assets passing (87.49%)** and
-299 thin assets (12.51%) across seven fully thin kits and additional mixed kits.
-The latest round promoted 40 existing airfield assets from the
-2,051/2,390 checkpoint; no IDs were added.
+The catalog quality gate reports **2,251/2,390 assets passing (94.2%)** with
+139 thin assets remaining. The latest round promoted all 40 existing music
+assets, increasing the workspace result from 2,211/2,390 (92.5%); no IDs or kits
+were added. The [music quality handoff](../artifacts/catalog-demos/music-quality-20261106/README.md)
+records its source, preview, index, local-page, lint and integration evidence.
 See the [Apiary quality handoff](../artifacts/catalog-demos/apiary-quality-promotion-20261105/README.md),
 [Alpine expedition quality handoff](../artifacts/catalog-demos/alpine-expedition-quality-promotion-20261105/README.md),
 [archaeology fieldwork quality handoff](../artifacts/catalog-demos/archaeology-fieldwork-quality-promotion-20261105/README.md),
@@ -22,6 +23,21 @@ See the [Apiary quality handoff](../artifacts/catalog-demos/apiary-quality-promo
 and [airfield handoff](../artifacts/catalog-demos/airfield-quality-promotion-20261105/README.md)
 for source, preview, index, and verification evidence. These are local catalog
 checks and do not represent deployed behavior.
+
+## Music assets
+
+The [music kit](../catalog/kits/music/README.md) keeps its 40 orchestra, band,
+rehearsal and stage props. Each source retains its scale control and has two to
+four material-named color controls plus `concert` and `vintage` presets. The
+round adds 125 material controls and 80 preset entries; all 40 rendered previews
+were refreshed and indexed. Path-extruded bodies clarify the guitar and bowed
+string silhouettes, while flared bells, instrument skins, fingerboards, strings
+and contrasting keywork separate the main materials. The [quality promotion
+handoff](../artifacts/catalog-demos/music-quality-20261106/README.md) includes
+before/after previews, actual preset renders, source hashes, local checks and an
+inspected MP4. These are visualization assets; no acoustic performance,
+instrument certification, manufacturing suitability, deployed behavior or
+physical acceptance is claimed.
 
 ## Airfield assets
 
