@@ -213819,15 +213819,21 @@
       "id": "barcode-scanner",
       "kit": "retail-store",
       "title": "Barcode scanner",
-      "description": "Countertop barcode scanner with an angled reading head, glass windows and a low weighted base. Knobs: overall scale and abs plastic, glass, polycarbonate color controls. Presets: cleanStore and nightRestock.",
+      "description": "Checkout barcode scanner: pistol-grip handheld with flared head, glass window in a rubber nose bumper, trigger and grip overmould, standing in a weighted presentation stand with coiled cable; or an in-counter bioptic scanner with glass platter and raked tower window. Material controls: ABS housing, scan window glass, trigger and status light, rubber. Clean-store and night-restock presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "barcode scanner",
+        "handheld scanner",
+        "bioptic scanner",
+        "POS scanner",
+        "checkout",
         "retail",
         "grocery",
         "shop",
         "low poly",
-        "scene prop"
+        "scene prop",
+        "CC0"
       ],
       "compat": [
         "retail",
@@ -213839,7 +213845,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/barcode-scanner.kcad.ts",
       "preview": "/assets/retail-store-barcode-scanner.png",
-      "sourceSha256": "746d67ee75ec02e943e9c98f34c6356a765ce7f6a28eec3a80fd060426c808d6",
+      "sourceSha256": "78e48b3b1718fe5789c635c9b1b659230227385f6e56fc1600931a0b01f4a697",
       "triangleBudget": 1800,
       "params": [
         {
@@ -213852,42 +213858,60 @@
           "step": 0.05
         },
         {
+          "name": "style",
+          "type": "choice",
+          "default": "handheld",
+          "label": "Scanner type",
+          "choices": [
+            "handheld",
+            "bioptic"
+          ]
+        },
+        {
           "name": "abs",
           "type": "color",
           "default": "#38474e",
-          "label": "ABS plastic color"
+          "label": "Housing (ABS plastic)"
         },
         {
           "name": "glass",
           "type": "color",
-          "default": "#75c5d4",
-          "label": "Glass color"
+          "default": "#5fb8c9",
+          "label": "Scan window glass"
         },
         {
           "name": "polycarbonate",
           "type": "color",
           "default": "#e0a735",
-          "label": "Polycarbonate color"
+          "label": "Trigger and status light (polycarbonate)"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1f2427",
+          "label": "Nose bumper, grip and cable (rubber)"
         }
       ],
       "presets": {
         "cleanStore": {
           "abs": "#e5e9e9",
           "glass": "#9ccfd6",
-          "polycarbonate": "#a2d1d7"
+          "polycarbonate": "#3aa267",
+          "rubber": "#59646a"
         },
         "nightRestock": {
           "abs": "#364a55",
           "glass": "#3e6677",
-          "polycarbonate": "#486b7b"
+          "polycarbonate": "#d84b3a",
+          "rubber": "#1a1d1f"
         }
       },
       "stats": {
-        "triangles": 92,
+        "triangles": 942,
         "sizeM": [
-          0.31,
-          0.176,
-          0.24
+          0.17,
+          0.338,
+          0.439375
         ],
         "minUpM": 0,
         "materials": 1
@@ -213897,27 +213921,81 @@
           "name": "abs",
           "color": "#38474e",
           "parts": [
-            "base",
-            "scanner-head"
+            "stand-base",
+            "stand-neck",
+            "stand-cup",
+            "scanner-body"
           ],
           "param": "abs"
         },
         {
-          "name": "glass",
-          "color": "#75c5d4",
+          "name": "rubber",
+          "color": "#1f2427",
           "parts": [
-            "front-window",
-            "side-window"
+            "stand-foot-ring",
+            "grip-overmould",
+            "nose-bumper",
+            "cable-0",
+            "cable-1",
+            "cable-2",
+            "cable-3",
+            "cable-4",
+            "cable-5",
+            "cable-6",
+            "cable-7",
+            "cable-8",
+            "cable-9",
+            "cable-10",
+            "cable-11",
+            "cable-12",
+            "cable-13",
+            "cable-14",
+            "cable-15",
+            "cable-16",
+            "cable-17",
+            "cable-18",
+            "cable-19",
+            "cable-20",
+            "cable-21",
+            "cable-22",
+            "cable-23",
+            "cable-24",
+            "cable-25",
+            "cable-26",
+            "cable-27",
+            "cable-28",
+            "cable-29",
+            "cable-30",
+            "cable-31",
+            "cable-32",
+            "cable-33",
+            "cable-34",
+            "cable-35",
+            "cable-36",
+            "cable-37",
+            "cable-38",
+            "cable-39",
+            "cable-40",
+            "cable-tail"
           ],
-          "param": "glass"
+          "param": "rubber"
         },
         {
           "name": "polycarbonate",
           "color": "#e0a735",
           "parts": [
+            "trigger",
             "status-light"
           ],
           "param": "polycarbonate"
+        },
+        {
+          "name": "glass",
+          "color": "#5fb8c9",
+          "parts": [
+            "scan-window"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -216256,15 +216334,23 @@
       "id": "payment-terminal",
       "kit": "retail-store",
       "title": "Payment terminal",
-      "description": "Handheld payment pin pad with angled display, keypad block, contactless area and stand. Knobs: overall scale and abs plastic, glass, rubber color controls. Presets: cleanStore and nightRestock.",
+      "description": "Card payment terminal: slim handset with screen, 4 x 3 keypad over cancel, clear and enter keys, chip-reader lip with card slot, magstripe groove and contactless mark; as a PIN pad on a weighted swivel stand or a portable terminal with receipt printer in a charging base. Material controls: ABS housing, display glass, rubber keys, enter key. Clean-store and night-restock presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "payment terminal",
+        "card reader",
+        "PIN pad",
+        "POS terminal",
+        "chip and PIN",
+        "contactless",
+        "checkout",
         "retail",
         "grocery",
         "shop",
         "low poly",
-        "scene prop"
+        "scene prop",
+        "CC0"
       ],
       "compat": [
         "retail",
@@ -216276,7 +216362,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/payment-terminal.kcad.ts",
       "preview": "/assets/retail-store-payment-terminal.png",
-      "sourceSha256": "6762cc7ed65a2d37ea794636f5e6ad10ae2ba19bf909616f16ca920d2745fbb2",
+      "sourceSha256": "09044c07c18560172033827b2c58cb247c5d722f61032e170509e8736fe5a566",
       "triangleBudget": 1800,
       "params": [
         {
@@ -216289,42 +216375,60 @@
           "step": 0.05
         },
         {
+          "name": "type",
+          "type": "choice",
+          "default": "pinpad",
+          "label": "Terminal type",
+          "choices": [
+            "pinpad",
+            "portable"
+          ]
+        },
+        {
           "name": "abs",
           "type": "color",
-          "default": "#364751",
-          "label": "ABS plastic color"
+          "default": "#2c3a42",
+          "label": "Housing (ABS plastic)"
         },
         {
           "name": "glass",
           "type": "color",
           "default": "#79c3ce",
-          "label": "Glass color"
+          "label": "Display glass"
         },
         {
           "name": "rubber",
           "type": "color",
-          "default": "#343638",
-          "label": "Rubber color"
+          "default": "#4a5257",
+          "label": "Keys, slot and stand pads (rubber)"
+        },
+        {
+          "name": "enterKey",
+          "type": "color",
+          "default": "#33a35a",
+          "label": "Enter key (green enamel)"
         }
       ],
       "presets": {
         "cleanStore": {
           "abs": "#e5e9e9",
           "glass": "#9ccfd6",
-          "rubber": "#40474b"
+          "rubber": "#9aa5aa",
+          "enterKey": "#2f9a55"
         },
         "nightRestock": {
-          "abs": "#364a55",
+          "abs": "#1d262b",
           "glass": "#3e6677",
-          "rubber": "#262b2e"
+          "rubber": "#262b2e",
+          "enterKey": "#d8a12a"
         }
       },
       "stats": {
-        "triangles": 92,
+        "triangles": 592,
         "sizeM": [
-          0.21,
-          0.193038,
-          0.19
+          0.156,
+          0.228798,
+          0.182115
         ],
         "minUpM": 0,
         "materials": 1
@@ -216332,29 +216436,57 @@
       "palette": [
         {
           "name": "abs",
-          "color": "#364751",
+          "color": "#2c3a42",
           "parts": [
-            "base",
-            "housing"
+            "handset",
+            "contactless-mark",
+            "stand-base",
+            "stand-neck",
+            "cradle"
           ],
           "param": "abs"
+        },
+        {
+          "name": "rubber",
+          "color": "#4a5257",
+          "parts": [
+            "card-slot",
+            "magstripe-groove",
+            "screen-bezel",
+            "key-0-0",
+            "key-0-1",
+            "key-0-2",
+            "key-1-0",
+            "key-1-1",
+            "key-1-2",
+            "key-2-0",
+            "key-2-1",
+            "key-2-2",
+            "key-3-0",
+            "key-3-1",
+            "key-3-2",
+            "key-cancel",
+            "stand-pad",
+            "swivel-collar"
+          ],
+          "param": "rubber"
         },
         {
           "name": "glass",
           "color": "#79c3ce",
           "parts": [
             "screen",
-            "contactless-mark"
+            "key-clear"
           ],
           "param": "glass"
         },
         {
-          "name": "rubber",
-          "color": "#343638",
+          "name": "enterKey",
+          "color": "#33a35a",
           "parts": [
-            "keypad"
+            "key-enter"
           ],
-          "param": "rubber"
+          "param": "enterKey"
         }
       ]
     },
@@ -217982,15 +218114,20 @@
       "id": "shopping-cart",
       "kit": "retail-store",
       "title": "Shopping cart",
-      "description": "Retail cart with an open wire-grid basket, child-seat rail, lower rack and four rubber casters. Knobs: overall scale and stainless steel, polypropylene, rubber color controls. Presets: cleanStore and nightRestock.",
+      "description": "Supermarket shopping cart: tapered wire basket that overhangs the nose so carts nest, hinged rear gate with fold-down child seat or plain gate, raked handle brackets with a plastic push bar, nesting U chassis with lower tray, two swivel and two fixed casters. Material controls: basket wire, chassis tube, handle and seat plastic, caster rubber. Clean-store and night-restock presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "shopping cart",
+        "shopping trolley",
+        "grocery cart",
+        "supermarket",
         "retail",
         "grocery",
         "shop",
         "low poly",
-        "scene prop"
+        "scene prop",
+        "CC0"
       ],
       "compat": [
         "retail",
@@ -218002,8 +218139,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/shopping-cart.kcad.ts",
       "preview": "/assets/retail-store-shopping-cart.png",
-      "sourceSha256": "d4367c2177981731a755aebfac8c6ed5085e5c2a4c4bf7fdc9abb60c6982eda2",
-      "triangleBudget": 1800,
+      "sourceSha256": "cba358c59ea17ecd7338223039a67acc41a16b8dd5ce1738abe46dd1983a4ca3",
+      "triangleBudget": 2200,
       "params": [
         {
           "name": "scale",
@@ -218015,42 +218152,60 @@
           "step": 0.05
         },
         {
+          "name": "childSeat",
+          "type": "choice",
+          "default": "seat",
+          "label": "Rear gate",
+          "choices": [
+            "seat",
+            "none"
+          ]
+        },
+        {
           "name": "stainless",
           "type": "color",
-          "default": "#77868a",
-          "label": "Stainless steel color"
+          "default": "#a9b4b8",
+          "label": "Basket wire (zinc-plated steel)"
+        },
+        {
+          "name": "chassis",
+          "type": "color",
+          "default": "#5b666b",
+          "label": "Chassis tube (powder-coated steel)"
         },
         {
           "name": "polypropylene",
           "type": "color",
-          "default": "#b63d35",
-          "label": "Polypropylene color"
+          "default": "#c8372f",
+          "label": "Handle and seat plastic"
         },
         {
           "name": "rubber",
           "type": "color",
-          "default": "#292d30",
-          "label": "Rubber color"
+          "default": "#25292c",
+          "label": "Caster rubber"
         }
       ],
       "presets": {
         "cleanStore": {
-          "stainless": "#bfc8cb",
-          "polypropylene": "#d6e0d5",
+          "stainless": "#d3dadd",
+          "chassis": "#8f9ba0",
+          "polypropylene": "#2f8a52",
           "rubber": "#40474b"
         },
         "nightRestock": {
-          "stainless": "#66747a",
+          "stainless": "#6c7a80",
+          "chassis": "#2f383d",
           "polypropylene": "#45614e",
-          "rubber": "#262b2e"
+          "rubber": "#1f2326"
         }
       },
       "stats": {
-        "triangles": 908,
+        "triangles": 1932,
         "sizeM": [
-          0.84,
-          1.08,
-          0.67
+          0.581586,
+          1.037,
+          0.970923
         ],
         "minUpM": 0,
         "materials": 1
@@ -218058,87 +218213,128 @@
       "palette": [
         {
           "name": "stainless",
-          "color": "#77868a",
+          "color": "#a9b4b8",
           "parts": [
-            "basket-floor",
-            "front-wire-0",
-            "back-wire-0",
-            "left-wire-0",
-            "right-wire-0",
-            "front-wire-1",
-            "back-wire-1",
+            "floor-front",
+            "floor-rear",
+            "floor-left",
+            "floor-right",
+            "ring-1-front",
+            "ring-1-rear",
+            "ring-1-left",
+            "ring-1-right",
+            "ring-2-front",
+            "ring-2-rear",
+            "ring-2-left",
+            "ring-2-right",
+            "rim-front",
+            "rim-rear",
+            "rim-left",
+            "rim-right",
             "left-wire-1",
             "right-wire-1",
-            "front-wire-2",
-            "back-wire-2",
             "left-wire-2",
             "right-wire-2",
-            "front-wire-3",
-            "back-wire-3",
             "left-wire-3",
             "right-wire-3",
-            "front-wire-4",
-            "back-wire-4",
             "left-wire-4",
             "right-wire-4",
-            "front-upright-0",
-            "back-upright-0",
-            "front-upright-1",
-            "back-upright-1",
-            "front-upright-2",
-            "back-upright-2",
-            "front-upright-3",
-            "back-upright-3",
-            "front-upright-4",
-            "back-upright-4",
-            "front-upright-5",
-            "back-upright-5",
-            "front-upright-6",
-            "back-upright-6",
-            "front-upright-7",
-            "back-upright-7",
-            "front-upright-8",
-            "back-upright-8",
-            "left-upright-0",
-            "right-upright-0",
-            "left-upright-1",
-            "right-upright-1",
-            "left-upright-2",
-            "right-upright-2",
-            "left-upright-3",
-            "right-upright-3",
-            "left-upright-4",
-            "right-upright-4",
-            "left-upright-5",
-            "right-upright-5",
-            "lower-rack",
-            "wheel-mount--390--250",
-            "wheel-mount--390-250",
-            "wheel-mount-390--250",
-            "wheel-mount-390-250",
-            "frame--400",
-            "frame-400"
+            "left-wire-5",
+            "right-wire-5",
+            "left-wire-6",
+            "right-wire-6",
+            "left-wire-7",
+            "right-wire-7",
+            "front-wire-1",
+            "floor-wire-1",
+            "front-wire-2",
+            "floor-wire-2",
+            "front-wire-3",
+            "floor-wire-3",
+            "front-wire-4",
+            "floor-wire-4",
+            "front-wire-5",
+            "floor-wire-5",
+            "corner-fl",
+            "corner-fr",
+            "corner-rl",
+            "corner-rr",
+            "gate-wire-1",
+            "gate-wire-2",
+            "gate-wire-3",
+            "gate-wire-4",
+            "gate-wire-5",
+            "tray-wire-0",
+            "tray-wire-1",
+            "tray-wire-2",
+            "tray-wire-3",
+            "tray-wire-4",
+            "tray-wire-5",
+            "tray-left",
+            "tray-right"
           ],
           "param": "stainless"
         },
         {
           "name": "polypropylene",
-          "color": "#b63d35",
+          "color": "#c8372f",
           "parts": [
-            "handlebar",
-            "handle-post--300",
-            "handle-post-300"
+            "bumper-left",
+            "bumper-right",
+            "child-seat-flap",
+            "child-seat-hinge",
+            "handle-cap--1",
+            "handle-cap-1",
+            "push-bar",
+            "caster-hub-fl",
+            "caster-hub-fr",
+            "caster-hub-rl",
+            "caster-hub-rr"
           ],
           "param": "polypropylene"
         },
         {
-          "name": "rubber",
-          "color": "#292d30",
+          "name": "chassis",
+          "color": "#5b666b",
           "parts": [
-            "wheel--390--250",
-            "wheel--390-250",
-            "wheel-390--250",
-            "wheel-390-250"
+            "handle-bracket--1",
+            "handle-bracket-1",
+            "chassis-left",
+            "chassis-right",
+            "chassis-front",
+            "rear-leg--1",
+            "front-strut--1",
+            "rear-leg-1",
+            "front-strut-1",
+            "tray-hanger--1",
+            "tray-hanger-1",
+            "caster-plate-fl",
+            "caster-swivel-fl",
+            "caster-fork-fl--1",
+            "caster-fork-fl-1",
+            "caster-plate-fr",
+            "caster-swivel-fr",
+            "caster-fork-fr--1",
+            "caster-fork-fr-1",
+            "caster-plate-rl",
+            "caster-swivel-rl",
+            "caster-fork-rl--1",
+            "caster-fork-rl-1",
+            "caster-plate-rr",
+            "caster-swivel-rr",
+            "caster-fork-rr--1",
+            "caster-fork-rr-1"
+          ],
+          "param": "chassis"
+        },
+        {
+          "name": "rubber",
+          "color": "#25292c",
+          "parts": [
+            "caster-wheel-fl",
+            "caster-wheel-fr",
+            "caster-wheel-rl",
+            "caster-wheel-rr"
           ],
           "param": "rubber"
         }
@@ -218256,15 +218452,21 @@
       "id": "stock-ladder",
       "kit": "retail-store",
       "title": "Stock ladder",
-      "description": "Compact rolling stock ladder with three broad treads, side rails, top platform and caster feet. Knobs: overall scale and aluminium, rubber, powder-coated steel color controls. Presets: cleanStore and nightRestock.",
+      "description": "Rolling stock ladder: raked front stiles with three ribbed treads and anti-slip nosings, top platform, vertical rear legs with side gussets, rubber front feet and rear casters, with a full handrail cage or as a low step stand without rails. Material controls: powder-coated frame, aluminium treads, tread nosing, rubber. Clean-store and night-restock presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "rolling ladder",
+        "stock ladder",
+        "platform ladder",
+        "step ladder",
+        "warehouse",
         "retail",
         "grocery",
         "shop",
         "low poly",
-        "scene prop"
+        "scene prop",
+        "CC0"
       ],
       "compat": [
         "retail",
@@ -218276,7 +218478,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/stock-ladder.kcad.ts",
       "preview": "/assets/retail-store-stock-ladder.png",
-      "sourceSha256": "4e3c9776281c454f8727848f40af5fd6594b4a12aa15278dff383ee5f23099f3",
+      "sourceSha256": "865ea81a6384783e33ed01dea7b1abf32277e7ae4567a68aa85f66719ed8a083",
       "triangleBudget": 1800,
       "params": [
         {
@@ -218289,42 +218491,60 @@
           "step": 0.05
         },
         {
-          "name": "aluminium",
-          "type": "color",
-          "default": "#c2cbcc",
-          "label": "Aluminium color"
-        },
-        {
-          "name": "rubber",
-          "type": "color",
-          "default": "#2e3336",
-          "label": "Rubber color"
+          "name": "handrail",
+          "type": "choice",
+          "default": "full",
+          "label": "Handrail",
+          "choices": [
+            "full",
+            "none"
+          ]
         },
         {
           "name": "powderCoat",
           "type": "color",
           "default": "#d9a02d",
-          "label": "Powder-coated steel color"
+          "label": "Frame (powder-coated steel)"
+        },
+        {
+          "name": "aluminium",
+          "type": "color",
+          "default": "#b9c3c5",
+          "label": "Ribbed aluminium treads"
+        },
+        {
+          "name": "nosing",
+          "type": "color",
+          "default": "#2f3437",
+          "label": "Anti-slip tread nosing"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1f2326",
+          "label": "Feet, casters and grips (rubber)"
         }
       ],
       "presets": {
         "cleanStore": {
+          "powderCoat": "#e5ebed",
           "aluminium": "#c4cdd0",
-          "rubber": "#40474b",
-          "powderCoat": "#e5ebed"
+          "nosing": "#f2c230",
+          "rubber": "#40474b"
         },
         "nightRestock": {
+          "powderCoat": "#354750",
           "aluminium": "#6b7a80",
-          "rubber": "#262b2e",
-          "powderCoat": "#354750"
+          "nosing": "#d8a12a",
+          "rubber": "#262b2e"
         }
       },
       "stats": {
-        "triangles": 160,
+        "triangles": 1236,
         "sizeM": [
-          0.72,
-          0.92,
-          0.545
+          0.65,
+          1.615,
+          0.976
         ],
         "minUpM": 0,
         "materials": 1
@@ -218334,30 +218554,86 @@
           "name": "powderCoat",
           "color": "#d9a02d",
           "parts": [
-            "top-platform",
-            "tread-0",
-            "tread-1",
-            "tread-2"
+            "stile--1",
+            "rear-leg--1",
+            "platform-rail--1",
+            "base-rail--1",
+            "diagonal--1",
+            "gusset--1",
+            "caster-stem--1",
+            "stile-1",
+            "rear-leg-1",
+            "platform-rail-1",
+            "base-rail-1",
+            "diagonal-1",
+            "gusset-1",
+            "caster-stem-1",
+            "rear-crossbar",
+            "rear-crossbar-high",
+            "platform-kick",
+            "handrail-rake--1",
+            "handrail-top--1",
+            "handrail-post--1",
+            "handrail-mid--1",
+            "handrail-rake-1",
+            "handrail-top-1",
+            "handrail-post-1",
+            "handrail-mid-1",
+            "handrail-rear",
+            "handrail-rear-mid"
           ],
           "param": "powderCoat"
         },
         {
-          "name": "aluminium",
-          "color": "#c2cbcc",
+          "name": "rubber",
+          "color": "#1f2326",
           "parts": [
-            "rail--300",
-            "rail-300"
+            "foot--1",
+            "caster-wheel--1",
+            "foot-1",
+            "caster-wheel-1",
+            "grip--1",
+            "grip-1"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "aluminium",
+          "color": "#b9c3c5",
+          "parts": [
+            "tread-1",
+            "tread-1-rib-1",
+            "tread-1-rib-2",
+            "tread-1-rib-3",
+            "tread-1-rib-4",
+            "tread-2",
+            "tread-2-rib-1",
+            "tread-2-rib-2",
+            "tread-2-rib-3",
+            "tread-2-rib-4",
+            "tread-3",
+            "tread-3-rib-1",
+            "tread-3-rib-2",
+            "tread-3-rib-3",
+            "tread-3-rib-4",
+            "top-platform",
+            "platform-rib-1",
+            "platform-rib-2",
+            "platform-rib-3",
+            "platform-rib-4"
           ],
           "param": "aluminium"
         },
         {
-          "name": "rubber",
-          "color": "#2e3336",
+          "name": "nosing",
+          "color": "#2f3437",
           "parts": [
-            "caster--280",
-            "caster-280"
+            "tread-1-nosing",
+            "tread-2-nosing",
+            "tread-3-nosing",
+            "platform-nosing"
           ],
-          "param": "rubber"
+          "param": "nosing"
         }
       ]
     },
@@ -218365,28 +218641,36 @@
       "id": "trolley-corral",
       "kit": "retail-store",
       "title": "Trolley corral",
-      "description": "Low cart-return bay with parallel divider rails, end stop and corner guard posts. Knobs: overall scale and galvanized steel, powder-coated steel, rubber color controls. Presets: cleanStore and nightRestock.",
+      "description": "Car-park cart corral: long lane of galvanized tube rails on bolted posts, rounded closed end, flared entry with rubber bumper sleeves and a tall return-carts sign facing the mouth; four-bay or two-bay length. Material controls: galvanized steel, powder-coated sign frame and caps, rubber, sign face. Clean-store and night-restock presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "cart corral",
+        "trolley bay",
+        "cart return",
+        "trolley shelter",
+        "car park",
+        "parking lot",
         "retail",
         "grocery",
         "shop",
         "low poly",
-        "scene prop"
+        "scene prop",
+        "CC0"
       ],
       "compat": [
         "retail",
         "shop",
         "grocery",
-        "interior",
+        "parking",
+        "street",
         "scene"
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/trolley-corral.kcad.ts",
       "preview": "/assets/retail-store-trolley-corral.png",
-      "sourceSha256": "b56925b47b209b702101cd9266486bbff19cc4a662d85ffdfbc2ae21ee63aa74",
-      "triangleBudget": 1800,
+      "sourceSha256": "1b3b7551e3dd68cd095fe716e2f84b3b7affcad16907966ad767ce241902ce24",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "scale",
@@ -218398,42 +218682,60 @@
           "step": 0.05
         },
         {
+          "name": "bays",
+          "type": "choice",
+          "default": "four",
+          "label": "Corral length",
+          "choices": [
+            "four",
+            "two"
+          ]
+        },
+        {
           "name": "galvanizedSteel",
           "type": "color",
-          "default": "#778488",
-          "label": "Galvanized steel color"
+          "default": "#8d999c",
+          "label": "Galvanized steel rails and posts"
         },
         {
           "name": "powderCoat",
           "type": "color",
-          "default": "#d8a53b",
-          "label": "Powder-coated steel color"
+          "default": "#e0a828",
+          "label": "Sign frame and post caps (powder coat)"
         },
         {
           "name": "rubber",
           "type": "color",
-          "default": "#343a3c",
-          "label": "Rubber color"
+          "default": "#2b3033",
+          "label": "Bumper sleeves and base pads (rubber)"
+        },
+        {
+          "name": "signFace",
+          "type": "color",
+          "default": "#1f5aa6",
+          "label": "Sign face"
         }
       ],
       "presets": {
         "cleanStore": {
-          "galvanizedSteel": "#afbabb",
+          "galvanizedSteel": "#c3cccd",
           "powderCoat": "#e5ebed",
-          "rubber": "#40474b"
+          "rubber": "#40474b",
+          "signFace": "#2f8a52"
         },
         "nightRestock": {
-          "galvanizedSteel": "#566468",
+          "galvanizedSteel": "#5c6a6e",
           "powderCoat": "#354750",
-          "rubber": "#262b2e"
+          "rubber": "#1f2326",
+          "signFace": "#8a2f2b"
         }
       },
       "stats": {
-        "triangles": 196,
+        "triangles": 2404,
         "sizeM": [
-          1.8,
-          0.692,
-          0.695
+          4.787,
+          2.08,
+          1.47
         ],
         "minUpM": 0,
         "materials": 1
@@ -218441,35 +218743,104 @@
       "palette": [
         {
           "name": "galvanizedSteel",
-          "color": "#778488",
+          "color": "#8d999c",
           "parts": [
-            "floor-rail-left",
-            "floor-rail-right",
-            "divider-0",
-            "divider-1",
-            "divider-2",
-            "divider-3",
-            "divider-4"
+            "post-0--1-plate",
+            "post-0--1-tube",
+            "post-0-1-plate",
+            "post-0-1-tube",
+            "post-1--1-plate",
+            "post-1--1-tube",
+            "post-1-1-plate",
+            "post-1-1-tube",
+            "post-2--1-plate",
+            "post-2--1-tube",
+            "post-2-1-plate",
+            "post-2-1-tube",
+            "post-3--1-plate",
+            "post-3--1-tube",
+            "post-3-1-plate",
+            "post-3-1-tube",
+            "post-4--1-plate",
+            "post-4--1-tube",
+            "post-4-1-plate",
+            "post-4-1-tube",
+            "rail-160--1",
+            "rail-160-1",
+            "rail-560--1",
+            "rail-560-1",
+            "rail-960--1",
+            "rail-960-1",
+            "end-loop-560",
+            "end-loop-960",
+            "end-post",
+            "flare-560--1",
+            "flare-960--1",
+            "mouth-post--1-plate",
+            "mouth-post--1-tube",
+            "flare-560-1",
+            "flare-960-1",
+            "mouth-post-1-plate",
+            "mouth-post-1-tube",
+            "sign-post--1",
+            "sign-post-1"
           ],
           "param": "galvanizedSteel"
         },
         {
           "name": "rubber",
-          "color": "#343a3c",
+          "color": "#2b3033",
           "parts": [
-            "end-stop"
+            "post-0--1-pad",
+            "post-0-1-pad",
+            "post-1--1-pad",
+            "post-1-1-pad",
+            "post-2--1-pad",
+            "post-2-1-pad",
+            "post-3--1-pad",
+            "post-3-1-pad",
+            "post-4--1-pad",
+            "post-4-1-pad",
+            "end-bumper",
+            "mouth-post--1-pad",
+            "bumper-sleeve--1",
+            "mouth-post-1-pad",
+            "bumper-sleeve-1"
           ],
           "param": "rubber"
         },
         {
           "name": "powderCoat",
-          "color": "#d8a53b",
+          "color": "#e0a828",
           "parts": [
-            "front-gate",
-            "post-cap--850",
-            "post-cap-850"
+            "post-0--1-cap",
+            "post-0-1-cap",
+            "post-1--1-cap",
+            "post-1-1-cap",
+            "post-2--1-cap",
+            "post-2-1-cap",
+            "post-3--1-cap",
+            "post-3-1-cap",
+            "post-4--1-cap",
+            "post-4-1-cap",
+            "mouth-post--1-cap",
+            "mouth-post-1-cap",
+            "sign-frame",
+            "sign-band",
+            "sign-cart",
+            "sign-cart-handle",
+            "sign-wheel--110",
+            "sign-wheel-80"
           ],
           "param": "powderCoat"
+        },
+        {
+          "name": "signFace",
+          "color": "#1f5aa6",
+          "parts": [
+            "sign-face"
+          ],
+          "param": "signFace"
         }
       ]
     },
