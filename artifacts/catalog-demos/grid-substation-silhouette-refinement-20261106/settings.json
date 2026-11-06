@@ -1,0 +1,24 @@
+{
+  "date": "2026-11-06",
+  "scope": "Refine three existing grid-substation silhouettes; retain IDs, material controls, presets, scale parameters, and budgets.",
+  "sourceFiles": [
+    "catalog/kits/grid-substation/substation-dead-tank-breaker.kcad.ts",
+    "catalog/kits/grid-substation/substation-oil-containment-bund.kcad.ts",
+    "catalog/kits/grid-substation/substation-grading-ring-stand.kcad.ts"
+  ],
+  "changedPreviewAssetIds": "artifacts/catalog-demos/grid-substation-silhouette-refinement-20261106/preview-asset-ids.txt",
+  "kitPreviewAssetIds": "artifacts/catalog-demos/grid-substation-silhouette-refinement-20261106/kit-preview-asset-ids.txt",
+  "commands": [
+    "mapfile -t asset_ids < artifacts/catalog-demos/grid-substation-silhouette-refinement-20261106/kit-preview-asset-ids.txt",
+    "npx tsx scripts/renderCatalogPreviews.ts \"${asset_ids[@]}\"",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "python scripts/checkCatalogQuality.py",
+    "npx eslint catalog/kits/grid-substation/",
+    "npx vitest run tests/integration/catalog/",
+    "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-grid-substation-silhouette-refinement-20261106",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/grid-substation-silhouette-refinement-20261106/verify_local_pages.py /tmp/kernelcad-grid-substation-silhouette-refinement-20261106",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/grid-substation-silhouette-refinement-20261106/record_catalog_audit.py"
+  ],
+  "demo": "grid-substation-silhouette-refinement.mp4",
+  "demoSource": "capture_demo.py"
+}

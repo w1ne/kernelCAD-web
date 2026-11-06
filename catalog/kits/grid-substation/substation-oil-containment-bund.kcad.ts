@@ -33,12 +33,15 @@ p.part("curb-front", box(7200, 190, 470, true).translate(0, -2505, 415).scale(sc
 p.part("curb-back", box(7200, 190, 470, true).translate(0, 2505, 415).scale(scale).color(concrete));
 p.part("curb-left", box(190, 5200, 470, true).translate(-3505, 0, 415).scale(scale).color(concrete));
 p.part("curb-right", box(190, 5200, 470, true).translate(3505, 0, 415).scale(scale).color(concrete));
-p.part("drain-sump", box(1224, 936, 160, true).translate(2232, 1508, 260).scale(scale).color(concrete));
-p.part("grate-panel-1", box(864, 3640, 45, true).translate(-2448, 0, 203.50).scale(scale).color(stainlessSteel));
-p.part("grate-panel-2", box(864, 3640, 45, true).translate(-504, 0, 203.50).scale(scale).color(stainlessSteel));
-p.part("grate-panel-3", box(864, 3640, 45, true).translate(1440, 0, 203.50).scale(scale).color(stainlessSteel));
-p.part("grate-panel-4", box(864, 3640, 45, true).translate(3384, 0, 203.50).scale(scale).color(stainlessSteel));
-p.part("grate-panel-5", box(864, 3640, 45, true).translate(5328, 0, 203.50).scale(scale).color(stainlessSteel));
-p.part("grate-panel-6", box(864, 3640, 45, true).translate(7272, 0, 203.50).scale(scale).color(stainlessSteel));
+p.part("drain-sump", box(900, 700, 160, true).translate(2700, 1950, 260).scale(scale).color(concrete));
+p.part("grate-support-front", box(4200, 70, 40, true).translate(0, -1700, 200).scale(scale).color(stainlessSteel));
+p.part("grate-support-back", box(4200, 70, 40, true).translate(0, 1700, 200).scale(scale).color(stainlessSteel));
+for (let panel = 0; panel < 3; panel++) {
+  const centerX = -1500 + panel * 1500;
+  for (let bar = 0; bar < 14; bar++) {
+    const x = centerX + (bar - 6.5) * 80;
+    p.part(`grate-bar-${panel}-${bar}`, box(45, 3600, 25, true).translate(x, 0, 192.5).scale(scale).color(stainlessSteel));
+  }
+}
 
 return p.model();

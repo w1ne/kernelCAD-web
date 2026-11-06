@@ -28,6 +28,6 @@ Eighty original low-poly utility-yard scene assets. Sources use millimetres and 
 
 ## Preview and verification
 
-The [grid substation wave bundle](../../../artifacts/catalog-demos/grid-substation-wave-20261103/README.md) records the original source recipes. The [quality-promotion handoff](../../../artifacts/catalog-demos/grid-substation-quality-promotion-20261104/README.md) records the 80-asset material and geometry promotion, refreshed previews, validation, and inspected MP4 walkthrough.
+The [grid substation wave bundle](../../../artifacts/catalog-demos/grid-substation-wave-20261103/README.md) records the original source recipes. The [quality-promotion handoff](../../../artifacts/catalog-demos/grid-substation-quality-promotion-20261104/README.md) records the 80-asset material and geometry promotion, refreshed previews, validation, and inspected MP4 walkthrough. The [silhouette-refinement handoff](../../../artifacts/catalog-demos/grid-substation-silhouette-refinement-20261106/README.md) records three in-place placement and shape corrections, refreshed kit previews, checks, and an inspected MP4.
 
 These are generic visualization props. They do not specify voltage or current ratings, clearances, fault performance, switching procedures, electrical safety, grid compliance, or operational acceptance. Catalog checks do not establish electrical or field safety.

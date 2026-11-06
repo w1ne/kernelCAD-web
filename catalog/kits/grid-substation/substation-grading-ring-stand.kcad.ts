@@ -31,9 +31,14 @@ const beveledPlate = (width: number, depth: number, thickness: number, cut: numb
 
 p.part("base", beveledPlate(986, 680, 220, 40.80).translate(0, 0, 0).scale(scale).color(galvanizedSteel));
 p.part("support", cylinder(1386, 105, 10).translate(0, 0, 220).scale(scale).color(porcelain));
-p.part("ring-side-left", box(1450, 130, 130, true).translate(-217.50, 0, 1808).scale(scale).color(copper));
-p.part("ring-side-right", box(1450, 130, 130, true).translate(217.50, 0, 1808).scale(scale).color(copper));
-p.part("ring-top", box(899, 620, 130, true).translate(0, 0, 2018).scale(scale).color(copper));
-p.part("terminal", box(230, 230, 170, true).translate(0, 0, 2015).scale(scale).color(copper));
+p.part("support-neck", cylinder(360, 82, 10).translate(0, 0, 1606).scale(scale).color(porcelain));
+for (let side = 0; side < 8; side++) {
+  const angle = side * 45 + 22.5;
+  const radians = (angle * Math.PI) / 180;
+  const x = 314 * Math.cos(radians);
+  const y = 314 * Math.sin(radians);
+  p.part(`grading-ring-segment-${side}`, box(260, 70, 70, true).rotateZ(angle + 90).translate(x, y, 2000).scale(scale).color(copper));
+}
+p.part("terminal-pin", cylinder(220, 45, 8).translate(0, 0, 2032).scale(scale).color(copper));
 
 return p.model();

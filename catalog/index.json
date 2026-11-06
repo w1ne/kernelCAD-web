@@ -104642,7 +104642,7 @@
       "id": "substation-dead-tank-breaker",
       "kit": "grid-substation",
       "title": "Dead tank circuit breaker",
-      "description": "Schematic dead tank breaker with three terminal bushings and a side operating cabinet. Material controls: galvanized steel, powder-coated steel, porcelain, copper; finish presets: weathered and maintenance.",
+      "description": "Three grounded horizontal interrupter tanks with seated porcelain bushings, a shared copper terminal link and a side operating cabinet. Material controls: galvanized steel, powder-coated steel, porcelain, copper; finish presets: weathered and maintenance.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -104661,7 +104661,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-dead-tank-breaker.kcad.ts",
       "preview": "/assets/grid-substation-substation-dead-tank-breaker.png",
-      "sourceSha256": "b62c4635afdffe08fcf50b94948af8ce443e59d87cc29fe5243c00dde4de870d",
+      "sourceSha256": "d526bc26e6efb66ac350e78e441ddf8c4e0ff12108bbbd507a6feb088b7f965c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -104710,10 +104710,10 @@
         }
       },
       "stats": {
-        "triangles": 736,
+        "triangles": 1012,
         "sizeM": [
-          3,
-          2.86,
+          3.8,
+          2.175,
           1.6
         ],
         "minUpM": 0,
@@ -104724,7 +104724,10 @@
           "name": "galvanizedSteel",
           "color": "#7f8c92",
           "parts": [
-            "breaker-base"
+            "breaker-base",
+            "tank-saddle-1",
+            "tank-saddle-2",
+            "tank-saddle-3"
           ],
           "param": "galvanizedSteel"
         },
@@ -104732,9 +104735,9 @@
           "name": "powderCoat",
           "color": "#526f68",
           "parts": [
-            "tank-pole-1",
-            "tank-pole-2",
-            "tank-pole-3",
+            "interrupter-tank-1",
+            "interrupter-tank-2",
+            "interrupter-tank-3",
             "mechanism-cabinet"
           ],
           "param": "powderCoat"
@@ -105562,7 +105565,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-grading-ring-stand.kcad.ts",
       "preview": "/assets/grid-substation-substation-grading-ring-stand.png",
-      "sourceSha256": "57cf7cbcbc27236b0368262b64f3c91f392c4c076cd15c6a6b6d0ed2d24d5e76",
+      "sourceSha256": "055bc24e4c6e4e77530f25abdddbc1de0791d99dcd4d6d1614fed381a51a2418",
       "triangleBudget": 1800,
       "params": [
         {
@@ -105604,11 +105607,11 @@
         }
       },
       "stats": {
-        "triangles": 120,
+        "triangles": 256,
         "sizeM": [
-          1.885,
-          2.1,
-          0.68
+          0.986,
+          2.252,
+          0.744366
         ],
         "minUpM": 0,
         "materials": 1
@@ -105626,7 +105629,8 @@
           "name": "porcelain",
           "color": "#e6dfcb",
           "parts": [
-            "support"
+            "support",
+            "support-neck"
           ],
           "param": "porcelain"
         },
@@ -105634,10 +105638,15 @@
           "name": "copper",
           "color": "#b87545",
           "parts": [
-            "ring-side-left",
-            "ring-side-right",
-            "ring-top",
-            "terminal"
+            "grading-ring-segment-0",
+            "grading-ring-segment-1",
+            "grading-ring-segment-2",
+            "grading-ring-segment-3",
+            "grading-ring-segment-4",
+            "grading-ring-segment-5",
+            "grading-ring-segment-6",
+            "grading-ring-segment-7",
+            "terminal-pin"
           ],
           "param": "copper"
         }
@@ -107320,7 +107329,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-oil-containment-bund.kcad.ts",
       "preview": "/assets/grid-substation-substation-oil-containment-bund.png",
-      "sourceSha256": "768505782112d301b8d5cc3e1a179e58629c0a29a89512546d8a9ba360f14da4",
+      "sourceSha256": "a886936c20d6e453b46fdad8b07f063f74de60af3d84b1532454830dbd49eff6",
       "triangleBudget": 1800,
       "params": [
         {
@@ -107355,9 +107364,9 @@
         }
       },
       "stats": {
-        "triangles": 160,
+        "triangles": 616,
         "sizeM": [
-          11.304,
+          7.2,
           0.65,
           5.2
         ],
@@ -107382,12 +107391,50 @@
           "name": "stainlessSteel",
           "color": "#b5c0c0",
           "parts": [
-            "grate-panel-1",
-            "grate-panel-2",
-            "grate-panel-3",
-            "grate-panel-4",
-            "grate-panel-5",
-            "grate-panel-6"
+            "grate-support-front",
+            "grate-support-back",
+            "grate-bar-0-0",
+            "grate-bar-0-1",
+            "grate-bar-0-2",
+            "grate-bar-0-3",
+            "grate-bar-0-4",
+            "grate-bar-0-5",
+            "grate-bar-0-6",
+            "grate-bar-0-7",
+            "grate-bar-0-8",
+            "grate-bar-0-9",
+            "grate-bar-0-10",
+            "grate-bar-0-11",
+            "grate-bar-0-12",
+            "grate-bar-0-13",
+            "grate-bar-1-0",
+            "grate-bar-1-1",
+            "grate-bar-1-2",
+            "grate-bar-1-3",
+            "grate-bar-1-4",
+            "grate-bar-1-5",
+            "grate-bar-1-6",
+            "grate-bar-1-7",
+            "grate-bar-1-8",
+            "grate-bar-1-9",
+            "grate-bar-1-10",
+            "grate-bar-1-11",
+            "grate-bar-1-12",
+            "grate-bar-1-13",
+            "grate-bar-2-0",
+            "grate-bar-2-1",
+            "grate-bar-2-2",
+            "grate-bar-2-3",
+            "grate-bar-2-4",
+            "grate-bar-2-5",
+            "grate-bar-2-6",
+            "grate-bar-2-7",
+            "grate-bar-2-8",
+            "grate-bar-2-9",
+            "grate-bar-2-10",
+            "grate-bar-2-11",
+            "grate-bar-2-12",
+            "grate-bar-2-13"
           ],
           "param": "stainlessSteel"
         }
