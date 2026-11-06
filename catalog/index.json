@@ -186121,7 +186121,7 @@
       "id": "baggage-cart",
       "kit": "railway",
       "title": "Station baggage cart",
-      "description": "Two-wheel station baggage trolley with a broad load plate, push handle and raised side rails. Knobs: overall scale and asset color.",
+      "description": "Two-wheel station baggage trolley with a broad load plate, push handle and raised side rails. Editable material controls: painted steel, stainless steel, rubber. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -186142,7 +186142,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/baggage-cart.kcad.ts",
       "preview": "/assets/railway-baggage-cart.png",
-      "sourceSha256": "95c19aba30bf862c6ff5c9d43bb8e84d06dcd55b7ba48bb96e7d61426ae8b2cf",
+      "sourceSha256": "3a8f0d2412479f9aaefb5c6ffc8d00b7b40b1214168ca38c7dd399f3ade02dd8",
       "triangleBudget": 1800,
       "params": [
         {
@@ -186155,13 +186155,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#62594d",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b8c1c2",
+          "label": "Stainless steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30363a",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#665d50",
+          "stainlessSteel": "#a5a9a6",
+          "rubber": "#414342"
+        },
+        "freshService": {
+          "paintedSteel": "#b74734",
+          "stainlessSteel": "#cad2d1",
+          "rubber": "#272e32"
+        }
+      },
       "stats": {
         "triangles": 172,
         "sizeM": [
@@ -186174,20 +186197,34 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#62594d",
           "parts": [
             "base",
             "upright-left",
             "upright-right",
-            "top-rail",
             "side-left",
             "side-right",
-            "wheel-left",
-            "wheel-right",
             "handle"
           ],
-          "param": "color"
+          "param": "paintedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b8c1c2",
+          "parts": [
+            "top-rail"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#30363a",
+          "parts": [
+            "wheel-left",
+            "wheel-right"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -186195,7 +186232,7 @@
       "id": "buffer-stop",
       "kit": "railway",
       "title": "Railway buffer stop",
-      "description": "Track-end buffer stop with twin impact pads, a heavy crossbeam, support posts and short rails. Knobs: overall scale and asset color.",
+      "description": "Track-end buffer stop with twin impact pads, a heavy crossbeam, support posts and short rails. Editable material controls: rail and running gear steel, concrete, painted steel, rubber. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -186216,7 +186253,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/buffer-stop.kcad.ts",
       "preview": "/assets/railway-buffer-stop.png",
-      "sourceSha256": "adcaf2f846dfa3f7b12cae1271208f83872138b3f6603de10a500edde0cbc322",
+      "sourceSha256": "d06837547ca77d2616288f403fc5536bc08cbe31bd2934d319c94709cb940789",
       "triangleBudget": 1800,
       "params": [
         {
@@ -186229,13 +186266,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "railSteel",
+          "type": "color",
+          "default": "#626b70",
+          "label": "Rail and running gear steel"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#aaa79c",
+          "label": "Concrete"
+        },
+        {
+          "name": "paintedSteel",
           "type": "color",
           "default": "#555b5f",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30363a",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "concrete": "#9a968a",
+          "paintedSteel": "#5c5e5d",
+          "rubber": "#414342"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "concrete": "#b8b4a8",
+          "paintedSteel": "#b74734",
+          "rubber": "#272e32"
+        }
+      },
       "stats": {
         "triangles": 184,
         "sizeM": [
@@ -186248,21 +186316,42 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#555b5f",
+          "name": "railSteel",
+          "color": "#626b70",
           "parts": [
             "rail-left",
-            "rail-right",
+            "rail-right"
+          ],
+          "param": "railSteel"
+        },
+        {
+          "name": "concrete",
+          "color": "#aaa79c",
+          "parts": [
             "sleeper-1",
             "sleeper-2",
-            "sleeper-3",
+            "sleeper-3"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#555b5f",
+          "parts": [
             "post-left",
             "post-right",
-            "crossbeam",
+            "crossbeam"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#30363a",
+          "parts": [
             "pad-left",
             "pad-right"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -186270,7 +186359,7 @@
       "id": "caboose",
       "kit": "railway",
       "title": "Caboose",
-      "description": "Short railway caboose with a raised cupola, end platforms, side windows and four wheels. Knobs: overall scale and asset color.",
+      "description": "Short railway caboose with a raised cupola, end platforms, side windows and four wheels. Editable material controls: rail and running gear steel, painted steel, glazing. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -186291,7 +186380,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/caboose.kcad.ts",
       "preview": "/assets/railway-caboose.png",
-      "sourceSha256": "ef2cda513bf560fc420d4beeabb935337c0737e7df4bb7ab486c954e24158ccd",
+      "sourceSha256": "46262c4719be83e3c5aadbcbb5b662c4fe45688b7b6968d6884ae101a110d08b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -186304,13 +186393,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "railSteel",
+          "type": "color",
+          "default": "#626b70",
+          "label": "Rail and running gear steel"
+        },
+        {
+          "name": "paintedSteel",
           "type": "color",
           "default": "#a35c42",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#54a6bb",
+          "label": "Glazing"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "paintedSteel": "#955f48",
+          "glass": "#5a99a7"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "paintedSteel": "#b74734",
+          "glass": "#68b9ca"
+        }
+      },
       "stats": {
         "triangles": 284,
         "sizeM": [
@@ -186323,24 +186435,38 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#a35c42",
+          "name": "railSteel",
+          "color": "#626b70",
           "parts": [
             "underframe",
-            "body",
-            "roof",
-            "cupola",
-            "cupola-roof",
-            "window-left",
-            "window-right",
-            "platform-left",
-            "platform-right",
             "wheel-left-a",
             "wheel-left-b",
             "wheel-right-a",
             "wheel-right-b"
           ],
-          "param": "color"
+          "param": "railSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#a35c42",
+          "parts": [
+            "body",
+            "roof",
+            "cupola",
+            "cupola-roof",
+            "platform-left",
+            "platform-right"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "glass",
+          "color": "#54a6bb",
+          "parts": [
+            "window-left",
+            "window-right"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -186348,7 +186474,7 @@
       "id": "commuter-car",
       "kit": "railway",
       "title": "Commuter rail car",
-      "description": "Short commuter rail car with wide double doors, large windows, roof air units and paired bogies. Knobs: overall scale and asset color.",
+      "description": "Short commuter rail car with wide double doors, large windows, roof air units and paired bogies. Editable material controls: rail and running gear steel, painted aluminum, glazing, stainless steel. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -186369,7 +186495,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/commuter-car.kcad.ts",
       "preview": "/assets/railway-commuter-car.png",
-      "sourceSha256": "acf56a99dfeb0e0ed60c54375ecbb19fae48381b2d925c18e432c4c24b41d5bd",
+      "sourceSha256": "13de629525164c827de4b9b85356101e36b4831edffbf72ca1e45f25a5794d4e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -186382,13 +186508,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "railSteel",
+          "type": "color",
+          "default": "#626b70",
+          "label": "Rail and running gear steel"
+        },
+        {
+          "name": "paintedAluminum",
           "type": "color",
           "default": "#52636b",
-          "label": "Asset color"
+          "label": "Painted aluminum"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#54a6bb",
+          "label": "Glazing"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b8c1c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "paintedAluminum": "#5a6466",
+          "glass": "#5a99a7",
+          "stainlessSteel": "#a5a9a6"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "paintedAluminum": "#28728a",
+          "glass": "#68b9ca",
+          "stainlessSteel": "#cad2d1"
+        }
+      },
       "stats": {
         "triangles": 332,
         "sizeM": [
@@ -186401,20 +186558,10 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#52636b",
+          "name": "railSteel",
+          "color": "#626b70",
           "parts": [
             "underframe",
-            "body",
-            "roof",
-            "window-1",
-            "window-2",
-            "window-3",
-            "window-4",
-            "door-left",
-            "door-right",
-            "air-unit-1",
-            "air-unit-2",
             "bogie-left",
             "bogie-right",
             "wheel-left-a",
@@ -186422,7 +186569,38 @@
             "wheel-right-a",
             "wheel-right-b"
           ],
-          "param": "color"
+          "param": "railSteel"
+        },
+        {
+          "name": "paintedAluminum",
+          "color": "#52636b",
+          "parts": [
+            "body",
+            "roof",
+            "door-left",
+            "door-right"
+          ],
+          "param": "paintedAluminum"
+        },
+        {
+          "name": "glass",
+          "color": "#54a6bb",
+          "parts": [
+            "window-1",
+            "window-2",
+            "window-3",
+            "window-4"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b8c1c2",
+          "parts": [
+            "air-unit-1",
+            "air-unit-2"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -186430,7 +186608,7 @@
       "id": "crossing-gate",
       "kit": "railway",
       "title": "Rail crossing gate",
-      "description": "Rail crossing barrier with a striped arm, pivot housing, counterweight and short signal mast. Knobs: overall scale and asset color.",
+      "description": "Rail crossing barrier with alternating white and yellow bands, a pivot housing, counterweight and warning lamp. Editable material controls: galvanized steel, high-visibility paint, railway enamel, amber signal glass. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -186451,7 +186629,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/crossing-gate.kcad.ts",
       "preview": "/assets/railway-crossing-gate.png",
-      "sourceSha256": "6592ce74c29c1d6fad52ab8c005e92aae4ec768655134701ec30ede97c323a91",
+      "sourceSha256": "37382039d0152b1c63f0ff9ed6be915f4f0df4a7adecaa7f4826ba320555957e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -186464,15 +186642,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#ce4f3c",
-          "label": "Asset color"
+          "default": "#929da0",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#e7b735",
+          "label": "High-visibility paint"
+        },
+        {
+          "name": "enamel",
+          "type": "color",
+          "default": "#eee5cf",
+          "label": "Railway enamel"
+        },
+        {
+          "name": "signalAmberGlass",
+          "type": "color",
+          "default": "#efb438",
+          "label": "Amber signal glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#898e8d",
+          "safetyPaint": "#c7a13f",
+          "enamel": "#ccc3af",
+          "signalAmberGlass": "#d6a53f"
+        },
+        "freshService": {
+          "galvanizedSteel": "#aab4b4",
+          "safetyPaint": "#f5c521",
+          "enamel": "#f6eddb",
+          "signalAmberGlass": "#ffc12f"
+        }
+      },
       "stats": {
-        "triangles": 116,
+        "triangles": 164,
         "sizeM": [
           1.310502,
           0.76,
@@ -186483,18 +186692,43 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#ce4f3c",
+          "name": "galvanizedSteel",
+          "color": "#929da0",
           "parts": [
             "base",
             "pivot-post",
             "housing",
+            "lamp-post"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#e7b735",
+          "parts": [
             "barrier-arm",
-            "counterweight",
-            "lamp-post",
+            "counterweight"
+          ],
+          "param": "safetyPaint"
+        },
+        {
+          "name": "enamel",
+          "color": "#eee5cf",
+          "parts": [
+            "barrier-stripe-1",
+            "barrier-stripe-2",
+            "barrier-stripe-3",
+            "barrier-stripe-4"
+          ],
+          "param": "enamel"
+        },
+        {
+          "name": "signalAmberGlass",
+          "color": "#efb438",
+          "parts": [
             "lamp-head"
           ],
-          "param": "color"
+          "param": "signalAmberGlass"
         }
       ]
     },
@@ -186502,7 +186736,7 @@
       "id": "crossing-warning-light",
       "kit": "railway",
       "title": "Rail crossing warning light",
-      "description": "Rail crossing warning signal with paired circular lamps, protective hoods and a mounting bracket. Knobs: overall scale and asset color.",
+      "description": "Rail crossing warning signal with paired circular lamps, protective hoods and a mounting bracket. Editable material controls: galvanized steel, red signal glass, amber signal glass, high-visibility paint. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -186523,7 +186757,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/crossing-warning-light.kcad.ts",
       "preview": "/assets/railway-crossing-warning-light.png",
-      "sourceSha256": "632ed37555af9e44b7db3ba39a7a16e04881a9164eb8cbb98d2b56e659f97b23",
+      "sourceSha256": "f950ba824a771541cb47975815704056e5d504c07425b4694d72482aa95c4bb2",
       "triangleBudget": 1800,
       "params": [
         {
@@ -186536,13 +186770,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#d3513f",
-          "label": "Asset color"
+          "default": "#929da0",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "signalRedGlass",
+          "type": "color",
+          "default": "#cf4039",
+          "label": "Red signal glass"
+        },
+        {
+          "name": "signalAmberGlass",
+          "type": "color",
+          "default": "#efb438",
+          "label": "Amber signal glass"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#e7b735",
+          "label": "High-visibility paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#898e8d",
+          "signalRedGlass": "#bc483f",
+          "signalAmberGlass": "#d6a53f",
+          "safetyPaint": "#c7a13f"
+        },
+        "freshService": {
+          "galvanizedSteel": "#aab4b4",
+          "signalRedGlass": "#e0443a",
+          "signalAmberGlass": "#ffc12f",
+          "safetyPaint": "#f5c521"
+        }
+      },
       "stats": {
         "triangles": 224,
         "sizeM": [
@@ -186555,19 +186820,40 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#d3513f",
+          "name": "galvanizedSteel",
+          "color": "#929da0",
           "parts": [
             "post",
             "backplate",
-            "lamp-left",
-            "lamp-right",
-            "hood-left",
-            "hood-right",
             "mount",
             "base"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "signalRedGlass",
+          "color": "#cf4039",
+          "parts": [
+            "lamp-left"
+          ],
+          "param": "signalRedGlass"
+        },
+        {
+          "name": "signalAmberGlass",
+          "color": "#efb438",
+          "parts": [
+            "lamp-right"
+          ],
+          "param": "signalAmberGlass"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#e7b735",
+          "parts": [
+            "hood-left",
+            "hood-right"
+          ],
+          "param": "safetyPaint"
         }
       ]
     },
@@ -186575,7 +186861,7 @@
       "id": "curved-track",
       "kit": "railway",
       "title": "Curved railway track loop",
-      "description": "Closed circular railway track loop with twin concentric rails, radial sleepers and a low ballast ring. Knobs: overall scale and asset color.",
+      "description": "Closed circular railway track loop with twin concentric rails, radial sleepers and a low ballast ring. Editable material controls: track ballast, rail and running gear steel, concrete. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -186596,7 +186882,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/curved-track.kcad.ts",
       "preview": "/assets/railway-curved-track.png",
-      "sourceSha256": "5f1209c8dc3e35534b60d05cea62b6280e7cf41f25efdf8421f7ec81857dc810",
+      "sourceSha256": "29b3fc5caa18285b00b2320ae004cf1973862635c690531e09c697c2905d2052",
       "triangleBudget": 1800,
       "params": [
         {
@@ -186609,13 +186895,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "ballast",
           "type": "color",
-          "default": "#555b5f",
-          "label": "Asset color"
+          "default": "#706b62",
+          "label": "Track ballast"
+        },
+        {
+          "name": "railSteel",
+          "type": "color",
+          "default": "#626b70",
+          "label": "Rail and running gear steel"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#aaa79c",
+          "label": "Concrete"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "ballast": "#706a60",
+          "railSteel": "#666a6a",
+          "concrete": "#9a968a"
+        },
+        "freshService": {
+          "ballast": "#797367",
+          "railSteel": "#56636a",
+          "concrete": "#b8b4a8"
+        }
+      },
       "stats": {
         "triangles": 432,
         "sizeM": [
@@ -186628,12 +186937,26 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#555b5f",
+          "name": "ballast",
+          "color": "#706b62",
           "parts": [
-            "ballast-ring",
+            "ballast-ring"
+          ],
+          "param": "ballast"
+        },
+        {
+          "name": "railSteel",
+          "color": "#626b70",
+          "parts": [
             "outer-rail",
-            "inner-rail",
+            "inner-rail"
+          ],
+          "param": "railSteel"
+        },
+        {
+          "name": "concrete",
+          "color": "#aaa79c",
+          "parts": [
             "sleeper-1",
             "sleeper-2",
             "sleeper-3",
@@ -186647,7 +186970,7 @@
             "sleeper-11",
             "sleeper-12"
           ],
-          "param": "color"
+          "param": "concrete"
         }
       ]
     },
@@ -186655,7 +186978,7 @@
       "id": "diesel-locomotive",
       "kit": "railway",
       "title": "Diesel locomotive",
-      "description": "Road-switcher diesel locomotive with a long hood, raised cab, radiator grille, front lights and six wheels. Knobs: overall scale and asset color.",
+      "description": "Road-switcher diesel locomotive with a long hood, sloped nose, glazed cab, radiator grille, front lights and six steel wheels. Editable material controls: rail and running gear steel, painted steel, glazing, amber signal glass. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -186676,7 +186999,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/diesel-locomotive.kcad.ts",
       "preview": "/assets/railway-diesel-locomotive.png",
-      "sourceSha256": "9528eaa522d18da8cac033f9f52738e25e55e20f6552d31a202d27d36c21ca93",
+      "sourceSha256": "2a21b555c0ec773d176de45a1a5893d169d451a1e262809394986bde0d5e8994",
       "triangleBudget": 1800,
       "params": [
         {
@@ -186689,15 +187012,46 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "railSteel",
           "type": "color",
-          "default": "#4b555b",
-          "label": "Asset color"
+          "default": "#626b70",
+          "label": "Rail and running gear steel"
+        },
+        {
+          "name": "paintedSteel",
+          "type": "color",
+          "default": "#28758b",
+          "label": "Painted steel"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#54a6bb",
+          "label": "Glazing"
+        },
+        {
+          "name": "signalAmberGlass",
+          "type": "color",
+          "default": "#efb438",
+          "label": "Amber signal glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "paintedSteel": "#3b717e",
+          "glass": "#5a99a7",
+          "signalAmberGlass": "#d6a53f"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "paintedSteel": "#b74734",
+          "glass": "#68b9ca",
+          "signalAmberGlass": "#ffc12f"
+        }
+      },
       "stats": {
-        "triangles": 436,
+        "triangles": 472,
         "sizeM": [
           1.129847,
           0.57,
@@ -186708,26 +187062,50 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#4b555b",
+          "name": "railSteel",
+          "color": "#626b70",
           "parts": [
             "frame",
-            "long-hood",
-            "nose",
-            "cab",
-            "cab-roof",
             "front-grille",
-            "headlamp-left",
-            "headlamp-right",
             "wheel-left-1",
             "wheel-left-2",
             "wheel-left-3",
             "wheel-right-1",
             "wheel-right-2",
-            "wheel-right-3",
+            "wheel-right-3"
+          ],
+          "param": "railSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#28758b",
+          "parts": [
+            "long-hood",
+            "nose",
+            "cab",
+            "cab-roof",
             "pilot"
           ],
-          "param": "color"
+          "param": "paintedSteel"
+        },
+        {
+          "name": "glass",
+          "color": "#54a6bb",
+          "parts": [
+            "cab-side-window-left",
+            "cab-side-window-right",
+            "cab-front-window"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "signalAmberGlass",
+          "color": "#efb438",
+          "parts": [
+            "headlamp-left",
+            "headlamp-right"
+          ],
+          "param": "signalAmberGlass"
         }
       ]
     },
@@ -186735,7 +187113,7 @@
       "id": "dining-car",
       "kit": "railway",
       "title": "Dining car",
-      "description": "Passenger dining car with window rows, a central galley vent, end doors and wheel bogies. Knobs: overall scale and asset color.",
+      "description": "Passenger dining car with window rows, a central galley vent, end doors and wheel bogies. Editable material controls: rail and running gear steel, painted steel, glazing, stainless steel. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -186756,7 +187134,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/dining-car.kcad.ts",
       "preview": "/assets/railway-dining-car.png",
-      "sourceSha256": "ea254325d7daec9aee621f392ec64381ca52a726d994d707b6052044159d9b56",
+      "sourceSha256": "0485e94487a467be8ab11581bf72fc6505bcbbe5353f1f3b15fafb2ce98d82fe",
       "triangleBudget": 1800,
       "params": [
         {
@@ -186769,13 +187147,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "railSteel",
+          "type": "color",
+          "default": "#626b70",
+          "label": "Rail and running gear steel"
+        },
+        {
+          "name": "paintedSteel",
           "type": "color",
           "default": "#8c7650",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#54a6bb",
+          "label": "Glazing"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b8c1c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "paintedSteel": "#847252",
+          "glass": "#5a99a7",
+          "stainlessSteel": "#a5a9a6"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "paintedSteel": "#b74734",
+          "glass": "#68b9ca",
+          "stainlessSteel": "#cad2d1"
+        }
+      },
       "stats": {
         "triangles": 296,
         "sizeM": [
@@ -186788,25 +187197,46 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#8c7650",
+          "name": "railSteel",
+          "color": "#626b70",
           "parts": [
             "underframe",
-            "body",
-            "roof",
-            "window-1",
-            "window-2",
-            "window-3",
-            "window-4",
-            "window-5",
-            "window-6",
-            "galley-vent",
             "wheel-left-a",
             "wheel-left-b",
             "wheel-right-a",
             "wheel-right-b"
           ],
-          "param": "color"
+          "param": "railSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#8c7650",
+          "parts": [
+            "body",
+            "roof"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "glass",
+          "color": "#54a6bb",
+          "parts": [
+            "window-1",
+            "window-2",
+            "window-3",
+            "window-4",
+            "window-5",
+            "window-6"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b8c1c2",
+          "parts": [
+            "galley-vent"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -186814,7 +187244,7 @@
       "id": "electric-locomotive",
       "kit": "railway",
       "title": "Electric locomotive",
-      "description": "Electric locomotive with a broad cab, twin end windows, roof equipment and raised pantograph frame. Knobs: overall scale and asset color.",
+      "description": "Electric locomotive with a sloped nose, glazed cab, raised aluminum pantograph and six steel wheels. Editable material controls: rail and running gear steel, painted steel, glazing, bare aluminum. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -186835,7 +187265,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/electric-locomotive.kcad.ts",
       "preview": "/assets/railway-electric-locomotive.png",
-      "sourceSha256": "c0ad6a06b59194e12745e93e0bc0ac493983de30e15d0b2f2b00ce6460ce832e",
+      "sourceSha256": "d402d275a2301cba555658b0d34eeea6a916159c95c75b4d2a5642a04119b593",
       "triangleBudget": 1800,
       "params": [
         {
@@ -186848,38 +187278,60 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "railSteel",
           "type": "color",
-          "default": "#4c5b63",
-          "label": "Asset color"
+          "default": "#626b70",
+          "label": "Rail and running gear steel"
+        },
+        {
+          "name": "paintedSteel",
+          "type": "color",
+          "default": "#2f7286",
+          "label": "Painted steel"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#54a6bb",
+          "label": "Glazing"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#a7b2b4",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "paintedSteel": "#416f7a",
+          "glass": "#5a99a7",
+          "aluminum": "#989e9b"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "paintedSteel": "#b74734",
+          "glass": "#68b9ca",
+          "aluminum": "#bdc8c8"
+        }
+      },
       "stats": {
-        "triangles": 384,
+        "triangles": 408,
         "sizeM": [
           1.036162,
           0.856,
-          0.315
+          0.316
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#4c5b63",
+          "name": "railSteel",
+          "color": "#626b70",
           "parts": [
             "frame",
-            "body",
-            "nose-left",
-            "cab",
-            "front-window",
-            "roof",
-            "pantograph-base",
-            "pantograph-left",
-            "pantograph-right",
-            "pantograph-top",
             "wheel-left-a",
             "wheel-left-b",
             "wheel-left-c",
@@ -186887,7 +187339,39 @@
             "wheel-right-b",
             "wheel-right-c"
           ],
-          "param": "color"
+          "param": "railSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#2f7286",
+          "parts": [
+            "body",
+            "nose-left",
+            "cab",
+            "roof"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "glass",
+          "color": "#54a6bb",
+          "parts": [
+            "front-window",
+            "cab-side-window-left",
+            "cab-side-window-right"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "aluminum",
+          "color": "#a7b2b4",
+          "parts": [
+            "pantograph-base",
+            "pantograph-left",
+            "pantograph-right",
+            "pantograph-top"
+          ],
+          "param": "aluminum"
         }
       ]
     },
@@ -186895,7 +187379,7 @@
       "id": "flatbed-wagon",
       "kit": "railway",
       "title": "Flatbed wagon",
-      "description": "Rail flatbed wagon with a low deck, corner stakes, tie-down rings and two wheel bogies. Knobs: overall scale and asset color.",
+      "description": "Rail flatbed wagon with a low deck, corner stakes, tie-down rings and two wheel bogies. Editable material controls: rail and running gear steel, timber, painted steel. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -186916,7 +187400,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/flatbed-wagon.kcad.ts",
       "preview": "/assets/railway-flatbed-wagon.png",
-      "sourceSha256": "75de96722d8bb68ddd1283212d06b54d7098ea22e8c8419660c62048900e0014",
+      "sourceSha256": "2c17418d56d8a91896ae643d25df4467aa66ef878b79e5ac9c0a6cae88fda117",
       "triangleBudget": 1800,
       "params": [
         {
@@ -186929,13 +187413,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "railSteel",
           "type": "color",
-          "default": "#5b6265",
-          "label": "Asset color"
+          "default": "#626b70",
+          "label": "Rail and running gear steel"
+        },
+        {
+          "name": "timber",
+          "type": "color",
+          "default": "#8b6643",
+          "label": "Timber"
+        },
+        {
+          "name": "paintedSteel",
+          "type": "color",
+          "default": "#53646c",
+          "label": "Painted steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "timber": "#846649",
+          "paintedSteel": "#5b6567"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "timber": "#9b7146",
+          "paintedSteel": "#b74734"
+        }
+      },
       "stats": {
         "triangles": 272,
         "sizeM": [
@@ -186948,15 +187455,10 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#5b6265",
+          "name": "railSteel",
+          "color": "#626b70",
           "parts": [
             "underframe",
-            "deck",
-            "stake-left-front",
-            "stake-left-back",
-            "stake-right-front",
-            "stake-right-back",
             "bogie-left",
             "bogie-right",
             "wheel-left-a",
@@ -186964,7 +187466,26 @@
             "wheel-right-a",
             "wheel-right-b"
           ],
-          "param": "color"
+          "param": "railSteel"
+        },
+        {
+          "name": "timber",
+          "color": "#8b6643",
+          "parts": [
+            "deck"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#53646c",
+          "parts": [
+            "stake-left-front",
+            "stake-left-back",
+            "stake-right-front",
+            "stake-right-back"
+          ],
+          "param": "paintedSteel"
         }
       ]
     },
@@ -186972,7 +187493,7 @@
       "id": "freight-boxcar",
       "kit": "railway",
       "title": "Freight boxcar",
-      "description": "Enclosed freight boxcar with sliding side door, roof ribs, end ladders and two wheel bogies. Knobs: overall scale and asset color.",
+      "description": "Enclosed freight boxcar with sliding side door, roof ribs, end ladders and two wheel bogies. Editable material controls: rail and running gear steel, painted steel, galvanized steel. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -186993,7 +187514,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/freight-boxcar.kcad.ts",
       "preview": "/assets/railway-freight-boxcar.png",
-      "sourceSha256": "d10d6f4656f15fbac0ae1d6e8835b7a454b2e6d4c9328f61a54fdadff1f2fec8",
+      "sourceSha256": "33cd2ec24d6574414b2e8bb75bc91442d9bba714a4eb6014b1c43208f88702e8",
       "triangleBudget": 1800,
       "params": [
         {
@@ -187006,13 +187527,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "railSteel",
+          "type": "color",
+          "default": "#626b70",
+          "label": "Rail and running gear steel"
+        },
+        {
+          "name": "paintedSteel",
           "type": "color",
           "default": "#6c6152",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#929da0",
+          "label": "Galvanized steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "paintedSteel": "#6d6354",
+          "galvanizedSteel": "#898e8d"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "paintedSteel": "#b74734",
+          "galvanizedSteel": "#aab4b4"
+        }
+      },
       "stats": {
         "triangles": 308,
         "sizeM": [
@@ -187025,16 +187569,10 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#6c6152",
+          "name": "railSteel",
+          "color": "#626b70",
           "parts": [
             "underframe",
-            "box-body",
-            "roof",
-            "sliding-door",
-            "door-rail",
-            "ladder-left",
-            "ladder-right",
             "bogie-left",
             "bogie-right",
             "wheel-left-a",
@@ -187044,7 +187582,27 @@
             "coupler-front",
             "coupler-rear"
           ],
-          "param": "color"
+          "param": "railSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#6c6152",
+          "parts": [
+            "box-body",
+            "roof",
+            "sliding-door"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#929da0",
+          "parts": [
+            "door-rail",
+            "ladder-left",
+            "ladder-right"
+          ],
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -187052,7 +187610,7 @@
       "id": "handcar",
       "kit": "railway",
       "title": "Railway handcar",
-      "description": "Four-wheel railway handcar with wheels set against its frame, a plank platform, upright pump handle and two operator grips. Knobs: overall scale and asset color.",
+      "description": "Four-wheel railway handcar with wheels set against its frame, a plank platform, upright pump handle and two operator grips. Editable material controls: timber, painted steel, rail and running gear steel, rubber. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -187073,7 +187631,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/handcar.kcad.ts",
       "preview": "/assets/railway-handcar.png",
-      "sourceSha256": "6f35c2f99d1300cc46f17756af5c2a904a6f29a39332fc59cc4b5614bc2cc6b9",
+      "sourceSha256": "947c679014bfe0e927ff010c9b666058cf1d6c6aae5916d6210c7246318e9f91",
       "triangleBudget": 1800,
       "params": [
         {
@@ -187086,13 +187644,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
+          "type": "color",
+          "default": "#8b6643",
+          "label": "Timber"
+        },
+        {
+          "name": "paintedSteel",
           "type": "color",
           "default": "#70543c",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "railSteel",
+          "type": "color",
+          "default": "#626b70",
+          "label": "Rail and running gear steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30363a",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "timber": "#846649",
+          "paintedSteel": "#705944",
+          "railSteel": "#666a6a",
+          "rubber": "#414342"
+        },
+        "freshService": {
+          "timber": "#9b7146",
+          "paintedSteel": "#b74734",
+          "railSteel": "#56636a",
+          "rubber": "#272e32"
+        }
+      },
       "stats": {
         "triangles": 312,
         "sizeM": [
@@ -187105,21 +187694,42 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "timber",
+          "color": "#8b6643",
+          "parts": [
+            "platform"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "paintedSteel",
           "color": "#70543c",
           "parts": [
-            "platform",
             "frame",
+            "pump-post",
+            "pump-arm"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "railSteel",
+          "color": "#626b70",
+          "parts": [
             "wheel-left-front",
             "wheel-left-back",
             "wheel-right-front",
-            "wheel-right-back",
-            "pump-post",
-            "pump-arm",
+            "wheel-right-back"
+          ],
+          "param": "railSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#30363a",
+          "parts": [
             "grip-left",
             "grip-right"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -187127,7 +187737,7 @@
       "id": "hopper-wagon",
       "kit": "railway",
       "title": "Hopper wagon",
-      "description": "Open-top hopper wagon with sloped discharge bays, top rails and four paired wheels. Knobs: overall scale and asset color.",
+      "description": "Open-top hopper wagon with sloped discharge bays, top rails and four paired wheels. Editable material controls: rail and running gear steel, painted steel, galvanized steel. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -187148,7 +187758,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/hopper-wagon.kcad.ts",
       "preview": "/assets/railway-hopper-wagon.png",
-      "sourceSha256": "3317103ce8d9228e7d9640b639c34f46ed58d80cf88efe70d6dade586b3e4c7e",
+      "sourceSha256": "581cf3e4655e162f5ad25372d910f41d6239935a22145d5133c7f6d7c49d8e08",
       "triangleBudget": 1800,
       "params": [
         {
@@ -187161,13 +187771,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "railSteel",
+          "type": "color",
+          "default": "#626b70",
+          "label": "Rail and running gear steel"
+        },
+        {
+          "name": "paintedSteel",
           "type": "color",
           "default": "#4a5358",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#929da0",
+          "label": "Galvanized steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "paintedSteel": "#545858",
+          "galvanizedSteel": "#898e8d"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "paintedSteel": "#b74734",
+          "galvanizedSteel": "#aab4b4"
+        }
+      },
       "stats": {
         "triangles": 272,
         "sizeM": [
@@ -187180,23 +187813,37 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#4a5358",
+          "name": "railSteel",
+          "color": "#626b70",
           "parts": [
             "underframe",
-            "hopper-body",
-            "left-slope",
-            "right-slope",
-            "top-rail-front",
-            "top-rail-back",
-            "outlet-left",
-            "outlet-right",
             "wheel-left-a",
             "wheel-left-b",
             "wheel-right-a",
             "wheel-right-b"
           ],
-          "param": "color"
+          "param": "railSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#4a5358",
+          "parts": [
+            "hopper-body",
+            "left-slope",
+            "right-slope"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#929da0",
+          "parts": [
+            "top-rail-front",
+            "top-rail-back",
+            "outlet-left",
+            "outlet-right"
+          ],
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -187204,7 +187851,7 @@
       "id": "inspection-trolley",
       "kit": "railway",
       "title": "Track inspection trolley",
-      "description": "Compact two-axle track inspection trolley with a raised seat, handle bar and tool box. Knobs: overall scale and asset color.",
+      "description": "Compact two-axle track inspection trolley with a raised seat, handle bar and tool box. Editable material controls: painted steel, timber, rubber, rail and running gear steel. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -187225,7 +187872,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/inspection-trolley.kcad.ts",
       "preview": "/assets/railway-inspection-trolley.png",
-      "sourceSha256": "c48a5972ecdf726f2f0cfb571facfe4a86d40e6fe9ba89c1b45f29b02b320b10",
+      "sourceSha256": "c5e99f2d31d8aeddefbacecd4145494a980fcc737073c39519bfa50872cedb07",
       "triangleBudget": 1800,
       "params": [
         {
@@ -187238,13 +187885,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#68736e",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "timber",
+          "type": "color",
+          "default": "#8b6643",
+          "label": "Timber"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30363a",
+          "label": "Rubber"
+        },
+        {
+          "name": "railSteel",
+          "type": "color",
+          "default": "#626b70",
+          "label": "Rail and running gear steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#6a7068",
+          "timber": "#846649",
+          "rubber": "#414342",
+          "railSteel": "#666a6a"
+        },
+        "freshService": {
+          "paintedSteel": "#b74734",
+          "timber": "#9b7146",
+          "rubber": "#272e32",
+          "railSteel": "#56636a"
+        }
+      },
       "stats": {
         "triangles": 248,
         "sizeM": [
@@ -187257,21 +187935,42 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#68736e",
           "parts": [
             "chassis",
-            "seat-post",
-            "seat",
             "handle-post",
-            "handlebar",
-            "tool-box",
+            "tool-box"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "timber",
+          "color": "#8b6643",
+          "parts": [
+            "seat-post",
+            "seat"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "rubber",
+          "color": "#30363a",
+          "parts": [
+            "handlebar"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "railSteel",
+          "color": "#626b70",
+          "parts": [
             "wheel-left-front",
             "wheel-left-back",
             "wheel-right-front",
             "wheel-right-back"
           ],
-          "param": "color"
+          "param": "railSteel"
         }
       ]
     },
@@ -187279,7 +187978,7 @@
       "id": "level-crossing",
       "kit": "railway",
       "title": "Railway level crossing",
-      "description": "Road crossing over a short rail section with two road panels, flangeway grooves and warning posts. Knobs: overall scale and asset color.",
+      "description": "Road crossing over a short rail section with two road panels, flangeway grooves and warning posts. Editable material controls: road asphalt, rail and running gear steel, high-visibility paint. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -187300,7 +187999,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/level-crossing.kcad.ts",
       "preview": "/assets/railway-level-crossing.png",
-      "sourceSha256": "aaa42596cfb51ba594a1d2cac05a3227ab3c04ed227a0f49e9a5382c3042993b",
+      "sourceSha256": "ec70b81a4c4fab7655a4d64eb3bd30b786046dd434f4f847519572a2226ee21b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -187313,13 +188012,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "asphalt",
           "type": "color",
-          "default": "#5a6064",
-          "label": "Asset color"
+          "default": "#4e5558",
+          "label": "Road asphalt"
+        },
+        {
+          "name": "railSteel",
+          "type": "color",
+          "default": "#626b70",
+          "label": "Rail and running gear steel"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#e7b735",
+          "label": "High-visibility paint"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "asphalt": "#575a58",
+          "railSteel": "#666a6a",
+          "safetyPaint": "#c7a13f"
+        },
+        "freshService": {
+          "asphalt": "#555c5e",
+          "railSteel": "#56636a",
+          "safetyPaint": "#f5c521"
+        }
+      },
       "stats": {
         "triangles": 108,
         "sizeM": [
@@ -187332,20 +188054,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#5a6064",
+          "name": "asphalt",
+          "color": "#4e5558",
           "parts": [
             "road",
-            "rail-left",
-            "rail-right",
             "road-panel-left",
-            "road-panel-right",
+            "road-panel-right"
+          ],
+          "param": "asphalt"
+        },
+        {
+          "name": "railSteel",
+          "color": "#626b70",
+          "parts": [
+            "rail-left",
+            "rail-right"
+          ],
+          "param": "railSteel"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#e7b735",
+          "parts": [
             "warning-post-left",
             "warning-post-right",
             "crossbar-left",
             "crossbar-right"
           ],
-          "param": "color"
+          "param": "safetyPaint"
         }
       ]
     },
@@ -187353,7 +188089,7 @@
       "id": "luggage-stack",
       "kit": "railway",
       "title": "Station luggage stack",
-      "description": "Stack of three hard-sided passenger suitcases with handles, corner bumpers and rolling wheels. Knobs: overall scale and asset color.",
+      "description": "Stack of three hard-sided passenger suitcases with handles, corner bumpers and rolling wheels. Editable material controls: luggage polymer shell, leather, rubber. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -187374,7 +188110,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/luggage-stack.kcad.ts",
       "preview": "/assets/railway-luggage-stack.png",
-      "sourceSha256": "5c741311e59d9d754839ee6fe7f8e0aa3421e418c2c48b52891f5cf76bb47a74",
+      "sourceSha256": "8e4a2cb8b2f956d8a02b5181b09c0680ead42a7e79b42398e26cc832352fa6c6",
       "triangleBudget": 1800,
       "params": [
         {
@@ -187387,13 +188123,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "polymerShell",
           "type": "color",
-          "default": "#73634d",
-          "label": "Asset color"
+          "default": "#527b91",
+          "label": "Luggage polymer shell"
+        },
+        {
+          "name": "leather",
+          "type": "color",
+          "default": "#6d4a34",
+          "label": "Leather"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30363a",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "polymerShell": "#5a7682",
+          "leather": "#6e523e",
+          "rubber": "#414342"
+        },
+        "freshService": {
+          "polymerShell": "#4388a5",
+          "leather": "#795239",
+          "rubber": "#272e32"
+        }
+      },
       "stats": {
         "triangles": 160,
         "sizeM": [
@@ -187406,19 +188165,33 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#73634d",
+          "name": "polymerShell",
+          "color": "#527b91",
           "parts": [
             "case-bottom",
             "case-middle",
-            "case-top",
+            "case-top"
+          ],
+          "param": "polymerShell"
+        },
+        {
+          "name": "leather",
+          "color": "#6d4a34",
+          "parts": [
             "handle-bottom",
             "handle-middle",
-            "handle-top",
+            "handle-top"
+          ],
+          "param": "leather"
+        },
+        {
+          "name": "rubber",
+          "color": "#30363a",
+          "parts": [
             "wheel-left",
             "wheel-right"
           ],
-          "param": "color"
+          "param": "rubber"
         }
       ]
     },
@@ -187426,7 +188199,7 @@
       "id": "lumber-wagon",
       "kit": "railway",
       "title": "Lumber wagon",
-      "description": "Rail lumber wagon with a flat deck, tall end stakes and a layered timber cargo stack. Knobs: overall scale and asset color.",
+      "description": "Rail lumber wagon with a flat deck, tall end stakes and a layered timber cargo stack. Editable material controls: rail and running gear steel, timber, painted steel. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -187447,7 +188220,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/lumber-wagon.kcad.ts",
       "preview": "/assets/railway-lumber-wagon.png",
-      "sourceSha256": "3d38f3339f03d1dff2b672544a8e43f911b246888998dd2c75f2467529af2ee9",
+      "sourceSha256": "840beaa5feee5a32f0c192833bafde85765c0b32d46917ab14c2a0e5ea04e98c",
       "triangleBudget": 1800,
       "params": [
         {
@@ -187460,13 +188233,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "railSteel",
+          "type": "color",
+          "default": "#626b70",
+          "label": "Rail and running gear steel"
+        },
+        {
+          "name": "timber",
+          "type": "color",
+          "default": "#8b6643",
+          "label": "Timber"
+        },
+        {
+          "name": "paintedSteel",
           "type": "color",
           "default": "#72583e",
-          "label": "Asset color"
+          "label": "Painted steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "timber": "#846649",
+          "paintedSteel": "#715c45"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "timber": "#9b7146",
+          "paintedSteel": "#b74734"
+        }
+      },
       "stats": {
         "triangles": 356,
         "sizeM": [
@@ -187479,22 +188275,36 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#72583e",
+          "name": "railSteel",
+          "color": "#626b70",
           "parts": [
             "underframe",
+            "wheel-a",
+            "wheel-b"
+          ],
+          "param": "railSteel"
+        },
+        {
+          "name": "timber",
+          "color": "#8b6643",
+          "parts": [
             "deck",
-            "end-stake-left",
-            "end-stake-right",
             "log-1",
             "log-2",
             "log-3",
             "log-4",
-            "log-5",
-            "wheel-a",
-            "wheel-b"
+            "log-5"
           ],
-          "param": "color"
+          "param": "timber"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#72583e",
+          "parts": [
+            "end-stake-left",
+            "end-stake-right"
+          ],
+          "param": "paintedSteel"
         }
       ]
     },
@@ -187502,7 +188312,7 @@
       "id": "mail-car",
       "kit": "railway",
       "title": "Railway mail car",
-      "description": "Railway mail car with long sorting windows, sliding cargo doors, roof vents and paired bogies. Knobs: overall scale and asset color.",
+      "description": "Railway mail car with long sorting windows, sliding cargo doors, roof vents and paired bogies. Editable material controls: rail and running gear steel, painted steel, glazing, bare aluminum. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -187523,7 +188333,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/mail-car.kcad.ts",
       "preview": "/assets/railway-mail-car.png",
-      "sourceSha256": "06640003b1a90396d54a91b940ebc2336aa986f9ed0f62c37a708252337b6eea",
+      "sourceSha256": "b45a1abdece7634808bac69db460beb5d296d6e3ea7ee3960347a1881d1af047",
       "triangleBudget": 1800,
       "params": [
         {
@@ -187536,13 +188346,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "railSteel",
+          "type": "color",
+          "default": "#626b70",
+          "label": "Rail and running gear steel"
+        },
+        {
+          "name": "paintedSteel",
           "type": "color",
           "default": "#566879",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#54a6bb",
+          "label": "Glazing"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#a7b2b4",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "paintedSteel": "#5d6870",
+          "glass": "#5a99a7",
+          "aluminum": "#989e9b"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "paintedSteel": "#b74734",
+          "glass": "#68b9ca",
+          "aluminum": "#bdc8c8"
+        }
+      },
       "stats": {
         "triangles": 284,
         "sizeM": [
@@ -187555,24 +188396,45 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#566879",
+          "name": "railSteel",
+          "color": "#626b70",
           "parts": [
             "underframe",
-            "body",
-            "roof",
-            "door-left",
-            "door-right",
-            "window-a",
-            "window-b",
-            "vent-a",
-            "vent-b",
             "wheel-a",
             "wheel-b",
             "wheel-c",
             "wheel-d"
           ],
-          "param": "color"
+          "param": "railSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#566879",
+          "parts": [
+            "body",
+            "roof",
+            "door-left",
+            "door-right"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "glass",
+          "color": "#54a6bb",
+          "parts": [
+            "window-a",
+            "window-b"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "aluminum",
+          "color": "#a7b2b4",
+          "parts": [
+            "vent-a",
+            "vent-b"
+          ],
+          "param": "aluminum"
         }
       ]
     },
@@ -187580,7 +188442,7 @@
       "id": "maintenance-railcar",
       "kit": "railway",
       "title": "Rail maintenance car",
-      "description": "Compact maintenance railcar with an open service deck, tool cabinet, roof beacon and inspection wheels. Knobs: overall scale and asset color.",
+      "description": "Compact maintenance railcar with an open service deck, tool cabinet, roof beacon and inspection wheels. Editable material controls: rail and running gear steel, high-visibility paint, painted steel, amber signal glass. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -187601,7 +188463,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/maintenance-railcar.kcad.ts",
       "preview": "/assets/railway-maintenance-railcar.png",
-      "sourceSha256": "c92ea7e34f49dfd8ff02865c37ec0ac147afe67a4c83d510569e79b64a764b17",
+      "sourceSha256": "7a703256b86ad0fb7a934dc84bd168d938f6d1feb8c0ee5161b1722b543c1325",
       "triangleBudget": 1800,
       "params": [
         {
@@ -187614,13 +188476,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "railSteel",
           "type": "color",
-          "default": "#59645e",
-          "label": "Asset color"
+          "default": "#626b70",
+          "label": "Rail and running gear steel"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#e7b735",
+          "label": "High-visibility paint"
+        },
+        {
+          "name": "paintedSteel",
+          "type": "color",
+          "default": "#53646c",
+          "label": "Painted steel"
+        },
+        {
+          "name": "signalAmberGlass",
+          "type": "color",
+          "default": "#efb438",
+          "label": "Amber signal glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "safetyPaint": "#c7a13f",
+          "paintedSteel": "#5b6567",
+          "signalAmberGlass": "#d6a53f"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "safetyPaint": "#f5c521",
+          "paintedSteel": "#b74734",
+          "signalAmberGlass": "#ffc12f"
+        }
+      },
       "stats": {
         "triangles": 280,
         "sizeM": [
@@ -187633,21 +188526,42 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#59645e",
+          "name": "railSteel",
+          "color": "#626b70",
           "parts": [
             "frame",
-            "deck",
-            "cab",
-            "cab-roof",
-            "tool-box",
-            "beacon",
             "wheel-left-a",
             "wheel-left-b",
             "wheel-right-a",
             "wheel-right-b"
           ],
-          "param": "color"
+          "param": "railSteel"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#e7b735",
+          "parts": [
+            "deck",
+            "cab",
+            "cab-roof"
+          ],
+          "param": "safetyPaint"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#53646c",
+          "parts": [
+            "tool-box"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "signalAmberGlass",
+          "color": "#efb438",
+          "parts": [
+            "beacon"
+          ],
+          "param": "signalAmberGlass"
         }
       ]
     },
@@ -187655,7 +188569,7 @@
       "id": "milepost",
       "kit": "railway",
       "title": "Railway milepost",
-      "description": "Trackside railway milepost with a tapered-looking marker board, narrow post and broad ground foot. Knobs: overall scale and asset color.",
+      "description": "Trackside railway milepost with a marked enamel distance board, narrow post, cap and broad ground foot. Editable material controls: painted steel, railway enamel, concrete. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -187676,7 +188590,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/milepost.kcad.ts",
       "preview": "/assets/railway-milepost.png",
-      "sourceSha256": "6e63c0c809968ae8bdd10d06b4aaa0e7858191f70919110f46c82d86cb69e0a3",
+      "sourceSha256": "4008f14b0e92b9149604c4a22b49e89c0f8b286b8544bd6fd4ef355f4f0aba49",
       "triangleBudget": 1800,
       "params": [
         {
@@ -187689,15 +188603,38 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
-          "default": "#efe6cf",
-          "label": "Asset color"
+          "default": "#515d63",
+          "label": "Painted steel"
+        },
+        {
+          "name": "enamel",
+          "type": "color",
+          "default": "#eee5cf",
+          "label": "Railway enamel"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#aaa79c",
+          "label": "Concrete"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#596060",
+          "enamel": "#ccc3af",
+          "concrete": "#9a968a"
+        },
+        "freshService": {
+          "paintedSteel": "#b74734",
+          "enamel": "#f6eddb",
+          "concrete": "#b8b4a8"
+        }
+      },
       "stats": {
-        "triangles": 48,
+        "triangles": 84,
         "sizeM": [
           0.27,
           0.752,
@@ -187708,15 +188645,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#efe6cf",
+          "name": "paintedSteel",
+          "color": "#515d63",
           "parts": [
             "post",
-            "board",
-            "cap",
+            "distance-mark-vertical",
+            "distance-mark-top",
+            "distance-mark-bottom",
+            "cap"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "enamel",
+          "color": "#eee5cf",
+          "parts": [
+            "board"
+          ],
+          "param": "enamel"
+        },
+        {
+          "name": "concrete",
+          "color": "#aaa79c",
+          "parts": [
             "foot"
           ],
-          "param": "color"
+          "param": "concrete"
         }
       ]
     },
@@ -187724,7 +188678,7 @@
       "id": "passenger-coach",
       "kit": "railway",
       "title": "Passenger coach",
-      "description": "Passenger rail coach with long window rows, paired bogies, end doors and roof ventilation strips. Knobs: overall scale and asset color.",
+      "description": "Passenger rail coach with long window rows, paired bogies, end doors and roof ventilation strips. Editable material controls: rail and running gear steel, painted steel, glazing. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -187745,7 +188699,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/passenger-coach.kcad.ts",
       "preview": "/assets/railway-passenger-coach.png",
-      "sourceSha256": "3a57aa3c1bba0ae971a4cc16b2bd2414bbfaea5bcdd0db88779a86fd4b3f0235",
+      "sourceSha256": "27012fd742bbaef708e76824b9951b483c5e84c00b878571a4345ce39b29dc26",
       "triangleBudget": 1800,
       "params": [
         {
@@ -187758,13 +188712,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "railSteel",
+          "type": "color",
+          "default": "#626b70",
+          "label": "Rail and running gear steel"
+        },
+        {
+          "name": "paintedSteel",
           "type": "color",
           "default": "#657179",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#54a6bb",
+          "label": "Glazing"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "paintedSteel": "#686e70",
+          "glass": "#5a99a7"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "paintedSteel": "#b74734",
+          "glass": "#68b9ca"
+        }
+      },
       "stats": {
         "triangles": 332,
         "sizeM": [
@@ -187777,20 +188754,10 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#657179",
+          "name": "railSteel",
+          "color": "#626b70",
           "parts": [
             "underframe",
-            "body",
-            "roof",
-            "window-1",
-            "window-2",
-            "window-3",
-            "window-4",
-            "window-5",
-            "window-6",
-            "door-left",
-            "door-right",
             "bogie-left",
             "bogie-right",
             "wheel-left-front",
@@ -187798,7 +188765,31 @@
             "wheel-right-front",
             "wheel-right-back"
           ],
-          "param": "color"
+          "param": "railSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#657179",
+          "parts": [
+            "body",
+            "roof",
+            "door-left",
+            "door-right"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "glass",
+          "color": "#54a6bb",
+          "parts": [
+            "window-1",
+            "window-2",
+            "window-3",
+            "window-4",
+            "window-5",
+            "window-6"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -187806,7 +188797,7 @@
       "id": "platform-canopy",
       "kit": "railway",
       "title": "Station platform canopy",
-      "description": "Railway platform canopy with two posts, a pitched roof, cross-braces and a sheltered bench bay. Knobs: overall scale and asset color.",
+      "description": "Railway platform canopy with two posts, a pitched roof, cross-braces and a sheltered bench bay. Editable material controls: galvanized steel, painted steel. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -187827,7 +188818,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/platform-canopy.kcad.ts",
       "preview": "/assets/railway-platform-canopy.png",
-      "sourceSha256": "729fe960c0e25778b7c6cb4dd962840f92207addf4bffb0471a7f93316b863df",
+      "sourceSha256": "47f2dd6d4ffc170a17851cfdfd19fd68d269a6bac595cdb93ab8f3744881370e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -187840,13 +188831,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#596167",
-          "label": "Asset color"
+          "default": "#929da0",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "paintedSteel",
+          "type": "color",
+          "default": "#53646c",
+          "label": "Painted steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#898e8d",
+          "paintedSteel": "#5b6567"
+        },
+        "freshService": {
+          "galvanizedSteel": "#aab4b4",
+          "paintedSteel": "#b74734"
+        }
+      },
       "stats": {
         "triangles": 96,
         "sizeM": [
@@ -187859,11 +188865,18 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#596167",
+          "name": "galvanizedSteel",
+          "color": "#929da0",
           "parts": [
             "post-left",
-            "post-right",
+            "post-right"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#53646c",
+          "parts": [
             "roof-left",
             "roof-right",
             "ridge",
@@ -187871,7 +188884,7 @@
             "brace-right",
             "gutter"
           ],
-          "param": "color"
+          "param": "paintedSteel"
         }
       ]
     },
@@ -187879,7 +188892,7 @@
       "id": "rail-sleeper",
       "kit": "railway",
       "title": "Railway sleeper",
-      "description": "Concrete railway sleeper with two raised rail seats, fastening plates and four bolt heads. Knobs: overall scale and asset color.",
+      "description": "Concrete railway sleeper with two raised rail seats, fastening plates and four bolt heads. Editable material controls: concrete, rail and running gear steel, stainless steel. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -187900,7 +188913,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/rail-sleeper.kcad.ts",
       "preview": "/assets/railway-rail-sleeper.png",
-      "sourceSha256": "e559fbda76f7fb957f3cf238e7b2412b195c82b0b23164857c72032b1fad2959",
+      "sourceSha256": "ab26953c2a818065d448fa393f2f88cab5e728bf0c975a8e11c7b1155866e4c2",
       "triangleBudget": 1800,
       "params": [
         {
@@ -187913,13 +188926,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "concrete",
           "type": "color",
-          "default": "#777c7e",
-          "label": "Asset color"
+          "default": "#aaa79c",
+          "label": "Concrete"
+        },
+        {
+          "name": "railSteel",
+          "type": "color",
+          "default": "#626b70",
+          "label": "Rail and running gear steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b8c1c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "concrete": "#9a968a",
+          "railSteel": "#666a6a",
+          "stainlessSteel": "#a5a9a6"
+        },
+        "freshService": {
+          "concrete": "#b8b4a8",
+          "railSteel": "#56636a",
+          "stainlessSteel": "#cad2d1"
+        }
+      },
       "stats": {
         "triangles": 236,
         "sizeM": [
@@ -187932,20 +188968,34 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#777c7e",
+          "name": "concrete",
+          "color": "#aaa79c",
           "parts": [
             "beam",
             "seat-left",
-            "seat-right",
+            "seat-right"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "railSteel",
+          "color": "#626b70",
+          "parts": [
             "plate-left",
-            "plate-right",
+            "plate-right"
+          ],
+          "param": "railSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b8c1c2",
+          "parts": [
             "bolt-1",
             "bolt-2",
             "bolt-3",
             "bolt-4"
           ],
-          "param": "color"
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -187953,7 +189003,7 @@
       "id": "railway-lantern",
       "kit": "railway",
       "title": "Railway lantern",
-      "description": "Vintage railway hand lantern with a faceted body, carry handle, broad base and top cap. Knobs: overall scale and asset color.",
+      "description": "Vintage railway hand lantern with a faceted body, carry handle, broad base and top cap. Editable material controls: painted steel, glazing, brass. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -187974,7 +189024,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/railway-lantern.kcad.ts",
       "preview": "/assets/railway-railway-lantern.png",
-      "sourceSha256": "7c6b0cb503c4b42d081aece81c4488486225bb56af3f24ce9491b3888f0da003",
+      "sourceSha256": "50445b4437b8fe004baa29256f6b8945f0ab209dc969aa97453374be5e98aec9",
       "triangleBudget": 1800,
       "params": [
         {
@@ -187987,13 +189037,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#554a3c",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#54a6bb",
+          "label": "Glazing"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#c29b46",
+          "label": "Brass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#5c5244",
+          "glass": "#5a99a7",
+          "brass": "#ac8d4b"
+        },
+        "freshService": {
+          "paintedSteel": "#b74734",
+          "glass": "#68b9ca",
+          "brass": "#d3aa4d"
+        }
+      },
       "stats": {
         "triangles": 180,
         "sizeM": [
@@ -188006,18 +189079,32 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#554a3c",
           "parts": [
             "base",
             "body",
-            "globe",
-            "top-cap",
+            "top-cap"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "glass",
+          "color": "#54a6bb",
+          "parts": [
+            "globe"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "brass",
+          "color": "#c29b46",
+          "parts": [
             "handle-left",
             "handle-right",
             "handle-top"
           ],
-          "param": "color"
+          "param": "brass"
         }
       ]
     },
@@ -188025,7 +189112,7 @@
       "id": "railway-ticket-machine",
       "kit": "railway",
       "title": "Station ticket machine",
-      "description": "Compact railway ticket machine with a tilted display, keypad, slot and pedestal base. Knobs: overall scale and asset color.",
+      "description": "Compact railway ticket machine with a tilted display, keypad, slot and pedestal base. Editable material controls: painted steel, display glass, stainless steel. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -188046,7 +189133,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/railway-ticket-machine.kcad.ts",
       "preview": "/assets/railway-railway-ticket-machine.png",
-      "sourceSha256": "12d4185cb430fca89a9f100a1b969ec155f9d2e49a9ff5a31c0870996657f931",
+      "sourceSha256": "9056063c50702078f3cfbb79e31201a2b60ebc830b115360f0abd2005bad0471",
       "triangleBudget": 1800,
       "params": [
         {
@@ -188059,13 +189146,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#51636b",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#385f77",
+          "label": "Display glass"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b8c1c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#596466",
+          "displayGlass": "#436171",
+          "stainlessSteel": "#a5a9a6"
+        },
+        "freshService": {
+          "paintedSteel": "#b74734",
+          "displayGlass": "#417b98",
+          "stainlessSteel": "#cad2d1"
+        }
+      },
       "stats": {
         "triangles": 72,
         "sizeM": [
@@ -188078,17 +189188,31 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#51636b",
           "parts": [
             "pedestal",
             "housing",
-            "display",
-            "keypad",
-            "ticket-slot",
             "top-cap"
           ],
-          "param": "color"
+          "param": "paintedSteel"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#385f77",
+          "parts": [
+            "display"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b8c1c2",
+          "parts": [
+            "keypad",
+            "ticket-slot"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -188096,7 +189220,7 @@
       "id": "semaphore-signal",
       "kit": "railway",
       "title": "Railway semaphore signal",
-      "description": "Mechanical railway semaphore with a tall mast, pivot arm, counterweight and ladder rungs. Knobs: overall scale and asset color.",
+      "description": "Mechanical railway semaphore with a tall mast, pivot arm, counterweight and ladder rungs. Editable material controls: painted steel, high-visibility paint, brass, galvanized steel. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -188117,7 +189241,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/semaphore-signal.kcad.ts",
       "preview": "/assets/railway-semaphore-signal.png",
-      "sourceSha256": "e349dbb9fbce2a60060615f62b363010e8b442517218a5ab056e2f2346fea706",
+      "sourceSha256": "3e416600b6bdda3c1fb41905995d5a4b1ca0ba05b569caa70f60a1bf2a489ae3",
       "triangleBudget": 1800,
       "params": [
         {
@@ -188130,13 +189254,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#5a6063",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#e7b735",
+          "label": "High-visibility paint"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#c29b46",
+          "label": "Brass"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#929da0",
+          "label": "Galvanized steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#606260",
+          "safetyPaint": "#c7a13f",
+          "brass": "#ac8d4b",
+          "galvanizedSteel": "#898e8d"
+        },
+        "freshService": {
+          "paintedSteel": "#b74734",
+          "safetyPaint": "#f5c521",
+          "brass": "#d3aa4d",
+          "galvanizedSteel": "#aab4b4"
+        }
+      },
       "stats": {
         "triangles": 216,
         "sizeM": [
@@ -188149,21 +189304,42 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#5a6063",
           "parts": [
             "mast",
             "base",
+            "counterweight"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "safetyPaint",
+          "color": "#e7b735",
+          "parts": [
             "arm",
-            "arm-tip",
-            "counterweight",
-            "pivot",
+            "arm-tip"
+          ],
+          "param": "safetyPaint"
+        },
+        {
+          "name": "brass",
+          "color": "#c29b46",
+          "parts": [
+            "pivot"
+          ],
+          "param": "brass"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#929da0",
+          "parts": [
             "ladder-1",
             "ladder-2",
             "ladder-3",
             "ladder-4"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
         }
       ]
     },
@@ -188171,7 +189347,7 @@
       "id": "signal-gantry",
       "kit": "railway",
       "title": "Railway signal gantry",
-      "description": "Over-track signal gantry with two support towers, a crossbeam, signal heads and access walkway. Knobs: overall scale and asset color.",
+      "description": "Over-track signal gantry with two support towers, a crossbeam, signal heads and access walkway. Editable material controls: galvanized steel, painted steel, red signal glass, amber signal glass. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -188192,7 +189368,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/signal-gantry.kcad.ts",
       "preview": "/assets/railway-signal-gantry.png",
-      "sourceSha256": "effa24e143a3b561d7c79726ee62f389644dd0a087d5c4b796038a9b7dfbbfb8",
+      "sourceSha256": "23d82a679c658074d0c37ab328314d6aadf79ddba670d74356f864bd33fbae46",
       "triangleBudget": 1800,
       "params": [
         {
@@ -188205,13 +189381,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#51585c",
-          "label": "Asset color"
+          "default": "#929da0",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "paintedSteel",
+          "type": "color",
+          "default": "#53646c",
+          "label": "Painted steel"
+        },
+        {
+          "name": "signalRedGlass",
+          "type": "color",
+          "default": "#cf4039",
+          "label": "Red signal glass"
+        },
+        {
+          "name": "signalAmberGlass",
+          "type": "color",
+          "default": "#efb438",
+          "label": "Amber signal glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#898e8d",
+          "paintedSteel": "#5b6567",
+          "signalRedGlass": "#bc483f",
+          "signalAmberGlass": "#d6a53f"
+        },
+        "freshService": {
+          "galvanizedSteel": "#aab4b4",
+          "paintedSteel": "#b74734",
+          "signalRedGlass": "#e0443a",
+          "signalAmberGlass": "#ffc12f"
+        }
+      },
       "stats": {
         "triangles": 184,
         "sizeM": [
@@ -188224,21 +189431,42 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#51585c",
+          "name": "galvanizedSteel",
+          "color": "#929da0",
           "parts": [
             "tower-left",
             "tower-right",
             "crossbeam",
             "walkway",
-            "signal-left",
-            "signal-right",
-            "lens-left",
-            "lens-right",
             "ladder-left",
             "ladder-right"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#53646c",
+          "parts": [
+            "signal-left",
+            "signal-right"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "signalRedGlass",
+          "color": "#cf4039",
+          "parts": [
+            "lens-left"
+          ],
+          "param": "signalRedGlass"
+        },
+        {
+          "name": "signalAmberGlass",
+          "color": "#efb438",
+          "parts": [
+            "lens-right"
+          ],
+          "param": "signalAmberGlass"
         }
       ]
     },
@@ -188246,7 +189474,7 @@
       "id": "signal-light",
       "kit": "railway",
       "title": "Railway signal light",
-      "description": "Three-aspect railway signal with stacked lenses, a tall mast, backboard and service ladder. Knobs: overall scale and asset color.",
+      "description": "Three-aspect railway signal with stacked lenses, a tall mast, backboard and service ladder. Editable material controls: galvanized steel, red signal glass, amber signal glass, green signal glass. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -188267,7 +189495,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/signal-light.kcad.ts",
       "preview": "/assets/railway-signal-light.png",
-      "sourceSha256": "63b8de02431bfec66e4020910ccf8e5c348d9bc3d0bc9f01cd7eabc630fb323d",
+      "sourceSha256": "a3693f5f868ba3878077a855b2f07a08659499f0b35d47e1b8737edce70f9043",
       "triangleBudget": 1800,
       "params": [
         {
@@ -188280,13 +189508,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#42484c",
-          "label": "Asset color"
+          "default": "#929da0",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "signalRedGlass",
+          "type": "color",
+          "default": "#cf4039",
+          "label": "Red signal glass"
+        },
+        {
+          "name": "signalAmberGlass",
+          "type": "color",
+          "default": "#efb438",
+          "label": "Amber signal glass"
+        },
+        {
+          "name": "signalGreenGlass",
+          "type": "color",
+          "default": "#42935f",
+          "label": "Green signal glass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "galvanizedSteel": "#898e8d",
+          "signalRedGlass": "#bc483f",
+          "signalAmberGlass": "#d6a53f",
+          "signalGreenGlass": "#4b8a5e"
+        },
+        "freshService": {
+          "galvanizedSteel": "#aab4b4",
+          "signalRedGlass": "#e0443a",
+          "signalAmberGlass": "#ffc12f",
+          "signalGreenGlass": "#32a05e"
+        }
+      },
       "stats": {
         "triangles": 268,
         "sizeM": [
@@ -188299,20 +189558,41 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#42484c",
+          "name": "galvanizedSteel",
+          "color": "#929da0",
           "parts": [
             "mast",
             "backboard",
-            "lens-top",
-            "lens-middle",
-            "lens-bottom",
             "hood-top",
             "hood-middle",
             "hood-bottom",
             "base"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "signalRedGlass",
+          "color": "#cf4039",
+          "parts": [
+            "lens-top"
+          ],
+          "param": "signalRedGlass"
+        },
+        {
+          "name": "signalAmberGlass",
+          "color": "#efb438",
+          "parts": [
+            "lens-middle"
+          ],
+          "param": "signalAmberGlass"
+        },
+        {
+          "name": "signalGreenGlass",
+          "color": "#42935f",
+          "parts": [
+            "lens-bottom"
+          ],
+          "param": "signalGreenGlass"
         }
       ]
     },
@@ -188320,7 +189600,7 @@
       "id": "station-bench",
       "kit": "railway",
       "title": "Station bench",
-      "description": "Railway platform bench with a slatted seat, backrest, armrests and four simple legs. Knobs: overall scale and asset color.",
+      "description": "Railway platform bench with a slatted seat, backrest, armrests and four simple legs. Editable material controls: timber, painted steel. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -188341,7 +189621,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/station-bench.kcad.ts",
       "preview": "/assets/railway-station-bench.png",
-      "sourceSha256": "c4888e9f7774d7a0367b406721f727d5183ecb5664a353000d956b3a6213ba3a",
+      "sourceSha256": "e003afc592cd13c41ff478d8c2f8b7d496434a57d73b0212ced8bf9cf22ed31a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -188354,13 +189634,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "timber",
           "type": "color",
-          "default": "#725e49",
-          "label": "Asset color"
+          "default": "#8b6643",
+          "label": "Timber"
+        },
+        {
+          "name": "paintedSteel",
+          "type": "color",
+          "default": "#53646c",
+          "label": "Painted steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "timber": "#846649",
+          "paintedSteel": "#5b6567"
+        },
+        "freshService": {
+          "timber": "#9b7146",
+          "paintedSteel": "#b74734"
+        }
+      },
       "stats": {
         "triangles": 132,
         "sizeM": [
@@ -188373,14 +189668,21 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#725e49",
+          "name": "timber",
+          "color": "#8b6643",
           "parts": [
             "seat",
             "back",
             "slat-seat-1",
             "slat-seat-2",
-            "slat-seat-3",
+            "slat-seat-3"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#53646c",
+          "parts": [
             "leg-left-front",
             "leg-right-front",
             "leg-left-back",
@@ -188388,7 +189690,7 @@
             "arm-left",
             "arm-right"
           ],
-          "param": "color"
+          "param": "paintedSteel"
         }
       ]
     },
@@ -188396,7 +189698,7 @@
       "id": "station-clock",
       "kit": "railway",
       "title": "Station clock",
-      "description": "Round station clock on a tall post with a broad face, bezel rim and four support feet. Knobs: overall scale and asset color.",
+      "description": "Round station clock with a marked enamel face, brass bezel, hour and minute hands, and a tall support post. Editable material controls: painted steel, railway enamel, brass. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -188417,7 +189719,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/station-clock.kcad.ts",
       "preview": "/assets/railway-station-clock.png",
-      "sourceSha256": "177c37a2e87c559c40e1331f3b594620cdb656c396de766002f9c5a3009cad16",
+      "sourceSha256": "b6c9ea773c37c9fe9e4cd53dad65b615d55c5c61e0f63d46c4ecb5fed7f94242",
       "triangleBudget": 1800,
       "params": [
         {
@@ -188430,35 +189732,78 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#6b6255",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "enamel",
+          "type": "color",
+          "default": "#eee5cf",
+          "label": "Railway enamel"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#c29b46",
+          "label": "Brass"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#6c6356",
+          "enamel": "#ccc3af",
+          "brass": "#ac8d4b"
+        },
+        "freshService": {
+          "paintedSteel": "#b74734",
+          "enamel": "#f6eddb",
+          "brass": "#d3aa4d"
+        }
+      },
       "stats": {
-        "triangles": 176,
+        "triangles": 248,
         "sizeM": [
           0.396,
-          0.898,
-          0.18
+          0.914,
+          0.21
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#6b6255",
           "parts": [
             "post",
-            "face",
-            "rim",
+            "hour-hand",
+            "minute-hand",
+            "dial-mark-top",
+            "dial-mark-bottom",
+            "dial-mark-left",
+            "dial-mark-right",
             "top-cap",
             "base"
           ],
-          "param": "color"
+          "param": "paintedSteel"
+        },
+        {
+          "name": "enamel",
+          "color": "#eee5cf",
+          "parts": [
+            "face"
+          ],
+          "param": "enamel"
+        },
+        {
+          "name": "brass",
+          "color": "#c29b46",
+          "parts": [
+            "rim"
+          ],
+          "param": "brass"
         }
       ]
     },
@@ -188466,7 +189811,7 @@
       "id": "station-platform",
       "kit": "railway",
       "title": "Station platform",
-      "description": "Straight station platform segment with a raised edge, tactile strip and two access steps. Knobs: overall scale and asset color.",
+      "description": "Straight station platform segment with a raised edge, tactile strip and two access steps. Editable material controls: concrete, tactile polymer. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -188487,7 +189832,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/station-platform.kcad.ts",
       "preview": "/assets/railway-station-platform.png",
-      "sourceSha256": "c60d3ee9fefac09340ae5fe25cacb2bda4385a66d26b7dc80ad9a63fcfa3099e",
+      "sourceSha256": "bef6853e9bd3137ce481208973890095261a6311f5e93f170b34a648c30d911a",
       "triangleBudget": 1800,
       "params": [
         {
@@ -188500,13 +189845,28 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "concrete",
           "type": "color",
-          "default": "#777d7f",
-          "label": "Asset color"
+          "default": "#aaa79c",
+          "label": "Concrete"
+        },
+        {
+          "name": "tactilePolymer",
+          "type": "color",
+          "default": "#e1b33a",
+          "label": "Tactile polymer"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "concrete": "#9a968a",
+          "tactilePolymer": "#c29e42"
+        },
+        "freshService": {
+          "concrete": "#b8b4a8",
+          "tactilePolymer": "#f0c32c"
+        }
+      },
       "stats": {
         "triangles": 60,
         "sizeM": [
@@ -188519,16 +189879,23 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#777d7f",
+          "name": "concrete",
+          "color": "#aaa79c",
           "parts": [
             "platform",
             "edge",
-            "tactile-strip",
             "step-left",
             "step-right"
           ],
-          "param": "color"
+          "param": "concrete"
+        },
+        {
+          "name": "tactilePolymer",
+          "color": "#e1b33a",
+          "parts": [
+            "tactile-strip"
+          ],
+          "param": "tactilePolymer"
         }
       ]
     },
@@ -188536,7 +189903,7 @@
       "id": "steam-locomotive",
       "kit": "railway",
       "title": "Steam locomotive",
-      "description": "Low-poly steam locomotive with a boiler, smokestack, cab, cowcatcher and three driving wheel pairs. Knobs: overall scale and asset color.",
+      "description": "Steam locomotive with a cylindrical boiler, brass stack cap, glazed cab, cowcatcher and three driving wheel pairs. Editable material controls: rail and running gear steel, painted steel, brass, glazing. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -188557,7 +189924,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/steam-locomotive.kcad.ts",
       "preview": "/assets/railway-steam-locomotive.png",
-      "sourceSha256": "a086bf7fc2f839b2a144051cd8961f513cdb861f399692c07a3c39a53c1212f1",
+      "sourceSha256": "58784fc419ce375c3828f96a12f7f95b733a02c11f7a8f14af287ba72b139c85",
       "triangleBudget": 1800,
       "params": [
         {
@@ -188570,13 +189937,44 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "railSteel",
           "type": "color",
-          "default": "#34393d",
-          "label": "Asset color"
+          "default": "#626b70",
+          "label": "Rail and running gear steel"
+        },
+        {
+          "name": "paintedSteel",
+          "type": "color",
+          "default": "#914337",
+          "label": "Painted steel"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#c29b46",
+          "label": "Brass"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#54a6bb",
+          "label": "Glazing"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "paintedSteel": "#884d40",
+          "brass": "#ac8d4b",
+          "glass": "#5a99a7"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "paintedSteel": "#b74734",
+          "brass": "#d3aa4d",
+          "glass": "#68b9ca"
+        }
+      },
       "stats": {
         "triangles": 512,
         "sizeM": [
@@ -188589,18 +189987,10 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#34393d",
+          "name": "railSteel",
+          "color": "#626b70",
           "parts": [
             "lower-frame",
-            "boiler",
-            "boiler-front",
-            "smokestack",
-            "stack-cap",
-            "cab",
-            "cab-roof",
-            "front-window",
-            "cowcatcher",
             "wheel-a-left",
             "wheel-a-right",
             "wheel-b-left",
@@ -188609,7 +189999,36 @@
             "wheel-c-right",
             "drive-rod"
           ],
-          "param": "color"
+          "param": "railSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#914337",
+          "parts": [
+            "boiler",
+            "boiler-front",
+            "smokestack",
+            "cab",
+            "cab-roof",
+            "cowcatcher"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "brass",
+          "color": "#c29b46",
+          "parts": [
+            "stack-cap"
+          ],
+          "param": "brass"
+        },
+        {
+          "name": "glass",
+          "color": "#54a6bb",
+          "parts": [
+            "front-window"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -188617,7 +190036,7 @@
       "id": "straight-track",
       "kit": "railway",
       "title": "Straight railway track",
-      "description": "Short straight rail section with twin rails, six sleepers, tie plates and gravel ballast base. Knobs: overall scale and asset color.",
+      "description": "Short straight rail section with twin rails, six sleepers, tie plates and gravel ballast base. Editable material controls: track ballast, rail and running gear steel, concrete. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -188638,7 +190057,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/straight-track.kcad.ts",
       "preview": "/assets/railway-straight-track.png",
-      "sourceSha256": "a148ee428d709a546c8455ea94799fefbb0aef2a97873f58b6241a2a76d046db",
+      "sourceSha256": "fa25d13639a0d3ca5395506e1e7227a2392ded0a397d820cc3df65a4c49fb3ec",
       "triangleBudget": 1800,
       "params": [
         {
@@ -188651,13 +190070,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "ballast",
           "type": "color",
-          "default": "#555b5f",
-          "label": "Asset color"
+          "default": "#706b62",
+          "label": "Track ballast"
+        },
+        {
+          "name": "railSteel",
+          "type": "color",
+          "default": "#626b70",
+          "label": "Rail and running gear steel"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#aaa79c",
+          "label": "Concrete"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "ballast": "#706a60",
+          "railSteel": "#666a6a",
+          "concrete": "#9a968a"
+        },
+        "freshService": {
+          "ballast": "#797367",
+          "railSteel": "#56636a",
+          "concrete": "#b8b4a8"
+        }
+      },
       "stats": {
         "triangles": 108,
         "sizeM": [
@@ -188670,12 +190112,26 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#555b5f",
+          "name": "ballast",
+          "color": "#706b62",
           "parts": [
-            "ballast",
+            "ballast"
+          ],
+          "param": "ballast"
+        },
+        {
+          "name": "railSteel",
+          "color": "#626b70",
+          "parts": [
             "rail-left",
-            "rail-right",
+            "rail-right"
+          ],
+          "param": "railSteel"
+        },
+        {
+          "name": "concrete",
+          "color": "#aaa79c",
+          "parts": [
             "sleeper-1",
             "sleeper-2",
             "sleeper-3",
@@ -188683,7 +190139,7 @@
             "sleeper-5",
             "sleeper-6"
           ],
-          "param": "color"
+          "param": "concrete"
         }
       ]
     },
@@ -188691,7 +190147,7 @@
       "id": "subway-car",
       "kit": "railway",
       "title": "Subway car",
-      "description": "Urban subway car with a rounded-looking front cab, broad side doors and repeated passenger windows. Knobs: overall scale and asset color.",
+      "description": "Urban subway car with a rounded-looking front cab, broad side doors and repeated passenger windows. Editable material controls: rail and running gear steel, painted aluminum, glazing. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -188712,7 +190168,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/subway-car.kcad.ts",
       "preview": "/assets/railway-subway-car.png",
-      "sourceSha256": "77d76337b18a956547c01de5caaa0ceeff195cd6628b8b95dc00e9fd73f7ca9c",
+      "sourceSha256": "52b50aa250a1b4c656422fc001ebc12027701ebf0859b4c290bd8e0c29cfd9c1",
       "triangleBudget": 1800,
       "params": [
         {
@@ -188725,13 +190181,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "railSteel",
+          "type": "color",
+          "default": "#626b70",
+          "label": "Rail and running gear steel"
+        },
+        {
+          "name": "paintedAluminum",
           "type": "color",
           "default": "#53636a",
-          "label": "Asset color"
+          "label": "Painted aluminum"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#54a6bb",
+          "label": "Glazing"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "paintedAluminum": "#5b6465",
+          "glass": "#5a99a7"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "paintedAluminum": "#28728a",
+          "glass": "#68b9ca"
+        }
+      },
       "stats": {
         "triangles": 320,
         "sizeM": [
@@ -188744,19 +190223,10 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#53636a",
+          "name": "railSteel",
+          "color": "#626b70",
           "parts": [
             "underframe",
-            "car-body",
-            "front-cab",
-            "front-window",
-            "roof",
-            "door-left",
-            "door-right",
-            "window-left",
-            "window-right",
-            "window-rear",
             "bogie-left",
             "bogie-right",
             "wheel-left-a",
@@ -188764,7 +190234,30 @@
             "wheel-right-a",
             "wheel-right-b"
           ],
-          "param": "color"
+          "param": "railSteel"
+        },
+        {
+          "name": "paintedAluminum",
+          "color": "#53636a",
+          "parts": [
+            "car-body",
+            "front-cab",
+            "roof",
+            "door-left",
+            "door-right"
+          ],
+          "param": "paintedAluminum"
+        },
+        {
+          "name": "glass",
+          "color": "#54a6bb",
+          "parts": [
+            "front-window",
+            "window-left",
+            "window-right",
+            "window-rear"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -188772,7 +190265,7 @@
       "id": "tank-wagon",
       "kit": "railway",
       "title": "Rail tank wagon",
-      "description": "Cylindrical tank wagon with domed end caps, a top walkway, ladder and twin bogies. Knobs: overall scale and asset color.",
+      "description": "Cylindrical tank wagon with domed end caps, a top walkway, ladder and twin bogies. Editable material controls: rail and running gear steel, painted steel, stainless steel. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -188793,7 +190286,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/tank-wagon.kcad.ts",
       "preview": "/assets/railway-tank-wagon.png",
-      "sourceSha256": "32f97cd4161c14fafc046397d47ddc04f43c928364bf4f0c50bcec4dcd0f7396",
+      "sourceSha256": "706df12f9ce37793be95e2eb4e2f640510edff9bbb36ce52f996c0b69d850bce",
       "triangleBudget": 1800,
       "params": [
         {
@@ -188806,13 +190299,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "railSteel",
+          "type": "color",
+          "default": "#626b70",
+          "label": "Rail and running gear steel"
+        },
+        {
+          "name": "paintedSteel",
           "type": "color",
           "default": "#555d62",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b8c1c2",
+          "label": "Stainless steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "railSteel": "#666a6a",
+          "paintedSteel": "#5c6060",
+          "stainlessSteel": "#a5a9a6"
+        },
+        "freshService": {
+          "railSteel": "#56636a",
+          "paintedSteel": "#b74734",
+          "stainlessSteel": "#cad2d1"
+        }
+      },
       "stats": {
         "triangles": 400,
         "sizeM": [
@@ -188825,15 +190341,10 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#555d62",
+          "name": "railSteel",
+          "color": "#626b70",
           "parts": [
             "underframe",
-            "tank",
-            "tank-cap-left",
-            "tank-cap-right",
-            "top-hatch",
-            "walkway",
             "ladder",
             "bogie-left",
             "bogie-right",
@@ -188842,7 +190353,26 @@
             "wheel-right-a",
             "wheel-right-b"
           ],
-          "param": "color"
+          "param": "railSteel"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#555d62",
+          "parts": [
+            "tank",
+            "top-hatch"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b8c1c2",
+          "parts": [
+            "tank-cap-left",
+            "tank-cap-right",
+            "walkway"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -188850,7 +190380,7 @@
       "id": "ticket-barrier",
       "kit": "railway",
       "title": "Railway ticket barrier",
-      "description": "Station ticket gate with a pedestal reader, swing flap, card sensor and side rail. Knobs: overall scale and asset color.",
+      "description": "Station ticket gate with a pedestal reader, swing flap, card sensor and side rail. Editable material controls: painted steel, display glass, bare aluminum. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -188871,7 +190401,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/ticket-barrier.kcad.ts",
       "preview": "/assets/railway-ticket-barrier.png",
-      "sourceSha256": "9e9e711fe2091cf0805a0f8044c61e799f704b60701fa443b93eaae9bbca9501",
+      "sourceSha256": "19aee8e9479108af671c75c338ba93e7e07cbf1f5781b055ca0bfdd43b3bec1f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -188884,13 +190414,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#50585d",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "displayGlass",
+          "type": "color",
+          "default": "#385f77",
+          "label": "Display glass"
+        },
+        {
+          "name": "aluminum",
+          "type": "color",
+          "default": "#a7b2b4",
+          "label": "Bare aluminum"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#595c5c",
+          "displayGlass": "#436171",
+          "aluminum": "#989e9b"
+        },
+        "freshService": {
+          "paintedSteel": "#b74734",
+          "displayGlass": "#417b98",
+          "aluminum": "#bdc8c8"
+        }
+      },
       "stats": {
         "triangles": 116,
         "sizeM": [
@@ -188903,18 +190456,32 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#50585d",
           "parts": [
             "base",
             "pedestal",
-            "reader",
-            "flap",
-            "sensor",
             "side-post",
             "side-rail"
           ],
-          "param": "color"
+          "param": "paintedSteel"
+        },
+        {
+          "name": "displayGlass",
+          "color": "#385f77",
+          "parts": [
+            "reader",
+            "sensor"
+          ],
+          "param": "displayGlass"
+        },
+        {
+          "name": "aluminum",
+          "color": "#a7b2b4",
+          "parts": [
+            "flap"
+          ],
+          "param": "aluminum"
         }
       ]
     },
@@ -188922,7 +190489,7 @@
       "id": "timetable-board",
       "kit": "railway",
       "title": "Station timetable board",
-      "description": "Freestanding station timetable board with a framed display panel, roof cap and twin post supports. Knobs: overall scale and asset color.",
+      "description": "Freestanding station timetable board with a framed display panel, roof cap and twin post supports. Editable material controls: railway enamel, brass, painted steel. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -188943,7 +190510,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/timetable-board.kcad.ts",
       "preview": "/assets/railway-timetable-board.png",
-      "sourceSha256": "74bd86b67564320c5c1d22896d7bdcf83f47ebaea315722ee5632af9b3d4975c",
+      "sourceSha256": "1e759a54b67a9ac36bad27aaf362b6ab91d4cc35689ef8cb00cb9604be58de9f",
       "triangleBudget": 1800,
       "params": [
         {
@@ -188956,13 +190523,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "enamel",
+          "type": "color",
+          "default": "#eee5cf",
+          "label": "Railway enamel"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#c29b46",
+          "label": "Brass"
+        },
+        {
+          "name": "paintedSteel",
           "type": "color",
           "default": "#536069",
-          "label": "Asset color"
+          "label": "Painted steel"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "enamel": "#ccc3af",
+          "brass": "#ac8d4b",
+          "paintedSteel": "#5b6265"
+        },
+        "freshService": {
+          "enamel": "#f6eddb",
+          "brass": "#d3aa4d",
+          "paintedSteel": "#b74734"
+        }
+      },
       "stats": {
         "triangles": 84,
         "sizeM": [
@@ -188975,18 +190565,32 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#536069",
+          "name": "enamel",
+          "color": "#eee5cf",
           "parts": [
             "panel",
-            "display",
-            "top-cap",
+            "display"
+          ],
+          "param": "enamel"
+        },
+        {
+          "name": "brass",
+          "color": "#c29b46",
+          "parts": [
+            "top-cap"
+          ],
+          "param": "brass"
+        },
+        {
+          "name": "paintedSteel",
+          "color": "#536069",
+          "parts": [
             "post-left",
             "post-right",
             "foot-left",
             "foot-right"
           ],
-          "param": "color"
+          "param": "paintedSteel"
         }
       ]
     },
@@ -188994,7 +190598,7 @@
       "id": "track-switch-lever",
       "kit": "railway",
       "title": "Track switch lever",
-      "description": "Manual track switch lever with a weighted base, upright handle, counterweight and connecting rod. Knobs: overall scale and asset color.",
+      "description": "Manual track switch lever with a weighted base, upright handle, counterweight and connecting rod. Editable material controls: painted steel, galvanized steel, rubber. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -189015,7 +190619,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/track-switch-lever.kcad.ts",
       "preview": "/assets/railway-track-switch-lever.png",
-      "sourceSha256": "b26e9cfa3ba7370a3d1d9b148d87530cdac8e1a2f4a00c72c9d10fef19564341",
+      "sourceSha256": "cb601c360ca71b2b5d12f3680e404eb743cdd348d85c5db974e5ed8cf38dd033",
       "triangleBudget": 1800,
       "params": [
         {
@@ -189028,13 +190632,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "paintedSteel",
           "type": "color",
           "default": "#67624f",
-          "label": "Asset color"
+          "label": "Painted steel"
+        },
+        {
+          "name": "galvanizedSteel",
+          "type": "color",
+          "default": "#929da0",
+          "label": "Galvanized steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#30363a",
+          "label": "Rubber"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "paintedSteel": "#696352",
+          "galvanizedSteel": "#898e8d",
+          "rubber": "#414342"
+        },
+        "freshService": {
+          "paintedSteel": "#b74734",
+          "galvanizedSteel": "#aab4b4",
+          "rubber": "#272e32"
+        }
+      },
       "stats": {
         "triangles": 136,
         "sizeM": [
@@ -189047,17 +190674,31 @@
       },
       "palette": [
         {
-          "name": "color",
+          "name": "paintedSteel",
           "color": "#67624f",
           "parts": [
             "base",
-            "pivot-post",
             "lever",
-            "grip",
-            "counterweight",
+            "counterweight"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#929da0",
+          "parts": [
+            "pivot-post",
             "rod"
           ],
-          "param": "color"
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "rubber",
+          "color": "#30363a",
+          "parts": [
+            "grip"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -189065,7 +190706,7 @@
       "id": "turnout-track",
       "kit": "railway",
       "title": "Railway turnout track",
-      "description": "Rail switch turnout with a straight route, diverging branch, crossing frog and six sleepers. Knobs: overall scale and asset color.",
+      "description": "Rail switch turnout with a straight route, diverging branch, crossing frog and six sleepers. Editable material controls: track ballast, rail and running gear steel, concrete. Includes weathered and fresh service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -189086,7 +190727,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/railway/turnout-track.kcad.ts",
       "preview": "/assets/railway-turnout-track.png",
-      "sourceSha256": "786428876414063d59699f16e767b73936a8f79bbf4c57d04b9edb8cb555cccf",
+      "sourceSha256": "6b2ccaa57e02551f1ed261179baf35b16b6225d0d2eb2faed9952019b1cae1dd",
       "triangleBudget": 1800,
       "params": [
         {
@@ -189099,13 +190740,36 @@
           "step": 0.05
         },
         {
-          "name": "color",
+          "name": "ballast",
           "type": "color",
-          "default": "#555b5f",
-          "label": "Asset color"
+          "default": "#706b62",
+          "label": "Track ballast"
+        },
+        {
+          "name": "railSteel",
+          "type": "color",
+          "default": "#626b70",
+          "label": "Rail and running gear steel"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#aaa79c",
+          "label": "Concrete"
         }
       ],
-      "presets": {},
+      "presets": {
+        "weathered": {
+          "ballast": "#706a60",
+          "railSteel": "#666a6a",
+          "concrete": "#9a968a"
+        },
+        "freshService": {
+          "ballast": "#797367",
+          "railSteel": "#56636a",
+          "concrete": "#b8b4a8"
+        }
+      },
       "stats": {
         "triangles": 132,
         "sizeM": [
@@ -189118,14 +190782,28 @@
       },
       "palette": [
         {
-          "name": "color",
-          "color": "#555b5f",
+          "name": "ballast",
+          "color": "#706b62",
           "parts": [
-            "ballast",
+            "ballast"
+          ],
+          "param": "ballast"
+        },
+        {
+          "name": "railSteel",
+          "color": "#626b70",
+          "parts": [
             "main-left",
             "main-right",
             "branch-rail",
-            "frog",
+            "frog"
+          ],
+          "param": "railSteel"
+        },
+        {
+          "name": "concrete",
+          "color": "#aaa79c",
+          "parts": [
             "tie-1",
             "tie-2",
             "tie-3",
@@ -189133,7 +190811,7 @@
             "tie-5",
             "tie-6"
           ],
-          "param": "color"
+          "param": "concrete"
         }
       ]
     },

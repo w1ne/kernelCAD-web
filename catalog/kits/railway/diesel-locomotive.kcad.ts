@@ -1,11 +1,11 @@
-// Original kernelCAD low-poly road-switcher diesel locomotive with a long hood, raised cab, radiator grille, front lights and six wheels.
-// Millimetres, Z up, base on z = 0. All visible parts share one color control.
+// Road-switcher diesel locomotive with a long hood, sloped nose, glazed cab, radiator grille, front lights and six steel wheels.
+// Millimetres, Z up, base on z = 0. Material knobs map to the named components below.
 
 meta({
   name: "diesel-locomotive",
   license: 'CC0-1.0',
   title: "Diesel locomotive",
-  description: "Road-switcher diesel locomotive with a long hood, raised cab, radiator grille, front lights and six wheels. Knobs: overall scale and asset color.",
+  description: "Road-switcher diesel locomotive with a long hood, sloped nose, glazed cab, radiator grille, front lights and six steel wheels. Editable material controls: rail and running gear steel, painted steel, glazing, amber signal glass. Includes weathered and fresh service presets.",
   tags: ["diesel locomotive", "railway", "train", "station", "low poly", "CC0"],
   kit: 'railway',
   category: 'prop',
@@ -15,22 +15,32 @@ meta({
 });
 
 const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
-const color = param('color', "#4b555b", { label: 'Asset color' });
+const railSteel = param('railSteel', '#626b70', { label: 'Rail and running gear steel' });
+const paintedSteel = param('paintedSteel', '#28758b', { label: 'Painted steel' });
+const glass = param('glass', '#54a6bb', { label: 'Glazing' });
+const signalAmberGlass = param('signalAmberGlass', '#efb438', { label: 'Amber signal glass' });
+presets({
+  weathered: { railSteel: '#666a6a', paintedSteel: '#3b717e', glass: '#5a99a7', signalAmberGlass: '#d6a53f' },
+  freshService: { railSteel: '#56636a', paintedSteel: '#b74734', glass: '#68b9ca', signalAmberGlass: '#ffc12f' },
+});
 const p = assembly("diesel-locomotive");
-p.part("frame", box(920, 300, 110, true).translate(0,0,170).scale(scale).translate(0, 0, -12).color(color));
-p.part("long-hood", box(690, 270, 310, true).translate(-100,0,354).scale(scale).translate(0, 0, -12).color(color));
-p.part("nose", box(250, 270, 245, true).translate(370,0,320).scale(scale).translate(0, 0, -12).color(color));
-p.part("cab", box(230,290,340,true).translate(-410,0,370).scale(scale).translate(0, 0, -12).color(color));
-p.part("cab-roof", box(270,330,42,true).translate(-410,0,561).scale(scale).translate(0, 0, -12).color(color));
-p.part("front-grille", box(12,190,160,true).translate(251,-140,348).scale(scale).translate(0, 0, -12).color(color));
-p.part("headlamp-left", cylinder(30,30,10).rotate([1,0,0],90).translate(510,-140,390).scale(scale).translate(0, 0, -12).color(color));
-p.part("headlamp-right", cylinder(30,30,10).rotate([1,0,0],90).translate(510,-140,310).scale(scale).translate(0, 0, -12).color(color));
-p.part("wheel-left-1", cylinder(34,98,12).rotate([1,0,0],90).translate(-300,-104,110).scale(scale).translate(0, 0, -12).color(color));
-p.part("wheel-left-2", cylinder(34,98,12).rotate([1,0,0],90).translate(0,-104,110).scale(scale).translate(0, 0, -12).color(color));
-p.part("wheel-left-3", cylinder(34,98,12).rotate([1,0,0],90).translate(300,-104,110).scale(scale).translate(0, 0, -12).color(color));
-p.part("wheel-right-1", cylinder(34,98,12).rotate([1,0,0],90).translate(-300,138,110).scale(scale).translate(0, 0, -12).color(color));
-p.part("wheel-right-2", cylinder(34,98,12).rotate([1,0,0],90).translate(0,138,110).scale(scale).translate(0, 0, -12).color(color));
-p.part("wheel-right-3", cylinder(34,98,12).rotate([1,0,0],90).translate(300,138,110).scale(scale).translate(0, 0, -12).color(color));
-p.part("pilot", box(120,320,40,true).rotate([0,1,0],-12).translate(522,0,75).scale(scale).translate(0, 0, -12).color(color));
+p.part("frame", box(920, 300, 110, true).translate(0,0,170).scale(scale).translate(0, 0, -12).color(railSteel));
+p.part("long-hood", box(690, 270, 310, true).translate(-100,0,354).scale(scale).translate(0, 0, -12).color(paintedSteel));
+p.part("nose", path().moveTo(245,195).lineTo(495,225).lineTo(495,390).lineTo(245,445).close().extrude(270).rotateX(90).translate(0,135,0).scale(scale).translate(0, 0, -12).color(paintedSteel));
+p.part("cab", box(230,290,340,true).translate(-410,0,370).scale(scale).translate(0, 0, -12).color(paintedSteel));
+p.part("cab-roof", box(270,330,42,true).translate(-410,0,561).scale(scale).translate(0, 0, -12).color(paintedSteel));
+p.part("cab-side-window-left", box(118,8,118,true).translate(-410,-148,420).scale(scale).translate(0, 0, -12).color(glass));
+p.part("cab-side-window-right", box(118,8,118,true).translate(-410,148,420).scale(scale).translate(0, 0, -12).color(glass));
+p.part("cab-front-window", box(8,178,126,true).translate(-297,0,420).scale(scale).translate(0, 0, -12).color(glass));
+p.part("front-grille", box(12,190,160,true).translate(251,-140,348).scale(scale).translate(0, 0, -12).color(railSteel));
+p.part("headlamp-left", cylinder(30,30,10).rotate([1,0,0],90).translate(510,-140,390).scale(scale).translate(0, 0, -12).color(signalAmberGlass));
+p.part("headlamp-right", cylinder(30,30,10).rotate([1,0,0],90).translate(510,-140,310).scale(scale).translate(0, 0, -12).color(signalAmberGlass));
+p.part("wheel-left-1", cylinder(34,98,12).rotate([1,0,0],90).translate(-300,-104,110).scale(scale).translate(0, 0, -12).color(railSteel));
+p.part("wheel-left-2", cylinder(34,98,12).rotate([1,0,0],90).translate(0,-104,110).scale(scale).translate(0, 0, -12).color(railSteel));
+p.part("wheel-left-3", cylinder(34,98,12).rotate([1,0,0],90).translate(300,-104,110).scale(scale).translate(0, 0, -12).color(railSteel));
+p.part("wheel-right-1", cylinder(34,98,12).rotate([1,0,0],90).translate(-300,138,110).scale(scale).translate(0, 0, -12).color(railSteel));
+p.part("wheel-right-2", cylinder(34,98,12).rotate([1,0,0],90).translate(0,138,110).scale(scale).translate(0, 0, -12).color(railSteel));
+p.part("wheel-right-3", cylinder(34,98,12).rotate([1,0,0],90).translate(300,138,110).scale(scale).translate(0, 0, -12).color(railSteel));
+p.part("pilot", box(120,320,40,true).rotate([0,1,0],-12).translate(522,0,75).scale(scale).translate(0, 0, -12).color(paintedSteel));
 
 return p.model();
