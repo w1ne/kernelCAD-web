@@ -286826,14 +286826,18 @@
     {
       "id": "gearbox-enclosure",
       "kit": "wind-energy",
-      "title": "Gearbox assembly housing",
-      "description": "Compact gearbox housing with raised cover, mounting feet and two stepped side bosses. Controls: scale and painted steel, cast steel, stainless steel; weathered and high-visibility presets.",
+      "title": "Wind turbine main gearbox",
+      "description": "Three-stage wind turbine gearbox: main shaft and shrink disc entering a ribbed two-stage planetary housing, cast torque arms on elastomer bushings over bedplate pedestals, a parallel-stage housing with bearing caps, inspection cover, oil filter, breather and lifting eyes, and an offset high-speed shaft with brake disc, caliper and coupling. Material controls: cast steel, painted steel, stainless steel and elastomer; weathered, high-visibility and factory-grey presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "wind",
         "energy",
         "renewable",
+        "gearbox",
+        "drivetrain",
+        "nacelle",
+        "planetary",
         "low poly",
         "scene prop"
       ],
@@ -286846,8 +286850,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/gearbox-enclosure.kcad.ts",
       "preview": "/assets/wind-energy-gearbox-enclosure.png",
-      "sourceSha256": "f592ac9086d96c8e36a72c1fb6bf5a5bdf87ff4d92524ba438710bd8db924fa9",
-      "triangleBudget": 300,
+      "sourceSha256": "fd9f8f7e996458008a3e419e050d710597ea53a1708fb8e8a302fd820b4949d2",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -286859,84 +286863,156 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
-          "type": "color",
-          "default": "#53727c",
-          "label": "Painted steel"
-        },
-        {
           "name": "castSteel",
           "type": "color",
-          "default": "#59666b",
-          "label": "Cast steel"
+          "default": "#7d8b90",
+          "label": "Cast steel housing"
+        },
+        {
+          "name": "paintedSteel",
+          "type": "color",
+          "default": "#3f5f6b",
+          "label": "Painted steel"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
-          "default": "#b8c2c5",
+          "default": "#c3cbce",
           "label": "Stainless steel"
+        },
+        {
+          "name": "elastomer",
+          "type": "color",
+          "default": "#2b2f31",
+          "label": "Elastomer bushings"
         }
       ],
       "presets": {
         "weathered": {
+          "castSteel": "#6c7476",
           "paintedSteel": "#415961",
-          "castSteel": "#606e74"
+          "stainlessSteel": "#9da5a6",
+          "elastomer": "#363a3b"
         },
         "highVisibility": {
-          "paintedSteel": "#d8a62b"
+          "castSteel": "#8e9a9e",
+          "paintedSteel": "#d8a62b",
+          "stainlessSteel": "#d6dcde",
+          "elastomer": "#1f2224"
+        },
+        "factoryGrey": {
+          "castSteel": "#b4b9b5",
+          "paintedSteel": "#34477a",
+          "stainlessSteel": "#cfd5d7",
+          "elastomer": "#2a2d2f"
         }
       },
       "stats": {
-        "triangles": 136,
+        "triangles": 3112,
         "sizeM": [
-          0.93,
-          0.54,
-          0.48
+          3.07,
+          2.228,
+          2.84
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "castSteel",
-          "color": "#59666b",
+          "name": "stainlessSteel",
+          "color": "#c3cbce",
           "parts": [
-            "housing"
+            "main-shaft",
+            "shrink-disc",
+            "shrink-bolt-1",
+            "shrink-bolt-2",
+            "shrink-bolt-3",
+            "shrink-bolt-4",
+            "shrink-bolt-5",
+            "shrink-bolt-6",
+            "shrink-bolt-7",
+            "shrink-bolt-8",
+            "shrink-bolt-9",
+            "shrink-bolt-10",
+            "shrink-bolt-11",
+            "shrink-bolt-12",
+            "torque-pin-left",
+            "torque-pin-right",
+            "lifting-eye-front",
+            "lifting-eye-rear",
+            "oil-filter-head",
+            "oil-line",
+            "high-speed-shaft",
+            "brake-disc"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "castSteel",
+          "color": "#7d8b90",
+          "parts": [
+            "planetary-housing",
+            "housing-rib-1",
+            "housing-rib-2",
+            "housing-rib-3",
+            "housing-rib-4",
+            "housing-rib-5",
+            "torque-arm-left",
+            "torque-arm-right",
+            "parallel-housing",
+            "split-flange",
+            "bearing-cap-intermediate",
+            "bearing-cap-low"
           ],
           "param": "castSteel"
         },
         {
           "name": "paintedSteel",
-          "color": "#53727c",
+          "color": "#3f5f6b",
           "parts": [
-            "cover",
-            "foot--260",
-            "foot-260"
+            "ring-gear-band",
+            "support-pedestal-left",
+            "bedplate-rail-left",
+            "support-pedestal-right",
+            "bedplate-rail-right",
+            "rear-cover",
+            "inspection-cover",
+            "breather",
+            "oil-filter",
+            "brake-caliper",
+            "coupling-hub"
           ],
           "param": "paintedSteel"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b8c2c5",
+          "name": "elastomer",
+          "color": "#2b2f31",
           "parts": [
-            "shaft-left",
-            "shaft-right"
+            "torque-bushing-upper-left",
+            "torque-bushing-lower-left",
+            "torque-bushing-upper-right",
+            "torque-bushing-lower-right",
+            "coupling-insert"
           ],
-          "param": "stainlessSteel"
+          "param": "elastomer"
         }
       ]
     },
     {
       "id": "generator-cover",
       "kit": "wind-energy",
-      "title": "Generator housing cover",
-      "description": "Generator cover with cylindrical end caps, central rectangular body and mounting rails. Controls: scale and painted steel, cast steel; weathered and high-visibility presets.",
+      "title": "Wind turbine generator",
+      "description": "Doubly-fed induction generator with a finned cylindrical stator frame, cast drive-end and non-drive-end shields, shaft with coupling hub, louvred slip-ring compartment, terminal box with cable glands, lifting lugs, cast feet and a base frame on elastomer anti-vibration mounts. Material controls: painted steel, cast steel, shaft steel and elastomer; weathered, high-visibility and factory-blue presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "wind",
         "energy",
         "renewable",
+        "generator",
+        "drivetrain",
+        "nacelle",
+        "electric machine",
         "low poly",
         "scene prop"
       ],
@@ -286949,8 +287025,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/generator-cover.kcad.ts",
       "preview": "/assets/wind-energy-generator-cover.png",
-      "sourceSha256": "0547cf084f38ece39d931140bff7f4b86ef586b4a7dbb1f83be40dc23360db0a",
-      "triangleBudget": 300,
+      "sourceSha256": "31f32f8b7d72064dc88cec73907d4d1e2295f9ab611e52121ce35b028b3b4b97",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -286964,31 +287040,54 @@
         {
           "name": "paintedSteel",
           "type": "color",
-          "default": "#53727c",
-          "label": "Painted steel"
+          "default": "#4f7280",
+          "label": "Painted steel frame"
         },
         {
           "name": "castSteel",
           "type": "color",
-          "default": "#59666b",
-          "label": "Cast steel"
+          "default": "#6a777c",
+          "label": "Cast steel shields"
+        },
+        {
+          "name": "shaftSteel",
+          "type": "color",
+          "default": "#c3cbce",
+          "label": "Shaft steel"
+        },
+        {
+          "name": "elastomer",
+          "type": "color",
+          "default": "#2b2f31",
+          "label": "Elastomer mounts"
         }
       ],
       "presets": {
         "weathered": {
           "paintedSteel": "#415961",
-          "castSteel": "#606e74"
+          "castSteel": "#606e74",
+          "shaftSteel": "#9aa1a2",
+          "elastomer": "#363a3b"
         },
         "highVisibility": {
-          "paintedSteel": "#d8a62b"
+          "paintedSteel": "#d8a62b",
+          "castSteel": "#5d686c",
+          "shaftSteel": "#d6dcde",
+          "elastomer": "#1f2224"
+        },
+        "factoryBlue": {
+          "paintedSteel": "#2f4f8c",
+          "castSteel": "#26407a",
+          "shaftSteel": "#cfd5d7",
+          "elastomer": "#2a2d2f"
         }
       },
       "stats": {
-        "triangles": 136,
+        "triangles": 1960,
         "sizeM": [
-          1.14,
-          0.64,
-          0.565
+          2.48,
+          1.8,
+          1.31
         ],
         "minUpM": 0,
         "materials": 1
@@ -286996,23 +287095,89 @@
       "palette": [
         {
           "name": "paintedSteel",
-          "color": "#53727c",
+          "color": "#4f7280",
           "parts": [
-            "body",
-            "end-left",
-            "end-right",
-            "rail-left",
-            "rail-right"
+            "stator-frame",
+            "cooling-fin-1",
+            "cooling-fin-2",
+            "cooling-fin-3",
+            "cooling-fin-4",
+            "cooling-fin-5",
+            "cooling-fin-6",
+            "cooling-fin-7",
+            "cooling-fin-8",
+            "cooling-fin-9",
+            "cooling-fin-10",
+            "cooling-fin-11",
+            "cooling-fin-12",
+            "cooling-fin-13",
+            "cooling-fin-14",
+            "cooling-fin-15",
+            "cooling-fin-16",
+            "cooling-fin-17",
+            "cooling-fin-18",
+            "cooling-fin-19",
+            "cooling-fin-20",
+            "frame-band-front",
+            "frame-band-rear",
+            "slip-ring-housing",
+            "slip-ring-roof",
+            "terminal-box",
+            "base-rail-left",
+            "base-web-left",
+            "base-rail-right",
+            "base-web-right",
+            "base-cross-front",
+            "base-cross-rear"
           ],
           "param": "paintedSteel"
         },
         {
           "name": "castSteel",
-          "color": "#59666b",
+          "color": "#6a777c",
           "parts": [
-            "top"
+            "drive-end-shield",
+            "drive-end-bearing-cap",
+            "coupling-hub",
+            "non-drive-end-shield",
+            "louvre-1",
+            "louvre-2",
+            "louvre-3",
+            "louvre-4",
+            "louvre-5",
+            "slip-ring-access-door",
+            "terminal-box-lid",
+            "foot-front-left",
+            "foot-front-right",
+            "foot-rear-left",
+            "foot-rear-right"
           ],
           "param": "castSteel"
+        },
+        {
+          "name": "shaftSteel",
+          "color": "#c3cbce",
+          "parts": [
+            "shaft",
+            "lifting-lug-front",
+            "lifting-lug-rear"
+          ],
+          "param": "shaftSteel"
+        },
+        {
+          "name": "elastomer",
+          "color": "#2b2f31",
+          "parts": [
+            "cable-gland-1",
+            "cable-gland-2",
+            "cable-gland-3",
+            "cable-gland-4",
+            "anti-vibration-mount-front-left",
+            "anti-vibration-mount-front-right",
+            "anti-vibration-mount-rear-left",
+            "anti-vibration-mount-rear-right"
+          ],
+          "param": "elastomer"
         }
       ]
     },
@@ -287422,14 +287587,18 @@
     {
       "id": "monopile-foundation",
       "kit": "wind-energy",
-      "title": "Monopile foundation",
-      "description": "Short offshore monopile foundation with top rim, four fender blocks and a flat seabed shoe. Controls: scale and marine steel, elastomer, safety paint; weathered and high-visibility presets.",
+      "title": "Offshore monopile foundation",
+      "description": "Hollow steel monopile on a rock scour-protection apron, with a yellow splash-zone coating, bolted top flange, two cable J-tubes with clamps and bell mouths, and six sacrificial anodes on stand-offs. Material controls: marine steel, splash-zone coating, anode zinc and scour rock; weathered, high-visibility and grey-coating presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "wind",
         "energy",
         "renewable",
+        "offshore",
+        "monopile",
+        "foundation",
+        "marine",
         "low poly",
         "scene prop"
       ],
@@ -287437,13 +287606,14 @@
         "wind",
         "energy",
         "industrial",
+        "marine",
         "scene"
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/monopile-foundation.kcad.ts",
       "preview": "/assets/wind-energy-monopile-foundation.png",
-      "sourceSha256": "874055a2d11a77ef21328f2eba6116d617c55c931974f10d2648668e89212ecd",
-      "triangleBudget": 300,
+      "sourceSha256": "38739cd61822f8715620f06b907a2c07302511c4fb64ca1395059fc266e92ad4",
+      "triangleBudget": 4000,
       "params": [
         {
           "name": "scale",
@@ -287457,70 +287627,164 @@
         {
           "name": "marineSteel",
           "type": "color",
-          "default": "#335868",
+          "default": "#3d5866",
           "label": "Marine steel"
         },
         {
-          "name": "elastomer",
-          "type": "color",
-          "default": "#30383a",
-          "label": "Elastomer"
-        },
-        {
-          "name": "safetyPaint",
+          "name": "splashCoating",
           "type": "color",
           "default": "#efb532",
-          "label": "Safety paint"
+          "label": "Splash-zone coating"
+        },
+        {
+          "name": "anodeZinc",
+          "type": "color",
+          "default": "#c7c4b8",
+          "label": "Anode zinc"
+        },
+        {
+          "name": "scourRock",
+          "type": "color",
+          "default": "#7d766a",
+          "label": "Scour rock"
         }
       ],
       "presets": {
         "weathered": {
-          "marineSteel": "#284551",
-          "elastomer": "#343c3f"
+          "marineSteel": "#3a4446",
+          "splashCoating": "#c99a3a",
+          "anodeZinc": "#a9a596",
+          "scourRock": "#5f5a50"
         },
         "highVisibility": {
-          "safetyPaint": "#f7c331",
-          "marineSteel": "#2d4d5c"
+          "marineSteel": "#2d4d5c",
+          "splashCoating": "#f7c331",
+          "anodeZinc": "#dcd9cf",
+          "scourRock": "#8a8376"
+        },
+        "greyCoating": {
+          "marineSteel": "#4a5458",
+          "splashCoating": "#9aa3a6",
+          "anodeZinc": "#c7c4b8",
+          "scourRock": "#6e695f"
         }
       },
       "stats": {
-        "triangles": 148,
+        "triangles": 3272,
         "sizeM": [
-          0.73,
-          0.86,
-          0.73
+          5.4,
+          6.58,
+          5.4
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
+          "name": "scourRock",
+          "color": "#7d766a",
+          "parts": [
+            "scour-apron",
+            "armour-stone-1",
+            "armour-stone-2",
+            "armour-stone-3",
+            "armour-stone-4",
+            "armour-stone-5",
+            "armour-stone-6",
+            "armour-stone-7",
+            "armour-stone-8",
+            "armour-stone-9",
+            "armour-stone-10",
+            "armour-stone-11",
+            "armour-stone-12",
+            "armour-stone-13",
+            "armour-stone-14",
+            "armour-stone-15"
+          ],
+          "param": "scourRock"
+        },
+        {
           "name": "marineSteel",
-          "color": "#335868",
+          "color": "#3d5866",
           "parts": [
             "pile",
-            "rim"
+            "waterline-band",
+            "top-flange",
+            "j-tube-1",
+            "j-tube-1-bend",
+            "j-tube-1-bell-mouth",
+            "j-tube-1-hang-off",
+            "j-tube-1-clamp-2200",
+            "j-tube-1-clamp-3300",
+            "j-tube-1-clamp-4400",
+            "j-tube-2",
+            "j-tube-2-bend",
+            "j-tube-2-bell-mouth",
+            "j-tube-2-hang-off",
+            "j-tube-2-clamp-2200",
+            "j-tube-2-clamp-3300",
+            "j-tube-2-clamp-4400",
+            "anode-standoff-1",
+            "anode-standoff-2",
+            "anode-standoff-3",
+            "anode-standoff-4",
+            "anode-standoff-5",
+            "anode-standoff-6"
           ],
           "param": "marineSteel"
         },
         {
-          "name": "safetyPaint",
+          "name": "splashCoating",
           "color": "#efb532",
           "parts": [
-            "shoe"
+            "splash-zone-section"
           ],
-          "param": "safetyPaint"
+          "param": "splashCoating"
         },
         {
-          "name": "elastomer",
-          "color": "#30383a",
+          "name": "anodeZinc",
+          "color": "#c7c4b8",
           "parts": [
-            "fender-0",
-            "fender-1",
-            "fender-2",
-            "fender-3"
+            "flange-bolt-1",
+            "flange-bolt-2",
+            "flange-bolt-3",
+            "flange-bolt-4",
+            "flange-bolt-5",
+            "flange-bolt-6",
+            "flange-bolt-7",
+            "flange-bolt-8",
+            "flange-bolt-9",
+            "flange-bolt-10",
+            "flange-bolt-11",
+            "flange-bolt-12",
+            "flange-bolt-13",
+            "flange-bolt-14",
+            "flange-bolt-15",
+            "flange-bolt-16",
+            "flange-bolt-17",
+            "flange-bolt-18",
+            "flange-bolt-19",
+            "flange-bolt-20",
+            "flange-bolt-21",
+            "flange-bolt-22",
+            "flange-bolt-23",
+            "flange-bolt-24",
+            "flange-bolt-25",
+            "flange-bolt-26",
+            "flange-bolt-27",
+            "flange-bolt-28",
+            "flange-bolt-29",
+            "flange-bolt-30",
+            "flange-bolt-31",
+            "flange-bolt-32",
+            "anode-1",
+            "anode-2",
+            "anode-3",
+            "anode-4",
+            "anode-5",
+            "anode-6"
           ],
-          "param": "elastomer"
+          "param": "anodeZinc"
         }
       ]
     },
@@ -288059,14 +288323,19 @@
     {
       "id": "oil-cooler-module",
       "kit": "wind-energy",
-      "title": "Cooling module",
-      "description": "Cooling module with radiator core, two side fans and upper pipe headers. Controls: scale and powder-coated steel, aluminium; weathered and high-visibility presets.",
+      "title": "Gearbox oil cooler module",
+      "description": "Oil-to-air cooler with a finned aluminium radiator core in a powder-coated channel frame, two axial fans with pitched blades, hub motors, bell-mouth shrouds and concentric wire guards, top and bottom oil headers with flanged inlet and outlet lines, fan terminal box and four legs on base plates. Material controls: frame steel, aluminium, fan blade and pipework; weathered, high-visibility and nacelle-white presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "wind",
         "energy",
         "renewable",
+        "oil cooler",
+        "radiator",
+        "heat exchanger",
+        "fan",
+        "nacelle",
         "low poly",
         "scene prop"
       ],
@@ -288079,8 +288348,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/oil-cooler-module.kcad.ts",
       "preview": "/assets/wind-energy-oil-cooler-module.png",
-      "sourceSha256": "e8a0d079df4b9180d8cc9f315eff34265e68cd175bc707f9462f32b24fbd8e9e",
-      "triangleBudget": 300,
+      "sourceSha256": "3908a1e83112937318f9c1346045adcfe3e9bd4372e9a41b44b903b22e520647",
+      "triangleBudget": 4200,
       "params": [
         {
           "name": "scale",
@@ -288095,55 +288364,153 @@
           "name": "powderCoatedSteel",
           "type": "color",
           "default": "#287082",
-          "label": "Powder-coated steel"
+          "label": "Frame steel"
         },
         {
           "name": "aluminium",
           "type": "color",
           "default": "#aab7bb",
-          "label": "Aluminium"
+          "label": "Aluminium core"
+        },
+        {
+          "name": "fanBlade",
+          "type": "color",
+          "default": "#24292c",
+          "label": "Fan blades"
+        },
+        {
+          "name": "pipework",
+          "type": "color",
+          "default": "#9a5a32",
+          "label": "Oil pipework"
         }
       ],
       "presets": {
         "weathered": {
           "powderCoatedSteel": "#1f5765",
-          "aluminium": "#b8c6ca"
+          "aluminium": "#959f9f",
+          "fanBlade": "#33383b",
+          "pipework": "#7a5236"
         },
         "highVisibility": {
-          "powderCoatedSteel": "#d8a62b"
+          "powderCoatedSteel": "#d8a62b",
+          "aluminium": "#c4cfd2",
+          "fanBlade": "#1c2022",
+          "pipework": "#c4402f"
+        },
+        "nacelleWhite": {
+          "powderCoatedSteel": "#dfe2df",
+          "aluminium": "#9ea9ac",
+          "fanBlade": "#2c3134",
+          "pipework": "#5d6a70"
         }
       },
       "stats": {
-        "triangles": 148,
+        "triangles": 2968,
         "sizeM": [
-          0.76,
-          0.75,
-          0.465
+          1.98,
+          1.53,
+          0.506
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
+          "name": "aluminium",
+          "color": "#aab7bb",
+          "parts": [
+            "radiator-core",
+            "core-tube-1",
+            "core-tube-2",
+            "core-tube-3",
+            "core-tube-4",
+            "core-tube-5",
+            "core-tube-6",
+            "core-tube-7",
+            "core-tube-8",
+            "core-tube-9",
+            "core-tube-10",
+            "core-tube-11",
+            "fan-1-guard-ring-1",
+            "fan-1-guard-ring-2",
+            "fan-1-guard-ring-3",
+            "fan-1-guard-ring-4",
+            "fan-1-guard-spoke-1",
+            "fan-1-guard-spoke-2",
+            "fan-1-guard-spoke-3",
+            "fan-1-guard-spoke-4",
+            "fan-2-guard-ring-1",
+            "fan-2-guard-ring-2",
+            "fan-2-guard-ring-3",
+            "fan-2-guard-ring-4",
+            "fan-2-guard-spoke-1",
+            "fan-2-guard-spoke-2",
+            "fan-2-guard-spoke-3",
+            "fan-2-guard-spoke-4"
+          ],
+          "param": "aluminium"
+        },
+        {
           "name": "powderCoatedSteel",
           "color": "#287082",
           "parts": [
-            "core",
-            "foot--260",
-            "foot-260"
+            "frame-left",
+            "frame-right",
+            "frame-top",
+            "frame-bottom",
+            "leg-left-front",
+            "base-plate-left-front",
+            "leg-left-rear",
+            "base-plate-left-rear",
+            "leg-right-front",
+            "base-plate-right-front",
+            "leg-right-rear",
+            "base-plate-right-rear",
+            "fan-1-shroud",
+            "fan-2-shroud",
+            "fan-terminal-box",
+            "inlet-flange",
+            "inlet-end-cap",
+            "outlet-flange",
+            "outlet-end-cap",
+            "bypass-valve"
           ],
           "param": "powderCoatedSteel"
         },
         {
-          "name": "aluminium",
-          "color": "#aab7bb",
+          "name": "fanBlade",
+          "color": "#24292c",
           "parts": [
-            "fan-0",
-            "fan-1",
-            "header-top",
-            "header-bottom"
+            "fan-1-motor",
+            "fan-1-blade-1",
+            "fan-1-blade-2",
+            "fan-1-blade-3",
+            "fan-1-blade-4",
+            "fan-1-blade-5",
+            "fan-1-blade-6",
+            "fan-2-motor",
+            "fan-2-blade-1",
+            "fan-2-blade-2",
+            "fan-2-blade-3",
+            "fan-2-blade-4",
+            "fan-2-blade-5",
+            "fan-2-blade-6",
+            "fan-cable"
           ],
-          "param": "aluminium"
+          "param": "fanBlade"
+        },
+        {
+          "name": "pipework",
+          "color": "#9a5a32",
+          "parts": [
+            "header-top",
+            "header-bottom",
+            "inlet-line",
+            "outlet-line",
+            "thermostatic-bypass"
+          ],
+          "param": "pipework"
         }
       ]
     },
@@ -289228,13 +289595,18 @@
       "id": "transition-piece",
       "kit": "wind-energy",
       "title": "Offshore transition piece",
-      "description": "Offshore tower transition collar with a broad flange, inspection door and two boat-landing rails. Controls: scale and marine steel, galvanized steel, safety paint; weathered and high-visibility presets.",
+      "description": "Yellow offshore transition piece sleeved over a grey monopile stub, with grout skirt, cone and bolted tower flange, a grated ring platform on knee braces with guard rails, davit crane, watertight door, external J-tube and a boat landing of two fendered tubes with an access ladder and rest platform. Material controls: marine steel, transition-piece coating, galvanized steel and fender rubber; weathered, high-visibility and grey-coating presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "wind",
         "energy",
         "renewable",
+        "offshore",
+        "transition piece",
+        "boat landing",
+        "platform",
+        "marine",
         "low poly",
         "scene prop"
       ],
@@ -289242,13 +289614,14 @@
         "wind",
         "energy",
         "industrial",
+        "marine",
         "scene"
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/transition-piece.kcad.ts",
       "preview": "/assets/wind-energy-transition-piece.png",
-      "sourceSha256": "374b30565f84f160d26a5dff31787bb157ca5e86e7d2219fad1ef0f6caa60cc3",
-      "triangleBudget": 350,
+      "sourceSha256": "53b6a54c03e5e07945341bc1297241bb01acf2a805d95544789f337e868e1ffb",
+      "triangleBudget": 4800,
       "params": [
         {
           "name": "scale",
@@ -289262,8 +289635,14 @@
         {
           "name": "marineSteel",
           "type": "color",
-          "default": "#335868",
+          "default": "#3d5866",
           "label": "Marine steel"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#efb532",
+          "label": "Transition-piece coating"
         },
         {
           "name": "galvanizedSteel",
@@ -289272,49 +289651,56 @@
           "label": "Galvanized steel"
         },
         {
-          "name": "safetyPaint",
+          "name": "fenderRubber",
           "type": "color",
-          "default": "#efb532",
-          "label": "Safety paint"
+          "default": "#2a2e30",
+          "label": "Fender rubber"
         }
       ],
       "presets": {
         "weathered": {
-          "marineSteel": "#284551",
-          "galvanizedSteel": "#96a8ab"
+          "marineSteel": "#3a4446",
+          "safetyPaint": "#c99a3a",
+          "galvanizedSteel": "#76858a",
+          "fenderRubber": "#363a3b"
         },
         "highVisibility": {
+          "marineSteel": "#2d4d5c",
           "safetyPaint": "#f7c331",
-          "marineSteel": "#2d4d5c"
+          "galvanizedSteel": "#a9b6b8",
+          "fenderRubber": "#1f2224"
+        },
+        "greyCoating": {
+          "marineSteel": "#3d5866",
+          "safetyPaint": "#9aa3a6",
+          "galvanizedSteel": "#c2c9cb",
+          "fenderRubber": "#d2a12e"
         }
       },
       "stats": {
-        "triangles": 168,
+        "triangles": 3640,
         "sizeM": [
-          0.72,
-          1.18,
-          0.72
+          3.855046,
+          6.77,
+          3.49
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "galvanizedSteel",
-          "color": "#8b9c9e",
-          "parts": [
-            "lower-flange",
-            "top-flange",
-            "boat-rail-left",
-            "boat-rail-right"
-          ],
-          "param": "galvanizedSteel"
-        },
-        {
           "name": "marineSteel",
-          "color": "#335868",
+          "color": "#3d5866",
           "parts": [
-            "body"
+            "monopile-stub",
+            "grout-seal",
+            "davit-hook",
+            "door-frame",
+            "door-leaf",
+            "j-tube",
+            "j-tube-bell-mouth",
+            "j-tube-clamp-1400",
+            "j-tube-clamp-2600"
           ],
           "param": "marineSteel"
         },
@@ -289322,9 +289708,131 @@
           "name": "safetyPaint",
           "color": "#efb532",
           "parts": [
-            "door"
+            "grout-skirt",
+            "cone",
+            "davit-post",
+            "davit-jib",
+            "door-hood",
+            "landing-tube-left",
+            "landing-arm-left-1300",
+            "landing-arm-left-3300",
+            "landing-tube-right",
+            "landing-arm-right-1300",
+            "landing-arm-right-3300"
           ],
           "param": "safetyPaint"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#8b9c9e",
+          "parts": [
+            "tower-flange",
+            "flange-bolt-1",
+            "flange-bolt-2",
+            "flange-bolt-3",
+            "flange-bolt-4",
+            "flange-bolt-5",
+            "flange-bolt-6",
+            "flange-bolt-7",
+            "flange-bolt-8",
+            "flange-bolt-9",
+            "flange-bolt-10",
+            "flange-bolt-11",
+            "flange-bolt-12",
+            "flange-bolt-13",
+            "flange-bolt-14",
+            "flange-bolt-15",
+            "flange-bolt-16",
+            "flange-bolt-17",
+            "flange-bolt-18",
+            "flange-bolt-19",
+            "flange-bolt-20",
+            "flange-bolt-21",
+            "flange-bolt-22",
+            "flange-bolt-23",
+            "flange-bolt-24",
+            "platform-deck",
+            "deck-toe-board",
+            "deck-bearer-1",
+            "knee-brace-1",
+            "deck-bearer-2",
+            "knee-brace-2",
+            "deck-bearer-3",
+            "knee-brace-3",
+            "deck-bearer-4",
+            "knee-brace-4",
+            "deck-bearer-5",
+            "knee-brace-5",
+            "deck-bearer-6",
+            "knee-brace-6",
+            "deck-bearer-7",
+            "knee-brace-7",
+            "deck-bearer-8",
+            "knee-brace-8",
+            "rail-post-1",
+            "rail-post-2",
+            "rail-post-3",
+            "rail-post-4",
+            "rail-post-5",
+            "rail-post-6",
+            "rail-post-7",
+            "rail-post-8",
+            "rail-post-9",
+            "rail-post-10",
+            "rail-post-11",
+            "rail-post-12",
+            "rail-post-13",
+            "rail-post-14",
+            "rail-post-15",
+            "rail-post-16",
+            "rail-post-17",
+            "rail-post-18",
+            "rail-post-19",
+            "rail-post-20",
+            "rail-post-24",
+            "rail-post-25",
+            "rail-post-26",
+            "rail-post-27",
+            "rail-post-28",
+            "hand-rail",
+            "knee-rail",
+            "davit-winch",
+            "davit-wire",
+            "door-handle",
+            "ladder-stile-left",
+            "ladder-cage-hoop-left",
+            "ladder-stile-right",
+            "ladder-cage-hoop-right",
+            "ladder-rung-600",
+            "ladder-rung-900",
+            "ladder-rung-1200",
+            "ladder-rung-1500",
+            "ladder-rung-1800",
+            "ladder-rung-2100",
+            "ladder-rung-2400",
+            "ladder-rung-2700",
+            "ladder-rung-3000",
+            "ladder-rung-3300",
+            "ladder-rung-3600",
+            "ladder-rung-3900",
+            "ladder-rung-4200",
+            "rest-platform",
+            "landing-top-gate"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "fenderRubber",
+          "color": "#2a2e30",
+          "parts": [
+            "landing-fender-left-700",
+            "landing-fender-left-1700",
+            "landing-fender-left-2700",
+            "landing-fender-right-700",
+            "landing-fender-right-1700",
+            "landing-fender-right-2700"
+          ],
+          "param": "fenderRubber"
         }
       ]
     },
