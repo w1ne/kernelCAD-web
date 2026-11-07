@@ -279566,13 +279566,18 @@
       "id": "horizontal-axis-wind-turbine",
       "kit": "wind-energy",
       "title": "Horizontal-axis wind turbine",
-      "description": "Onshore turbine silhouette with tower, box nacelle, hub, three broad blades and foundation. Controls: scale and painted steel, fiberglass composite, stainless steel; weathered and high-visibility presets.",
+      "description": "Onshore three-blade upwind turbine: tapered tubular tower with section flanges, base door and steps on a round concrete foundation; streamlined nacelle with roof cooler, anemometer, wind vane and aviation lights; rounded spinner and three lofted, twisted airfoil blades with warning tip bands. Shape choice: blades running or feathered. Material controls: tower paint, blade and nacelle composite, warning paint, foundation concrete, fittings steel; weathered, highVisibility and unpaintedTips presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "wind",
+        "wind turbine",
+        "HAWT",
+        "onshore",
         "energy",
         "renewable",
+        "rotor",
+        "nacelle",
         "low poly",
         "scene prop"
       ],
@@ -279585,8 +279590,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/horizontal-axis-wind-turbine.kcad.ts",
       "preview": "/assets/wind-energy-horizontal-axis-wind-turbine.png",
-      "sourceSha256": "b3b17037696a21f23e462eeb399755d8e10fd82600459d89e91058e290f0bafa",
-      "triangleBudget": 550,
+      "sourceSha256": "dc413efb593e14ab2baa1b4f1e32b7c34a6ace8c06b77412f7b70344c3c61396",
+      "triangleBudget": 9000,
       "params": [
         {
           "name": "scale",
@@ -279598,71 +279603,149 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
-          "type": "color",
-          "default": "#53727c",
-          "label": "Painted steel"
+          "name": "bladePitch",
+          "type": "choice",
+          "default": "running",
+          "label": "Blade pitch",
+          "choices": [
+            "running",
+            "feathered"
+          ]
         },
         {
-          "name": "fiberglassComposite",
+          "name": "towerPaint",
           "type": "color",
-          "default": "#e7ebe1",
-          "label": "Fiberglass composite"
+          "default": "#dfe3e1",
+          "label": "Tower paint"
         },
         {
-          "name": "stainlessSteel",
+          "name": "composite",
           "type": "color",
-          "default": "#b8c2c5",
-          "label": "Stainless steel"
+          "default": "#f3f4f0",
+          "label": "Blade and nacelle composite"
+        },
+        {
+          "name": "warningPaint",
+          "type": "color",
+          "default": "#c9342c",
+          "label": "Warning paint (tip bands, beacons)"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#9c988e",
+          "label": "Foundation concrete"
+        },
+        {
+          "name": "fittings",
+          "type": "color",
+          "default": "#4b5559",
+          "label": "Fittings steel (door, flanges, mast)"
         }
       ],
       "presets": {
         "weathered": {
-          "paintedSteel": "#415961",
-          "fiberglassComposite": "#f9fef3"
+          "towerPaint": "#c9ccc6",
+          "composite": "#dcdcd2",
+          "warningPaint": "#9d4a40",
+          "concrete": "#86827a",
+          "fittings": "#5b605e"
         },
         "highVisibility": {
-          "fiberglassComposite": "#e48d35"
+          "towerPaint": "#eef0ee",
+          "composite": "#ffffff",
+          "warningPaint": "#ef6a1c",
+          "concrete": "#a8a59c",
+          "fittings": "#353c40"
+        },
+        "unpaintedTips": {
+          "warningPaint": "#f3f4f0"
         }
       },
       "stats": {
-        "triangles": 216,
+        "triangles": 2006,
         "sizeM": [
-          2.06282,
-          3.78,
-          0.43
+          2.806552,
+          5.16,
+          1.127
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#53727c",
+          "name": "concrete",
+          "color": "#9c988e",
+          "parts": [
+            "foundation",
+            "step-0",
+            "step-1",
+            "step-2"
+          ],
+          "param": "concrete"
+        },
+        {
+          "name": "towerPaint",
+          "color": "#dfe3e1",
           "parts": [
             "tower",
+            "cooler-fin-0",
+            "cooler-fin-1",
+            "cooler-fin-2",
+            "cooler-fin-3",
+            "cooler-fin-4",
+            "cooler-fin-5"
+          ],
+          "param": "towerPaint"
+        },
+        {
+          "name": "fittings",
+          "color": "#4b5559",
+          "parts": [
+            "base-flange",
+            "section-flange-1400",
+            "section-flange-2500",
+            "door",
+            "yaw-ring",
+            "cooler-rail-3655",
+            "cooler-rail-3800",
+            "met-mast",
+            "met-arm",
+            "anemometer-hub",
+            "anemometer-cup-0",
+            "anemometer-cup-120",
+            "anemometer-cup-240",
+            "wind-vane",
+            "main-shaft",
+            "blade-root-ring-0",
+            "blade-root-ring-120",
+            "blade-root-ring-240"
+          ],
+          "param": "fittings"
+        },
+        {
+          "name": "composite",
+          "color": "#f3f4f0",
+          "parts": [
             "nacelle",
-            "base-flange"
+            "spinner",
+            "blade-0",
+            "blade-120",
+            "blade-240"
           ],
-          "param": "paintedSteel"
+          "param": "composite"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b8c2c5",
+          "name": "warningPaint",
+          "color": "#c9342c",
           "parts": [
-            "hub"
+            "aviation-light--120",
+            "aviation-light-120",
+            "blade-tip-0",
+            "blade-tip-120",
+            "blade-tip-240"
           ],
-          "param": "stainlessSteel"
-        },
-        {
-          "name": "fiberglassComposite",
-          "color": "#e7ebe1",
-          "parts": [
-            "blade-up",
-            "blade-left",
-            "blade-right"
-          ],
-          "param": "fiberglassComposite"
+          "param": "warningPaint"
         }
       ]
     },
@@ -280162,11 +280245,16 @@
       "id": "offshore-wind-turbine",
       "kit": "wind-energy",
       "title": "Offshore wind turbine",
-      "description": "Offshore turbine scene prop with monopile, transition collar, tower, nacelle and rotor. Controls: scale and painted steel, fiberglass composite, marine steel; weathered and high-visibility presets.",
+      "description": "Offshore three-blade turbine on a monopile: dark marine-steel pile with cable J-tubes, yellow transition piece with railed access platform, crane davit and boat landing with fender tubes and ladder, tall tapered white tower, long nacelle with roof cooler and aviation beacons, rounded spinner and three lofted, twisted airfoil blades with warning tip bands. Shape choice: blades running or feathered. Material controls: tower paint, blade and nacelle composite, transition-piece safety yellow, marine steel, warning paint; weathered, highVisibility and unpaintedTips presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "wind",
+        "wind turbine",
+        "offshore",
+        "monopile",
+        "transition piece",
+        "boat landing",
         "energy",
         "renewable",
         "low poly",
@@ -280176,13 +280264,14 @@
         "wind",
         "energy",
         "industrial",
-        "scene"
+        "scene",
+        "marine"
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/offshore-wind-turbine.kcad.ts",
       "preview": "/assets/wind-energy-offshore-wind-turbine.png",
-      "sourceSha256": "1032484515f245b8785cb69749b130da5f3690455a0d87f811de8e8dd5e9e80d",
-      "triangleBudget": 650,
+      "sourceSha256": "b969b5cf20b3726333c88f9b05e772f394bade1153596e936249bdff58328f2f",
+      "triangleBudget": 9000,
       "params": [
         {
           "name": "scale",
@@ -280194,39 +280283,71 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
-          "type": "color",
-          "default": "#53727c",
-          "label": "Painted steel"
+          "name": "bladePitch",
+          "type": "choice",
+          "default": "running",
+          "label": "Blade pitch",
+          "choices": [
+            "running",
+            "feathered"
+          ]
         },
         {
-          "name": "fiberglassComposite",
+          "name": "towerPaint",
           "type": "color",
-          "default": "#e7ebe1",
-          "label": "Fiberglass composite"
+          "default": "#e2e5e3",
+          "label": "Tower paint"
+        },
+        {
+          "name": "composite",
+          "type": "color",
+          "default": "#f3f4f0",
+          "label": "Blade and nacelle composite"
+        },
+        {
+          "name": "safetyYellow",
+          "type": "color",
+          "default": "#f1c21b",
+          "label": "Transition piece safety yellow"
         },
         {
           "name": "marineSteel",
           "type": "color",
-          "default": "#335868",
-          "label": "Marine steel"
+          "default": "#2f3c43",
+          "label": "Marine steel (pile, landing, fittings)"
+        },
+        {
+          "name": "warningPaint",
+          "type": "color",
+          "default": "#c9342c",
+          "label": "Warning paint (tip bands, beacons)"
         }
       ],
       "presets": {
         "weathered": {
-          "paintedSteel": "#415961",
-          "fiberglassComposite": "#f9fef3"
+          "towerPaint": "#c8ccc7",
+          "composite": "#d9dad0",
+          "safetyYellow": "#c99f2a",
+          "marineSteel": "#4a4136",
+          "warningPaint": "#9d4a40"
         },
         "highVisibility": {
-          "fiberglassComposite": "#e48d35"
+          "towerPaint": "#f0f2f0",
+          "composite": "#ffffff",
+          "safetyYellow": "#ffd21a",
+          "marineSteel": "#24313a",
+          "warningPaint": "#ef6a1c"
+        },
+        "unpaintedTips": {
+          "warningPaint": "#f3f4f0"
         }
       },
       "stats": {
-        "triangles": 260,
+        "triangles": 3224,
         "sizeM": [
-          2.75764,
-          5.09,
-          0.53
+          3.415692,
+          6.638052,
+          1.418
         ],
         "minUpM": 0,
         "materials": 1
@@ -280234,32 +280355,144 @@
       "palette": [
         {
           "name": "marineSteel",
-          "color": "#335868",
+          "color": "#2f3c43",
           "parts": [
             "monopile",
-            "transition"
+            "scour-protection",
+            "j-tube-150",
+            "j-tube-bell-150",
+            "j-tube-210",
+            "j-tube-bell-210",
+            "platform-deck",
+            "davit-hook",
+            "fender-arm--110-420",
+            "fender-arm--110-1220",
+            "fender-arm-110-420",
+            "fender-arm-110-1220",
+            "ladder-rail--45",
+            "ladder-rail-45",
+            "ladder-rung-0",
+            "ladder-rung-1",
+            "ladder-rung-2",
+            "ladder-rung-3",
+            "ladder-rung-4",
+            "ladder-rung-5",
+            "ladder-rung-6",
+            "ladder-rung-7",
+            "ladder-rung-8",
+            "tower-door",
+            "section-flange",
+            "yaw-ring",
+            "cooler-rail-4810",
+            "cooler-rail-4980",
+            "helihoist-deck",
+            "met-mast",
+            "met-arm",
+            "main-shaft",
+            "blade-root-ring-20",
+            "blade-root-ring-140",
+            "blade-root-ring-260"
           ],
           "param": "marineSteel"
         },
         {
-          "name": "paintedSteel",
-          "color": "#53727c",
+          "name": "safetyYellow",
+          "color": "#f1c21b",
           "parts": [
-            "tower",
-            "nacelle",
-            "hub"
+            "transition-piece",
+            "splash-band",
+            "platform-bracket-0",
+            "rail-post-0",
+            "platform-bracket-1",
+            "rail-post-1",
+            "platform-bracket-2",
+            "rail-post-2",
+            "platform-bracket-3",
+            "rail-post-3",
+            "platform-bracket-4",
+            "rail-post-4",
+            "platform-bracket-5",
+            "rail-post-5",
+            "platform-bracket-6",
+            "rail-post-6",
+            "platform-bracket-7",
+            "rail-post-7",
+            "platform-bracket-8",
+            "rail-post-8",
+            "platform-bracket-9",
+            "platform-bracket-10",
+            "rail-post-10",
+            "platform-bracket-11",
+            "rail-post-11",
+            "rail-1440-0",
+            "rail-1440-1",
+            "rail-1440-2",
+            "rail-1440-3",
+            "rail-1440-4",
+            "rail-1440-5",
+            "rail-1440-6",
+            "rail-1440-7",
+            "rail-1440-10",
+            "rail-1440-11",
+            "rail-1550-0",
+            "rail-1550-1",
+            "rail-1550-2",
+            "rail-1550-3",
+            "rail-1550-4",
+            "rail-1550-5",
+            "rail-1550-6",
+            "rail-1550-7",
+            "rail-1550-10",
+            "rail-1550-11",
+            "davit-post",
+            "davit-jib",
+            "fender-tube--110",
+            "fender-tube-110",
+            "helihoist-post-0",
+            "helihoist-post-1",
+            "helihoist-post-2",
+            "helihoist-post-3"
           ],
-          "param": "paintedSteel"
+          "param": "safetyYellow"
         },
         {
-          "name": "fiberglassComposite",
-          "color": "#e7ebe1",
+          "name": "towerPaint",
+          "color": "#e2e5e3",
           "parts": [
-            "blade-up",
-            "blade-left",
-            "blade-right"
+            "tower",
+            "cooler-fin-0",
+            "cooler-fin-1",
+            "cooler-fin-2",
+            "cooler-fin-3",
+            "cooler-fin-4",
+            "cooler-fin-5",
+            "cooler-fin-6"
           ],
-          "param": "fiberglassComposite"
+          "param": "towerPaint"
+        },
+        {
+          "name": "composite",
+          "color": "#f3f4f0",
+          "parts": [
+            "nacelle",
+            "spinner",
+            "blade-20",
+            "blade-140",
+            "blade-260"
+          ],
+          "param": "composite"
+        },
+        {
+          "name": "warningPaint",
+          "color": "#c9342c",
+          "parts": [
+            "aviation-light--150",
+            "aviation-light-150",
+            "blade-tip-20",
+            "blade-tip-140",
+            "blade-tip-260"
+          ],
+          "param": "warningPaint"
         }
       ]
     },
@@ -282096,11 +282329,16 @@
       "id": "turbine-nacelle-shell",
       "kit": "wind-energy",
       "title": "Turbine nacelle shell",
-      "description": "Long nacelle housing with raised roof, nose cap, rear service panel and support saddle. Controls: scale and painted steel, cast steel; weathered and high-visibility presets.",
+      "description": "Streamlined GRP nacelle cover on a transport frame: sloping rounded nose with main-shaft opening and bearing housing, bolted panel seams, roof service hatch with handrails, side ventilation louvres, rear roof cooler with fins and aviation lights, steel transport skids and saddles. Material controls: shell composite, frame and fittings steel, cooler aluminium, warning paint and transport-frame paint; weathered, highVisibility and darkGrey presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "wind",
+        "wind turbine",
+        "nacelle",
+        "housing",
+        "composite",
+        "transport",
         "energy",
         "renewable",
         "low poly",
@@ -282115,8 +282353,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/turbine-nacelle-shell.kcad.ts",
       "preview": "/assets/wind-energy-turbine-nacelle-shell.png",
-      "sourceSha256": "372e8719abb7f1bb9d682a9d6317dc4f4164db560f6382f63c64b973d386ee57",
-      "triangleBudget": 300,
+      "sourceSha256": "5ab54055ddcecdd993544a1a4cb291bbbcfba74f63fde0488c5876caa97afd23",
+      "triangleBudget": 4000,
       "params": [
         {
           "name": "scale",
@@ -282128,56 +282366,147 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "composite",
           "type": "color",
-          "default": "#53727c",
-          "label": "Painted steel"
+          "default": "#eef0ec",
+          "label": "Shell composite (GRP)"
         },
         {
-          "name": "castSteel",
+          "name": "fittings",
           "type": "color",
-          "default": "#59666b",
-          "label": "Cast steel"
+          "default": "#4b5559",
+          "label": "Frame and fittings steel"
+        },
+        {
+          "name": "cooler",
+          "type": "color",
+          "default": "#a9b1b4",
+          "label": "Cooler aluminium"
+        },
+        {
+          "name": "warningPaint",
+          "type": "color",
+          "default": "#c9342c",
+          "label": "Warning paint (aviation lights)"
+        },
+        {
+          "name": "transportPaint",
+          "type": "color",
+          "default": "#e2a823",
+          "label": "Transport frame paint"
         }
       ],
       "presets": {
         "weathered": {
-          "paintedSteel": "#415961",
-          "castSteel": "#606e74"
+          "composite": "#d6d6cc",
+          "fittings": "#5b5f5c",
+          "cooler": "#8c9192",
+          "warningPaint": "#9d4a40",
+          "transportPaint": "#b58a3c"
         },
         "highVisibility": {
-          "paintedSteel": "#d8a62b"
+          "composite": "#ffffff",
+          "fittings": "#353c40",
+          "cooler": "#c3cacc",
+          "warningPaint": "#ef6a1c",
+          "transportPaint": "#f2c21b"
+        },
+        "darkGrey": {
+          "composite": "#5d6467",
+          "cooler": "#7d8588"
         }
       },
       "stats": {
-        "triangles": 92,
+        "triangles": 1180,
         "sizeM": [
-          1.2325,
-          0.305,
-          0.5
+          1.344,
+          0.796,
+          0.52
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#53727c",
+          "name": "composite",
+          "color": "#eef0ec",
           "parts": [
             "shell",
-            "roof",
-            "nose",
-            "rear-panel"
+            "seam--230",
+            "seam-230",
+            "roof-hatch"
           ],
-          "param": "paintedSteel"
+          "param": "composite"
         },
         {
-          "name": "castSteel",
-          "color": "#59666b",
+          "name": "fittings",
+          "color": "#4b5559",
           "parts": [
-            "saddle"
+            "shaft-opening-rim",
+            "bearing-housing",
+            "hatch-hinge",
+            "louvre--1-0",
+            "louvre--1-1",
+            "louvre--1-2",
+            "louvre--1-3",
+            "louvre--1-4",
+            "louvre-1-0",
+            "louvre-1-1",
+            "louvre-1-2",
+            "louvre-1-3",
+            "louvre-1-4",
+            "cooler-rail-575",
+            "cooler-rail-745",
+            "saddle--380",
+            "saddle-380",
+            "lifting-eye--620--190",
+            "lifting-eye--620-190",
+            "lifting-eye-660--190",
+            "lifting-eye-660-190"
           ],
-          "param": "castSteel"
+          "param": "fittings"
+        },
+        {
+          "name": "transportPaint",
+          "color": "#e2a823",
+          "parts": [
+            "handrail--150",
+            "handrail-post-130--150",
+            "handrail-post-280--150",
+            "handrail-post-430--150",
+            "handrail-150",
+            "handrail-post-130-150",
+            "handrail-post-280-150",
+            "handrail-post-430-150",
+            "skid--190",
+            "skid-190",
+            "cross-beam--380",
+            "cross-beam-380"
+          ],
+          "param": "transportPaint"
+        },
+        {
+          "name": "cooler",
+          "color": "#a9b1b4",
+          "parts": [
+            "cooler-fin-0",
+            "cooler-fin-1",
+            "cooler-fin-2",
+            "cooler-fin-3",
+            "cooler-fin-4",
+            "cooler-fin-5",
+            "cooler-fin-6"
+          ],
+          "param": "cooler"
+        },
+        {
+          "name": "warningPaint",
+          "color": "#c9342c",
+          "parts": [
+            "aviation-light--130",
+            "aviation-light-130"
+          ],
+          "param": "warningPaint"
         }
       ]
     },
@@ -282286,11 +282615,16 @@
       "id": "turbine-rotor-hub",
       "kit": "wind-energy",
       "title": "Turbine rotor hub",
-      "description": "Three-arm rotor hub with central barrel, front cap and three blade-root sockets. Controls: scale and painted steel, cast steel; weathered and high-visibility presets.",
+      "description": "Bare three-blade rotor hub on a shop cradle: turned cast-iron hub body, three radial blade bosses with two-ring pitch bearings, blade studs and pitch-drive motors, rear main-shaft flange with bolts and shaft stub, nose spinner ring, steel cradle with timber pads. Material controls: hub casting paint, bearing steel, fasteners, cradle paint and timber; weathered, highVisibility and primer presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "wind",
+        "wind turbine",
+        "rotor hub",
+        "hub",
+        "pitch bearing",
+        "casting",
         "energy",
         "renewable",
         "low poly",
@@ -282305,8 +282639,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/turbine-rotor-hub.kcad.ts",
       "preview": "/assets/wind-energy-turbine-rotor-hub.png",
-      "sourceSha256": "4b9d581e7e01c1277f32610c30a5a84ec540f3efc1c78b2104c8c8264b33176c",
-      "triangleBudget": 550,
+      "sourceSha256": "921d9f2e30f229375cd65e7e151e6595403a23d3bb09bbb3a37e3493030ba694",
+      "triangleBudget": 6000,
       "params": [
         {
           "name": "scale",
@@ -282318,59 +282652,193 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "casting",
           "type": "color",
-          "default": "#53727c",
-          "label": "Painted steel"
+          "default": "#d3d8d2",
+          "label": "Hub casting paint"
         },
         {
-          "name": "castSteel",
+          "name": "bearingSteel",
           "type": "color",
-          "default": "#59666b",
-          "label": "Cast steel"
+          "default": "#5f696e",
+          "label": "Pitch bearing and shaft steel"
+        },
+        {
+          "name": "fasteners",
+          "type": "color",
+          "default": "#b7bcbd",
+          "label": "Studs and bolts (zinc)"
+        },
+        {
+          "name": "cradlePaint",
+          "type": "color",
+          "default": "#2f6fb0",
+          "label": "Cradle paint"
+        },
+        {
+          "name": "timber",
+          "type": "color",
+          "default": "#a77c4f",
+          "label": "Cradle timber pads"
         }
       ],
       "presets": {
         "weathered": {
-          "paintedSteel": "#415961",
-          "castSteel": "#606e74"
+          "casting": "#b9bcb3",
+          "bearingSteel": "#6a645c",
+          "fasteners": "#8d8d86",
+          "cradlePaint": "#3d5c78",
+          "timber": "#7f664c"
         },
         "highVisibility": {
-          "paintedSteel": "#d8a62b"
+          "casting": "#f3f4f0",
+          "bearingSteel": "#3c464b",
+          "fasteners": "#d8dcdc",
+          "cradlePaint": "#f0b81c",
+          "timber": "#b88d5a"
+        },
+        "primer": {
+          "casting": "#8a6e5c",
+          "bearingSteel": "#55606a"
         }
       },
       "stats": {
-        "triangles": 256,
+        "triangles": 4062,
         "sizeM": [
-          1.35,
-          0.79,
-          0.49
+          0.828213,
+          1.006,
+          0.81
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "castSteel",
-          "color": "#59666b",
+          "name": "casting",
+          "color": "#d3d8d2",
           "parts": [
-            "hub",
-            "root-0",
-            "root-1",
-            "root-2"
+            "hub-body",
+            "nose-hatch",
+            "boss-0",
+            "pitch-motor-0",
+            "boss-120",
+            "pitch-motor-120",
+            "boss-240",
+            "pitch-motor-240"
           ],
-          "param": "castSteel"
+          "param": "casting"
         },
         {
-          "name": "paintedSteel",
-          "color": "#53727c",
+          "name": "bearingSteel",
+          "color": "#5f696e",
           "parts": [
-            "nose",
-            "arm-up",
-            "arm-left",
-            "arm-right"
+            "shaft-flange",
+            "main-shaft",
+            "spinner-ring",
+            "bearing-outer-0",
+            "bearing-bore-0",
+            "pitch-gearbox-0",
+            "pitch-motor-cap-0",
+            "bearing-outer-120",
+            "bearing-bore-120",
+            "pitch-gearbox-120",
+            "pitch-motor-cap-120",
+            "bearing-outer-240",
+            "bearing-bore-240",
+            "pitch-gearbox-240",
+            "pitch-motor-cap-240"
           ],
-          "param": "paintedSteel"
+          "param": "bearingSteel"
+        },
+        {
+          "name": "fasteners",
+          "color": "#b7bcbd",
+          "parts": [
+            "shaft-bolt-0",
+            "shaft-bolt-1",
+            "shaft-bolt-2",
+            "shaft-bolt-3",
+            "shaft-bolt-4",
+            "shaft-bolt-5",
+            "shaft-bolt-6",
+            "shaft-bolt-7",
+            "shaft-bolt-8",
+            "shaft-bolt-9",
+            "shaft-bolt-10",
+            "shaft-bolt-11",
+            "shaft-bolt-12",
+            "shaft-bolt-13",
+            "shaft-bolt-14",
+            "shaft-bolt-15",
+            "bearing-inner-0",
+            "stud-0-0",
+            "stud-0-1",
+            "stud-0-2",
+            "stud-0-3",
+            "stud-0-4",
+            "stud-0-5",
+            "stud-0-6",
+            "stud-0-7",
+            "stud-0-8",
+            "stud-0-9",
+            "stud-0-10",
+            "stud-0-11",
+            "bearing-inner-120",
+            "stud-120-0",
+            "stud-120-1",
+            "stud-120-2",
+            "stud-120-3",
+            "stud-120-4",
+            "stud-120-5",
+            "stud-120-6",
+            "stud-120-7",
+            "stud-120-8",
+            "stud-120-9",
+            "stud-120-10",
+            "stud-120-11",
+            "bearing-inner-240",
+            "stud-240-0",
+            "stud-240-1",
+            "stud-240-2",
+            "stud-240-3",
+            "stud-240-4",
+            "stud-240-5",
+            "stud-240-6",
+            "stud-240-7",
+            "stud-240-8",
+            "stud-240-9",
+            "stud-240-10",
+            "stud-240-11"
+          ],
+          "param": "fasteners"
+        },
+        {
+          "name": "cradlePaint",
+          "color": "#2f6fb0",
+          "parts": [
+            "cradle-rail-left",
+            "cradle-rail-right",
+            "cradle-cross-front",
+            "cradle-cross-rear",
+            "cradle-beam--150",
+            "cradle-post--110--150",
+            "cradle-post-110--150",
+            "cradle-beam-150",
+            "cradle-post--110-150",
+            "cradle-post-110-150"
+          ],
+          "param": "cradlePaint"
+        },
+        {
+          "name": "timber",
+          "color": "#a77c4f",
+          "parts": [
+            "timber-pad--110--150",
+            "timber-pad-110--150",
+            "timber-pad--110-150",
+            "timber-pad-110-150"
+          ],
+          "param": "timber"
         }
       ]
     },
@@ -283001,11 +283469,16 @@
       "id": "wind-turbine-blade",
       "kit": "wind-energy",
       "title": "Wind turbine blade",
-      "description": "Tapered-look turbine blade with a broad root block and slender tip section. Controls: scale and fiberglass composite, stainless steel; weathered and high-visibility presets.",
+      "description": "Single rotor blade standing on its bolted root: lofted, twisted airfoil from a round root through a wide shoulder to a slim tip, root flange with T-bolt studs and pitch mark, leading-edge protection strip, lightning receptor and warning tip band, on a steel root stand. Material controls: blade composite, leading-edge tape, warning paint, root steel and stand paint; weathered, highVisibility and unpaintedTip presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "wind",
+        "wind turbine",
+        "blade",
+        "rotor blade",
+        "airfoil",
+        "composite",
         "energy",
         "renewable",
         "low poly",
@@ -283020,8 +283493,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/wind-energy/wind-turbine-blade.kcad.ts",
       "preview": "/assets/wind-energy-wind-turbine-blade.png",
-      "sourceSha256": "33a229df0d44858a8df70ece25e0c44261a8a7f580cd12ff712430429ba51693",
-      "triangleBudget": 300,
+      "sourceSha256": "ffa8c4c2af18da48f24a1d2d94c93584d7499182f62c341207c298e6b828084c",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -283033,53 +283506,128 @@
           "step": 0.05
         },
         {
-          "name": "fiberglassComposite",
+          "name": "composite",
           "type": "color",
-          "default": "#e7ebe1",
-          "label": "Fiberglass composite"
+          "default": "#f1f2ee",
+          "label": "Blade composite"
         },
         {
-          "name": "stainlessSteel",
+          "name": "edgeTape",
           "type": "color",
-          "default": "#b8c2c5",
-          "label": "Stainless steel"
+          "default": "#b9bdb8",
+          "label": "Leading-edge protection tape"
+        },
+        {
+          "name": "warningPaint",
+          "type": "color",
+          "default": "#c9342c",
+          "label": "Warning paint (tip band, pitch mark)"
+        },
+        {
+          "name": "rootSteel",
+          "type": "color",
+          "default": "#5d676b",
+          "label": "Root flange and studs steel"
+        },
+        {
+          "name": "standPaint",
+          "type": "color",
+          "default": "#e0a526",
+          "label": "Root stand paint"
         }
       ],
       "presets": {
         "weathered": {
-          "fiberglassComposite": "#b4b7b0",
-          "stainlessSteel": "#c7d2d5"
+          "composite": "#d9d8cf",
+          "edgeTape": "#8f918b",
+          "warningPaint": "#9b4c42",
+          "rootSteel": "#6b6a62",
+          "standPaint": "#b48a3a"
         },
         "highVisibility": {
-          "fiberglassComposite": "#e48d35"
+          "composite": "#ffffff",
+          "edgeTape": "#d2d6d2",
+          "warningPaint": "#ef6a1c",
+          "rootSteel": "#384146",
+          "standPaint": "#f2c21b"
+        },
+        "unpaintedTip": {
+          "warningPaint": "#f1f2ee"
         }
       },
       "stats": {
-        "triangles": 40,
+        "triangles": 1138,
         "sizeM": [
-          0.3,
-          2.06,
-          0.205
+          0.444762,
+          2.1,
+          0.4
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "fiberglassComposite",
-          "color": "#e7ebe1",
+          "name": "composite",
+          "color": "#f1f2ee",
           "parts": [
             "blade"
           ],
-          "param": "fiberglassComposite"
+          "param": "composite"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b8c2c5",
+          "name": "warningPaint",
+          "color": "#c9342c",
           "parts": [
-            "root-ring"
+            "tip-band",
+            "pitch-mark"
           ],
-          "param": "stainlessSteel"
+          "param": "warningPaint"
+        },
+        {
+          "name": "edgeTape",
+          "color": "#b9bdb8",
+          "parts": [
+            "leading-edge-tape"
+          ],
+          "param": "edgeTape"
+        },
+        {
+          "name": "rootSteel",
+          "color": "#5d676b",
+          "parts": [
+            "lightning-receptor",
+            "root-flange",
+            "stud-0",
+            "stud-1",
+            "stud-2",
+            "stud-3",
+            "stud-4",
+            "stud-5",
+            "stud-6",
+            "stud-7",
+            "stud-8",
+            "stud-9",
+            "stud-10",
+            "stud-11",
+            "stud-12",
+            "stud-13"
+          ],
+          "param": "rootSteel"
+        },
+        {
+          "name": "standPaint",
+          "color": "#e0a526",
+          "parts": [
+            "stand-seat",
+            "stand-leg--1--1",
+            "stand-leg-1--1",
+            "stand-leg-1-1",
+            "stand-leg--1-1",
+            "stand-base",
+            "stand-seat-web-x",
+            "stand-seat-web-y"
+          ],
+          "param": "standPaint"
         }
       ]
     }
