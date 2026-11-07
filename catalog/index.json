@@ -108901,7 +108901,7 @@
     {
       "id": "substation-cable-ladder-section",
       "kit": "grid-substation",
-      "title": "Cable ladder section",
+      "title": "Substation cable ladder section",
       "description": "Open cable ladder with twin stringers, evenly spaced rungs, and support feet. Material controls: galvanized steel, stainless steel; finish presets: weathered and maintenance.",
       "category": "prop",
       "origin": "base",
@@ -108921,7 +108921,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-cable-ladder-section.kcad.ts",
       "preview": "/assets/grid-substation-substation-cable-ladder-section.png",
-      "sourceSha256": "434b4b9b6d06eee567f6a45ae05c941ca48bbd7e7e6fa79e1f2dcde0b1a7b032",
+      "sourceSha256": "ec81b93850372ca97602836e9dfd9a1ef05904a05f35b5cbaa8afd34830eace1",
       "triangleBudget": 1800,
       "params": [
         {

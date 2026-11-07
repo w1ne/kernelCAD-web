@@ -1,8 +1,8 @@
-// Cable ladder section: Open cable ladder with twin stringers, evenly spaced rungs, and support feet. Low-poly visualization geometry in millimetres, Z up.
+// Substation cable ladder section: Open cable ladder with twin stringers, evenly spaced rungs, and support feet. Low-poly visualization geometry in millimetres, Z up.
 meta({
   name: "substation-cable-ladder-section",
   license: "CC0-1.0",
-  title: "Cable ladder section",
+  title: "Substation cable ladder section",
   description: "Open cable ladder with twin stringers, evenly spaced rungs, and support feet. Material controls: galvanized steel, stainless steel; finish presets: weathered and maintenance.",
   tags: ["grid substation", "electrical infrastructure", "utility yard", "low poly", "CC0", "cable and grounding"],
   kit: "grid-substation",
