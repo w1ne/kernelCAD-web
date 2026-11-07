@@ -1,0 +1,57 @@
+  RICH   airfield                     40/40   colours/asset=3.55
+  RICH   alpine-expedition            50/50   colours/asset=2.86
+  RICH   amusement-park               70/70   colours/asset=3.03
+  RICH   apiary                       50/50   colours/asset=2.48
+  RICH   archaeology-fieldwork        50/50   colours/asset=2.48
+  RICH   beverage-bottling-line       50/50   colours/asset=2.74
+  RICH   characters                   35/35   colours/asset=4.74
+  MIXED  city-street                  61/65   colours/asset=3.09
+  RICH   construction-equipment       60/60   colours/asset=3.70
+  RICH   containers                   12/12   colours/asset=3.92
+  RICH   data-center-infrastructure   50/50   colours/asset=2.42
+  RICH   electronics                  12/12   colours/asset=3.92
+  RICH   ev-charging-infrastructure   50/50   colours/asset=3.18
+  RICH   farm-machinery               60/60   colours/asset=3.72
+  RICH   fire-rescue                  60/60   colours/asset=4.18
+  RICH   fire-station                 70/70   colours/asset=3.29
+  RICH   food-kitchen                 12/12   colours/asset=4.00
+  RICH   garden                       40/40   colours/asset=2.75
+  RICH   grid-substation              80/80   colours/asset=2.99
+  RICH   hydroponics                  52/52   colours/asset=2.92
+  RICH   industrial-plant             60/60   colours/asset=2.27
+  RICH   interior                     72/72   colours/asset=3.24
+  RICH   lab-infrastructure           60/60   colours/asset=3.22
+  RICH   lighting                     12/12   colours/asset=3.58
+  RICH   marine                       40/40   colours/asset=3.05
+  RICH   medical                      40/40   colours/asset=2.00
+  RICH   mining                       50/50   colours/asset=2.88
+  RICH   music                        40/40   colours/asset=3.12
+  MIXED  nature                       63/66   colours/asset=2.62
+  THIN   office                        0/40   colours/asset=1.00
+  MIXED  outdoor-gear                  1/12   colours/asset=2.92
+  THIN   photo-video-studio            0/40   colours/asset=1.00
+  RICH   postal-logistics             52/52   colours/asset=3.19
+  MIXED  props                        44/45   colours/asset=3.33
+  RICH   railway                      40/40   colours/asset=3.30
+  RICH   recycling-facility          153/153  colours/asset=2.51
+  RICH   retail-store                 48/48   colours/asset=3.00
+  RICH   shipyard                     70/70   colours/asset=2.54
+  THIN   solar-energy                  0/40   colours/asset=1.00
+  RICH   space-exploration            52/52   colours/asset=2.33
+  RICH   sports                       40/40   colours/asset=2.88
+  RICH   standard-components          50/50   colours/asset=2.20
+  RICH   telecom-infrastructure       56/56   colours/asset=2.55
+  RICH   terrain                      30/30   colours/asset=4.17
+  RICH   theatre-production           52/52   colours/asset=3.10
+  RICH   tools-equipment              12/12   colours/asset=3.33
+  RICH   vet-clinic                   50/50   colours/asset=3.92
+  RICH   water-treatment              50/50   colours/asset=2.78
+  RICH   wind-energy                  50/50   colours/asset=2.34
+
+  2251/2390 assets pass (42 rich kits, 3 thin kits)
+  139 thin assets = 6% of the catalog
+
+  worst 3:
+    1c 0p 1g  catalog/kits/photo-video-studio/backdrop-frame.kcad.ts
+    1c 0p 1g  catalog/kits/photo-video-studio/camera-cage.kcad.ts
+    1c 0p 1g  catalog/kits/photo-video-studio/camera-slider.kcad.ts

@@ -1,0 +1,24 @@
+{
+  "browserEndpoint": "http://127.0.0.1:9223",
+  "attachedToExistingChrome": true,
+  "launchedBrowser": false,
+  "temporaryPageClosed": true,
+  "pageTitles": [
+    "Low-poly 3D model catalog (CC0) | kernelCAD",
+    "Main power transformer · Grid Substation · kernelCAD",
+    "Scale variant · local catalog evidence"
+  ],
+  "searchQuery": "grid substation",
+  "filteredAssetCount": 80,
+  "detailHasScaleAndColorParameters": true,
+  "assetDetailCaptureZoom": 0.72,
+  "assetDetailCaptureScrollPixels": 96,
+  "capturedScreenshots": [
+    "01-catalog-search.png",
+    "02-asset-detail.png",
+    "03-scale-variant.png"
+  ],
+  "localPageBase": "http://127.0.0.1:8766",
+  "idleTimeoutSeconds": 45,
+  "fixedLifetimeSeconds": 160
+}

@@ -1,0 +1,10 @@
+EXIT CODE: 0
+{
+  "status": "passed",
+  "pagesChecked": 3,
+  "assets": [
+    "towable-light-tower",
+    "ride-on-power-trowel",
+    "concrete-batch-plant"
+  ]
+}

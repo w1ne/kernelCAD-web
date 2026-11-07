@@ -1,0 +1,25 @@
+{
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-props-pages-20261106",
+  "outputRoot": "/tmp/kernelcad-props-pages-20261106/catalog",
+  "workspacePages": 2390,
+  "assetsChecked": 1,
+  "hubBuilt": true,
+  "deployed": false,
+  "pages": [
+    {
+      "id": "sandbags",
+      "path": "/tmp/kernelcad-props-pages-20261106/catalog/props/sandbags/index.html",
+      "materialLabels": [
+        "Woven canvas",
+        "Alternate canvas",
+        "Stitching thread"
+      ],
+      "presets": [
+        "floodControl",
+        "military",
+        "white"
+      ],
+      "previewCopied": true
+    }
+  ]
+}

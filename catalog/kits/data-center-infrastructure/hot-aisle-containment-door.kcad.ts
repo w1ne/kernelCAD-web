@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: CC0-1.0
-// Original generic data-center scene prop, millimetres, Z up, base at z = 0.
+// Hot-aisle containment door: Aisle-end door assembly with uprights, clear-panel frame, and pull handle.
 
 meta({
   name: "hot-aisle-containment-door",
   license: 'CC0-1.0',
   title: "Hot-aisle containment door",
-  description: "Aisle-end door assembly with uprights, clear-panel frame, and pull handle. Knobs: overall scale and asset color.",
-  tags: ['data center', 'critical infrastructure', 'IT equipment', 'power', 'cooling', 'low poly', 'scene prop'],
+  description: "Aisle-end door assembly with uprights, clear-panel frame, and pull handle. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
+  tags: ['data center', 'critical infrastructure', 'IT equipment', 'power', 'cooling', 'scene prop'],
   kit: 'data-center-infrastructure',
   category: 'prop',
   origin: 'base',
@@ -15,18 +15,31 @@ meta({
 });
 
 const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });
-const color = param('color', "#78858a", { label: 'Asset color' });
-const baseZ=0;
+const steel = param('steel', '#4f7485', { label: 'Painted steel' });
+const polymer = param('polymer', '#c99b35', { label: 'Engineering polymer' });
+
+presets({
+  facilityStandard: {
+    steel: '#4f7485',
+    polymer: '#c99b35',
+  },
+  highVisibility: {
+    steel: '#d99b22',
+    polymer: '#263e48',
+  },
+});
+
+const baseZ = 0;
 const b=(x:number,y:number,z:number,w:number,d:number,h:number)=>box(w,d,h,true).translate(x,y,z-baseZ+h/2).scale(scale);
 const c=(x:number,y:number,z:number,h:number,r:number,n=10)=>cylinder(h,r,n).translate(x,y,z-baseZ).scale(scale);
 
 const p=assembly("hot-aisle-containment-door");
-p.part("left-jamb", b(-620, 0, 0, 75, 100, 2250).color(color));
-p.part("right-jamb", b(620, 0, 0, 75, 100, 2250).color(color));
-p.part("header", b(0, 0, 2175, 1320, 100, 75).color(color));
-p.part("door-panel-left", b(-300, 0, 120, 500, 35, 1920).color(color));
-p.part("door-panel-right", b(300, 0, 120, 500, 35, 1920).color(color));
-p.part("pull-handle", b(0, -45, 950, 35, 60, 240).color(color));
-p.part("hinge-top", c(-590, 0, 1750, 65, 28, 8).color(color));
+p.part("left-jamb", b(-620, 0, 0, 75, 100, 2250).color(steel));
+p.part("right-jamb", b(620, 0, 0, 75, 100, 2250).color(steel));
+p.part("header", b(0, 0, 2175, 1320, 100, 75).color(steel));
+p.part("door-panel-left", b(-300, 0, 120, 500, 35, 1920).color(steel));
+p.part("door-panel-right", b(300, 0, 120, 500, 35, 1920).color(steel));
+p.part("pull-handle", b(0, -45, 950, 35, 60, 240).color(polymer));
+p.part("hinge-top", c(-590, 0, 1750, 65, 28, 8).color(steel));
 
 return p.model();

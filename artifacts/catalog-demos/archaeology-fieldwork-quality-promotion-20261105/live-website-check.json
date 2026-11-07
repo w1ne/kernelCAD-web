@@ -1,0 +1,24 @@
+{
+  "checkedAt": "2026-11-05",
+  "homePage": {
+    "url": "https://kernelcad.com/",
+    "status": 200,
+    "observed": "The homepage links to the model library and describes editable models, parameter changes, checking, and export."
+  },
+  "assetManifest": {
+    "url": "https://kernelcad.com/assets.json",
+    "status": 200,
+    "rows": 2116,
+    "archaeologyFieldworkRows": 50
+  },
+  "catalogHub": {
+    "url": "https://kernelcad.com/catalog/",
+    "status": 404
+  },
+  "kitRoute": {
+    "url": "https://kernelcad.com/catalog/archaeology-fieldwork/",
+    "status": 404
+  },
+  "followUpDeployed": false,
+  "note": "The source promotion is local to the feat/catalog-2000 follow-up branch. The live manifest and routes do not verify this branch's changed previews or parameters."
+}

@@ -1,28 +1,20 @@
 # Space exploration catalog wave demo
 
-[Watch the 30-second local workflow demo](space-exploration-kit.mp4)
+[Watch the original 30-second local workflow demo](space-exploration-kit.mp4)
 
-The MP4 shows a real `lunar-habitat-module.kcad.ts` source and its rendered preview, then the 52 generated previews in seven contact sheets. Its final frame reports the source/index/mesh audit, lint, integration suite and locally generated pages. The captions distinguish local replay and validation from deployed, simulation and physical acceptance claims.
+This MP4 is historical evidence from the kit's initial wave, before the
+2026-11-05 material and silhouette promotion. It shows the original
+single-color `lunar-habitat-module.kcad.ts` source and the then-current preview
+set. The [quality promotion handoff](../space-exploration-quality-promotion-20261105/README.md)
+documents the current sources and refreshed previews. The generator retained
+here has since been updated to reproduce the promoted sources; replaying it does
+not recreate the original single-color state.
 
 ## Rebuild and verify
 
-Run from the repository root:
-
-```sh
-python3 artifacts/catalog-demos/space-exploration-wave-20261103/generate_space_assets.py
-npx tsx scripts/buildAssetCatalog.ts
-npx eslint catalog/
-set -o pipefail && npx vitest run tests/integration/catalog/ 2>&1 | tee artifacts/catalog-demos/space-exploration-wave-20261103/catalog-test-output.txt
-python3 artifacts/catalog-demos/space-exploration-wave-20261103/record_space_checks.py
-python3 artifacts/catalog-demos/space-exploration-wave-20261103/write_space_readme.py
-python3 artifacts/catalog-demos/space-exploration-wave-20261103/render_space_previews.py
-npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-space-pages
-python3 artifacts/catalog-demos/space-exploration-wave-20261103/verify_space_pages.py /tmp/kernelcad-space-pages
-python3 artifacts/catalog-demos/space-exploration-wave-20261103/capture_space_demo.py
-python3 artifacts/catalog-demos/space-exploration-wave-20261103/inspect_space_video.py
-```
-
-`asset-check-results.json`, `catalog-tests.json`, `catalog-eslint.json` and `catalog-pages-check.json` retain the wave checks. `settings.json` records capture settings. `video-review/` contains decoded frames, a contact sheet and MP4 metadata. The scripts retain generation, preview, audit, page verification, capture and inspection invocations.
+Use the current [quality promotion handoff](../space-exploration-quality-promotion-20261105/README.md)
+for the generator, preview/index invocation and validation sequence. The
+historical evidence files in this wave bundle are unchanged.
 
 ## Website status and limits
 

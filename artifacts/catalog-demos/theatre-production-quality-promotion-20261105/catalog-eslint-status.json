@@ -1,0 +1,6 @@
+{
+  "command": "npx eslint catalog/kits/theatre-production/",
+  "environment": {},
+  "exitCode": 0,
+  "status": "pass"
+}

@@ -1,0 +1,55 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/office-quality-20261106/render_office_presets.ts",
+  "exporter": "runAndExport(format=\"glb\", options={ format: \"glb\", style: \"lowpoly\", lowpoly: { maxTriangles: 320 } })",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "variants": [
+    {
+      "assetId": "paper-shredder",
+      "preset": "professional",
+      "values": {
+        "polymer": "#b9c4c4",
+        "steel": "#464b4d",
+        "glass": "#73948b"
+      },
+      "source": "catalog/kits/office/paper-shredder.kcad.ts",
+      "sourceSha256": "362c2712ad26a4fadb1ac43bbcb4e1a7ce997cc09e4f0f322fcba41821145994",
+      "png": "preset-variants/paper-shredder-professional.png"
+    },
+    {
+      "assetId": "paper-shredder",
+      "preset": "classroom",
+      "values": {
+        "polymer": "#4e758c",
+        "steel": "#d25e49",
+        "glass": "#d4b24d"
+      },
+      "source": "catalog/kits/office/paper-shredder.kcad.ts",
+      "sourceSha256": "362c2712ad26a4fadb1ac43bbcb4e1a7ce997cc09e4f0f322fcba41821145994",
+      "png": "preset-variants/paper-shredder-classroom.png"
+    },
+    {
+      "assetId": "scissors",
+      "preset": "professional",
+      "values": {
+        "stainlessSteel": "#aeb7ba",
+        "polymer": "#c95045",
+        "brass": "#c19a4b"
+      },
+      "source": "catalog/kits/office/scissors.kcad.ts",
+      "sourceSha256": "86e69299570ea238c5096bee287aca369758364c5eed307e6e4faba7bce74694",
+      "png": "preset-variants/scissors-professional.png"
+    },
+    {
+      "assetId": "scissors",
+      "preset": "classroom",
+      "values": {
+        "stainlessSteel": "#c0c6c8",
+        "polymer": "#4f7992",
+        "brass": "#d2a548"
+      },
+      "source": "catalog/kits/office/scissors.kcad.ts",
+      "sourceSha256": "86e69299570ea238c5096bee287aca369758364c5eed307e6e4faba7bce74694",
+      "png": "preset-variants/scissors-classroom.png"
+    }
+  ]
+}

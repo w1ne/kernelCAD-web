@@ -1,0 +1,5 @@
+beverage-bottling-line/bottle-infeed-conveyor: 2300 tris
+beverage-bottling-line/carbonation-vessel: 2142 tris
+beverage-bottling-line/rotary-filler: 5404 tris
+beverage-bottling-line/sanitary-lobe-pump: 1584 tris
+beverage-bottling-line/stretch-wrapper: 1004 tris

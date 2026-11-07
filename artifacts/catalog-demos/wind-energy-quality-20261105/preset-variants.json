@@ -1,0 +1,24 @@
+{
+  "source": "catalog/kits/wind-energy/horizontal-axis-wind-turbine.kcad.ts",
+  "sourceSha256": "b3b17037696a21f23e462eeb399755d8e10fd82600459d89e91058e290f0bafa",
+  "invocation": "npx tsx artifacts/catalog-demos/wind-energy-quality-20261105/render_preset_variants.ts",
+  "exporter": "runAndExport(format=\"glb\", options={ format: \"glb\", style: \"lowpoly\", lowpoly: { maxTriangles: 550 } })",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "variants": [
+    {
+      "id": "weathered",
+      "values": {
+        "paintedSteel": "#415961",
+        "fiberglassComposite": "#f9fef3"
+      },
+      "png": "/home/andrii/worktrees/kernelCAD-web/catalog-2000/artifacts/catalog-demos/wind-energy-quality-20261105/preset-variants/weathered.png"
+    },
+    {
+      "id": "highVisibility",
+      "values": {
+        "fiberglassComposite": "#e48d35"
+      },
+      "png": "/home/andrii/worktrees/kernelCAD-web/catalog-2000/artifacts/catalog-demos/wind-energy-quality-20261105/preset-variants/highVisibility.png"
+    }
+  ]
+}

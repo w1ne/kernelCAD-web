@@ -1,0 +1,8 @@
+{
+  "command": "npx tsx artifacts/catalog-demos/hydroponics-quality-promotion-20261105/render_hydroponics_variant.ts",
+  "asset": "hydroponics/circulation-pump-skid",
+  "preset": "highVisibility",
+  "indexedMaterialControls": 3,
+  "exitCode": 0,
+  "passed": true
+}

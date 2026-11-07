@@ -1,0 +1,12 @@
+{
+  "checkedAt": "2026-11-06T07:49:03Z",
+  "method": "curl -sS -L",
+  "urls": {
+    "https://kernelcad.com/": 200,
+    "https://kernelcad.com/catalog/": 404,
+    "https://kernelcad.com/catalog/medical/diagnostic-monitor/": 404,
+    "https://app.kernelcad.com/studio?catalog=medical/diagnostic-monitor": 200
+  },
+  "sitemapCatalogEntries": 0,
+  "deploymentStatus": "The feat/catalog-2000 branch is not deployed. These results are a live baseline, not post-deployment verification."
+}

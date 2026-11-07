@@ -4,9 +4,11 @@ Fifty original low-poly props for a small animal clinic scene, organized around
 the work areas that make the place read as a real veterinary facility. Models
 are native kernelCAD `.kcad.ts` sources in millimetres and Z up. Floor-placed
 assets use a base origin at z = 0; the dental X-ray arm and kennel feeding rail
-use wall origins. Every asset exposes overall scale and asset color controls,
-uses one material, and declares a 1,800-triangle ceiling. All geometry is
-dedicated to the public domain under CC0 1.0.
+use wall origins. Every asset keeps its editable overall scale and now exposes
+two to four material-named color controls, with `clinicClean` and `softTeal`
+presets. Frames, housings, contact surfaces, glass, and upholstery receive
+separate controls where present. Triangle ceilings remain unchanged at 1,800.
+All geometry is dedicated to the public domain under CC0 1.0.
 
 ## Reception and examination
 
@@ -45,9 +47,11 @@ dedicated to the public domain under CC0 1.0.
 
 ## Preview and verification
 
-The [veterinary clinic wave demo bundle](../../../artifacts/catalog-demos/vet-clinic-wave-20261103/README.md)
-contains the generator, parameter-variant render, catalog audit records,
-preview checks, local page checks, and an inspected MP4 walkthrough.
+The [quality promotion handoff](../../../artifacts/catalog-demos/vet-clinic-quality-promotion-20261105/README.md)
+records the material assignments, refreshed previews, regenerated index,
+local checks, preview review, and inspected MP4 walkthrough. The [original wave
+bundle](../../../artifacts/catalog-demos/vet-clinic-wave-20261103/README.md)
+preserves the kit's initial creation evidence.
 
 These are generic scene assets, not clinical device specifications. Catalog
 checks do not establish clinical suitability, safety, ratings, hygiene,

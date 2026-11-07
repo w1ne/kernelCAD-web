@@ -1,0 +1,15 @@
+{
+  "kit": "retail-store",
+  "assets": 48,
+  "materialControlRange": [
+    2,
+    4
+  ],
+  "materialControls": 144,
+  "presetBlocks": 48,
+  "sourceHashesMatched": 48,
+  "previewPathsPresent": 48,
+  "triangleBudgetsWithinLimit": 48,
+  "sameIDsAsBefore": true,
+  "failures": []
+}

@@ -1,8 +1,10 @@
+// Office marker: Round office marker with a broad cap, pocket clip and felt tip. Material controls: barrel polymer, marker ink, felt tip.
+
 meta({
   name: 'marker',
   license: 'CC0-1.0',
   title: 'Office marker',
-  description: 'Round office marker with a broad cap, pocket clip and felt tip. Knobs: compact or standard format, barrel, cap and tip colours.',
+  description: "Round office marker with a broad cap, pocket clip and felt tip. Controls: barrel polymer, marker ink, felt tip.",
   tags: ['marker', 'felt-tip pen', 'office supplies', 'office', 'stationery'],
   kit: 'office',
   category: 'item',
@@ -11,30 +13,36 @@ meta({
   triangleBudget: 180,
 });
 
-const body = param('body', '#53677d', { label: 'Body' });
-const accent = param('accent', '#c74e42', { label: 'Accent' });
-const detail = param('detail', '#e9e3d7', { label: 'Detail' });
+const polymer = param('polymer', '#5b83a5', { label: 'Barrel polymer' });
+const ink = param('ink', '#276395', { label: 'Marker ink' });
+const felt = param('felt', '#c3463d', { label: 'Felt tip' });
 const format = param('format', 'standard', { choices: ['compact', 'standard'], label: 'Format' });
 const k = format.value === 'compact' ? 0.8 : 1;
 
 presets({
-  clean: { body: '#e8e7df', accent: '#66829a', detail: '#454b50' },
-  warm: { body: '#c8a875', accent: '#557581', detail: '#493c34' },
+  professional: { polymer: '#5b83a5', ink: '#276395', felt: '#c3463d' },
+  classroom: { polymer: '#db634a', ink: '#c94e42', felt: '#4c8d63' },
 });
 
 const office = assembly('marker');
 
-const addBox = (name: string, x: number, y: number, z: number, w: number, d: number, h: number, colour: typeof body) => {
-  office.part(name, box(w * k, d * k, h * k, true).translate(x * k, y * k, (z + h / 2) * k).color(colour));
+const addBox = (name: string, x: number, y: number, z: number, w: number, d: number, h: number, colour: typeof polymer | typeof ink | typeof felt) => {
+  const partShape = box(w * k, d * k, h * k, true).translate(x * k, y * k, (z + h / 2) * k);
+  if (colour === polymer) office.part(name, partShape.color(polymer));
+  else if (colour === ink) office.part(name, partShape.color(ink));
+  else office.part(name, partShape.color(felt));
 };
-const addCylinder = (name: string, h: number, r: number, x: number, y: number, z: number, colour: typeof body) => {
-  office.part(name, cylinder(h * k, r * k).translate(x * k, y * k, z * k).color(colour));
+const addCylinder = (name: string, h: number, r: number, x: number, y: number, z: number, colour: typeof polymer | typeof ink | typeof felt) => {
+  const partShape = cylinder(h * k, r * k).translate(x * k, y * k, z * k);
+  if (colour === polymer) office.part(name, partShape.color(polymer));
+  else if (colour === ink) office.part(name, partShape.color(ink));
+  else office.part(name, partShape.color(felt));
 };
 
-addCylinder('barrel', 118, 8, 0, 0, 0, body);
-addCylinder('cap', 26, 9, 0, 0, 117, accent);
-addCylinder('tip', 11, 5, 0, 0, 0, detail);
-addBox('pocket-clip', 8, 5, 87, 4, 4, 34, accent);
-addBox('cap-end', 0, 0, 139, 12, 12, 4, detail);
+addCylinder('barrel', 118, 8, 0, 0, 0, polymer);
+addCylinder('cap', 26, 9, 0, 0, 117, ink);
+addCylinder('tip', 11, 5, 0, 0, 0, felt);
+addBox('pocket-clip', 8, 5, 87, 4, 4, 34, ink);
+addBox('cap-end', 0, 0, 139, 12, 12, 4, felt);
 
 return office.model();

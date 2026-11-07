@@ -1,0 +1,6 @@
+{
+  "command": "npx eslint catalog/kits/telecom-infrastructure/",
+  "environment": {},
+  "exitCode": 0,
+  "status": "pass"
+}

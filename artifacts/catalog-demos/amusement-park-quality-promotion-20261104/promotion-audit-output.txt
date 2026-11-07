@@ -1,0 +1,49 @@
+{
+  "kit": "amusement-park",
+  "assetsPromoted": 70,
+  "expectedExistingAssets": 70,
+  "idsAddedOrRemoved": [],
+  "materialColorKnobs": 212,
+  "materialColorKnobsPerAsset": {
+    "min": 3,
+    "max": 4
+  },
+  "namedMaterialRoles": [
+    "acrylic",
+    "aluminum",
+    "anodizedAluminum",
+    "canvas",
+    "concrete",
+    "enamel",
+    "fabric",
+    "fiberglass",
+    "galvanizedSteel",
+    "glass",
+    "leaves",
+    "nylon",
+    "paintedTimber",
+    "polymer",
+    "powderCoat",
+    "rope",
+    "rubber",
+    "stainlessSteel",
+    "steel",
+    "timber"
+  ],
+  "presetVariants": 140,
+  "presetNamesPerAsset": [
+    "festival",
+    "twilight"
+  ],
+  "triangleRange": {
+    "min": 72,
+    "max": 976
+  },
+  "indexRowsWithPreview": 70,
+  "previewsRendered": 70,
+  "sourceHashesMatch": true,
+  "noIdentifiersAddedOrRemoved": true,
+  "qualityGate": "passed",
+  "issues": [],
+  "indexRowsAcrossAllKits": 2390
+}

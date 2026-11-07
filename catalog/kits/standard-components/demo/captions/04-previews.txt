@@ -1,4 +1,4 @@
-04 / PREVIEW
-npm run catalog:previews
-50 software-rendered PNG previews
-Flat-shaded assets for scenes
+04 / PREVIEW — t-slot-end-cap.kcad.ts
+Engineering-polymer cap and locating ribs
+Grooved aluminum profile sample
+Size choice scales the assembly

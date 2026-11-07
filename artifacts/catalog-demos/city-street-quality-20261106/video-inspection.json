@@ -1,0 +1,56 @@
+{
+  "video": "city-street-quality-demo.mp4",
+  "probe": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "r_frame_rate": "24/1"
+      }
+    ],
+    "format": {
+      "duration": "21.000000"
+    }
+  },
+  "decodedFrames": [
+    {
+      "timeSeconds": 1,
+      "path": "frame-01.png",
+      "size": 117102
+    },
+    {
+      "timeSeconds": 4,
+      "path": "frame-02.png",
+      "size": 191949
+    },
+    {
+      "timeSeconds": 7,
+      "path": "frame-03.png",
+      "size": 126474
+    },
+    {
+      "timeSeconds": 10,
+      "path": "frame-04.png",
+      "size": 99726
+    },
+    {
+      "timeSeconds": 13,
+      "path": "frame-05.png",
+      "size": 113919
+    },
+    {
+      "timeSeconds": 16,
+      "path": "frame-06.png",
+      "size": 133907
+    },
+    {
+      "timeSeconds": 19,
+      "path": "frame-07.png",
+      "size": 135617
+    }
+  ],
+  "contactSheet": "video-review/contact-sheet.png",
+  "manualVisualInspection": "Reviewed the contact sheet and all seven decoded frames. The source panel is legible, each object is centered and recognizable, default/preset pairs show their material changes, the playground parameter line fits, and the captions consistently identify local-only renders and checks."
+}

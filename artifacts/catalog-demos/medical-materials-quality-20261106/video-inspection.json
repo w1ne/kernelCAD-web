@@ -1,0 +1,28 @@
+{
+  "video": "artifacts/catalog-demos/medical-materials-quality-20261106/medical-materials-quality-demo.mp4",
+  "probe": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "pix_fmt": "yuv420p"
+      }
+    ],
+    "format": {
+      "duration": "18.000000",
+      "size": "218720"
+    }
+  },
+  "decodedFrames": [
+    "frame-01.png",
+    "frame-02.png",
+    "frame-03.png",
+    "frame-04.png",
+    "frame-05.png",
+    "frame-06.png"
+  ],
+  "contactSheet": "video-review/contact-sheet.png",
+  "review": "Six decoded 1280x720 frames inspected for legible titles, control names, recognizable previews, preset comparisons, truthful route/deployment captions and no clinical acceptance claim."
+}

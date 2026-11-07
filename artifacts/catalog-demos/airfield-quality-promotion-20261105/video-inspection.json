@@ -1,0 +1,22 @@
+{
+  "video": "airfield-quality-promotion.mp4",
+  "probe": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "r_frame_rate": "24/1",
+        "nb_frames": "505"
+      }
+    ],
+    "format": {
+      "duration": "21.041667"
+    }
+  },
+  "decodedFrames": 6,
+  "contactSheet": "video-review/contact-sheet.png",
+  "visuallyReviewed": true,
+  "visualReviewNotes": "Decoded six-frame contact sheet and full-resolution source/parameter frame were inspected; all six frames are legible and match the rendered source previews and local verification claims."
+}

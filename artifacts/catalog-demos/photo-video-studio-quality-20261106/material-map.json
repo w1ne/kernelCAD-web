@@ -1,0 +1,1386 @@
+{
+  "baseCommit": "41232a82d",
+  "kit": "photo-video-studio",
+  "assets": [
+    {
+      "assetId": "action-camera",
+      "source": "catalog/kits/photo-video-studio/action-camera.kcad.ts",
+      "sourceBeforeSha256": "8889d4789936aa3fa01f114804c3339cee6adc22c403f297f380080dd8c35d08",
+      "sourceSha256": "5cbe7592dc99f2b55aeba0898e906d29f58ba47d8bd24d10effca810bf67e32a",
+      "partCount": 7,
+      "materials": {
+        "polymer": "Polymer",
+        "metal": "Metal",
+        "glass": "Optical glass"
+      },
+      "partMaterials": {
+        "body": "polymer",
+        "lens-barrel": "metal",
+        "lens-face": "glass",
+        "status-screen": "glass",
+        "mount-neck": "metal",
+        "mount-tab-left": "metal",
+        "mount-tab-right": "metal"
+      },
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "metal": "#a9b5ba",
+          "glass": "#45a6c0"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "metal": "#657780",
+          "glass": "#79d4e3"
+        }
+      }
+    },
+    {
+      "assetId": "backdrop-frame",
+      "source": "catalog/kits/photo-video-studio/backdrop-frame.kcad.ts",
+      "sourceBeforeSha256": "3d7cd157c3ec79b0da43e63ff2b59660a2d91d18a20517566d5ee6ac1270525e",
+      "sourceSha256": "55d1100cc69d710e4da75ab7d8c276b1a6423bca516af7b0e710e1824e65a4ed",
+      "partCount": 10,
+      "materials": {
+        "metal": "Metal",
+        "polymer": "Polymer",
+        "rubber": "Rubber",
+        "fabric": "Studio fabric"
+      },
+      "partMaterials": {
+        "crossbar": "metal",
+        "left-upright-lower": "metal",
+        "left-upright-upper": "metal",
+        "right-upright-lower": "metal",
+        "right-upright-upper": "metal",
+        "left-lock": "polymer",
+        "right-lock": "polymer",
+        "left-foot": "rubber",
+        "right-foot": "rubber",
+        "backdrop-panel": "fabric"
+      },
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "polymer": "#343c43",
+          "rubber": "#1b2024",
+          "fabric": "#e5ddce"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "polymer": "#c75a2e",
+          "rubber": "#292b2d",
+          "fabric": "#d6b365"
+        }
+      }
+    },
+    {
+      "assetId": "beauty-dish-light",
+      "source": "catalog/kits/photo-video-studio/beauty-dish-light.kcad.ts",
+      "sourceBeforeSha256": "d40c17fb43fa528c5aa0961dd1f1b87ee2e3974c6000991464729adca8cf3d39",
+      "sourceSha256": "79ba344aec7348eb7307304da9adb628289b3911cc098d87caa22a04a9212a92",
+      "partCount": 8,
+      "materials": {
+        "metal": "Metal",
+        "polycarbonate": "Diffuser polycarbonate",
+        "rubber": "Rubber"
+      },
+      "partMaterials": {
+        "dish": "metal",
+        "outer-rim": "metal",
+        "center-deflector": "polycarbonate",
+        "stem": "metal",
+        "yoke-left": "metal",
+        "yoke-right": "metal",
+        "stand-pole": "metal",
+        "stand-foot": "rubber"
+      },
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "polycarbonate": "#d7e4e3",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "polycarbonate": "#f0c75a",
+          "rubber": "#292b2d"
+        }
+      }
+    },
+    {
+      "assetId": "c-stand",
+      "source": "catalog/kits/photo-video-studio/c-stand.kcad.ts",
+      "sourceBeforeSha256": "845f4b9be4cfe347b026838068f5f3c2a251a26b1d8146ac711d5e7c78853493",
+      "sourceSha256": "90fdbde9299893a5da28319a155ebf09079df9c1b91d877d91fbf010b1ca8fff",
+      "partCount": 9,
+      "materials": {
+        "metal": "Metal",
+        "rubber": "Rubber"
+      },
+      "partMaterials": {
+        "column": "metal",
+        "upper-column": "metal",
+        "grip-head": "metal",
+        "arm": "metal",
+        "arm-grip": "rubber",
+        "base-hub": "metal",
+        "leg-one": "metal",
+        "leg-two": "metal",
+        "leg-three": "metal"
+      },
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "rubber": "#292b2d"
+        }
+      }
+    },
+    {
+      "assetId": "camcorder",
+      "source": "catalog/kits/photo-video-studio/camcorder.kcad.ts",
+      "sourceBeforeSha256": "615edfb0782c891bc32a84aef0d056bbd3fe31cb0dec1bbc6fd8158b9b4b1f8b",
+      "sourceSha256": "522864ff7c73472bcdca6e22649289c137c8841816b2dc70d264be6f830c7b4c",
+      "partCount": 8,
+      "materials": {
+        "polymer": "Polymer",
+        "metal": "Metal",
+        "glass": "Optical glass",
+        "fabric": "Studio fabric"
+      },
+      "partMaterials": {
+        "body": "polymer",
+        "lens-barrel": "metal",
+        "lens-front": "polymer",
+        "top-handle": "polymer",
+        "handle-post-left": "metal",
+        "handle-post-right": "metal",
+        "viewfinder": "glass",
+        "strap": "fabric"
+      },
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "metal": "#a9b5ba",
+          "glass": "#45a6c0",
+          "fabric": "#e5ddce"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "metal": "#657780",
+          "glass": "#79d4e3",
+          "fabric": "#d6b365"
+        }
+      }
+    },
+    {
+      "assetId": "camera-backpack",
+      "source": "catalog/kits/photo-video-studio/camera-backpack.kcad.ts",
+      "sourceBeforeSha256": "e43db5fb5bf00a27d402aa8f29444de01c043235f11c62c9a1582ec65c4f8686",
+      "sourceSha256": "701336700bba2e22512dea75e82c2d9e6d040080ac6f44121911644007915f23",
+      "partCount": 8,
+      "materials": {
+        "fabric": "Studio fabric",
+        "polymer": "Polymer",
+        "rubber": "Rubber"
+      },
+      "partMaterials": {
+        "main-pack": "fabric",
+        "front-flap": "polymer",
+        "top-pocket": "fabric",
+        "side-pocket-left": "polymer",
+        "side-pocket-right": "polymer",
+        "strap-left": "fabric",
+        "strap-right": "fabric",
+        "grab-handle": "rubber"
+      },
+      "presets": {
+        "studioBlack": {
+          "fabric": "#e5ddce",
+          "polymer": "#343c43",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "fabric": "#d6b365",
+          "polymer": "#c75a2e",
+          "rubber": "#292b2d"
+        }
+      }
+    },
+    {
+      "assetId": "camera-cage",
+      "source": "catalog/kits/photo-video-studio/camera-cage.kcad.ts",
+      "sourceBeforeSha256": "6f59b3d8c6e67e75db97c60f2c8248a352cca72baef15800b5b574602ff45ebf",
+      "sourceSha256": "90c71f56e565be19fb7996bf21f7ade29a47d58da805d799491b1caf467feb90",
+      "partCount": 9,
+      "materials": {
+        "metal": "Metal",
+        "polymer": "Polymer",
+        "rubber": "Rubber"
+      },
+      "partMaterials": {
+        "base-plate": "metal",
+        "camera-body": "polymer",
+        "left-rail": "metal",
+        "right-rail": "metal",
+        "top-rail": "metal",
+        "top-handle": "metal",
+        "shoe-mount": "metal",
+        "left-grip": "rubber",
+        "right-grip": "rubber"
+      },
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "polymer": "#343c43",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "polymer": "#c75a2e",
+          "rubber": "#292b2d"
+        }
+      }
+    },
+    {
+      "assetId": "camera-roller-case",
+      "source": "catalog/kits/photo-video-studio/camera-roller-case.kcad.ts",
+      "sourceBeforeSha256": "963387a6cc700015ea281cb4faa7dbcc6e9bbeba987f8df204db90210128f083",
+      "sourceSha256": "1afcf9bab1ebce6120be94ce6a048c14c2a3f88565c6b9ae25f3f4d428cabbd4",
+      "partCount": 11,
+      "materials": {
+        "polymer": "Polymer",
+        "metal": "Metal",
+        "rubber": "Rubber"
+      },
+      "partMaterials": {
+        "case": "polymer",
+        "lid": "polymer",
+        "handle": "polymer",
+        "handle-post-left": "metal",
+        "handle-post-right": "metal",
+        "latch-left": "metal",
+        "latch-right": "metal",
+        "wheel-left-front": "rubber",
+        "wheel-right-front": "rubber",
+        "wheel-left-back": "rubber",
+        "wheel-right-back": "rubber"
+      },
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "metal": "#a9b5ba",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "metal": "#657780",
+          "rubber": "#292b2d"
+        }
+      }
+    },
+    {
+      "assetId": "camera-slider",
+      "source": "catalog/kits/photo-video-studio/camera-slider.kcad.ts",
+      "sourceBeforeSha256": "2c3b9fcbfc38b5283ce521d85d3242a75535704d4de91e7d9bb2b265793310b9",
+      "sourceSha256": "cb1ebfd289079c1ef5629427bafe75038370c8ef14b630902aeebf76c1800d5b",
+      "partCount": 10,
+      "materials": {
+        "metal": "Metal",
+        "polymer": "Polymer",
+        "rubber": "Rubber"
+      },
+      "partMaterials": {
+        "rail-left": "metal",
+        "rail-right": "metal",
+        "carriage": "polymer",
+        "mount": "metal",
+        "end-left": "polymer",
+        "end-right": "polymer",
+        "foot-front-left": "rubber",
+        "foot-front-right": "rubber",
+        "foot-rear-left": "rubber",
+        "foot-rear-right": "rubber"
+      },
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "polymer": "#343c43",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "polymer": "#c75a2e",
+          "rubber": "#292b2d"
+        }
+      }
+    },
+    {
+      "assetId": "camera-tripod",
+      "source": "catalog/kits/photo-video-studio/camera-tripod.kcad.ts",
+      "sourceBeforeSha256": "c7cab749907ffa63c468d4498bbffc8729a3aac82ed86e1ee393107d0bd87884",
+      "sourceSha256": "c1034b748d1f68a9c285ff6b3aa8f1519e5a096e0fbd6c4fc65cb2342789262e",
+      "partCount": 12,
+      "materials": {
+        "metal": "Metal",
+        "rubber": "Rubber"
+      },
+      "partMaterials": {
+        "center-column": "metal",
+        "head": "metal",
+        "quick-plate": "metal",
+        "leg-one": "metal",
+        "leg-two": "metal",
+        "leg-three": "metal",
+        "foot-one": "rubber",
+        "foot-two": "rubber",
+        "foot-three": "rubber",
+        "brace-one": "metal",
+        "brace-two": "metal",
+        "brace-three": "metal"
+      },
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "rubber": "#292b2d"
+        }
+      }
+    },
+    {
+      "assetId": "cinema-camera",
+      "source": "catalog/kits/photo-video-studio/cinema-camera.kcad.ts",
+      "sourceBeforeSha256": "d6e84ccd616002af2e05f685addf9a10eb7039cb1d94144aa28ddd4ade0b3223",
+      "sourceSha256": "2158fa521839e5b5ca5054ced26d90a35b3068f057f1ed2c33925060c37a6b3d",
+      "partCount": 8,
+      "materials": {
+        "polymer": "Polymer",
+        "glass": "Optical glass",
+        "metal": "Metal"
+      },
+      "partMaterials": {
+        "body": "polymer",
+        "lens": "glass",
+        "matte-box": "polymer",
+        "matte-top-flag": "polymer",
+        "rail-left": "metal",
+        "rail-right": "metal",
+        "top-handle": "polymer",
+        "base-plate": "metal"
+      },
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "glass": "#45a6c0",
+          "metal": "#a9b5ba"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "glass": "#79d4e3",
+          "metal": "#657780"
+        }
+      }
+    },
+    {
+      "assetId": "clapperboard",
+      "source": "catalog/kits/photo-video-studio/clapperboard.kcad.ts",
+      "sourceBeforeSha256": "7d87c437e20c16e5c4881dcee6ec788bd4f99b2ce518812458c1716c9f678da0",
+      "sourceSha256": "a5cc57a6d10b35f980e0c52d6c9026d8e2674c3fdac5ada95fdb6fe72c628e48",
+      "partCount": 6,
+      "materials": {
+        "polymer": "Polymer",
+        "mattePaint": "Matte paint",
+        "wood": "Wood",
+        "metal": "Metal"
+      },
+      "partMaterials": {
+        "board": "polymer",
+        "face": "mattePaint",
+        "top-stick": "wood",
+        "hinge-left": "metal",
+        "hinge-right": "metal",
+        "lower-ledge": "polymer"
+      },
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "mattePaint": "#333a3e",
+          "wood": "#9a714d",
+          "metal": "#a9b5ba"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "mattePaint": "#e9e4d7",
+          "wood": "#c79a58",
+          "metal": "#657780"
+        }
+      }
+    },
+    {
+      "assetId": "digital-slr-camera",
+      "source": "catalog/kits/photo-video-studio/digital-slr-camera.kcad.ts",
+      "sourceBeforeSha256": "3c29c979cb6082e3eb7b0e98dfa9e479b57b5ec3f819d667c75d3c08dcc14b92",
+      "sourceSha256": "b177d573c9075c49438524c07cfe91c8d420d8c0a037f7d8ee67fce334701200",
+      "partCount": 8,
+      "materials": {
+        "polymer": "Polymer",
+        "rubber": "Rubber",
+        "glass": "Optical glass",
+        "metal": "Metal"
+      },
+      "partMaterials": {
+        "body": "polymer",
+        "grip": "rubber",
+        "prism-hump": "polymer",
+        "viewfinder": "glass",
+        "lens-barrel": "metal",
+        "lens-ring": "metal",
+        "lens-face": "glass",
+        "top-dial": "metal"
+      },
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "rubber": "#1b2024",
+          "glass": "#45a6c0",
+          "metal": "#a9b5ba"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "rubber": "#292b2d",
+          "glass": "#79d4e3",
+          "metal": "#657780"
+        }
+      }
+    },
+    {
+      "assetId": "disposable-camera",
+      "source": "catalog/kits/photo-video-studio/disposable-camera.kcad.ts",
+      "sourceBeforeSha256": "67ef221895bd8f2bfaba5b7d91655375b4ac05b99cce411ae2cd21d4a97fe10a",
+      "sourceSha256": "f8a47c995e4f26bc15d0d95519ed48ef6a9cb9e3a46715e13c8a3bc42f846bd3",
+      "partCount": 6,
+      "materials": {
+        "polymer": "Polymer",
+        "glass": "Optical glass",
+        "metal": "Metal"
+      },
+      "partMaterials": {
+        "shell": "polymer",
+        "lens": "glass",
+        "lens-rim": "metal",
+        "flash": "glass",
+        "view-window": "glass",
+        "shutter": "polymer"
+      },
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "glass": "#45a6c0",
+          "metal": "#a9b5ba"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "glass": "#79d4e3",
+          "metal": "#657780"
+        }
+      }
+    },
+    {
+      "assetId": "film-rangefinder-camera",
+      "source": "catalog/kits/photo-video-studio/film-rangefinder-camera.kcad.ts",
+      "sourceBeforeSha256": "ae16469441f44c45d589a42d11587f59cd624773cc21d2516f3ce27a6901fae0",
+      "sourceSha256": "1aacff13bdc69778dd817931cad64610aec4e58bc58b1d058956ca72eed38ea3",
+      "partCount": 8,
+      "materials": {
+        "polymer": "Polymer",
+        "metal": "Metal",
+        "glass": "Optical glass"
+      },
+      "partMaterials": {
+        "body": "polymer",
+        "top-plate": "metal",
+        "lens": "glass",
+        "lens-ring": "metal",
+        "rangefinder-window": "glass",
+        "view-window": "glass",
+        "rewind-knob": "polymer",
+        "advance-dial": "metal"
+      },
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "metal": "#a9b5ba",
+          "glass": "#45a6c0"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "metal": "#657780",
+          "glass": "#79d4e3"
+        }
+      }
+    },
+    {
+      "assetId": "follow-focus-unit",
+      "source": "catalog/kits/photo-video-studio/follow-focus-unit.kcad.ts",
+      "sourceBeforeSha256": "845b56adc632565315c42dda08d9e4a0c57977171879a73e191c0d74d3722454",
+      "sourceSha256": "37588f20f67d1adb7919fd1a3200c953d789b6ba7ec792dbda47ec33ec926238",
+      "partCount": 8,
+      "materials": {
+        "metal": "Metal",
+        "rubber": "Rubber"
+      },
+      "partMaterials": {
+        "lens-barrel": "metal",
+        "gear-ring": "metal",
+        "front-rim": "metal",
+        "support-arm": "metal",
+        "wheel-hub": "rubber",
+        "focus-wheel": "rubber",
+        "wheel-handle": "rubber",
+        "clamp": "metal"
+      },
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "rubber": "#292b2d"
+        }
+      }
+    },
+    {
+      "assetId": "gimbal-stabilizer",
+      "source": "catalog/kits/photo-video-studio/gimbal-stabilizer.kcad.ts",
+      "sourceBeforeSha256": "e1e928eb605acf18289a78f2ff395a401317b098b79cd2a54b5aa270ff4e59a9",
+      "sourceSha256": "78b818ffbe93942f9db2bb5b93498ced2b981b3d627278b9cf3925eff560ff34",
+      "partCount": 8,
+      "materials": {
+        "rubber": "Rubber",
+        "polymer": "Polymer",
+        "metal": "Metal",
+        "glass": "Optical glass"
+      },
+      "partMaterials": {
+        "grip": "rubber",
+        "control-panel": "polymer",
+        "upright-arm": "polymer",
+        "cross-arm": "polymer",
+        "camera-plate": "metal",
+        "camera-body": "polymer",
+        "lens": "glass",
+        "side-wheel": "metal"
+      },
+      "presets": {
+        "studioBlack": {
+          "rubber": "#1b2024",
+          "polymer": "#343c43",
+          "metal": "#a9b5ba",
+          "glass": "#45a6c0"
+        },
+        "fieldRental": {
+          "rubber": "#292b2d",
+          "polymer": "#c75a2e",
+          "metal": "#657780",
+          "glass": "#79d4e3"
+        }
+      }
+    },
+    {
+      "assetId": "instant-camera",
+      "source": "catalog/kits/photo-video-studio/instant-camera.kcad.ts",
+      "sourceBeforeSha256": "44ef51b26b6351e819d88051fba80f5b54b3f86a6c1ad1d8e01ce3b9bb84bcc8",
+      "sourceSha256": "4de6b4a40f4545aa739b14e77b947a62f04e93c10c80e69626b5280d9bd85f32",
+      "partCount": 7,
+      "materials": {
+        "polymer": "Polymer",
+        "glass": "Optical glass",
+        "metal": "Metal"
+      },
+      "partMaterials": {
+        "body": "polymer",
+        "top-housing": "polymer",
+        "lens": "glass",
+        "lens-rim": "metal",
+        "viewfinder-left": "glass",
+        "viewfinder-right": "glass",
+        "eject-slot": "polymer"
+      },
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "glass": "#45a6c0",
+          "metal": "#a9b5ba"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "glass": "#79d4e3",
+          "metal": "#657780"
+        }
+      }
+    },
+    {
+      "assetId": "lantern-softbox",
+      "source": "catalog/kits/photo-video-studio/lantern-softbox.kcad.ts",
+      "sourceBeforeSha256": "65a66d63f6f0bc2f6df229b6c0dc705cadbbc70ab85ca60800405d44ccf6b209",
+      "sourceSha256": "533ed8366fe609628a510a5fbe4b13a71d796cf771d0521c488e76a9afe7a851",
+      "partCount": 13,
+      "materials": {
+        "diffusionFabric": "Diffuser fabric",
+        "polymer": "Polymer",
+        "metal": "Metal",
+        "rubber": "Rubber"
+      },
+      "partMaterials": {
+        "diffuser": "diffusionFabric",
+        "top-cap": "polymer",
+        "bottom-cap": "polymer",
+        "rib-left": "metal",
+        "rib-right": "metal",
+        "stand-pole": "metal",
+        "stand-hub": "metal",
+        "stand-leg-one": "metal",
+        "stand-leg-two": "metal",
+        "stand-leg-three": "metal",
+        "foot-one": "rubber",
+        "foot-two": "rubber",
+        "foot-three": "rubber"
+      },
+      "presets": {
+        "studioBlack": {
+          "diffusionFabric": "#fff7e8",
+          "polymer": "#343c43",
+          "metal": "#a9b5ba",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "diffusionFabric": "#fff0c8",
+          "polymer": "#c75a2e",
+          "metal": "#657780",
+          "rubber": "#292b2d"
+        }
+      }
+    },
+    {
+      "assetId": "led-panel-light",
+      "source": "catalog/kits/photo-video-studio/led-panel-light.kcad.ts",
+      "sourceBeforeSha256": "b69776e88c8c061b5b288ea1a4550b338fd0bde4d22077c34337a998cfcc6cb0",
+      "sourceSha256": "26db6501ad0223d2e7d6964c594965a388ee5e7c7dcf8740b721fb9a8356b525",
+      "partCount": 10,
+      "materials": {
+        "polymer": "Polymer",
+        "polycarbonate": "Diffuser polycarbonate",
+        "metal": "Metal"
+      },
+      "partMaterials": {
+        "panel": "polymer",
+        "diffuser-face": "polycarbonate",
+        "yoke-crossbar": "metal",
+        "yoke-left": "metal",
+        "yoke-right": "metal",
+        "stand-pole": "metal",
+        "stand-hub": "metal",
+        "stand-leg-one": "metal",
+        "stand-leg-two": "metal",
+        "stand-leg-three": "metal"
+      },
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "polycarbonate": "#d7e4e3",
+          "metal": "#a9b5ba"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "polycarbonate": "#f0c75a",
+          "metal": "#657780"
+        }
+      }
+    },
+    {
+      "assetId": "lens-filter-set",
+      "source": "catalog/kits/photo-video-studio/lens-filter-set.kcad.ts",
+      "sourceBeforeSha256": "2564c865d48a059de1935fb44199f8fc20a96c10d2cd790c26971ff619c4bfe0",
+      "sourceSha256": "cf01593e881c1095b4e11993cc12b14f5ee89bb2bf3c27d7f955334c4fbcdf29",
+      "partCount": 7,
+      "materials": {
+        "glass": "Optical glass",
+        "metal": "Metal",
+        "polymer": "Polymer"
+      },
+      "partMaterials": {
+        "filter-one": "glass",
+        "filter-one-rim": "metal",
+        "filter-two": "glass",
+        "filter-two-rim": "metal",
+        "filter-three": "glass",
+        "filter-three-rim": "metal",
+        "case": "polymer"
+      },
+      "presets": {
+        "studioBlack": {
+          "glass": "#45a6c0",
+          "metal": "#a9b5ba",
+          "polymer": "#343c43"
+        },
+        "fieldRental": {
+          "glass": "#79d4e3",
+          "metal": "#657780",
+          "polymer": "#c75a2e"
+        }
+      }
+    },
+    {
+      "assetId": "lens-hood",
+      "source": "catalog/kits/photo-video-studio/lens-hood.kcad.ts",
+      "sourceBeforeSha256": "62b5f36f45301c1bf090aabfca7a3e197075aececffb42886878a9cabbb1d7e7",
+      "sourceSha256": "a005ea2fa6de8c7158d0e6b210f8e0fbd8e22a0e03c98b146b8f58dc066c3bb5",
+      "partCount": 5,
+      "materials": {
+        "polymer": "Polymer",
+        "metal": "Metal"
+      },
+      "partMaterials": {
+        "tube": "polymer",
+        "bayonet-ring": "metal",
+        "petal-left": "polymer",
+        "petal-right": "polymer",
+        "petal-front": "polymer"
+      },
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "metal": "#a9b5ba"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "metal": "#657780"
+        }
+      }
+    },
+    {
+      "assetId": "light-stand",
+      "source": "catalog/kits/photo-video-studio/light-stand.kcad.ts",
+      "sourceBeforeSha256": "4be4bc6b838bdce2ba6139e1cea70d37b231789578619fc519e39ce106f23fd5",
+      "sourceSha256": "b6842996a706dce0ba551df78f08c86092d485edac009cc8d3f39d214fd2eb77",
+      "partCount": 9,
+      "materials": {
+        "metal": "Metal",
+        "polymer": "Polymer"
+      },
+      "partMaterials": {
+        "lower-pole": "metal",
+        "upper-pole": "metal",
+        "spigot": "metal",
+        "lock-one": "polymer",
+        "lock-two": "polymer",
+        "hub": "metal",
+        "leg-one": "metal",
+        "leg-two": "metal",
+        "leg-three": "metal"
+      },
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "polymer": "#343c43"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "polymer": "#c75a2e"
+        }
+      }
+    },
+    {
+      "assetId": "macro-lens",
+      "source": "catalog/kits/photo-video-studio/macro-lens.kcad.ts",
+      "sourceBeforeSha256": "1a103850e7928865dff1899adacd86550d9597fbace1570688e13b150b2d8ae5",
+      "sourceSha256": "b8b3dcf9677080a55b24e3af037896267feab80cbdaf8f8ecd9b5fcb0d9c91bb",
+      "partCount": 6,
+      "materials": {
+        "metal": "Metal",
+        "rubber": "Rubber",
+        "glass": "Optical glass"
+      },
+      "partMaterials": {
+        "barrel": "metal",
+        "mount": "metal",
+        "focus-ring": "rubber",
+        "front-rim": "metal",
+        "front-glass": "glass",
+        "index-mark": "metal"
+      },
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "rubber": "#1b2024",
+          "glass": "#45a6c0"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "rubber": "#292b2d",
+          "glass": "#79d4e3"
+        }
+      }
+    },
+    {
+      "assetId": "mirrorless-camera",
+      "source": "catalog/kits/photo-video-studio/mirrorless-camera.kcad.ts",
+      "sourceBeforeSha256": "8708d89a4691b3a3537fa8b250decb3334994483733b09841fa367b65d98ce50",
+      "sourceSha256": "937f6b306f1424fa0c7c47139ab4db881fa7415d3bc55ccb38f40174a581dc3d",
+      "partCount": 7,
+      "materials": {
+        "polymer": "Polymer",
+        "rubber": "Rubber",
+        "glass": "Optical glass",
+        "metal": "Metal"
+      },
+      "partMaterials": {
+        "body": "polymer",
+        "grip": "rubber",
+        "viewfinder": "glass",
+        "lens": "glass",
+        "front-ring": "metal",
+        "mode-dial": "metal",
+        "hot-shoe": "metal"
+      },
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "rubber": "#1b2024",
+          "glass": "#45a6c0",
+          "metal": "#a9b5ba"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "rubber": "#292b2d",
+          "glass": "#79d4e3",
+          "metal": "#657780"
+        }
+      }
+    },
+    {
+      "assetId": "monopod",
+      "source": "catalog/kits/photo-video-studio/monopod.kcad.ts",
+      "sourceBeforeSha256": "cec5b7a27f1ed4fcd01c704ac7d2faf8256ae577343ff3b075e566285418fd5d",
+      "sourceSha256": "f5f4ca1a6f50bf49ad88602a5006fe26f8015d43c69cdcf6d2717829146e86f1",
+      "partCount": 8,
+      "materials": {
+        "metal": "Metal",
+        "polymer": "Polymer",
+        "fabric": "Studio fabric",
+        "rubber": "Rubber"
+      },
+      "partMaterials": {
+        "lower-shaft": "metal",
+        "upper-shaft": "metal",
+        "lock-one": "polymer",
+        "lock-two": "polymer",
+        "tilt-head": "metal",
+        "quick-plate": "metal",
+        "wrist-loop": "fabric",
+        "rubber-foot": "rubber"
+      },
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "polymer": "#343c43",
+          "fabric": "#e5ddce",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "polymer": "#c75a2e",
+          "fabric": "#d6b365",
+          "rubber": "#292b2d"
+        }
+      }
+    },
+    {
+      "assetId": "pancake-lens",
+      "source": "catalog/kits/photo-video-studio/pancake-lens.kcad.ts",
+      "sourceBeforeSha256": "a5bdc73ca5752d5ece351692d5122411ab73432bb36f6ce95910bffe42dc2cdc",
+      "sourceSha256": "2936b333c0bc7ebc68ffe9ec8d2872f16df29cfc7aff1d577daf566da5b21194",
+      "partCount": 5,
+      "materials": {
+        "metal": "Metal",
+        "glass": "Optical glass",
+        "rubber": "Rubber"
+      },
+      "partMaterials": {
+        "barrel": "metal",
+        "mount": "metal",
+        "front-rim": "metal",
+        "front-glass": "glass",
+        "focus-band": "rubber"
+      },
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "glass": "#45a6c0",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "glass": "#79d4e3",
+          "rubber": "#292b2d"
+        }
+      }
+    },
+    {
+      "assetId": "pocket-digital-camera",
+      "source": "catalog/kits/photo-video-studio/pocket-digital-camera.kcad.ts",
+      "sourceBeforeSha256": "d6a34663d5d0e7bc8834e1764d50bb918b5d7e254b623d9a064ae26d92076222",
+      "sourceSha256": "fa1296fcbc3fd02d856035ac6345dda1797fab68dec2023255e98b50c63c782f",
+      "partCount": 6,
+      "materials": {
+        "polymer": "Polymer",
+        "metal": "Metal",
+        "glass": "Optical glass",
+        "fabric": "Studio fabric"
+      },
+      "partMaterials": {
+        "body": "polymer",
+        "lens-barrel": "metal",
+        "lens-face": "glass",
+        "rear-screen": "glass",
+        "flash-window": "glass",
+        "wrist-loop": "fabric"
+      },
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "metal": "#a9b5ba",
+          "glass": "#45a6c0",
+          "fabric": "#e5ddce"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "metal": "#657780",
+          "glass": "#79d4e3",
+          "fabric": "#d6b365"
+        }
+      }
+    },
+    {
+      "assetId": "portrait-lens",
+      "source": "catalog/kits/photo-video-studio/portrait-lens.kcad.ts",
+      "sourceBeforeSha256": "626462ede16f6f73d1fec32f2a1930b652246a4cef1e570ff35cd49bc0e8bc2f",
+      "sourceSha256": "30ab48ac09d734e7ed4acef9ae956a588b7d402090d1835134b4f9abfa862a3a",
+      "partCount": 6,
+      "materials": {
+        "metal": "Metal",
+        "rubber": "Rubber",
+        "glass": "Optical glass"
+      },
+      "partMaterials": {
+        "barrel": "metal",
+        "mount": "metal",
+        "focus-ring": "rubber",
+        "front-ring": "metal",
+        "front-glass": "glass",
+        "aperture-band": "rubber"
+      },
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "rubber": "#1b2024",
+          "glass": "#45a6c0"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "rubber": "#292b2d",
+          "glass": "#79d4e3"
+        }
+      }
+    },
+    {
+      "assetId": "reflector-board",
+      "source": "catalog/kits/photo-video-studio/reflector-board.kcad.ts",
+      "sourceBeforeSha256": "c378201cc0216d658f0e2cd1920608eac0f6a79da61466f827ddc7fd4d1bfb49",
+      "sourceSha256": "7f4d3f0e290b52c6a337993b33b675b27af15921326e72c953d110444e59bbe0",
+      "partCount": 5,
+      "materials": {
+        "reflectiveFilm": "Reflective film",
+        "metal": "Metal"
+      },
+      "partMaterials": {
+        "left-panel": "reflectiveFilm",
+        "right-panel": "reflectiveFilm",
+        "hinge": "metal",
+        "kickstand": "metal",
+        "kickstand-foot": "metal"
+      },
+      "presets": {
+        "studioBlack": {
+          "reflectiveFilm": "#d0d7d7",
+          "metal": "#a9b5ba"
+        },
+        "fieldRental": {
+          "reflectiveFilm": "#d3a64b",
+          "metal": "#657780"
+        }
+      }
+    },
+    {
+      "assetId": "ring-light",
+      "source": "catalog/kits/photo-video-studio/ring-light.kcad.ts",
+      "sourceBeforeSha256": "8271726e4cd03db390997b8fd3413e704ec72fd652cd9f758343c9729ca09b80",
+      "sourceSha256": "ea666924c20163294de86a6d10169de0128c3645aadbf914d9b0e94d86fffeb2",
+      "partCount": 9,
+      "materials": {
+        "polycarbonate": "Diffuser polycarbonate",
+        "polymer": "Polymer",
+        "rubber": "Rubber",
+        "metal": "Metal"
+      },
+      "partMaterials": {
+        "light-ring": "polycarbonate",
+        "phone-grip": "polymer",
+        "phone-clamp-top": "rubber",
+        "phone-clamp-bottom": "rubber",
+        "pole": "metal",
+        "hub": "metal",
+        "leg-one": "metal",
+        "leg-two": "metal",
+        "leg-three": "metal"
+      },
+      "presets": {
+        "studioBlack": {
+          "polycarbonate": "#d7e4e3",
+          "polymer": "#343c43",
+          "rubber": "#1b2024",
+          "metal": "#a9b5ba"
+        },
+        "fieldRental": {
+          "polycarbonate": "#f0c75a",
+          "polymer": "#c75a2e",
+          "rubber": "#292b2d",
+          "metal": "#657780"
+        }
+      }
+    },
+    {
+      "assetId": "shoulder-rig",
+      "source": "catalog/kits/photo-video-studio/shoulder-rig.kcad.ts",
+      "sourceBeforeSha256": "4101422c7f2e392507775a577125df73067cb90ed382958aa5d926ff01a8052a",
+      "sourceSha256": "72124fc1119943779d5fb44bb717f5bb202655aa344e1fea7814f9c684f70ef9",
+      "partCount": 8,
+      "materials": {
+        "metal": "Metal",
+        "foam": "Foam",
+        "rubber": "Rubber"
+      },
+      "partMaterials": {
+        "rail-left": "metal",
+        "rail-right": "metal",
+        "shoulder-pad": "foam",
+        "camera-plate": "metal",
+        "left-handgrip": "rubber",
+        "right-handgrip": "rubber",
+        "crossbar": "metal",
+        "rear-counterweight": "metal"
+      },
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "foam": "#514844",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "foam": "#596c53",
+          "rubber": "#292b2d"
+        }
+      }
+    },
+    {
+      "assetId": "softbox-light",
+      "source": "catalog/kits/photo-video-studio/softbox-light.kcad.ts",
+      "sourceBeforeSha256": "9685bc499d23ee3b7b75fa9a40a464717f4ca5c3c6b05a41cfe2572bdf8499aa",
+      "sourceSha256": "55e5734f21658a8c89c81761c2c684133b95d01bd33fd7dccb6b6c717ce2706c",
+      "partCount": 8,
+      "materials": {
+        "diffusionFabric": "Diffuser fabric",
+        "fabric": "Studio fabric",
+        "metal": "Metal",
+        "rubber": "Rubber"
+      },
+      "partMaterials": {
+        "front-diffuser": "diffusionFabric",
+        "side-left": "fabric",
+        "side-right": "fabric",
+        "top-side": "fabric",
+        "bottom-side": "fabric",
+        "rear-mount": "metal",
+        "stand-pole": "metal",
+        "stand-base": "rubber"
+      },
+      "presets": {
+        "studioBlack": {
+          "diffusionFabric": "#fff7e8",
+          "fabric": "#e5ddce",
+          "metal": "#a9b5ba",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "diffusionFabric": "#fff0c8",
+          "fabric": "#d6b365",
+          "metal": "#657780",
+          "rubber": "#292b2d"
+        }
+      }
+    },
+    {
+      "assetId": "speedlight-flash",
+      "source": "catalog/kits/photo-video-studio/speedlight-flash.kcad.ts",
+      "sourceBeforeSha256": "21c0933494f0100b316f4fecb396705c520ee74e7684158ecaf8f85953c62266",
+      "sourceSha256": "9feefb9a0d6eb118c49c841ea6cea58edec5c3f38621f3f3e4404e55a10ff368",
+      "partCount": 7,
+      "materials": {
+        "metal": "Metal",
+        "polymer": "Polymer",
+        "polycarbonate": "Diffuser polycarbonate",
+        "glass": "Optical glass"
+      },
+      "partMaterials": {
+        "base": "metal",
+        "foot": "metal",
+        "upright": "polymer",
+        "flash-head": "polymer",
+        "diffuser": "polycarbonate",
+        "rear-screen": "glass",
+        "control-dial": "polymer"
+      },
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "polymer": "#343c43",
+          "polycarbonate": "#d7e4e3",
+          "glass": "#45a6c0"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "polymer": "#c75a2e",
+          "polycarbonate": "#f0c75a",
+          "glass": "#79d4e3"
+        }
+      }
+    },
+    {
+      "assetId": "telephoto-lens",
+      "source": "catalog/kits/photo-video-studio/telephoto-lens.kcad.ts",
+      "sourceBeforeSha256": "2e7fdddbc8f0caf997ae1d0aa88309d9ae60c70f3fbe22a8f643d6b742bfde1b",
+      "sourceSha256": "ac4848fec00cd390471a4117ed7cedf116ee997bb306ddc9ab82b630e96b73b7",
+      "partCount": 8,
+      "materials": {
+        "metal": "Metal",
+        "rubber": "Rubber",
+        "glass": "Optical glass"
+      },
+      "partMaterials": {
+        "main-barrel": "metal",
+        "mount": "metal",
+        "zoom-band": "rubber",
+        "focus-band": "rubber",
+        "front-rim": "metal",
+        "front-glass": "glass",
+        "collar": "metal",
+        "collar-foot": "metal"
+      },
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "rubber": "#1b2024",
+          "glass": "#45a6c0"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "rubber": "#292b2d",
+          "glass": "#79d4e3"
+        }
+      }
+    },
+    {
+      "assetId": "umbrella-reflector",
+      "source": "catalog/kits/photo-video-studio/umbrella-reflector.kcad.ts",
+      "sourceBeforeSha256": "570d5532af4734e6a06c533f8d8a9e35c9affa4967c43404fd70348de3afe955",
+      "sourceSha256": "058c90d6d4f75931f036575fd01f74e67c0161b576962ea031ccd5c20007d5e4",
+      "partCount": 11,
+      "materials": {
+        "fabric": "Studio fabric",
+        "polymer": "Polymer",
+        "metal": "Metal"
+      },
+      "partMaterials": {
+        "canopy": "fabric",
+        "hub": "polymer",
+        "shaft": "metal",
+        "rib-one": "metal",
+        "rib-two": "metal",
+        "rib-three": "metal",
+        "rib-four": "metal",
+        "stand-hub": "polymer",
+        "stand-leg-one": "metal",
+        "stand-leg-two": "metal",
+        "stand-leg-three": "metal"
+      },
+      "presets": {
+        "studioBlack": {
+          "fabric": "#e5ddce",
+          "polymer": "#343c43",
+          "metal": "#a9b5ba"
+        },
+        "fieldRental": {
+          "fabric": "#d6b365",
+          "polymer": "#c75a2e",
+          "metal": "#657780"
+        }
+      }
+    },
+    {
+      "assetId": "video-tripod",
+      "source": "catalog/kits/photo-video-studio/video-tripod.kcad.ts",
+      "sourceBeforeSha256": "afb084f173b566c35e364a84b385ef9675cf57cfd32ee01b3adf236fcc60c031",
+      "sourceSha256": "4f7d32ddfa646fa95abe7e363faf0e1996560a6b87694fa27fca1a195be524fc",
+      "partCount": 13,
+      "materials": {
+        "metal": "Metal",
+        "rubber": "Rubber"
+      },
+      "partMaterials": {
+        "bowl-head": "metal",
+        "fluid-head": "metal",
+        "quick-plate": "metal",
+        "pan-handle": "metal",
+        "handle-grip": "rubber",
+        "center-column": "metal",
+        "leg-one": "metal",
+        "leg-two": "metal",
+        "leg-three": "metal",
+        "foot-one": "rubber",
+        "foot-two": "rubber",
+        "foot-three": "rubber",
+        "spreader": "metal"
+      },
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "rubber": "#1b2024"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "rubber": "#292b2d"
+        }
+      }
+    },
+    {
+      "assetId": "webcam",
+      "source": "catalog/kits/photo-video-studio/webcam.kcad.ts",
+      "sourceBeforeSha256": "1189dd1c004d1ad72f839379be8f928b9c8d30db96a305748e7defa9a888c32f",
+      "sourceSha256": "9ac865ae55f9d4d330b39036cd767386f7bd23caf6461fd212f488ba7ba85c12",
+      "partCount": 7,
+      "materials": {
+        "polymer": "Polymer",
+        "glass": "Optical glass",
+        "metal": "Metal"
+      },
+      "partMaterials": {
+        "camera-body": "polymer",
+        "lens": "glass",
+        "left-mic": "metal",
+        "right-mic": "metal",
+        "neck": "polymer",
+        "monitor-clip": "polymer",
+        "clip-lip": "polymer"
+      },
+      "presets": {
+        "studioBlack": {
+          "polymer": "#343c43",
+          "glass": "#45a6c0",
+          "metal": "#a9b5ba"
+        },
+        "fieldRental": {
+          "polymer": "#c75a2e",
+          "glass": "#79d4e3",
+          "metal": "#657780"
+        }
+      }
+    },
+    {
+      "assetId": "wide-angle-lens",
+      "source": "catalog/kits/photo-video-studio/wide-angle-lens.kcad.ts",
+      "sourceBeforeSha256": "4e2daa492b351d670b4d7bf180693b35f7f5593941e5593a4e915437ad118a27",
+      "sourceSha256": "94228dced1fa6439f0b74e8ab03a68e5521a6e686e34854e8afc2c50e01067be",
+      "partCount": 5,
+      "materials": {
+        "metal": "Metal",
+        "rubber": "Rubber",
+        "glass": "Optical glass"
+      },
+      "partMaterials": {
+        "barrel": "metal",
+        "mount": "metal",
+        "focus-ring": "rubber",
+        "front-rim": "metal",
+        "front-glass": "glass"
+      },
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "rubber": "#1b2024",
+          "glass": "#45a6c0"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "rubber": "#292b2d",
+          "glass": "#79d4e3"
+        }
+      }
+    },
+    {
+      "assetId": "zoom-lens",
+      "source": "catalog/kits/photo-video-studio/zoom-lens.kcad.ts",
+      "sourceBeforeSha256": "2392b3062c713bad4c6d51df0a09b65d51c14fce288b2b0640eacce33af42326",
+      "sourceSha256": "54ea5b7d9ef79abd6a45b78ea3e1cac805f9062c12118d139c038b71ef94014d",
+      "partCount": 8,
+      "materials": {
+        "metal": "Metal",
+        "rubber": "Rubber",
+        "glass": "Optical glass"
+      },
+      "partMaterials": {
+        "mount": "metal",
+        "rear-barrel": "metal",
+        "zoom-ring": "metal",
+        "middle-barrel": "metal",
+        "focus-ring": "rubber",
+        "front-barrel": "metal",
+        "front-rim": "metal",
+        "front-glass": "glass"
+      },
+      "presets": {
+        "studioBlack": {
+          "metal": "#a9b5ba",
+          "rubber": "#1b2024",
+          "glass": "#45a6c0"
+        },
+        "fieldRental": {
+          "metal": "#657780",
+          "rubber": "#292b2d",
+          "glass": "#79d4e3"
+        }
+      }
+    }
+  ],
+  "materialControls": 125,
+  "presetEntries": 80,
+  "partCount": 322
+}

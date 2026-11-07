@@ -1,0 +1,105 @@
+{
+  "date": "2026-11-05",
+  "kit": "vet-clinic",
+  "assetsBefore": 50,
+  "assetsAfter": 50,
+  "assetIdsAdded": 0,
+  "assetsPromoted": 50,
+  "materialControlsAdded": 146,
+  "assetsWithTwoToFourMaterialControls": 50,
+  "presetEntriesAdded": 100,
+  "assetsWithClinicCleanPreset": 50,
+  "assetsWithSoftTealPreset": 50,
+  "previewsRendered": 50,
+  "indexRowsWithFreshSourceHashAndPreview": 50,
+  "kitQuality": {
+    "passed": 50,
+    "total": 50,
+    "exitCode": 0
+  },
+  "catalogQuality": {
+    "before": {
+      "passed": 1504,
+      "total": 2390,
+      "passRatePercent": 62.93
+    },
+    "after": {
+      "passed": 1554,
+      "total": 2390,
+      "passRatePercent": 65.02,
+      "thin": 836,
+      "thinRatePercent": 34.98,
+      "remainingThinKits": 17
+    }
+  },
+  "eslint": {
+    "command": "npx eslint catalog/kits/vet-clinic/",
+    "exitCode": 0
+  },
+  "integrationTests": {
+    "command": "npx vitest run tests/integration/catalog/",
+    "filesPassed": 4,
+    "testsPassed": 15,
+    "exitCode": 0,
+    "durationSeconds": 248.89
+  },
+  "localPages": {
+    "hubListsKit": true,
+    "kitPages": 50,
+    "previewCopies": 50,
+    "sourceHashes": 50,
+    "parameterCountRangeIncludingScale": [
+      3,
+      5
+    ],
+    "passed": true
+  },
+  "hostedKernelEvaluation": {
+    "asset": "anesthesia-machine",
+    "dryRun": {
+      "ok": true,
+      "featureCount": 35,
+      "parts": 17,
+      "diagnostics": 0
+    },
+    "fullEvaluation": {
+      "valid": true,
+      "volumeMm3": 166163016.72,
+      "faceCount": 75,
+      "sizeMm": [
+        716,
+        515,
+        1202.5
+      ],
+      "diagnostics": 0
+    },
+    "hostedSnapshot": "unavailable because no browser attachment was present; local generated PNGs were visually inspected"
+  },
+  "visualReview": {
+    "previewAssets": [
+      "anesthesia-machine",
+      "stainless-kennel-bank",
+      "patient-recovery-incubator"
+    ],
+    "videoDecodedFrames": 6,
+    "videoVisuallyInspected": true
+  },
+  "packageBoundary": {
+    "auditFile": "package-boundary-audit.json",
+    "passed": true,
+    "packageName": "kernelcad",
+    "packageVersion": "0.17.4",
+    "fileCount": 5200,
+    "allKitSourcesAndPreviewsIncluded": true,
+    "catalogIndexIncluded": true,
+    "packageExportsUnchanged": true,
+    "productImplementationPaths": 0,
+    "archiveRetained": false
+  },
+  "deployment": {
+    "branchDeployed": false,
+    "liveSiteAfterPromotionVerified": false,
+    "status": "current public site is the prior baseline; deployment is pending merge and marketing deploy"
+  },
+  "hardwareAcceptance": "not performed"
+}

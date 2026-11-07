@@ -18,6 +18,10 @@ const style = param('style', 'baseplate', { choices: ['baseplate', 'round'], lab
 const caseColor = param('caseColor', '#55755c', { label: 'Case' });
 const dial = param('dial', '#e1ddc8', { label: 'Dial' });
 const needle = param('needle', '#bd4935', { label: 'Needle' });
+presets({
+  field: { caseColor: '#55755c', dial: '#e1ddc8', needle: '#bd4935' },
+  rescue: { caseColor: '#c84e35', dial: '#ebe6d6', needle: '#303b3f' },
+});
 
 const compass = assembly('trail-compass');
 if (style.value === 'round') {

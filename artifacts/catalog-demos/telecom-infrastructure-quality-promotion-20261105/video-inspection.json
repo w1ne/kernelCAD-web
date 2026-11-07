@@ -1,0 +1,26 @@
+{
+  "decodedFrames": 6,
+  "sampleSeconds": [
+    1,
+    4,
+    7,
+    10,
+    13,
+    16
+  ],
+  "probe": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "nb_frames": "540"
+      }
+    ],
+    "format": {
+      "duration": "18.000000",
+      "size": "261663"
+    }
+  }
+}

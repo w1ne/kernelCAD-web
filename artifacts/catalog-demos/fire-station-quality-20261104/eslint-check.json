@@ -1,0 +1,7 @@
+{
+  "command": "npx eslint catalog/kits/fire-station/",
+  "exitCode": 0,
+  "status": "passed",
+  "files": "catalog/kits/fire-station/",
+  "output": "eslint-output.txt"
+}

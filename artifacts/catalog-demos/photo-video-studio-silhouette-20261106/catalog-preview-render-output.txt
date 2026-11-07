@@ -1,0 +1,5 @@
+photo-video-studio/camera-tripod: 1720 tris
+photo-video-studio/cinema-camera: 1466 tris
+photo-video-studio/digital-slr-camera: 1732 tris
+photo-video-studio/softbox-light: 1212 tris
+photo-video-studio/telephoto-lens: 1414 tris

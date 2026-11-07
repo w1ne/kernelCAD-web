@@ -1,0 +1,19 @@
+{
+  "video": "artifacts/catalog-demos/music-quality-20261106/music-quality-demo.mp4",
+  "durationSeconds": 18.0,
+  "width": 1280,
+  "height": 720,
+  "codec": "h264",
+  "frameRate": "24/1",
+  "decodedSamplesSeconds": [
+    1.5,
+    4.5,
+    7.5,
+    10.5,
+    13.5,
+    16.5
+  ],
+  "sampleCount": 6,
+  "contactSheet": "artifacts/catalog-demos/music-quality-20261106/video-review/contact-sheet.png",
+  "review": "Visually inspected the decoded 6-frame contact sheet: source-to-preview workflow, readable instrument forms, contrasting preset variants and local validation summary; no deployed behavior or physical acceptance is depicted."
+}

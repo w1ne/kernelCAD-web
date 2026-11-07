@@ -1,0 +1,31 @@
+{
+  "kit": "recycling-facility",
+  "assetsPromoted": 153,
+  "newAssetsAdded": 0,
+  "materialKnobsMin": 2,
+  "materialKnobsMax": 4,
+  "materialKnobsTotal": 384,
+  "netMaterialKnobsAdded": 231,
+  "presetNamesPerAsset": [
+    2
+  ],
+  "presetEntries": 2,
+  "presetEntriesTotal": 306,
+  "curvedGeometryAssets": 146,
+  "previewsRendered": 153,
+  "indexedRowsWithPreview": 153,
+  "catalogRows": 2390,
+  "sourceHashesFresh": true,
+  "sourceHashMismatches": [],
+  "missingPreviews": [],
+  "triangleRange": [
+    108,
+    1128
+  ],
+  "qualityGate": "153/153 pass",
+  "eslint": "passed",
+  "integration": "4 files \u00b7 15 tests passed",
+  "localPages": "passed",
+  "localPagePairs": 153,
+  "liveProduction": "not deployed; verify after merge/deployment"
+}

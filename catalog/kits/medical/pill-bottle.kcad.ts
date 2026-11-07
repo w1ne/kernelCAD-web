@@ -2,7 +2,7 @@ meta({
   "name": "pill-bottle",
   "license": "CC0-1.0",
   "title": "Pill bottle",
-  "description": "Small medicine bottle with screw cap, label band and broad stable base for pharmacy or bathroom props.",
+  "description": "Small medicine bottle with screw cap, label band and broad stable base for pharmacy or bathroom props. Material controls: Amber polymer, Label paper, Cap polymer.",
   "tags": [
     "pill bottle",
     "medicine bottle",
@@ -23,20 +23,22 @@ meta({
   "triangleBudget": 260
 });
 
+// A prescription bottle has an amber polymer body, paper label and separate child-safe cap.
 const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
-const shell = param('shell', '#f0f2ed', { label: 'Shell' });
-const accent = param('accent', '#d8bd65', { label: 'Accent' });
+const amberPolymer = param('amberPolymer', '#c28d39', { label: 'Amber polymer' });
+const labelPaper = param('labelPaper', '#eee9dd', { label: 'Label paper' });
+const medicalPolymer = param('medicalPolymer', '#d8bd65', { label: 'Cap polymer' });
 presets({
-  clinic: { shell: '#f1f3f4', accent: '#2d9893' },
-  emergency: { shell: '#ebe8df', accent: '#c9413b' },
+  clinic: { amberPolymer: '#cc9b49', labelPaper: '#f4f1e8', medicalPolymer: '#73a29d' },
+  emergency: { amberPolymer: '#bd8640', labelPaper: '#eee3d5', medicalPolymer: '#c9413b' },
 });
 const p = assembly('pill-bottle');
 const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
 
-p.part('bottle', c(0, 0, 0, 82, 27, 10).color(shell).scale(overallScale));
-p.part('label', c(0, 0, 22, 38, 28, 10).color(accent).scale(overallScale));
-p.part('neck', c(0, 0, 82, 15, 20, 10).color(shell).scale(overallScale));
-p.part('cap', c(0, 0, 96, 24, 24, 10).color(accent).scale(overallScale));
-p.part('cap-rim', c(0, 0, 94, 5, 26, 10).color(shell).scale(overallScale));
+p.part('bottle', c(0, 0, 0, 82, 27, 10).color(amberPolymer).scale(overallScale));
+p.part('label', c(0, 0, 22, 38, 28, 10).color(labelPaper).scale(overallScale));
+p.part('neck', c(0, 0, 82, 15, 20, 10).color(amberPolymer).scale(overallScale));
+p.part('cap', c(0, 0, 96, 24, 24, 10).color(medicalPolymer).scale(overallScale));
+p.part('cap-rim', c(0, 0, 94, 5, 26, 10).color(medicalPolymer).scale(overallScale));
 
 return p.model();

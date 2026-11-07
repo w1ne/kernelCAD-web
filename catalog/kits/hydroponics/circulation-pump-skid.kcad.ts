@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: CC0-1.0
-// Original low-poly hydroponics scene prop, millimetres, Z up, base at z = 0.
+// Circulation pump skid: Recirculation pump skid with a cylindrical motor and volute, axial coupling guard, inlet flange and discharge riser. Low-poly visualization geometry in millimetres, Z up.
 
 meta({
   name: "circulation-pump-skid",
   license: 'CC0-1.0',
   title: "Circulation pump skid",
-  description: "Compact recirculation unit with pump housing, motor block, inlet elbow and discharge riser. Stylized scene geometry. Knobs: overall scale and asset color.",
+  description: "Recirculation pump skid with a cylindrical motor and volute, axial coupling guard, inlet flange and discharge riser. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
   tags: ['hydroponics', 'greenhouse', 'controlled environment agriculture', 'low poly', 'scene prop'],
   kit: 'hydroponics',
   category: 'prop',
@@ -15,20 +15,44 @@ meta({
 });
 
 const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });
-const color = param('color', "#5e7975", { label: 'Asset color' });
+const powderCoatedSteel=param('powderCoatedSteel','#557b70',{label:'Powder-coated steel'});
+const pvc=param('pvc','#c7d4ca',{label:'PVC'});
+const polymer=param('polymer','#ddd8c7',{label:'Polymer'});
+presets({
+  weathered: {powderCoatedSteel:'#69766e', pvc:'#b2bcae', polymer:'#b4b5aa'},
+  highVisibility: {powderCoatedSteel:'#e87832', pvc:'#ead789', polymer:'#f2c84b'},
+});
 const b = (x:number,y:number,z:number,w:number,d:number,h:number) => box(w,d,h,true).translate(x,y,z+h/2).scale(scale);
-const c = (x:number,y:number,z:number,h:number,r:number,s:number) => cylinder(h,r,s).translate(x,y,z).scale(scale);
+const section=(radius:number,sides:number)=>{
+  let outline=path().moveTo(radius*Math.cos(Math.PI/2),radius*Math.sin(Math.PI/2));
+  for(let k=1;k<sides;k++){
+    const angle=Math.PI/2+(2*Math.PI*k)/sides;
+    outline=outline.lineTo(radius*Math.cos(angle),radius*Math.sin(angle));
+  }
+  return outline.close();
+};
+const loftCylinder=(height:number,radius:number,sides:number)=>{
+  const levels=[0,height*0.08,height*0.92,height];
+  const radii=[radius*0.9,radius,radius,radius*0.9];
+  const profiles=levels.map((_,index)=>section(radii[index],sides));
+  return profiles[0].loft(profiles.slice(1),{
+    planes:levels.map((z)=>({plane:'XY' as const,origin:[0,0,z] as [number,number,number]})),
+    ruled:true,
+  });
+};
 
 const p = assembly("circulation-pump-skid");
-p.part("base-plate", b(0,0,0,900,470,80).color(color));
-p.part("motor-block", b(-190,0,80,300,320,310).color(color));
-p.part("coupling-guard", b(55,0,210,150,190,150).color(color));
-p.part("pump-support", b(250,0,80,180,260,330).color(color));
-p.part("front-nameplate", b(-190,-170,180,170,20,90).color(color));
-p.part("inlet-pipe", b(470,-50,140,260,70,70).color(color));
-p.part("discharge-pipe", b(300,0,410,75,70,260).color(color));
-p.part("pump-volute", c(260,0,180,250,125,10).color(color));
-p.part("inlet-flange", c(520,-50,140,65,88,10).color(color));
-p.part("motor-endcap", c(-370,0,170,85,150,10).color(color));
+p.part("base-plate", b(0,0,0,900,470,80).color(powderCoatedSteel));
+p.part("motor-block",loftCylinder(300,150,10).rotateY(90).translate(-340,0,235).scale(scale).color(powderCoatedSteel));
+p.part("coupling-guard",loftCylinder(210,78,10).rotateY(90).translate(-40,0,285).scale(scale).color(powderCoatedSteel));
+p.part("front-nameplate", b(-190,-170,180,170,20,90).color(polymer));
+p.part("inlet-pipe",loftCylinder(260,35,10).rotateY(90).translate(340,-50,175).scale(scale).color(pvc));
+p.part("discharge-pipe", b(300,0,410,75,70,260).color(pvc));
+p.part("pump-volute",loftCylinder(180,125,10).rotateY(90).translate(170,0,305).scale(scale).color(powderCoatedSteel));
+p.part("inlet-flange",loftCylinder(65,78,10).rotateY(90).translate(500,-50,175).scale(scale).color(pvc));
+p.part("motor-endcap",loftCylinder(30,148,10).rotateY(90).translate(-370,0,235).scale(scale).color(powderCoatedSteel));
+
+p.part("pump-support-near",b(260,-85,80,120,70,140).color(powderCoatedSteel));
+p.part("pump-support-far",b(260,85,80,120,70,140).color(powderCoatedSteel));
 
 return p.model();

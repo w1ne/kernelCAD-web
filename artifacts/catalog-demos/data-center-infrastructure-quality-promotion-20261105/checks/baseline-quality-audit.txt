@@ -1,0 +1,1 @@
+Before this promotion, scripts/checkCatalogQuality.py --top 20 reported 1604/2390 assets passing (67.1%). The data-center-infrastructure kit was 0/50.

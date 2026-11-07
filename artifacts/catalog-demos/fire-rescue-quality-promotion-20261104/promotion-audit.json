@@ -1,0 +1,28 @@
+{
+  "kit": "fire-rescue",
+  "assetsPromoted": 60,
+  "newAssets": 0,
+  "namedMaterialColorControls": 191,
+  "materialControlsMin": 2,
+  "materialControlsMax": 4,
+  "presetEntries": 120,
+  "presetNames": [
+    "highVisibility",
+    "weathered"
+  ],
+  "partAssignments": 974,
+  "previewsRendered": 60,
+  "indexedRowsWithPreview": 60,
+  "sourceHashesFresh": true,
+  "maxTriangleCount": 1296,
+  "maxTriangleBudget": 2200,
+  "triangleBudgetsHonest": true,
+  "baseAssetsOnGround": true,
+  "qualityGate": "60/60 assets pass",
+  "eslint": "passed",
+  "integration": "passed",
+  "catalogPages": "passed",
+  "catalogPagePairs": 60,
+  "status": "passed",
+  "claimBoundary": "Local source replay, software-rendered previews, catalog pages, lint, and integration tests; production deployment, field simulation, safety certification, and hardware acceptance are not established."
+}

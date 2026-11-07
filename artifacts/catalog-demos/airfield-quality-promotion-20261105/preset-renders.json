@@ -1,0 +1,73 @@
+{
+  "targets": [
+    "airport-fire-engine",
+    "airport-control-tower",
+    "aircraft-hangar"
+  ],
+  "results": [
+    {
+      "asset": "airport-fire-engine",
+      "preset": "weathered",
+      "triangles": 388,
+      "colors": {
+        "vehiclePaint": "#596765",
+        "cabPaint": "#596765",
+        "stainlessSteel": "#536267",
+        "rubber": "#202528"
+      }
+    },
+    {
+      "asset": "airport-fire-engine",
+      "preset": "highVisibility",
+      "triangles": 388,
+      "colors": {
+        "vehiclePaint": "#f0b52f",
+        "cabPaint": "#f0b52f",
+        "stainlessSteel": "#aeb9bb",
+        "rubber": "#262b2e"
+      }
+    },
+    {
+      "asset": "airport-control-tower",
+      "preset": "weathered",
+      "triangles": 72,
+      "colors": {
+        "cladding": "#596765",
+        "roofMetal": "#536267",
+        "concrete": "#555751",
+        "glass": "#315c69"
+      }
+    },
+    {
+      "asset": "airport-control-tower",
+      "preset": "highVisibility",
+      "triangles": 72,
+      "colors": {
+        "cladding": "#f0b52f",
+        "roofMetal": "#aeb9bb",
+        "concrete": "#999990",
+        "glass": "#82c8d0"
+      }
+    },
+    {
+      "asset": "aircraft-hangar",
+      "preset": "weathered",
+      "triangles": 76,
+      "colors": {
+        "cladding": "#596765",
+        "roofMetal": "#536267",
+        "concrete": "#555751"
+      }
+    },
+    {
+      "asset": "aircraft-hangar",
+      "preset": "highVisibility",
+      "triangles": 76,
+      "colors": {
+        "cladding": "#f0b52f",
+        "roofMetal": "#aeb9bb",
+        "concrete": "#999990"
+      }
+    }
+  ]
+}

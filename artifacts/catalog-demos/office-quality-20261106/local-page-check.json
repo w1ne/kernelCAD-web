@@ -1,0 +1,570 @@
+{
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-office-pages-20261106",
+  "outputRoot": "/tmp/kernelcad-office-pages-20261106/catalog",
+  "workspacePages": 2390,
+  "officePagesChecked": 40,
+  "hubBuilt": true,
+  "deployed": false,
+  "pages": [
+    {
+      "id": "archive-box",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/archive-box/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Paperboard",
+        "Cover stock",
+        "Label ink"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "business-card-holder",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/business-card-holder/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Anodized aluminum",
+        "Card stock",
+        "Rubber feet"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "calculator",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/calculator/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Case polymer",
+        "LCD glass",
+        "Keycap plastic"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "clipboard",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/clipboard/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Polypropylene",
+        "Paper",
+        "Stainless steel"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "desk-calendar",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/desk-calendar/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Calendar paper",
+        "Chipboard stand",
+        "Steel wire"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "desk-organizer",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/desk-organizer/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Timber",
+        "Stainless steel",
+        "Label paper"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "dry-erase-board",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/dry-erase-board/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Enamel steel",
+        "Aluminum frame",
+        "Marker polymer"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "envelope-stack",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/envelope-stack/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Kraft paper",
+        "Envelope paper",
+        "Printed ink"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "file-folder",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/file-folder/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Manila card",
+        "Paper",
+        "Steel wire"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "footrest",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/footrest/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Platform polymer",
+        "Grip rubber",
+        "Cushion foam"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "fountain-pen",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/fountain-pen/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Barrel resin",
+        "Stainless steel",
+        "Ink"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "hanging-file-folder",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/hanging-file-folder/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "File card",
+        "Hanging rail steel",
+        "Folder paper"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "highlighter",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/highlighter/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Barrel polymer",
+        "Fluorescent ink",
+        "Felt tip"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "hole-punch",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/hole-punch/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Powder-coated steel",
+        "Stainless steel",
+        "Handle polymer"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "ink-pad",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/ink-pad/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Case polymer",
+        "Ink felt",
+        "Stamp ink"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "label-maker",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/label-maker/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Case polymer",
+        "LCD glass",
+        "Grip rubber"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "laminator",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/laminator/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Housing polymer",
+        "Feed tray aluminum",
+        "Roller rubber"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "laptop-stand",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/laptop-stand/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Anodized aluminum",
+        "Silicone pads",
+        "Stainless steel"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "letter-sorter",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/letter-sorter/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Timber",
+        "Letter paper",
+        "Powder-coated steel"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "letter-tray",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/letter-tray/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Tray polymer",
+        "Grip rubber",
+        "Stainless steel"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "marker",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/marker/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Barrel polymer",
+        "Marker ink",
+        "Felt tip"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "mechanical-pencil",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/mechanical-pencil/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Barrel aluminum",
+        "Grip polymer",
+        "Graphite lead"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "memo-pad",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/memo-pad/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Memo paper",
+        "Chipboard backing",
+        "Printed ink"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "monitor-riser",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/monitor-riser/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Timber shelf",
+        "Support steel",
+        "Edge rubber"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "mousepad",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/mousepad/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Woven fabric",
+        "Non-slip rubber",
+        "Cushion foam"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "notebook",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/notebook/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Page paper",
+        "Cover leatherette",
+        "Printed ink"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "office-pinboard",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/office-pinboard/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Cork panel",
+        "Timber frame",
+        "Pin steel"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "paper-clip-dish",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/paper-clip-dish/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Dish polymer",
+        "Stainless steel",
+        "Brass clips"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "paper-cutter",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/paper-cutter/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Powder-coated steel",
+        "Stainless steel blade",
+        "Handle polymer"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "paper-shredder",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/paper-shredder/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Housing polymer",
+        "Cutter steel",
+        "Bin window glass"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "paperweight",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/paperweight/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Glass body",
+        "Brass foot",
+        "Ceramic inset"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "pencil-cup",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/pencil-cup/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Ceramic cup",
+        "Pencil wood",
+        "Graphite"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "ring-binder",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/ring-binder/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Cover polypropylene",
+        "Paper",
+        "Ring steel"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "rubber-stamp",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/rubber-stamp/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Handle timber",
+        "Stamp rubber",
+        "Cap brass"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "ruler",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/ruler/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Ruler acrylic",
+        "Scale ink",
+        "End aluminum"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "scissors",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/scissors/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Stainless steel",
+        "Handle polymer",
+        "Pivot brass"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "stapler",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/stapler/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Powder-coated steel",
+        "Stainless steel",
+        "Grip rubber"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "sticky-notes",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/sticky-notes/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Sticky-note paper",
+        "Adhesive strip",
+        "Printed ink"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "tape-dispenser",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/tape-dispenser/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Dispenser polymer",
+        "Cutter stainless steel",
+        "Roller rubber"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    },
+    {
+      "id": "wrist-rest",
+      "path": "/tmp/kernelcad-office-pages-20261106/catalog/office/wrist-rest/index.html",
+      "titlePresent": true,
+      "materialLabels": [
+        "Cover fabric",
+        "Cushion foam",
+        "Non-slip rubber"
+      ],
+      "presets": [
+        "classroom",
+        "professional"
+      ]
+    }
+  ]
+}

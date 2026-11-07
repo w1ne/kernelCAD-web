@@ -1,0 +1,28 @@
+Date: 2026-11-05 UTC
+Worktree: /home/andrii/worktrees/kernelCAD-web/catalog-2000
+
+Promote the existing source files:
+python3 artifacts/catalog-demos/vet-clinic-quality-promotion-20261105/promote_vet_clinic_quality.py
+
+Render all 50 previews at default parameters:
+npx tsx scripts/renderCatalogPreviews.ts anesthesia-machine appointment-status-display basket-muzzle cage-card-panel chemistry-analyzer dental-delivery-unit dental-scaler-console dental-xray-arm dog-run-gate electrosurgery-generator exam-step-stool exam-wall-station fluid-warmer grooming-bath-tub hard-sided-pet-carrier hematology-analyzer high-velocity-dryer-stand isolation-kennel kennel-bowl-rail leash-hook-board mayo-instrument-stand mobile-exam-light mobile-surgical-light mobile-ultrasound-cart multi-channel-infusion-pump multiparameter-monitor oxygen-therapy-cage patient-recovery-incubator pet-floor-scale radiography-tube-stand reception-check-in-counter restraint-loop-stand sample-prep-bench slide-storage-cabinet specimen-transport-cooler stacked-feline-condo stainless-kennel-bank surgical-scrub-sink surgical-suction-unit tabletop-autoclave treatment-cart urinalysis-analyzer veterinary-exam-stool veterinary-radiography-table veterinary-surgery-table waiting-area-partition-gate waiting-bench warming-cabinet wet-treatment-table xray-cassette
+
+Regenerate source hashes, mesh rows, and preview paths:
+npx tsx scripts/buildAssetCatalog.ts
+
+Gate, lint, and integration suite:
+python3 scripts/checkCatalogQuality.py --kit vet-clinic
+npx eslint catalog/kits/vet-clinic/
+npx vitest run tests/integration/catalog/
+
+Generate and verify local public catalog pages:
+npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-vet-clinic-catalog-pages
+python3 artifacts/catalog-demos/vet-clinic-quality-promotion-20261105/verify_vet_clinic_quality_pages.py /tmp/kernelcad-vet-clinic-catalog-pages
+
+Render the exact preset color values, capture the MP4, and inspect its decoded frames:
+npx tsx artifacts/catalog-demos/vet-clinic-quality-promotion-20261105/render_vet_clinic_presets.ts
+python3 artifacts/catalog-demos/vet-clinic-quality-promotion-20261105/capture_vet_clinic_quality.py
+python3 artifacts/catalog-demos/vet-clinic-quality-promotion-20261105/inspect_vet_clinic_quality_video.py
+
+Build and inspect the npm package archive, checking included catalog assets and the commercial source boundary:
+python3 artifacts/catalog-demos/vet-clinic-quality-promotion-20261105/audit_npm_package.py

@@ -1,0 +1,20 @@
+{
+  "video": "artifacts/catalog-demos/standard-components-visible-details-20261106/standard-components-visible-details.mp4",
+  "durationSeconds": 18.0,
+  "width": 1280,
+  "height": 720,
+  "codec": "h264",
+  "frameRate": "24/1",
+  "decodedSamplesSeconds": [
+    1.5,
+    4.5,
+    7.5,
+    10.5,
+    13.5,
+    16.5
+  ],
+  "sampleCount": 6,
+  "contactSheet": "artifacts/catalog-demos/standard-components-visible-details-20261106/video-review/contact-sheet.png",
+  "videoSha256": "e7dceb169ff841cb91fe880e26c00556d7d8ff95ba434f941ae703b8de481a78",
+  "visualReview": "Reviewed the six decoded frames at 1.5-second intervals across the 18-second MP4. No clipping or visible render defects found. The before/after panels distinguish the original flat pulley, horizontal hinge and plain terminal-block housing from the final toothed pulley, upright knuckled hinge and orange housing with visible gold contacts and silver screws. The preset grid shows clear dark, brass and weathered color changes; the size panel keeps the pulley recognizable at all three bounds. Source controls, triangle budgets and verification captions remain within the frame and are legible at 1280\u00d7720. The footer correctly limits claims to local renders and checks; no deployment or physical acceptance is represented."
+}

@@ -1,0 +1,5 @@
+MIXED  nature                       63/66   colours/asset=2.62
+  MIXED  props                        44/45   colours/asset=3.33
+
+  2386/2390 assets pass (47 rich kits, 0 thin kits)
+  4 thin assets = 0% of the catalog

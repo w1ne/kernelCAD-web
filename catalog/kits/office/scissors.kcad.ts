@@ -1,46 +1,53 @@
+// Office scissors: Desktop office scissors with crossed blades, pivot and contrasting handles. Material controls: stainless steel, handle polymer, pivot brass.
+
 meta({
   name: 'scissors',
   license: 'CC0-1.0',
   title: 'Office scissors',
-  description: 'Desktop office scissors with crossed blades, pivot and contrasting handles. Knobs: compact or standard format, blade, handle and pivot colours.',
+  description: "Desktop office scissors with crossed blades, pivot and contrasting handles. Controls: stainless steel, handle polymer, pivot brass.",
   tags: ['scissors', 'shears', 'office supplies', 'office', 'stationery'],
   kit: 'office',
   category: 'item',
   origin: 'base',
   compat: ['office', 'interior', 'desktop'],
-  triangleBudget: 280,
+  triangleBudget: 360,
 });
 
-const body = param('body', '#929da3', { label: 'Body' });
-const accent = param('accent', '#c7544d', { label: 'Accent' });
-const detail = param('detail', '#43494d', { label: 'Detail' });
+const stainlessSteel = param('stainlessSteel', '#aeb7ba', { label: 'Stainless steel' });
+const polymer = param('polymer', '#c95045', { label: 'Handle polymer' });
+const brass = param('brass', '#c19a4b', { label: 'Pivot brass' });
 const format = param('format', 'standard', { choices: ['compact', 'standard'], label: 'Format' });
 const k = format.value === 'compact' ? 0.8 : 1;
 
 presets({
-  clean: { body: '#e8e7df', accent: '#66829a', detail: '#454b50' },
-  warm: { body: '#c8a875', accent: '#557581', detail: '#493c34' },
+  professional: { stainlessSteel: '#aeb7ba', polymer: '#c95045', brass: '#c19a4b' },
+  classroom: { stainlessSteel: '#c0c6c8', polymer: '#4f7992', brass: '#d2a548' },
 });
 
 const office = assembly('scissors');
 
-const addBox = (name: string, x: number, y: number, z: number, w: number, d: number, h: number, colour: typeof body) => {
-  office.part(name, box(w * k, d * k, h * k, true).translate(x * k, y * k, (z + h / 2) * k).color(colour));
-};
-const addCylinder = (name: string, h: number, r: number, x: number, y: number, z: number, colour: typeof body) => {
-  office.part(name, cylinder(h * k, r * k).translate(x * k, y * k, z * k).color(colour));
+const blade = (name: string, outline: [number, number][], z: number) =>
+  office.part(name, extrudePolygon(outline, 3 * k).translate(0, 0, z * k).color(stainlessSteel));
+const handleTang = (name: string, side: 1 | -1, z: number) => {
+  const outline: [number, number][] = side === 1
+    ? [[24, -2], [42, 5], [51, 10], [58, 16], [55, 23], [49, 19], [42, 13], [26, 2]]
+    : [[24, 2], [42, -5], [51, -10], [58, -16], [55, -23], [49, -19], [42, -13], [26, -2]];
+  office.part(name, extrudePolygon(outline, 4 * k).translate(0, 0, z * k).color(polymer));
 };
 
-addBox('blade-left', -23, 0, 0, 94, 8, 3, body);
-addBox('blade-right', 23, 0, 3, 94, 8, 3, body);
-addBox('handle-left-inner', -70, -14, 0, 44, 7, 8, accent);
-addBox('handle-left-outer', -70, 14, 0, 44, 7, 8, accent);
-addBox('handle-left-side-a', -91, 0, 0, 7, 34, 8, accent);
-addBox('handle-left-side-b', -49, 0, 0, 7, 34, 8, accent);
-addBox('handle-right-inner', 70, -14, 0, 44, 7, 8, accent);
-addBox('handle-right-outer', 70, 14, 0, 44, 7, 8, accent);
-addBox('handle-right-side-a', 49, 0, 0, 7, 34, 8, accent);
-addBox('handle-right-side-b', 91, 0, 0, 7, 34, 8, accent);
-addCylinder('pivot', 8, 7, 0, 0, 4, detail);
+// The two blades open into a shallow V, with both finger loops behind the pivot.
+blade('lower-blade', [[27, -2], [-106, -31], [-85, -19], [27, 2]], 0);
+blade('upper-blade', [[27, 2], [-106, 31], [-85, 19], [27, -2]], 3);
+
+// Molded handle tangs bridge each finger loop back to the pivot, so the preview
+// reads as one usable pair of shears instead of disconnected rings and blades.
+handleTang('lower-handle-tang', -1, 0);
+handleTang('upper-handle-tang', 1, 4);
+
+const fingerLoop = (x: number, y: number) =>
+  cylinder(8 * k, 19 * k).subtract(cylinder(10 * k, 11 * k)).translate(x * k, y * k, 0);
+office.part('thumb-loop', fingerLoop(65, -20).color(polymer));
+office.part('finger-loop', fingerLoop(65, 20).color(polymer));
+office.part('pivot', cylinder(9 * k, 8 * k).translate(27 * k, 0, 0).color(brass));
 
 return office.model();

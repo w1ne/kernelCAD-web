@@ -1,0 +1,5 @@
+{
+  "status": "FAIL (initial render, fixed)",
+  "rootCause": "lowboy ramp rotation put the lowest point 0.017878 m below its origin",
+  "resolution": "raised both ramps 30 source units and re-rendered all 60 previews before final index rebuild and test rerun"
+}

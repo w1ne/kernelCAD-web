@@ -1,0 +1,6 @@
+{
+  "status": "PASS",
+  "command": "npx eslint catalog/kits/lab-infrastructure/",
+  "exitCode": 0,
+  "outputFile": "catalog-eslint-output.txt"
+}

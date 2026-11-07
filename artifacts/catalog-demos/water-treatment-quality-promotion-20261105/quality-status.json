@@ -1,0 +1,12 @@
+{
+  "date": "2026-11-05",
+  "command": "python3 scripts/checkCatalogQuality.py --kit water-treatment",
+  "kitStatus": "PASS",
+  "kitAssetsPass": 50,
+  "kitAssetsTotal": 50,
+  "overallAssetsPass": 1060,
+  "overallAssetsTotal": 2390,
+  "overallThinAssets": 1330,
+  "overallPassRate": 44.35,
+  "overallExitCode": 1
+}

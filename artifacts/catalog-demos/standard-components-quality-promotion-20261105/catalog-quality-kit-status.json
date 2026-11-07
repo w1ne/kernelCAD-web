@@ -1,0 +1,5 @@
+{
+  "command": "python3 scripts/checkCatalogQuality.py --kit standard-components",
+  "exitCode": 0,
+  "durationSeconds": 0.1
+}

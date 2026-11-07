@@ -1,0 +1,9 @@
+{
+  "command": "npx tsx scripts/buildAssetCatalog.ts",
+  "exitCode": 0,
+  "startedOrRecordedAtUtc": "2026-11-06T03:01:19.863427+00:00",
+  "output": "catalog-build-output.txt",
+  "followUpCheck": "npx tsx scripts/buildAssetCatalog.ts --check",
+  "followUpExitCode": 0,
+  "catalogIntegrationVerifiedIndexFresh": true
+}

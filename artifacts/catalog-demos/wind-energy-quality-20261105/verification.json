@@ -1,0 +1,515 @@
+{
+  "checkedAt": "2026-11-05T12:31:44.497305+00:00",
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-wind-pages",
+  "assetsChecked": 50,
+  "assetsInFullIndex": 2390,
+  "allSourceHashesMatch": true,
+  "previewsPresent": 50,
+  "localPagesPresent": 50,
+  "hubListsKit": true,
+  "assets": [
+    {
+      "id": "access-ladder-cage",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 260,
+      "triangleBudget": 550,
+      "localPageExists": true
+    },
+    {
+      "id": "access-platform-ring",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 128,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "aviation-light",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 144,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "blade-root-lifting-yoke",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 168,
+      "triangleBudget": 350,
+      "localPageExists": true
+    },
+    {
+      "id": "blade-root-protector",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 136,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "blade-transport-saddle",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 72,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "cable-entry-boot",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 188,
+      "triangleBudget": 400,
+      "localPageExists": true
+    },
+    {
+      "id": "cable-reel-stand",
+      "sourceSha256Matches": true,
+      "materialControls": 3,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 148,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "cable-trench-cover",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 84,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "converter-cabinet",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 108,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "crane-outrigger-pad",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 72,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "foundation-anchor-cage",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 440,
+      "triangleBudget": 900,
+      "localPageExists": true
+    },
+    {
+      "id": "foundation-inspection-hatch",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 200,
+      "triangleBudget": 400,
+      "localPageExists": true
+    },
+    {
+      "id": "gearbox-enclosure",
+      "sourceSha256Matches": true,
+      "materialControls": 3,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 136,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "generator-cover",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 136,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "grounding-busbar",
+      "sourceSha256Matches": true,
+      "materialControls": 3,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 300,
+      "triangleBudget": 600,
+      "localPageExists": true
+    },
+    {
+      "id": "horizontal-axis-wind-turbine",
+      "sourceSha256Matches": true,
+      "materialControls": 3,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 216,
+      "triangleBudget": 550,
+      "localPageExists": true
+    },
+    {
+      "id": "maintenance-tool-cart",
+      "sourceSha256Matches": true,
+      "materialControls": 3,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 284,
+      "triangleBudget": 550,
+      "localPageExists": true
+    },
+    {
+      "id": "monopile-foundation",
+      "sourceSha256Matches": true,
+      "materialControls": 3,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 148,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "nacelle-service-platform",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 72,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "nacelle-transport-frame",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 84,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "offshore-wind-turbine",
+      "sourceSha256Matches": true,
+      "materialControls": 3,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 260,
+      "triangleBudget": 650,
+      "localPageExists": true
+    },
+    {
+      "id": "oil-cooler-module",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 148,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "rooftop-wind-turbine",
+      "sourceSha256Matches": true,
+      "materialControls": 3,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 196,
+      "triangleBudget": 550,
+      "localPageExists": true
+    },
+    {
+      "id": "service-lift-cage",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 96,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "service-shelter",
+      "sourceSha256Matches": true,
+      "materialControls": 3,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 72,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "small-farm-wind-turbine",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 190,
+      "triangleBudget": 450,
+      "localPageExists": true
+    },
+    {
+      "id": "substation-switchgear-kiosk",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 72,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "torque-tool-case",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 72,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "tower-base-flange",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 440,
+      "triangleBudget": 900,
+      "localPageExists": true
+    },
+    {
+      "id": "tower-ladder-section",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 144,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "tower-section",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 144,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "tower-transport-saddle",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 136,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "transition-piece",
+      "sourceSha256Matches": true,
+      "materialControls": 3,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 168,
+      "triangleBudget": 350,
+      "localPageExists": true
+    },
+    {
+      "id": "turbine-base-skirt",
+      "sourceSha256Matches": true,
+      "materialControls": 3,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 144,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "turbine-base-steps",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 72,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "turbine-blade-root-sleeve",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 136,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "turbine-control-cabinet",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 84,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "turbine-door-frame",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 72,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "turbine-junction-box",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 224,
+      "triangleBudget": 450,
+      "localPageExists": true
+    },
+    {
+      "id": "turbine-nacelle-shell",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 92,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "turbine-number-placard",
+      "sourceSha256Matches": true,
+      "materialControls": 3,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 80,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "turbine-rotor-hub",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 256,
+      "triangleBudget": 550,
+      "localPageExists": true
+    },
+    {
+      "id": "vertical-axis-wind-turbine",
+      "sourceSha256Matches": true,
+      "materialControls": 3,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 288,
+      "triangleBudget": 550,
+      "localPageExists": true
+    },
+    {
+      "id": "wind-farm-access-gate",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 108,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "wind-farm-meter-pedestal",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 136,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "wind-farm-pad-mount-transformer",
+      "sourceSha256Matches": true,
+      "materialControls": 4,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 360,
+      "triangleBudget": 500,
+      "localPageExists": true
+    },
+    {
+      "id": "wind-farm-warning-sign",
+      "sourceSha256Matches": true,
+      "materialControls": 3,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 72,
+      "triangleBudget": 300,
+      "localPageExists": true
+    },
+    {
+      "id": "wind-site-bollard",
+      "sourceSha256Matches": true,
+      "materialControls": 3,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 188,
+      "triangleBudget": 400,
+      "localPageExists": true
+    },
+    {
+      "id": "wind-turbine-blade",
+      "sourceSha256Matches": true,
+      "materialControls": 2,
+      "presetVariants": 2,
+      "previewExists": true,
+      "triangles": 40,
+      "triangleBudget": 300,
+      "localPageExists": true
+    }
+  ],
+  "failures": [],
+  "passed": true,
+  "deploymentVerified": false
+}

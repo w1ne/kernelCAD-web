@@ -1,0 +1,20 @@
+{
+  "video": "artifacts/catalog-demos/railway-quality-promotion-20261106/railway-quality-promotion.mp4",
+  "bytes": 176760,
+  "sha256": "27feb6735d179e130c0b08e246310b4e21ab66e8fbbba8cd2c87cdf75e1b230a",
+  "codec": "h264",
+  "width": 960,
+  "height": 540,
+  "pixelFormat": "yuv420p",
+  "durationSeconds": 18.0,
+  "sampledFrames": [
+    "artifacts/catalog-demos/railway-quality-promotion-20261106/video-review/decoded-01.png",
+    "artifacts/catalog-demos/railway-quality-promotion-20261106/video-review/decoded-02.png",
+    "artifacts/catalog-demos/railway-quality-promotion-20261106/video-review/decoded-03.png",
+    "artifacts/catalog-demos/railway-quality-promotion-20261106/video-review/decoded-04.png",
+    "artifacts/catalog-demos/railway-quality-promotion-20261106/video-review/decoded-05.png",
+    "artifacts/catalog-demos/railway-quality-promotion-20261106/video-review/decoded-06.png"
+  ],
+  "contactSheet": "artifacts/catalog-demos/railway-quality-promotion-20261106/video-review/contact-sheet.png",
+  "manualVisualInspection": true
+}

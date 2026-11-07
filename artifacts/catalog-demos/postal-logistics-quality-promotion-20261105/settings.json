@@ -1,0 +1,29 @@
+{
+  "date": "2026-11-05",
+  "branch": "feat/catalog-2000",
+  "kit": "postal-logistics",
+  "baselineCommit": "b3527fd9d0c6c3d68eaeddb2cecdaed1e7b26879",
+  "existingAssetCount": 52,
+  "newAssetIds": 0,
+  "materialControls": 166,
+  "netMaterialColorControlsAdded": 114,
+  "presetEntries": 104,
+  "presets": ["weathered", "highVisibility"],
+  "qualityGate": "python3 scripts/checkCatalogQuality.py --kit postal-logistics",
+  "qualityBeforeRoundEvidence": "artifacts/catalog-demos/postal-logistics-quality-promotion-20261105/catalog-quality-before-round-output.txt",
+  "promotion": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/postal-logistics-quality-promotion-20261105/promote_postal_logistics_assets.py (run against the unpromoted sources at baselineCommit)",
+  "lint": "npx eslint catalog/kits/postal-logistics/",
+  "previewRender": "npx tsx scripts/renderCatalogPreviews.ts <all 52 ids from preview-asset-ids.txt>",
+  "catalogIndex": "npx tsx scripts/buildAssetCatalog.ts",
+  "integrationTests": "npx vitest run tests/integration/catalog/",
+  "localPages": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-postal-logistics-quality-promotion-20261105",
+  "variantRender": "npx tsx artifacts/catalog-demos/postal-logistics-quality-promotion-20261105/render_postal_variant.ts",
+  "videoCapture": "python3 artifacts/catalog-demos/postal-logistics-quality-promotion-20261105/capture_postal_demo.py",
+  "videoInspection": "python3 artifacts/catalog-demos/postal-logistics-quality-promotion-20261105/inspect_postal_video.py",
+  "previewIdsVisuallyInspected": [
+    "automated-label-applicator",
+    "carrier-satchel",
+    "sorting-operator-console"
+  ],
+  "visualizationScope": "Local low-poly catalog visualization only; no operational simulation, deployed update, manufacturing suitability, or hardware acceptance claim."
+}

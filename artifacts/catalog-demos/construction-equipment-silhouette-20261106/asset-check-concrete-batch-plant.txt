@@ -1,0 +1,5 @@
+EXIT CODE: 0
+(node:4102551) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{"id":"concrete-batch-plant","triangles":1500,"budget":2200,"sizeM":[1.917,2.176,1.476402],"minUpM":0,"materials":1,"knobs":["scale:number","aggregateBinCount:choice","siloHeight:choice","equipmentPaintColor:color","structuralSteelColor:color","aggregateColor:color","cementSiloColor:color"],"palette":["aggregateColor=#758266","equipmentPaintColor=#e1a31b","structuralSteelColor=#89969a","aggregate-conveyor-belt=#303638","cementSiloColor=#c3c8c3","control-cabin-window=#8eb6ba"]}
+wrote /home/andrii/worktrees/kernelCAD-web/catalog-2000/artifacts/catalog-demos/construction-equipment-silhouette-20261106/asset-renders/concrete-batch-plant.png

@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """Generate original low-poly space exploration props for kernelCAD."""
 import json
+import math
+import re
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[3]; KIT_ID='space-exploration'; KIT=ROOT/'catalog/kits'/KIT_ID; KIT.mkdir(parents=True,exist_ok=True)
 for stale in KIT.glob('*.kcad.ts'): stale.unlink()
 def B(n,x,y,z,w,d,h): return ('b',n,x,y,z,w,d,h)
 def C(n,x,y,z,h,r,s=8): return ('c',n,x,y,z,h,r,s)
 ASSETS=[
-('lunar-habitat-module','Lunar habitat module','Compact surface habitat with domed cap, four corner supports and a framed entry hatch.','#b7b1a2',[C('body',0,0,80,820,360,10),C('roof',0,0,900,100,390,10),B('hatch',0,-355,200,300,28,500),*[B(f'leg-{x}-{y}',x,y,0,90,90,130) for x in(-250,250) for y in(-250,250)]]),
+('lunar-habitat-module','Lunar habitat module','Compact cylindrical surface habitat with a domed cap, four corner supports, a framed entry hatch and a forward porthole.','#d97835',[C('body',0,0,80,820,360,10),C('roof',0,0,900,100,390,10),B('hatch',0,-355,200,300,28,500),B('viewport',0,-377,610,130,24,100),*[B(f'leg-{x}-{y}',x,y,0,90,90,130) for x in(-250,250) for y in(-250,250)]]),
 ('airlock-hatch','Airlock hatch','Circular pressure-door prop with an outer rim, central disk, handle and locking lugs.','#737c7d',[C('rim',0,0,40,55,360,12),C('door',0,0,95,40,300,12),B('handle',0,-315,135,140,25,42),*[C(f'lug-{i}',x,y,95,65,34) for i,(x,y) in enumerate([(0,-340),(240,-240),(340,0),(240,240),(0,340),(-240,240),(-340,0),(-240,-240)])]]),
 ('habitat-corridor-section','Habitat corridor section','Short cylindrical pressure corridor with two raised seam rings and floor skids.','#9d9a8d',[C('tube',0,0,80,560,290,10),C('ring-a',0,0,60,70,330,10),C('ring-b',0,0,590,70,330,10),B('skid-left',0,-220,0,620,80,80),B('skid-right',0,220,0,620,80,80)]),
 ('cargo-airlock-pod','Cargo airlock pod','Small cargo transfer pod with rounded-looking shell, wide hatch and side grab rails.','#b5aa8e',[C('pod',0,0,50,650,280,10),C('cap',0,0,700,65,290,10),B('hatch',0,-278,180,330,24,350),B('rail-left',-130,-340,160,28,45,470),B('rail-right',130,-340,160,28,45,470)]),
@@ -15,15 +17,15 @@ ASSETS=[
 ('surface-storage-shed','Surface storage shed','Boxy field storage module with double doors, roof lip and raised corner feet.','#8b8174',[B('body',0,0,100,1200,900,1500),B('roof',0,0,1600,1300,1000,80),B('door-left',-270,-460,140,500,24,1250),B('door-right',270,-460,140,500,24,1250),*[B(f'foot-{x}-{y}',x,y,0,120,120,100) for x in(-500,500) for y in(-350,350)]]),
 ('inflatable-habitat-frame','Inflatable habitat frame','Inflatable habitat shell represented by a broad drum, end collars and an external rib frame.','#a7a59a',[C('shell',0,0,70,900,410,10),C('collar-a',0,0,40,90,450,10),C('collar-b',0,0,910,90,450,10),*[B(f'rib-{i}',-330+i*220,0,70,42,840,860) for i in range(4)]]),
 ('pressurized-tunnel-collar','Pressurized tunnel collar','Circular tunnel connection ring with broad flange, inner lip and four bolt bosses.','#7c8585',[C('flange',0,0,20,85,410,12),C('inner-lip',0,0,105,45,340,12),*[C(f'bolt-{i}',x,y,20,70,28) for i,(x,y) in enumerate([(0,-370),(370,0),(0,370),(-370,0)])]]),
-('lunar-rover-chassis','Lunar rover chassis','Open rover frame with four wheel mounts, central deck, front bumper and rear cargo rail.','#9c8e6d',[B('deck',0,0,430,1150,700,100),B('front-bumper',0,-390,310,1250,80,80),B('rear-rail',0,390,360,1100,45,110),*[B(f'wheel-mount-{x}-{y}',x,y,100,160,150,100) for x in(-460,460) for y in(-360,360)]]),
-('rover-wheel-assembly','Rover wheel assembly','Oversized low-pressure rover wheel with thick tire, hub and six raised tread bars.','#55595b',[C('tire',0,0,30,170,300,12),C('hub',0,0,200,50,110,10),*[B(f'tread-{i}',0,0,10,62,100,190) for i in range(6)]]),
+('lunar-rover-chassis','Lunar rover chassis','Six-wheel lunar rover with a raised equipment bay, paired rocker links, exposed suspension and a forward navigation camera.','#e87832',[B('deck',0,0,430,1150,700,100),B('equipment-bay',0,25,530,500,420,210),B('instrument-cover',0,25,740,560,480,34),C('camera-mast',0,0,774,230,28,8),B('front-bumper',0,-390,310,1250,80,80),B('rear-rail',0,390,360,1100,45,110),*[B(f'rocker-{side}',side*560,0,210,55,570,55) for side in(-1,1)],*[B(f'suspension-{side}-{y}',side*520,y,220,230,45,45) for side in(-1,1) for y in(-250,0,250)],*[C(f'wheel-{side}-{y}',side*640,y,180,150,180,12) for side in(-1,1) for y in(-250,0,250)],B('navigation-camera',0,-410,455,150,85,95)]),
+('rover-wheel-assembly','Rover wheel assembly','Oversized low-pressure rover wheel with a broad tire, inset hub and twelve separated traction bars around the circumference.','#55595b',[C('tire',0,0,300,170,300,12),C('hub',0,0,300,50,110,10),*[B(f'tread-{i}',0,0,10,62,100,190) for i in range(12)]]),
 ('rover-seat','Rover operator seat','Simple rover seat with bucket base, raised back, arm rests and central pedestal.','#6c716e',[B('cushion',0,0,510,420,420,130),B('back',0,190,800,420,110,560),B('arm-left',-245,20,650,70,390,70),B('arm-right',245,20,650,70,390,70),C('pedestal',0,0,130,310,95),B('foot',0,0,70,360,320,60)]),
-('sample-trailer-cart','Sample trailer cart','Low two-wheel sample trailer with cargo bed, drawbar and raised side rails.','#8d8064',[B('bed',0,0,290,950,720,100),*[B(f'rail-{i}',-430+i*215,0,390,38,720,100) for i in range(5)],B('drawbar',0,-520,190,90,520,70),*[C(f'wheel-{x}',x,0,120,120,210) for x in(-390,390)]]),
+('sample-trailer-cart','Sample trailer cart','Low two-wheel sample trailer with a raised cargo bed, drawbar, retaining rails and wheels on a shared axle.','#8d8064',[B('bed',0,0,290,950,720,100),*[B(f'rail-{i}',-430+i*215,0,390,38,720,100) for i in range(5)],B('drawbar',0,-520,190,90,520,70),*[C(f'wheel-{side}',0,side*390,210,120,210,12) for side in(-1,1)]]),
 ('rover-tool-rack','Rover tool rack','Open rack with three long tool channels, end stops and four mounting feet.','#6c7475',[B('base',0,0,80,880,420,90),*[B(f'channel-{i}',0,-140+i*140,170,760,54,70) for i in range(3)],B('end-left',-400,0,220,50,460,250),B('end-right',400,0,220,50,460,250),*[B(f'foot-{x}',x,0,0,100,120,80) for x in(-340,340)]]),
 ('rover-charging-dock','Rover charging dock','Low charging dock with guide rails, raised connector post and two anchor pads.','#58676b',[B('base',0,0,60,1150,700,120),B('guide-left',0,-280,130,1050,70,90),B('guide-right',0,280,130,1050,70,90),C('post',0,250,180,540,95),B('connector',0,180,650,180,160,120),*[B(f'anchor-{x}',x,0,0,120,180,60) for x in(-460,460)]]),
 ('rover-dust-shield','Rover dust shield','Pair of broad rover wheel shields with short mounting struts and protective edge lips.','#a69c83',[B('shield-left',-380,0,300,420,65,700),B('shield-right',380,0,300,420,65,700),*[B(f'strut-{x}-{y}',x,y,60,55,55,440) for x in(-380,380) for y in(-80,80)],B('lip-left',-380,-40,650,440,35,55),B('lip-right',380,-40,650,440,35,55)]),
 ('landing-gear-pod','Landing gear pod','Landing leg pod with a tapered-looking strut, broad footplate and two brace arms.','#777b78',[C('strut',0,0,80,700,90),B('foot',0,0,25,440,440,50),B('brace-left',-110,0,300,40,90,520),B('brace-right',110,0,300,40,90,520),C('collar',0,0,630,65,135)]),
-('orbital-communication-dish','Orbital communication dish','Compact orbital dish on a box bus with a feed arm and two solar-panel wings.','#c1c6c1',[B('bus',0,0,220,420,420,440),C('dish',0,-360,500,45,300),B('arm',0,-220,430,55,300,55),C('feed',0,-510,430,100,65),B('panel-left',-520,0,260,560,40,400),B('panel-right',520,0,260,560,40,400)]),
+('orbital-communication-dish','Orbital communication dish','Compact satellite with a forward-tilted reflector, projecting feed horn, support arm and two solar-panel wings.','#d97835',[B('bus',0,0,220,420,420,440),C('dish',0,-520,650,60,320,12),B('arm',0,-330,420,60,400,50),C('feed',0,-790,780,100,48,10),B('panel-left',-520,0,260,560,40,400),B('panel-right',520,0,260,560,40,400)]),
 ('satellite-bus','Satellite bus','Rectangular satellite bus with corner rails, top sensor block and two side panel mounts.','#aaa99c',[B('bus',0,0,220,700,600,600),B('top-sensor',0,0,540,260,260,100),*[B(f'corner-{x}-{y}',x,y,190,40,40,660) for x in(-320,320) for y in(-270,270)],B('panel-mount-left',-430,0,300,180,60,80),B('panel-mount-right',430,0,300,180,60,80)]),
 ('satellite-solar-wing','Satellite solar wing','Deployable satellite panel wing with a central spine and three framed panel sections.','#46556a',[B('spine',0,0,35,90,1100,70),*[B(f'panel-{i}',0,-360+i*360,100,620,300,28) for i in range(3)],*[B(f'crossbar-{i}',0,-360+i*360,55,650,38,30) for i in range(4)]]),
 ('surface-antenna-mast','Surface antenna mast','Short surface mast with tripod feet, a crossbar and two small vertical aerials.','#747c7b',[C('mast',0,0,0,1350,38),B('crossbar',0,0,1040,650,45,45),*[C(f'aerial-{i}',x,0,1085,420,18) for i,x in enumerate((-250,250))],*[B(f'foot-{i}',x,y,0,240,70,45) for i,(x,y) in enumerate([(0,-190),(-165,95),(165,95)])]]),
@@ -56,21 +58,204 @@ ASSETS=[
 ('robotic-arm-pedestal','Instrument arm pedestal','Static instrument-arm pedestal with a broad base, two block links and a tool-end mount.','#797e79',[B('base',0,0,35,520,520,70),C('turntable',0,0,70,90,180),B('lower-link',0,0,330,180,180,460),B('upper-link',160,0,670,480,150,150),C('joint',380,0,700,180,85),B('tool-mount',520,0,720,160,180,100)]),
 ('sample-cassette','Sample cassette carrier','Stackable sample cassette with four open cell blocks and a raised handle ridge.','#9b9078',[B('base',0,0,25,720,500,50),*[B(f'cell-{i}',-240+i*160,0,60,140,400,90) for i in range(4)],B('handle',0,0,170,520,55,45),B('end-left',-350,0,70,40,520,110),B('end-right',350,0,70,40,520,110)]),
 ('drill-core-tube-rack','Core tube rack','Portable core-tube rack with four parallel channels and broad end plates.','#8f8a7a',[B('base',0,0,40,820,620,80),*[C(f'tube-{i}',-270+i*180,0,120,570,48) for i in range(4)],B('end-left',-380,0,210,60,650,300),B('end-right',380,0,210,60,650,300)]),
-('surface-utility-cart','Surface utility cart','Small utility cart with a flat deck, raised push handle and four low polygon wheels.','#89806b',[B('deck',0,0,360,900,600,70),B('handle',0,250,760,760,50,50),*[B(f'handle-post-{x}',x,250,430,55,55,620) for x in(-330,330)],*[C(f'wheel-{x}-{y}',x,y,0,90,95) for x in(-330,330) for y in(-330,330)]]),
+('surface-utility-cart','Surface utility cart','Small four-wheel utility cart with a raised deck, push handle and low-profile tires outside the frame.','#89806b',[B('deck',0,0,360,900,600,70),B('handle',0,250,760,760,50,50),*[B(f'handle-post-{x}',x,250,430,55,55,620) for x in(-330,330)],*[C(f'wheel-{x}-{y}',x,y,235,90,95,10) for x in(-330,330) for y in(-330,330)]]),
 ('habitat-spares-crate','Habitat spares crate','Stackable spares crate with reinforced corner rails, lid seam and side hand slots.','#9a8a68',[B('body',0,0,80,800,650,520),B('lid',0,0,620,840,690,70),*[B(f'corner-{x}-{y}',x,y,90,70,70,570) for x in(-340,340) for y in(-265,265)],B('slot-left',-405,-10,310,18,210,80),B('slot-right',405,-10,310,18,210,80)]),
 ('portable-science-console','Portable science console','Field console with tilted-looking display housing, top rail and four low mounting feet.','#66716e',[B('base',0,0,40,650,500,80),B('body',0,0,250,600,420,360),B('screen',0,-215,510,390,18,190),B('hood',0,-150,620,500,120,45),*[B(f'foot-{x}-{y}',x,y,0,90,90,40) for x in(-250,250) for y in(-180,180)]]),
 ]
 if len(ASSETS)!=52: raise SystemExit(f'expected 52 assets, got {len(ASSETS)}')
+MATERIALS = {
+    'paint': ('#9aa09a', 'Painted shell'),
+    'aluminum': ('#b6bdbe', 'Bare aluminum'),
+    'rubber': ('#34383a', 'Rubber'),
+    'glass': ('#548b9a', 'Optical glass'),
+    'solarCell': ('#304d70', 'Solar cells'),
+    'fabric': ('#b4aa8c', 'Insulating fabric'),
+    'warningAmber': ('#d9aa36', 'Warning amber'),
+    'reflector': ('#eef1f1', 'Reflective aluminum'),
+}
+ROLE_ORDER = ['paint', 'aluminum', 'rubber', 'glass', 'solarCell', 'fabric', 'warningAmber', 'reflector']
+METAL_PART = re.compile(r'(rim|ring|lug|rail|mount|brace|strut|mast|antenna|bar|tube|collar|skid|runner|cross|post|handle|connector|bolt|joint|arm|hinge|cap|gland|pedestal|pole|pick|latch|foot|leg|rocker|suspension|chute|hub|feed|cover|hatch)', re.I)
+GLASS_PART = re.compile(r'(lens|screen|sensor|camera|display|beacon|indicator|viewport)', re.I)
+
+def material_for(aid, name):
+    low = name.lower()
+    if 'wheel' in low or 'tire' in low or 'tread' in low or 'grip' in low:
+        return 'rubber'
+    if aid == 'satellite-solar-wing' and 'panel' in low:
+        return 'solarCell'
+    if aid == 'orbital-communication-dish' and 'panel-' in low:
+        return 'solarCell'
+    if GLASS_PART.search(low):
+        return 'glass'
+    if low == 'dish' and ('antenna' in aid or 'communication' in aid):
+        return 'reflector'
+    if aid == 'inflatable-habitat-frame' and 'shell' in low:
+        return 'fabric'
+    if low == 'flag' or 'inflatable' in low:
+        return 'fabric'
+    if 'marker' in aid and low == 'center':
+        return 'warningAmber'
+    if METAL_PART.search(low):
+        return 'aluminum'
+    return 'paint'
+
+def chamfered_box_source(include_basic, include_rotation):
+    source = [
+        'const octRect = (w: number, d: number, c: number) => path().moveTo(-w/2+c,-d/2).lineTo(w/2-c,-d/2).lineTo(w/2,-d/2+c).lineTo(w/2,d/2-c).lineTo(w/2-c,d/2).lineTo(-w/2+c,d/2).lineTo(-w/2,d/2-c).lineTo(-w/2,-d/2+c).close();',
+        'const boxShape = (w: number, d: number, h: number) => {',
+        '  const bevel = Math.min(w,d,h) * 0.06;',
+        '  const levels = [-h/2,-h/2+bevel,h/2-bevel,h/2];',
+        '  const insets = [bevel,0,0,bevel];',
+        '  const profiles = levels.map((_,i) => octRect(w-2*insets[i],d-2*insets[i],Math.min(w-2*insets[i],d-2*insets[i])*0.06));',
+        "  return profiles[0].loft(profiles.slice(1), { planes: levels.map((z) => ({ plane: 'XY' as const, origin: [0,0,z] as [number,number,number] })), ruled: true });",
+        '};',
+    ]
+    if include_basic:
+        source.append('const b = (x: number,y: number,z: number,w: number,d: number,h: number) => boxShape(w,d,h).translate(x,y,z+h/2).scale(scale);')
+    if include_rotation:
+        source.append('const br = (x: number,y: number,z: number,w: number,d: number,h: number,rx=0,ry=0) => boxShape(w,d,h).rotateX(rx).rotateY(ry).translate(x,y,z+h/2).scale(scale);')
+    return source
+
+def cylinder_source(aid, parts):
+    names = [part[1] for part in parts if part[0]=='c']
+    has_dish = 'dish' in names
+    has_wheels = any(name in ('tire','hub') or 'wheel' in name for name in names)
+    has_x_wheels = aid == 'lunar-rover-chassis' and has_wheels
+    has_y_wheels = has_wheels and not has_x_wheels
+    has_plain_cylinder = any(name != 'dish' and not (name in ('tire','hub') or 'wheel' in name) for name in names)
+    source = [
+        'const ngon = (r: number,n: number) => { let p = path().moveTo(r,0); for (let k=1;k<n;k++) { const a=2*Math.PI*k/n; p=p.lineTo(r*Math.cos(a),r*Math.sin(a)); } return p.close(); };',
+        'const cylShape = (h: number,r: number,n=8) => {',
+        '  const levels = [0,h*0.08,h*0.92,h]; const radii = [r*0.86,r,r,r*0.86];',
+        '  const profiles = levels.map((_,i) => ngon(radii[i],n));',
+        "  return profiles[0].loft(profiles.slice(1), { planes: levels.map((z) => ({ plane: 'XY' as const, origin: [0,0,z] as [number,number,number] })), ruled: true });",
+        '};',
+    ]
+    if has_plain_cylinder:
+        source.append('const c = (x: number,y: number,z: number,h: number,r: number,n=8) => cylShape(h,r,n).translate(x,y,z).scale(scale);')
+    if has_y_wheels:
+        source.append('const wheelY = (x: number,y: number,z: number,w: number,r: number,n=12) => cylShape(w,r,n).translate(0,0,-w/2).rotateX(90).translate(x,y,z).scale(scale);')
+    if has_x_wheels:
+        source.append('const wheelX = (x: number,y: number,z: number,w: number,r: number,n=12) => cylShape(w,r,n).translate(0,0,-w/2).rotateY(90).translate(x,y,z).scale(scale);')
+    if has_dish:
+        source += [
+            'const dishShape = (h: number,r: number,n=12) => {',
+            '  const levels = [0,h*0.16,h*0.62,h]; const radii = [r*0.16,r*0.48,r*0.82,r];',
+            '  const profiles = levels.map((_,i) => ngon(radii[i],n));',
+            "  return profiles[0].loft(profiles.slice(1), { planes: levels.map((z) => ({ plane: 'XY' as const, origin: [0,0,z] as [number,number,number] })), ruled: true });",
+            '};',
+            'const dish = (x: number,y: number,z: number,h: number,r: number,n=12) => dishShape(h,r,n).rotateX(55).translate(x,y,z).scale(scale);',
+        ]
+    return source
+
+def box_rotation(aid, name):
+    low = name.lower()
+    if aid == 'dust-protection-screen' and low.startswith('panel-'):
+        return (0, (int(low.rsplit('-',1)[1])-1)*7)
+    if aid == 'field-tool-chest' and low == 'lid': return (4, 0)
+    if aid == 'geological-hammer' and low == 'handle': return (0, 12)
+    if aid == 'geological-hammer' and low == 'pick': return (0, -12)
+    if aid == 'lunar-rover-chassis' and low.startswith('suspension-'):
+        match = re.match(r'suspension-(-?\d+)-', low)
+        side = -1 if match and match.group(1) == '-1' else 1
+        return (0, side*11)
+    if aid == 'orbital-communication-dish' and low == 'arm': return (-24, 0)
+    if aid == 'portable-science-console' and low in ('screen','hood'): return (-12, 0)
+    if aid == 'regolith-sieve' and low.startswith('leg-'):
+        return (0, -10 if low.endswith('-220') else 10)
+    if aid == 'surface-cable-bridge' and low.startswith('ramp-'):
+        return (0, -18 if low.endswith('left') else 18)
+    if aid == 'spectrometer-case' and low == 'lid': return (5, 0)
+    if aid == 'surface-storage-shed' and low == 'roof': return (0, 2)
+    return None
+
 def render(a):
-    aid,title,desc,color,parts=a; minz=min(p[4] for p in parts); hasb=any(p[0]=='b' for p in parts); hasc=any(p[0]=='c' for p in parts)
-    out=['// SPDX-License-Identifier: CC0-1.0','// Original low-poly space exploration prop, millimetres, Z up, base at z = 0.','', 'meta({',f'  name: {json.dumps(aid)},',"  license: 'CC0-1.0',",f'  title: {json.dumps(title)},',f'  description: {json.dumps(desc+" Knobs: overall scale and asset color.")},',"  tags: ['space', 'exploration', 'lunar', 'low poly', 'scene prop'],",f"  kit: '{KIT_ID}',","  category: 'prop',","  origin: 'base',","  compat: ['space', 'science', 'exploration', 'scene'],",'  triangleBudget: 2200,','});','',"const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });",f"const color = param('color', {json.dumps(color)}, {{ label: 'Asset color' }});"]
-    if hasb: out.append('const b = (x: number,y: number,z: number,w: number,d: number,h: number) => box(w,d,h,true).translate(x,y,z+h/2).scale(scale);')
-    if hasc: out.append('const c = (x: number,y: number,z: number,h: number,r: number,n=8) => cylinder(h,r,n).translate(x,y,z).scale(scale);')
-    out+=['',f'const p=assembly({json.dumps(aid)});']
-    for q in parts:
-        if q[0]=='b': _,name,x,y,z,w,d,h=q; out.append(f'p.part({json.dumps(name)},b({x},{y},{z-minz},{w},{d},{h}).color(color));')
-        else: _,name,x,y,z,h,r,n=q; out.append(f'p.part({json.dumps(name)},c({x},{y},{z-minz},{h},{r},{n}).color(color));')
-    out+=['','return p.model();','']; return '\n'.join(out)
+    aid,title,desc,color,parts=a
+    def rotated_box_min_z(w,d,h,rx,ry):
+        bevel=min(w,d,h)*0.06
+        levels=[-h/2,-h/2+bevel,h/2-bevel,h/2]
+        insets=[bevel,0,0,bevel]
+        x_angle,y_angle=math.radians(rx),math.radians(ry)
+        candidates=[]
+        for z,inset in zip(levels,insets):
+            width,depth=w-2*inset,d-2*inset
+            corner=min(width,depth)*0.06
+            profile=[(-width/2+corner,-depth/2),(width/2-corner,-depth/2),(width/2,-depth/2+corner),(width/2,depth/2-corner),(width/2-corner,depth/2),(-width/2+corner,depth/2),(-width/2,depth/2-corner),(-width/2,-depth/2+corner)]
+            for x,y in profile:
+                after_x=y*math.sin(x_angle)+z*math.cos(x_angle)
+                candidates.append(-x*math.sin(y_angle)+after_x*math.cos(y_angle))
+        return min(candidates)
+    def lower_z(part):
+        if part[0]=='c' and part[1]=='dish':
+            return part[4]-part[6]*math.sin(math.radians(55))
+        if part[0]=='c' and ('wheel' in part[1] or part[1] in ('tire','hub')):
+            vertical_angle=0 if aid=='lunar-rover-chassis' else math.pi/2
+            support=max(math.cos(2*math.pi*k/part[7]-vertical_angle) for k in range(part[7]))
+            return part[4]-part[6]*support
+        if aid=='rover-wheel-assembly' and part[0]=='b' and part[1].startswith('tread-'):
+            return -34
+        if part[0]=='b':
+            rotation=box_rotation(aid,part[1])
+            if rotation is not None:
+                _,name,x,y,z,w,d,h=part
+                return z+h/2+rotated_box_min_z(w,d,h,*rotation)
+        return part[4]
+    minz=min(lower_z(p) for p in parts)
+    hasb=any(p[0]=='b' for p in parts); hasc=any(p[0]=='c' for p in parts)
+    part_names=[p[1] for p in parts]
+    part_roles=[material_for(aid,name) for name in part_names]
+    if len(set(part_roles)) < 2:
+        target = next((i for i,name in enumerate(part_names) if name.lower() in ('body','base','deck','bed','shell','case','head','door')), 0)
+        part_roles[target] = 'paint' if part_roles[target] != 'paint' else 'aluminum'
+    roles=[role for role in ROLE_ORDER if role in set(part_roles)]
+    if len(roles)>4:
+        kept=roles[:4]
+        part_roles=[role if role in kept else 'aluminum' for role in part_roles]
+        roles=kept
+    defaults={role:(color if role=='paint' else MATERIALS[role][0]) for role in roles}
+    budget_estimate=sum(60 if p[0]=='b' else max(64,p[-1]*8) for p in parts)
+    triangle_budget=max(300,math.ceil(budget_estimate*1.4+80))
+    color_knobs=', '.join(roles)
+    out=[
+        '// SPDX-License-Identifier: CC0-1.0',
+        f'// {title}: {desc} Stylized visualization geometry in millimetres, Z up.',
+        '', 'meta({', f'  name: {json.dumps(aid)},', "  license: 'CC0-1.0',", f'  title: {json.dumps(title)},',
+        f'  description: {json.dumps(desc+" Material controls: "+color_knobs+"; named lunarDust and highVisibility presets.")},',
+        "  tags: ['space', 'exploration', 'lunar', 'low poly', 'scene prop'],", f"  kit: '{KIT_ID}',", "  category: 'prop',", "  origin: 'base',", "  compat: ['space', 'science', 'exploration', 'scene'],", f'  triangleBudget: {triangle_budget},',
+        '});', '', "const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });"
+    ]
+    for role in roles:
+        out.append(f"const {role} = param('{role}', {json.dumps(defaults[role])}, {{ label: {json.dumps(MATERIALS[role][1])} }});")
+    lunar={role:({'paint':'#c9c3b5','aluminum':'#c3c5c3','rubber':'#514d44','glass':'#7b9ba0','solarCell':'#52647b','fabric':'#d0c7a9','warningAmber':'#d3bd82','reflector':'#f5f6f4'}[role]) for role in roles}
+    visible={role:({'paint':'#d86e35','aluminum':'#d8b255','rubber':'#34383a','glass':'#63a9b8','solarCell':'#244267','fabric':'#d7c98f','warningAmber':'#f0b72f','reflector':'#dce9ee'}[role]) for role in roles}
+    out+=['','presets({',f'  lunarDust: {json.dumps(lunar)},',f'  highVisibility: {json.dumps(visible)},','});']
+    out+=['']
+    needs_br=aid=='rover-wheel-assembly' or any(box_rotation(aid,name) is not None for name in part_names)
+    needs_b=any(not (aid=='rover-wheel-assembly' and name.startswith('tread-')) for q,name in zip(parts,part_names) if q[0]=='b')
+    if hasb: out+=chamfered_box_source(needs_b,needs_br)
+    if hasc: out+=cylinder_source(aid,parts)
+    out+=['',f'const p = assembly({json.dumps(aid)});']
+    tread_count=sum(1 for q in parts if q[0]=='b' and q[1].startswith('tread-'))
+    for q,role in zip(parts,part_roles):
+        if q[0]=='b':
+            _,name,x,y,z,w,d,h=q
+            if aid=='rover-wheel-assembly' and name.startswith('tread-'):
+                i=int(name.rsplit('-',1)[1]); angle=360*i/tread_count; rad=math.radians(angle)
+                cx=320*math.sin(rad); cz=300+320*math.cos(rad)
+                expr=f'br({cx:.3f},0,{cz-14-minz:.3f},150,170,28,0,{angle:.3f})'
+            else:
+                rotation=box_rotation(aid,name)
+                expr=(f'br({x},{y},{z-minz},{w},{d},{h},{rotation[0]},{rotation[1]})' if rotation else f'b({x},{y},{z-minz},{w},{d},{h})')
+            out.append(f'p.part({json.dumps(name)},{expr}.color({role}));')
+        else:
+            _,name,x,y,z,h,r,n=q
+            if name=='dish': expr=f'dish({x},{y},{z-minz},{h},{r},{n})'
+            elif (name in ('tire','hub') or 'wheel' in name) and aid=='lunar-rover-chassis': expr=f'wheelX({x},{y},{z-minz},{h},{r},{n})'
+            elif name in ('tire','hub') or 'wheel' in name: expr=f'wheelY({x},{y},{z-minz},{h},{r},{n})'
+            else: expr=f'c({x},{y},{z-minz},{h},{r},{n})'
+            out.append(f'p.part({json.dumps(name)},{expr}.color({role}));')
+    out+=['','return p.model();','']
+    return '\n'.join(out)
 for a in ASSETS: (KIT/f'{a[0]}.kcad.ts').write_text(render(a))
-(KIT/'kit.json').write_text(json.dumps({'title':'Space exploration','description':'Original low-poly lunar surface, spacecraft support and field science props with editable scale and color controls.'},indent=2)+'\n')
+(KIT/'kit.json').write_text(json.dumps({'title':'Space exploration','description':'Stylized lunar habitat, rover, spacecraft support and field science props with editable scale, material-specific colors and named appearance presets.'},indent=2)+'\n')
 print(f'generated {len(ASSETS)} space exploration assets')

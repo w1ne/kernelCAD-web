@@ -1,0 +1,60 @@
+{
+  "date": "2026-11-06",
+  "commands": {
+    "previewRender": {
+      "command": "npx tsx scripts/renderCatalogPreviews.ts <all 45 props asset ids>",
+      "exitCode": 0,
+      "renderedAssets": 45,
+      "output": "preview-render-output.txt"
+    },
+    "catalogBuild": {
+      "command": "npx tsx scripts/buildAssetCatalog.ts",
+      "exitCode": 0,
+      "output": "catalog-build-output.txt"
+    },
+    "catalogIndexCheck": {
+      "command": "npx tsx scripts/buildAssetCatalog.ts --check",
+      "exitCode": 0,
+      "output": "catalog-check-output.txt"
+    },
+    "propsQuality": {
+      "command": "python3 scripts/checkCatalogQuality.py --kit props",
+      "exitCode": 0,
+      "passing": 45,
+      "total": 45,
+      "output": "props-quality-output.txt"
+    },
+    "catalogQuality": {
+      "command": "python3 scripts/checkCatalogQuality.py",
+      "exitCode": 0,
+      "passing": 2390,
+      "total": 2390,
+      "output": "catalog-quality-output.txt"
+    },
+    "eslint": {
+      "command": "npx eslint catalog/kits/props/",
+      "exitCode": 0,
+      "output": "eslint-output.txt"
+    },
+    "catalogIntegration": {
+      "command": "npx vitest run tests/integration/catalog/",
+      "exitCode": 0,
+      "files": 4,
+      "tests": 15,
+      "output": "integration-output.txt"
+    },
+    "localPages": {
+      "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-props-pages-20261106",
+      "exitCode": 0,
+      "pages": 2390,
+      "hubBuilt": true,
+      "output": "local-pages-output.txt"
+    },
+    "presetRenders": {
+      "command": "npx tsx artifacts/catalog-demos/props-sandbags-quality-20261106/render_sandbags_variants.ts",
+      "exitCode": 0,
+      "variants": 4,
+      "output": "preset-render-output.txt"
+    }
+  }
+}

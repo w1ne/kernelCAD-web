@@ -1,4 +1,4 @@
 {
   "title": "EV charging infrastructure",
-  "description": "Original generic props for AC and DC charging, connectors, power cabinets, parking fixtures, fleet depots, and charging canopies."
+  "description": "Original generic props for AC and DC charging, connectors, cable routing, power cabinets, parking fixtures, fleet depots, and charging canopies, with editable scale, material-specific color controls, and named appearance presets."
 }

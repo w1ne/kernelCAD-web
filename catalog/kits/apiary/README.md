@@ -1,11 +1,22 @@
 # Apiary kit
 
-The apiary kit adds 50 original low-poly scene props for hive structures,
+The apiary kit contains 50 original low-poly scene props for hive structures,
 beekeeping tools, feeding and swarm management, yard fixtures, and honey
-handling. Each `.kcad.ts` source exposes overall scale and asset color; the
-generated catalog index records its mesh statistics and preview path.
+handling. Every asset keeps its scale control and now exposes two to four
+material-named controls with two coordinated appearance presets. The 49 thin
+sources add 121 material controls and 98 preset entries; the existing gate
+retains its three material controls and two presets. All 50 IDs have a
+regenerated indexed preview. The shade canopy now includes a canvas roof and
+steel corner brackets, hive frames show wax foundation, and honey handling
+props distinguish glass, honey, stainless steel, brass, paper, and polymer.
+
+The beekeeper veil hood, jacket, gloves, bee smoker and hive tool were later
+rebuilt from lofted, hooped and profiled geometry with shape choices; see the
+[silhouette rebuild handoff](../../../artifacts/catalog-demos/apiary-silhouette-20261106/README.md).
 
 These are generic scene assets rather than manufacturing drawings or beekeeping
-guidance. The [wave demo and local verification bundle](../../../artifacts/catalog-demos/apiary-wave-20261103/README.md)
-shows the source-to-preview workflow and the checks run for this kit. The branch
-has not been deployed, so live visibility for these new assets is not claimed.
+guidance. The [quality promotion handoff](../../../artifacts/catalog-demos/apiary-quality-promotion-20261105/README.md)
+records source, preview, index, quality, test, local-page and demo evidence. The
+[original wave demo and local verification bundle](../../../artifacts/catalog-demos/apiary-wave-20261103/README.md)
+shows the kit's initial source-to-preview workflow. The branch has not been
+deployed, so the promoted previews are not yet live on the public site.

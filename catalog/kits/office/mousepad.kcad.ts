@@ -1,8 +1,10 @@
+// Mouse pad: Flat desktop mouse pad with stitched border, wrist-side edge and subtle center mark. Material controls: woven fabric, non-slip rubber, cushion foam.
+
 meta({
   name: 'mousepad',
   license: 'CC0-1.0',
   title: 'Mouse pad',
-  description: 'Flat desktop mouse pad with stitched border, wrist-side edge and subtle center mark. Knobs: compact or standard format, pad, stitching and accent colours.',
+  description: "Flat desktop mouse pad with stitched border, wrist-side edge and subtle center mark. Controls: woven fabric, non-slip rubber, cushion foam.",
   tags: ['mouse pad', 'mouse mat', 'desk accessory', 'office', 'workstation'],
   kit: 'office',
   category: 'item',
@@ -11,28 +13,31 @@ meta({
   triangleBudget: 150,
 });
 
-const body = param('body', '#34414a', { label: 'Body' });
-const accent = param('accent', '#657b89', { label: 'Accent' });
-const detail = param('detail', '#d1c69e', { label: 'Detail' });
+const fabric = param('fabric', '#4d6687', { label: 'Woven fabric' });
+const rubber = param('rubber', '#2f3438', { label: 'Non-slip rubber' });
+const foam = param('foam', '#b5aa93', { label: 'Cushion foam' });
 const format = param('format', 'standard', { choices: ['compact', 'standard'], label: 'Format' });
 const k = format.value === 'compact' ? 0.8 : 1;
 
 presets({
-  clean: { body: '#e8e7df', accent: '#66829a', detail: '#454b50' },
-  warm: { body: '#c8a875', accent: '#557581', detail: '#493c34' },
+  professional: { fabric: '#4d6687', rubber: '#2f3438', foam: '#b5aa93' },
+  classroom: { fabric: '#d2604b', rubber: '#678454', foam: '#e0bf65' },
 });
 
 const office = assembly('mousepad');
 
-const addBox = (name: string, x: number, y: number, z: number, w: number, d: number, h: number, colour: typeof body) => {
-  office.part(name, box(w * k, d * k, h * k, true).translate(x * k, y * k, (z + h / 2) * k).color(colour));
+const addBox = (name: string, x: number, y: number, z: number, w: number, d: number, h: number, colour: typeof fabric | typeof rubber | typeof foam) => {
+  const partShape = box(w * k, d * k, h * k, true).translate(x * k, y * k, (z + h / 2) * k);
+  if (colour === fabric) office.part(name, partShape.color(fabric));
+  else if (colour === rubber) office.part(name, partShape.color(rubber));
+  else office.part(name, partShape.color(foam));
 };
 
-addBox('pad', 0, 0, 0, 230, 195, 5, body);
-addBox('north-stitch', 0, 93, 5, 218, 2, 2, accent);
-addBox('south-stitch', 0, -93, 5, 218, 2, 2, accent);
-addBox('east-stitch', 113, 0, 5, 2, 184, 2, accent);
-addBox('west-stitch', -113, 0, 5, 2, 184, 2, accent);
-addBox('center-mark', 0, 0, 5, 22, 3, 2, detail);
+addBox('pad', 0, 0, 0, 230, 195, 5, fabric);
+addBox('north-stitch', 0, 93, 5, 218, 2, 2, rubber);
+addBox('south-stitch', 0, -93, 5, 218, 2, 2, rubber);
+addBox('east-stitch', 113, 0, 5, 2, 184, 2, rubber);
+addBox('west-stitch', -113, 0, 5, 2, 184, 2, rubber);
+addBox('center-mark', 0, 0, 5, 22, 3, 2, foam);
 
 return office.model();

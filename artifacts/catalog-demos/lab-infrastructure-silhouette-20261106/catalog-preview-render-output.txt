@@ -1,0 +1,5 @@
+lab-infrastructure/articulated-extraction-snorkel: 1284 tris
+lab-infrastructure/cryogenic-dewar-storage-rack: 2542 tris
+lab-infrastructure/laboratory-faucet-set: 1130 tris
+lab-infrastructure/laboratory-safety-shower: 1324 tris
+lab-infrastructure/ultra-low-temperature-freezer: 996 tris

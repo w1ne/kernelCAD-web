@@ -2,9 +2,9 @@
 
 Forty original low-poly props for clinic, hospital, first-aid and laboratory scenes. Sources are individual `.kcad.ts` programs in millimetres, with Z up and `origin: 'base'` on z = 0. Every model is authored in kernelCAD and dedicated to the public domain under CC0 1.0. The models are stylized scene assets; dimensions and forms are not clinical device specifications.
 
-Each source has CC0 metadata, search tags, two editable color knobs and a triangle budget. The hospital bed, medical cart and specimen tube rack also expose choice knobs for side rails, shelf count and tube count. Useful presets are included for clinic and emergency palettes.
+Each source has CC0 metadata, search tags, two to four material-named color controls and a triangle budget. Across the kit, 132 controls now name materials such as upholstery, aluminum, rubber, glass, steel, polymer, paper and gauze. Every asset keeps its `clinic` and `emergency` presets, and the hospital bed, medical cart and specimen tube rack retain their side-rail, shelf-count and tube-count choices.
 
-Workflow source, verification records and the inspected MP4 are in the [medical wave demo bundle](../../../artifacts/catalog-demos/medical-wave-90612/README.md).
+The [material quality handoff](../../../artifacts/catalog-demos/medical-materials-quality-20261106/README.md) records the per-asset material map, source-driven preset renders, before/after previews, local checks and inspected MP4. The original [medical wave demo](../../../artifacts/catalog-demos/medical-wave-90612/README.md) remains as the initial creation record.
 
 | id | asset |
 | --- | --- |

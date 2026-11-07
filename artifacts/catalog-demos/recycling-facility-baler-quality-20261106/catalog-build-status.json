@@ -1,0 +1,12 @@
+{
+  "command": "npx tsx scripts/buildAssetCatalog.ts",
+  "completed": true,
+  "postconditions": {
+    "sourceSha256MatchesIndex": true,
+    "previewPathIndexed": true,
+    "triangles": 676,
+    "triangleBudget": 1800,
+    "kitAssets": 153,
+    "totalAssets": 2390
+  }
+}

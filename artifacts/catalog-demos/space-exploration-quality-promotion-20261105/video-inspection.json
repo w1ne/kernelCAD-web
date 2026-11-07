@@ -1,0 +1,20 @@
+{
+  "video": "space-exploration-quality-promotion.mp4",
+  "probe": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "r_frame_rate": "24/1",
+        "nb_frames": "420"
+      }
+    ],
+    "format": {
+      "duration": "17.500000"
+    }
+  },
+  "decodedFrames": 7,
+  "contactSheet": "video-review/contact-sheet.png"
+}

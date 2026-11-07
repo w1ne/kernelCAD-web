@@ -1,0 +1,9 @@
+{
+  "command": "npx tsx artifacts/catalog-demos/data-center-infrastructure-quality-promotion-20261105/check_data_center_pages.mts",
+  "exitCode": 0,
+  "status": "pass",
+  "kitPages": 50,
+  "pageAndPreviewPairs": 50,
+  "generatedCatalogPages": 2390,
+  "localOnly": true
+}

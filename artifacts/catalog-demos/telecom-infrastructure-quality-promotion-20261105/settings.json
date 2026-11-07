@@ -1,0 +1,54 @@
+{
+  "date": "2026-11-05",
+  "sourceRevision": "c139f259735a6dc8945a40801ded3ee68248ce9d",
+  "scope": {
+    "kit": "telecom-infrastructure",
+    "existingAssets": 56,
+    "newIds": 0,
+    "preservedLicense": "CC0-1.0",
+    "triangleBudgetPerAsset": 900
+  },
+  "promotionSource": "promote_telecom_infrastructure.py",
+  "promotionInvocation": "python artifacts/catalog-demos/telecom-infrastructure-quality-promotion-20261105/promote_telecom_infrastructure.py",
+  "materialPalette": {
+    "galvanizedSteel": { "default": "#77868d", "fieldSite": "#8f9b9b", "highVisibility": "#3a4b51" },
+    "powderCoat": { "default": "#318b96", "fieldSite": "#52756b", "highVisibility": "#e0aa18" },
+    "stainlessSteel": { "default": "#d2dbdc", "fieldSite": "#d0d9d6", "highVisibility": "#e4e9e6" },
+    "polymer": { "default": "#315267", "fieldSite": "#263a37", "highVisibility": "#27363c" },
+    "rubber": { "default": "#282d30", "fieldSite": "#292e2d", "highVisibility": "#252a2c" },
+    "copper": { "default": "#c27836", "fieldSite": "#ba7740", "highVisibility": "#c4823c" },
+    "aluminum": { "default": "#c2cacc", "fieldSite": "#b9c3c3", "highVisibility": "#d4dada" },
+    "concrete": { "default": "#a29a8d", "fieldSite": "#99968c", "highVisibility": "#a7a59d" }
+  },
+  "presets": ["fieldSite", "highVisibility"],
+  "geometryWork": [
+    "lofted round microwave reflectors with separate aluminum and steel parts",
+    "tapered monopole shaft",
+    "angled guy wires and tripod legs",
+    "cross-braced lattice mast section",
+    "hollow-flange fiber reel with jacketed cable bundle and projecting hub",
+    "open annular fiber service hoops with narrow retaining fingers",
+    "shelter represented by separate walls with an open front and door",
+    "fiber cable jackets in ladder, elbow tray, conduit riser and waveguide bridge"
+  ],
+  "commands": {
+    "renderPreviews": "npx tsx scripts/renderCatalogPreviews.ts <56 telecom asset IDs>",
+    "rebuildIndex": "npx tsx scripts/buildAssetCatalog.ts",
+    "qualityGate": "python scripts/checkCatalogQuality.py --kit telecom-infrastructure",
+    "lint": "npx eslint catalog/kits/telecom-infrastructure/",
+    "integration": "NODE_OPTIONS=--max-old-space-size=8192 npx vitest run tests/integration/catalog/ --maxWorkers=1 --no-file-parallelism",
+    "localPages": "npx tsx artifacts/catalog-demos/telecom-infrastructure-quality-promotion-20261105/check_telecom_pages.mts",
+    "allPromotionChecks": "python artifacts/catalog-demos/telecom-infrastructure-quality-promotion-20261105/run_promotion_checks.py",
+    "recordAudit": "python artifacts/catalog-demos/telecom-infrastructure-quality-promotion-20261105/record_promotion_audit.py",
+    "updateKitReadme": "python artifacts/catalog-demos/telecom-infrastructure-quality-promotion-20261105/update_telecom_readme.py",
+    "presetRender": "npx tsx artifacts/catalog-demos/telecom-infrastructure-quality-promotion-20261105/render_telecom_variant.mts",
+    "videoCapture": "python artifacts/catalog-demos/telecom-infrastructure-quality-promotion-20261105/capture_telecom_demo.py",
+    "videoInspection": "python artifacts/catalog-demos/telecom-infrastructure-quality-promotion-20261105/inspect_telecom_video.py"
+  },
+  "claimBoundaries": [
+    "source authoring and local geometry evaluation",
+    "software-rendered default and preset preview outputs",
+    "local catalog page generation and integration checks",
+    "no deployed behavior, RF performance, installation suitability, regulatory compliance, or hardware acceptance"
+  ]
+}

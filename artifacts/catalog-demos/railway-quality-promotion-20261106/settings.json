@@ -1,0 +1,15 @@
+{
+  "date": "2026-11-06",
+  "kit": "railway",
+  "assetCount": 40,
+  "materialControlCount": 132,
+  "replacedGenericColorControls": 40,
+  "netMaterialControlsAdded": 92,
+  "presetBlocks": 40,
+  "namedPresetVariants": 80,
+  "sampleAssets": ["diesel-locomotive", "crossing-warning-light", "station-platform"],
+  "frameSize": [960, 540],
+  "frameHoldSeconds": 3,
+  "video": "railway-quality-promotion.mp4",
+  "provenance": "Local source edits, actual catalog preview renders and local page/check output; branch-only. Deployed behavior is unverified and hardware acceptance was not performed."
+}
