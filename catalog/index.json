@@ -212052,7 +212052,7 @@
       "id": "overband-magnet-separator",
       "kit": "recycling-facility",
       "title": "Overband magnet separator",
-      "description": "Overband magnet separator: a guarded screening bed with a feed hopper, discharge lip and support rollers. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Cross-belt overband magnet at about real size: finned permanent-magnet block between head and tail pulleys, cleated self-cleaning belt with captured cans, side frames with take-up screws, shaft-mounted gearmotor, four suspension chains from a portal gantry, troughed conveyor with idlers carrying mixed material underneath, ferrous discharge chute into a skip of scrap. Material controls: magnet paint, gantry and frames, belting, ferrous scrap; weathered, highVisibility and red-magnet presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -212060,7 +212060,10 @@
         "materials recovery",
         "waste management",
         "sorting",
-        "low poly",
+        "magnet",
+        "overband",
+        "ferrous",
+        "conveyor",
         "scene prop"
       ],
       "compat": [
@@ -212072,8 +212075,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/overband-magnet-separator.kcad.ts",
       "preview": "/assets/recycling-facility-overband-magnet-separator.png",
-      "sourceSha256": "e2dcaa72abdd6ac106f2df44a38780a1c645be30ebe3e4a035ff992bc683e710",
-      "triangleBudget": 1800,
+      "sourceSha256": "9b5d3910890468918367650c7e16f701b917b65c936ed6a1ab629f898b32b6eb",
+      "triangleBudget": 4500,
       "params": [
         {
           "name": "scale",
@@ -212085,64 +212088,308 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "magnet",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#2b5c9e",
+          "label": "Magnet paint"
         },
         {
-          "name": "paintedSteel",
+          "name": "structure",
           "type": "color",
-          "default": "#61727c",
-          "label": "Painted steel"
+          "default": "#e0a321",
+          "label": "Gantry and frames"
+        },
+        {
+          "name": "belting",
+          "type": "color",
+          "default": "#2c3033",
+          "label": "Belting and rollers"
+        },
+        {
+          "name": "scrap",
+          "type": "color",
+          "default": "#8a6a4f",
+          "label": "Ferrous scrap"
         }
       ],
       "presets": {
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#667071"
+          "magnet": "#45607a",
+          "structure": "#a98845",
+          "belting": "#3a3936",
+          "scrap": "#6f5440"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "structure": "#ffc93a",
+          "magnet": "#1f6fd0"
+        },
+        "redMagnet": {
+          "magnet": "#b2302b",
+          "structure": "#5f6b72"
         }
       },
       "stats": {
-        "triangles": 540,
+        "triangles": 3536,
         "sizeM": [
-          0.9348,
-          0.8,
-          1.75
+          6.54,
+          3.88,
+          7.6
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "belting",
+          "color": "#2c3033",
           "parts": [
-            "support-rail-left",
-            "support-rail-right",
-            "screen-bed",
-            "support-roller-1",
-            "support-roller-2",
-            "support-roller-3",
-            "support-roller-4"
+            "conveyor-belt",
+            "head-pulley",
+            "tail-pulley",
+            "belt-bottom-run",
+            "belt-top-run",
+            "cleat-0",
+            "cleat-1",
+            "cleat-2",
+            "cleat-3",
+            "cleat-4",
+            "cleat-5",
+            "cleat-6",
+            "cleat-7",
+            "cleat-8",
+            "motor-cowl",
+            "skip-base"
           ],
-          "param": "stainlessSteel"
+          "param": "belting"
         },
         {
-          "name": "paintedSteel",
-          "color": "#61727c",
+          "name": "structure",
+          "color": "#e0a321",
           "parts": [
-            "feed-hopper",
-            "oversize-chute",
-            "side-guard-left",
-            "side-guard-right",
-            "vibrator-left",
-            "vibrator-right"
+            "conveyor-stringer--1",
+            "conveyor-stringer-1",
+            "idler-frame-0",
+            "idler-frame-1",
+            "idler-frame-2",
+            "idler-frame-3",
+            "idler-frame-4",
+            "idler-frame-5",
+            "idler-frame-6",
+            "idler-frame-7",
+            "idler-frame-8",
+            "conveyor-leg--3400--1",
+            "conveyor-leg--3400-1",
+            "conveyor-leg--1000--1",
+            "conveyor-leg--1000-1",
+            "conveyor-leg-1400--1",
+            "conveyor-leg-1400-1",
+            "conveyor-leg-3400--1",
+            "conveyor-leg-3400-1",
+            "side-frame--1",
+            "take-up-plate--1",
+            "side-frame-1",
+            "take-up-plate-1",
+            "torque-arm",
+            "gantry-column--2100--1500",
+            "gantry-column--2100-1500",
+            "gantry-beam-y--2100",
+            "gantry-column-2100--1500",
+            "gantry-column-2100-1500",
+            "gantry-beam-y-2100",
+            "gantry-beam-x--1500",
+            "gantry-beam-x-1500",
+            "hanger-beam--800",
+            "shackle--800--600",
+            "shackle--800-600",
+            "hanger-beam-800",
+            "shackle-800--600",
+            "shackle-800-600",
+            "discharge-chute",
+            "chute-hood"
           ],
-          "param": "paintedSteel"
+          "param": "structure"
+        },
+        {
+          "name": "idler-centre-0",
+          "color": "#9aa0a4",
+          "parts": [
+            "idler-centre-0",
+            "idler-wing-0--1",
+            "idler-wing-0-1",
+            "idler-centre-1",
+            "idler-wing-1--1",
+            "idler-wing-1-1",
+            "idler-centre-2",
+            "idler-wing-2--1",
+            "idler-wing-2-1",
+            "idler-centre-3",
+            "idler-wing-3--1",
+            "idler-wing-3-1",
+            "idler-centre-4",
+            "idler-wing-4--1",
+            "idler-wing-4-1",
+            "idler-centre-5",
+            "idler-wing-5--1",
+            "idler-wing-5-1",
+            "idler-centre-6",
+            "idler-wing-6--1",
+            "idler-wing-6-1",
+            "idler-centre-7",
+            "idler-wing-7--1",
+            "idler-wing-7-1",
+            "idler-centre-8",
+            "idler-wing-8--1",
+            "idler-wing-8-1",
+            "head-shaft",
+            "tail-shaft",
+            "take-up-screw--1",
+            "take-up-screw-1",
+            "chain--800--600",
+            "chain-link--800--600-0",
+            "chain-link--800--600-1",
+            "chain-link--800--600-2",
+            "chain-link--800--600-3",
+            "chain-link--800--600-4",
+            "chain-link--800--600-5",
+            "chain--800-600",
+            "chain-link--800-600-0",
+            "chain-link--800-600-1",
+            "chain-link--800-600-2",
+            "chain-link--800-600-3",
+            "chain-link--800-600-4",
+            "chain-link--800-600-5",
+            "chain-800--600",
+            "chain-link-800--600-0",
+            "chain-link-800--600-1",
+            "chain-link-800--600-2",
+            "chain-link-800--600-3",
+            "chain-link-800--600-4",
+            "chain-link-800--600-5",
+            "chain-800-600",
+            "chain-link-800-600-0",
+            "chain-link-800-600-1",
+            "chain-link-800-600-2",
+            "chain-link-800-600-3",
+            "chain-link-800-600-4",
+            "chain-link-800-600-5"
+          ]
+        },
+        {
+          "name": "load-0",
+          "color": "#c94b3a",
+          "parts": [
+            "load-0",
+            "load-6",
+            "load-12",
+            "load-18"
+          ]
+        },
+        {
+          "name": "load-1",
+          "color": "#3d8bc9",
+          "parts": [
+            "load-1",
+            "load-7",
+            "load-13",
+            "load-19"
+          ]
+        },
+        {
+          "name": "load-2",
+          "color": "#e6dccb",
+          "parts": [
+            "load-2",
+            "load-8",
+            "load-14",
+            "load-20"
+          ]
+        },
+        {
+          "name": "load-3",
+          "color": "#5aa04a",
+          "parts": [
+            "load-3",
+            "load-9",
+            "load-15",
+            "load-21"
+          ]
+        },
+        {
+          "name": "load-4",
+          "color": "#d9b23a",
+          "parts": [
+            "load-4",
+            "load-10",
+            "load-16"
+          ]
+        },
+        {
+          "name": "load-5",
+          "color": "#8a8f93",
+          "parts": [
+            "load-5",
+            "load-11",
+            "load-17"
+          ]
+        },
+        {
+          "name": "magnet",
+          "color": "#2b5c9e",
+          "parts": [
+            "magnet-block",
+            "magnet-fin-0",
+            "magnet-fin-1",
+            "magnet-fin-2",
+            "magnet-fin-3",
+            "magnet-fin-4",
+            "magnet-fin-5",
+            "magnet-fin-6",
+            "magnet-fin-7",
+            "magnet-fin-8",
+            "magnet-terminal-box",
+            "head-bearing--1",
+            "head-bearing-1",
+            "tail-bearing--1",
+            "tail-bearing-1",
+            "gearbox",
+            "drive-motor",
+            "skip-body",
+            "skip-rim"
+          ],
+          "param": "magnet"
+        },
+        {
+          "name": "magnet-face",
+          "color": "#c9cdd0",
+          "parts": [
+            "magnet-face"
+          ]
+        },
+        {
+          "name": "magnet-label",
+          "color": "#f2f2ee",
+          "parts": [
+            "magnet-label"
+          ]
+        },
+        {
+          "name": "scrap",
+          "color": "#8a6a4f",
+          "parts": [
+            "captured-can-0",
+            "captured-can-1",
+            "captured-can-2",
+            "captured-can-3",
+            "captured-can-4",
+            "scrap-heap",
+            "scrap-can-0",
+            "scrap-can-1",
+            "scrap-can-2",
+            "scrap-can-3",
+            "scrap-can-4",
+            "scrap-can-5"
+          ],
+          "param": "scrap"
         }
       ]
     },
@@ -213681,7 +213928,7 @@
       "id": "recycling-trommel-screen",
       "kit": "recycling-facility",
       "title": "Recycling trommel screen",
-      "description": "Recycling trommel screen: a faceted rotating screen drum, feed hopper and opposed discharge chute. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Stationary trommel screen at about real size: inclined screen drum with perforated shell, longitudinal bars, stiffener rings and open mouths, two riding tyres on four trunnion rollers with a driven gearmotor, feed hopper at the high end, overs chute at the low end, fines trough under the drum and a cross conveyor building a fines pile, all on a braced base frame. Material controls: base frame, screen drum, hopper and chutes, conveyor belting; weathered, highVisibility and green-plant presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -213689,7 +213936,10 @@
         "materials recovery",
         "waste management",
         "sorting",
-        "low poly",
+        "trommel",
+        "screen",
+        "compost",
+        "conveyor",
         "scene prop"
       ],
       "compat": [
@@ -213701,8 +213951,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/recycling-trommel-screen.kcad.ts",
       "preview": "/assets/recycling-facility-recycling-trommel-screen.png",
-      "sourceSha256": "5f063c118f057fa49a44b29e5676fcdce0c88e7fc0e2681939e4ee0c945e8d59",
-      "triangleBudget": 1800,
+      "sourceSha256": "60ea2ddfa957547b4b920bca8b35c013b87e544201f67a97332028fae4224ee6",
+      "triangleBudget": 3500,
       "params": [
         {
           "name": "scale",
@@ -213714,59 +213964,188 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#3e5f7a",
+          "label": "Base frame"
         },
         {
-          "name": "paintedSteel",
+          "name": "drum",
           "type": "color",
-          "default": "#75656d",
-          "label": "Painted steel"
+          "default": "#a3a9ad",
+          "label": "Screen drum steel"
+        },
+        {
+          "name": "chutes",
+          "type": "color",
+          "default": "#e0a321",
+          "label": "Hopper and chutes"
+        },
+        {
+          "name": "belting",
+          "type": "color",
+          "default": "#2c3033",
+          "label": "Conveyor belting and rollers"
         }
       ],
       "presets": {
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#736767"
+          "frame": "#4c5862",
+          "drum": "#7d776c",
+          "chutes": "#a98845",
+          "belting": "#3a3936"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "frame": "#d77632",
+          "chutes": "#ffd044"
+        },
+        "greenPlant": {
+          "frame": "#3f6b45",
+          "chutes": "#c9cdd0",
+          "drum": "#8a9196"
         }
       },
       "stats": {
-        "triangles": 400,
+        "triangles": 2432,
         "sizeM": [
-          0.914637,
-          0.8554,
-          2.5888
+          7.81,
+          4.06,
+          10.38
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "drum-shell",
+          "color": "#353a3e",
           "parts": [
-            "base-rail-left",
-            "base-rail-right",
-            "screen-drum",
-            "drive-ring-front",
-            "drive-ring-back"
-          ],
-          "param": "stainlessSteel"
+            "drum-shell",
+            "feed-hopper-mouth"
+          ]
         },
         {
-          "name": "paintedSteel",
-          "color": "#75656d",
+          "name": "drum",
+          "color": "#a3a9ad",
+          "parts": [
+            "drum-bar-0",
+            "drum-bar-1",
+            "drum-bar-2",
+            "drum-bar-3",
+            "drum-bar-4",
+            "drum-bar-5",
+            "drum-bar-6",
+            "drum-bar-7",
+            "drum-bar-8",
+            "drum-bar-9",
+            "drum-bar-10",
+            "drum-bar-11",
+            "drum-bar-12",
+            "drum-bar-13",
+            "drum-bar-14",
+            "drum-bar-15",
+            "drum-bar-16",
+            "drum-bar-17",
+            "drum-stiffener--1500",
+            "drum-stiffener--750",
+            "drum-stiffener-0",
+            "drum-stiffener-750",
+            "drum-stiffener-1500",
+            "mouth-feed",
+            "mouth-overs",
+            "riding-tyre--2200",
+            "riding-tyre-2200",
+            "trunnion-axle--2200--1",
+            "trunnion-axle--2200-1",
+            "trunnion-axle-2200--1",
+            "trunnion-axle-2200-1"
+          ],
+          "param": "drum"
+        },
+        {
+          "name": "belting",
+          "color": "#2c3033",
+          "parts": [
+            "trunnion--2200--1",
+            "trunnion--2200-1",
+            "trunnion-2200--1",
+            "trunnion-2200-1",
+            "drive-motor-cowl",
+            "conveyor-belt",
+            "head-pulley",
+            "tail-pulley"
+          ],
+          "param": "belting"
+        },
+        {
+          "name": "frame",
+          "color": "#3e5f7a",
+          "parts": [
+            "pillow-block--2200--1--1",
+            "pillow-block--2200--1-1",
+            "roller-pedestal--2200--1",
+            "pillow-block--2200-1--1",
+            "pillow-block--2200-1-1",
+            "roller-pedestal--2200-1",
+            "pillow-block-2200--1--1",
+            "pillow-block-2200--1-1",
+            "roller-pedestal-2200--1",
+            "pillow-block-2200-1--1",
+            "pillow-block-2200-1-1",
+            "roller-pedestal-2200-1",
+            "gearbox",
+            "drive-motor",
+            "base-beam--1",
+            "brace--1",
+            "base-beam-1",
+            "brace-1",
+            "cross-member--3200",
+            "cross-member-0",
+            "cross-member-3200",
+            "feed-hopper-rim-2710",
+            "feed-hopper-rim-4270",
+            "feed-hopper-rim-side--1",
+            "feed-hopper-rim-side-1",
+            "hopper-leg--1050-3100",
+            "hopper-leg--1050-4200",
+            "hopper-leg-1050-3100",
+            "hopper-leg-1050-4200",
+            "fines-trough-lip",
+            "conveyor-stringer-front",
+            "conveyor-stringer-back",
+            "conveyor-leg-1600--1",
+            "conveyor-leg-1600-1",
+            "conveyor-leg-3400--1",
+            "conveyor-leg-3400-1"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "chutes",
+          "color": "#e0a321",
           "parts": [
             "feed-hopper",
-            "discharge-chute",
-            "drive-motor"
+            "feed-spout",
+            "overs-chute",
+            "overs-chute-cheek--1",
+            "overs-chute-cheek-1",
+            "fines-trough"
           ],
-          "param": "paintedSteel"
+          "param": "chutes"
+        },
+        {
+          "name": "overs-pile",
+          "color": "#7b7f6c",
+          "parts": [
+            "overs-pile"
+          ]
+        },
+        {
+          "name": "fines-pile",
+          "color": "#5b4330",
+          "parts": [
+            "fines-pile"
+          ]
         }
       ]
     },
@@ -215617,15 +215996,17 @@
       "id": "twin-shaft-shredder",
       "kit": "recycling-facility",
       "title": "Twin-shaft shredder",
-      "description": "Twin-shaft shredder: twin cutting shafts between the feed hopper and discharge chute. Low-poly visualization prop. Material controls: painted steel, stainless steel, safety amber.",
+      "description": "Low-speed twin-shaft shear shredder at about real size: two hex shafts with interleaved three-hook cutter discs in an open cutting chamber, flared feed hopper with a low loading lip, heavy end walls with bearing blocks, a planetary gearbox and finned motor driving each shaft from opposite ends, discharge chute on a column stand, control cabinet with beacon. Material controls: machine body, cutter steel, drive paint, safety trim; weathered, highVisibility and blue-machine presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
         "materials recovery",
         "waste management",
-        "baling",
-        "low poly",
+        "shredder",
+        "twin shaft",
+        "size reduction",
+        "cutter discs",
         "scene prop"
       ],
       "compat": [
@@ -215637,8 +216018,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/twin-shaft-shredder.kcad.ts",
       "preview": "/assets/recycling-facility-twin-shaft-shredder.png",
-      "sourceSha256": "72519d3c65337e29c9ff720f6b692acb75fe7a743b75b965aa10c260fcb215d1",
-      "triangleBudget": 1800,
+      "sourceSha256": "6b7d377dbd818a14887d4eee6f1d028a2ee9aac1d3b6e268139bed8e240299ca",
+      "triangleBudget": 7000,
       "params": [
         {
           "name": "scale",
@@ -215650,76 +216031,234 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "body",
           "type": "color",
-          "default": "#5f7380",
-          "label": "Painted steel"
+          "default": "#2f6b4f",
+          "label": "Machine body and hopper"
         },
         {
-          "name": "stainlessSteel",
+          "name": "cutters",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#8c9196",
+          "label": "Cutter discs and shafts"
         },
         {
-          "name": "safetyAmber",
+          "name": "drive",
           "type": "color",
-          "default": "#f0ae32",
-          "label": "Safety amber"
+          "default": "#2c4a72",
+          "label": "Gearboxes and motors"
+        },
+        {
+          "name": "safety",
+          "type": "color",
+          "default": "#f2b51c",
+          "label": "Safety trim and guards"
         }
       ],
       "presets": {
         "weathered": {
-          "paintedSteel": "#647074",
-          "stainlessSteel": "#9ea7a5",
-          "safetyAmber": "#d9a239"
+          "body": "#4c5f52",
+          "cutters": "#6f6a62",
+          "drive": "#3c4a5a",
+          "safety": "#c9993a"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632",
-          "safetyAmber": "#ffd044"
+          "body": "#d77632",
+          "safety": "#ffd044"
+        },
+        "blueMachine": {
+          "body": "#255d93",
+          "drive": "#3b3f44",
+          "safety": "#e8e3d4"
         }
       },
       "stats": {
-        "triangles": 408,
+        "triangles": 6112,
         "sizeM": [
-          1.251893,
-          1.488,
-          0.9915
+          4.18,
+          2.45,
+          2.24
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#5f7380",
+          "name": "body",
+          "color": "#2f6b4f",
           "parts": [
-            "base-frame",
-            "cutting-housing",
-            "feed-hopper-front",
-            "feed-lip",
+            "column--800--520",
+            "column-foot--800--520",
+            "column--800-520",
+            "column-foot--800-520",
+            "column-800--520",
+            "column-foot-800--520",
+            "column-800-520",
+            "column-foot-800-520",
+            "deck-beam--1",
+            "deck-beam-1",
+            "deck-cross--1",
+            "deck-cross-1",
             "discharge-chute",
-            "side-service-panel",
-            "drive-motor"
+            "end-wall-drive",
+            "end-wall-idle",
+            "chamber-wall-back",
+            "chamber-wall-front",
+            "front-rib--560",
+            "front-rib--280",
+            "front-rib-0",
+            "front-rib-280",
+            "front-rib-560",
+            "hopper-back",
+            "hopper-front",
+            "hopper-stiffener--600",
+            "hopper-stiffener-0",
+            "hopper-stiffener-600",
+            "comb-front-0",
+            "comb-back-0",
+            "comb-front-1",
+            "comb-back-1",
+            "comb-front-2",
+            "comb-back-2",
+            "comb-front-3",
+            "comb-back-3",
+            "comb-front-4",
+            "comb-back-4",
+            "comb-front-5",
+            "comb-back-5",
+            "comb-front-6",
+            "comb-back-6",
+            "comb-front-7",
+            "comb-back-7",
+            "comb-front-8",
+            "comb-back-8",
+            "comb-front-9",
+            "comb-back-9",
+            "comb-front-10",
+            "comb-back-10",
+            "comb-back-11",
+            "drive-front-pedestal",
+            "drive-back-pedestal",
+            "cabinet",
+            "cabinet-door"
           ],
-          "param": "paintedSteel"
+          "param": "body"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "safety",
+          "color": "#f2b51c",
           "parts": [
-            "cutting-shaft-a",
-            "cutting-shaft-b"
+            "discharge-mouth",
+            "hopper-rim-back",
+            "hopper-rim-front",
+            "hopper-rim-end--1",
+            "hopper-rim-end-1",
+            "drive-front-torque-arm",
+            "drive-back-torque-arm"
           ],
-          "param": "stainlessSteel"
+          "param": "safety"
         },
         {
-          "name": "safetyAmber",
-          "color": "#f0ae32",
+          "name": "cutters",
+          "color": "#8c9196",
           "parts": [
-            "warning-beacon"
+            "shaft-0",
+            "cutter-0-0",
+            "cutter-0-1",
+            "cutter-0-2",
+            "cutter-0-3",
+            "cutter-0-4",
+            "cutter-0-5",
+            "cutter-0-6",
+            "cutter-0-7",
+            "cutter-0-8",
+            "cutter-0-9",
+            "cutter-0-10",
+            "cutter-0-11",
+            "shaft-1",
+            "cutter-1-0",
+            "cutter-1-1",
+            "cutter-1-2",
+            "cutter-1-3",
+            "cutter-1-4",
+            "cutter-1-5",
+            "cutter-1-6",
+            "cutter-1-7",
+            "cutter-1-8",
+            "cutter-1-9",
+            "cutter-1-10",
+            "bearing-front-cap",
+            "bearing-back-cap",
+            "cabinet-handle",
+            "beacon-stem"
           ],
-          "param": "safetyAmber"
+          "param": "cutters"
+        },
+        {
+          "name": "drive",
+          "color": "#2c4a72",
+          "parts": [
+            "bearing-front",
+            "bearing-back",
+            "drive-front-gearbox",
+            "drive-front-gear-band-1060",
+            "drive-front-gear-band-1180",
+            "drive-front-motor",
+            "drive-front-fin-0",
+            "drive-front-fin-1",
+            "drive-front-fin-2",
+            "drive-front-fin-3",
+            "drive-front-fin-4",
+            "drive-front-fin-5",
+            "drive-front-fin-6",
+            "drive-front-fin-7",
+            "drive-front-fin-8",
+            "drive-front-fin-9",
+            "drive-front-motor-foot-1250",
+            "drive-front-motor-foot-1800",
+            "drive-front-terminal-box",
+            "drive-back-gearbox",
+            "drive-back-gear-band-1060",
+            "drive-back-gear-band-1180",
+            "drive-back-motor",
+            "drive-back-fin-0",
+            "drive-back-fin-1",
+            "drive-back-fin-2",
+            "drive-back-fin-3",
+            "drive-back-fin-4",
+            "drive-back-fin-5",
+            "drive-back-fin-6",
+            "drive-back-fin-7",
+            "drive-back-fin-8",
+            "drive-back-fin-9",
+            "drive-back-motor-foot-1250",
+            "drive-back-motor-foot-1800",
+            "drive-back-terminal-box"
+          ],
+          "param": "drive"
+        },
+        {
+          "name": "drive-front-fan-cowl",
+          "color": "#23272a",
+          "parts": [
+            "drive-front-fan-cowl",
+            "drive-back-fan-cowl",
+            "cabinet-hmi"
+          ]
+        },
+        {
+          "name": "e-stop",
+          "color": "#d0302a",
+          "parts": [
+            "e-stop"
+          ]
+        },
+        {
+          "name": "beacon",
+          "color": "#f08c00",
+          "parts": [
+            "beacon"
+          ]
         }
       ]
     },
@@ -216254,7 +216793,7 @@
       "id": "vertical-baler",
       "kit": "recycling-facility",
       "title": "Vertical baler",
-      "description": "Vertical baler: a press chamber, ram, upper gantry and clear discharge floor. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Vertical down-stroke cardboard baler at about real size: ribbed press chamber with corner posts, crosshead with standing main cylinder and hoses, upper feed opening with sliding mesh safety gate showing the platen and loose cardboard, hinged lower bale door with wheel latch and tie slots, side hydraulic power pack and control box, finished wire-tied bale on a pallet. Material controls: chamber paint, safety gate and trim, hydraulics, bale cardboard; weathered, highVisibility and red-baler presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -216262,7 +216801,9 @@
         "materials recovery",
         "waste management",
         "baling",
-        "low poly",
+        "baler",
+        "cardboard",
+        "hydraulic press",
         "scene prop"
       ],
       "compat": [
@@ -216274,8 +216815,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/vertical-baler.kcad.ts",
       "preview": "/assets/recycling-facility-vertical-baler.png",
-      "sourceSha256": "624bea5fbbcbdbfc5b567950ff082e190a0416f0fdfcd962aeba947df6c5427e",
-      "triangleBudget": 1800,
+      "sourceSha256": "816b0dc324494a91f254ba751e2b03113738f3bf455d047127ae6607bd76f9f7",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -216287,60 +216828,233 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "chamber",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#2a5d8f",
+          "label": "Press chamber paint"
         },
         {
-          "name": "paintedSteel",
+          "name": "gate",
           "type": "color",
-          "default": "#5f7380",
-          "label": "Painted steel"
+          "default": "#f2b51c",
+          "label": "Safety gate and trim"
+        },
+        {
+          "name": "hydraulics",
+          "type": "color",
+          "default": "#a9aeb2",
+          "label": "Cylinder and hydraulics"
+        },
+        {
+          "name": "bale",
+          "type": "color",
+          "default": "#b98a55",
+          "label": "Cardboard bale"
         }
       ],
       "presets": {
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#647074"
+          "chamber": "#4b5c69",
+          "gate": "#c9993a",
+          "hydraulics": "#85817a",
+          "bale": "#9c7a55"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "chamber": "#d77632",
+          "gate": "#ffd044"
+        },
+        "redBaler": {
+          "chamber": "#b2302b",
+          "gate": "#2f3338",
+          "bale": "#c49a64"
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 1984,
         "sizeM": [
-          1.263,
-          1.135,
-          1.2024
+          3.93,
+          3.78,
+          1.33
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "chamber",
+          "color": "#2a5d8f",
           "parts": [
             "base-skid",
-            "pressure-gauge"
+            "chamber-body",
+            "corner-post--900--560",
+            "corner-post--900-560",
+            "corner-post-900--560",
+            "corner-post-900-560",
+            "side-rib--1--200",
+            "side-rib--1-200",
+            "side-rib-1--200",
+            "side-rib-1-200",
+            "back-band-900",
+            "back-band-1700",
+            "crosshead",
+            "gate-track--860",
+            "gate-track-820",
+            "bale-door",
+            "door-stiffener-420",
+            "door-stiffener-800",
+            "door-stiffener-1180",
+            "hinge-leaf-300",
+            "hinge-leaf-1200",
+            "oil-tank"
           ],
-          "param": "stainlessSteel"
+          "param": "chamber"
         },
         {
-          "name": "paintedSteel",
-          "color": "#5f7380",
+          "name": "hydraulics",
+          "color": "#a9aeb2",
           "parts": [
-            "press-chamber",
-            "front-door-frame",
-            "press-plate",
-            "upper-gantry",
-            "discharge-floor",
-            "control-cabinet",
-            "hydraulic-cylinder"
+            "cylinder-barrel",
+            "cylinder-cap",
+            "cylinder-gland",
+            "lifting-eye--1",
+            "lifting-eye-1",
+            "platen",
+            "hinge-300",
+            "hinge-1200",
+            "latch-hub",
+            "pump-motor"
           ],
-          "param": "paintedSteel"
+          "param": "hydraulics"
+        },
+        {
+          "name": "hose--1",
+          "color": "#1f2326",
+          "parts": [
+            "hose--1",
+            "hose-drop--1",
+            "hose-1",
+            "hose-drop-1",
+            "feed-mouth",
+            "gate-handle",
+            "tie-slot--540",
+            "tie-slot--180",
+            "tie-slot-180",
+            "tie-slot-540",
+            "motor-cowl",
+            "filler-cap",
+            "power-hose",
+            "power-hose-top",
+            "key-switch"
+          ]
+        },
+        {
+          "name": "bale",
+          "color": "#b98a55",
+          "parts": [
+            "loose-board-0",
+            "loose-board-1",
+            "loose-board-2",
+            "loose-board-3",
+            "loose-board-4",
+            "bale-block"
+          ],
+          "param": "bale"
+        },
+        {
+          "name": "gate",
+          "color": "#f2b51c",
+          "parts": [
+            "gate-frame-top",
+            "gate-frame-bottom",
+            "gate-stile--800",
+            "gate-stile-760",
+            "gate-bar-0",
+            "gate-bar-1",
+            "gate-bar-2",
+            "gate-bar-3",
+            "gate-bar-4",
+            "gate-bar-5",
+            "gate-bar-6",
+            "gate-bar-7",
+            "gate-bar-8",
+            "gate-bar-9",
+            "gate-bar-10",
+            "gate-bar-11",
+            "gate-bar-12",
+            "gate-cross",
+            "opening-sill",
+            "latch-wheel",
+            "latch-spoke-0",
+            "latch-spoke-60",
+            "latch-spoke-120",
+            "warning-strip"
+          ],
+          "param": "gate"
+        },
+        {
+          "name": "control-box",
+          "color": "#d9dcde",
+          "parts": [
+            "control-box"
+          ]
+        },
+        {
+          "name": "button-start",
+          "color": "#2e9b46",
+          "parts": [
+            "button-start"
+          ]
+        },
+        {
+          "name": "button-stop",
+          "color": "#d0302a",
+          "parts": [
+            "button-stop"
+          ]
+        },
+        {
+          "name": "pallet-runner--500",
+          "color": "#a77c4a",
+          "parts": [
+            "pallet-runner--500",
+            "pallet-runner-0",
+            "pallet-runner-500",
+            "pallet-slat-0",
+            "pallet-slat-1",
+            "pallet-slat-2",
+            "pallet-slat-3",
+            "pallet-slat-4",
+            "pallet-slat-5",
+            "pallet-slat-6"
+          ]
+        },
+        {
+          "name": "bale-layer-0",
+          "color": "#8f6a40",
+          "parts": [
+            "bale-layer-0",
+            "bale-layer-1",
+            "bale-layer-2",
+            "bale-layer-3",
+            "bale-layer-4",
+            "bale-layer-5"
+          ]
+        },
+        {
+          "name": "bale-wire-top--420",
+          "color": "#c9ccce",
+          "parts": [
+            "bale-wire-top--420",
+            "bale-wire-front--420",
+            "bale-wire-top--210",
+            "bale-wire-front--210",
+            "bale-wire-top-0",
+            "bale-wire-front-0",
+            "bale-wire-top-210",
+            "bale-wire-front-210",
+            "bale-wire-top-420",
+            "bale-wire-front-420"
+          ]
         }
       ]
     },
@@ -217165,7 +217879,7 @@
       "id": "windrow-turner",
       "kit": "recycling-facility",
       "title": "Windrow turner",
-      "description": "Windrow turner: a long belt deck with side guides, terminal rollers and a feed chute. Low-poly visualization prop. Material controls: painted steel, rubber, stainless steel.",
+      "description": "Self-propelled straddle compost windrow turner at about real size: tunnel frame on two crawler tracks with sprockets and rollers, full-width rotor drum with helical paddle flights and a rear curtain, compost windrow running through the tunnel, glazed operator cab with ladder and handrail, roof-mounted diesel power pack with radiator grille and exhaust stack. Material controls: machine paint, tracks and undercarriage, rotor steel, cab glazing; weathered, highVisibility and green-machine presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -217173,7 +217887,9 @@
         "materials recovery",
         "waste management",
         "organics",
-        "low poly",
+        "compost",
+        "windrow turner",
+        "crawler",
         "scene prop"
       ],
       "compat": [
@@ -217185,8 +217901,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/windrow-turner.kcad.ts",
       "preview": "/assets/recycling-facility-windrow-turner.png",
-      "sourceSha256": "31f0a1cccba15173d8989f0e03fce517036dd3b7f1f391479c9b2d0f4866db87",
-      "triangleBudget": 1800,
+      "sourceSha256": "ac9c0b23f39997fea37c1e8305c9dee12f788878d21ed3ccfde9fc53589ec164",
+      "triangleBudget": 4000,
       "params": [
         {
           "name": "scale",
@@ -217198,79 +217914,260 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "paint",
           "type": "color",
-          "default": "#5e7759",
-          "label": "Painted steel"
+          "default": "#e0a321",
+          "label": "Machine paint"
         },
         {
-          "name": "rubber",
+          "name": "tracks",
           "type": "color",
-          "default": "#303638",
-          "label": "Rubber"
+          "default": "#2c3033",
+          "label": "Tracks and undercarriage"
         },
         {
-          "name": "stainlessSteel",
+          "name": "rotor",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#8f969a",
+          "label": "Rotor drum and flights"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#7fa8bd",
+          "label": "Cab glazing"
         }
       ],
       "presets": {
         "weathered": {
-          "paintedSteel": "#647359",
-          "rubber": "#3c403e",
-          "stainlessSteel": "#9ea7a5"
+          "paint": "#a98845",
+          "tracks": "#3a3936",
+          "rotor": "#7a6f62",
+          "glass": "#6b8290"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "paint": "#ffc93a",
+          "glass": "#9fd0e6"
+        },
+        "greenMachine": {
+          "paint": "#3f7d3a",
+          "rotor": "#b0b5b8",
+          "glass": "#8fb4c4"
         }
       },
       "stats": {
-        "triangles": 360,
+        "triangles": 2584,
         "sizeM": [
-          1.171895,
-          0.985,
-          2.12
+          7.6,
+          5.68,
+          7.2
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#5e7759",
+          "name": "windrow",
+          "color": "#5b4330",
           "parts": [
-            "base-left",
-            "base-right",
-            "belt-deck",
-            "tail-support-left",
-            "tail-support-right",
-            "head-support-left",
-            "head-support-right",
-            "feed-chute",
-            "drive-motor"
-          ],
-          "param": "paintedSteel"
+            "windrow"
+          ]
         },
         {
-          "name": "rubber",
-          "color": "#303638",
+          "name": "windrow-turned",
+          "color": "#6e5238",
           "parts": [
-            "belt-surface"
-          ],
-          "param": "rubber"
+            "windrow-turned"
+          ]
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "tracks",
+          "color": "#2c3033",
           "parts": [
-            "side-rail-left",
-            "side-rail-right",
-            "head-roller",
-            "tail-roller"
+            "track--1",
+            "grouser--1--6",
+            "grouser--1--5",
+            "grouser--1--4",
+            "grouser--1--3",
+            "grouser--1--2",
+            "grouser--1--1",
+            "grouser--1-0",
+            "grouser--1-1",
+            "grouser--1-2",
+            "grouser--1-3",
+            "grouser--1-4",
+            "grouser--1-5",
+            "grouser--1-6",
+            "final-drive--1",
+            "track-1",
+            "grouser-1--6",
+            "grouser-1--5",
+            "grouser-1--4",
+            "grouser-1--3",
+            "grouser-1--2",
+            "grouser-1--1",
+            "grouser-1-0",
+            "grouser-1-1",
+            "grouser-1-2",
+            "grouser-1-3",
+            "grouser-1-4",
+            "grouser-1-5",
+            "grouser-1-6",
+            "final-drive-1",
+            "rotor-hub--1",
+            "rotor-hub-1",
+            "rear-curtain",
+            "grille-0",
+            "grille-1",
+            "grille-2",
+            "grille-3",
+            "grille-4",
+            "grille-5",
+            "grille-6",
+            "cab-mirror--1",
+            "cab-mirror-1"
           ],
-          "param": "stainlessSteel"
+          "param": "tracks"
+        },
+        {
+          "name": "sprocket--1",
+          "color": "#5a5f63",
+          "parts": [
+            "sprocket--1",
+            "idler--1",
+            "roller--1--700",
+            "roller--1-0",
+            "roller--1-700",
+            "sprocket-1",
+            "idler-1",
+            "roller-1--700",
+            "roller-1-0",
+            "roller-1-700",
+            "roof-deck",
+            "air-cleaner",
+            "fuel-tank",
+            "ladder-rung-0",
+            "ladder-rung-1",
+            "ladder-rung-2",
+            "ladder-rung-3",
+            "ladder-rung-4",
+            "ladder-rung-5",
+            "ladder-rung-6",
+            "ladder-rail-3250",
+            "ladder-rail-3630"
+          ]
+        },
+        {
+          "name": "paint",
+          "color": "#e0a321",
+          "parts": [
+            "track-frame--1",
+            "track-frame-1",
+            "leg--1",
+            "leg-brace--1",
+            "leg-1",
+            "leg-brace-1",
+            "roof-beam",
+            "roof-handrail-post--1",
+            "roof-handrail-post-1",
+            "rotor-hood",
+            "engine-hood",
+            "hydraulic-tank",
+            "cab-floor",
+            "cab-bracket",
+            "cab-shell",
+            "cab-roof",
+            "cab-handrail",
+            "cab-handrail-post-2950",
+            "cab-handrail-post-3700",
+            "cab-handrail-post-4410"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "rotor",
+          "color": "#8f969a",
+          "parts": [
+            "rotor-drum",
+            "flight-0-0",
+            "flight-0-1",
+            "flight-1-0",
+            "flight-1-1",
+            "flight-2-0",
+            "flight-2-1",
+            "flight-3-0",
+            "flight-3-1",
+            "flight-4-0",
+            "flight-4-1",
+            "flight-5-0",
+            "flight-5-1",
+            "flight-6-0",
+            "flight-6-1",
+            "flight-7-0",
+            "flight-7-1",
+            "flight-8-0",
+            "flight-8-1",
+            "flight-9-0",
+            "flight-9-1",
+            "flight-10-0",
+            "flight-10-1",
+            "flight-11-0",
+            "flight-11-1",
+            "flight-12-0",
+            "flight-12-1",
+            "flight-13-0",
+            "flight-13-1",
+            "flight-14-0",
+            "flight-14-1",
+            "flight-15-0",
+            "flight-15-1",
+            "flight-16-0",
+            "flight-16-1",
+            "flight-17-0",
+            "flight-17-1",
+            "flight-18-0",
+            "flight-18-1",
+            "flight-19-0",
+            "flight-19-1",
+            "flight-20-0",
+            "flight-20-1",
+            "flight-21-0",
+            "flight-21-1",
+            "flight-22-0",
+            "flight-22-1",
+            "flight-23-0",
+            "flight-23-1",
+            "flight-24-0",
+            "flight-24-1",
+            "flight-25-0",
+            "flight-25-1"
+          ],
+          "param": "rotor"
+        },
+        {
+          "name": "exhaust-stack",
+          "color": "#3a3c3e",
+          "parts": [
+            "exhaust-stack",
+            "exhaust-cap"
+          ]
+        },
+        {
+          "name": "glass",
+          "color": "#7fa8bd",
+          "parts": [
+            "cab-windscreen",
+            "cab-door-glass",
+            "cab-side-glass"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "beacon",
+          "color": "#f08c00",
+          "parts": [
+            "beacon"
+          ]
         }
       ]
     },

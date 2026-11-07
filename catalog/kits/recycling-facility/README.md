@@ -10,6 +10,19 @@ indexed rendered preview.
 
 ## Quality promotion
 
+Five hero machines are rebuilt at about real size from turned profiles and
+extruded sections: `twin-shaft-shredder` (interleaved hooked cutter discs on
+hex shafts, flared hopper, a gearbox and finned motor at each end),
+`windrow-turner` (tunnel frame on crawler tracks straddling a compost row,
+flighted rotor, cab and roof power pack), `vertical-baler` (ribbed chamber,
+standing main cylinder, mesh feed gate, latched bale door, tied bale on a
+pallet), `recycling-trommel-screen` (inclined screen drum on riding tyres and
+trunnions, feed hopper, overs chute, fines conveyor and pile) and
+`overband-magnet-separator` (finned magnet and cleated cross belt hung from a
+gantry over a loaded troughed conveyor, discharging into a scrap skip). Each
+has four material-named controls, keeps `weathered` and `highVisibility`, and
+gains a third preset; triangle budgets are 3,000 to 7,000.
+
 The [horizontal baler refinement handoff](../../../artifacts/catalog-demos/recycling-facility-baler-quality-20261106/README.md)
 records an in-place silhouette update to the existing `horizontal-baler` asset:
 the open press mouth now shows the ram, hydraulic drive, discharge belt, and a
