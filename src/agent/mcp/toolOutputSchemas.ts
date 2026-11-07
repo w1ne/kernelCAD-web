@@ -38,6 +38,7 @@ import { COST_ESTIMATE_OUTPUT_SCHEMAS } from './registry/costTools.outputSchemas
 import { TOLERANCE_STACK_OUTPUT_SCHEMAS } from './registry/toleranceTools.outputSchemas';
 import { SCAN_REFERENCE_OUTPUT_SCHEMAS } from './registry/scanReferenceTools.outputSchemas';
 import { METRIC_THREAD_OUTPUT_SCHEMAS } from './registry/metricThreadTools.outputSchemas';
+import { SPLIT_KEEP_PARTS_OUTPUT_SCHEMAS } from './registry/splitKeepPartsTools.outputSchemas';
 import { SDF_EXPORT_PREVIEW_OUTPUT_SCHEMAS } from './registry/sdfExportPreviewTools.outputSchemas';
 
 export type { JSONSchemaObject } from './toolOutputSchemaParts';
@@ -758,4 +759,5 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   ...TOLERANCE_STACK_OUTPUT_SCHEMAS,
   ...SCAN_REFERENCE_OUTPUT_SCHEMAS,
   ...METRIC_THREAD_OUTPUT_SCHEMAS,
+  ...SPLIT_KEEP_PARTS_OUTPUT_SCHEMAS,
 };
