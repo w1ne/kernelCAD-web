@@ -1,11 +1,11 @@
 // Original kernelCAD low-poly photographic umbrella reflector with a radial canopy, central shaft and short floor stand.
-// Millimetres, Z up, base on z = 0. All visible parts share one color control.
+// Millimetres, Z up, base on z = 0. Separate studio fabric, polymer and metal zones keep the object readable and editable.
 
 meta({
   name: "umbrella-reflector",
   license: 'CC0-1.0',
   title: "Umbrella reflector",
-  description: "Photographic umbrella reflector with a radial canopy, central shaft and short floor stand. Knobs: overall scale and asset color.",
+  description: "Photographic umbrella reflector with a radial canopy, central shaft and short floor stand. Knobs: overall scale and studio fabric, polymer and metal color controls. Presets: studioBlack and fieldRental.",
   tags: ["umbrella reflector", "photography", "video", "studio", "low poly", "CC0"],
   kit: 'photo-video-studio',
   category: 'prop',
@@ -15,18 +15,25 @@ meta({
 });
 
 const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
-const color = param('color', "#555c62", { label: 'Asset color' });
+const fabric = param('fabric', '#e5ddce', { label: 'Studio fabric' });
+const polymer = param('polymer', '#343c43', { label: 'Polymer' });
+const metal = param('metal', '#a9b5ba', { label: 'Metal' });
+
+presets({
+  studioBlack: { fabric: '#e5ddce', polymer: '#343c43', metal: '#a9b5ba' },
+  fieldRental: { fabric: '#d6b365', polymer: '#c75a2e', metal: '#657780' },
+});
 const p = assembly("umbrella-reflector");
-p.part("canopy", (sphere(190).scale([1, 0.16, 1]).translate(0, 0, 820)).translate(0, 0, -3.493).scale(scale).color(color));
-p.part("hub", (sphere(28).translate(0, 0, 820)).translate(0, 0, -3.493).scale(scale).color(color));
-p.part("shaft", (cylinder(730, 12, 8).translate(0, 0, 90)).translate(0, 0, -3.493).scale(scale).color(color));
-p.part("rib-one", (box(10, 10, 360, true).rotate([0, 1, 0], 25).translate(0, -10, 650)).translate(0, 0, -3.493).scale(scale).color(color));
-p.part("rib-two", (box(10, 10, 360, true).rotate([0, 1, 0], -25).translate(0, -10, 650)).translate(0, 0, -3.493).scale(scale).color(color));
-p.part("rib-three", (box(10, 10, 360, true).rotate([0, 1, 0], 65).translate(0, -10, 650)).translate(0, 0, -3.493).scale(scale).color(color));
-p.part("rib-four", (box(10, 10, 360, true).rotate([0, 1, 0], -65).translate(0, -10, 650)).translate(0, 0, -3.493).scale(scale).color(color));
-p.part("stand-hub", (cylinder(40, 30, 8).translate(0, 0, 85)).translate(0, 0, -3.493).scale(scale).color(color));
-p.part("stand-leg-one", (box(30, 310, 22, true).rotate([0, 1, 0], 15).translate(0, 0, 18)).translate(0, 0, -3.493).scale(scale).color(color));
-p.part("stand-leg-two", (box(30, 310, 22, true).rotate([0, 1, 0], -15).rotate([0, 0, 1], 120).translate(0, 0, 18)).translate(0, 0, -3.493).scale(scale).color(color));
-p.part("stand-leg-three", (box(30, 310, 22, true).rotate([0, 1, 0], -15).rotate([0, 0, 1], 240).translate(0, 0, 18)).translate(0, 0, -3.493).scale(scale).color(color));
+p.part("canopy", (sphere(190).scale([1, 0.16, 1]).translate(0, 0, 820)).translate(0, 0, -3.493).scale(scale).color(fabric));
+p.part("hub", (sphere(28).translate(0, 0, 820)).translate(0, 0, -3.493).scale(scale).color(polymer));
+p.part("shaft", (cylinder(730, 12, 8).translate(0, 0, 90)).translate(0, 0, -3.493).scale(scale).color(metal));
+p.part("rib-one", (box(10, 10, 360, true).rotate([0, 1, 0], 25).translate(0, -10, 650)).translate(0, 0, -3.493).scale(scale).color(metal));
+p.part("rib-two", (box(10, 10, 360, true).rotate([0, 1, 0], -25).translate(0, -10, 650)).translate(0, 0, -3.493).scale(scale).color(metal));
+p.part("rib-three", (box(10, 10, 360, true).rotate([0, 1, 0], 65).translate(0, -10, 650)).translate(0, 0, -3.493).scale(scale).color(metal));
+p.part("rib-four", (box(10, 10, 360, true).rotate([0, 1, 0], -65).translate(0, -10, 650)).translate(0, 0, -3.493).scale(scale).color(metal));
+p.part("stand-hub", (cylinder(40, 30, 8).translate(0, 0, 85)).translate(0, 0, -3.493).scale(scale).color(polymer));
+p.part("stand-leg-one", (box(30, 310, 22, true).rotate([0, 1, 0], 15).translate(0, 0, 18)).translate(0, 0, -3.493).scale(scale).color(metal));
+p.part("stand-leg-two", (box(30, 310, 22, true).rotate([0, 1, 0], -15).rotate([0, 0, 1], 120).translate(0, 0, 18)).translate(0, 0, -3.493).scale(scale).color(metal));
+p.part("stand-leg-three", (box(30, 310, 22, true).rotate([0, 1, 0], -15).rotate([0, 0, 1], 240).translate(0, 0, 18)).translate(0, 0, -3.493).scale(scale).color(metal));
 
 return p.model();

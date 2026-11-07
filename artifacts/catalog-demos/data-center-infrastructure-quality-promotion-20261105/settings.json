@@ -1,0 +1,40 @@
+{
+  "kit": "data-center-infrastructure",
+  "date": "2026-11-05",
+  "baselineCommit": "1543e72a9acb2d9b9cd6aeed6f29512e60d5d4e0",
+  "baselineCatalogAudit": {
+    "passing": 1604,
+    "total": 2390,
+    "passRatePercent": 67.1
+  },
+  "assetCount": 50,
+  "assetsAdded": 0,
+  "materialControls": "2-4 named by material for every existing asset",
+  "presets": [
+    "facilityStandard",
+    "highVisibility"
+  ],
+  "triangleBudget": 2200,
+  "previewCommand": "npx tsx scripts/renderCatalogPreviews.ts <all 50 kit ids>",
+  "indexCommand": "npx tsx scripts/buildAssetCatalog.ts",
+  "comparisonNote": "/home/andrii/worktrees/kernelCAD-private/catalog-data-center-infrastructure-compare-20261105/COMPARISON.md",
+  "source": "promote_data_center_infrastructure.py imports original geometry profiles from the 2026-11-03 wave generator and writes all existing IDs in place",
+  "verificationScope": {
+    "covered": [
+      "quality gate",
+      "source lint",
+      "catalog integration tests",
+      "targeted PNG previews",
+      "index source hashes and preview paths",
+      "local pages",
+      "source-to-preview demo"
+    ],
+    "notCovered": [
+      "deployed behavior for this branch",
+      "facility design",
+      "electrical or cooling performance",
+      "safety certification",
+      "physical acceptance"
+    ]
+  }
+}

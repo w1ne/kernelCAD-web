@@ -1,0 +1,75 @@
+{
+  "date": "2026-11-06",
+  "kit": "railway",
+  "assetsPromoted": 40,
+  "materialControls": 132,
+  "genericColorControlsReplaced": 40,
+  "netMaterialControlsAdded": 92,
+  "presetBlocks": 40,
+  "namedPresetVariants": 80,
+  "triangleBudget": "all assets within their declared budgets",
+  "previews": {
+    "rerendered": 40,
+    "indexRegenerated": true,
+    "sourceHashesMatched": true,
+    "openedAndReviewed": [
+      "diesel-locomotive",
+      "crossing-warning-light",
+      "station-platform",
+      "crossing-gate",
+      "station-clock",
+      "milepost",
+      "electric-locomotive",
+      "steam-locomotive"
+    ]
+  },
+  "qualityGate": {
+    "railway": {
+      "passed": 40,
+      "total": 40,
+      "exitCode": 0
+    },
+    "catalog": {
+      "passed": 2211,
+      "total": 2390,
+      "passRatePercent": 92.51,
+      "thin": 179,
+      "richKits": 41,
+      "thinKits": 4,
+      "exitCode": 1,
+      "remainingThinKits": [
+        "music",
+        "office",
+        "photo-video-studio",
+        "solar-energy"
+      ]
+    }
+  },
+  "eslint": {
+    "command": "npx eslint catalog/kits/railway/",
+    "exitCode": 0
+  },
+  "integrationTests": {
+    "command": "npx vitest run tests/integration/catalog/",
+    "filesPassed": 4,
+    "testsPassed": 15,
+    "exitCode": 0,
+    "output": "catalog-test-output.txt",
+    "initialConcurrentAttempt": "catalog-test-first-attempt-stale-index.txt"
+  },
+  "catalogPages": {
+    "generated": 2390,
+    "railwayPagesVerifiedLocally": 40,
+    "deploymentVerified": false
+  },
+  "demo": {
+    "path": "railway-quality-promotion.mp4",
+    "durationSeconds": 18,
+    "resolution": "960x540",
+    "codec": "h264",
+    "decodedFrames": 6,
+    "manuallyInspected": true
+  },
+  "deployment": "not performed; deployed behavior unverified",
+  "hardwareAcceptance": "not performed"
+}

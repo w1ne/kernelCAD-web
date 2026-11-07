@@ -1,0 +1,34 @@
+Date: 2026-11-05 (UTC)
+Worktree: /home/andrii/worktrees/kernelCAD-web/catalog-2000
+
+Promotion source and plan:
+  python3 -B artifacts/catalog-demos/sports-quality-promotion-20261105/promote_sports_quality.py --apply
+  per-ID plan and before/after SHA-256 values: promotion-plan.json
+
+Default preview render (40 unchanged sports IDs):
+  npx tsx scripts/renderCatalogPreviews.ts american-football badminton-racket barbell baseball-bat baseball-glove baseball basketball-hoop basketball batting-helmet cricket-bat cricket-wicket dumbbell exercise-ball foam-roller golf-bag golf-club gym-bench hockey-puck hockey-stick inline-skate jump-rope kettlebell lacrosse-stick shuttlecock skateboard soccer-ball soccer-goal sports-water-bottle starting-block tennis-ball tennis-net tennis-racket track-hurdle treadmill trophy-cup volleyball-net volleyball weight-plate yoga-block yoga-mat
+  output: preview-render-output.txt
+
+Catalog index regeneration:
+  npx tsx scripts/buildAssetCatalog.ts
+  output: catalog-build-output.txt
+
+Source-declared preset replay renders:
+  npx tsx artifacts/catalog-demos/sports-quality-promotion-20261105/render_sports_presets.ts
+  output: preset-render-output.txt
+
+Quality and validation:
+  python3 scripts/checkCatalogQuality.py --top 20
+  npx tsx scripts/checkCatalogAsset.ts sports
+  npx eslint catalog/kits/sports/
+  npx vitest run tests/integration/catalog/
+  python3 -B artifacts/catalog-demos/sports-quality-promotion-20261105/audit_sports_index.py
+  python3 -B artifacts/catalog-demos/sports-quality-promotion-20261105/verify_sports_pages.py
+  python3 -B artifacts/catalog-demos/sports-quality-promotion-20261105/audit_npm_package.py
+
+Demo generation and inspection:
+  python3 -B artifacts/catalog-demos/sports-quality-promotion-20261105/capture_sports_quality.py
+  python3 -B artifacts/catalog-demos/sports-quality-promotion-20261105/inspect_sports_quality_video.py
+  ffprobe -v error -show_entries format=duration:stream=codec_name,width,height,r_frame_rate,nb_frames -of json artifacts/catalog-demos/sports-quality-promotion-20261105/sports-quality-promotion.mp4
+
+The video uses the captured pre-edit PNGs, current indexed default previews, source-declared preset replay PNGs, and locally generated validation summaries. It describes local replay and software rendering only. It does not claim deployment, simulation acceptance, or hardware acceptance.

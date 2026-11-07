@@ -1,0 +1,9 @@
+{
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-construction-equipment-quality-promotion-20261104",
+  "kitPages": 60,
+  "assetsInIndex": 2390,
+  "pageAndPreviewPairs": 60,
+  "hubListsKit": true,
+  "missing": [],
+  "passed": true
+}

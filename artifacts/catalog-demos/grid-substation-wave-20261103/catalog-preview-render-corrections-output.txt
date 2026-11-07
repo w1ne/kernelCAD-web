@@ -1,0 +1,3 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' scripts/renderCatalogPreviews.ts substation-phase-spacer-damper
+grid-substation/substation-phase-spacer-damper: 136 tris

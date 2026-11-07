@@ -1,0 +1,92 @@
+{
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-city-street-pages-20261106",
+  "outputRoot": "/tmp/kernelcad-city-street-pages-20261106/catalog",
+  "workspacePages": 2390,
+  "assetsChecked": 4,
+  "hubBuilt": true,
+  "deployed": false,
+  "pages": [
+    {
+      "id": "crosswalk-tile",
+      "path": "/tmp/kernelcad-city-street-pages-20261106/catalog/city-street/crosswalk-tile/index.html",
+      "materialLabels": [
+        "Asphalt",
+        "Crosswalk paint",
+        "Edge-line paint"
+      ],
+      "allParameterLabels": [
+        "Zebra bars",
+        "Asphalt",
+        "Crosswalk paint",
+        "Edge-line paint"
+      ],
+      "presets": [
+        "fresh",
+        "worn"
+      ],
+      "previewPresent": true
+    },
+    {
+      "id": "road-tile",
+      "path": "/tmp/kernelcad-city-street-pages-20261106/catalog/city-street/road-tile/index.html",
+      "materialLabels": [
+        "Asphalt",
+        "Edge-line paint",
+        "Centre-line paint"
+      ],
+      "allParameterLabels": [
+        "Style",
+        "Asphalt",
+        "Edge-line paint",
+        "Centre-line paint"
+      ],
+      "presets": [
+        "worn",
+        "yellowCentre"
+      ],
+      "previewPresent": true
+    },
+    {
+      "id": "sidewalk-tile",
+      "path": "/tmp/kernelcad-city-street-pages-20261106/catalog/city-street/sidewalk-tile/index.html",
+      "materialLabels": [
+        "Kerb concrete",
+        "Paving stone",
+        "Accent brick"
+      ],
+      "allParameterLabels": [
+        "Paving grid",
+        "Kerb concrete",
+        "Paving stone",
+        "Accent brick"
+      ],
+      "presets": [
+        "brick",
+        "granite"
+      ],
+      "previewPresent": true
+    },
+    {
+      "id": "playground-slide",
+      "path": "/tmp/kernelcad-city-street-pages-20261106/catalog/city-street/playground-slide/index.html",
+      "materialLabels": [
+        "Galvanized steel",
+        "HDPE deck",
+        "Stainless-steel slide",
+        "Roof polyethylene"
+      ],
+      "allParameterLabels": [
+        "Roof",
+        "Galvanized steel",
+        "HDPE deck",
+        "Stainless-steel slide",
+        "Roof polyethylene"
+      ],
+      "presets": [
+        "coastal",
+        "park"
+      ],
+      "previewPresent": true
+    }
+  ]
+}

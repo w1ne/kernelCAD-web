@@ -1,0 +1,11 @@
+{
+  "video": "postal-logistics-quality-promotion.mp4",
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "frameRate": "24/1",
+  "pixelFormat": "yuv420p",
+  "durationSeconds": 24.0,
+  "decodedReviewFrames": 6,
+  "visualReview": "All six decoded cards are assembled in video-review/contact-sheet.png for direct inspection."
+}

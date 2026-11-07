@@ -1,0 +1,33 @@
+{
+  "checkedAt": "2026-11-05T08:33:19.573336+00:00",
+  "productionOrigin": "https://kernelcad.com",
+  "branch": "feat/catalog-2000",
+  "branchDeploymentClaimed": false,
+  "homepage": {
+    "status": 200,
+    "contentType": "text/html; charset=utf-8"
+  },
+  "assetIndex": {
+    "status": 200,
+    "contentType": "application/json",
+    "generatedAt": "2026-11-05T07:49:43.772Z",
+    "assetCount": 2116,
+    "postalLogisticsRows": 52,
+    "postalLogisticsRowsWithPreview": 52
+  },
+  "catalogHub": {
+    "status": 404,
+    "contentType": "text/html; charset=utf-8"
+  },
+  "postalAssetPage": {
+    "status": 404,
+    "contentType": "text/html; charset=utf-8"
+  },
+  "postalSource": {
+    "status": 200,
+    "contentType": "video/mp2t",
+    "genericColorControlVisible": true,
+    "weatheredPresetVisible": false
+  },
+  "interpretation": "This records the live production baseline only. The feature branch source/index/previews are local and require integration and deployment before production behavior can be verified."
+}

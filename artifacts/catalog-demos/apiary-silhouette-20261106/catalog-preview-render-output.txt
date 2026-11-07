@@ -1,0 +1,7 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' scripts/renderCatalogPreviews.ts beekeeper-veil-hood beekeeper-jacket beekeeper-gloves bee-smoker hive-tool
+apiary/bee-smoker: 1644 tris
+apiary/beekeeper-gloves: 1232 tris
+apiary/beekeeper-jacket: 1528 tris
+apiary/beekeeper-veil-hood: 2368 tris
+apiary/hive-tool: 172 tris

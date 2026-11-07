@@ -1,0 +1,19 @@
+{
+  "video": "industrial-plant-quality-promotion.mp4",
+  "durationSeconds": 24.0,
+  "decodedFrames": 8,
+  "frameSampling": "one frame every 3 seconds from encoded MP4",
+  "contactSheet": "decoded-video-contact-sheet.png",
+  "contactSheetSize": [
+    2600,
+    744
+  ],
+  "stream": {
+    "codec_name": "h264",
+    "width": 1280,
+    "height": 720,
+    "avg_frame_rate": "24/1"
+  },
+  "visualInspectionStatus": "pass",
+  "visualInspection": "decoded contact sheet and full-resolution source and verification frames opened; comparison, color preset, readable controls, and local-only claims are clear"
+}

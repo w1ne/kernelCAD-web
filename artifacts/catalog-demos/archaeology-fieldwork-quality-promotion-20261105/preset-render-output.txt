@@ -1,0 +1,3 @@
+(node:4074430) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+rendered archaeology-fieldwork/total-station from indexed weathered preset (4 material controls)

@@ -1,0 +1,9 @@
+ ✓ tests/integration/catalog/assetModule.test.ts (4 tests) 723ms
+ ✓ tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 378ms
+ ✓ tests/integration/catalog/catalogStudioLink.test.ts (4 tests) 186346ms
+     ✓ every committed catalog asset opens with exactly the knobs its index row lists  185211ms
+     ✓ refuses refs that do not name a catalog row, and sources that no longer match the index  346ms
+ ✓ tests/integration/catalog/catalogIndex.test.ts (2 tests) 263824ms
+     ✓ every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh  263384ms
+ Test Files  4 passed (4)
+      Tests  15 passed (15)

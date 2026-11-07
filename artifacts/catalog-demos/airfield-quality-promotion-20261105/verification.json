@@ -1,0 +1,85 @@
+{
+  "date": "2026-11-05",
+  "targetKit": "airfield",
+  "targetKitQuality": {
+    "before": "0/40 (0%)",
+    "after": "40/40 (100%)",
+    "status": "passed"
+  },
+  "catalogQuality": {
+    "before": "2051/2390 (85.82%)",
+    "after": "2091/2390 (87.49%)",
+    "remainingThin": "299/2390 (12.51%)",
+    "fullScanExitCode": 1,
+    "fullScanReason": "The catalog-wide script returns 1 while any thin assets remain; the reported count is 2,091/2,390 passing."
+  },
+  "materialControls": 142,
+  "presetEntries": 80,
+  "previews": {
+    "rendered": 40,
+    "indexed": 40
+  },
+  "sourceIndexAudit": "passed: 40 hashes, 40 preview paths, 40 budgets, same 40 IDs",
+  "eslint": "passed",
+  "integrationTests": {
+    "status": "passed",
+    "files": 4,
+    "tests": 15
+  },
+  "localPages": {
+    "status": "passed",
+    "catalogPagesBuilt": 2390,
+    "airfieldPagesAndPreviewHashesChecked": 40
+  },
+  "npmPackageBoundary": {
+    "status": "passed",
+    "airfieldSourcesIncluded": 40,
+    "airfieldPreviewsIncluded": 40,
+    "catalogIndexIncluded": true,
+    "packageExportsUnchanged": true,
+    "productImplementationPaths": 0
+  },
+  "presetReplay": {
+    "status": "passed",
+    "assets": 3,
+    "renders": 6
+  },
+  "demoVideo": {
+    "status": "inspected",
+    "frames": 6,
+    "resolution": "1280x720",
+    "codec": "H.264",
+    "durationSeconds": 21.04
+  },
+  "publicSite": {
+    "status": "checkedBeforeBranchDeployment",
+    "homepage": "HTTP 200",
+    "assetLibrary": "HTTP 200",
+    "manifest": "HTTP 200",
+    "sampleAirfieldSourceAndPreview": "HTTP 200",
+    "deployment": "not performed"
+  },
+  "physicalAcceptance": "not evaluated",
+  "promotionReplay": {
+    "status": "passed",
+    "matchingAssetSources": 40,
+    "promotionPlanMatches": true
+  },
+  "catalogIndexBuild": {
+    "status": "passed",
+    "command": "npx tsx scripts/buildAssetCatalog.ts",
+    "sourceHashesAndPreviewPaths": "verified by integration suite and source-index-audit.json"
+  },
+  "defaultPreviewReview": {
+    "status": "passed",
+    "all40Rendered": true,
+    "openedPreviews": [
+      "airport-fire-engine",
+      "airport-control-tower",
+      "terminal-gate-front",
+      "aircraft-hangar",
+      "aircraft-fuel-truck"
+    ]
+  },
+  "fullCatalogQualityStatus": "incomplete catalog-wide by design: 299 thin assets remain; promoted airfield kit passes 40/40."
+}

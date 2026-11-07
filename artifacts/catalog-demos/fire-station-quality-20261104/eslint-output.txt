@@ -1,0 +1,1 @@
+PASS: npx eslint catalog/kits/fire-station/

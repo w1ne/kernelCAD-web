@@ -1,0 +1,1 @@
+{"id":"substation-main-power-transformer","scale":1.2,"triangles":580,"budget":1800,"materials":1,"sizeM":[7.68,5.7792,3.9312],"knobs":["scale","color"]}

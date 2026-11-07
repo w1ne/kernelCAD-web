@@ -1,0 +1,1225 @@
+{
+  "checkedAt": "2026-11-05T03:41:57.532Z",
+  "method": "npx tsx artifacts/catalog-demos/lab-infrastructure-quality-promotion-20261105/check_lab_pages.mts",
+  "localOnly": true,
+  "totalIndexedAssets": 2390,
+  "generatedAssetPages": 2390,
+  "kitPages": 60,
+  "pageAndPreviewPairs": 60,
+  "checkedPages": [
+    {
+      "id": "acid-corrosive-storage-cabinet",
+      "params": [
+        "scale",
+        "enamel",
+        "polymer",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 84,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "articulated-extraction-snorkel",
+      "params": [
+        "scale",
+        "enamel",
+        "stainless",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 212,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "balance-isolation-bench",
+      "params": [
+        "scale",
+        "enamel",
+        "rubber",
+        "stainless",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 484,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "bench-service-pegboard",
+      "params": [
+        "scale",
+        "enamel",
+        "stainless",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 312,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "benchtop-extraction-enclosure",
+      "params": [
+        "scale",
+        "enamel",
+        "glass",
+        "polymer",
+        "stainless"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 168,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "canopy-extraction-hood",
+      "params": [
+        "scale",
+        "stainless",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 60,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cantilever-lab-bench",
+      "params": [
+        "scale",
+        "enamel",
+        "stainless",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 156,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "ceiling-service-carrier",
+      "params": [
+        "scale",
+        "enamel",
+        "stainless",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 144,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "center-island-lab-bench",
+      "params": [
+        "scale",
+        "enamel",
+        "polymer",
+        "stainless",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 228,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "chemical-weighing-enclosure",
+      "params": [
+        "scale",
+        "enamel",
+        "glass",
+        "polymer",
+        "stainless"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 168,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cleanroom-ceiling-light-panel",
+      "params": [
+        "scale",
+        "enamel",
+        "polymer"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 48,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cleanroom-fan-filter-unit",
+      "params": [
+        "scale",
+        "enamel",
+        "polymer",
+        "stainless",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 120,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cleanroom-gowning-bench",
+      "params": [
+        "scale",
+        "enamel",
+        "stainless",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 132,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cleanroom-gowning-locker-bank",
+      "params": [
+        "scale",
+        "enamel",
+        "polymer",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 180,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cleanroom-partition-panel",
+      "params": [
+        "scale",
+        "enamel",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 60,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cleanroom-pass-through-chamber",
+      "params": [
+        "scale",
+        "enamel",
+        "glass",
+        "polymer",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 132,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cleanroom-shoe-cubby",
+      "params": [
+        "scale",
+        "enamel",
+        "stainless",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 156,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cleanroom-single-door-module",
+      "params": [
+        "scale",
+        "enamel",
+        "glass",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 72,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cleanroom-tacky-mat-tray",
+      "params": [
+        "scale",
+        "enamel",
+        "polymer"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 108,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cleanroom-viewing-window",
+      "params": [
+        "scale",
+        "enamel",
+        "glass",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 84,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cold-room-door-module",
+      "params": [
+        "scale",
+        "enamel",
+        "glass",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 72,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cold-room-wall-panel",
+      "params": [
+        "scale",
+        "enamel",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 60,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cryogenic-dewar-storage-rack",
+      "params": [
+        "scale",
+        "enamel",
+        "stainless",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 348,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "ductless-fume-enclosure",
+      "params": [
+        "scale",
+        "enamel",
+        "glass",
+        "polymer",
+        "stainless"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 168,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "flammable-liquid-storage-cabinet",
+      "params": [
+        "scale",
+        "enamel",
+        "polymer",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 144,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "fume-exhaust-riser",
+      "params": [
+        "scale",
+        "enamel",
+        "stainless"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 72,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "glassware-drying-cabinet",
+      "params": [
+        "scale",
+        "enamel",
+        "polymer",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 120,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "l-shaped-laboratory-bench",
+      "params": [
+        "scale",
+        "enamel",
+        "stainless",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 132,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "lab-gas-manifold-panel",
+      "params": [
+        "scale",
+        "enamel",
+        "polymer",
+        "stainless",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 320,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-base-cabinet",
+      "params": [
+        "scale",
+        "enamel",
+        "polymer",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 72,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-drawer-cabinet",
+      "params": [
+        "scale",
+        "enamel",
+        "polymer",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 408,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-electrical-service-rail",
+      "params": [
+        "scale",
+        "enamel",
+        "polymer",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 180,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-faucet-set",
+      "params": [
+        "scale",
+        "polymer",
+        "stainless"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 290,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-floor-drain-trough",
+      "params": [
+        "scale",
+        "polymer",
+        "stainless"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 188,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-fume-hood",
+      "params": [
+        "scale",
+        "enamel",
+        "glass",
+        "polymer",
+        "stainless"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 156,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-gas-cylinder-cabinet",
+      "params": [
+        "scale",
+        "enamel",
+        "polymer",
+        "stainless",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 144,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-refrigerator",
+      "params": [
+        "scale",
+        "enamel",
+        "polymer",
+        "rubber",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 132,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-safety-shower",
+      "params": [
+        "scale",
+        "enamel",
+        "polymer",
+        "stainless"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 400,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-service-spine",
+      "params": [
+        "scale",
+        "enamel",
+        "polymer",
+        "stainless"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 372,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-sink-base-cabinet",
+      "params": [
+        "scale",
+        "enamel",
+        "polymer",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 84,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-utility-turret",
+      "params": [
+        "scale",
+        "enamel",
+        "polymer",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 156,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-vacuum-service-panel",
+      "params": [
+        "scale",
+        "enamel",
+        "polymer",
+        "stainless"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 316,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-wall-eyewash-station",
+      "params": [
+        "scale",
+        "enamel",
+        "polymer",
+        "stainless",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 224,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-washup-station",
+      "params": [
+        "scale",
+        "polymer",
+        "stainless",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 322,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laboratory-water-service-console",
+      "params": [
+        "scale",
+        "enamel",
+        "polymer",
+        "stainless",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 224,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "laminar-flow-workbench",
+      "params": [
+        "scale",
+        "enamel",
+        "glass",
+        "polymer",
+        "stainless"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 180,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "mobile-underbench-cabinet",
+      "params": [
+        "scale",
+        "enamel",
+        "polymer",
+        "rubber",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 296,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "open-laboratory-shelving",
+      "params": [
+        "scale",
+        "enamel",
+        "stainless",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 192,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "overhead-reagent-shelf",
+      "params": [
+        "scale",
+        "enamel",
+        "glass",
+        "polymer",
+        "stainless"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 448,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "overhead-service-bridge",
+      "params": [
+        "scale",
+        "enamel",
+        "stainless",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 108,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "reagent-wall-shelf",
+      "params": [
+        "scale",
+        "enamel",
+        "glass",
+        "polymer",
+        "stainless"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 624,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "solvent-storage-cabinet",
+      "params": [
+        "scale",
+        "enamel",
+        "polymer",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 132,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "stainless-lab-bench",
+      "params": [
+        "scale",
+        "stainless",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 192,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "ultra-low-temperature-freezer",
+      "params": [
+        "scale",
+        "enamel",
+        "polymer",
+        "rubber",
+        "stainless"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 252,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "undercounter-laboratory-freezer",
+      "params": [
+        "scale",
+        "enamel",
+        "polymer",
+        "rubber",
+        "stainless"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 180,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "vibration-isolation-table",
+      "params": [
+        "scale",
+        "rubber",
+        "stainless",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 496,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "walk-in-fume-hood",
+      "params": [
+        "scale",
+        "enamel",
+        "glass",
+        "polymer",
+        "stainless"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 168,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "wall-lab-bench",
+      "params": [
+        "scale",
+        "enamel",
+        "polymer",
+        "stainless",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 108,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "wall-reagent-cabinet",
+      "params": [
+        "scale",
+        "enamel",
+        "polymer",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 96,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    },
+    {
+      "id": "wet-lab-sink-bench",
+      "params": [
+        "scale",
+        "enamel",
+        "polymer",
+        "stainless",
+        "steel"
+      ],
+      "presets": [
+        "cleanroom",
+        "highVisibility"
+      ],
+      "triangles": 188,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "materialControls": true,
+      "namedPresets": true,
+      "triangleStats": true
+    }
+  ],
+  "liveDeployment": "not verified; the feature branch has not been deployed"
+}

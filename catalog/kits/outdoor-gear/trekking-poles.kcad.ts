@@ -18,6 +18,10 @@ const length = param('length', '1200', { choices: ['1000', '1200', '1400'], labe
 const shaft = param('shaft', '#a64b35', { label: 'Shafts' });
 const grip = param('grip', '#343739', { label: 'Grips' });
 const tip = param('tip', '#b7b8b5', { label: 'Tips and baskets' });
+presets({
+  alpine: { shaft: '#a64b35', grip: '#343739', tip: '#b7b8b5' },
+  forest: { shaft: '#487268', grip: '#363b3c', tip: '#c0b9a3' },
+});
 
 const poleLength = Number(length.value);
 const poles = assembly('trekking-poles');

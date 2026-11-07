@@ -1,0 +1,3 @@
+wrote 2390 asset page(s) + hub, sitemap.xml and robots.txt to /tmp/kernelcad-grid-substation-silhouette-refinement-20261106
+(node:3277228) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)

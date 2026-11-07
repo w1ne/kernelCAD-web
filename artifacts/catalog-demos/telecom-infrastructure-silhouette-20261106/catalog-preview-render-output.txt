@@ -1,0 +1,5 @@
+telecom-infrastructure/dual-sector-panel-array: 2036 tris
+telecom-infrastructure/microwave-dish-antenna: 1486 tris
+telecom-infrastructure/remote-radio-unit: 1616 tris
+telecom-infrastructure/sector-panel-antenna: 1232 tris
+telecom-infrastructure/yagi-radio-antenna: 1232 tris

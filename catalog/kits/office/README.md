@@ -1,6 +1,6 @@
 # Office kit
 
-Original low-poly office supplies, desk accessories and small workstation equipment. Models use millimetres, Z up, a `base` origin, and CC0 metadata. Each source has compact/standard format and body, accent and detail colour knobs; several items also expose useful counts such as pages, shelves, rings or tiers.
+Original low-poly office supplies, desk accessories and small workstation equipment. Models use millimetres, Z up, a `base` origin, and CC0 metadata. Each source has compact/standard format, material-specific color controls and `professional` / `classroom` appearance presets; several items also expose useful counts such as pages, shelves, rings or tiers.
 
 | id | asset |
 | --- | --- |
@@ -18,19 +18,19 @@ Original low-poly office supplies, desk accessories and small workstation equipm
 | `business-card-holder` | Angled desktop card holder |
 | `pencil-cup` | Open stationery cup with tools |
 | `mechanical-pencil` | Mechanical writing pencil |
-| `fountain-pen` | Capped fountain pen |
+| `fountain-pen` | Uncapped fountain pen with two-tone nib, ribbed feed and clipped cap beside it |
 | `highlighter` | Chisel-tip highlighter |
 | `marker` | Capped felt-tip marker |
-| `stapler` | Desktop stapler |
+| `stapler` | Full-strip stapler: arched arm on a hinge pin, steel magazine, driver nose over an anvil |
 | `hole-punch` | Two-hole paper punch |
-| `tape-dispenser` | Weighted dispenser with tape roll |
+| `tape-dispenser` | Weighted shoe-shaped dispenser with tape roll on a hub and serrated cutter |
 | `scissors` | Office scissors with crossed blades |
 | `ruler` | Marked office ruler |
 | `paper-clip-dish` | Desk dish with paper clips |
 | `rubber-stamp` | Hand stamp with handle |
 | `ink-pad` | Lidded stamp ink pad |
 | `desk-calendar` | Standing calendar with selectable page count |
-| `calculator` | Keypad desktop calculator |
+| `calculator` | Wedge desk calculator: LCD with digits, solar strip, sculpted keys with accent operators |
 | `paperweight` | Faceted desktop paperweight |
 | `desk-organizer` | Multi-compartment organizer |
 | `mousepad` | Desk mat with stitched border |
@@ -38,7 +38,7 @@ Original low-poly office supplies, desk accessories and small workstation equipm
 | `laptop-stand` | Desktop computer riser |
 | `monitor-riser` | Shelf riser for a display |
 | `footrest` | Low office footrest |
-| `paper-shredder` | Compact office shredder |
+| `paper-shredder` | Bin shredder: motor head with feed throat and controls over a windowed bin on casters |
 | `paper-cutter` | Desktop guillotine cutter |
 | `label-maker` | Desktop label maker |
 | `laminator` | Pouch laminator |
@@ -47,7 +47,19 @@ Original low-poly office supplies, desk accessories and small workstation equipm
 
 ## Use
 
-Open any `.kcad.ts` source in kernelCAD to inspect its parameters, change its format or palette, and export a GLB. For example, `catalog/kits/office/desk-organizer.kcad.ts` produces a desktop organizer with editable colours and proportions.
+Open any `.kcad.ts` source in kernelCAD to inspect its parameters, change its format or palette, and export a GLB. For example, `catalog/kits/office/desk-organizer.kcad.ts` produces a timber-and-steel desktop organizer with editable proportions and material colors.
+
+## Quality promotion
+
+The [office quality handoff](../../../artifacts/catalog-demos/office-quality-20261106/README.md)
+records the material mapping, before/after previews, source-driven preset
+renders, regenerated index, local checks, and inspected MP4. All 40 existing
+IDs were retained.
+
+The [scissors visual follow-up](../../../artifacts/catalog-demos/office-scissors-detail-20261106/README.md)
+repairs the default catalog view by joining each polymer finger loop to the
+brass pivot with a tapered handle tang. It retains the existing stainless-steel,
+polymer, and brass controls and both named palettes.
 
 ## Licence and provenance
 

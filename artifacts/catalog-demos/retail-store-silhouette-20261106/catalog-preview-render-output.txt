@@ -1,0 +1,5 @@
+retail-store/barcode-scanner: 942 tris
+retail-store/payment-terminal: 592 tris
+retail-store/shopping-cart: 1932 tris
+retail-store/stock-ladder: 1236 tris
+retail-store/trolley-corral: 2404 tris

@@ -1,0 +1,54 @@
+  THIN   retail-store                  0/48   colours/asset=1.00
+
+  0/48 assets pass (0 rich kits, 1 thin kits)
+  48 thin assets = 100% of the catalog
+
+  worst 50:
+    1c 0p 1g  catalog/kits/retail-store/aisle-sign.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/assisted-checkout-till.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/bakery-display-case.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/barcode-scanner.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/bottle-return-kiosk.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/bulk-food-bin.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/cash-drawer.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/checkout-bagging-stand.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/checkout-conveyor.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/checkout-counter.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/checkout-divider.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/chest-freezer.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/clothing-rail.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/customer-service-desk.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/deli-service-case.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/entry-security-gate.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/flatbed-stock-trolley.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/floor-display-stand.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/gondola-shelf.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/handbasket.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/hanging-wayfinding-sign.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/impulse-merchandiser.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/magazine-rack.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/pallet-display.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/parcel-locker-bank.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/payment-terminal.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/price-check-scale.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/produce-crate-stack.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/produce-display-table.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/queue-barrier.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/queue-stanchion.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/receipt-printer.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/recycling-station.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/refrigerated-display-case.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/returns-drop-bin.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/roll-cage-trolley.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/self-checkout-kiosk.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/shelf-endcap.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/shopping-bag-dispenser.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/shopping-basket.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/shopping-cart.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/stock-hand-truck.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/stock-ladder.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/trolley-corral.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/upright-drink-cooler.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/wall-shelf-unit.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/wire-grid-display.kcad.ts
+    1c 0p 1g  catalog/kits/retail-store/wooden-pallet.kcad.ts

@@ -1,0 +1,7 @@
+{
+  "command": "xargs -a artifacts/catalog-demos/hydroponics-quality-promotion-20261105/preview-asset-ids.txt npx tsx scripts/renderCatalogPreviews.ts",
+  "exitCode": 0,
+  "assetsRequested": 52,
+  "assetsRendered": 52,
+  "passed": true
+}

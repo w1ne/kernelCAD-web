@@ -1,0 +1,42 @@
+{
+  "kit": "industrial-plant",
+  "assetsPromoted": 60,
+  "newAssetsAdded": 0,
+  "overallQualityGateBeforeRound": "1120/2390 assets pass (46.86%)",
+  "materialKnobsMin": 2,
+  "materialKnobsMax": 3,
+  "materialKnobsTotal": 136,
+  "netMaterialKnobsAdded": 16,
+  "materialControlsPerAsset": {
+    "2": 44,
+    "3": 16
+  },
+  "presetNamesPerAsset": [
+    2
+  ],
+  "presetEntriesTotal": 120,
+  "silhouetteGeometryAssets": 48,
+  "geometryEnhancements": [
+    "axial-flow-fan: hollow shroud and swept rotor blades",
+    "evaporative-cooling-tower: multi-profile lofted shell",
+    "weigh-hopper: tapered transition into the outlet"
+  ],
+  "previewsRendered": 60,
+  "indexedRowsWithPreview": 60,
+  "catalogRows": 2390,
+  "sourceHashesFresh": true,
+  "sourceHashMismatches": [],
+  "missingPreviews": [],
+  "triangleRange": [
+    132,
+    980
+  ],
+  "triangleBudgetsHonest": true,
+  "triangleBudgetIssues": [],
+  "qualityGate": "60/60 pass",
+  "overallQualityGate": "1180/2390 assets pass (49.37%)",
+  "passingAssetsGainedThisRound": 60,
+  "thinAssetsRemaining": 1210,
+  "overallPassRate": "49.37%",
+  "problems": []
+}

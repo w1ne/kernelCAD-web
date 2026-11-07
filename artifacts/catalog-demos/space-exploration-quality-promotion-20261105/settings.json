@@ -1,0 +1,25 @@
+{
+  "captureScript": "capture_space_quality_promotion.py",
+  "inspectionScript": "inspect_space_quality_video.py",
+  "invocationsFile": "invocations.txt",
+  "video": "space-exploration-quality-promotion.mp4",
+  "resolution": "1280x720",
+  "sourceFrames": 7,
+  "frameDurationSeconds": 2.5,
+  "outputFrameRate": 24,
+  "videoCodec": "libx264",
+  "pixelFormat": "yuv420p",
+  "crf": 25,
+  "inputSources": [
+    "catalog/kits/space-exploration/*.kcad.ts",
+    "catalog/kits/space-exploration/previews/*.png",
+    "artifacts/catalog-demos/space-exploration-quality-promotion-20261105/before/*.png",
+    "artifacts/catalog-demos/space-exploration-quality-promotion-20261105/verification.json"
+  ],
+  "claimLimits": [
+    "local source-to-preview workflow",
+    "not deployed",
+    "not simulated mission behavior",
+    "not hardware or flight acceptance"
+  ]
+}

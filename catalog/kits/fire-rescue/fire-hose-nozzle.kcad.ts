@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: CC0-1.0
-// Original kernelCAD low-poly fire hose nozzle scene prop, modeled from scratch.
+// Straight fire hose nozzle with barrel, selector collar, pistol grip and adjustable front tip. Material controls: nozzle metal, selector finish, rubber grip; weathered and highVisibility presets.
 meta({
   name: "fire-hose-nozzle",
   license: 'CC0-1.0',
   title: "Fire hose nozzle",
-  description: "Straight hose nozzle with hand grip, barrel and adjustable front tip. Knobs: overall scale, body color and accent color.",
+  description: "Straight fire hose nozzle with barrel, selector collar, pistol grip and adjustable front tip. Material controls: nozzle metal, selector finish, rubber grip; weathered and highVisibility presets.",
   tags: ['fire rescue', 'fire service', 'emergency scene', 'low poly', 'CC0'],
   kit: 'fire-rescue',
   category: 'prop',
@@ -14,14 +14,20 @@ meta({
 });
 
 const scale = param('scale', 1, { label: 'Overall scale', min: 0.7, max: 1.3, step: 0.05 });
-const body = param('body', '#78828a', { label: 'Body color' });
-const accent = param('accent', '#d74735', { label: 'Accent color' });
+const nozzleMetalColor = param('nozzleMetalColor', '#aeb8ba', { label: 'Nozzle metal' });
+const selectorFinishColor = param('selectorFinishColor', '#d2ad3e', { label: 'Selector finish' });
+const gripRubberColor = param('gripRubberColor', '#303539', { label: 'Rubber grip' });
+presets({
+  weathered: { nozzleMetalColor: '#858f91', selectorFinishColor: '#9b7e37', gripRubberColor: '#41423f' },
+  highVisibility: { nozzleMetalColor: '#c4c8b8', selectorFinishColor: '#eedb59', gripRubberColor: '#303539' },
+});
 const p = assembly("fire-hose-nozzle");
-const groundOffset = 0;
-const add = (name, shape, finish = body) => p.part(name, shape.translate(0, 0, groundOffset).scale(scale).color(finish));
-add("hose-tail", cylinder(80.6, 45, 10).rotate([0, 1, 0], 90).translate(-111.6, 0, 54), accent);
-add("nozzle-body", cylinder(145.7, 34, 10).rotate([0, 1, 0], 90).translate(-9.3, 0, 54), body);
-add("tip", cylinder(55.8, 22, 10).rotate([0, 1, 0], 90).translate(99.2, 0, 54), accent);
-add("handle", box(40, 100, 32, true).translate(-31, 0, 16), accent);
+const groundOffset = 10;
+const add = (name, shape, finish = nozzleMetalColor) => p.part(name, shape.translate(0, 0, groundOffset).scale(scale).color(finish));
+add("hose-tail", cylinder(80.6, 45, 10).rotateY(90).translate(-111.6, 0, 54), nozzleMetalColor);
+add("nozzle-body", cylinder(145.7, 34, 10).rotateY(90).translate(-9.3, 0, 54), nozzleMetalColor);
+add("tip", cylinder(55.8, 22, 10).rotateY(90).translate(99.2, 0, 54), selectorFinishColor);
+add("pistol-grip", cylinder(76, 23, 8).translate(-31, 0, -10), gripRubberColor);
+add("selector-collar", cylinder(18, 42, 10).rotateY(90).translate(60, 0, 54), selectorFinishColor);
 
 return p.model();

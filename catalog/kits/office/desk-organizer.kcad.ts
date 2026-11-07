@@ -1,8 +1,10 @@
+// Desk organizer: Multi-compartment desktop organizer for papers and small stationery. Material controls: timber, stainless steel, label paper.
+
 meta({
   name: 'desk-organizer',
   license: 'CC0-1.0',
   title: 'Desk organizer',
-  description: 'Multi-compartment desktop organizer for papers and small stationery. Knobs: compact or standard format, body, dividers and label colours.',
+  description: "Multi-compartment desktop organizer for papers and small stationery. Controls: timber, stainless steel, label paper.",
   tags: ['desk organizer', 'desktop organizer', 'office supplies', 'office', 'stationery'],
   kit: 'office',
   category: 'item',
@@ -11,29 +13,32 @@ meta({
   triangleBudget: 180,
 });
 
-const body = param('body', '#816744', { label: 'Body' });
-const accent = param('accent', '#b9b1a1', { label: 'Accent' });
-const detail = param('detail', '#4b555c', { label: 'Detail' });
+const timber = param('timber', '#ad8155', { label: 'Timber' });
+const stainlessSteel = param('stainlessSteel', '#bfc3c4', { label: 'Stainless steel' });
+const labelPaper = param('labelPaper', '#eae4d3', { label: 'Label paper' });
 const format = param('format', 'standard', { choices: ['compact', 'standard'], label: 'Format' });
 const k = format.value === 'compact' ? 0.8 : 1;
 
 presets({
-  clean: { body: '#e8e7df', accent: '#66829a', detail: '#454b50' },
-  warm: { body: '#c8a875', accent: '#557581', detail: '#493c34' },
+  professional: { timber: '#ad8155', stainlessSteel: '#bfc3c4', labelPaper: '#eae4d3' },
+  classroom: { timber: '#426f75', stainlessSteel: '#d1a340', labelPaper: '#d96f4e' },
 });
 
 const office = assembly('desk-organizer');
 
-const addBox = (name: string, x: number, y: number, z: number, w: number, d: number, h: number, colour: typeof body) => {
-  office.part(name, box(w * k, d * k, h * k, true).translate(x * k, y * k, (z + h / 2) * k).color(colour));
+const addBox = (name: string, x: number, y: number, z: number, w: number, d: number, h: number, colour: typeof timber | typeof stainlessSteel | typeof labelPaper) => {
+  const partShape = box(w * k, d * k, h * k, true).translate(x * k, y * k, (z + h / 2) * k);
+  if (colour === timber) office.part(name, partShape.color(timber));
+  else if (colour === stainlessSteel) office.part(name, partShape.color(stainlessSteel));
+  else office.part(name, partShape.color(labelPaper));
 };
 
-addBox('base', 0, 0, 0, 220, 150, 12, body);
-addBox('back-wall', 0, 67, 12, 220, 16, 104, body);
-addBox('left-wall', -102, 0, 12, 16, 150, 60, body);
-addBox('right-wall', 102, 0, 12, 16, 150, 60, body);
-addBox('divider-a', -35, -4, 12, 10, 128, 52, accent);
-addBox('divider-b', 36, -4, 12, 10, 128, 52, accent);
-addBox('label', 0, 72, 71, 70, 4, 18, detail);
+addBox('base', 0, 0, 0, 220, 150, 12, timber);
+addBox('back-wall', 0, 67, 12, 220, 16, 104, timber);
+addBox('left-wall', -102, 0, 12, 16, 150, 60, timber);
+addBox('right-wall', 102, 0, 12, 16, 150, 60, timber);
+addBox('divider-a', -35, -4, 12, 10, 128, 52, stainlessSteel);
+addBox('divider-b', 36, -4, 12, 10, 128, 52, stainlessSteel);
+addBox('label', 0, 72, 71, 70, 4, 18, labelPaper);
 
 return office.model();

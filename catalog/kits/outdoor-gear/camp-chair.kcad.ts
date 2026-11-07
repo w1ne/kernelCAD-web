@@ -17,6 +17,10 @@ meta({
 const size = param('size', 'classic', { choices: ['compact', 'classic'], label: 'Size' });
 const fabric = param('fabric', '#b25636', { label: 'Fabric' });
 const frame = param('frame', '#555b5c', { label: 'Frame' });
+presets({
+  trail: { fabric: '#b85b3d', frame: '#4b5252' },
+  highVisibility: { fabric: '#e2a43a', frame: '#3b4145' },
+});
 
 const compact = size.value === 'compact';
 const width = compact ? 390 : 440;

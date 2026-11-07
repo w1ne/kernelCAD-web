@@ -1,0 +1,5 @@
+{
+  "command": "npx eslint catalog/kits/mining/",
+  "status": "PASS",
+  "cleanOutput": true
+}

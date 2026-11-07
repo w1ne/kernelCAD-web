@@ -1,0 +1,26 @@
+{
+  "video": "artifacts/catalog-demos/fire-station-wave-20261103/fire-station-kit.mp4",
+  "bytes": 513244,
+  "sha256": "a4e582b1740ec2d7bb637c77728055680300465141bdea1e03c415bd00b6457c",
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "pixelFormat": "yuv420p",
+  "durationSeconds": 36.0,
+  "decodedFrameSamples": [
+    "artifacts/catalog-demos/fire-station-wave-20261103/video-review/decoded-01.png",
+    "artifacts/catalog-demos/fire-station-wave-20261103/video-review/decoded-02.png",
+    "artifacts/catalog-demos/fire-station-wave-20261103/video-review/decoded-03.png",
+    "artifacts/catalog-demos/fire-station-wave-20261103/video-review/decoded-04.png",
+    "artifacts/catalog-demos/fire-station-wave-20261103/video-review/decoded-05.png",
+    "artifacts/catalog-demos/fire-station-wave-20261103/video-review/decoded-06.png",
+    "artifacts/catalog-demos/fire-station-wave-20261103/video-review/decoded-07.png",
+    "artifacts/catalog-demos/fire-station-wave-20261103/video-review/decoded-08.png",
+    "artifacts/catalog-demos/fire-station-wave-20261103/video-review/decoded-09.png",
+    "artifacts/catalog-demos/fire-station-wave-20261103/video-review/decoded-10.png",
+    "artifacts/catalog-demos/fire-station-wave-20261103/video-review/decoded-11.png",
+    "artifacts/catalog-demos/fire-station-wave-20261103/video-review/decoded-12.png"
+  ],
+  "contactSheet": "artifacts/catalog-demos/fire-station-wave-20261103/video-review/contact-sheet.png",
+  "manualVisualInspection": true
+}

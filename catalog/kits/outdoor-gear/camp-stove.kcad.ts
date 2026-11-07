@@ -18,6 +18,10 @@ const style = param('style', 'integrated', { choices: ['integrated', 'remote'], 
 const body = param('body', '#4c5154', { label: 'Stove body' });
 const burner = param('burner', '#c7c9c6', { label: 'Burner and supports' });
 const fuel = param('fuel', '#c98336', { label: 'Fuel canister' });
+presets({
+  trail: { body: '#4b5154', burner: '#bcc4c3', fuel: '#c98336' },
+  highVisibility: { body: '#414a4c', burner: '#d0d1c9', fuel: '#d94b33' },
+});
 
 const stove = assembly('camp-stove');
 if (style.value === 'remote') {

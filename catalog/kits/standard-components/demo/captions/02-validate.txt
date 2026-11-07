@@ -1,4 +1,4 @@
-02 / VALIDATE
-50 independent .kcad.ts assets
-50 / 50 passed asset checks
-One material each; every base Z = 0
+02 / MATERIAL ZONES — jaw-coupling.kcad.ts
+Steel: two toothed hubs
+Engineering polymer: flexible spider
+Presets: dark / brass / weathered

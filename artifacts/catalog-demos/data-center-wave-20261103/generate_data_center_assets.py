@@ -288,43 +288,48 @@ def source_for(asset_id, title, description, color, profile, index):
     return '\n'.join(lines)
 
 
-ids = [row[0] for row in ASSETS]
-if len(ids) != len(set(ids)):
-    raise ValueError('duplicate data-center asset ids')
-if any(row[4] == '' for row in ASSETS):
-    raise ValueError('each data-center asset needs a geometry profile')
-existing = ROOT / 'catalog' / 'index.json'
-if existing.exists():
-    existing_ids = {row['id'] for row in json.loads(existing.read_text())['assets']}
-    collisions = sorted(existing_ids.intersection(ids))
-    if collisions:
-        raise ValueError(f'asset ids already exist: {collisions}')
+def generate_assets() -> None:
+    ids = [row[0] for row in ASSETS]
+    if len(ids) != len(set(ids)):
+        raise ValueError('duplicate data-center asset ids')
+    if any(row[4] == '' for row in ASSETS):
+        raise ValueError('each data-center asset needs a geometry profile')
+    existing = ROOT / 'catalog' / 'index.json'
+    if existing.exists():
+        existing_ids = {row['id'] for row in json.loads(existing.read_text())['assets']}
+        collisions = sorted(existing_ids.intersection(ids))
+        if collisions:
+            raise ValueError(f'asset ids already exist: {collisions}')
 
-KIT.joinpath('kit.json').write_text(json.dumps({
-    'title': 'Data-center infrastructure',
-    'description': 'Original generic props for IT racks, power distribution, thermal management, containment, monitoring, and facility safety.',
-}, indent=2) + '\n')
-for index, spec in enumerate(ASSETS):
-    asset_id, title, description, color, profile = spec
-    (KIT / f'{asset_id}.kcad.ts').write_text(source_for(*spec, index))
+    KIT.joinpath('kit.json').write_text(json.dumps({
+        'title': 'Data-center infrastructure',
+        'description': 'Original generic props for IT racks, power distribution, thermal management, containment, monitoring, and facility safety.',
+    }, indent=2) + '\n')
+    for index, spec in enumerate(ASSETS):
+        asset_id, title, description, color, profile = spec
+        (KIT / f'{asset_id}.kcad.ts').write_text(source_for(*spec, index))
 
-settings = {
-    'kit': KIT_ID,
-    'generatedOn': '2026-11-03',
-    'assetCount': len(ASSETS),
-    'sourceCommand': 'python3 artifacts/catalog-demos/data-center-wave-20261103/generate_data_center_assets.py',
-    'catalogCommand': 'npx tsx scripts/buildAssetCatalog.ts',
-    'previewCommand': 'npx tsx scripts/renderCatalogPreviews.ts',
-    'knobs': {'scale': {'default': 1, 'min': 0.7, 'max': 1.3, 'step': 0.05}, 'color': 'asset-specific hex color'},
-    'triangleBudget': 2200,
-    'materialCount': 1,
-    'verificationScope': {
-        'covered': ['local source and index', 'low-poly mesh export', 'triangle and material audit', 'catalog integration suite', 'preview files and URLs', 'local generated catalog pages', 'current public website snapshot', 'built npm tarball contents'],
-        'notCovered': ['deployed behavior for this branch', 'data-center capacity or reliability', 'power and cooling engineering', 'safety certification', 'site suitability', 'physical acceptance'],
-    },
-    'assets': [{'id': row[0], 'title': row[1], 'profile': row[4]} for row in ASSETS],
-}
-BUNDLE = ROOT / 'artifacts' / 'catalog-demos' / 'data-center-wave-20261103'
-BUNDLE.mkdir(parents=True, exist_ok=True)
-(BUNDLE / 'settings.json').write_text(json.dumps(settings, indent=2) + '\n')
-print(f'generated {len(ASSETS)} assets in {KIT}')
+    settings = {
+        'kit': KIT_ID,
+        'generatedOn': '2026-11-03',
+        'assetCount': len(ASSETS),
+        'sourceCommand': 'python3 artifacts/catalog-demos/data-center-wave-20261103/generate_data_center_assets.py',
+        'catalogCommand': 'npx tsx scripts/buildAssetCatalog.ts',
+        'previewCommand': 'npx tsx scripts/renderCatalogPreviews.ts',
+        'knobs': {'scale': {'default': 1, 'min': 0.7, 'max': 1.3, 'step': 0.05}, 'color': 'asset-specific hex color'},
+        'triangleBudget': 2200,
+        'materialCount': 1,
+        'verificationScope': {
+            'covered': ['local source and index', 'low-poly mesh export', 'triangle and material audit', 'catalog integration suite', 'preview files and URLs', 'local generated catalog pages', 'current public website snapshot', 'built npm tarball contents'],
+            'notCovered': ['deployed behavior for this branch', 'data-center capacity or reliability', 'power and cooling engineering', 'safety certification', 'site suitability', 'physical acceptance'],
+        },
+        'assets': [{'id': row[0], 'title': row[1], 'profile': row[4]} for row in ASSETS],
+    }
+    bundle = ROOT / 'artifacts' / 'catalog-demos' / 'data-center-wave-20261103'
+    bundle.mkdir(parents=True, exist_ok=True)
+    (bundle / 'settings.json').write_text(json.dumps(settings, indent=2) + '\n')
+    print(f'generated {len(ASSETS)} assets in {KIT}')
+
+
+if __name__ == '__main__':
+    generate_assets()

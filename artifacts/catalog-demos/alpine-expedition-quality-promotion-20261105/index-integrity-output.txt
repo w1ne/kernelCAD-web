@@ -1,0 +1,16 @@
+{
+  "status": "passed",
+  "kit": "alpine-expedition",
+  "assets": 50,
+  "catalogAssets": 2390,
+  "materialControls": 143,
+  "presetEntries": 100,
+  "sourceHashesMatched": 50,
+  "previewPathsAndFilesMatched": 50,
+  "triangleRange": [
+    72,
+    580
+  ],
+  "qualityGate": "50/50 assets pass",
+  "issues": []
+}

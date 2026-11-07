@@ -1,0 +1,87 @@
+(node:2008264) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{
+  "invocation": "npx tsx artifacts/catalog-demos/nature-quality-20261106/render_nature_presets.ts",
+  "exporter": "runAndExport(format=\"glb\", options={ format: \"glb\", style: \"lowpoly\", lowpoly: { maxTriangles: indexed triangleBudget } })",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "variants": [
+    {
+      "assetId": "cairn",
+      "preset": "dark",
+      "values": {
+        "stoneColor": "#4f545a",
+        "accentColor": "#6e747a"
+      },
+      "source": "catalog/kits/nature/cairn.kcad.ts",
+      "sourceSha256": "718d5eafa0808b16c48314abf9efa23b7c6df33f637e0d47b211b60bd3bccbf8",
+      "triangles": 228,
+      "triangleBudget": 340,
+      "png": "preset-variants/cairn-dark.png"
+    },
+    {
+      "assetId": "cairn",
+      "preset": "sandstone",
+      "values": {
+        "stoneColor": "#b88a62",
+        "accentColor": "#d4ae84"
+      },
+      "source": "catalog/kits/nature/cairn.kcad.ts",
+      "sourceSha256": "718d5eafa0808b16c48314abf9efa23b7c6df33f637e0d47b211b60bd3bccbf8",
+      "triangles": 228,
+      "triangleBudget": 340,
+      "png": "preset-variants/cairn-sandstone.png"
+    },
+    {
+      "assetId": "pebble-cluster",
+      "preset": "beach",
+      "values": {
+        "stoneColor": "#d8c8a8",
+        "accentColor": "#f0e8d8"
+      },
+      "source": "catalog/kits/nature/pebble-cluster.kcad.ts",
+      "sourceSha256": "592e862b9c896073994d4da9b3a95893e1b041c9caf5878ff99f0335315f047d",
+      "triangles": 256,
+      "triangleBudget": 400,
+      "png": "preset-variants/pebble-cluster-beach.png"
+    },
+    {
+      "assetId": "pebble-cluster",
+      "preset": "red",
+      "values": {
+        "stoneColor": "#a86a4a",
+        "accentColor": "#c89a7a"
+      },
+      "source": "catalog/kits/nature/pebble-cluster.kcad.ts",
+      "sourceSha256": "592e862b9c896073994d4da9b3a95893e1b041c9caf5878ff99f0335315f047d",
+      "triangles": 256,
+      "triangleBudget": 400,
+      "png": "preset-variants/pebble-cluster-red.png"
+    },
+    {
+      "assetId": "dead-tree",
+      "preset": "charred",
+      "values": {
+        "bark": "#2f2a27",
+        "heartwood": "#634a37"
+      },
+      "source": "catalog/kits/nature/dead-tree.kcad.ts",
+      "sourceSha256": "7c249c6b05fe78234f28f7e1f1dcc8a7d248925431d89f9d089600dcbdcef9f7",
+      "triangles": 336,
+      "triangleBudget": 400,
+      "png": "preset-variants/dead-tree-charred.png"
+    },
+    {
+      "assetId": "dead-tree",
+      "preset": "bleached",
+      "values": {
+        "bark": "#b9b1a3",
+        "heartwood": "#d9c7a7"
+      },
+      "source": "catalog/kits/nature/dead-tree.kcad.ts",
+      "sourceSha256": "7c249c6b05fe78234f28f7e1f1dcc8a7d248925431d89f9d089600dcbdcef9f7",
+      "triangles": 336,
+      "triangleBudget": 400,
+      "png": "preset-variants/dead-tree-bleached.png"
+    }
+  ]
+}

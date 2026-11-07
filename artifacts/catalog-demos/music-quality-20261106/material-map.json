@@ -1,0 +1,937 @@
+[
+  {
+    "id": "accordion",
+    "parts": 17,
+    "materials": [
+      "lacquer",
+      "bellows",
+      "ivory",
+      "nickel"
+    ],
+    "materialLabels": [
+      "Case lacquer",
+      "Bellows fabric",
+      "Ivory keys",
+      "Nickel buttons"
+    ],
+    "materialUsage": {
+      "lacquer": 2,
+      "bellows": 8,
+      "ivory": 6,
+      "nickel": 1
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "acoustic-guitar",
+    "parts": 6,
+    "materials": [
+      "spruce",
+      "mahogany",
+      "ebony",
+      "steel"
+    ],
+    "materialLabels": [
+      "Spruce soundboard",
+      "Mahogany tonewood",
+      "Ebony fingerboard",
+      "Steel strings"
+    ],
+    "materialUsage": {
+      "spruce": 1,
+      "mahogany": 3,
+      "ebony": 1,
+      "steel": 1
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "alto-saxophone",
+    "parts": 9,
+    "materials": [
+      "brass",
+      "nickel",
+      "ebonite"
+    ],
+    "materialLabels": [
+      "Lacquered brass",
+      "Nickel keywork",
+      "Ebonite mouthpiece"
+    ],
+    "materialUsage": {
+      "brass": 4,
+      "nickel": 4,
+      "ebonite": 1
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "banjo",
+    "parts": 8,
+    "materials": [
+      "maple",
+      "parchment",
+      "nickel",
+      "ebony"
+    ],
+    "materialLabels": [
+      "Maple neck",
+      "Parchment head",
+      "Nickel hardware",
+      "Ebony fingerboard"
+    ],
+    "materialUsage": {
+      "maple": 4,
+      "parchment": 1,
+      "nickel": 2,
+      "ebony": 1
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "bass-drum",
+    "parts": 6,
+    "materials": [
+      "lacquer",
+      "calfskin",
+      "steel"
+    ],
+    "materialLabels": [
+      "Shell lacquer",
+      "Calfskin heads",
+      "Cradle steel"
+    ],
+    "materialUsage": {
+      "lacquer": 1,
+      "calfskin": 2,
+      "steel": 3
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "bass-guitar",
+    "parts": 8,
+    "materials": [
+      "lacquer",
+      "maple",
+      "ebony",
+      "steel"
+    ],
+    "materialLabels": [
+      "Body lacquer",
+      "Maple neck",
+      "Ebony fingerboard",
+      "Steel hardware"
+    ],
+    "materialUsage": {
+      "lacquer": 1,
+      "maple": 2,
+      "ebony": 3,
+      "steel": 2
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "bassoon",
+    "parts": 10,
+    "materials": [
+      "maple",
+      "silver",
+      "ebonite"
+    ],
+    "materialLabels": [
+      "Maple body",
+      "Silver keywork",
+      "Ebonite reed"
+    ],
+    "materialUsage": {
+      "maple": 4,
+      "silver": 5,
+      "ebonite": 1
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "bongos",
+    "parts": 6,
+    "materials": [
+      "maple",
+      "calfskin",
+      "steel"
+    ],
+    "materialLabels": [
+      "Maple shells",
+      "Calfskin heads",
+      "Steel bridge"
+    ],
+    "materialUsage": {
+      "maple": 2,
+      "calfskin": 2,
+      "steel": 2
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "cajon",
+    "parts": 5,
+    "materials": [
+      "birch",
+      "rosewood",
+      "rubber"
+    ],
+    "materialLabels": [
+      "Birch cabinet",
+      "Rosewood striking panel",
+      "Rubber feet"
+    ],
+    "materialUsage": {
+      "birch": 2,
+      "rosewood": 1,
+      "rubber": 2
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "cello",
+    "parts": 7,
+    "materials": [
+      "maple",
+      "ebony",
+      "steel",
+      "nickel"
+    ],
+    "materialLabels": [
+      "Maple body",
+      "Ebony fingerboard",
+      "Steel strings",
+      "Nickel endpin"
+    ],
+    "materialUsage": {
+      "maple": 2,
+      "ebony": 3,
+      "steel": 1,
+      "nickel": 1
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "clarinet",
+    "parts": 10,
+    "materials": [
+      "grenadilla",
+      "silver",
+      "ivory"
+    ],
+    "materialLabels": [
+      "Grenadilla wood",
+      "Silver keywork",
+      "Ivory rings"
+    ],
+    "materialUsage": {
+      "grenadilla": 3,
+      "silver": 5,
+      "ivory": 2
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "concert-flute",
+    "parts": 6,
+    "materials": [
+      "silver",
+      "nickel"
+    ],
+    "materialLabels": [
+      "Silver tube",
+      "Nickel keywork"
+    ],
+    "materialUsage": {
+      "silver": 2,
+      "nickel": 4
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "concert-harp",
+    "parts": 12,
+    "materials": [
+      "maple",
+      "brass",
+      "steel"
+    ],
+    "materialLabels": [
+      "Maple frame",
+      "Brass neck fittings",
+      "Steel strings"
+    ],
+    "materialUsage": {
+      "maple": 3,
+      "brass": 1,
+      "steel": 8
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "conductor-podium",
+    "parts": 4,
+    "materials": [
+      "oak",
+      "paint",
+      "rubber"
+    ],
+    "materialLabels": [
+      "Oak platform",
+      "Enamel riser",
+      "Rubber tread"
+    ],
+    "materialUsage": {
+      "oak": 2,
+      "paint": 1,
+      "rubber": 1
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "conga-drums",
+    "parts": 7,
+    "materials": [
+      "maple",
+      "calfskin",
+      "chrome"
+    ],
+    "materialLabels": [
+      "Maple shells",
+      "Calfskin heads",
+      "Chrome fittings"
+    ],
+    "materialUsage": {
+      "maple": 2,
+      "calfskin": 2,
+      "chrome": 3
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "double-bass",
+    "parts": 7,
+    "materials": [
+      "maple",
+      "ebony",
+      "steel",
+      "nickel"
+    ],
+    "materialLabels": [
+      "Maple body",
+      "Ebony fingerboard",
+      "Steel strings",
+      "Nickel endpin"
+    ],
+    "materialUsage": {
+      "maple": 2,
+      "ebony": 3,
+      "steel": 1,
+      "nickel": 1
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "drum-kit",
+    "parts": 22,
+    "materials": [
+      "lacquer",
+      "calfskin",
+      "chrome",
+      "bronze"
+    ],
+    "materialLabels": [
+      "Drum lacquer",
+      "Drumhead skin",
+      "Chrome hardware",
+      "Bronze cymbals"
+    ],
+    "materialUsage": {
+      "lacquer": 7,
+      "calfskin": 6,
+      "chrome": 7,
+      "bronze": 2
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "electric-guitar",
+    "parts": 8,
+    "materials": [
+      "polyLacquer",
+      "maple",
+      "ebony",
+      "steel"
+    ],
+    "materialLabels": [
+      "Polyurethane body lacquer",
+      "Maple neck",
+      "Ebony fingerboard",
+      "Steel hardware"
+    ],
+    "materialUsage": {
+      "polyLacquer": 1,
+      "maple": 3,
+      "ebony": 2,
+      "steel": 2
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "french-horn",
+    "parts": 8,
+    "materials": [
+      "brass",
+      "nickel",
+      "ebonite"
+    ],
+    "materialLabels": [
+      "Lacquered brass",
+      "Nickel slides",
+      "Ebonite mouthpiece"
+    ],
+    "materialUsage": {
+      "brass": 3,
+      "nickel": 4,
+      "ebonite": 1
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "harmonica",
+    "parts": 10,
+    "materials": [
+      "stainless",
+      "brass",
+      "polymer"
+    ],
+    "materialLabels": [
+      "Stainless covers",
+      "Brass reed plates",
+      "Polymer comb"
+    ],
+    "materialUsage": {
+      "stainless": 2,
+      "brass": 7,
+      "polymer": 1
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "maracas",
+    "parts": 6,
+    "materials": [
+      "paint",
+      "maple"
+    ],
+    "materialLabels": [
+      "Painted gourd shells",
+      "Maple handles"
+    ],
+    "materialUsage": {
+      "paint": 2,
+      "maple": 4
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "marimba",
+    "parts": 11,
+    "materials": [
+      "rosewood",
+      "aluminum",
+      "steel"
+    ],
+    "materialLabels": [
+      "Rosewood bars",
+      "Aluminum resonators",
+      "Steel frame"
+    ],
+    "materialUsage": {
+      "rosewood": 6,
+      "aluminum": 3,
+      "steel": 2
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "mechanical-metronome",
+    "parts": 8,
+    "materials": [
+      "walnut",
+      "brass",
+      "steel"
+    ],
+    "materialLabels": [
+      "Walnut case",
+      "Brass pendulum",
+      "Steel slider"
+    ],
+    "materialUsage": {
+      "walnut": 5,
+      "brass": 1,
+      "steel": 2
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "microphone-stand",
+    "parts": 9,
+    "materials": [
+      "steel",
+      "polymer",
+      "silver"
+    ],
+    "materialLabels": [
+      "Powder-coated steel",
+      "Microphone polymer",
+      "Silver grille"
+    ],
+    "materialUsage": {
+      "steel": 7,
+      "polymer": 1,
+      "silver": 1
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "music-stand",
+    "parts": 7,
+    "materials": [
+      "steel",
+      "aluminum",
+      "rubber"
+    ],
+    "materialLabels": [
+      "Powder-coated steel",
+      "Aluminum tray",
+      "Rubber feet"
+    ],
+    "materialUsage": {
+      "steel": 2,
+      "aluminum": 2,
+      "rubber": 3
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "oboe",
+    "parts": 9,
+    "materials": [
+      "grenadilla",
+      "silver",
+      "reed"
+    ],
+    "materialLabels": [
+      "Grenadilla wood",
+      "Silver keywork",
+      "Cane reed"
+    ],
+    "materialUsage": {
+      "grenadilla": 3,
+      "silver": 5,
+      "reed": 1
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "orchestral-cymbals",
+    "parts": 6,
+    "materials": [
+      "bronze",
+      "leather",
+      "steel"
+    ],
+    "materialLabels": [
+      "B20 bronze",
+      "Leather hand straps",
+      "Steel bosses"
+    ],
+    "materialUsage": {
+      "bronze": 2,
+      "leather": 2,
+      "steel": 2
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "orchestral-triangle",
+    "parts": 5,
+    "materials": [
+      "steel",
+      "maple",
+      "rubber"
+    ],
+    "materialLabels": [
+      "Polished steel",
+      "Maple striker",
+      "Striker grip polymer"
+    ],
+    "materialUsage": {
+      "steel": 3,
+      "maple": 1,
+      "rubber": 1
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "snare-drum",
+    "parts": 7,
+    "materials": [
+      "lacquer",
+      "calfskin",
+      "chrome"
+    ],
+    "materialLabels": [
+      "Shell lacquer",
+      "Drumhead skin",
+      "Chrome hoops and stand"
+    ],
+    "materialUsage": {
+      "lacquer": 1,
+      "calfskin": 1,
+      "chrome": 5
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "tambourine",
+    "parts": 6,
+    "materials": [
+      "maple",
+      "brass"
+    ],
+    "materialLabels": [
+      "Maple frame",
+      "Brass jingles"
+    ],
+    "materialUsage": {
+      "maple": 1,
+      "brass": 5
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "tenor-saxophone",
+    "parts": 9,
+    "materials": [
+      "brass",
+      "nickel",
+      "ebonite"
+    ],
+    "materialLabels": [
+      "Lacquered brass",
+      "Nickel keywork",
+      "Ebonite mouthpiece"
+    ],
+    "materialUsage": {
+      "brass": 4,
+      "nickel": 4,
+      "ebonite": 1
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "timpani",
+    "parts": 7,
+    "materials": [
+      "copper",
+      "calfskin",
+      "steel"
+    ],
+    "materialLabels": [
+      "Copper bowl",
+      "Drumhead skin",
+      "Steel legs and pedal"
+    ],
+    "materialUsage": {
+      "copper": 1,
+      "calfskin": 2,
+      "steel": 4
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "trombone",
+    "parts": 8,
+    "materials": [
+      "brass",
+      "nickel",
+      "ebonite"
+    ],
+    "materialLabels": [
+      "Lacquered brass bell",
+      "Nickel slide tubes",
+      "Ebonite mouthpiece"
+    ],
+    "materialUsage": {
+      "brass": 2,
+      "nickel": 5,
+      "ebonite": 1
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "trumpet",
+    "parts": 7,
+    "materials": [
+      "brass",
+      "nickel",
+      "ebonite"
+    ],
+    "materialLabels": [
+      "Lacquered brass",
+      "Nickel valve casing",
+      "Ebonite valve buttons"
+    ],
+    "materialUsage": {
+      "brass": 2,
+      "nickel": 4,
+      "ebonite": 1
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "tuba",
+    "parts": 10,
+    "materials": [
+      "brass",
+      "nickel",
+      "ebonite"
+    ],
+    "materialLabels": [
+      "Lacquered brass",
+      "Nickel valve casing",
+      "Ebonite valve buttons"
+    ],
+    "materialUsage": {
+      "brass": 4,
+      "nickel": 3,
+      "ebonite": 3
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "ukulele",
+    "parts": 7,
+    "materials": [
+      "koa",
+      "ebony",
+      "steel",
+      "brass"
+    ],
+    "materialLabels": [
+      "Koa soundboard",
+      "Ebony fingerboard",
+      "Steel strings",
+      "Brass tuning hardware"
+    ],
+    "materialUsage": {
+      "koa": 3,
+      "ebony": 2,
+      "steel": 1,
+      "brass": 1
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "vibraphone",
+    "parts": 12,
+    "materials": [
+      "aluminum",
+      "steel",
+      "resonator"
+    ],
+    "materialLabels": [
+      "Aluminum bars",
+      "Steel frame",
+      "Dark resonator tubes"
+    ],
+    "materialUsage": {
+      "aluminum": 6,
+      "steel": 1,
+      "resonator": 5
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "viola",
+    "parts": 8,
+    "materials": [
+      "maple",
+      "ebony",
+      "steel"
+    ],
+    "materialLabels": [
+      "Maple body",
+      "Ebony fingerboard",
+      "Steel strings"
+    ],
+    "materialUsage": {
+      "maple": 4,
+      "ebony": 3,
+      "steel": 1
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "violin",
+    "parts": 8,
+    "materials": [
+      "maple",
+      "ebony",
+      "steel"
+    ],
+    "materialLabels": [
+      "Maple body",
+      "Ebony fingerboard",
+      "Steel strings"
+    ],
+    "materialUsage": {
+      "maple": 4,
+      "ebony": 3,
+      "steel": 1
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  },
+  {
+    "id": "xylophone",
+    "parts": 10,
+    "materials": [
+      "rosewood",
+      "steel"
+    ],
+    "materialLabels": [
+      "Rosewood bars",
+      "Steel frame"
+    ],
+    "materialUsage": {
+      "rosewood": 6,
+      "steel": 4
+    },
+    "presets": [
+      "concert",
+      "vintage"
+    ]
+  }
+]

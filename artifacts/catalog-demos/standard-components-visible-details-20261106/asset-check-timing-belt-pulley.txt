@@ -1,0 +1,5 @@
+EXIT CODE: 0
+(node:3394038) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{"id":"timing-belt-pulley","triangles":1236,"budget":1380,"sizeM":[0.048,0.02615,0.048],"minUpM":0,"materials":1,"knobs":["size:choice","aluminum:color","steel:color","hardware:color"],"palette":["aluminum=#6fabc3","steel=#c8cfd2","hardware=#29363e"]}
+wrote artifacts/catalog-demos/standard-components-visible-details-20261106/asset-renders/timing-belt-pulley.png

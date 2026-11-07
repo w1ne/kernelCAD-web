@@ -1,0 +1,64 @@
+(node:1928690) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{
+  "invocation": "npx tsx artifacts/catalog-demos/city-street-quality-20261106/render_city_street_presets.ts",
+  "exporter": "runAndExport(format=\"glb\", options={ format: \"glb\", style: \"lowpoly\", lowpoly: { maxTriangles: indexed triangleBudget } })",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "variants": [
+    {
+      "assetId": "crosswalk-tile",
+      "preset": "fresh",
+      "values": {
+        "asphalt": "#373b40",
+        "stripePaint": "#ffffff",
+        "edgePaint": "#e8e5dc"
+      },
+      "source": "catalog/kits/city-street/crosswalk-tile.kcad.ts",
+      "sourceSha256": "e604f3c30f78085193fe22fb6feff5366d9d6483919480e7f2de401e063a8ae2",
+      "triangles": 228,
+      "triangleBudget": 400,
+      "png": "preset-variants/crosswalk-tile-fresh.png"
+    },
+    {
+      "assetId": "road-tile",
+      "preset": "yellowCentre",
+      "values": {
+        "centrePaint": "#f0c419"
+      },
+      "source": "catalog/kits/city-street/road-tile.kcad.ts",
+      "sourceSha256": "81f3ce2a48088c14a805aaef24a5852f0db93716c02100eb5cc3b0081efff749",
+      "triangles": 132,
+      "triangleBudget": 300,
+      "png": "preset-variants/road-tile-yellowCentre.png"
+    },
+    {
+      "assetId": "sidewalk-tile",
+      "preset": "brick",
+      "values": {
+        "pavingStone": "#b0644a",
+        "accentBrick": "#9a553e",
+        "kerbConcrete": "#a8a6a0"
+      },
+      "source": "catalog/kits/city-street/sidewalk-tile.kcad.ts",
+      "sourceSha256": "d43eca4965774043403cb658674fe97a230ad33c161bbb25d37ae0e33fb93700",
+      "triangles": 240,
+      "triangleBudget": 400,
+      "png": "preset-variants/sidewalk-tile-brick.png"
+    },
+    {
+      "assetId": "playground-slide",
+      "preset": "park",
+      "values": {
+        "galvanizedSteel": "#2f7d4a",
+        "hdpe": "#e7c78e",
+        "stainlessSteel": "#e8432e",
+        "roofPolyethylene": "#f2c418"
+      },
+      "source": "catalog/kits/city-street/playground-slide.kcad.ts",
+      "sourceSha256": "f4e3be40e449f61357891ff2eaf9dfa624b5788e3c185536aac9142a7d52deac",
+      "triangles": 256,
+      "triangleBudget": 480,
+      "png": "preset-variants/playground-slide-park.png"
+    }
+  ]
+}

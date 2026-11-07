@@ -1,0 +1,7 @@
+MIXED  city-street                  61/65   colours/asset=3.09
+  MIXED  nature                       63/66   colours/asset=2.62
+  MIXED  outdoor-gear                  1/12   colours/asset=2.92
+  MIXED  props                        44/45   colours/asset=3.33
+
+  2371/2390 assets pass (45 rich kits, 0 thin kits)
+  19 thin assets = 1% of the catalog

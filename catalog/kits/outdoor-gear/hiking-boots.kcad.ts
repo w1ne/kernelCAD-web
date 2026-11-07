@@ -18,6 +18,10 @@ const size = param('size', '42', { choices: ['39', '42', '45'], label: 'EU size'
 const leather = param('leather', '#93633d', { label: 'Upper' });
 const sole = param('sole', '#302e2b', { label: 'Sole' });
 const laces = param('laces', '#d5c6a5', { label: 'Laces' });
+presets({
+  trail: { leather: '#91613b', sole: '#302e2b', laces: '#d5c6a5' },
+  alpine: { leather: '#794936', sole: '#272a2c', laces: '#e4dfcb' },
+});
 
 const scale = Number(size.value) / 42;
 const boots = assembly('hiking-boots');

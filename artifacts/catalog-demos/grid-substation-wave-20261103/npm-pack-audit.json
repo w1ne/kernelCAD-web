@@ -1,0 +1,23 @@
+{
+  "packageName": "kernelcad",
+  "packageVersion": "0.17.4",
+  "packageFileCount": 5199,
+  "newCatalogSources": 80,
+  "catalogSourcesInNpmArtifact": 80,
+  "catalogPreviewsInNpmArtifact": 80,
+  "catalogKitReadmeInNpmArtifact": true,
+  "catalogKitMetadataInNpmArtifact": true,
+  "npmArtifactExcludesDemoArtifacts": true,
+  "npmArtifactExcludesPrivateResearch": true,
+  "npmArtifactHasNoForbiddenCommercialPaths": true,
+  "sourceHasNoCommercialWorkflowTerms": true,
+  "builtJavaScriptFilesScanned": 2,
+  "builtCommercialWorkflowTerms": [],
+  "builtNpmJavaScriptHasNoCommercialWorkflows": true,
+  "packageExportsUnchanged": true,
+  "noPackageOrImplementationOrDeploymentWorkflowChanges": true,
+  "commercialTerms": [],
+  "forbiddenPackagePaths": [],
+  "unexpectedProtectedPaths": [],
+  "passed": true
+}

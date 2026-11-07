@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: CC0-1.0
-// Original low-poly recycling-facility scene prop, millimetres, Z up.
+// Glass cullet skip: its pallet, corner post and rail. Low-poly visualization geometry in millimetres, Z up.
 
 meta({
   name: "glass-cullet-skip",
   license: 'CC0-1.0',
   title: "Glass cullet skip",
-  description: "Glass cullet skip as original low-poly scene equipment for a recycling and materials-recovery facility. Visualization geometry only. Knobs: overall scale and asset color.",
+  description: "Glass cullet skip: its pallet, corner post and rail. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
   tags: ["recycling", "materials recovery", "waste management", "containers", "low poly", "scene prop"],
   kit: "recycling-facility",
   category: 'prop',
@@ -15,25 +15,47 @@ meta({
 });
 
 const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });
-const color = param('color', "#707b86", { label: 'Asset color' });
+const paintedSteel = param('paintedSteel', '#707b86', { label: 'Painted steel' });
+const stainlessSteel = param('stainlessSteel', '#a8b4b6', { label: 'Stainless steel' });
+presets({
+  weathered: { paintedSteel: '#707678', stainlessSteel: '#9ea7a5' },
+  highVisibility: { paintedSteel: '#d77632' },
+});
 const b = (x:number,y:number,z:number,w:number,d:number,h:number) => box(w,d,h,true).translate(x,y,z+h/2).scale(scale);
-const c = (x:number,y:number,z:number,h:number,r:number,s:number) => cylinder(h,r,s).translate(x,y,z).scale(scale);
+const ngon = (r:number,s:number) => {
+  let p = path().moveTo(r * Math.cos(Math.PI / 2), r * Math.sin(Math.PI / 2));
+  for (let k = 1; k < s; k++) {
+    const a = Math.PI / 2 + (2 * Math.PI * k) / s;
+    p = p.lineTo(r * Math.cos(a), r * Math.sin(a));
+  }
+  return p.close();
+};
+const loftCylinder = (h:number,r:number,s:number) => {
+  const levels = [0, h * 0.06, h * 0.94, h];
+  const radii = [r * 0.9, r, r, r * 0.9];
+  const profiles = levels.map((_, i) => ngon(radii[i], s));
+  return profiles[0].loft(profiles.slice(1), {
+    planes: levels.map((z) => ({ plane: 'XY' as const, origin: [0, 0, z] as [number, number, number] })),
+    ruled: true,
+  });
+};
+const c = (x:number,y:number,z:number,h:number,r:number,s:number) => loftCylinder(h,r,s).translate(x,y,z).scale(scale);
 
 const p = assembly("glass-cullet-skip");
-p.part("pallet-base", b(0,0,0,1450,900,95).color(color));
-p.part("corner-post-left-front", b(-680.0,-405.0,95,70,70,965).color(color));
-p.part("corner-post-right-front", b(680.0,-405.0,95,70,70,965).color(color));
-p.part("corner-post-left-back", b(-680.0,405.0,95,70,70,965).color(color));
-p.part("corner-post-right-back", b(680.0,405.0,95,70,70,965).color(color));
-p.part("front-rail-1", b(0,-402.0,210.0,1360,35,35).color(color));
-p.part("rear-rail-1", b(0,402.0,210.0,1360,35,35).color(color));
-p.part("front-rail-2", b(0,-402.0,463.33333333333337,1360,35,35).color(color));
-p.part("rear-rail-2", b(0,402.0,463.33333333333337,1360,35,35).color(color));
-p.part("front-rail-3", b(0,-402.0,716.6666666666667,1360,35,35).color(color));
-p.part("rear-rail-3", b(0,402.0,716.6666666666667,1360,35,35).color(color));
-p.part("side-rail-left", b(-677.0,0,210,35,805,35).color(color));
-p.part("side-rail-right", b(677.0,0,210,35,805,35).color(color));
-p.part("corner-cap-a", c(-680.0,-405.0,1060,45,44,10).color(color));
-p.part("corner-cap-b", c(680.0,405.0,1060,45,44,10).color(color));
+p.part("pallet-base", b(0,0,0,1450,900,95).color(paintedSteel));
+p.part("corner-post-left-front", b(-680.0,-405.0,95,70,70,965).color(stainlessSteel));
+p.part("corner-post-right-front", b(680.0,-405.0,95,70,70,965).color(stainlessSteel));
+p.part("corner-post-left-back", b(-680.0,405.0,95,70,70,965).color(stainlessSteel));
+p.part("corner-post-right-back", b(680.0,405.0,95,70,70,965).color(stainlessSteel));
+p.part("front-rail-1", b(0,-402.0,210.0,1360,35,35).color(stainlessSteel));
+p.part("rear-rail-1", b(0,402.0,210.0,1360,35,35).color(stainlessSteel));
+p.part("front-rail-2", b(0,-402.0,463.33333333333337,1360,35,35).color(stainlessSteel));
+p.part("rear-rail-2", b(0,402.0,463.33333333333337,1360,35,35).color(stainlessSteel));
+p.part("front-rail-3", b(0,-402.0,716.6666666666667,1360,35,35).color(stainlessSteel));
+p.part("rear-rail-3", b(0,402.0,716.6666666666667,1360,35,35).color(stainlessSteel));
+p.part("side-rail-left", b(-677.0,0,210,35,805,35).color(stainlessSteel));
+p.part("side-rail-right", b(677.0,0,210,35,805,35).color(stainlessSteel));
+p.part("corner-cap-a", c(-680.0,-405.0,1060,45,44,10).color(stainlessSteel));
+p.part("corner-cap-b", c(680.0,405.0,1060,45,44,10).color(stainlessSteel));
 
 return p.model();

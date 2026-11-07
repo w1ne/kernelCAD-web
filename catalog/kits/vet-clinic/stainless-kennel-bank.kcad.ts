@@ -1,9 +1,9 @@
-// Original low-poly veterinary clinic scene asset. Millimetres, Z up, base origin.
+// Three-bay stainless kennel bank: Three-bay clinic kennel bank with tray fronts, shared frame and barred doors. Separate molded polymer, stainless steel surfaces keep its component silhouette readable.
 meta({
   name: "stainless-kennel-bank",
   license: 'CC0-1.0',
   title: "Three-bay stainless kennel bank",
-  description: "Three-bay clinic kennel bank with tray fronts, shared frame and barred doors." + ' Editable overall scale and asset color.',
+  description: "Three-bay clinic kennel bank with tray fronts, shared frame and barred doors. Material controls: molded polymer, stainless steel. Presets: clinicClean and softTeal.",
   tags: ["veterinary", "animal clinic", "animal health", "three-bay", "stainless", "kennel", "bank", "low poly", "CC0"],
   kit: 'vet-clinic',
   category: 'prop',
@@ -13,7 +13,20 @@ meta({
 });
 
 const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
-const color = param('color', "#7d8987", { label: 'Asset color' });
+const stainlessSteelColor = param('stainlessSteelColor', '#bdc7c5', { label: 'Stainless steel' });
+const polymerColor = param('polymerColor', '#d3dfdc', { label: 'Molded polymer' });
+
+presets({
+  clinicClean: { stainlessSteelColor: '#e1e6e3' },
+  softTeal: { stainlessSteelColor: '#8daeb0', polymerColor: '#9bbfc0' },
+});
+
+const finishFor = (name: string) => {
+  switch (name) {
+    case "base-plinth": return polymerColor;
+  }
+  return stainlessSteelColor;
+};
 const p = assembly("stainless-kennel-bank");
 
 const b = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
@@ -21,7 +34,7 @@ const b = (name: string, size: [number, number, number], at: [number, number, nu
   if (rotation?.[0]) shape = shape.rotate([1, 0, 0], rotation[0]);
   if (rotation?.[1]) shape = shape.rotate([0, 1, 0], rotation[1]);
   if (rotation?.[2]) shape = shape.rotate([0, 0, 1], rotation[2]);
-  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(color));
+  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(finishFor(name)));
 };
 
 b("base-plinth", [1740, 700, 120], [0, 0, 60]);

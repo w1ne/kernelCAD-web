@@ -1,0 +1,36 @@
+
+ RUN  v4.0.18 /home/andrii/worktrees/kernelCAD-web/catalog-2000
+
+ ✓ tests/integration/catalog/assetModule.test.ts (4 tests) 783ms
+ ✓ tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 1226ms
+     ✓ search_assets finds the pine tree with an ok coverage verdict and a compact row  766ms
+     ✓ search_assets is honest about gaps and filters  377ms
+ ❯ tests/integration/catalog/catalogStudioLink.test.ts (4 tests | 1 failed) 142381ms
+     ✓ nature/pine-tree opens with its five knobs at their defaults 186ms
+     ✓ characters/block-figure opens with its own knobs, not the first asset in the index 112ms
+     × every committed catalog asset opens with exactly the knobs its index row lists 140958ms
+     ✓ refuses refs that do not name a catalog row, and sources that no longer match the index  409ms
+ ✓ tests/integration/catalog/catalogIndex.test.ts (2 tests) 299961ms
+     ✓ every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh  299466ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/catalogStudioLink.test.ts > open a catalog asset in Studio by ?catalog=<kit>/<id> > every committed catalog asset opens with exactly the knobs its index row lists
+Error: Catalog source for railway/crossing-gate does not match the index (sha256 37382039d0152b1c63f0ff9ed6be915f4f0df4a7adecaa7f4826ba320555957e); rebuild catalog/index.json.
+ ❯ loadCatalogAsset src/shared/assets/catalogStudioLink.ts:87:11
+     85|   const sha = await sha256Hex(source);
+     86|   if (sha !== asset.sourceSha256) {
+     87|     throw new CatalogRefError(`Catalog source for ${ref.kit}/${ref.id}…
+       |           ^
+     88|   }
+     89|   return { asset, source, title: asset.title };
+ ❯ openInStudio tests/integration/catalog/catalogStudioLink.test.ts:40:18
+ ❯ tests/integration/catalog/catalogStudioLink.test.ts:96:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 14 passed (15)
+   Start at  01:12:37
+   Duration  305.14s (transform 17.67s, setup 380ms, import 23.79s, tests 444.35s, environment 1ms)

@@ -1,0 +1,18 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' scripts/renderCatalogPreviews.ts character-meet-photo-easel drop-tower-seat-ring first-aid-response-cart junior-coaster-track-section junior-coaster-train-car log-flume-boat parade-rope-stanchion park-observation-wheel park-pathway-bollard-light pirate-ship-ride-car refillable-cup-rack ride-maintenance-tool-cart ride-photo-camera splash-pad-jet-column stroller-service-station tea-cup-spinner-car
+amusement-park/character-meet-photo-easel: 120 tris
+amusement-park/drop-tower-seat-ring: 376 tris
+amusement-park/first-aid-response-cart: 272 tris
+amusement-park/junior-coaster-track-section: 144 tris
+amusement-park/junior-coaster-train-car: 248 tris
+amusement-park/log-flume-boat: 84 tris
+amusement-park/parade-rope-stanchion: 256 tris
+amusement-park/park-observation-wheel: 620 tris
+amusement-park/park-pathway-bollard-light: 192 tris
+amusement-park/pirate-ship-ride-car: 108 tris
+amusement-park/refillable-cup-rack: 324 tris
+amusement-park/ride-maintenance-tool-cart: 272 tris
+amusement-park/ride-photo-camera: 196 tris
+amusement-park/splash-pad-jet-column: 576 tris
+amusement-park/stroller-service-station: 280 tris
+amusement-park/tea-cup-spinner-car: 236 tris

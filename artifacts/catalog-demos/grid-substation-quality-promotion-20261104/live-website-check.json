@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-11-04 19:03:47 UTC",
+  "method": "Existing Chrome DevTools session and profile; opened a background tab, then closed only that tab.",
+  "url": "https://kernelcad.com/catalog/grid-substation/substation-main-power-transformer/",
+  "httpResponseStatus": 404,
+  "pageTitle": "Page not found — kernelCAD",
+  "heading": "Page not found",
+  "publicAssetPageAvailable": false,
+  "localPageAudit": "80/80 asset pages and preview copies passed; catalog hub lists grid-substation.",
+  "postDeploymentVerificationRequired": true
+}

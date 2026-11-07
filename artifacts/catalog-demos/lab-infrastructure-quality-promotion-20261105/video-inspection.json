@@ -1,0 +1,21 @@
+{
+  "video": "lab-infrastructure-quality-promotion.mp4",
+  "metadata": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1280,
+        "height": 720,
+        "nb_frames": "630"
+      }
+    ],
+    "format": {
+      "duration": "21.000000",
+      "size": "341560"
+    }
+  },
+  "decodedContactSheet": "decoded-video-contact-sheet.png",
+  "decode": "ffmpeg decoded the MP4 and sampled one frame per three seconds",
+  "visualInspectionRequired": true
+}

@@ -18,6 +18,10 @@ const state = param('state', 'open', { choices: ['open', 'folded'], label: 'Case
 const pouch = param('pouch', '#69543e', { label: 'Pouch' });
 const map = param('map', '#e2d8b7', { label: 'Map panel' });
 const strap = param('strap', '#3d4341', { label: 'Strap' });
+presets({
+  topographic: { pouch: '#66523d', map: '#e2d8b7', strap: '#3d4341' },
+  rescue: { pouch: '#c84e36', map: '#e8e2cc', strap: '#343a3a' },
+});
 
 const open = state.value === 'open';
 const mapWidth = open ? 520 : 340;

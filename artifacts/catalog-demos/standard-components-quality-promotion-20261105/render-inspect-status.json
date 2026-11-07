@@ -1,0 +1,6 @@
+{
+  "command": "npx kernelcad render inspect catalog/kits/standard-components/caster-wheel.kcad.ts artifacts/catalog-demos/standard-components-quality-promotion-20261105/caster-wheel-inspection --views front,right,top,iso --width 512 --height 512 --environment softbox --shading flat --screenshot-timeout 30000 --no-watermark",
+  "browser": "existing Chrome via PW_CDP_URL=http://127.0.0.1:9223",
+  "exitCode": 1,
+  "durationSeconds": 33.1
+}

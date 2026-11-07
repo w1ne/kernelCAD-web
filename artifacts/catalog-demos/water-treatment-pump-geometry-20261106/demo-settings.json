@@ -1,0 +1,16 @@
+{
+  "workflow": "water-treatment .kcad.ts sources -> software-rendered before/after previews -> highVisibility and geometry-choice variants -> regenerated catalog index and local checks",
+  "video": "artifacts/catalog-demos/water-treatment-pump-geometry-20261106/water-treatment-pump-geometry.mp4",
+  "canvas": {
+    "width": 1280,
+    "height": 720
+  },
+  "frames": 5,
+  "durationSeconds": 15,
+  "ffmpeg": "ffmpeg -framerate 1/3 -c:v libx264 -r 24 -pix_fmt yuv420p -crf 24 -movflags +faststart",
+  "invocation": "python3 artifacts/catalog-demos/water-treatment-pump-geometry-20261106/capture_water_treatment_demo.py",
+  "variantInvocation": "npx tsx artifacts/catalog-demos/water-treatment-pump-geometry-20261106/render_water_treatment_variants.ts",
+  "previewInvocation": "npx tsx scripts/renderCatalogPreviews.ts high-lift-pump-skid horizontal-split-case-pump reverse-osmosis-skid",
+  "indexInvocation": "npx tsx scripts/buildAssetCatalog.ts",
+  "provenance": "Generated locally from checked-in kernelCAD sources, baseline/current catalog previews, source-defined palettes and local verification. The feature branch is not deployed; treatment performance and physical acceptance are not shown."
+}

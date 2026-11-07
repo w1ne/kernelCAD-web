@@ -1,0 +1,5 @@
+{
+  "status": "passed",
+  "summary": "4 files / 15 tests passed",
+  "command": "npx vitest run tests/integration/catalog/"
+}

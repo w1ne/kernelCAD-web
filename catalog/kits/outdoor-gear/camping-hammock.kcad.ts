@@ -18,6 +18,10 @@ const length = param('length', '2200', { choices: ['2200', '2600'], label: 'Slin
 const fabric = param('fabric', '#b34c39', { label: 'Sling fabric' });
 const frame = param('frame', '#5a6260', { label: 'Support frame' });
 const strap = param('strap', '#3b403e', { label: 'End straps' });
+presets({
+  forest: { fabric: '#54785a', frame: '#52595a', strap: '#2f3833' },
+  coastal: { fabric: '#d27755', frame: '#778083', strap: '#46464c' },
+});
 
 const slingLength = Number(length.value);
 const half = slingLength / 2;

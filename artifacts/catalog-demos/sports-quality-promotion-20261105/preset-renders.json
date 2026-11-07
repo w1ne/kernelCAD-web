@@ -1,0 +1,54 @@
+{
+  "targets": [
+    "basketball",
+    "soccer-ball",
+    "tennis-racket"
+  ],
+  "results": [
+    {
+      "asset": "basketball",
+      "variant": "default",
+      "triangles": 654,
+      "colors": {}
+    },
+    {
+      "asset": "basketball",
+      "variant": "clubColors",
+      "triangles": 654,
+      "colors": {
+        "pebbledCover": "#3979a3",
+        "channelRubber": "#272d32"
+      }
+    },
+    {
+      "asset": "soccer-ball",
+      "variant": "default",
+      "triangles": 274,
+      "colors": {}
+    },
+    {
+      "asset": "soccer-ball",
+      "variant": "clubColors",
+      "triangles": 274,
+      "colors": {
+        "ballCover": "#e8e4d8",
+        "panelPolymer": "#cf4939"
+      }
+    },
+    {
+      "asset": "tennis-racket",
+      "variant": "default",
+      "triangles": 288,
+      "colors": {}
+    },
+    {
+      "asset": "tennis-racket",
+      "variant": "clubColors",
+      "triangles": 288,
+      "colors": {
+        "graphiteFrame": "#357394",
+        "nylonStrings": "#e7e3d7"
+      }
+    }
+  ]
+}

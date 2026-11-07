@@ -1,9 +1,9 @@
-// Original low-poly veterinary clinic scene asset. Millimetres, Z up, base origin.
+// Mobile surgical light: Mobile multi-head procedure light with a floor mast and articulated overhead arm. Separate tinted glass and displays, powder-coated steel, rubber, stainless steel surfaces keep its component silhouette readable.
 meta({
   name: "mobile-surgical-light",
   license: 'CC0-1.0',
   title: "Mobile surgical light",
-  description: "Mobile multi-head procedure light with a floor mast and articulated overhead arm." + ' Editable overall scale and asset color.',
+  description: "Mobile multi-head procedure light with a floor mast and articulated overhead arm. Material controls: tinted glass and displays, powder-coated steel, rubber, stainless steel. Presets: clinicClean and softTeal.",
   tags: ["veterinary", "animal clinic", "animal health", "mobile", "surgical", "light", "low poly", "CC0"],
   kit: 'vet-clinic',
   category: 'prop',
@@ -13,7 +13,32 @@ meta({
 });
 
 const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
-const color = param('color', "#83918a", { label: 'Asset color' });
+const paintedSteelColor = param('paintedSteelColor', '#6e8994', { label: 'Powder-coated steel' });
+const glassColor = param('glassColor', '#4e8290', { label: 'Tinted glass and displays' });
+const rubberColor = param('rubberColor', '#30383b', { label: 'Rubber' });
+const stainlessSteelColor = param('stainlessSteelColor', '#bdc7c5', { label: 'Stainless steel' });
+
+presets({
+  clinicClean: { paintedSteelColor: '#e4ebe7' },
+  softTeal: { paintedSteelColor: '#4d858d', glassColor: '#3f7480' },
+});
+
+const finishFor = (name: string) => {
+  switch (name) {
+    case "lamp-lens-1": return glassColor;
+    case "lamp-lens-2": return glassColor;
+    case "lamp-lens-3": return glassColor;
+    case "lamp-lens-4": return glassColor;
+    case "caster-a": return rubberColor;
+    case "caster-b": return rubberColor;
+    case "caster-c": return rubberColor;
+    case "mast": return stainlessSteelColor;
+    case "arm-lower": return stainlessSteelColor;
+    case "arm-upper": return stainlessSteelColor;
+    case "lamp-yoke": return stainlessSteelColor;
+  }
+  return paintedSteelColor;
+};
 const p = assembly("mobile-surgical-light");
 
 const b = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
@@ -21,12 +46,12 @@ const b = (name: string, size: [number, number, number], at: [number, number, nu
   if (rotation?.[0]) shape = shape.rotate([1, 0, 0], rotation[0]);
   if (rotation?.[1]) shape = shape.rotate([0, 1, 0], rotation[1]);
   if (rotation?.[2]) shape = shape.rotate([0, 0, 1], rotation[2]);
-  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(color));
+  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(finishFor(name)));
 };
 const c = (name: string, h: number, r: number, segments: number, at: [number, number, number], axis?: [number, number, number], degrees = 0) => {
   let shape = cylinder(h, r, segments);
   if (axis && degrees) shape = shape.rotate(axis, degrees);
-  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(color));
+  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(finishFor(name)));
 };
 
 b("base-cross-x", [620, 80, 72], [0, 0, 36]);

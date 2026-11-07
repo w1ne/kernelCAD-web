@@ -1,0 +1,346 @@
+{
+  "invocation": "npx tsx artifacts/catalog-demos/solar-energy-silhouette-20261106/render_variants.ts",
+  "exporter": "runAndExport(format=\"glb\", style=\"lowpoly\", maxTriangles=source triangleBudget)",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "sources": [
+    {
+      "source": "catalog/kits/solar-energy/pole-mount-transformer.kcad.ts",
+      "sourceSha256": "5ab15c344538761fb4b7a85b1fcfdf6ab7e6e8ad993f125d02d4a83f77b0ea53",
+      "triangleBudget": 2000,
+      "presets": {
+        "fieldService": {
+          "wood": "#755b43",
+          "powderCoat": "#7a807b",
+          "ceramic": "#e7e0ce",
+          "hardware": "#4f5659"
+        },
+        "highVisibility": {
+          "wood": "#8a6440",
+          "powderCoat": "#a9b8b4",
+          "ceramic": "#8a4b2c",
+          "hardware": "#6c7477"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/solar-energy/solar-carport-canopy.kcad.ts",
+      "sourceSha256": "ffb6db0a815574936decf20af37719c759b3542bd61bd0f34561d30ceb96848c",
+      "triangleBudget": 1800,
+      "presets": {
+        "fieldService": {
+          "galvanizedSteel": "#68787b",
+          "aluminum": "#a9b5b9",
+          "solarGlass": "#1e4668",
+          "concrete": "#a39d92",
+          "chargerPlastic": "#3a6f9c"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#536367",
+          "aluminum": "#d4dcdf",
+          "solarGlass": "#183a5b",
+          "concrete": "#c4beb2",
+          "chargerPlastic": "#e0a31f"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/solar-energy/string-inverter.kcad.ts",
+      "sourceSha256": "12c93adddde74a658a7640ce655a4c5adfac2e0aac1ab15347879512cd7f03fc",
+      "triangleBudget": 1800,
+      "presets": {
+        "fieldService": {
+          "stainlessSteel": "#abb5b7",
+          "powderCoat": "#c9cec9",
+          "displayGlass": "#376a73",
+          "rubber": "#282d2e",
+          "isolatorPolymer": "#c8352b"
+        },
+        "highVisibility": {
+          "stainlessSteel": "#e0e5e4",
+          "powderCoat": "#d1722b",
+          "displayGlass": "#167d95",
+          "rubber": "#232728",
+          "isolatorPolymer": "#f2c230"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/solar-energy/solar-weather-station.kcad.ts",
+      "sourceSha256": "99bbeb6635ccaadc373ce556ed57ec3a7d21ef3ff537c5d274d31a48b5cc5329",
+      "triangleBudget": 1800,
+      "presets": {
+        "fieldService": {
+          "galvanizedSteel": "#68787b",
+          "aluminum": "#a9b5b9",
+          "polymer": "#cdd2cb",
+          "domeGlass": "#244e6e"
+        },
+        "highVisibility": {
+          "galvanizedSteel": "#536367",
+          "aluminum": "#d4dcdf",
+          "polymer": "#f2ece0",
+          "domeGlass": "#1c6c94"
+        }
+      }
+    },
+    {
+      "source": "catalog/kits/solar-energy/pv-panel-cleaning-robot.kcad.ts",
+      "sourceSha256": "581f691a56c4cd00a0d46c8f2ba87e4870d099b1c6d6bbeeebd1b3e6d79482f5",
+      "triangleBudget": 1800,
+      "presets": {
+        "fieldService": {
+          "polymer": "#e7e9e4",
+          "rubber": "#282d2e",
+          "galvanizedSteel": "#68787b",
+          "stainlessSteel": "#abb5b7",
+          "solarGlass": "#1e4668"
+        },
+        "highVisibility": {
+          "polymer": "#ef6c1f",
+          "rubber": "#232728",
+          "galvanizedSteel": "#536367",
+          "stainlessSteel": "#e0e5e4",
+          "solarGlass": "#183a5b"
+        }
+      }
+    }
+  ],
+  "renders": [
+    {
+      "assetId": "pole-mount-transformer",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1848,
+      "png": "artifacts/catalog-demos/solar-energy-silhouette-20261106/variants/pole-mount-transformer-default.png"
+    },
+    {
+      "assetId": "pole-mount-transformer",
+      "variant": "25kva",
+      "view": "3/4",
+      "values": {
+        "rating": "25kva"
+      },
+      "triangles": 1848,
+      "png": "artifacts/catalog-demos/solar-energy-silhouette-20261106/variants/pole-mount-transformer-25kva.png"
+    },
+    {
+      "assetId": "pole-mount-transformer",
+      "variant": "100kva",
+      "view": "3/4",
+      "values": {
+        "rating": "100kva"
+      },
+      "triangles": 1848,
+      "png": "artifacts/catalog-demos/solar-energy-silhouette-20261106/variants/pole-mount-transformer-100kva.png"
+    },
+    {
+      "assetId": "pole-mount-transformer",
+      "variant": "fieldService",
+      "view": "3/4",
+      "values": {
+        "wood": "#755b43",
+        "powderCoat": "#7a807b",
+        "ceramic": "#e7e0ce",
+        "hardware": "#4f5659"
+      },
+      "triangles": 1848,
+      "png": "artifacts/catalog-demos/solar-energy-silhouette-20261106/variants/pole-mount-transformer-fieldService.png"
+    },
+    {
+      "assetId": "pole-mount-transformer",
+      "variant": "highVisibility",
+      "view": "3/4",
+      "values": {
+        "wood": "#8a6440",
+        "powderCoat": "#a9b8b4",
+        "ceramic": "#8a4b2c",
+        "hardware": "#6c7477"
+      },
+      "triangles": 1848,
+      "png": "artifacts/catalog-demos/solar-energy-silhouette-20261106/variants/pole-mount-transformer-highVisibility.png"
+    },
+    {
+      "assetId": "solar-carport-canopy",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1504,
+      "png": "artifacts/catalog-demos/solar-energy-silhouette-20261106/variants/solar-carport-canopy-default.png"
+    },
+    {
+      "assetId": "solar-carport-canopy",
+      "variant": "cantilever",
+      "view": "3/4",
+      "values": {
+        "structure": "cantilever"
+      },
+      "triangles": 1280,
+      "png": "artifacts/catalog-demos/solar-energy-silhouette-20261106/variants/solar-carport-canopy-cantilever.png"
+    },
+    {
+      "assetId": "solar-carport-canopy",
+      "variant": "fieldService",
+      "view": "3/4",
+      "values": {
+        "galvanizedSteel": "#68787b",
+        "aluminum": "#a9b5b9",
+        "solarGlass": "#1e4668",
+        "concrete": "#a39d92",
+        "chargerPlastic": "#3a6f9c"
+      },
+      "triangles": 1504,
+      "png": "artifacts/catalog-demos/solar-energy-silhouette-20261106/variants/solar-carport-canopy-fieldService.png"
+    },
+    {
+      "assetId": "solar-carport-canopy",
+      "variant": "highVisibility",
+      "view": "3/4",
+      "values": {
+        "galvanizedSteel": "#536367",
+        "aluminum": "#d4dcdf",
+        "solarGlass": "#183a5b",
+        "concrete": "#c4beb2",
+        "chargerPlastic": "#e0a31f"
+      },
+      "triangles": 1504,
+      "png": "artifacts/catalog-demos/solar-energy-silhouette-20261106/variants/solar-carport-canopy-highVisibility.png"
+    },
+    {
+      "assetId": "string-inverter",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1252,
+      "png": "artifacts/catalog-demos/solar-energy-silhouette-20261106/variants/string-inverter-default.png"
+    },
+    {
+      "assetId": "string-inverter",
+      "variant": "commercial",
+      "view": "3/4",
+      "values": {
+        "rating": "commercial"
+      },
+      "triangles": 1084,
+      "png": "artifacts/catalog-demos/solar-energy-silhouette-20261106/variants/string-inverter-commercial.png"
+    },
+    {
+      "assetId": "string-inverter",
+      "variant": "fieldService",
+      "view": "3/4",
+      "values": {
+        "stainlessSteel": "#abb5b7",
+        "powderCoat": "#c9cec9",
+        "displayGlass": "#376a73",
+        "rubber": "#282d2e",
+        "isolatorPolymer": "#c8352b"
+      },
+      "triangles": 1252,
+      "png": "artifacts/catalog-demos/solar-energy-silhouette-20261106/variants/string-inverter-fieldService.png"
+    },
+    {
+      "assetId": "string-inverter",
+      "variant": "highVisibility",
+      "view": "3/4",
+      "values": {
+        "stainlessSteel": "#e0e5e4",
+        "powderCoat": "#d1722b",
+        "displayGlass": "#167d95",
+        "rubber": "#232728",
+        "isolatorPolymer": "#f2c230"
+      },
+      "triangles": 1252,
+      "png": "artifacts/catalog-demos/solar-energy-silhouette-20261106/variants/string-inverter-highVisibility.png"
+    },
+    {
+      "assetId": "solar-weather-station",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 1752,
+      "png": "artifacts/catalog-demos/solar-energy-silhouette-20261106/variants/solar-weather-station-default.png"
+    },
+    {
+      "assetId": "solar-weather-station",
+      "variant": "ultrasonic",
+      "view": "3/4",
+      "values": {
+        "wind": "ultrasonic"
+      },
+      "triangles": 1590,
+      "png": "artifacts/catalog-demos/solar-energy-silhouette-20261106/variants/solar-weather-station-ultrasonic.png"
+    },
+    {
+      "assetId": "solar-weather-station",
+      "variant": "fieldService",
+      "view": "3/4",
+      "values": {
+        "galvanizedSteel": "#68787b",
+        "aluminum": "#a9b5b9",
+        "polymer": "#cdd2cb",
+        "domeGlass": "#244e6e"
+      },
+      "triangles": 1752,
+      "png": "artifacts/catalog-demos/solar-energy-silhouette-20261106/variants/solar-weather-station-fieldService.png"
+    },
+    {
+      "assetId": "solar-weather-station",
+      "variant": "highVisibility",
+      "view": "3/4",
+      "values": {
+        "galvanizedSteel": "#536367",
+        "aluminum": "#d4dcdf",
+        "polymer": "#f2ece0",
+        "domeGlass": "#1c6c94"
+      },
+      "triangles": 1752,
+      "png": "artifacts/catalog-demos/solar-energy-silhouette-20261106/variants/solar-weather-station-highVisibility.png"
+    },
+    {
+      "assetId": "pv-panel-cleaning-robot",
+      "variant": "default",
+      "view": "3/4",
+      "values": {},
+      "triangles": 872,
+      "png": "artifacts/catalog-demos/solar-energy-silhouette-20261106/variants/pv-panel-cleaning-robot-default.png"
+    },
+    {
+      "assetId": "pv-panel-cleaning-robot",
+      "variant": "parked",
+      "view": "3/4",
+      "values": {
+        "placement": "parked"
+      },
+      "triangles": 592,
+      "png": "artifacts/catalog-demos/solar-energy-silhouette-20261106/variants/pv-panel-cleaning-robot-parked.png"
+    },
+    {
+      "assetId": "pv-panel-cleaning-robot",
+      "variant": "fieldService",
+      "view": "3/4",
+      "values": {
+        "polymer": "#e7e9e4",
+        "rubber": "#282d2e",
+        "galvanizedSteel": "#68787b",
+        "stainlessSteel": "#abb5b7",
+        "solarGlass": "#1e4668"
+      },
+      "triangles": 872,
+      "png": "artifacts/catalog-demos/solar-energy-silhouette-20261106/variants/pv-panel-cleaning-robot-fieldService.png"
+    },
+    {
+      "assetId": "pv-panel-cleaning-robot",
+      "variant": "highVisibility",
+      "view": "3/4",
+      "values": {
+        "polymer": "#ef6c1f",
+        "rubber": "#232728",
+        "galvanizedSteel": "#536367",
+        "stainlessSteel": "#e0e5e4",
+        "solarGlass": "#183a5b"
+      },
+      "triangles": 872,
+      "png": "artifacts/catalog-demos/solar-energy-silhouette-20261106/variants/pv-panel-cleaning-robot-highVisibility.png"
+    }
+  ]
+}

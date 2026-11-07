@@ -1,4 +1,4 @@
-03 / BUILD INDEX
-npm run catalog:build
-50 new catalog index entries
-CC0 metadata, knobs and budgets
+03 / PREVIEW — handwheel.kcad.ts
+Cast-iron rim and hub zones
+Brass center hub
+Steel spokes

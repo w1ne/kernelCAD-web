@@ -1,0 +1,12 @@
+{
+  "scope": "catalog-wide quality report after archaeology-fieldwork promotion",
+  "exitCode": 1,
+  "assetsPassing": 1904,
+  "totalAssets": 2390,
+  "passRate": 0.7967,
+  "thinAssetsRemaining": 486,
+  "thinKitsRemaining": 10,
+  "promotedKit": "archaeology-fieldwork",
+  "promotedKitQuality": "50/50 pass",
+  "note": "The catalog-wide report is expected to return 1 while thin assets remain in other kits."
+}

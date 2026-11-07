@@ -1,0 +1,5 @@
+{
+  "status": "passed",
+  "summary": "clean: 0 errors, 0 warnings",
+  "command": "npx eslint catalog/kits/alpine-expedition/"
+}

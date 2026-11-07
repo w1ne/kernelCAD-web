@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: CC0-1.0
-// Original low-poly mining scene prop, millimetres, Z up, base at z = 0.
+// Wet magnetic separator: Separator frame with feed trough, drum housing, collection launder, and drive block. Low-poly visualization geometry in millimetres, Z up.
 
 meta({
   name: "magnetic-separator-drum",
   license: 'CC0-1.0',
   title: "Wet magnetic separator",
-  description: "Separator frame with feed trough, drum housing, collection launder, and drive block. Knobs: overall scale and asset color.",
+  description: "Separator frame with feed trough, drum housing, collection launder, and drive block. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
   tags: ['mining', 'mineral processing', 'ore handling', 'infrastructure', 'low poly', 'scene prop'],
   kit: 'mining',
   category: 'prop',
@@ -15,20 +15,43 @@ meta({
 });
 
 const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });
-const color = param('color', "#637a75", { label: 'Asset color' });
+const coatedSteel = param('coatedSteel', '#65a89a', { label: 'Coated equipment steel' });
+const structuralSteel = param('structuralSteel', '#566168', { label: 'Structural steel' });
+const stainlessSteel = param('stainlessSteel', '#b5c0c0', { label: 'Stainless steel' });
+presets({
+  weathered: { coatedSteel: '#6c716d', structuralSteel: '#666a66', stainlessSteel: '#969f9e' },
+  highVisibility: { coatedSteel: '#e48a1e', structuralSteel: '#465159', stainlessSteel: '#c5ccca' },
+});
 const baseZ=0;
 const b=(x:number,y:number,z:number,w:number,d:number,h:number)=>box(w,d,h,true).translate(x,y,z-baseZ+h/2).scale(scale);
-const c=(x:number,y:number,z:number,h:number,r:number,n=10)=>cylinder(h,r,n).translate(x,y,z-baseZ).scale(scale);
+const section = (radius:number, sides:number) => {
+  let outline = path().moveTo(radius * Math.cos(Math.PI / 2), radius * Math.sin(Math.PI / 2));
+  for (let k = 1; k < sides; k++) {
+    const angle = Math.PI / 2 + (2 * Math.PI * k) / sides;
+    outline = outline.lineTo(radius * Math.cos(angle), radius * Math.sin(angle));
+  }
+  return outline.close();
+};
+const loftCylinder = (height:number, radius:number, sides:number) => {
+  const levels = [0, height * 0.08, height * 0.92, height];
+  const radii = [radius * 0.9, radius, radius, radius * 0.9];
+  const profiles = levels.map((_, index) => section(radii[index], sides));
+  return profiles[0].loft(profiles.slice(1), {
+    planes: levels.map((z) => ({ plane: 'XY' as const, origin: [0, 0, z] as [number, number, number] })),
+    ruled: true,
+  });
+};
+const c=(x:number,y:number,z:number,h:number,r:number,n=10)=>loftCylinder(h,r,n).translate(x,y,z-baseZ).scale(scale);
 
 const p=assembly("magnetic-separator-drum");
-p.part("base-frame", b(0, 0, 0, 1050, 700, 70).color(color));
-p.part("side-left", b(-400, 0, 70, 75, 620, 620).color(color));
-p.part("side-right", b(400, 0, 70, 75, 620, 620).color(color));
-p.part("separator-drum", c(0, 0, 250, 360, 290, 12).color(color));
-p.part("feed-trough", b(-120, -330, 410, 620, 130, 95).color(color));
-p.part("tailings-launder", b(170, 330, 180, 650, 140, 100).color(color));
-p.part("drive-motor", b(460, 0, 160, 230, 270, 270).color(color));
-p.part("top-beam", b(0, 0, 650, 900, 85, 70).color(color));
-p.part("service-platform", b(0, 390, 350, 950, 140, 45).color(color));
+p.part("base-frame", b(0, 0, 0, 1050, 700, 70).color(structuralSteel));
+p.part("side-left", b(-400, 0, 70, 75, 620, 620).color(coatedSteel));
+p.part("side-right", b(400, 0, 70, 75, 620, 620).color(coatedSteel));
+p.part("separator-drum", c(0, 0, 250, 360, 290, 12).color(stainlessSteel));
+p.part("feed-trough", b(-120, -330, 410, 620, 130, 95).color(coatedSteel));
+p.part("tailings-launder", b(170, 330, 180, 650, 140, 100).color(coatedSteel));
+p.part("drive-motor", b(460, 0, 160, 230, 270, 270).color(coatedSteel));
+p.part("top-beam", b(0, 0, 650, 900, 85, 70).color(structuralSteel));
+p.part("service-platform", b(0, 390, 350, 950, 140, 45).color(structuralSteel));
 
 return p.model();

@@ -1,9 +1,9 @@
-// Original low-poly veterinary clinic scene asset. Millimetres, Z up, base origin.
+// Microscope slide storage cabinet: Compact indexed drawer cabinet with labeled fronts and a raised top lip. Separate powder-coated steel, stainless steel surfaces keep its component silhouette readable.
 meta({
   name: "slide-storage-cabinet",
   license: 'CC0-1.0',
   title: "Microscope slide storage cabinet",
-  description: "Compact indexed drawer cabinet with labeled fronts and a raised top lip." + ' Editable overall scale and asset color.',
+  description: "Compact indexed drawer cabinet with labeled fronts and a raised top lip. Material controls: powder-coated steel, stainless steel. Presets: clinicClean and softTeal.",
   tags: ["veterinary", "animal clinic", "animal health", "microscope", "slide", "storage", "cabinet", "low poly", "CC0"],
   kit: 'vet-clinic',
   category: 'prop',
@@ -13,7 +13,23 @@ meta({
 });
 
 const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
-const color = param('color', "#687a7d", { label: 'Asset color' });
+const paintedSteelColor = param('paintedSteelColor', '#7d8d96', { label: 'Powder-coated steel' });
+const stainlessSteelColor = param('stainlessSteelColor', '#bdc7c5', { label: 'Stainless steel' });
+
+presets({
+  clinicClean: { paintedSteelColor: '#e4ebe7' },
+  softTeal: { paintedSteelColor: '#4d858d', stainlessSteelColor: '#8daeb0' },
+});
+
+const finishFor = (name: string) => {
+  switch (name) {
+    case "drawer-pull-0": return stainlessSteelColor;
+    case "drawer-pull-1": return stainlessSteelColor;
+    case "drawer-pull-2": return stainlessSteelColor;
+    case "drawer-pull-3": return stainlessSteelColor;
+  }
+  return paintedSteelColor;
+};
 const p = assembly("slide-storage-cabinet");
 
 const b = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
@@ -21,7 +37,7 @@ const b = (name: string, size: [number, number, number], at: [number, number, nu
   if (rotation?.[0]) shape = shape.rotate([1, 0, 0], rotation[0]);
   if (rotation?.[1]) shape = shape.rotate([0, 1, 0], rotation[1]);
   if (rotation?.[2]) shape = shape.rotate([0, 0, 1], rotation[2]);
-  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(color));
+  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(finishFor(name)));
 };
 
 b("cabinet-body", [570, 440, 690], [0, 0, 345]);

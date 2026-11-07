@@ -1,0 +1,23 @@
+{
+  "source": "catalog/kits/music/acoustic-guitar.kcad.ts",
+  "sourceSha256": "18ea72ac6920e90c3ed18bff50d934d196688c9476053d506106c4177e906c0d",
+  "invocation": "npx tsx artifacts/catalog-demos/music-quality-20261106/render_music_preset_variants.ts",
+  "exporter": "runAndExport(format=\"glb\", options={ format: \"glb\", style: \"lowpoly\", lowpoly: { maxTriangles: 600 } })",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "variants": [
+    {
+      "id": "concert",
+      "values": {
+        "spruce": "#e4b873"
+      },
+      "png": "/home/andrii/worktrees/kernelCAD-web/catalog-2000/artifacts/catalog-demos/music-quality-20261106/preset-variants/concert.png"
+    },
+    {
+      "id": "vintage",
+      "values": {
+        "spruce": "#ab7044"
+      },
+      "png": "/home/andrii/worktrees/kernelCAD-web/catalog-2000/artifacts/catalog-demos/music-quality-20261106/preset-variants/vintage.png"
+    }
+  ]
+}

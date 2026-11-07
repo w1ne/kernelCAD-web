@@ -1,0 +1,13 @@
+{
+  "source": "catalog/kits/telecom-infrastructure/fiber-distribution-cabinet.kcad.ts",
+  "sourceSha256": "778f7a13762b2c1e213970ab5c646caaf39996ac1d2dfc77187a9fd458bd0a72",
+  "preset": "highVisibility",
+  "appliedOverrides": {
+    "powderCoat": "#e0aa18",
+    "stainlessSteel": "#e4e9e6"
+  },
+  "triangles": 92,
+  "triangleBudget": 900,
+  "output": "variants/fiber-distribution-cabinet-highVisibility.png",
+  "workflow": "evaluate authored preset, export low-poly GLB, and software-render the resolved mesh"
+}

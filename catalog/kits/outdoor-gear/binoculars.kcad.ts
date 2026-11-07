@@ -18,6 +18,10 @@ const magnification = param('magnification', '8x', { choices: ['8x', '10x'], lab
 const body = param('body', '#3b4140', { label: 'Body' });
 const trim = param('trim', '#b6aa82', { label: 'Trim' });
 const glass = param('glass', '#43748a', { label: 'Lenses' });
+presets({
+  field: { body: '#45564a', trim: '#c7b786', glass: '#557f91' },
+  alpine: { body: '#314657', trim: '#d6d2c3', glass: '#6db7c4' },
+});
 
 const length = magnification.value === '8x' ? 190 : 225;
 const radius = magnification.value === '8x' ? 58 : 64;
