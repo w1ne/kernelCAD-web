@@ -5,8 +5,8 @@
   "displayName": "kernelCAD",
   "repo": "w1ne/kernelCAD-web",
   "versionFrom": "package.json",
-  "description": "Create and edit dimensioned parametric CAD parts and assemblies from natural-language instructions. Design enclosures, brackets, gears and motor mounts; change dimensions, inspect an interactive 3D model, and run supported geometry and manufacturability checks. Export CAD and manufacturing files in STEP, STL or 3MF, and drawings in DXF or PDF. Check results describe the supported checks performed; manufacturing requirements still depend on the chosen process and material.",
-  "shortDescription": "Design and edit 3D CAD parts",
+  "description": "Create and edit dimensioned parametric manufacturing CAD parts and assemblies from natural-language prompts. Design mounting plates, brackets, enclosures, gears and fixtures for 3D printing or CNC; inspect interactive models; run supported geometry and manufacturability checks; and export STEP, STL, 3MF, DXF or PDF drawings. For schematics, export connectivity netlists and run electrical rule checks (ERC).",
+  "shortDescription": "Manufacturing CAD & Schematics",
   "author": {
     "name": "kernelCAD",
     "url": "https://kernelcad.com"
@@ -32,18 +32,27 @@
     "step",
     "stl",
     "3mf",
+    "opencascade",
+    "skills",
+    "electronics",
+    "schematic",
+    "netlist",
+    "erc",
+    "manufacturing-cad",
+    "mechanical-cad",
+    "mounting-plate",
+    "m4",
     "dxf",
     "pdf",
-    "mcp",
-    "skills"
+    "mcp"
   ],
   "category": "Productivity",
   "codexCategory": "Creativity",
   "brandColor": "#2563EB",
   "defaultPrompts": [
     "Create an editable 60 × 40 × 5 mm mounting plate with four M4 clearance holes, and show it in 3D.",
-    "Design a 3D-printable electronics enclosure with adjustable dimensions, and check its wall thickness.",
-    "Export this bracket as STEP and 3MF, with a dimensioned PDF drawing."
+    "Check this bracket for supported FDM and CNC manufacturability, then export STEP and a dimensioned PDF drawing.",
+    "Here are my components and nets: export the netlist, then run ERC and tell me what is wrong."
   ],
   "mcp": {
     "serverName": "kernelcad",
@@ -59,7 +68,7 @@
     "dashboardPackageName": "app-6a2fcd20e8008191b0c688ca1bc7abb5",
     "dashboardMcpUrl": "https://mcp.kernelcad.com/chatgpt/mcp",
     "commerce": false,
-    "releaseNotes": "Updates discovery descriptions, keywords and starter prompts for parametric mechanical parts, assemblies, design checks and CAD or drawing exports.",
+    "releaseNotes": "Updates manufacturing-CAD discovery copy, the M4 mounting-plate starter prompt, drawing exports, and schematic netlist/ERC support.",
     "testCases": {
       "positive": [
         {
@@ -102,6 +111,12 @@
             "import_step"
           ],
           "expected_behavior": "import_step brings the file in as the base body, then the hole is added."
+        },
+        {
+          "description": "Netlist and ERC on a schematic",
+          "prompt": "Here are my components and nets: export the netlist, then run ERC and tell me what is wrong.",
+          "tools_triggered": ["netlist_export", "erc_run"],
+          "expected_behavior": "netlist_export returns the nets and pin→net membership; erc_run returns zero or more structured diagnostics (e.g. an unconnected pin, or two outputs on one net) with the offending component and pin named."
         }
       ],
       "negative": [
