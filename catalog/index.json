@@ -279030,15 +279030,17 @@
       "id": "bar-screen-channel",
       "kit": "water-treatment",
       "title": "Bar screen channel",
-      "description": "Open intake channel with two retaining walls, screen bars and a raised debris rack. Parameters: overall scale and concrete, stainless steel; weathered and highVisibility presets.",
+      "description": "Mechanically raked bar screen at about real size in a 1.5 m concrete inlet channel with flowing water: a rack of flat stainless bars at 75 degrees, side frames rising to a hooded head with geared drive motor, a rake carriage on the upstream face carrying rags, a discharge chute dropping screenings into a wheeled bin on the deck, downstream grating, handrails and floating debris. Material controls: concrete, stainless bars and grating, frame and drive coating, water; weathered, highVisibility and blueDrive presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "water treatment",
-        "water utility",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "wastewater",
+        "headworks",
+        "bar screen",
+        "screenings",
+        "rake",
+        "inlet channel"
       ],
       "compat": [
         "water-treatment",
@@ -279049,8 +279051,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/bar-screen-channel.kcad.ts",
       "preview": "/assets/water-treatment-bar-screen-channel.png",
-      "sourceSha256": "fc87990e13e2ce7a1112f798d986cc7fdbe67e0ff0f3889815e81c2ab3365515",
-      "triangleBudget": 2200,
+      "sourceSha256": "e50fadb76641956f10737aca0cca693e92a5c0af7506891f1b68f320f51068b7",
+      "triangleBudget": 1800,
       "params": [
         {
           "name": "scale",
@@ -279071,25 +279073,47 @@
           "name": "stainlessSteel",
           "type": "color",
           "default": "#b5c0c0",
-          "label": "Stainless steel"
+          "label": "Stainless bars and grating"
+        },
+        {
+          "name": "coatedSteel",
+          "type": "color",
+          "default": "#5a7f3c",
+          "label": "Frame and drive coating"
+        },
+        {
+          "name": "water",
+          "type": "color",
+          "default": "#5f6f5c",
+          "label": "Raw water"
         }
       ],
       "presets": {
         "weathered": {
           "concrete": "#9b9587",
-          "stainlessSteel": "#9ca7a6"
+          "stainlessSteel": "#9ca7a6",
+          "coatedSteel": "#66705f",
+          "water": "#5a5a48"
         },
         "highVisibility": {
           "concrete": "#c6bdac",
-          "stainlessSteel": "#e1ddd0"
+          "stainlessSteel": "#e1ddd0",
+          "coatedSteel": "#e5682d",
+          "water": "#4f7378"
+        },
+        "blueDrive": {
+          "concrete": "#b3ad9f",
+          "stainlessSteel": "#c3cbcc",
+          "coatedSteel": "#2f5f8a",
+          "water": "#53685f"
         }
       },
       "stats": {
-        "triangles": 132,
+        "triangles": 1346,
         "sizeM": [
-          1.2,
-          0.44,
-          0.9
+          7,
+          5.702814,
+          6.9
         ],
         "minUpM": 0,
         "materials": 1
@@ -279099,12 +279123,34 @@
           "name": "concrete",
           "color": "#b8b1a1",
           "parts": [
-            "channel-base",
-            "wall-left",
-            "wall-right",
-            "top-crossbar"
+            "channel-floor",
+            "channel-wall--1",
+            "deck--1",
+            "channel-wall-1",
+            "deck-1"
           ],
           "param": "concrete"
+        },
+        {
+          "name": "water",
+          "color": "#5f6f5c",
+          "parts": [
+            "water-upstream",
+            "water-downstream"
+          ],
+          "param": "water"
+        },
+        {
+          "name": "floating-debris-0",
+          "color": "#4a3f33",
+          "parts": [
+            "floating-debris-0",
+            "floating-debris-1",
+            "floating-debris-2",
+            "floating-debris-3",
+            "rake-rags",
+            "bin-screenings"
+          ]
         },
         {
           "name": "stainlessSteel",
@@ -279116,9 +279162,91 @@
             "screen-bar-3",
             "screen-bar-4",
             "screen-bar-5",
-            "screen-bar-6"
+            "screen-bar-6",
+            "screen-bar-7",
+            "screen-bar-8",
+            "screen-bar-9",
+            "screen-bar-10",
+            "screen-bar-11",
+            "screen-bar-12",
+            "screen-bar-13",
+            "screen-bar-14",
+            "screen-bar-15",
+            "screen-bar-16",
+            "screen-bar-17",
+            "screen-bar-18",
+            "rack-bottom-bar",
+            "dead-plate",
+            "rake-tine-0",
+            "rake-tine-1",
+            "rake-tine-2",
+            "rake-tine-3",
+            "rake-tine-4",
+            "rake-tine-5",
+            "rake-tine-6",
+            "rake-tine-7",
+            "rake-tine-8",
+            "rake-tine-9",
+            "discharge-chute",
+            "chute-cheek--1",
+            "chute-cheek-1",
+            "grating"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#5a7f3c",
+          "parts": [
+            "side-frame--1",
+            "frame-foot--1",
+            "deck-leg--1",
+            "side-frame-1",
+            "frame-foot-1",
+            "deck-leg-1",
+            "head-hood",
+            "gearbox",
+            "drive-motor",
+            "rake-beam",
+            "rail-post--1-0",
+            "rail-post--1-1",
+            "rail-post--1-2",
+            "rail-post--1-3",
+            "rail--1-3050",
+            "rail--1-3600",
+            "toe-board--1",
+            "rail-post-1-0",
+            "rail-post-1-1",
+            "rail-post-1-2",
+            "rail-post-1-3",
+            "rail-1-3050",
+            "rail-1-3600",
+            "toe-board-1"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "head-shaft",
+          "color": "#202426",
+          "parts": [
+            "head-shaft",
+            "motor-cowl",
+            "rake-guide--1",
+            "rake-guide-1",
+            "bin-rim",
+            "bin-castor-0",
+            "bin-castor-1",
+            "bin-castor-2",
+            "bin-castor-3"
+          ]
+        },
+        {
+          "name": "bin-body",
+          "color": "#3c6e3f",
+          "parts": [
+            "bin-body",
+            "bin-lid"
+          ]
         }
       ]
     },
@@ -279126,15 +279254,17 @@
       "id": "belt-filter-press",
       "kit": "water-treatment",
       "title": "Belt filter press",
-      "description": "Compact belt press with paired roller banks, side frame plates and collection pan. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
+      "description": "Two-metre belt filter press at about real size on an open steel frame: flocculation tank with mixer feeding a distribution box, gravity drainage table with sludge and three rows of ploughs, a closing wedge and a serpentine pressure train of rollers with the two filter belts and cake between them, doctor blade and cake chute onto a screw conveyor carrying cake, belt wash boxes with spray bars, pneumatic tension cylinders, drip pan and control panel. Material controls: frame coating, filter belts, stainless rollers and trim, sludge cake; weathered, highVisibility and stainlessFrame presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "water treatment",
-        "water utility",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "wastewater",
+        "sludge",
+        "dewatering",
+        "belt filter press",
+        "biosolids",
+        "filter belt"
       ],
       "compat": [
         "water-treatment",
@@ -279145,8 +279275,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/belt-filter-press.kcad.ts",
       "preview": "/assets/water-treatment-belt-filter-press.png",
-      "sourceSha256": "722c2fcf9c0af7586c24724cae68592778fc9f7c658202e652245878dbb0b70f",
-      "triangleBudget": 2200,
+      "sourceSha256": "8af4a81f2accb3252d7be178f5066d7adbc70571ef7051fb322ddd1c103b7954",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -279161,73 +279291,275 @@
           "name": "coatedSteel",
           "type": "color",
           "default": "#3d8589",
-          "label": "Coated equipment steel"
+          "label": "Frame coating"
         },
         {
-          "name": "structuralSteel",
+          "name": "filterBelt",
           "type": "color",
-          "default": "#68777b",
-          "label": "Structural steel"
+          "default": "#2f4d73",
+          "label": "Filter belts"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#b5c0c0",
-          "label": "Stainless steel"
+          "label": "Stainless rollers and trim"
+        },
+        {
+          "name": "sludge",
+          "type": "color",
+          "default": "#5a4632",
+          "label": "Sludge cake"
         }
       ],
       "presets": {
         "weathered": {
           "coatedSteel": "#687b78",
-          "structuralSteel": "#6e6b63",
-          "stainlessSteel": "#9ca7a6"
+          "filterBelt": "#3e4a52",
+          "stainlessSteel": "#9ca7a6",
+          "sludge": "#4d3d2c"
         },
         "highVisibility": {
           "coatedSteel": "#e5682d",
-          "structuralSteel": "#505b60",
-          "stainlessSteel": "#e1ddd0"
+          "filterBelt": "#1f5fa8",
+          "stainlessSteel": "#e1ddd0",
+          "sludge": "#6b5236"
+        },
+        "stainlessFrame": {
+          "coatedSteel": "#aeb7b8",
+          "filterBelt": "#2a6b4f",
+          "stainlessSteel": "#d3d9d8",
+          "sludge": "#544030"
         }
       },
       "stats": {
-        "triangles": 364,
+        "triangles": 3096,
         "sizeM": [
-          1.1,
-          0.845,
-          0.56
+          9.04,
+          3.45,
+          5.45
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "structuralSteel",
-          "color": "#68777b",
+          "name": "coatedSteel",
+          "color": "#3d8589",
           "parts": [
-            "base",
-            "frame-left",
-            "frame-right",
-            "upper-beam"
+            "screw-support-a",
+            "screw-support-b",
+            "column--200--1",
+            "column-foot--200--1",
+            "column--200-1",
+            "column-foot--200-1",
+            "cross-beam--200",
+            "column-1800--1",
+            "column-foot-1800--1",
+            "column-1800-1",
+            "column-foot-1800-1",
+            "cross-beam-1800",
+            "column-3800--1",
+            "column-foot-3800--1",
+            "column-3800-1",
+            "column-foot-3800-1",
+            "cross-beam-3800",
+            "column-5700--1",
+            "column-foot-5700--1",
+            "column-5700-1",
+            "column-foot-5700-1",
+            "cross-beam-5700",
+            "side-rail--1-250",
+            "side-rail--1-2200",
+            "side-brace--1",
+            "side-rail-1-250",
+            "side-rail-1-2200",
+            "side-brace-1",
+            "tension-cylinder--1",
+            "tension-cylinder-1",
+            "screw-drive",
+            "floc-tank-stand",
+            "floc-mixer-motor",
+            "control-panel"
           ],
-          "param": "structuralSteel"
+          "param": "coatedSteel"
         },
         {
           "name": "stainlessSteel",
           "color": "#b5c0c0",
           "parts": [
-            "roller-0",
-            "roller-1",
-            "roller-2",
-            "roller-3"
+            "drip-pan",
+            "drip-pan-outlet",
+            "gravity-tail-roller",
+            "gravity-head-roller",
+            "gravity-grid",
+            "plough-bar-0",
+            "plough-0-0",
+            "plough-0-1",
+            "plough-0-2",
+            "plough-0-3",
+            "plough-0-4",
+            "plough-0-5",
+            "plough-0-6",
+            "plough-0-7",
+            "plough-bar-1",
+            "plough-1-0",
+            "plough-1-1",
+            "plough-1-2",
+            "plough-1-3",
+            "plough-1-4",
+            "plough-1-5",
+            "plough-1-6",
+            "plough-1-7",
+            "plough-bar-2",
+            "plough-2-0",
+            "plough-2-1",
+            "plough-2-2",
+            "plough-2-3",
+            "plough-2-4",
+            "plough-2-5",
+            "plough-2-6",
+            "plough-2-7",
+            "gravity-side-seal--1",
+            "gravity-side-seal-1",
+            "press-roller-0",
+            "press-roller-1",
+            "press-roller-2",
+            "press-roller-3",
+            "press-roller-4",
+            "press-roller-5",
+            "return-roller-a",
+            "return-roller-b",
+            "tension-rod--1",
+            "tension-rod-1",
+            "wash-box-0",
+            "wash-box-1",
+            "cake-chute",
+            "chute-cheek--1",
+            "chute-cheek-1",
+            "screw-trough",
+            "screw-conveyor-casing",
+            "floc-tank",
+            "feed-pipe",
+            "distribution-box"
           ],
           "param": "stainlessSteel"
         },
         {
-          "name": "coatedSteel",
-          "color": "#3d8589",
+          "name": "gravity-tail-roller-shaft",
+          "color": "#23272a",
           "parts": [
-            "collection-pan"
+            "gravity-tail-roller-shaft",
+            "gravity-tail-roller-bearing--1",
+            "gravity-tail-roller-bearing-1",
+            "gravity-head-roller-shaft",
+            "gravity-head-roller-bearing--1",
+            "gravity-head-roller-bearing-1",
+            "press-roller-0-shaft",
+            "press-roller-0-bearing--1",
+            "press-roller-0-bearing-1",
+            "press-roller-1-shaft",
+            "press-roller-1-bearing--1",
+            "press-roller-1-bearing-1",
+            "press-roller-2-shaft",
+            "press-roller-2-bearing--1",
+            "press-roller-2-bearing-1",
+            "press-roller-3-shaft",
+            "press-roller-3-bearing--1",
+            "press-roller-3-bearing-1",
+            "press-roller-4-shaft",
+            "press-roller-4-bearing--1",
+            "press-roller-4-bearing-1",
+            "press-roller-5-shaft",
+            "press-roller-5-bearing--1",
+            "press-roller-5-bearing-1",
+            "return-roller-a-shaft",
+            "return-roller-a-bearing--1",
+            "return-roller-a-bearing-1",
+            "return-roller-b-shaft",
+            "return-roller-b-bearing--1",
+            "return-roller-b-bearing-1",
+            "spray-bar-0",
+            "wash-feed-0",
+            "spray-bar-1",
+            "wash-feed-1",
+            "doctor-blade",
+            "floc-polymer-line",
+            "sludge-feed-pipe",
+            "sludge-feed-riser",
+            "control-panel-door-line"
+          ]
+        },
+        {
+          "name": "filterBelt",
+          "color": "#2f4d73",
+          "parts": [
+            "gravity-belt",
+            "wedge-lower-belt",
+            "belt-run-upper-0",
+            "belt-run-lower-0",
+            "belt-run-upper-1",
+            "belt-run-lower-1",
+            "belt-run-upper-2",
+            "belt-run-lower-2",
+            "belt-run-upper-3",
+            "belt-run-lower-3",
+            "belt-run-upper-4",
+            "belt-run-lower-4",
+            "return-belt-upper",
+            "return-belt-upper-top",
+            "return-belt-lower",
+            "return-belt-lower-up"
           ],
-          "param": "coatedSteel"
+          "param": "filterBelt"
+        },
+        {
+          "name": "sludge",
+          "color": "#5a4632",
+          "parts": [
+            "gravity-sludge",
+            "cake-run-0",
+            "cake-run-1",
+            "cake-run-2",
+            "cake-run-3",
+            "cake-run-4",
+            "screw-cake",
+            "cake-lump-0",
+            "cake-lump-1",
+            "cake-lump-2",
+            "cake-lump-3",
+            "cake-lump-4",
+            "cake-lump-5"
+          ],
+          "param": "sludge"
+        },
+        {
+          "name": "control-panel-hmi",
+          "color": "#7fc4d6",
+          "parts": [
+            "control-panel-hmi"
+          ]
+        },
+        {
+          "name": "pilot-light-0",
+          "color": "#3fae49",
+          "parts": [
+            "pilot-light-0"
+          ]
+        },
+        {
+          "name": "pilot-light-1",
+          "color": "#d33a2c",
+          "parts": [
+            "pilot-light-1"
+          ]
+        },
+        {
+          "name": "pilot-light-2",
+          "color": "#e8c23a",
+          "parts": [
+            "pilot-light-2"
+          ]
         }
       ]
     },
@@ -279647,15 +279979,17 @@
       "id": "circular-clarifier",
       "kit": "water-treatment",
       "title": "Circular clarifier tank",
-      "description": "Circular clarifier with wide rim, central feed well, bridge beam and scraper drive housing. Parameters: overall scale and concrete, structural steel; weathered and highVisibility presets.",
+      "description": "Circular secondary clarifier at about real size: 18 m concrete tank on an apron slab with a still water surface, inboard effluent launder with stainless weir plate and scum baffle, centre column with stainless inlet feed well, scraper drive gearbox and motor on a square drive platform, half-bridge truss walkway with grating and handrails from the rim to the drive, rotating surface skimmer arm and scum box, rim handrail, stair and landing, and an outlet box with effluent pipe. Material controls: concrete, bridge and drive steel, stainless and handrail, water; weathered, highVisibility and algaeBloom presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "water treatment",
-        "water utility",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "wastewater",
+        "clarifier",
+        "settling tank",
+        "scraper bridge",
+        "weir",
+        "infrastructure"
       ],
       "compat": [
         "water-treatment",
@@ -279666,8 +280000,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/circular-clarifier.kcad.ts",
       "preview": "/assets/water-treatment-circular-clarifier.png",
-      "sourceSha256": "975133aac14c7d209e645b745c79a32c7b8a1019a2f3fbfbc0c382aa2d5c11b7",
-      "triangleBudget": 2200,
+      "sourceSha256": "31439344572bee2a0e61229103f9f3146796ad43596d8a3e2229bef69e242304",
+      "triangleBudget": 6600,
       "params": [
         {
           "name": "scale",
@@ -279687,26 +280021,48 @@
         {
           "name": "structuralSteel",
           "type": "color",
-          "default": "#68777b",
-          "label": "Structural steel"
+          "default": "#3f6f8f",
+          "label": "Bridge and drive steel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#c3cbcc",
+          "label": "Stainless steel and handrail"
+        },
+        {
+          "name": "water",
+          "type": "color",
+          "default": "#4f7f86",
+          "label": "Water surface"
         }
       ],
       "presets": {
         "weathered": {
           "concrete": "#9b9587",
-          "structuralSteel": "#6e6b63"
+          "structuralSteel": "#5d6a70",
+          "stainlessSteel": "#a3aaa8",
+          "water": "#5d746a"
         },
         "highVisibility": {
-          "concrete": "#c6bdac",
-          "structuralSteel": "#505b60"
+          "concrete": "#cfc6b4",
+          "structuralSteel": "#e2b01f",
+          "stainlessSteel": "#e8e6dc",
+          "water": "#3d7f93"
+        },
+        "algaeBloom": {
+          "concrete": "#a9a493",
+          "structuralSteel": "#2f5b46",
+          "stainlessSteel": "#b7bdb6",
+          "water": "#5f7d3d"
         }
       },
       "stats": {
-        "triangles": 376,
+        "triangles": 6344,
         "sizeM": [
-          1.12,
-          0.69,
-          1.12
+          24.9,
+          5.925,
+          20.6
         ],
         "minUpM": 0,
         "materials": 1
@@ -279716,21 +280072,429 @@
           "name": "concrete",
           "color": "#b8b1a1",
           "parts": [
-            "tank",
-            "rim",
-            "feed-well",
-            "drive"
+            "apron-slab",
+            "tank-wall-0",
+            "tank-wall-1",
+            "tank-wall-2",
+            "tank-wall-3",
+            "tank-wall-4",
+            "tank-wall-5",
+            "tank-wall-6",
+            "tank-wall-7",
+            "tank-wall-8",
+            "tank-wall-9",
+            "tank-wall-10",
+            "tank-wall-11",
+            "tank-wall-12",
+            "tank-wall-13",
+            "tank-wall-14",
+            "tank-wall-15",
+            "tank-wall-16",
+            "tank-wall-17",
+            "tank-wall-18",
+            "tank-wall-19",
+            "tank-wall-20",
+            "tank-wall-21",
+            "tank-wall-22",
+            "tank-wall-23",
+            "tank-wall-24",
+            "tank-wall-25",
+            "tank-wall-26",
+            "tank-wall-27",
+            "tank-wall-28",
+            "tank-wall-29",
+            "tank-wall-30",
+            "tank-wall-31",
+            "tank-wall-32",
+            "tank-wall-33",
+            "tank-wall-34",
+            "tank-wall-35",
+            "tank-wall-36",
+            "tank-wall-37",
+            "tank-wall-38",
+            "tank-wall-39",
+            "wall-coping-0",
+            "wall-coping-1",
+            "wall-coping-2",
+            "wall-coping-3",
+            "wall-coping-4",
+            "wall-coping-5",
+            "wall-coping-6",
+            "wall-coping-7",
+            "wall-coping-8",
+            "wall-coping-9",
+            "wall-coping-10",
+            "wall-coping-11",
+            "wall-coping-12",
+            "wall-coping-13",
+            "wall-coping-14",
+            "wall-coping-15",
+            "wall-coping-16",
+            "wall-coping-17",
+            "wall-coping-18",
+            "wall-coping-19",
+            "wall-coping-20",
+            "wall-coping-21",
+            "wall-coping-22",
+            "wall-coping-23",
+            "wall-coping-24",
+            "wall-coping-25",
+            "wall-coping-26",
+            "wall-coping-27",
+            "wall-coping-28",
+            "wall-coping-29",
+            "wall-coping-30",
+            "wall-coping-31",
+            "wall-coping-32",
+            "wall-coping-33",
+            "wall-coping-34",
+            "wall-coping-35",
+            "wall-coping-36",
+            "wall-coping-37",
+            "wall-coping-38",
+            "wall-coping-39",
+            "launder-wall-0",
+            "launder-wall-1",
+            "launder-wall-2",
+            "launder-wall-3",
+            "launder-wall-4",
+            "launder-wall-5",
+            "launder-wall-6",
+            "launder-wall-7",
+            "launder-wall-8",
+            "launder-wall-9",
+            "launder-wall-10",
+            "launder-wall-11",
+            "launder-wall-12",
+            "launder-wall-13",
+            "launder-wall-14",
+            "launder-wall-15",
+            "launder-wall-16",
+            "launder-wall-17",
+            "launder-wall-18",
+            "launder-wall-19",
+            "launder-wall-20",
+            "launder-wall-21",
+            "launder-wall-22",
+            "launder-wall-23",
+            "launder-wall-24",
+            "launder-wall-25",
+            "launder-wall-26",
+            "launder-wall-27",
+            "launder-wall-28",
+            "launder-wall-29",
+            "launder-wall-30",
+            "launder-wall-31",
+            "launder-wall-32",
+            "launder-wall-33",
+            "launder-wall-34",
+            "launder-wall-35",
+            "outlet-box",
+            "centre-column"
           ],
           "param": "concrete"
         },
         {
-          "name": "structuralSteel",
-          "color": "#68777b",
+          "name": "water",
+          "color": "#4f7f86",
           "parts": [
-            "bridge",
-            "walkway"
+            "water-surface"
+          ],
+          "param": "water"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#c3cbcc",
+          "parts": [
+            "weir-plate-0",
+            "weir-plate-1",
+            "weir-plate-2",
+            "weir-plate-3",
+            "weir-plate-4",
+            "weir-plate-5",
+            "weir-plate-6",
+            "weir-plate-7",
+            "weir-plate-8",
+            "weir-plate-9",
+            "weir-plate-10",
+            "weir-plate-11",
+            "weir-plate-12",
+            "weir-plate-13",
+            "weir-plate-14",
+            "weir-plate-15",
+            "weir-plate-16",
+            "weir-plate-17",
+            "weir-plate-18",
+            "weir-plate-19",
+            "weir-plate-20",
+            "weir-plate-21",
+            "weir-plate-22",
+            "weir-plate-23",
+            "weir-plate-24",
+            "weir-plate-25",
+            "weir-plate-26",
+            "weir-plate-27",
+            "weir-plate-28",
+            "weir-plate-29",
+            "weir-plate-30",
+            "weir-plate-31",
+            "weir-plate-32",
+            "weir-plate-33",
+            "weir-plate-34",
+            "weir-plate-35",
+            "scum-baffle-0",
+            "scum-baffle-1",
+            "scum-baffle-2",
+            "scum-baffle-3",
+            "scum-baffle-4",
+            "scum-baffle-5",
+            "scum-baffle-6",
+            "scum-baffle-7",
+            "scum-baffle-8",
+            "scum-baffle-9",
+            "scum-baffle-10",
+            "scum-baffle-11",
+            "scum-baffle-12",
+            "scum-baffle-13",
+            "scum-baffle-14",
+            "scum-baffle-15",
+            "scum-baffle-16",
+            "scum-baffle-17",
+            "scum-baffle-18",
+            "scum-baffle-19",
+            "scum-baffle-20",
+            "scum-baffle-21",
+            "scum-baffle-22",
+            "scum-baffle-23",
+            "scum-baffle-24",
+            "scum-baffle-25",
+            "scum-baffle-26",
+            "scum-baffle-27",
+            "scum-baffle-28",
+            "scum-baffle-29",
+            "scum-baffle-30",
+            "scum-baffle-31",
+            "scum-baffle-32",
+            "scum-baffle-33",
+            "scum-baffle-34",
+            "scum-baffle-35",
+            "baffle-bracket-0",
+            "baffle-bracket-1",
+            "baffle-bracket-2",
+            "baffle-bracket-3",
+            "baffle-bracket-4",
+            "baffle-bracket-5",
+            "baffle-bracket-6",
+            "baffle-bracket-7",
+            "baffle-bracket-8",
+            "baffle-bracket-9",
+            "baffle-bracket-10",
+            "baffle-bracket-11",
+            "outlet-box-cover",
+            "feed-well",
+            "drive-rail-post-0",
+            "drive-rail-post-1",
+            "drive-rail-post-2",
+            "drive-rail-post-3",
+            "drive-rail-post-4",
+            "drive-rail-post-5",
+            "drive-rail-post-6",
+            "drive-rail-0-5250",
+            "drive-rail-0-5750",
+            "drive-rail-1-5250",
+            "drive-rail-1-5750",
+            "drive-rail-2-5250",
+            "drive-rail-2-5750",
+            "bridge-rail-post--1-0",
+            "bridge-rail-post--1-1",
+            "bridge-rail-post--1-2",
+            "bridge-rail-post--1-3",
+            "bridge-rail-post--1-4",
+            "bridge-rail-post--1-5",
+            "bridge-rail-post--1-6",
+            "bridge-rail-post--1-7",
+            "bridge-rail-post--1-8",
+            "bridge-rail--1-5100",
+            "bridge-rail--1-5650",
+            "bridge-rail-post-1-0",
+            "bridge-rail-post-1-1",
+            "bridge-rail-post-1-2",
+            "bridge-rail-post-1-3",
+            "bridge-rail-post-1-4",
+            "bridge-rail-post-1-5",
+            "bridge-rail-post-1-6",
+            "bridge-rail-post-1-7",
+            "bridge-rail-post-1-8",
+            "bridge-rail-1-5100",
+            "bridge-rail-1-5650",
+            "bridge-grating",
+            "stair-tread-0",
+            "stair-tread-1",
+            "stair-tread-2",
+            "stair-tread-3",
+            "stair-tread-4",
+            "stair-tread-5",
+            "stair-tread-6",
+            "stair-tread-7",
+            "stair-tread-8",
+            "stair-tread-9",
+            "stair-tread-10",
+            "stair-tread-11",
+            "stair-tread-12",
+            "stair-tread-13",
+            "stair-tread-14",
+            "stair-tread-15",
+            "stair-tread-16",
+            "stair-tread-17",
+            "stair-handrail-9580",
+            "stair-handrail-10620",
+            "scum-box",
+            "rim-rail-post-1",
+            "rim-rail-top-1",
+            "rim-rail-knee-1",
+            "rim-rail-post-2",
+            "rim-rail-top-2",
+            "rim-rail-knee-2",
+            "rim-rail-post-3",
+            "rim-rail-top-3",
+            "rim-rail-knee-3",
+            "rim-rail-post-4",
+            "rim-rail-top-4",
+            "rim-rail-knee-4",
+            "rim-rail-post-5",
+            "rim-rail-top-5",
+            "rim-rail-knee-5",
+            "rim-rail-post-6",
+            "rim-rail-top-6",
+            "rim-rail-knee-6",
+            "rim-rail-post-7",
+            "rim-rail-top-7",
+            "rim-rail-knee-7",
+            "rim-rail-post-8",
+            "rim-rail-top-8",
+            "rim-rail-knee-8",
+            "rim-rail-post-9",
+            "rim-rail-top-9",
+            "rim-rail-knee-9",
+            "rim-rail-post-10",
+            "rim-rail-top-10",
+            "rim-rail-knee-10",
+            "rim-rail-post-11",
+            "rim-rail-top-11",
+            "rim-rail-knee-11",
+            "rim-rail-post-12",
+            "rim-rail-top-12",
+            "rim-rail-knee-12",
+            "rim-rail-post-13",
+            "rim-rail-top-13",
+            "rim-rail-knee-13",
+            "rim-rail-post-14",
+            "rim-rail-top-14",
+            "rim-rail-knee-14",
+            "rim-rail-post-15",
+            "rim-rail-top-15",
+            "rim-rail-knee-15",
+            "rim-rail-post-16",
+            "rim-rail-top-16",
+            "rim-rail-knee-16",
+            "rim-rail-post-17",
+            "rim-rail-top-17",
+            "rim-rail-knee-17",
+            "rim-rail-post-18",
+            "rim-rail-top-18",
+            "rim-rail-knee-18",
+            "rim-rail-post-19",
+            "rim-rail-top-19",
+            "rim-rail-knee-19",
+            "rim-rail-post-20",
+            "rim-rail-top-20",
+            "rim-rail-knee-20",
+            "rim-rail-post-21",
+            "rim-rail-top-21",
+            "rim-rail-knee-21",
+            "rim-rail-post-22",
+            "rim-rail-top-22",
+            "rim-rail-knee-22",
+            "rim-rail-post-23",
+            "rim-rail-top-23",
+            "rim-rail-knee-23",
+            "rim-rail-post-24",
+            "rim-rail-top-24",
+            "rim-rail-knee-24",
+            "rim-rail-post-25",
+            "rim-rail-top-25",
+            "rim-rail-knee-25",
+            "rim-rail-post-26",
+            "rim-rail-top-26",
+            "rim-rail-knee-26"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "structuralSteel",
+          "color": "#3f6f8f",
+          "parts": [
+            "effluent-pipe",
+            "effluent-pipe-flange",
+            "feed-well-hanger-0",
+            "feed-well-hanger-1",
+            "feed-well-hanger-2",
+            "feed-well-hanger-3",
+            "drive-platform",
+            "drive-ring-gear",
+            "drive-gearbox",
+            "drive-motor",
+            "bridge-chord-bottom--1",
+            "bridge-chord-top--1",
+            "bridge-diagonal--1-0",
+            "bridge-diagonal--1-1",
+            "bridge-diagonal--1-2",
+            "bridge-diagonal--1-3",
+            "bridge-diagonal--1-4",
+            "bridge-diagonal--1-5",
+            "bridge-diagonal--1-6",
+            "bridge-diagonal--1-7",
+            "bridge-chord-bottom-1",
+            "bridge-chord-top-1",
+            "bridge-diagonal-1-0",
+            "bridge-diagonal-1-1",
+            "bridge-diagonal-1-2",
+            "bridge-diagonal-1-3",
+            "bridge-diagonal-1-4",
+            "bridge-diagonal-1-5",
+            "bridge-diagonal-1-6",
+            "bridge-diagonal-1-7",
+            "bridge-crossbeam-2000",
+            "bridge-crossbeam-3300",
+            "bridge-crossbeam-4600",
+            "bridge-crossbeam-5900",
+            "bridge-crossbeam-7200",
+            "bridge-crossbeam-8500",
+            "landing",
+            "landing-column-a",
+            "landing-column-b",
+            "stair-stringer-9580",
+            "stair-stringer-10620",
+            "skimmer-arm",
+            "skimmer-truss"
           ],
           "param": "structuralSteel"
+        },
+        {
+          "name": "drive-motor-cowl",
+          "color": "#2a2e30",
+          "parts": [
+            "drive-motor-cowl",
+            "drive-terminal-box",
+            "scum-box-lip"
+          ]
+        },
+        {
+          "name": "skimmer-scum",
+          "color": "#8c7f5e",
+          "parts": [
+            "skimmer-scum"
+          ]
         }
       ]
     },
@@ -283307,15 +284071,17 @@
       "id": "surface-aerator",
       "kit": "water-treatment",
       "title": "Surface aerator assembly",
-      "description": "Floating bridge aerator with twin pontoons, motor housing and a low polygon rotor guard. Parameters: overall scale and coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
+      "description": "Floating high-speed surface aerator at about real size: three FRP floats at 120 degrees on a tubular stainless frame and mounting ring, a vertical finned motor with fan cowl, terminal box and lifting eye, a stainless volute and diffuser cone at the water line, an umbrella of thrown water jets landing in a foam ring on the lagoon surface, three mooring cables and a power cable on buoys. Material controls: floats, motor coating, stainless frame and volute, water; weathered, highVisibility and lagoonGreen presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "water treatment",
-        "water utility",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "wastewater",
+        "aerator",
+        "surface aerator",
+        "lagoon",
+        "floating",
+        "oxygen transfer"
       ],
       "compat": [
         "water-treatment",
@@ -283326,8 +284092,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/surface-aerator.kcad.ts",
       "preview": "/assets/water-treatment-surface-aerator.png",
-      "sourceSha256": "0c6d98e8bf77a92d3bc9e4b7de8c84818bead9cc28eff6eaa247fb217f45fc60",
-      "triangleBudget": 2200,
+      "sourceSha256": "5a158375c07533c58e35c3b91c33b410b329d61f028c1e4fbd339916ea33dd0a",
+      "triangleBudget": 4200,
       "params": [
         {
           "name": "scale",
@@ -283339,77 +284105,232 @@
           "step": 0.05
         },
         {
+          "name": "floats",
+          "type": "color",
+          "default": "#d9ad2f",
+          "label": "FRP floats"
+        },
+        {
           "name": "coatedSteel",
           "type": "color",
           "default": "#3d8589",
-          "label": "Coated equipment steel"
-        },
-        {
-          "name": "structuralSteel",
-          "type": "color",
-          "default": "#68777b",
-          "label": "Structural steel"
+          "label": "Motor coating"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#b5c0c0",
-          "label": "Stainless steel"
+          "label": "Stainless frame and volute"
+        },
+        {
+          "name": "water",
+          "type": "color",
+          "default": "#4d7c80",
+          "label": "Lagoon water"
         }
       ],
       "presets": {
         "weathered": {
+          "floats": "#b3995a",
           "coatedSteel": "#687b78",
-          "structuralSteel": "#6e6b63",
-          "stainlessSteel": "#9ca7a6"
+          "stainlessSteel": "#9ca7a6",
+          "water": "#5a6f62"
         },
         "highVisibility": {
+          "floats": "#f08a1c",
           "coatedSteel": "#e5682d",
-          "structuralSteel": "#505b60",
-          "stainlessSteel": "#e1ddd0"
+          "stainlessSteel": "#e1ddd0",
+          "water": "#3b7d92"
+        },
+        "lagoonGreen": {
+          "floats": "#d8dccb",
+          "coatedSteel": "#2f5f8a",
+          "stainlessSteel": "#b7c0bd",
+          "water": "#56713f"
         }
       },
       "stats": {
-        "triangles": 184,
+        "triangles": 3612,
         "sizeM": [
-          1.12,
-          0.35,
-          0.42
+          10.4,
+          2.925,
+          10.4
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "structuralSteel",
-          "color": "#68777b",
+          "name": "water",
+          "color": "#4d7c80",
           "parts": [
-            "pontoon-left",
-            "pontoon-right",
-            "bridge",
-            "guard",
-            "guard-post--180--180",
-            "guard-post--180-180",
-            "guard-post-180--180",
-            "guard-post-180-180"
+            "water-surface"
           ],
-          "param": "structuralSteel"
+          "param": "water"
         },
         {
-          "name": "coatedSteel",
-          "color": "#3d8589",
+          "name": "foam-mound",
+          "color": "#f2f5f2",
           "parts": [
-            "motor"
+            "foam-mound",
+            "foam-streak-0",
+            "foam-streak-1",
+            "foam-streak-2",
+            "foam-streak-3",
+            "foam-streak-4",
+            "foam-streak-5",
+            "foam-streak-6",
+            "foam-streak-7",
+            "foam-streak-8"
+          ]
+        },
+        {
+          "name": "floats",
+          "color": "#d9ad2f",
+          "parts": [
+            "float-90",
+            "float-210",
+            "float-330"
           ],
-          "param": "coatedSteel"
+          "param": "floats"
         },
         {
           "name": "stainlessSteel",
           "color": "#b5c0c0",
           "parts": [
-            "shaft"
+            "float-band-a-90",
+            "float-band-b-90",
+            "frame-strut-a-90",
+            "frame-strut-b-90",
+            "frame-saddle-a-90",
+            "frame-saddle-b-90",
+            "mooring-eye-90",
+            "float-band-a-210",
+            "float-band-b-210",
+            "frame-strut-a-210",
+            "frame-strut-b-210",
+            "frame-saddle-a-210",
+            "frame-saddle-b-210",
+            "mooring-eye-210",
+            "float-band-a-330",
+            "float-band-b-330",
+            "frame-strut-a-330",
+            "frame-strut-b-330",
+            "frame-saddle-a-330",
+            "frame-saddle-b-330",
+            "mooring-eye-330",
+            "frame-tie-0",
+            "frame-tie-1",
+            "frame-tie-2",
+            "mounting-ring",
+            "diffuser-cone",
+            "volute-lip",
+            "cowl-grille",
+            "lifting-eye-post",
+            "lifting-eye"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "mooring-90",
+          "color": "#24282a",
+          "parts": [
+            "mooring-90",
+            "mooring-210",
+            "mooring-330",
+            "power-cable-drop",
+            "power-cable"
+          ]
+        },
+        {
+          "name": "jet-up-0",
+          "color": "#e4f0f1",
+          "parts": [
+            "jet-up-0",
+            "jet-down-0",
+            "jet-up-1",
+            "jet-down-1",
+            "jet-up-2",
+            "jet-down-2",
+            "jet-up-3",
+            "jet-down-3",
+            "jet-up-4",
+            "jet-down-4",
+            "jet-up-5",
+            "jet-down-5",
+            "jet-up-6",
+            "jet-down-6",
+            "jet-up-7",
+            "jet-down-7",
+            "jet-up-8",
+            "jet-down-8",
+            "jet-up-9",
+            "jet-down-9",
+            "jet-up-10",
+            "jet-down-10",
+            "jet-up-11",
+            "jet-down-11",
+            "jet-up-12",
+            "jet-down-12",
+            "jet-up-13",
+            "jet-down-13",
+            "jet-up-14",
+            "jet-down-14",
+            "jet-up-15",
+            "jet-down-15",
+            "jet-up-16",
+            "jet-down-16",
+            "jet-up-17",
+            "jet-down-17",
+            "jet-up-18",
+            "jet-down-18",
+            "jet-up-19",
+            "jet-down-19",
+            "jet-up-20",
+            "jet-down-20",
+            "jet-up-21",
+            "jet-down-21"
+          ]
+        },
+        {
+          "name": "coatedSteel",
+          "color": "#3d8589",
+          "parts": [
+            "motor-flange",
+            "motor-body",
+            "motor-fin-0",
+            "motor-fin-1",
+            "motor-fin-2",
+            "motor-fin-3",
+            "motor-fin-4",
+            "motor-fin-5",
+            "motor-fin-6",
+            "motor-fin-7",
+            "motor-fin-8",
+            "motor-fin-9",
+            "motor-fin-10",
+            "motor-fin-11",
+            "terminal-box"
+          ],
+          "param": "coatedSteel"
+        },
+        {
+          "name": "fan-cowl",
+          "color": "#1f2325",
+          "parts": [
+            "fan-cowl",
+            "cable-gland"
+          ]
+        },
+        {
+          "name": "cable-buoy-1",
+          "color": "#e2582a",
+          "parts": [
+            "cable-buoy-1",
+            "cable-buoy-2",
+            "cable-buoy-3",
+            "cable-buoy-4"
+          ]
         }
       ]
     },
@@ -283524,15 +284445,17 @@
       "id": "uv-disinfection-channel",
       "kit": "water-treatment",
       "title": "UV disinfection channel",
-      "description": "Covered UV channel with support frame, lamp cassette bars and service bridge. Parameters: overall scale and concrete, structural steel, instrument glass; weathered and highVisibility presets.",
+      "description": "Open-channel UV disinfection system at about real size: a 1.2 m concrete channel with flowing effluent, two banks of eight vertical lamp modules with ballast heads above the water on a bank rail, cable trays to two power distribution cabinets on the deck, a downstream motorised flap gate for level control, a level sensor, handrail and a service rack holding two lifted modules with glowing quartz-sleeved lamps and wiper rings. Material controls: concrete, stainless modules and frame, cabinet coating, effluent; weathered, highVisibility and greyCabinet presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "water treatment",
-        "water utility",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "wastewater",
+        "disinfection",
+        "UV",
+        "ultraviolet",
+        "lamp module",
+        "effluent channel"
       ],
       "compat": [
         "water-treatment",
@@ -283543,8 +284466,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/water-treatment/uv-disinfection-channel.kcad.ts",
       "preview": "/assets/water-treatment-uv-disinfection-channel.png",
-      "sourceSha256": "9a7c6af97e212b26da3978d07fd5dc100b44e8d2c77e42c0df2ceed800537ba0",
-      "triangleBudget": 2200,
+      "sourceSha256": "aa3676d7a0a4a0ba39e689a0bcf63a49bb5ea699effa9e7f99d30cae33c4d056",
+      "triangleBudget": 2800,
       "params": [
         {
           "name": "scale",
@@ -283562,36 +284485,50 @@
           "label": "Concrete"
         },
         {
-          "name": "structuralSteel",
+          "name": "stainlessSteel",
           "type": "color",
-          "default": "#68777b",
-          "label": "Structural steel"
+          "default": "#c0c8c9",
+          "label": "Stainless modules and frame"
         },
         {
-          "name": "instrumentGlass",
+          "name": "cabinet",
           "type": "color",
-          "default": "#5eb5c1",
-          "label": "Instrument glass"
+          "default": "#2f5f8a",
+          "label": "Cabinet coating"
+        },
+        {
+          "name": "water",
+          "type": "color",
+          "default": "#4f8288",
+          "label": "Treated effluent"
         }
       ],
       "presets": {
         "weathered": {
           "concrete": "#9b9587",
-          "structuralSteel": "#6e6b63",
-          "instrumentGlass": "#548b91"
+          "stainlessSteel": "#9ca7a6",
+          "cabinet": "#5a6a72",
+          "water": "#5b746b"
         },
         "highVisibility": {
           "concrete": "#c6bdac",
-          "structuralSteel": "#505b60",
-          "instrumentGlass": "#43b4c8"
+          "stainlessSteel": "#e1ddd0",
+          "cabinet": "#e5682d",
+          "water": "#3d8396"
+        },
+        "greyCabinet": {
+          "concrete": "#b3ad9f",
+          "stainlessSteel": "#cdd3d2",
+          "cabinet": "#9aa3a6",
+          "water": "#4a7c7c"
         }
       },
       "stats": {
-        "triangles": 452,
+        "triangles": 2328,
         "sizeM": [
-          1.2,
-          0.535,
-          0.58
+          8.4,
+          4.3,
+          5.8
         ],
         "minUpM": 0,
         "materials": 1
@@ -283602,32 +284539,204 @@
           "color": "#b8b1a1",
           "parts": [
             "channel-floor",
-            "wall-front",
-            "wall-back"
+            "channel-wall--1",
+            "deck--1",
+            "channel-wall-1",
+            "deck-1"
           ],
           "param": "concrete"
         },
         {
-          "name": "structuralSteel",
-          "color": "#68777b",
+          "name": "water",
+          "color": "#4f8288",
           "parts": [
-            "bridge",
-            "frame-post--520",
-            "frame-post-520"
+            "water-upstream",
+            "water-downstream"
           ],
-          "param": "structuralSteel"
+          "param": "water"
         },
         {
-          "name": "instrumentGlass",
-          "color": "#5eb5c1",
+          "name": "stainlessSteel",
+          "color": "#c0c8c9",
           "parts": [
-            "lamp-0",
-            "lamp-1",
-            "lamp-2",
-            "lamp-3",
-            "lamp-4"
+            "bank-0-module-0-leg--2600",
+            "bank-0-module-0-leg--1000",
+            "bank-0-module-0-head",
+            "bank-0-module-1-leg--2600",
+            "bank-0-module-1-leg--1000",
+            "bank-0-module-1-head",
+            "bank-0-module-2-leg--2600",
+            "bank-0-module-2-leg--1000",
+            "bank-0-module-2-head",
+            "bank-0-module-3-leg--2600",
+            "bank-0-module-3-leg--1000",
+            "bank-0-module-3-head",
+            "bank-0-module-4-leg--2600",
+            "bank-0-module-4-leg--1000",
+            "bank-0-module-4-head",
+            "bank-0-module-5-leg--2600",
+            "bank-0-module-5-leg--1000",
+            "bank-0-module-5-head",
+            "bank-0-module-6-leg--2600",
+            "bank-0-module-6-leg--1000",
+            "bank-0-module-6-head",
+            "bank-0-module-7-leg--2600",
+            "bank-0-module-7-leg--1000",
+            "bank-0-module-7-head",
+            "bank-0-rail--2720",
+            "bank-0-rail--880",
+            "bank-1-module-0-leg--200",
+            "bank-1-module-0-leg-1400",
+            "bank-1-module-0-head",
+            "bank-1-module-1-leg--200",
+            "bank-1-module-1-leg-1400",
+            "bank-1-module-1-head",
+            "bank-1-module-2-leg--200",
+            "bank-1-module-2-leg-1400",
+            "bank-1-module-2-head",
+            "bank-1-module-3-leg--200",
+            "bank-1-module-3-leg-1400",
+            "bank-1-module-3-head",
+            "bank-1-module-4-leg--200",
+            "bank-1-module-4-leg-1400",
+            "bank-1-module-4-head",
+            "bank-1-module-5-leg--200",
+            "bank-1-module-5-leg-1400",
+            "bank-1-module-5-head",
+            "bank-1-module-6-leg--200",
+            "bank-1-module-6-leg-1400",
+            "bank-1-module-6-head",
+            "bank-1-module-7-leg--200",
+            "bank-1-module-7-leg-1400",
+            "bank-1-module-7-head",
+            "bank-1-rail--320",
+            "bank-1-rail-1520",
+            "flap-gate",
+            "gate-link",
+            "level-sensor-arm",
+            "level-sensor-post",
+            "lifted-module-a-leg--3700",
+            "lifted-module-a-leg--2100",
+            "lifted-module-a-head",
+            "lifted-module-a-wiper-rod",
+            "lifted-module-b-leg--3700",
+            "lifted-module-b-leg--2100",
+            "lifted-module-b-head",
+            "lifted-module-b-wiper-rod",
+            "rail-post-0",
+            "rail-post-1",
+            "rail-post-2",
+            "rail-post-3",
+            "rail-post-4",
+            "rail-2350",
+            "rail-2900"
           ],
-          "param": "instrumentGlass"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "bank-0-module-0-ballast-cap",
+          "color": "#202426",
+          "parts": [
+            "bank-0-module-0-ballast-cap",
+            "bank-0-module-1-ballast-cap",
+            "bank-0-module-2-ballast-cap",
+            "bank-0-module-3-ballast-cap",
+            "bank-0-module-4-ballast-cap",
+            "bank-0-module-5-ballast-cap",
+            "bank-0-module-6-ballast-cap",
+            "bank-0-module-7-ballast-cap",
+            "bank-0-cable-drop",
+            "bank-1-module-0-ballast-cap",
+            "bank-1-module-1-ballast-cap",
+            "bank-1-module-2-ballast-cap",
+            "bank-1-module-3-ballast-cap",
+            "bank-1-module-4-ballast-cap",
+            "bank-1-module-5-ballast-cap",
+            "bank-1-module-6-ballast-cap",
+            "bank-1-module-7-ballast-cap",
+            "bank-1-cable-drop",
+            "pdc-plinth-0",
+            "pdc-door-seam-0",
+            "pdc-plinth-1",
+            "pdc-door-seam-1",
+            "flap-gate-hinge",
+            "gate-actuator-shaft",
+            "level-sensor-head",
+            "lifted-module-a-ballast-cap",
+            "lifted-module-a-wiper-0",
+            "lifted-module-a-wiper-1",
+            "lifted-module-a-wiper-2",
+            "lifted-module-a-wiper-3",
+            "lifted-module-a-wiper-4",
+            "lifted-module-a-wiper-5",
+            "lifted-module-b-ballast-cap",
+            "lifted-module-b-wiper-0",
+            "lifted-module-b-wiper-1",
+            "lifted-module-b-wiper-2",
+            "lifted-module-b-wiper-3",
+            "lifted-module-b-wiper-4",
+            "lifted-module-b-wiper-5"
+          ]
+        },
+        {
+          "name": "cabinet",
+          "color": "#2f5f8a",
+          "parts": [
+            "pdc-0",
+            "pdc-hood-0",
+            "pdc-1",
+            "pdc-hood-1",
+            "gate-actuator",
+            "service-rack-base",
+            "service-rack-upright--3850",
+            "service-rack-upright--1950",
+            "service-rack-top"
+          ],
+          "param": "cabinet"
+        },
+        {
+          "name": "pdc-hmi-0",
+          "color": "#7fc4d6",
+          "parts": [
+            "pdc-hmi-0",
+            "pdc-hmi-1"
+          ]
+        },
+        {
+          "name": "pdc-beacon-0",
+          "color": "#e0a43a",
+          "parts": [
+            "pdc-beacon-0",
+            "pdc-beacon-1"
+          ]
+        },
+        {
+          "name": "cable-tray",
+          "color": "#8d9496",
+          "parts": [
+            "cable-tray",
+            "cable-tray-post--2600",
+            "cable-tray-post--200",
+            "cable-tray-post-1300"
+          ]
+        },
+        {
+          "name": "lifted-module-a-lamp-0",
+          "color": "#b6a8ff",
+          "parts": [
+            "lifted-module-a-lamp-0",
+            "lifted-module-a-lamp-1",
+            "lifted-module-a-lamp-2",
+            "lifted-module-a-lamp-3",
+            "lifted-module-a-lamp-4",
+            "lifted-module-a-lamp-5",
+            "lifted-module-b-lamp-0",
+            "lifted-module-b-lamp-1",
+            "lifted-module-b-lamp-2",
+            "lifted-module-b-lamp-3",
+            "lifted-module-b-lamp-4",
+            "lifted-module-b-lamp-5"
+          ]
         }
       ]
     },
