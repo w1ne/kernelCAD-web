@@ -226097,19 +226097,19 @@
       "id": "confined-space-rescue-tripod",
       "kit": "shipyard",
       "title": "Confined-space rescue tripod",
-      "description": "Portable access tripod with three feet, a head bridge, a winch housing, and a suspended retrieval line. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+      "description": "Confined-space rescue tripod at about real size over a tank-top manhole: three splayed telescopic aluminium legs with pin collars and locking pins, a cast head with anchor eye and twin sheaves, hinged feet with rubber shoes tied by a spreader chain, a hand winch with drum, crank and leg brackets, a self-retracting lifeline block with leg pulley, both lines reeved over the head down through the raised manhole coaming to a swivel hook. Material controls: aluminium legs, cast head, winch and lifeline, deck steel; fresh-coat, weathered-yard and high-visibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "shipyard",
-        "shipbuilding",
-        "drydock",
-        "refit",
-        "low poly",
-        "CC0",
-        "confined-space",
-        "rescue",
-        "tripod"
+        "confined space",
+        "rescue tripod",
+        "fall arrest",
+        "man-riding winch",
+        "tank entry",
+        "manhole",
+        "safety equipment",
+        "CC0"
       ],
       "compat": [
         "shipyard",
@@ -226120,8 +226120,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/confined-space-rescue-tripod.kcad.ts",
       "preview": "/assets/shipyard-confined-space-rescue-tripod.png",
-      "sourceSha256": "236949a7949d9fe399f784cde1137ded30c8e3440f664ccee201ecd1e28c5c6f",
-      "triangleBudget": 1800,
+      "sourceSha256": "ed11a44f4822b4ff7a700f371feddddec7dfeff7aab56800b9d34102689c3532",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -226133,77 +226133,229 @@
           "step": 0.05
         },
         {
-          "name": "yardPaint",
+          "name": "aluminium",
           "type": "color",
-          "default": "#d19f45",
-          "label": "Yard finish"
+          "default": "#c3c9cc",
+          "label": "Aluminium legs"
         },
         {
-          "name": "structuralSteel",
+          "name": "castHead",
           "type": "color",
-          "default": "#b6c1c4",
-          "label": "Structural steel"
+          "default": "#e3b22b",
+          "label": "Cast head and feet"
         },
         {
-          "name": "elastomer",
+          "name": "winch",
           "type": "color",
-          "default": "#30383b",
-          "label": "Elastomer"
+          "default": "#c7322a",
+          "label": "Winch and lifeline block"
+        },
+        {
+          "name": "deckSteel",
+          "type": "color",
+          "default": "#6c7873",
+          "label": "Tank-top deck steel"
         }
       ],
       "presets": {
         "fresh-coat": {
-          "yardPaint": "#d9b066",
-          "structuralSteel": "#d0d7d8",
-          "elastomer": "#3a4245"
+          "aluminium": "#d6dbdd",
+          "castHead": "#f0c234",
+          "winch": "#d83a30",
+          "deckSteel": "#7c8a84"
         },
         "weathered-yard": {
-          "yardPaint": "#ad8439",
-          "structuralSteel": "#828d91",
-          "elastomer": "#252b2d"
+          "aluminium": "#9ea4a4",
+          "castHead": "#b38d34",
+          "winch": "#94392f",
+          "deckSteel": "#6b5a4c"
+        },
+        "high-visibility": {
+          "castHead": "#f26a1b",
+          "winch": "#f2d11b"
         }
       },
       "stats": {
-        "triangles": 296,
+        "triangles": 2528,
         "sizeM": [
-          1.66,
-          2.07,
-          1.43
+          3,
+          2.577308,
+          3
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "structuralSteel",
-          "color": "#b6c1c4",
+          "name": "deckSteel",
+          "color": "#6c7873",
           "parts": [
-            "tripod-leg-0",
-            "tripod-leg-1",
-            "tripod-leg-2",
-            "head-bridge"
+            "deck-plate",
+            "manhole-coaming",
+            "manhole-cover"
           ],
-          "param": "structuralSteel"
+          "param": "deckSteel"
         },
         {
-          "name": "yardPaint",
-          "color": "#d19f45",
+          "name": "manhole-opening",
+          "color": "#151719",
           "parts": [
-            "winch-housing",
-            "retrieval-drum",
-            "retrieval-line"
-          ],
-          "param": "yardPaint"
+            "manhole-opening"
+          ]
         },
         {
-          "name": "elastomer",
-          "color": "#30383b",
+          "name": "deck-weld-strip-900",
+          "color": "#59625e",
           "parts": [
-            "foot-pad-0",
-            "foot-pad-1",
-            "foot-pad-2"
+            "deck-weld-strip-900",
+            "deck-weld-strip-1250",
+            "deck-weld-strip--1250"
+          ]
+        },
+        {
+          "name": "castHead",
+          "color": "#e3b22b",
+          "parts": [
+            "leg-1-socket",
+            "leg-1-collar",
+            "leg-1-foot-knuckle",
+            "leg-1-foot-plate",
+            "leg-2-socket",
+            "leg-2-collar",
+            "leg-2-foot-knuckle",
+            "leg-2-foot-plate",
+            "leg-3-socket",
+            "leg-3-collar",
+            "leg-3-foot-knuckle",
+            "leg-3-foot-plate",
+            "head-hub",
+            "head-eye",
+            "head-eye-web",
+            "sheave-cheek-0",
+            "sheave-cheek-1",
+            "hook-shank",
+            "hook-bight"
           ],
-          "param": "elastomer"
+          "param": "castHead"
+        },
+        {
+          "name": "aluminium",
+          "color": "#c3c9cc",
+          "parts": [
+            "leg-1-upper",
+            "leg-1-extension",
+            "leg-2-upper",
+            "leg-2-extension",
+            "leg-3-upper",
+            "leg-3-extension",
+            "sheave-0",
+            "sheave-1",
+            "winch-drum",
+            "swivel",
+            "srl-snap"
+          ],
+          "param": "aluminium"
+        },
+        {
+          "name": "leg-1-lock-pin",
+          "color": "#22262a",
+          "parts": [
+            "leg-1-lock-pin",
+            "leg-1-foot-shoe",
+            "leg-2-lock-pin",
+            "leg-2-foot-shoe",
+            "leg-3-lock-pin",
+            "leg-3-foot-shoe",
+            "winch-crank-handle"
+          ]
+        },
+        {
+          "name": "leg-1-adjust-band-0",
+          "color": "#7f8689",
+          "parts": [
+            "leg-1-adjust-band-0",
+            "leg-1-adjust-band-1",
+            "leg-1-adjust-band-2",
+            "leg-2-adjust-band-0",
+            "leg-2-adjust-band-1",
+            "leg-2-adjust-band-2",
+            "leg-3-adjust-band-0",
+            "leg-3-adjust-band-1",
+            "leg-3-adjust-band-2"
+          ]
+        },
+        {
+          "name": "chain-0-0",
+          "color": "#8a8f92",
+          "parts": [
+            "chain-0-0",
+            "chain-0-1",
+            "chain-0-2",
+            "chain-0-3",
+            "chain-0-4",
+            "chain-0-5",
+            "chain-0-6",
+            "chain-0-7",
+            "chain-0-8",
+            "chain-1-0",
+            "chain-1-1",
+            "chain-1-2",
+            "chain-1-3",
+            "chain-1-4",
+            "chain-1-5",
+            "chain-1-6",
+            "chain-1-7",
+            "chain-1-8",
+            "chain-2-0",
+            "chain-2-1",
+            "chain-2-2",
+            "chain-2-3",
+            "chain-2-4",
+            "chain-2-5",
+            "chain-2-6",
+            "chain-2-7",
+            "chain-2-8",
+            "winch-cable-up",
+            "winch-line-down"
+          ]
+        },
+        {
+          "name": "winch",
+          "color": "#c7322a",
+          "parts": [
+            "winch-bracket-upper",
+            "winch-bracket-lower",
+            "winch-frame",
+            "winch-drum-flange-a",
+            "winch-drum-flange-b",
+            "winch-gear-cover",
+            "srl-bracket",
+            "srl-block"
+          ],
+          "param": "winch"
+        },
+        {
+          "name": "winch-crank-arm",
+          "color": "#2e3236",
+          "parts": [
+            "winch-crank-arm",
+            "srl-hub"
+          ]
+        },
+        {
+          "name": "srl-line-up",
+          "color": "#2d3a4a",
+          "parts": [
+            "srl-line-up",
+            "srl-line-down"
+          ]
+        },
+        {
+          "name": "legend-plate",
+          "color": "#efeadf",
+          "parts": [
+            "legend-plate"
+          ]
         }
       ]
     },
@@ -229843,19 +229995,18 @@
       "id": "pipe-spool-rotator",
       "kit": "shipyard",
       "title": "Pipe spool rotator",
-      "description": "Weld-fit rotator with two roller stands, guarded drive housing, foot controls, and a pipe centering stop. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+      "description": "Welding turning rolls at about real size carrying a 1 m pipe spool: a powered drive stand and a free idler stand, each with two pairs of twin polyurethane tyres on steel hubs in bearing blocks, adjustable roller-centre slots, a gearmotor with chain guard on the drive stand, and a pipe spool with weld-neck flange, branch nozzle with its own flange and a fresh girth weld, plus a pendant controller on a post and a foot pedal with cables. Material controls: frame paint, polyurethane tyres, pipe steel, machined steel; fresh-coat, weathered-yard and red-rolls presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "shipyard",
-        "shipbuilding",
-        "drydock",
-        "refit",
-        "low poly",
-        "CC0",
-        "pipe",
-        "spool",
-        "rotator"
+        "pipe shop",
+        "welding rotator",
+        "turning rolls",
+        "pipe spool",
+        "welding positioner",
+        "outfitting",
+        "CC0"
       ],
       "compat": [
         "shipyard",
@@ -229866,8 +230017,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/pipe-spool-rotator.kcad.ts",
       "preview": "/assets/shipyard-pipe-spool-rotator.png",
-      "sourceSha256": "f952268f11af34c42ad35df1796f84935d74d8f12dbf9fb7b0cbdc9a36abd51c",
-      "triangleBudget": 1800,
+      "sourceSha256": "070a2922dba06e147942effd7342b488341201110b6329e0fb5e6ba6fed6a7c5",
+      "triangleBudget": 4000,
       "params": [
         {
           "name": "scale",
@@ -229879,61 +230030,210 @@
           "step": 0.05
         },
         {
-          "name": "yardPaint",
+          "name": "framePaint",
           "type": "color",
-          "default": "#ad764a",
-          "label": "Yard finish"
+          "default": "#3d7a4a",
+          "label": "Frame paint"
         },
         {
-          "name": "structuralSteel",
+          "name": "polyurethane",
           "type": "color",
-          "default": "#b6c1c4",
-          "label": "Structural steel"
+          "default": "#d0702a",
+          "label": "Polyurethane tyres"
+        },
+        {
+          "name": "pipeSteel",
+          "type": "color",
+          "default": "#666c6f",
+          "label": "Pipe spool steel"
+        },
+        {
+          "name": "machinedSteel",
+          "type": "color",
+          "default": "#b5bcc0",
+          "label": "Hubs and machined steel"
         }
       ],
       "presets": {
         "fresh-coat": {
-          "yardPaint": "#bc8f6b",
-          "structuralSteel": "#d0d7d8"
+          "framePaint": "#4a8f59",
+          "polyurethane": "#e07e33",
+          "pipeSteel": "#737a7d",
+          "machinedSteel": "#c8ced1"
         },
         "weathered-yard": {
-          "yardPaint": "#90623d",
-          "structuralSteel": "#828d91"
+          "framePaint": "#4b5f45",
+          "polyurethane": "#a8622f",
+          "pipeSteel": "#7a5a45",
+          "machinedSteel": "#8f9597"
+        },
+        "red-rolls": {
+          "framePaint": "#2f4f7a",
+          "polyurethane": "#b5352b"
         }
       },
       "stats": {
-        "triangles": 316,
+        "triangles": 2968,
         "sizeM": [
-          2.35,
-          1.05,
-          1.08
+          5.229,
+          1.957076,
+          2.38
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "yardPaint",
-          "color": "#ad764a",
+          "name": "framePaint",
+          "color": "#3d7a4a",
           "parts": [
-            "roller-frame-0",
-            "drive-cabinet"
+            "drive-frame",
+            "drive-top-plate",
+            "drive-lifting-eye-a",
+            "drive-lifting-eye-b",
+            "idler-frame",
+            "idler-top-plate",
+            "idler-lifting-eye-a",
+            "idler-lifting-eye-b",
+            "gearbox",
+            "drive-motor",
+            "motor-terminal-box"
           ],
-          "param": "yardPaint"
+          "param": "framePaint"
         },
         {
-          "name": "structuralSteel",
-          "color": "#b6c1c4",
+          "name": "drive-slot--560",
+          "color": "#25292c",
           "parts": [
-            "roller-frame-1",
-            "drive-roller-0",
-            "drive-roller-1",
-            "drive-roller-2",
-            "drive-roller-3",
-            "foot-pedal",
-            "pipe-stop"
+            "drive-slot--560",
+            "drive-slot--280",
+            "drive-slot-560",
+            "drive-slot-280",
+            "idler-slot--560",
+            "idler-slot--280",
+            "idler-slot-560",
+            "idler-slot-280",
+            "motor-fan-cowl",
+            "pipe-bore",
+            "flange-bolt-hole-0",
+            "flange-bolt-hole-1",
+            "flange-bolt-hole-2",
+            "flange-bolt-hole-3",
+            "flange-bolt-hole-4",
+            "flange-bolt-hole-5",
+            "flange-bolt-hole-6",
+            "flange-bolt-hole-7",
+            "flange-bolt-hole-8",
+            "flange-bolt-hole-9",
+            "flange-bolt-hole-10",
+            "flange-bolt-hole-11",
+            "pendant-post-base",
+            "pendant-button-2",
+            "pendant-cable",
+            "pedal-cable",
+            "control-cable"
+          ]
+        },
+        {
+          "name": "machinedSteel",
+          "color": "#b5bcc0",
+          "parts": [
+            "drive-bearing-block--1-a",
+            "drive-bearing-block--1-b",
+            "drive-axle--1",
+            "drive-hub--1--1595",
+            "drive-hub--1--1405",
+            "drive-bearing-block-1-a",
+            "drive-bearing-block-1-b",
+            "drive-axle-1",
+            "drive-hub-1--1595",
+            "drive-hub-1--1405",
+            "idler-bearing-block--1-a",
+            "idler-bearing-block--1-b",
+            "idler-axle--1",
+            "idler-hub--1-1405",
+            "idler-hub--1-1595",
+            "idler-bearing-block-1-a",
+            "idler-bearing-block-1-b",
+            "idler-axle-1",
+            "idler-hub-1-1405",
+            "idler-hub-1-1595",
+            "pendant-post"
           ],
-          "param": "structuralSteel"
+          "param": "machinedSteel"
+        },
+        {
+          "name": "polyurethane",
+          "color": "#d0702a",
+          "parts": [
+            "drive-tyre--1--1595",
+            "drive-tyre--1--1405",
+            "drive-tyre-1--1595",
+            "drive-tyre-1--1405",
+            "idler-tyre--1-1405",
+            "idler-tyre--1-1595",
+            "idler-tyre-1-1405",
+            "idler-tyre-1-1595"
+          ],
+          "param": "polyurethane"
+        },
+        {
+          "name": "chain-guard",
+          "color": "#e2b02b",
+          "parts": [
+            "chain-guard",
+            "pendant",
+            "foot-pedal",
+            "foot-pedal-guard"
+          ]
+        },
+        {
+          "name": "drive-plate-label",
+          "color": "#efeadf",
+          "parts": [
+            "drive-plate-label"
+          ]
+        },
+        {
+          "name": "pipeSteel",
+          "color": "#666c6f",
+          "parts": [
+            "pipe",
+            "weld-neck-hub",
+            "flange",
+            "branch-nozzle",
+            "branch-flange"
+          ],
+          "param": "pipeSteel"
+        },
+        {
+          "name": "girth-weld",
+          "color": "#3a3632",
+          "parts": [
+            "girth-weld",
+            "branch-weld"
+          ]
+        },
+        {
+          "name": "spool-tag",
+          "color": "#f2d23a",
+          "parts": [
+            "spool-tag"
+          ]
+        },
+        {
+          "name": "pendant-button-0",
+          "color": "#3ea44c",
+          "parts": [
+            "pendant-button-0"
+          ]
+        },
+        {
+          "name": "pendant-button-1",
+          "color": "#d23a2c",
+          "parts": [
+            "pendant-button-1"
+          ]
         }
       ]
     },
@@ -230038,21 +230338,20 @@
     {
       "id": "plasma-cutting-gantry-head",
       "kit": "shipyard",
-      "title": "Plasma cutting gantry head",
-      "description": "Compact cutting carriage with a bridge beam, end trucks, torch head, cable loop, and operator pendant. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+      "title": "CNC plasma cutting gantry",
+      "description": "CNC plasma cutting gantry at about real size: box-beam bridge on two driven end carriages with servo motors and rail wheels running on raised floor rails, a torch carriage with Z lifter and long plasma torch pointing down at a steel plate, drag chains along the rail and the bridge, a downdraft slat table with sawtooth slats, a fume extraction duct, a plate with cut-part outlines and an operator console with an angled screen. Material controls: gantry paint, machined steel, cutting table, cable carriers; fresh-coat, weathered-yard and blue-machine presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "shipyard",
         "shipbuilding",
-        "drydock",
-        "refit",
-        "low poly",
-        "CC0",
-        "plasma",
-        "cutting",
+        "plasma cutting",
+        "CNC",
         "gantry",
-        "head"
+        "plate cutting",
+        "panel line",
+        "hull fabrication",
+        "CC0"
       ],
       "compat": [
         "shipyard",
@@ -230063,8 +230362,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/plasma-cutting-gantry-head.kcad.ts",
       "preview": "/assets/shipyard-plasma-cutting-gantry-head.png",
-      "sourceSha256": "111ab678bd5b77bdadde6f944842e6e885b64f78466f83c4f7a012cf98ccb49c",
-      "triangleBudget": 1800,
+      "sourceSha256": "6908bf4c7ebabf079b961ef38b51fe107a61f4566453cd738004600432608835",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -230076,59 +230375,263 @@
           "step": 0.05
         },
         {
-          "name": "yardPaint",
+          "name": "gantryPaint",
           "type": "color",
-          "default": "#d19443",
-          "label": "Yard finish"
+          "default": "#e07a26",
+          "label": "Gantry paint"
         },
         {
-          "name": "structuralSteel",
+          "name": "machinedSteel",
           "type": "color",
-          "default": "#b6c1c4",
-          "label": "Structural steel"
+          "default": "#a8b0b4",
+          "label": "Rails and machined steel"
+        },
+        {
+          "name": "cuttingTable",
+          "type": "color",
+          "default": "#4d5458",
+          "label": "Cutting table and plate"
+        },
+        {
+          "name": "cableCarrier",
+          "type": "color",
+          "default": "#26292c",
+          "label": "Cable carriers and torch body"
         }
       ],
       "presets": {
         "fresh-coat": {
-          "yardPaint": "#d9a765",
-          "structuralSteel": "#d0d7d8"
+          "gantryPaint": "#f08a30",
+          "machinedSteel": "#c2c9cc",
+          "cuttingTable": "#596165",
+          "cableCarrier": "#2c3033"
         },
         "weathered-yard": {
-          "yardPaint": "#ad7b38",
-          "structuralSteel": "#828d91"
+          "gantryPaint": "#b5642c",
+          "machinedSteel": "#8a8f90",
+          "cuttingTable": "#5d5048",
+          "cableCarrier": "#2a2a2a"
+        },
+        "blue-machine": {
+          "gantryPaint": "#2f62a6",
+          "cableCarrier": "#e0a51f"
         }
       },
       "stats": {
-        "triangles": 196,
+        "triangles": 2164,
         "sizeM": [
-          2.6,
-          1.15,
-          0.645
+          8.257,
+          2.05,
+          5.478
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "yardPaint",
-          "color": "#d19443",
+          "name": "gantryPaint",
+          "color": "#e07a26",
           "parts": [
-            "bridge",
-            "end-truck-0",
-            "end-truck-1",
-            "cable-loop",
-            "pendant"
+            "rail-beam--1",
+            "rail-stand--1--2700",
+            "rail-stand-foot--1--2700",
+            "rail-stand--1--1350",
+            "rail-stand-foot--1--1350",
+            "rail-stand--1-0",
+            "rail-stand-foot--1-0",
+            "rail-stand--1-1350",
+            "rail-stand-foot--1-1350",
+            "rail-stand--1-2700",
+            "rail-stand-foot--1-2700",
+            "rail-beam-1",
+            "rail-stand-1--2700",
+            "rail-stand-foot-1--2700",
+            "rail-stand-1--1350",
+            "rail-stand-foot-1--1350",
+            "rail-stand-1-0",
+            "rail-stand-foot-1-0",
+            "rail-stand-1-1350",
+            "rail-stand-foot-1-1350",
+            "rail-stand-1-2700",
+            "rail-stand-foot-1-2700",
+            "duct-riser",
+            "extraction-fan",
+            "end-carriage--1",
+            "end-carriage-skirt--1",
+            "end-carriage-1",
+            "end-carriage-skirt-1",
+            "bridge-beam",
+            "torch-carriage-plate",
+            "lifter-slide",
+            "torch-holder",
+            "rail-chain-bracket",
+            "console-post",
+            "console-arm",
+            "console-box"
           ],
-          "param": "yardPaint"
+          "param": "gantryPaint"
         },
         {
-          "name": "structuralSteel",
-          "color": "#b6c1c4",
+          "name": "machinedSteel",
+          "color": "#a8b0b4",
           "parts": [
-            "torch-carriage",
-            "torch-nozzle"
+            "rail--1",
+            "gear-rack--1",
+            "rail-1",
+            "gear-rack-1",
+            "slat--2550",
+            "slat--2400",
+            "slat--2250",
+            "slat--2100",
+            "slat--1950",
+            "slat--1800",
+            "slat--1650",
+            "slat--1500",
+            "slat--1350",
+            "slat--1200",
+            "slat--1050",
+            "slat--900",
+            "slat--750",
+            "slat--600",
+            "slat--450",
+            "slat--300",
+            "slat--150",
+            "slat-0",
+            "slat-150",
+            "slat-300",
+            "slat-450",
+            "slat-600",
+            "slat-750",
+            "slat-900",
+            "slat-1050",
+            "slat-1200",
+            "slat-1350",
+            "slat-1500",
+            "slat-1650",
+            "slat-1800",
+            "slat-1950",
+            "slat-2100",
+            "slat-2250",
+            "slat-2400",
+            "slat-2550",
+            "extraction-duct",
+            "rail-wheel--1--50",
+            "rail-wheel--1-850",
+            "servo-gearhead--1",
+            "rail-wheel-1--50",
+            "rail-wheel-1-850",
+            "servo-gearhead-1",
+            "bridge-linear-rail-top",
+            "bridge-linear-rail-bottom",
+            "bridge-rack",
+            "lifter-column",
+            "rail-chain-tray",
+            "bridge-chain-tray"
           ],
-          "param": "structuralSteel"
+          "param": "machinedSteel"
+        },
+        {
+          "name": "cuttingTable",
+          "color": "#4d5458",
+          "parts": [
+            "table-frame",
+            "plate"
+          ],
+          "param": "cuttingTable"
+        },
+        {
+          "name": "table-hopper",
+          "color": "#383d40",
+          "parts": [
+            "table-hopper"
+          ]
+        },
+        {
+          "name": "cut-bracket-1-a",
+          "color": "#1b1d1f",
+          "parts": [
+            "cut-bracket-1-a",
+            "cut-bracket-1-b",
+            "cut-bracket-1-c",
+            "cut-bracket-1-d",
+            "cut-bracket-2-a",
+            "cut-bracket-2-b",
+            "cut-bracket-2-c",
+            "cut-bracket-2-d",
+            "cut-floor-plate-a",
+            "cut-floor-plate-b",
+            "cut-floor-plate-c",
+            "cut-floor-plate-d",
+            "cut-lightening-hole"
+          ]
+        },
+        {
+          "name": "cableCarrier",
+          "color": "#26292c",
+          "parts": [
+            "extraction-fan-motor",
+            "servo-motor--1",
+            "servo-motor-1",
+            "torch-y-motor",
+            "lifter-motor",
+            "torch-body",
+            "torch-lead",
+            "rail-chain-link-0",
+            "rail-chain-link-1",
+            "rail-chain-link-2",
+            "rail-chain-link-3",
+            "rail-chain-link-4",
+            "rail-chain-link-5",
+            "rail-chain-link-6",
+            "rail-chain-link-7",
+            "rail-chain-link-8",
+            "rail-chain-link-9",
+            "rail-chain-link-10",
+            "rail-chain-link-11",
+            "rail-chain-link-12",
+            "rail-chain-link-13",
+            "rail-chain-bend-0",
+            "rail-chain-bend-1",
+            "rail-chain-bend-2",
+            "rail-chain-bend-3",
+            "rail-chain-bend-4",
+            "rail-chain-bend-5",
+            "rail-chain-bend-6",
+            "rail-chain-upper-run",
+            "bridge-chain-run",
+            "bridge-chain-top",
+            "bridge-chain-bend",
+            "console-screen-housing"
+          ],
+          "param": "cableCarrier"
+        },
+        {
+          "name": "torch-shield-cup",
+          "color": "#c7a46a",
+          "parts": [
+            "torch-shield-cup"
+          ]
+        },
+        {
+          "name": "arc-glow",
+          "color": "#9fd8ff",
+          "parts": [
+            "arc-glow"
+          ]
+        },
+        {
+          "name": "console-screen",
+          "color": "#3a6e8c",
+          "parts": [
+            "console-screen"
+          ]
+        },
+        {
+          "name": "console-estop",
+          "color": "#d1352a",
+          "parts": [
+            "console-estop"
+          ]
         }
       ]
     },
@@ -230355,19 +230858,18 @@
       "id": "plate-rolling-machine",
       "kit": "shipyard",
       "title": "Plate rolling machine",
-      "description": "Three-roll plate former with a rigid bed, two lower rollers, upper pressure roller, and side drive cabinet. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+      "description": "Three-roll plate bending machine at about real size: polished top roll and two lower rolls between fixed and drop-end cast side housings on a bed and plinth, angled hydraulic cylinders under the lower rolls, a tipping cylinder on the drop end, a gearbox with a finned drive motor, a hydraulic power pack with hoses, a pedestal control console and a half-rolled steel plate curling up around the top roll. Material controls: machine paint, roll steel, hydraulics, plate steel; fresh-coat, weathered-yard and machine-green presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "shipyard",
         "shipbuilding",
-        "drydock",
-        "refit",
-        "low poly",
-        "CC0",
-        "plate",
-        "rolling",
-        "machine"
+        "plate rolling",
+        "plate bending",
+        "three-roll",
+        "metal forming",
+        "hull fabrication",
+        "CC0"
       ],
       "compat": [
         "shipyard",
@@ -230378,8 +230880,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/plate-rolling-machine.kcad.ts",
       "preview": "/assets/shipyard-plate-rolling-machine.png",
-      "sourceSha256": "aeddcd5ac2e5b6a9a8631bbb84b69a26211acf69a6de913f94c8a38ca90115a3",
-      "triangleBudget": 1800,
+      "sourceSha256": "9a6e9f3f430e311241585a1181022fb180e0fa73c9beef83e9c9d554ccf3d6de",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -230391,60 +230893,185 @@
           "step": 0.05
         },
         {
-          "name": "yardPaint",
+          "name": "framePaint",
           "type": "color",
-          "default": "#687e79",
-          "label": "Yard finish"
+          "default": "#2f5f8f",
+          "label": "Machine paint"
         },
         {
-          "name": "structuralSteel",
+          "name": "rollSteel",
           "type": "color",
-          "default": "#b6c1c4",
-          "label": "Structural steel"
+          "default": "#c3c9cc",
+          "label": "Polished roll steel"
+        },
+        {
+          "name": "hydraulic",
+          "type": "color",
+          "default": "#e2b02c",
+          "label": "Hydraulic cylinders and power pack"
+        },
+        {
+          "name": "plateSteel",
+          "type": "color",
+          "default": "#5b6266",
+          "label": "Mill-scale plate"
         }
       ],
       "presets": {
         "fresh-coat": {
-          "yardPaint": "#839591",
-          "structuralSteel": "#d0d7d8"
+          "framePaint": "#3b72a8",
+          "rollSteel": "#d4d9db",
+          "hydraulic": "#f0c03a",
+          "plateSteel": "#646b6f"
         },
         "weathered-yard": {
-          "yardPaint": "#566964",
-          "structuralSteel": "#828d91"
+          "framePaint": "#40566a",
+          "rollSteel": "#9da3a5",
+          "hydraulic": "#b58e35",
+          "plateSteel": "#6e5446"
+        },
+        "machine-green": {
+          "framePaint": "#3f6e4f",
+          "hydraulic": "#d24a2c"
         }
       },
       "stats": {
-        "triangles": 296,
+        "triangles": 2108,
         "sizeM": [
-          2.33,
-          1.495,
-          1.56
+          6.18,
+          2.015644,
+          3.061673
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "yardPaint",
-          "color": "#687e79",
+          "name": "plinth",
+          "color": "#9b9890",
           "parts": [
-            "machine-bed",
-            "lower-roll-0",
-            "lower-roll-1",
-            "upper-pressure-roll",
-            "drive-cabinet",
-            "control-pendant"
-          ],
-          "param": "yardPaint"
+            "plinth"
+          ]
         },
         {
-          "name": "structuralSteel",
-          "color": "#b6c1c4",
+          "name": "framePaint",
+          "color": "#2f5f8f",
           "parts": [
-            "bearing-tower-0",
-            "bearing-tower-1"
+            "bed",
+            "bed-rib-front",
+            "bed-rib-rear",
+            "fixed-housing",
+            "drop-housing",
+            "drop-bearing-block",
+            "drop-tip-clevis",
+            "top-bearing-cap--1760",
+            "top-bearing-cap-1740",
+            "gearbox",
+            "gearbox-cover",
+            "gearbox-feet",
+            "drive-motor",
+            "motor-fin--3580",
+            "motor-fin--3500",
+            "motor-fin--3420",
+            "motor-fin--3340",
+            "motor-fin--3260",
+            "motor-fin--3180",
+            "motor-fin--3100",
+            "motor-terminal-box",
+            "motor-stand",
+            "power-pack-motor",
+            "console-box"
           ],
-          "param": "structuralSteel"
+          "param": "framePaint"
+        },
+        {
+          "name": "fixed-housing-window",
+          "color": "#2a2e31",
+          "parts": [
+            "fixed-housing-window",
+            "motor-fan-cowl",
+            "power-pack-filter",
+            "console-pedestal",
+            "console-base"
+          ]
+        },
+        {
+          "name": "hydraulic",
+          "color": "#e2b02c",
+          "parts": [
+            "drop-tip-cylinder",
+            "lift-cylinder--1--1530",
+            "lift-cylinder--1-1530",
+            "lift-cylinder-1--1530",
+            "lift-cylinder-1-1530",
+            "coupling-guard",
+            "power-pack-tank"
+          ],
+          "param": "hydraulic"
+        },
+        {
+          "name": "rollSteel",
+          "color": "#c3c9cc",
+          "parts": [
+            "drop-tip-rod",
+            "top-roll",
+            "top-roll-necks",
+            "lower-roll--1",
+            "lower-roll-necks--1",
+            "lift-rod--1--1530",
+            "lift-rod--1-1530",
+            "lower-roll-1",
+            "lower-roll-necks-1",
+            "lift-rod-1--1530",
+            "lift-rod-1-1530"
+          ],
+          "param": "rollSteel"
+        },
+        {
+          "name": "plateSteel",
+          "color": "#5b6266",
+          "parts": [
+            "rolled-plate"
+          ],
+          "param": "plateSteel"
+        },
+        {
+          "name": "power-pack-gauge",
+          "color": "#ece8dc",
+          "parts": [
+            "power-pack-gauge"
+          ]
+        },
+        {
+          "name": "hose-0-a",
+          "color": "#1e2224",
+          "parts": [
+            "hose-0-a",
+            "hose-0-b",
+            "hose-1-a",
+            "hose-1-b"
+          ]
+        },
+        {
+          "name": "console-button--2420",
+          "color": "#d43a2a",
+          "parts": [
+            "console-button--2420"
+          ]
+        },
+        {
+          "name": "console-button--2300",
+          "color": "#3fa34d",
+          "parts": [
+            "console-button--2300"
+          ]
+        },
+        {
+          "name": "console-button--2180",
+          "color": "#e7e2d4",
+          "parts": [
+            "console-button--2180"
+          ]
         }
       ]
     },
@@ -231090,19 +231717,19 @@
     {
       "id": "shipyard-block-transporter",
       "kit": "shipyard",
-      "title": "Shipyard block transporter",
-      "description": "Low heavy-haul platform with a reinforced deck, wheel bogies, guide posts, and a tractor coupling beam. Editable yard-finish and component-material colors; includes fresh-coat and weathered-yard presets.",
+      "title": "Shipyard block transporter (SPMT)",
+      "description": "Six-axle-line self-propelled modular transporter at about real size: a long low deck with chamfered ends, side skirts and hazard-striped end beams, twelve steered suspension units each with a hydraulic king-pin cylinder, yoke and two pairs of twin tyres, a hung diesel power pack unit with radiator grille, exhaust stack, ladder and handrail, timber cribbing stacks on deck, tie-down lugs, a module coupling plate, a hand-held remote on its holster and amber corner beacons. Material controls: deck paint, chassis steel, tyres, timber cribbing; fresh-coat, weathered-yard and orange-fleet presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "shipyard",
         "shipbuilding",
-        "drydock",
-        "refit",
-        "low poly",
-        "CC0",
-        "block",
-        "transporter"
+        "SPMT",
+        "self-propelled modular transporter",
+        "block transporter",
+        "heavy haul",
+        "multi-wheel",
+        "CC0"
       ],
       "compat": [
         "shipyard",
@@ -231113,8 +231740,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/shipyard/shipyard-block-transporter.kcad.ts",
       "preview": "/assets/shipyard-shipyard-block-transporter.png",
-      "sourceSha256": "e5ff9a048450797fd3badda676941d3b4bec19fbf6f783cec77ca3490910805f",
-      "triangleBudget": 1800,
+      "sourceSha256": "5018593a1aec3a77b82aa66e7a4b980347319a921d5dddbeab4419564f5ec5c6",
+      "triangleBudget": 9500,
       "params": [
         {
           "name": "scale",
@@ -231126,83 +231753,369 @@
           "step": 0.05
         },
         {
-          "name": "yardPaint",
+          "name": "deckPaint",
           "type": "color",
-          "default": "#c07842",
-          "label": "Yard finish"
+          "default": "#e3a62a",
+          "label": "Deck and power pack paint"
         },
         {
-          "name": "structuralSteel",
+          "name": "chassis",
           "type": "color",
-          "default": "#b6c1c4",
-          "label": "Structural steel"
+          "default": "#3c4247",
+          "label": "Chassis and suspension steel"
         },
         {
-          "name": "elastomer",
+          "name": "tyre",
           "type": "color",
-          "default": "#30383b",
-          "label": "Elastomer"
+          "default": "#1d2124",
+          "label": "Tyres"
+        },
+        {
+          "name": "timber",
+          "type": "color",
+          "default": "#9a6b3e",
+          "label": "Timber cribbing"
         }
       ],
       "presets": {
         "fresh-coat": {
-          "yardPaint": "#cb9064",
-          "structuralSteel": "#d0d7d8",
-          "elastomer": "#3a4245"
+          "deckPaint": "#f0b83a",
+          "chassis": "#4a5257",
+          "tyre": "#232729",
+          "timber": "#b58250"
         },
         "weathered-yard": {
-          "yardPaint": "#9f6437",
-          "structuralSteel": "#828d91",
-          "elastomer": "#252b2d"
+          "deckPaint": "#b98a35",
+          "chassis": "#3a3b3b",
+          "tyre": "#2a2b2b",
+          "timber": "#6f5a45"
+        },
+        "orange-fleet": {
+          "deckPaint": "#d9622b",
+          "chassis": "#2f3b45"
         }
       },
       "stats": {
-        "triangles": 576,
+        "triangles": 8928,
         "sizeM": [
-          3.81,
-          1.25,
-          1.9
+          10.33,
+          3.5,
+          2.6
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "yardPaint",
-          "color": "#c07842",
+          "name": "deckPaint",
+          "color": "#e3a62a",
           "parts": [
-            "transport-deck"
+            "deck",
+            "side-skirt--1",
+            "side-skirt-1",
+            "hazard-stripe--1-1",
+            "hazard-stripe--1-3",
+            "hazard-stripe--1-5",
+            "hazard-stripe-1-1",
+            "hazard-stripe-1-3",
+            "hazard-stripe-1-5",
+            "ppu-body",
+            "ppu-grille-bar-980",
+            "ppu-grille-bar-1090",
+            "ppu-grille-bar-1200",
+            "ppu-grille-bar-1310",
+            "ppu-grille-bar-1420",
+            "ppu-grille-bar-1530",
+            "ppu-grille-bar-1640",
+            "ppu-grille-bar-1750",
+            "ppu-grille-bar-1860",
+            "ppu-grille-bar-1970",
+            "ppu-grille-bar-2080",
+            "ppu-grille-bar-2190",
+            "ppu-door--1",
+            "ppu-door-1",
+            "ppu-rail-post--900",
+            "ppu-rail-post-0",
+            "ppu-rail-post-900",
+            "ppu-rail",
+            "remote-control"
           ],
-          "param": "yardPaint"
+          "param": "deckPaint"
         },
         {
-          "name": "structuralSteel",
-          "color": "#b6c1c4",
+          "name": "chassis",
+          "color": "#3c4247",
           "parts": [
-            "bogie-frame-0",
-            "bogie-frame-1",
-            "guide-post-0",
-            "guide-post-1",
-            "guide-post-2",
-            "guide-post-3",
-            "tractor-coupling"
+            "deck-plate",
+            "tie-down-lug--1--3500",
+            "tie-down-lug--1--1750",
+            "tie-down-lug--1-0",
+            "tie-down-lug--1-1750",
+            "tie-down-lug--1-3500",
+            "tie-down-lug-1--3500",
+            "tie-down-lug-1--1750",
+            "tie-down-lug-1-0",
+            "tie-down-lug-1-1750",
+            "tie-down-lug-1-3500",
+            "coupling-plate",
+            "unit-0--1-turntable",
+            "unit-0--1-cylinder",
+            "unit-0--1-yoke",
+            "unit-0--1-axle",
+            "unit-0-1-turntable",
+            "unit-0-1-cylinder",
+            "unit-0-1-yoke",
+            "unit-0-1-axle",
+            "axle-line-crossmember-0",
+            "unit-1--1-turntable",
+            "unit-1--1-cylinder",
+            "unit-1--1-yoke",
+            "unit-1--1-axle",
+            "unit-1-1-turntable",
+            "unit-1-1-cylinder",
+            "unit-1-1-yoke",
+            "unit-1-1-axle",
+            "axle-line-crossmember-1",
+            "unit-2--1-turntable",
+            "unit-2--1-cylinder",
+            "unit-2--1-yoke",
+            "unit-2--1-axle",
+            "unit-2-1-turntable",
+            "unit-2-1-cylinder",
+            "unit-2-1-yoke",
+            "unit-2-1-axle",
+            "axle-line-crossmember-2",
+            "unit-3--1-turntable",
+            "unit-3--1-cylinder",
+            "unit-3--1-yoke",
+            "unit-3--1-axle",
+            "unit-3-1-turntable",
+            "unit-3-1-cylinder",
+            "unit-3-1-yoke",
+            "unit-3-1-axle",
+            "axle-line-crossmember-3",
+            "unit-4--1-turntable",
+            "unit-4--1-cylinder",
+            "unit-4--1-yoke",
+            "unit-4--1-axle",
+            "unit-4-1-turntable",
+            "unit-4-1-cylinder",
+            "unit-4-1-yoke",
+            "unit-4-1-axle",
+            "axle-line-crossmember-4",
+            "unit-5--1-turntable",
+            "unit-5--1-cylinder",
+            "unit-5--1-yoke",
+            "unit-5--1-axle",
+            "unit-5-1-turntable",
+            "unit-5-1-cylinder",
+            "unit-5-1-yoke",
+            "unit-5-1-axle",
+            "axle-line-crossmember-5",
+            "ppu-hanger",
+            "ppu-ladder-l",
+            "ppu-ladder-r",
+            "ppu-ladder-rung-850",
+            "ppu-ladder-rung-1130",
+            "ppu-ladder-rung-1410",
+            "ppu-ladder-rung-1690",
+            "ppu-ladder-rung-1970",
+            "ppu-ladder-rung-2250",
+            "ppu-ladder-rung-2530"
           ],
-          "param": "structuralSteel"
+          "param": "chassis"
         },
         {
-          "name": "elastomer",
-          "color": "#30383b",
+          "name": "hazard-stripe--1-0",
+          "color": "#24282b",
           "parts": [
-            "bogie-wheel-0",
-            "bogie-wheel-1",
-            "bogie-wheel-2",
-            "bogie-wheel-3",
-            "bogie-wheel-4",
-            "bogie-wheel-5",
-            "bogie-wheel-6",
-            "bogie-wheel-7"
+            "hazard-stripe--1-0",
+            "hazard-stripe--1-2",
+            "hazard-stripe--1-4",
+            "hazard-stripe-1-0",
+            "hazard-stripe-1-2",
+            "hazard-stripe-1-4",
+            "ppu-grille",
+            "ppu-door-handle--1",
+            "ppu-vent--1",
+            "ppu-door-handle-1",
+            "ppu-vent-1",
+            "exhaust-cap",
+            "air-intake",
+            "beacon-base--4200--1",
+            "beacon-base--4200-1",
+            "beacon-base-4200--1",
+            "beacon-base-4200-1",
+            "remote-holster",
+            "remote-joystick"
+          ]
+        },
+        {
+          "name": "coupling-bolt--500",
+          "color": "#8c949a",
+          "parts": [
+            "coupling-bolt--500",
+            "coupling-bolt--170",
+            "coupling-bolt-170",
+            "coupling-bolt-500",
+            "unit-0--1-piston",
+            "unit-0--1-hub-0",
+            "unit-0--1-hub-1",
+            "unit-0-1-piston",
+            "unit-0-1-hub-0",
+            "unit-0-1-hub-1",
+            "unit-1--1-piston",
+            "unit-1--1-hub-0",
+            "unit-1--1-hub-1",
+            "unit-1-1-piston",
+            "unit-1-1-hub-0",
+            "unit-1-1-hub-1",
+            "unit-2--1-piston",
+            "unit-2--1-hub-0",
+            "unit-2--1-hub-1",
+            "unit-2-1-piston",
+            "unit-2-1-hub-0",
+            "unit-2-1-hub-1",
+            "unit-3--1-piston",
+            "unit-3--1-hub-0",
+            "unit-3--1-hub-1",
+            "unit-3-1-piston",
+            "unit-3-1-hub-0",
+            "unit-3-1-hub-1",
+            "unit-4--1-piston",
+            "unit-4--1-hub-0",
+            "unit-4--1-hub-1",
+            "unit-4-1-piston",
+            "unit-4-1-hub-0",
+            "unit-4-1-hub-1",
+            "unit-5--1-piston",
+            "unit-5--1-hub-0",
+            "unit-5--1-hub-1",
+            "unit-5-1-piston",
+            "unit-5-1-hub-0",
+            "unit-5-1-hub-1",
+            "exhaust-stack"
+          ]
+        },
+        {
+          "name": "tyre",
+          "color": "#1d2124",
+          "parts": [
+            "unit-0--1-tyre-0-0",
+            "unit-0--1-tyre-0-1",
+            "unit-0--1-tyre-1-0",
+            "unit-0--1-tyre-1-1",
+            "unit-0-1-tyre-0-0",
+            "unit-0-1-tyre-0-1",
+            "unit-0-1-tyre-1-0",
+            "unit-0-1-tyre-1-1",
+            "unit-1--1-tyre-0-0",
+            "unit-1--1-tyre-0-1",
+            "unit-1--1-tyre-1-0",
+            "unit-1--1-tyre-1-1",
+            "unit-1-1-tyre-0-0",
+            "unit-1-1-tyre-0-1",
+            "unit-1-1-tyre-1-0",
+            "unit-1-1-tyre-1-1",
+            "unit-2--1-tyre-0-0",
+            "unit-2--1-tyre-0-1",
+            "unit-2--1-tyre-1-0",
+            "unit-2--1-tyre-1-1",
+            "unit-2-1-tyre-0-0",
+            "unit-2-1-tyre-0-1",
+            "unit-2-1-tyre-1-0",
+            "unit-2-1-tyre-1-1",
+            "unit-3--1-tyre-0-0",
+            "unit-3--1-tyre-0-1",
+            "unit-3--1-tyre-1-0",
+            "unit-3--1-tyre-1-1",
+            "unit-3-1-tyre-0-0",
+            "unit-3-1-tyre-0-1",
+            "unit-3-1-tyre-1-0",
+            "unit-3-1-tyre-1-1",
+            "unit-4--1-tyre-0-0",
+            "unit-4--1-tyre-0-1",
+            "unit-4--1-tyre-1-0",
+            "unit-4--1-tyre-1-1",
+            "unit-4-1-tyre-0-0",
+            "unit-4-1-tyre-0-1",
+            "unit-4-1-tyre-1-0",
+            "unit-4-1-tyre-1-1",
+            "unit-5--1-tyre-0-0",
+            "unit-5--1-tyre-0-1",
+            "unit-5--1-tyre-1-0",
+            "unit-5--1-tyre-1-1",
+            "unit-5-1-tyre-0-0",
+            "unit-5-1-tyre-0-1",
+            "unit-5-1-tyre-1-0",
+            "unit-5-1-tyre-1-1"
           ],
-          "param": "elastomer"
+          "param": "tyre"
+        },
+        {
+          "name": "timber",
+          "color": "#9a6b3e",
+          "parts": [
+            "crib--2800--1-0--220",
+            "crib--2800--1-0-220",
+            "crib--2800--1-1--220",
+            "crib--2800--1-1-220",
+            "crib--2800--1-2--220",
+            "crib--2800--1-2-220",
+            "crib--2800--1-3--220",
+            "crib--2800--1-3-220",
+            "crib--2800-1-0--220",
+            "crib--2800-1-0-220",
+            "crib--2800-1-1--220",
+            "crib--2800-1-1-220",
+            "crib--2800-1-2--220",
+            "crib--2800-1-2-220",
+            "crib--2800-1-3--220",
+            "crib--2800-1-3-220",
+            "crib-0--1-0--220",
+            "crib-0--1-0-220",
+            "crib-0--1-1--220",
+            "crib-0--1-1-220",
+            "crib-0--1-2--220",
+            "crib-0--1-2-220",
+            "crib-0--1-3--220",
+            "crib-0--1-3-220",
+            "crib-0-1-0--220",
+            "crib-0-1-0-220",
+            "crib-0-1-1--220",
+            "crib-0-1-1-220",
+            "crib-0-1-2--220",
+            "crib-0-1-2-220",
+            "crib-0-1-3--220",
+            "crib-0-1-3-220",
+            "crib-2800--1-0--220",
+            "crib-2800--1-0-220",
+            "crib-2800--1-1--220",
+            "crib-2800--1-1-220",
+            "crib-2800--1-2--220",
+            "crib-2800--1-2-220",
+            "crib-2800--1-3--220",
+            "crib-2800--1-3-220",
+            "crib-2800-1-0--220",
+            "crib-2800-1-0-220",
+            "crib-2800-1-1--220",
+            "crib-2800-1-1-220",
+            "crib-2800-1-2--220",
+            "crib-2800-1-2-220",
+            "crib-2800-1-3--220",
+            "crib-2800-1-3-220"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "beacon--4200--1",
+          "color": "#f39a1e",
+          "parts": [
+            "beacon--4200--1",
+            "beacon--4200-1",
+            "beacon-4200--1",
+            "beacon-4200-1"
+          ]
         }
       ]
     },

@@ -1,6 +1,6 @@
 # Shipyard kit
 
-Seventy original low-poly scene props for shipyard construction, repair, block fabrication, and drydock operations. Sources use millimetres and Z up. Each asset exposes overall scale, 2–4 material-specific color controls, and `fresh-coat` and `weathered-yard` presets. Profiled panels, beams, tanks, and fittings give each prop a distinct low-poly silhouette; every source keeps its 1,800-triangle ceiling. All geometry is dedicated to the public domain under CC0 1.0.
+Seventy original low-poly scene props for shipyard construction, repair, block fabrication, and drydock operations. Sources use millimetres and Z up. Each asset exposes overall scale, 2–4 material-specific color controls, and `fresh-coat` and `weathered-yard` presets. Profiled panels, beams, tanks, and fittings give each prop a distinct low-poly silhouette; sources keep a 1,800-triangle ceiling except the rebuilt signature equipment below. All geometry is dedicated to the public domain under CC0 1.0.
 
 ## Yard and dock operations
 
@@ -25,6 +25,23 @@ Seventy original low-poly scene props for shipyard construction, repair, block f
 ## Inspection and refit support
 
 `hull-survey-grid-frame`, `hull-profile-template-rack`, `alignment-target-stand`, `optical-measurement-station`, `weld-inspection-light-stand`, `ultrasonic-test-cart`, `confined-space-rescue-tripod`, `portable-weld-fume-extractor`, `refit-service-bench`, `vessel-refit-job-board`.
+
+## Signature equipment rebuild
+
+Five hero assets are rebuilt at about real size from faceted lathes, extruded
+side profiles and oriented members: `plate-rolling-machine` (three polished
+rolls in a pyramid between fixed and drop-end housings, angled lift cylinders,
+gearbox and finned motor, power pack, console and a half-rolled plate),
+`shipyard-block-transporter` (a six-axle-line SPMT: low deck on twelve steered
+suspension units with twin tyres, a hung power pack unit, timber cribbing and
+beacons), `confined-space-rescue-tripod` (three splayed telescopic legs on a
+cast head over a tank-top manhole, hand winch and self-retracting lifeline
+reeved down to a hook), `plasma-cutting-gantry-head` (a CNC gantry on floor
+rails over a slat table, torch carriage with Z lifter and torch, drag chains
+and console) and `pipe-spool-rotator` (drive and idler turning rolls with twin
+polyurethane tyres carrying a flanged pipe spool, pendant and foot pedal).
+Each has four material-named controls and three presets; triangle budgets are
+3,000 to 9,500 (actual 2,108 to 8,928).
 
 ## Preview and verification
 
