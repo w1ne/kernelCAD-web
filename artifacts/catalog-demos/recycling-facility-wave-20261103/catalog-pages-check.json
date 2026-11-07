@@ -1,0 +1,9 @@
+{
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-recycling-facility-pages-wave-20261103",
+  "kitPages": 153,
+  "assetsInIndex": 2000,
+  "pageAndPreviewPairs": 153,
+  "hubListsKit": true,
+  "missing": [],
+  "passed": true
+}

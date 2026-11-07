@@ -45,14 +45,14 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
         'dxf (2D cut file for laser / waterjet / CNC: a flat part — plate, panel, extruded profile, in any orientation — exports its outline and holes in its own plane with exact arcs and circles; '
         + 'a sheet-metal part or a returned Region exports its flat pattern; a flat or sheet-metal part also returns sheet { thickness_mm, bend_count }, which a shop needs and the DXF does not carry; options.section { axis: "x"|"y"|"z", at } exports the cross-section of any part in world coordinates (plans, profiles); '
         + "a multi-part model (cut list) writes all parts side by side on output_path, one layer per part, plus parts/<part>.dxf per part (reported in part_files; options.layout 'sheet' writes the combined sheet only); "
-        + 'any other part fails with export.dxf.non-planar), ' +
+        + 'a 3D part that is not a flat plate or panel fails with export.dxf.non-planar), ' +
         "3mf (slicer-friendly mesh: one named object per part, colours as core-spec basematerials named by the part's engineering material; " +
         "options.arrange 'plate' packs parts on the bed at Z=0 without overlap (options.orient puts each part's largest flat face down), 'assembled' keeps them together as one multi-part object for multi-colour prints; " +
         "options.slicer 'bambu' | 'orca' | 'prusa' adds that slicer's per-object name + filament-slot sidecar — slot N is the Nth distinct colour/material), " +
         "options.infill { fromFea: '<study>' | true, bands?, pattern? } = stress-graded FDM infill (requires the local CalculiX + gmsh toolchain; without it the export fails with fea.solver.unavailable): " +
         "solves the feaStudy and writes modifier volumes, each with its own infill density (Orca/Bambu format by default; options.slicer 'prusa' writes PrusaSlicer's format instead, since the two are not interchangeable); the result carries infill { bands, saving, images }), " +
         'gcode (installed OrcaSlicer output; preserves G-code and returns optional gcode_stats with header generator identity and slicer-predicted time/material), ' +
-        'glb (web-viewer / AR with PBR materials), obj (Wavefront indexed triangle mesh), ply (Stanford PLY triangle mesh, mm, Z-up, binary little-endian by default, with per-vertex normals and the part colour from .finish()/.material()/.color(); an assembly is one file with every part in world space), usd (ASCII USDA triangle mesh in millimeter, Z-up coordinates; multi-part scenes emit one named mesh per part), ' +
+        'glb (web-viewer / AR with PBR materials), asset-pack (deterministic zip of the script when the licence allows it, a default-parameter GLB, params JSON, README, SPDX licence, three.js viewer and sha256 manifest), obj (Wavefront indexed triangle mesh), ply (Stanford PLY triangle mesh, mm, Z-up, binary little-endian by default, with per-vertex normals and the part colour from .finish()/.material()/.color(); an assembly is one file with every part in world space), usd (ASCII USDA triangle mesh in millimeter, Z-up coordinates; multi-part scenes emit one named mesh per part), ' +
         'svg-drawing (third-angle engineering-drawing sheet: front/top/left + isometric views, hidden edges dashed, tangent edges thin, ' +
         'overall bounding-box dimensions, title block; assemblies are drawn with inter-part occlusion; pass options.annotations to dimension specific features instead of the bounding box; ' +
         'pass options.exploded { factor, mode } to explode the isometric cell, options.balloons to number parts from the BOM, and options.partsList for an item/name/qty/material table above the title block). ' +
@@ -68,7 +68,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
         'PhysicsFixedJoint/PhysicsRevoluteJoint/PhysicsPrismaticJoint per mate with token axis, two-sided joint frames and limits, UsdPreviewSurface materials from the part appearance, ' +
         'and joint drives only when declared in options.drives { <mate>: { stiffness, damping, maxForce?, targetPosition? } }; options.collisionApproximation is convexHull | convexDecomposition; ' +
         'planar/cylindrical/pin_slot/ball mates fail closed with export.usd.joint-unsupported). ' +
-        "bom-csv / bom-json (bill of materials over assembly.model()/solvedModel(): one row per distinct part — grouped by geometry/catalog identity, not name — with real instance quantity, kind, material, density, mass, bbox, fabrication process (`process` + `processSource`), and catalog provenance for purchased parts; same numbers as inspect({ of: 'bom' })). " +
+        "bom-csv / bom-json (bill of materials over assembly.model()/solvedModel(): one row per distinct part — grouped by geometry/catalog identity, not name — with real instance quantity, kind, material, density, mass, bbox, fabrication process (`process` + `processSource`), declared stock when present, and catalog provenance for purchased parts; same numbers as inspect({ of: 'bom' })). " +
         "bend-table (tube bender tables over tube() records: one <tube name>.csv per tube with the LRA bend table, XYZ points, cut length and last straight; output_path is a DIRECTORY and the written files are reported in table_files; a script with no tube() fails with export.bend-table.no-tubes, and a script whose tube gates report errors writes nothing). " +
         'urdf and sdf-gazebo also write one meshes/<part>.stl per link, and usd-isaac one meshes/<part>.usda mesh layer per link, next to output_path (reported in mesh_files) — ship the whole directory to the consumer. ' +
         'STL exports run a watertight verify by default; failures return ok: false with export.mesh.not-watertight ' +
@@ -83,7 +83,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
         'and fails the call with export.mesh.not-watertight; unknown part names fail with export.part.not-found listing the valid names.\n' +
         'Pass { no_verify: true } to skip the watertight gate. ' +
         "Geometry-quality gate (both targets; formats stl, step, 3mf, obj, ply, gcode): every solid body (each assembly part) is screened for BREP faces below tiny_face_area_mm2 (default 0.01 mm²) and edges below short_edge_length_mm (default 0.1 mm), the same thresholds as verify({ check: 'geometry-quality' }) without its symmetry sampling. " +
-        "qualityGate 'warn' (default) exports and returns geometryQuality { ok, tinyFaces, shortEdges, worst: up to 5 { part, kind, id, location, size, unit }, thresholds, parts } plus warn diagnostics export.geometry-quality.tiny-faces / export.geometry-quality.short-edges; " +
+        "quality_gate 'warn' (default) exports and returns geometryQuality { ok, tinyFaces, shortEdges, worst: up to 5 { part, kind, id, location, size, unit }, thresholds, parts } plus warn diagnostics export.geometry-quality.tiny-faces / export.geometry-quality.short-edges; " +
         "'block' makes them errors and writes no file (ok: false); 'off' skips the screen. Shells, mesh bodies and bodies past the face budget are skipped with info export.geometry-quality.skipped. " +
         'All params except `target` are forwarded verbatim; each target fails closed on its own missing required params.',
       inputSchema: {
@@ -99,7 +99,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
           output_path: { type: 'string', description: "Destination path (a directory for format 'bend-table'). target:'model' — the export file (required). target:'part' — single-part .stl path." },
           format: {
             type: 'string',
-            enum: ['stl', 'step', 'dxf', '3mf', 'glb', 'obj', 'ply', 'usd', 'svg-drawing', 'pdf-drawing', 'urdf', 'srdf', 'sdf-gazebo', 'usd-isaac', 'bom-csv', 'bom-json', 'bend-table', 'gcode'],
+            enum: ['stl', 'step', 'dxf', '3mf', 'glb', 'asset-pack', 'obj', 'ply', 'usd', 'svg-drawing', 'pdf-drawing', 'urdf', 'srdf', 'sdf-gazebo', 'usd-isaac', 'bom-csv', 'bom-json', 'bend-table', 'gcode'],
             description: "target:'model' — output file format (required for that target).",
           },
           feature_id: { type: 'string', description: "target:'model' — optional FeatureId to export; defaults to last." },
@@ -113,7 +113,8 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
               '3mf: { printUnit?: "mm"|"cm"|"in", embedSource?, arrange?: "none"|"plate"|"assembled", orient?: boolean, slicer?: "generic"|"bambu"|"orca"|"prusa", printer?: printer profile id, one of ' + PRINTER_PROFILE_IDS.map(id => `"${id}"`).join('|') + ' (default "generic-fdm"; sets the bed for arrange and the slicer default; an unknown id is refused with the valid list; CLI: kernelcad print printers) }; parts that do not fit the bed are still written and reported as warn diagnostics export.3mf.plate-overflow / export.3mf.exceeds-bed, whose hint names the smallest profiles the layout fits on. ' +
               'gcode: { printer?: printer profile id, layerHeight?: mm, infill?: percent, supports?: boolean, material?: string }; requires a locally installed OrcaSlicer. Returns slicer predictions as gcode_stats; does not start a printer. ' +
               'glb: { axis?: "y-up"|"z-up", draco?: false, style?: "pbr"|"lowpoly", lowpoly?: { angularDeg?: 5..60 (default 30, about 12 segments per circle), maxTriangles?: number }, units?: "mm"|"m" }. ' +
-              'style "lowpoly" writes a faceted, flat-shaded game asset in metres (default) with every opaque part coloured through COLOR_0 on one shared material "kernelcad-palette" (merges to one draw call); asset.extras.kernelcad carries stats { triangles, sizeM, minUpM } and palette zones; exceeding maxTriangles fails with export.glb.triangle-budget. ' +
+              'style "lowpoly" writes a faceted, flat-shaded game asset in metres (default) with every opaque part coloured through COLOR_0 on one shared material "kernelcad-palette" (merges to one draw call); asset.extras.kernelcad carries stats { triangles, sizeM, minUpM, materials, drawCalls, parts, hasRig, hasIk } and palette zones; exceeding maxTriangles fails with export.glb.triangle-budget. ' +
+              'asset-pack takes no extra keys: it zips the default-parameter GLB (named materials and mesh stats) with the script when the licence allows it, params JSON, a knob README, an SPDX licence, a three.js viewer and a sha256 manifest. ' +
               'obj and usd are mesh exports with no extra options; usd writes ASCII USDA (millimeter, Z-up). ' +
               'ply: { encoding?: "binary"|"ascii" (default "binary" = binary_little_endian), normals?: boolean (default true; vertices split at creases over 30°), colors?: "vertex"|"face"|"none" (default "vertex": uchar red/green/blue per vertex; "face" puts them on the face element) }; any other key or value fails with export.ply.invalid-options. ' +
               'svg-drawing: { views?: ["front"], sheet?: "a4"|"a3" (or any pdf-drawing sheet), projection?, titleBlock?: { title?, partName?, material?, revision? }, modelName?, date?, annotations?, exploded?: { factor, mode? }, balloons?, partsList?, sections?, autoAnnotate? }. ' +
@@ -142,7 +143,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
           part: { type: 'string', description: "target:'part' — part name for single-part export, or 'all'." },
           output_dir: { type: 'string', description: "target:'part' — destination directory (all-parts mode); files are <dir>/<part>.stl." },
           no_verify: { type: 'boolean', description: 'Skip the default STL/STEP validity and watertightness gates.', default: false },
-          qualityGate: {
+          quality_gate: {
             type: 'string',
             enum: ['warn', 'block', 'off'],
             default: 'warn',

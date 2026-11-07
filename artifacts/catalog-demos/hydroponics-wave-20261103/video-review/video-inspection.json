@@ -1,0 +1,12 @@
+{
+  "video": "hydroponics-kit.mp4",
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "frameRate": "24/1",
+  "pixelFormat": "yuv420p",
+  "durationSeconds": 30.0,
+  "sampledFrameCount": 10,
+  "contactSheet": "video-review/contact-sheet.png",
+  "manualVisualInspection": "inspected the decoded contact sheet for all ten frames; text is legible, generated previews are visible, and the sequence includes the source, all 52 assets, and local verification without implying deployment or crop acceptance"
+}

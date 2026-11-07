@@ -1,0 +1,25 @@
+meta({
+  name: 'sailplane',
+  license: 'CC0-1.0',
+  title: 'Sailplane',
+  description: 'Slender glider fuselage and long tapered wings with a compact tailplane and small wheel.',
+  tags: ['airfield', 'aviation', 'airport', 'low poly', 'scene prop', 'CC0'],
+  kit: 'airfield',
+  category: 'prop',
+  origin: 'base',
+  compat: ['airfield', 'airport', 'aviation', 'transport', 'scene'],
+  triangleBudget: 1800
+});
+
+const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
+const color = param('color', '#a0a6a1', { label: 'Asset color' });
+const p = assembly("sailplane");
+p.part("fuselage", sphere(31).scale([14.516, 1, 0.72]).translate(0, 0, 190).scale(scale).color(color));
+p.part("cockpit-canopy", sphere(19.22).scale([1.05, 0.82, 0.6]).translate(153, 0, 209.195).scale(scale).color(color));
+p.part("main-wing", extrudePolygon([[-180, -925], [126, -925], [18, 0], [126, 925], [-180, 925], [-54, 0]], 16).translate(0, 0, 185.09).scale(scale).color(color));
+p.part("tailplane", extrudePolygon([[-315, -314.5], [-198, -314.5], [-243, 0], [-198, 314.5], [-315, 314.5], [-279, 0]], 14).translate(0, 0, 201.16).scale(scale).color(color));
+p.part("vertical-tail", box(144, 16, 49.6, true).translate(-306, 0, 214.552).scale(scale).color(color));
+p.part("glider-wheel-strut", box(10, 10, 143.68, true).translate(27, 0, 99.84).scale(scale).color(color));
+p.part("glider-wheel", cylinder(16, 14, 8).rotate([1, 0, 0], 90).translate(27, 8, 14).scale(scale).color(color));
+
+return p.model();

@@ -1,0 +1,26 @@
+{
+  "command": "npx vitest run tests/integration/catalog/",
+  "assetsInIndex": 2000,
+  "kit": "theatre-production",
+  "kitAssets": 52,
+  "loadKnobsMeshBudgetsMaterialsAndStudio": "passed by the full catalog integration suite",
+  "integration": {
+    "filesPassed": 4,
+    "filesTotal": 4,
+    "testsPassed": 15,
+    "testsTotal": 15
+  },
+  "triangleRange": [
+    128,
+    304
+  ],
+  "materials": [
+    1
+  ],
+  "knobs": [
+    "scale + color"
+  ],
+  "minimumBaseZ": 0,
+  "allWithinTriangleBudget": true,
+  "passed": true
+}

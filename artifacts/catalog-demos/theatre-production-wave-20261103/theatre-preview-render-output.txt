@@ -1,0 +1,2 @@
+theatre-production/fresnel-wash-fixture: 216 tris
+theatre-production/wireless-intercom-beltpack: 204 tris

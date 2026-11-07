@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -74,5 +75,13 @@ describe('agent plugin manifests', () => {
     const png = readFileSync(`${ROOT}plugins/kernelcad/assets/logo.png`);
     expect(png.readUInt32BE(16)).toBe(512);
     expect(png.readUInt32BE(20)).toBe(512);
+  });
+
+  it('bundled Studio instructions preserve save states and project identity', () => {
+    execFileSync(process.execPath, ['--test', 'scripts/agentPlugin/studioSkillContract.test.mjs'], {
+      cwd: ROOT,
+      encoding: 'utf8',
+      timeout: 10_000,
+    });
   });
 });

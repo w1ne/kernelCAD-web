@@ -1,0 +1,41 @@
+{
+  "date": "2026-11-03",
+  "kit": "beverage-bottling-line",
+  "assetCount": 50,
+  "nodeRuntime": "v22.23.4",
+  "occtDependencyWorkaround": "Temporarily set ignored node_modules/replicad-opencascadejs/package.json type=commonjs for each OCCT command, then restore exact original bytes.",
+  "demo": {
+    "source": "capture_bottling_demo.py",
+    "output": "beverage-bottling-line-kit.mp4",
+    "codec": "H.264 / libx264",
+    "width": 1280,
+    "height": 720,
+    "frameRate": 24,
+    "frameHoldSeconds": 3,
+    "frameCount": 10,
+    "pixelFormat": "yuv420p",
+    "quality": "CRF 25",
+    "previewFrames": 5,
+    "assetsPerPreviewFrame": 10
+  },
+  "verificationScope": {
+    "covered": [
+      "source metadata and sha256 match",
+      "50 assets load and export low-poly meshes",
+      "scale, body color, and safety accent parameters",
+      "triangle budgets and one exported material per asset",
+      "all 50 rendered previews and index preview paths",
+      "catalog integration suite",
+      "local generated catalog hub and detail pages",
+      "local parameter variant rendering"
+    ],
+    "notCovered": [
+      "deployed catalog behavior",
+      "factory equipment performance",
+      "flow, pressure, or process validation",
+      "food-safety or regulatory compliance",
+      "installation suitability",
+      "physical acceptance"
+    ]
+  }
+}

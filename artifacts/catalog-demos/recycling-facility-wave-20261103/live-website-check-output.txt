@@ -1,0 +1,13 @@
+{
+  "checkedAt": "2026-11-03T10:22:43.447942+00:00",
+  "homepageStatus": 200,
+  "assetsStatus": 200,
+  "assetsGeneratedAt": "2026-11-03T01:39:22.642Z",
+  "assetsTotal": 1291,
+  "assetsWithPreview": 1291,
+  "newKitRows": 0,
+  "homepageHasAssetRail": true,
+  "homepageExcerpt": "",
+  "branchDeployed": false,
+  "passed": true
+}

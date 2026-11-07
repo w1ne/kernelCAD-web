@@ -1,0 +1,18 @@
+{
+  "command": "npm pack --ignore-scripts --json --pack-destination /tmp/kernelcad-ev-charging-npm-pack",
+  "tarball": "/tmp/kernelcad-ev-charging-npm-pack/kernelcad-0.17.4.tgz",
+  "tarballBytes": 50905584,
+  "tarballSha256": "b7db73500e16fdc31506becd8b197d6b82fa7323a668ef22412ffb4ac5468afa",
+  "package": "kernelcad@0.17.4",
+  "packedFileCount": 3475,
+  "catalogIndexIncluded": true,
+  "evChargingSources": 50,
+  "evChargingPreviews": 50,
+  "cliEntryIncluded": true,
+  "headlessPlayerIncluded": true,
+  "packageExports": {
+    "./package.json": "./package.json"
+  },
+  "privateProductPaths": [],
+  "passed": true
+}

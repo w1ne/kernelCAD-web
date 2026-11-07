@@ -18,6 +18,11 @@ developers can ship them without attribution: set `license: 'CC0-1.0'` in
 `meta()` (the schema default is CC-BY-4.0) and keep the kit README's Licence
 section.
 
+The generated index records `preview: "/assets/<kit>-<id>.png"` whenever the
+matching PNG exists under `catalog/kits/<kit>/previews/`. Render every new or
+changed asset before rebuilding the index so preview-backed assets stay visible
+in the homepage rail.
+
 ## File contract
 
 ```ts

@@ -1,0 +1,22 @@
+{
+  "video": "artifacts/catalog-demos/marine-wave-20261102/marine-kit.mp4",
+  "bytes": 318145,
+  "sha256": "2a40d5011cbdba6e41a0a77928e18246e1da562db32165045a863b1f70e516a4",
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "pixelFormat": "yuv420p",
+  "durationSeconds": 24.0,
+  "decodedFrameSamples": [
+    "artifacts/catalog-demos/marine-wave-20261102/video-review/decoded-01.png",
+    "artifacts/catalog-demos/marine-wave-20261102/video-review/decoded-02.png",
+    "artifacts/catalog-demos/marine-wave-20261102/video-review/decoded-03.png",
+    "artifacts/catalog-demos/marine-wave-20261102/video-review/decoded-04.png",
+    "artifacts/catalog-demos/marine-wave-20261102/video-review/decoded-05.png",
+    "artifacts/catalog-demos/marine-wave-20261102/video-review/decoded-06.png",
+    "artifacts/catalog-demos/marine-wave-20261102/video-review/decoded-07.png",
+    "artifacts/catalog-demos/marine-wave-20261102/video-review/decoded-08.png"
+  ],
+  "contactSheet": "artifacts/catalog-demos/marine-wave-20261102/video-review/contact-sheet.png",
+  "manualVisualInspection": true
+}

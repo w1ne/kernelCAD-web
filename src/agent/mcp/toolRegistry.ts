@@ -22,7 +22,7 @@ import {
 } from './registry/inspectionVerificationTools';
 import { printToolEntries } from './registry/printTools';
 import { importToolEntries } from './registry/importTools';
-import { manufacturingToolEntries } from './registry/manufacturingTools';
+import { manufacturingFixRecheckToolEntries, manufacturingToolEntries } from './registry/manufacturingTools';
 import { rayPickToolEntries } from './registry/rayPickTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
 import { surfaceBlendToolEntries } from './registry/surfaceBlendTools';
@@ -39,8 +39,13 @@ import { assetCatalogToolEntries } from './registry/assetCatalogTools';
 import { meshBooleanToolEntries } from './registry/meshBooleanTools';
 import { cookbookExecutionToolEntries } from './registry/cookbookExecutionTools';
 import { cfdToolEntries } from './registry/cfdTools';
+import { costEstimateToolEntries } from './registry/costTools';
+import { toleranceStackToolEntries } from './registry/toleranceTools';
+import { scanReferenceToolEntries } from './registry/scanReferenceTools';
+import { metricThreadToolEntries } from './registry/metricThreadTools';
 import type { McpToolDefinition, ToolRegistryEntry } from './registry/types';
 import { guardMcpToolArgs } from './sandboxArgs';
+import { foldMcpInputAliases } from './snakeCaseArgs';
 export { runClosedLoop } from '../loop/closedLoop.js';
 export { buildRepairPrompt } from '../loop/repairPrompt.js';
 export * from '../loop/types.js';
@@ -119,6 +124,20 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...assetCatalogToolEntries,
   // Appended at the tail: steady CFD through OpenFOAM (run_cfd, cfd_summary).
   ...cfdToolEntries,
+  // Appended at the tail: targeted assembly checks. Belongs to the inspection
+  // family, but index order is a public contract so it does not shift earlier slices.
+  // Appended at the tail: one DFM parameter edit, then the same dfm_review.
+  // Stays out of manufacturingToolEntries so dfm_review keeps index 50.
+  ...manufacturingFixRecheckToolEntries,
+  // Appended after dfm_fix_recheck: offline fabrication cost heuristic.
+  ...costEstimateToolEntries,
+  // Appended after estimate_cost: 1D worst-case and RSS tolerance stack.
+  ...toleranceStackToolEntries,
+  // Appended after the tolerance stack: PLY/XYZ scan references. Not solids.
+  ...scanReferenceToolEntries,
+  // Appended after the scan tools: bbox mill toolpaths. Not FDM G-code.
+  // Appended after the mill planner: diameter → ISO metric coarse designation.
+  ...metricThreadToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints
@@ -165,11 +184,18 @@ export const TOOLS = TOOL_REGISTRY.map(entry => withMetadata(entry.definition));
 export async function callMcpTool(name: string, input: Record<string, unknown>): Promise<unknown> {
   const handler = toolHandlers.get(name);
   if (!handler) throw new Error(`Unknown tool: ${name}`);
+  // Snake_case is the canonical argument name. Fold camelCase aliases onto it
+  // before the sandbox guard so a path selector written against the schema
+  // still sees a client that sent the old name.
+  const definition = toolDefinitions.get(name);
+  const args = definition
+    ? foldMcpInputAliases(definition.inputSchema, input) as Record<string, unknown>
+    : input;
   // Sandbox mode: refuse out-of-workspace paths / network URLs before the
   // handler runs (no-op when the sandbox is off). See ./sandboxArgs.ts.
-  guardMcpToolArgs(name, input);
+  guardMcpToolArgs(name, args);
   const previousViewer = getMcpViewerResult();
-  const result = await handler(input);
+  const result = await handler(args);
   const viewer = getMcpViewerResult();
   // Source-edit tools often return a trimmed evaluate result. Preserve the
   // live link whenever this call built a replacement model.

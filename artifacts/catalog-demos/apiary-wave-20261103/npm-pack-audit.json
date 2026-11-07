@@ -1,0 +1,13 @@
+{
+  "package": "kernelcad",
+  "version": "0.17.4",
+  "apiarySources": 50,
+  "apiaryPreviews": 50,
+  "indexIncluded": true,
+  "packageExports": {
+    "./package.json": "./package.json"
+  },
+  "productLikePaths": [],
+  "lifecycleScriptsRun": false,
+  "tarballWritten": false
+}

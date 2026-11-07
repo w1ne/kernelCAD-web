@@ -740,7 +740,7 @@ function collectParts(value: string, prev: string[]): string[] {
 }
 
 const SUPPORTED_FORMATS = new Set<ExportFormat>([
-  'stl', 'step', 'dxf', '3mf', 'glb', 'obj', 'ply', 'usd', 'svg-drawing', 'pdf-drawing', 'urdf', 'srdf', 'sdf-gazebo', 'gcode', 'usd-isaac',
+  'stl', 'step', 'dxf', '3mf', 'glb', 'asset-pack', 'obj', 'ply', 'usd', 'svg-drawing', 'pdf-drawing', 'urdf', 'srdf', 'sdf-gazebo', 'gcode', 'usd-isaac',
   'bom-csv', 'bom-json', 'bend-table',
 ]);
 
@@ -861,7 +861,7 @@ async function runExportMode(
 export function exportCommand(): Command {
   const cmd = addQualityGateOptions(new Command('export'))
     .description('Export a .kcad.ts script to STL, STEP, DXF, 3MF, GLB, OBJ, PLY, USD, an SVG or PDF engineering-drawing sheet, a bill of materials, or tube bend tables')
-    .argument('<format>', 'stl | step | dxf | 3mf | glb | obj | ply | usd | svg-drawing | pdf-drawing | urdf | srdf | sdf-gazebo | usd-isaac | bom-csv | bom-json | bend-table')
+    .argument('<format>', 'stl | step | dxf | 3mf | glb | asset-pack | obj | ply | usd | svg-drawing | pdf-drawing | urdf | srdf | sdf-gazebo | usd-isaac | bom-csv | bom-json | bend-table')
     .argument('<file>', 'path to .kcad.ts script')
     .requiredOption('-o, --out <path>', 'output file path (output directory for bend-table, --parts all and repeated --part)')
     .option('--part <name>', 'export a single named assembly part (STL only); repeat for a subset (-o is then a directory)', collectParts, [] as string[])

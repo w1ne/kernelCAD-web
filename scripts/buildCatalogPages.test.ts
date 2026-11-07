@@ -4,7 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { assetPath, assetUrl, escapeHtml, metaDescription, ORIGIN, writeCatalogSite, type CatalogIndex } from './buildCatalogPages';
+import { assetPath, assetUrl, catalogUrls, escapeHtml, metaDescription, ORIGIN, writeCatalogSite, type CatalogIndex } from './buildCatalogPages';
 
 const repoRoot = resolve(import.meta.dirname, '..');
 const index = JSON.parse(readFileSync(join(repoRoot, 'catalog', 'index.json'), 'utf8')) as CatalogIndex;
@@ -77,12 +77,12 @@ describe('catalog SEO page export', () => {
         expect([...broken]).toEqual([]);
     });
 
-    it('lists the hub and every asset page in sitemap.xml, and robots.txt allows them', () => {
-        const sitemap = readFileSync(join(out, 'sitemap.xml'), 'utf8');
-        const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
-        expect(locs.sort()).toEqual([`${ORIGIN}catalog/`, ...index.assets.map(assetUrl)].sort());
-        const robots = readFileSync(join(out, 'robots.txt'), 'utf8');
-        expect(robots).not.toMatch(/Disallow:\s*\/(catalog\/?)?\s*$/m);
-        expect(robots).toContain(`Sitemap: ${ORIGIN}sitemap.xml`);
+    it('offers the hub and every asset page as sitemap URLs, without writing the site sitemap', () => {
+        // The site owns sitemap.xml and robots.txt. The catalog contributes its
+        // URLs through catalogUrls() so build-sitemap.ts can merge them; it must
+        // not emit those files itself or it clobbers the server's own.
+        expect(catalogUrls(index).sort()).toEqual([`${ORIGIN}catalog/`, ...index.assets.map(assetUrl)].sort());
+        expect(existsSync(join(out, 'sitemap.xml'))).toBe(false);
+        expect(existsSync(join(out, 'robots.txt'))).toBe(false);
     });
 });

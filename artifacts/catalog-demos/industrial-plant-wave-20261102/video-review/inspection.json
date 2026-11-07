@@ -1,0 +1,45 @@
+{
+  "reviewedAt": "2026-11-02T21:57:29.313Z",
+  "artifact": "../demo.mp4",
+  "decode": {
+    "codec": "h264",
+    "width": 1280,
+    "height": 720,
+    "pixelFormat": "yuv420p",
+    "frameRate": "24/1",
+    "durationSeconds": 18,
+    "audio": false
+  },
+  "decodedSampleSheet": "decoded-contact-sheet.png",
+  "sampledAtSeconds": [
+    0,
+    2,
+    4,
+    6,
+    8,
+    10,
+    12,
+    14,
+    16
+  ],
+  "manualReview": {
+    "result": "pass",
+    "notes": [
+      "All three industrial plant index panels are present and readable at native playback size.",
+      "All 60 assets are covered across the panels; labels show each asset id, triangle count and three knobs.",
+      "Variant sections show default and resolved low-poly renders side by side; body/accent colors and scale change as requested.",
+      "No blank or corrupt frames were seen; footer identifies local software-rendered export and says deployment is not verified."
+    ]
+  },
+  "sha256": {
+    "video": "782ef4e9593277aa19ace1e707a8b1247177d98fdbec0644cc97f193bfc6e170",
+    "decodedSampleSheet": "7e9d812abd910a6826046a7fe13e1732663dafbd67488b3ede82a0409c91f1da"
+  },
+  "claimBoundary": {
+    "localCatalogWorkflow": true,
+    "softwareRendered": true,
+    "liveDeployment": false,
+    "simulation": false,
+    "hardwareAcceptance": false
+  }
+}

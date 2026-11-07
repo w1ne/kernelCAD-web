@@ -15,7 +15,7 @@ import type { SolidMeshBackend } from '../../kernel/backends/solidMeshBackend';
 import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { export3mfWithReportAsync, type Export3mfOptions, type MeshedPart } from '../../kernel/backends/occt/export3mf';
 import { verifyWatertight } from '../../kernel/backends/occt/meshHeal';
-import { exportMeshObj } from '../../kernel/export/meshFormats';
+import { exportMeshObjZip } from '../../kernel/export/meshFormats';
 import type { LatticeReport } from '../../kernel/lattice/buildLattice';
 import { stlNotWatertightDiagnostic } from './exportDiagnostics';
 
@@ -58,7 +58,7 @@ export async function exportMeshSolid(
     return { ...base, bytes, diagnostics: report && !report.ok ? [...diagnostics, stlNotWatertightDiagnostic(report, targetId)] : diagnostics };
   }
   if (format === 'obj') {
-    return { ...base, bytes: exportMeshObj([{ name: 'part', mesh }]), diagnostics };
+    return { ...base, bytes: exportMeshObjZip([{ name: 'part', mesh }]), diagnostics };
   }
   if (format === '3mf') {
     const opts = (options as Export3mfOptions | undefined) ?? { format: '3mf' };

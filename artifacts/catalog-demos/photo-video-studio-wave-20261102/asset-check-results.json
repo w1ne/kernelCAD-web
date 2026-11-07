@@ -1,0 +1,542 @@
+{
+  "checkedAt": "2026-11-02",
+  "kit": "photo-video-studio",
+  "totalAssets": 675,
+  "kitAssets": 40,
+  "passed": 40,
+  "total": 40,
+  "catalogIndexSource": "catalog/index.json",
+  "verificationCommands": [
+    "python3 artifacts/catalog-demos/photo-video-studio-wave-20261102/generate_photo_video_assets.py",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "npx eslint catalog/",
+    "npx vitest run tests/integration/catalog/"
+  ],
+  "auditScope": "Each source builds to a non-empty one-material mesh within its indexed triangle budget, opens with exactly scale and color knobs, and has base origin.",
+  "triangleRange": [
+    92,
+    352
+  ],
+  "assets": [
+    {
+      "id": "action-camera",
+      "source": "catalog/kits/photo-video-studio/action-camera.kcad.ts",
+      "sourceSha256": "8889d4789936aa3fa01f114804c3339cee6adc22c403f297f380080dd8c35d08",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 148,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "backdrop-frame",
+      "source": "catalog/kits/photo-video-studio/backdrop-frame.kcad.ts",
+      "sourceSha256": "3d7cd157c3ec79b0da43e63ff2b59660a2d91d18a20517566d5ee6ac1270525e",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 344,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "beauty-dish-light",
+      "source": "catalog/kits/photo-video-studio/beauty-dish-light.kcad.ts",
+      "sourceSha256": "d40c17fb43fa528c5aa0961dd1f1b87ee2e3974c6000991464729adca8cf3d39",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 232,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "c-stand",
+      "source": "catalog/kits/photo-video-studio/c-stand.kcad.ts",
+      "sourceSha256": "845f4b9be4cfe347b026838068f5f3c2a251a26b1d8146ac711d5e7c78853493",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 268,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "camcorder",
+      "source": "catalog/kits/photo-video-studio/camcorder.kcad.ts",
+      "sourceSha256": "615edfb0782c891bc32a84aef0d056bbd3fe31cb0dec1bbc6fd8158b9b4b1f8b",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 160,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "camera-backpack",
+      "source": "catalog/kits/photo-video-studio/camera-backpack.kcad.ts",
+      "sourceSha256": "e43db5fb5bf00a27d402aa8f29444de01c043235f11c62c9a1582ec65c4f8686",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 96,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "camera-cage",
+      "source": "catalog/kits/photo-video-studio/camera-cage.kcad.ts",
+      "sourceSha256": "6f59b3d8c6e67e75db97c60f2c8248a352cca72baef15800b5b574602ff45ebf",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 108,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "camera-roller-case",
+      "source": "catalog/kits/photo-video-studio/camera-roller-case.kcad.ts",
+      "sourceSha256": "963387a6cc700015ea281cb4faa7dbcc6e9bbeba987f8df204db90210128f083",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 260,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "camera-slider",
+      "source": "catalog/kits/photo-video-studio/camera-slider.kcad.ts",
+      "sourceSha256": "2c3b9fcbfc38b5283ce521d85d3242a75535704d4de91e7d9bb2b265793310b9",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 280,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "camera-tripod",
+      "source": "catalog/kits/photo-video-studio/camera-tripod.kcad.ts",
+      "sourceSha256": "c7cab749907ffa63c468d4498bbffc8729a3aac82ed86e1ee393107d0bd87884",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 208,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "cinema-camera",
+      "source": "catalog/kits/photo-video-studio/cinema-camera.kcad.ts",
+      "sourceSha256": "d6e84ccd616002af2e05f685addf9a10eb7039cb1d94144aa28ddd4ade0b3223",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 192,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "clapperboard",
+      "source": "catalog/kits/photo-video-studio/clapperboard.kcad.ts",
+      "sourceSha256": "7d87c437e20c16e5c4881dcee6ec788bd4f99b2ce518812458c1716c9f678da0",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 136,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "digital-slr-camera",
+      "source": "catalog/kits/photo-video-studio/digital-slr-camera.kcad.ts",
+      "sourceSha256": "3c29c979cb6082e3eb7b0e98dfa9e479b57b5ec3f819d667c75d3c08dcc14b92",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 224,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "disposable-camera",
+      "source": "catalog/kits/photo-video-studio/disposable-camera.kcad.ts",
+      "sourceSha256": "67ef221895bd8f2bfaba5b7d91655375b4ac05b99cce411ae2cd21d4a97fe10a",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 168,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "film-rangefinder-camera",
+      "source": "catalog/kits/photo-video-studio/film-rangefinder-camera.kcad.ts",
+      "sourceSha256": "ae16469441f44c45d589a42d11587f59cd624773cc21d2516f3ce27a6901fae0",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 288,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "follow-focus-unit",
+      "source": "catalog/kits/photo-video-studio/follow-focus-unit.kcad.ts",
+      "sourceSha256": "845b56adc632565315c42dda08d9e4a0c57977171879a73e191c0d74d3722454",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 256,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "gimbal-stabilizer",
+      "source": "catalog/kits/photo-video-studio/gimbal-stabilizer.kcad.ts",
+      "sourceSha256": "e1e928eb605acf18289a78f2ff395a401317b098b79cd2a54b5aa270ff4e59a9",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 160,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "instant-camera",
+      "source": "catalog/kits/photo-video-studio/instant-camera.kcad.ts",
+      "sourceSha256": "44ef51b26b6351e819d88051fba80f5b54b3f86a6c1ad1d8e01ce3b9bb84bcc8",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 148,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "lantern-softbox",
+      "source": "catalog/kits/photo-video-studio/lantern-softbox.kcad.ts",
+      "sourceSha256": "65a66d63f6f0bc2f6df229b6c0dc705cadbbc70ab85ca60800405d44ccf6b209",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 310,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "led-panel-light",
+      "source": "catalog/kits/photo-video-studio/led-panel-light.kcad.ts",
+      "sourceSha256": "b69776e88c8c061b5b288ea1a4550b338fd0bde4d22077c34337a998cfcc6cb0",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 184,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "lens-filter-set",
+      "source": "catalog/kits/photo-video-studio/lens-filter-set.kcad.ts",
+      "sourceSha256": "2564c865d48a059de1935fb44199f8fc20a96c10d2cd790c26971ff619c4bfe0",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 276,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "lens-hood",
+      "source": "catalog/kits/photo-video-studio/lens-hood.kcad.ts",
+      "sourceSha256": "62b5f36f45301c1bf090aabfca7a3e197075aececffb42886878a9cabbb1d7e7",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 228,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "light-stand",
+      "source": "catalog/kits/photo-video-studio/light-stand.kcad.ts",
+      "sourceSha256": "4be4bc6b838bdce2ba6139e1cea70d37b231789578619fc519e39ce106f23fd5",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 300,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "macro-lens",
+      "source": "catalog/kits/photo-video-studio/macro-lens.kcad.ts",
+      "sourceSha256": "1a103850e7928865dff1899adacd86550d9597fbace1570688e13b150b2d8ae5",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 232,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "mirrorless-camera",
+      "source": "catalog/kits/photo-video-studio/mirrorless-camera.kcad.ts",
+      "sourceSha256": "8708d89a4691b3a3537fa8b250decb3334994483733b09841fa367b65d98ce50",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 180,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "monopod",
+      "source": "catalog/kits/photo-video-studio/monopod.kcad.ts",
+      "sourceSha256": "cec5b7a27f1ed4fcd01c704ac7d2faf8256ae577343ff3b075e566285418fd5d",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 256,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "pancake-lens",
+      "source": "catalog/kits/photo-video-studio/pancake-lens.kcad.ts",
+      "sourceSha256": "a5bdc73ca5752d5ece351692d5122411ab73432bb36f6ce95910bffe42dc2cdc",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 220,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "pocket-digital-camera",
+      "source": "catalog/kits/photo-video-studio/pocket-digital-camera.kcad.ts",
+      "sourceSha256": "d6a34663d5d0e7bc8834e1764d50bb918b5d7e254b623d9a064ae26d92076222",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 136,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "portrait-lens",
+      "source": "catalog/kits/photo-video-studio/portrait-lens.kcad.ts",
+      "sourceSha256": "626462ede16f6f73d1fec32f2a1930b652246a4cef1e570ff35cd49bc0e8bc2f",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 264,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "reflector-board",
+      "source": "catalog/kits/photo-video-studio/reflector-board.kcad.ts",
+      "sourceSha256": "c378201cc0216d658f0e2cd1920608eac0f6a79da61466f827ddc7fd4d1bfb49",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 92,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "ring-light",
+      "source": "catalog/kits/photo-video-studio/ring-light.kcad.ts",
+      "sourceSha256": "8271726e4cd03db390997b8fd3413e704ec72fd652cd9f758343c9729ca09b80",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 256,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "shoulder-rig",
+      "source": "catalog/kits/photo-video-studio/shoulder-rig.kcad.ts",
+      "sourceSha256": "4101422c7f2e392507775a577125df73067cb90ed382958aa5d926ff01a8052a",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 224,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "softbox-light",
+      "source": "catalog/kits/photo-video-studio/softbox-light.kcad.ts",
+      "sourceSha256": "9685bc499d23ee3b7b75fa9a40a464717f4ca5c3c6b05a41cfe2572bdf8499aa",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 160,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "speedlight-flash",
+      "source": "catalog/kits/photo-video-studio/speedlight-flash.kcad.ts",
+      "sourceSha256": "21c0933494f0100b316f4fecb396705c520ee74e7684158ecaf8f85953c62266",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 116,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "telephoto-lens",
+      "source": "catalog/kits/photo-video-studio/telephoto-lens.kcad.ts",
+      "sourceSha256": "2e7fdddbc8f0caf997ae1d0aa88309d9ae60c70f3fbe22a8f643d6b742bfde1b",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 320,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "umbrella-reflector",
+      "source": "catalog/kits/photo-video-studio/umbrella-reflector.kcad.ts",
+      "sourceSha256": "570d5532af4734e6a06c533f8d8a9e35c9affa4967c43404fd70348de3afe955",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 282,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "video-tripod",
+      "source": "catalog/kits/photo-video-studio/video-tripod.kcad.ts",
+      "sourceSha256": "afb084f173b566c35e364a84b385ef9675cf57cfd32ee01b3adf236fcc60c031",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 284,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "webcam",
+      "source": "catalog/kits/photo-video-studio/webcam.kcad.ts",
+      "sourceSha256": "1189dd1c004d1ad72f839379be8f928b9c8d30db96a305748e7defa9a888c32f",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 180,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "wide-angle-lens",
+      "source": "catalog/kits/photo-video-studio/wide-angle-lens.kcad.ts",
+      "sourceSha256": "4e2daa492b351d670b4d7bf180693b35f7f5593941e5593a4e915437ad118a27",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 220,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "zoom-lens",
+      "source": "catalog/kits/photo-video-studio/zoom-lens.kcad.ts",
+      "sourceSha256": "2392b3062c713bad4c6d51df0a09b65d51c14fce288b2b0640eacce33af42326",
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "triangles": 352,
+      "triangleBudget": 1800,
+      "materials": 1,
+      "minUpM": 0
+    }
+  ]
+}

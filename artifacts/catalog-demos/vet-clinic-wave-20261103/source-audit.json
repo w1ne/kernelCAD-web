@@ -1,0 +1,858 @@
+{
+  "expected": 50,
+  "audited": 50,
+  "passed": 50,
+  "failed": [],
+  "assets": [
+    {
+      "id": "anesthesia-machine",
+      "origin": "base",
+      "triangles": 392,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.63,
+        1.2025,
+        0.515
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "appointment-status-display",
+      "origin": "base",
+      "triangles": 136,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.668244,
+        1.1195,
+        0.3
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "basket-muzzle",
+      "origin": "base",
+      "triangles": 180,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.330004,
+        0.272,
+        0.383
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "cage-card-panel",
+      "origin": "base",
+      "triangles": 156,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.1,
+        0.665,
+        0.151
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "chemistry-analyzer",
+      "origin": "base",
+      "triangles": 248,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.725,
+        0.638,
+        0.528
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "dental-delivery-unit",
+      "origin": "base",
+      "triangles": 412,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.919457,
+        0.962,
+        0.485
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "dental-scaler-console",
+      "origin": "base",
+      "triangles": 236,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.437,
+        0.4515,
+        0.603615
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "dental-xray-arm",
+      "origin": "wall",
+      "triangles": 192,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.048,
+        0.485,
+        0.413519
+      ],
+      "minUpM": 0.2
+    },
+    {
+      "id": "dog-run-gate",
+      "origin": "base",
+      "triangles": 280,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.71,
+        1.5275,
+        0.43
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "electrosurgery-generator",
+      "origin": "base",
+      "triangles": 304,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.55,
+        0.7675,
+        0.562451
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "exam-step-stool",
+      "origin": "base",
+      "triangles": 96,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.63,
+        0.3825,
+        0.565
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "exam-wall-station",
+      "origin": "base",
+      "triangles": 280,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.8,
+        0.786,
+        0.246
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "fluid-warmer",
+      "origin": "base",
+      "triangles": 128,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.45,
+        0.57,
+        0.443
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "grooming-bath-tub",
+      "origin": "base",
+      "triangles": 188,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.38,
+        1.37,
+        1.262051
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "hard-sided-pet-carrier",
+      "origin": "base",
+      "triangles": 252,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.47,
+        0.445,
+        0.941
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "hematology-analyzer",
+      "origin": "base",
+      "triangles": 96,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.63,
+        0.686,
+        0.54
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "high-velocity-dryer-stand",
+      "origin": "base",
+      "triangles": 324,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.238624,
+        1.153647,
+        0.48
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "isolation-kennel",
+      "origin": "base",
+      "triangles": 204,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.92,
+        1.13,
+        0.8375
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "kennel-bowl-rail",
+      "origin": "wall",
+      "triangles": 228,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.26,
+        0.308,
+        0.27
+      ],
+      "minUpM": 0.236
+    },
+    {
+      "id": "leash-hook-board",
+      "origin": "base",
+      "triangles": 300,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.94,
+        0.4375,
+        0.137
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "mayo-instrument-stand",
+      "origin": "base",
+      "triangles": 216,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.6,
+        1.123,
+        0.448
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "mobile-exam-light",
+      "origin": "base",
+      "triangles": 356,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.895,
+        1.52,
+        0.54
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "mobile-surgical-light",
+      "origin": "base",
+      "triangles": 488,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.48,
+        1.641,
+        0.56
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "mobile-ultrasound-cart",
+      "origin": "base",
+      "triangles": 292,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.616,
+        1.102483,
+        0.47
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "multi-channel-infusion-pump",
+      "origin": "base",
+      "triangles": 304,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.52,
+        1.396,
+        0.46
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "multiparameter-monitor",
+      "origin": "base",
+      "triangles": 312,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.527037,
+        1.294569,
+        0.38
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "oxygen-therapy-cage",
+      "origin": "base",
+      "triangles": 248,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.88,
+        1.025,
+        0.925
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "patient-recovery-incubator",
+      "origin": "base",
+      "triangles": 184,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.82,
+        1.03,
+        0.683
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "pet-floor-scale",
+      "origin": "base",
+      "triangles": 256,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.54,
+        0.671916,
+        0.52
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "radiography-tube-stand",
+      "origin": "base",
+      "triangles": 248,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.058,
+        1.483,
+        0.48
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "reception-check-in-counter",
+      "origin": "base",
+      "triangles": 84,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.75,
+        1.05,
+        0.72
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "restraint-loop-stand",
+      "origin": "base",
+      "triangles": 256,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.52,
+        1.3275,
+        0.43
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "sample-prep-bench",
+      "origin": "base",
+      "triangles": 380,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.26,
+        1.18,
+        0.6
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "slide-storage-cabinet",
+      "origin": "base",
+      "triangles": 132,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.61,
+        0.7345,
+        0.5025
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "specimen-transport-cooler",
+      "origin": "base",
+      "triangles": 120,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.694,
+        0.627,
+        0.4785
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "stacked-feline-condo",
+      "origin": "base",
+      "triangles": 120,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.38,
+        1.2,
+        0.885
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "stainless-kennel-bank",
+      "origin": "base",
+      "triangles": 372,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.74,
+        1.26,
+        0.712
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "surgical-scrub-sink",
+      "origin": "base",
+      "triangles": 228,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.98,
+        1.31,
+        0.59
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "surgical-suction-unit",
+      "origin": "base",
+      "triangles": 312,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.5,
+        0.946,
+        0.42
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "tabletop-autoclave",
+      "origin": "base",
+      "triangles": 236,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.655,
+        0.581,
+        0.68
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "treatment-cart",
+      "origin": "base",
+      "triangles": 196,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.65,
+        0.859,
+        0.488
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "urinalysis-analyzer",
+      "origin": "base",
+      "triangles": 248,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.46,
+        0.435,
+        0.476
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "veterinary-exam-stool",
+      "origin": "base",
+      "triangles": 332,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.46,
+        0.624,
+        0.46
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "veterinary-radiography-table",
+      "origin": "base",
+      "triangles": 120,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.538,
+        0.946,
+        0.68
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "veterinary-surgery-table",
+      "origin": "base",
+      "triangles": 184,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.665564,
+        0.861533,
+        0.636
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "waiting-area-partition-gate",
+      "origin": "base",
+      "triangles": 204,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.33,
+        0.961,
+        0.33
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "waiting-bench",
+      "origin": "base",
+      "triangles": 108,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.5,
+        1.11,
+        0.51
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "warming-cabinet",
+      "origin": "base",
+      "triangles": 172,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.76,
+        1.175,
+        0.72
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "wet-treatment-table",
+      "origin": "base",
+      "triangles": 196,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.32,
+        0.9425,
+        0.71
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "xray-cassette",
+      "origin": "base",
+      "triangles": 84,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.43,
+        0.056,
+        0.562
+      ],
+      "minUpM": 0
+    }
+  ]
+}

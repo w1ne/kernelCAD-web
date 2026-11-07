@@ -1,0 +1,1167 @@
+{
+  "kit": "ev-charging-infrastructure",
+  "added": 50,
+  "catalogTotal": 1541,
+  "previewFilesRenderedInKit": 50,
+  "passed": 50,
+  "total": 50,
+  "triangleRange": [
+    92,
+    388
+  ],
+  "allOneMaterial": true,
+  "allWithinBudget": true,
+  "allBaseOrigin": true,
+  "allKnobsExact": true,
+  "allSourceHashesMatch": true,
+  "allPreviewPathsAndFilesPresent": true,
+  "allCatalogAssetsPreviewBacked": true,
+  "lint": {
+    "passed": true,
+    "files": 1541,
+    "errors": 0,
+    "warnings": 0,
+    "command": "npx eslint catalog/ --format json"
+  },
+  "pages": {
+    "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-ev-charging-pages",
+    "kit": "ev-charging-infrastructure",
+    "assets": 50,
+    "pagePreviewPairs": 50,
+    "allParametersListed": true,
+    "passed": true,
+    "checks": [
+      {
+        "id": "ac-charging-bollard",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "battery-buffer-charger-container",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "bus-depot-pantograph-post",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "ccs-combo-1-connector",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "ccs-combo-2-connector",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "chademo-connector",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "charger-cable-holster-bollard",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "charger-cable-retractor",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "charger-canopy-column-base",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "charger-load-management-panel",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "charger-status-display-post",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "charging-island-plinth",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "charging-payment-terminal",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "charging-station-direction-sign",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "coiled-charging-cable-reel",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "compact-dc-fast-charger",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "curbside-ac-charger-post",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "curbside-lamp-charger",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "destination-charging-pedestal",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "dual-connector-dc-dispenser",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "dual-outlet-wallbox",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "dual-port-ac-pedestal",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "ev-charger-protection-bollard",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "ev-emergency-stop-station",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "ev-metering-pedestal",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "ev-parking-bay-sign",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "ev-service-disconnect-cabinet",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "ev-site-distribution-panel",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "fleet-charging-canopy",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "fleet-depot-dc-dispenser",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "high-power-charge-dispenser",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "home-ac-wallbox",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "j1772-ac-connector",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "liquid-cooled-charging-cable",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "mobile-fast-charge-cart",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "modular-charger-power-stack",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "nacs-connector",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "outdoor-charger-switchboard",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "overhead-cable-balance-arm",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "overhead-cable-management-boom",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "overhead-pantograph-head",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "parking-cable-protection-ramp",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "parking-wheel-stop",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "remote-charger-power-cabinet",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "rfid-access-reader-pedestal",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "site-energy-management-controller",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "solar-ev-carport",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "streetlight-charger-arm",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "vehicle-to-grid-power-cabinet",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      },
+      {
+        "id": "wall-mounted-connector-holster",
+        "pageExists": true,
+        "previewExists": true,
+        "pageReferencesPreview": true,
+        "pageMentionsParameters": true
+      }
+    ]
+  },
+  "liveWebsiteSnapshot": {
+    "homepageStatus": 200,
+    "livePreviewAssets": 1291,
+    "branchDeployed": false
+  },
+  "npmPackageBoundary": {
+    "command": "npm pack --ignore-scripts --json --pack-destination /tmp/kernelcad-ev-charging-npm-pack",
+    "tarball": "/tmp/kernelcad-ev-charging-npm-pack/kernelcad-0.17.4.tgz",
+    "tarballBytes": 50905584,
+    "tarballSha256": "b7db73500e16fdc31506becd8b197d6b82fa7323a668ef22412ffb4ac5468afa",
+    "package": "kernelcad@0.17.4",
+    "packedFileCount": 3475,
+    "catalogIndexIncluded": true,
+    "evChargingSources": 50,
+    "evChargingPreviews": 50,
+    "cliEntryIncluded": true,
+    "headlessPlayerIncluded": true,
+    "packageExports": {
+      "./package.json": "./package.json"
+    },
+    "privateProductPaths": [],
+    "passed": true
+  },
+  "integration": {
+    "passed": true,
+    "filesPassed": 4,
+    "testsPassed": 15,
+    "durationSeconds": 160.24
+  },
+  "assets": [
+    {
+      "id": "ac-charging-bollard",
+      "triangles": 340,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-ac-charging-bollard.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "battery-buffer-charger-container",
+      "triangles": 244,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-battery-buffer-charger-container.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "bus-depot-pantograph-post",
+      "triangles": 288,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-bus-depot-pantograph-post.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "ccs-combo-1-connector",
+      "triangles": 180,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-ccs-combo-1-connector.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "ccs-combo-2-connector",
+      "triangles": 180,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-ccs-combo-2-connector.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "chademo-connector",
+      "triangles": 180,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-chademo-connector.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "charger-cable-holster-bollard",
+      "triangles": 200,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-charger-cable-holster-bollard.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "charger-cable-retractor",
+      "triangles": 244,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-charger-cable-retractor.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "charger-canopy-column-base",
+      "triangles": 260,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-charger-canopy-column-base.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "charger-load-management-panel",
+      "triangles": 244,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-charger-load-management-panel.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "charger-status-display-post",
+      "triangles": 252,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-charger-status-display-post.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "charging-island-plinth",
+      "triangles": 224,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-charging-island-plinth.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "charging-payment-terminal",
+      "triangles": 128,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-charging-payment-terminal.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "charging-station-direction-sign",
+      "triangles": 148,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-charging-station-direction-sign.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "coiled-charging-cable-reel",
+      "triangles": 276,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-coiled-charging-cable-reel.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "compact-dc-fast-charger",
+      "triangles": 364,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-compact-dc-fast-charger.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "curbside-ac-charger-post",
+      "triangles": 340,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-curbside-ac-charger-post.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "curbside-lamp-charger",
+      "triangles": 212,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-curbside-lamp-charger.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "destination-charging-pedestal",
+      "triangles": 340,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-destination-charging-pedestal.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "dual-connector-dc-dispenser",
+      "triangles": 364,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-dual-connector-dc-dispenser.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "dual-outlet-wallbox",
+      "triangles": 252,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-dual-outlet-wallbox.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "dual-port-ac-pedestal",
+      "triangles": 352,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-dual-port-ac-pedestal.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "ev-charger-protection-bollard",
+      "triangles": 308,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-ev-charger-protection-bollard.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "ev-emergency-stop-station",
+      "triangles": 136,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-ev-emergency-stop-station.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "ev-metering-pedestal",
+      "triangles": 148,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-ev-metering-pedestal.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "ev-parking-bay-sign",
+      "triangles": 92,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-ev-parking-bay-sign.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "ev-service-disconnect-cabinet",
+      "triangles": 300,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-ev-service-disconnect-cabinet.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "ev-site-distribution-panel",
+      "triangles": 344,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-ev-site-distribution-panel.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "fleet-charging-canopy",
+      "triangles": 388,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-fleet-charging-canopy.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "fleet-depot-dc-dispenser",
+      "triangles": 364,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-fleet-depot-dc-dispenser.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "high-power-charge-dispenser",
+      "triangles": 376,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-high-power-charge-dispenser.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "home-ac-wallbox",
+      "triangles": 208,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-home-ac-wallbox.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "j1772-ac-connector",
+      "triangles": 168,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-j1772-ac-connector.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "liquid-cooled-charging-cable",
+      "triangles": 376,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-liquid-cooled-charging-cable.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "mobile-fast-charge-cart",
+      "triangles": 384,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-mobile-fast-charge-cart.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "modular-charger-power-stack",
+      "triangles": 156,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-modular-charger-power-stack.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "nacs-connector",
+      "triangles": 168,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-nacs-connector.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "outdoor-charger-switchboard",
+      "triangles": 344,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-outdoor-charger-switchboard.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "overhead-cable-balance-arm",
+      "triangles": 288,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-overhead-cable-balance-arm.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "overhead-cable-management-boom",
+      "triangles": 244,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-overhead-cable-management-boom.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "overhead-pantograph-head",
+      "triangles": 180,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-overhead-pantograph-head.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "parking-cable-protection-ramp",
+      "triangles": 160,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-parking-cable-protection-ramp.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "parking-wheel-stop",
+      "triangles": 136,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-parking-wheel-stop.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "remote-charger-power-cabinet",
+      "triangles": 176,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-remote-charger-power-cabinet.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "rfid-access-reader-pedestal",
+      "triangles": 104,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-rfid-access-reader-pedestal.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "site-energy-management-controller",
+      "triangles": 240,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-site-energy-management-controller.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "solar-ev-carport",
+      "triangles": 276,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-solar-ev-carport.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "streetlight-charger-arm",
+      "triangles": 212,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-streetlight-charger-arm.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "vehicle-to-grid-power-cabinet",
+      "triangles": 244,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-vehicle-to-grid-power-cabinet.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    },
+    {
+      "id": "wall-mounted-connector-holster",
+      "triangles": 104,
+      "triangleBudget": 2400,
+      "materials": 1,
+      "minUpM": 0,
+      "knobs": [
+        "scale",
+        "color"
+      ],
+      "preview": "/assets/ev-charging-infrastructure-wall-mounted-connector-holster.png",
+      "previewFileExists": true,
+      "sourceSha256Matches": true,
+      "passed": true
+    }
+  ]
+}

@@ -270,6 +270,15 @@ export interface KernelCadApi {
    */
   isoThread(spec: string): IsoThreadInfo;
   /**
+   * ISO 261 coarse thread for a diameter in mm. `12` → M12×1.75.
+   * `kind: 'tap_drill'` matches D − P (`5` → M6). `kind: 'auto'` tries
+   * nominal (0.05 mm) then tap drill (0.1 mm). A clearance bore is refused.
+   */
+  metricThreadFromDiameter(
+    diameterMm: number,
+    opts?: { kind?: 'nominal' | 'tap_drill' | 'auto'; toleranceMm?: number },
+  ): IsoThreadInfo;
+  /**
    * A real ISO metric EXTERNAL thread: 60° basic profile, right-hand, axis
    * +Z from z = 0 to z = `length`, ridge centre crossing +X at every
    * z = k·pitch (so a `threadedHole` whose entry face sits at a whole number

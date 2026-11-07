@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 
+import type { PBRMaterial } from '../../shared/intent/material';
+import { zipSync } from 'fflate';
+import { materialTable, uniqueSlots, type MeshMaterialSlot } from './meshMaterialTable';
+
 /** Indexed triangle mesh consumed by the neutral text mesh writers. */
 export interface IndexedMesh {
   vertices: readonly number[] | Float32Array;
@@ -10,44 +14,145 @@ export interface IndexedMesh {
 export interface NamedMesh {
   name: string;
   mesh: IndexedMesh;
+  /** Authored PBR. `material.name` wins in the shared GLB name registry. */
+  material?: PBRMaterial;
+  /** Role token or hex from `.color()`, used when the PBR record has no base colour. */
+  color?: string;
+  colorParamName?: string;
+  finishName?: string;
 }
 
-/** Encode one or more indexed triangle meshes as Wavefront OBJ. */
-export function exportMeshObj(parts: readonly NamedMesh[]): Uint8Array {
+/** Sibling Wavefront files. `obj` references `model.mtl`. */
+export interface ObjMeshExport {
+  readonly obj: Uint8Array;
+  readonly mtl: Uint8Array;
+}
+
+export const OBJ_MTL_FILENAME = 'model.mtl';
+export const OBJ_ZIP_ENTRY = 'model.obj';
+
+/** Encode one or more indexed triangle meshes as Wavefront OBJ plus a sibling MTL. */
+export function exportMeshObj(parts: readonly NamedMesh[]): ObjMeshExport {
   if (parts.length === 0) throw new Error('OBJ export requires at least one mesh.');
-  const lines = ['# kernelCAD OBJ mesh export'];
+  const slots = materialTable(parts);
+  const lines = ['# kernelCAD OBJ mesh export', `mtllib ${OBJ_MTL_FILENAME}`];
   let vertexBase = 0;
-  for (const part of parts) {
-    const { vertices, triangles } = part.mesh;
-    validateMesh(part.name, vertices, triangles);
-    lines.push(`o ${objName(part.name)}`);
-    for (let i = 0; i < vertices.length; i += 3) {
-      lines.push(`v ${number(vertices[i]!)} ${number(vertices[i + 1]!)} ${number(vertices[i + 2]!)}`);
-    }
-    for (let i = 0; i < triangles.length; i += 3) {
-      lines.push(`f ${triangles[i]! + vertexBase + 1} ${triangles[i + 1]! + vertexBase + 1} ${triangles[i + 2]! + vertexBase + 1}`);
-    }
-    vertexBase += vertices.length / 3;
-  }
-  return new TextEncoder().encode(`${lines.join('\n')}\n`);
+  parts.forEach((part, index) => {
+    vertexBase = writeObjObject(lines, part, slots[index]!.objToken, vertexBase);
+  });
+  return { obj: encode(lines), mtl: encode(writeMtl(slots)) };
+}
+
+/** Zip `model.obj` and `model.mtl` for a caller that can return only one buffer. */
+export function exportMeshObjZip(parts: readonly NamedMesh[]): Uint8Array {
+  const { obj, mtl } = exportMeshObj(parts);
+  return zipSync({ [OBJ_ZIP_ENTRY]: obj, [OBJ_MTL_FILENAME]: mtl });
 }
 
 /** Encode triangle meshes as a USDA mesh stage. Coordinates are millimeters. */
 export function exportMeshUsd(parts: readonly NamedMesh[]): Uint8Array {
   if (parts.length === 0) throw new Error('USD export requires at least one mesh.');
-  const names = new Set<string>();
-  const meshes = parts.map(({ name, mesh }) => {
-    validateMesh(name, mesh.vertices, mesh.triangles);
-    const primName = usdName(name);
-    if (names.has(primName)) throw new Error(`USD export has duplicate mesh prim name '${primName}'.`);
-    names.add(primName);
-    const points = triples(mesh.vertices).map(([x, y, z]) => `            (${number(x)}, ${number(y)}, ${number(z)})`).join(',\n');
-    const indices = Array.from(mesh.triangles).join(', ');
-    const faceCount = mesh.triangles.length / 3;
-    return `    def Mesh "${primName}" {\n        point3f[] points = [\n${points}\n        ]\n        int[] faceVertexCounts = [${Array.from({ length: faceCount }, () => '3').join(', ')}]\n        int[] faceVertexIndices = [${indices}]\n        uniform token subdivisionScheme = "none"\n    }`;
-  });
-  const text = `#usda 1.0\n(\n    defaultPrim = "Model"\n    metersPerUnit = 0.001\n    upAxis = "Z"\n)\n\ndef Xform "Model" {\n${meshes.join('\n')}\n}\n`;
-  return new TextEncoder().encode(text);
+  const slots = materialTable(parts);
+  const used = new Set<string>();
+  const materials = uniqueSlots(slots).map(writeUsdMaterial);
+  const meshes = parts.map((part, index) => writeUsdMesh(part, slots[index]!, used));
+  return new TextEncoder().encode(usdStage(materials, meshes));
+}
+
+function writeObjObject(lines: string[], part: NamedMesh, material: string, vertexBase: number): number {
+  const { vertices, triangles } = part.mesh;
+  validateMesh(part.name, vertices, triangles);
+  lines.push(`o ${objName(part.name)}`, `usemtl ${material}`);
+  for (let i = 0; i < vertices.length; i += 3) {
+    lines.push(`v ${number(vertices[i]!)} ${number(vertices[i + 1]!)} ${number(vertices[i + 2]!)}`);
+  }
+  for (let i = 0; i < triangles.length; i += 3) {
+    const a = triangles[i]! + vertexBase + 1;
+    const b = triangles[i + 1]! + vertexBase + 1;
+    const c = triangles[i + 2]! + vertexBase + 1;
+    lines.push(`f ${a} ${b} ${c}`);
+  }
+  return vertexBase + vertices.length / 3;
+}
+
+function writeMtl(slots: readonly MeshMaterialSlot[]): string[] {
+  const seen = new Set<string>();
+  const lines = ['# kernelCAD MTL material library'];
+  for (const slot of slots) {
+    if (seen.has(slot.objToken)) continue;
+    seen.add(slot.objToken);
+    lines.push(`newmtl ${slot.objToken}`, `Kd ${slot.kd}`, `d ${slot.dissolve}`, `Ns ${slot.ns}`);
+  }
+  return lines;
+}
+
+function usdStage(materials: readonly string[], meshes: readonly string[]): string {
+  return [
+    '#usda 1.0',
+    '(',
+    '    defaultPrim = "Model"',
+    '    metersPerUnit = 0.001',
+    '    upAxis = "Z"',
+    ')',
+    '',
+    'def Xform "Model" {',
+    '    def Scope "Materials" {',
+    materials.join('\n'),
+    '    }',
+    meshes.join('\n'),
+    '}',
+    '',
+  ].join('\n');
+}
+
+function writeUsdMaterial(slot: MeshMaterialSlot): string {
+  const path = `/Model/Materials/${slot.usdPrim}`;
+  const lines = [
+    `        def Material "${slot.usdPrim}"`,
+    '        {',
+    `            token outputs:surface.connect = <${path}/PreviewSurface.outputs:surface>`,
+    '',
+    '            def Shader "PreviewSurface"',
+    '            {',
+    '                uniform token info:id = "UsdPreviewSurface"',
+    `                color3f inputs:diffuseColor = (${slot.diffuseLinear})`,
+    `                float inputs:metallic = ${slot.metallic}`,
+    `                float inputs:roughness = ${slot.roughness}`,
+  ];
+  if (slot.opacity !== '1.000000') lines.push(`                float inputs:opacity = ${slot.opacity}`);
+  lines.push('                token outputs:surface', '            }', '        }');
+  return lines.join('\n');
+}
+
+function writeUsdMesh(part: NamedMesh, slot: MeshMaterialSlot, used: Set<string>): string {
+  const { vertices, triangles } = part.mesh;
+  validateMesh(part.name, vertices, triangles);
+  const primName = usdName(part.name);
+  if (used.has(primName)) throw new Error(`USD export has duplicate mesh prim name '${primName}'.`);
+  used.add(primName);
+  const faceCount = triangles.length / 3;
+  return [
+    `    def Mesh "${primName}" (`,
+    '        prepend apiSchemas = ["MaterialBindingAPI"]',
+    '    )',
+    '    {',
+    '        point3f[] points = [',
+    pointLines(vertices),
+    '        ]',
+    `        int[] faceVertexCounts = [${Array.from({ length: faceCount }, () => '3').join(', ')}]`,
+    `        int[] faceVertexIndices = [${Array.from(triangles).join(', ')}]`,
+    '        uniform token subdivisionScheme = "none"',
+    `        rel material:binding = </Model/Materials/${slot.usdPrim}>`,
+    '    }',
+  ].join('\n');
+}
+
+function pointLines(vertices: IndexedMesh['vertices']): string {
+  return triples(vertices).map(([x, y, z]) => `            (${number(x)}, ${number(y)}, ${number(z)})`).join(',\n');
+}
+
+function encode(lines: readonly string[]): Uint8Array {
+  return new TextEncoder().encode(`${lines.join('\n')}\n`);
 }
 
 function validateMesh(name: string, vertices: IndexedMesh['vertices'], triangles: IndexedMesh['triangles']): void {

@@ -1,0 +1,851 @@
+{
+  "checkedAt": "2026-11-02T21:56:19.658Z",
+  "method": "npx tsx artifacts/catalog-demos/industrial-plant-wave-20261102/check-pages.mts",
+  "localOnly": true,
+  "totalIndexedAssets": 895,
+  "generatedAssetPages": 895,
+  "industrialPlantPages": 60,
+  "checkedIndustrialPlantPages": [
+    {
+      "id": "air-compressor",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 544,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "axial-flow-fan",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 240,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "baghouse-dust-collector",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 468,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "belt-conveyor",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 292,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "bridge-crane",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 164,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "bucket-elevator",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 260,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "bulk-loading-spout",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 224,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "burner-management-skid",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 520,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cable-tray-bridge",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 168,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cartridge-filter-housing",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 476,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "centrifugal-chiller",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 252,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "centrifugal-pump",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 378,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "chemical-metering-skid",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 380,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "compressed-air-receiver",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 556,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "cyclone-separator",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 388,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "diesel-generator-set",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 208,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "distillation-column",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 528,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "electric-chain-hoist",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 192,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "electric-pallet-jack",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 204,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "electrical-control-cabinet",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 264,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "evaporative-cooling-tower",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 284,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "flare-stack",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 380,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "forklift-truck",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 332,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "gantry-crane",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 252,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "grating-walkway-module",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 300,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "horizontal-pressure-vessel",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 468,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "industrial-boiler",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 300,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "industrial-stair-tower",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 192,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "industrial-transformer",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 484,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "inline-flow-meter",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 212,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "jib-crane",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 160,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "machine-guard-enclosure",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 168,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "maintenance-platform",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 192,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "mobile-tool-cart",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 344,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "motor-control-center",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 396,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "packed-scrubber-column",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 548,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "pallet-rack-bay",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 180,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "palletizer-robot-cell",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 254,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "pipe-rack-bay",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 360,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "plate-heat-exchanger",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 344,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "plc-control-rack",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 384,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "positive-displacement-pump",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 312,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "pressure-relief-valve",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 484,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "process-blower",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 292,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "process-reactor-vessel",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 612,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "process-water-silo",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 588,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "roller-conveyor-line",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 576,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "rooftop-air-handler",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 320,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "scissor-lift-table",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 196,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "screw-conveyor",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 160,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "shell-and-tube-exchanger",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 400,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "steam-header-manifold",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 980,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "steel-access-gate",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 132,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "vacuum-pump-unit",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 336,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "valve-manifold-station",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 740,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "variable-frequency-drive-cabinet",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 240,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "vertical-cage-ladder",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 368,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "vertical-storage-tank",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 544,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "vibratory-feeder",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 268,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    },
+    {
+      "id": "weigh-hopper",
+      "knobs": [
+        "scale",
+        "body",
+        "accent"
+      ],
+      "triangles": 264,
+      "title": true,
+      "preview": true,
+      "studioLink": true,
+      "exactKnobNames": true,
+      "triangleStats": true
+    }
+  ],
+  "liveDeployment": "not verified; this branch has not been deployed"
+}

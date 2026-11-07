@@ -1,0 +1,20 @@
+{
+  "checkedAt": "2026-11-02",
+  "generatedPage": "http://127.0.0.1:4327/catalog/outdoor-gear/camping-backpack/",
+  "pageTitle": "Camping backpack - free low-poly prop model (CC0) | kernelCAD",
+  "localStaticBuild": true,
+  "stylesheet": "https://kernelcad.com/style.css",
+  "browserReview": {
+    "productPreviewDisplayed": true,
+    "openInStudioLinkVisible": true,
+    "triangleStatsVisible": "96 triangles (budget 420)",
+    "knobNamesVisible": ["capacity", "pack", "trim"],
+    "presetsAndRelatedKitLinksVisible": true
+  },
+  "liveDeploymentCheck": {
+    "url": "https://kernelcad.com/catalog/",
+    "httpStatus": 404,
+    "pageTitle": "Page not found — kernelCAD",
+    "deployedBehaviorVerified": false
+  }
+}

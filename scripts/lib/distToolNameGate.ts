@@ -174,6 +174,13 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   'to_pos_mm',
   'assembly_order',
   'sheets_rows',
+  // load_scan_reference / fit_model_to_scan result and option fields
+  // (documented alongside those tool names, which DO resolve — fields, not calls).
+  'point_count',
+  'max_points',
+  'binary_big_endian',
+  'translate_mm',
+  'clearance_mm',
 ]);
 
 export interface ToolNameHit {

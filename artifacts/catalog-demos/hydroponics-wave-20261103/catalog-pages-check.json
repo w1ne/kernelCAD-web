@@ -1,0 +1,9 @@
+{
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-hydroponics-pages-wave-20261103",
+  "kitPages": 52,
+  "assetsInIndex": 1795,
+  "pageAndPreviewPairs": 52,
+  "hubListsKit": true,
+  "missing": [],
+  "passed": true
+}

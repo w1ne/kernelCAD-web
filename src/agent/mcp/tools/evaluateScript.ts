@@ -16,6 +16,7 @@ import type { KernelId } from '../../../shared/types/backendTarget';
 import type { PortReportEntry } from '../../../modeling/runtime/tube/portReport';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
+import { refuseEnvelope, type EvaluateRefuse } from '../../../shared/diagnostics/refuse';
 import { updateMcpViewer, type McpViewerResult, type McpViewerReview } from '../liveViewer';
 import { clearActiveMcpSession, getActiveMcpSession, setActiveMcpSession } from '../activeSession';
 import { summarizeScene, unavailableSceneSummary, type SceneSummary } from '../../script-runtime/sceneSummary';
@@ -75,6 +76,12 @@ export interface EvaluateScriptOutput extends McpViewerResult {
   ok: boolean;
   featureCount: number;
   diagnostics: CompilerDiagnostic[];
+  /**
+   * Present only when `ok` is false and at least one diagnostic is an error.
+   * The first error: `code`, `message`, optional `location`, and `try`
+   * (the recovery hint). Warnings alone omit it.
+   */
+  refuse?: EvaluateRefuse;
   /** Echoed `true` when the run was a dry run (capture-only validation —
    *  no geometry was lowered and the active session was not touched). */
   dryRun?: true;
@@ -250,6 +257,7 @@ export async function evaluateScriptTool(
     // today but ensures the contract holds if a future caller bypasses
     // the eval helper.
     diagnostics: mergedDiagnostics,
+    ...refuseEnvelope(ok, mergedDiagnostics),
     featureHealth: r.featureHealth,
     ...(r.dimensions !== undefined ? { dimensions: r.dimensions } : {}),
     ...(r.selections !== undefined ? { selections: r.selections } : {}),
@@ -281,11 +289,13 @@ function rejectUnavailableKernel(kernel: unknown): EvaluateScriptOutput | undefi
     return undefined;
   } catch (e) {
     if (!(e instanceof KernelUnavailableError)) throw e;
+    const diagnostics = [e.diagnostic];
     return {
       ok: false,
       sceneSummary: unavailableSceneSummary(),
       featureCount: 0,
-      diagnostics: [e.diagnostic],
+      diagnostics,
+      ...refuseEnvelope(false, diagnostics),
       featureHealth: [],
     };
   }
@@ -314,12 +324,15 @@ function buildSceneSummary(model: BuildOutcome['model'], buildSucceeded: boolean
 async function evaluateDryRun(input: EvaluateScriptInput): Promise<EvaluateScriptOutput> {
   const { evaluation: r, returnValue } = await dryRunScript(input as EvaluateInput);
   const parts = sceneParts(returnValue);
+  const diagnostics = withNextActions(r.diagnostics);
+  const ok = r.exitCode === 0;
   return {
-    ok: r.exitCode === 0,
+    ok,
     dryRun: true,
     sceneSummary: unavailableSceneSummary(),
     featureCount: r.featureCount,
-    diagnostics: withNextActions(r.diagnostics),
+    diagnostics,
+    ...refuseEnvelope(ok, diagnostics),
     featureHealth: r.featureHealth,
     ...(parts !== undefined ? { parts } : {}),
   };

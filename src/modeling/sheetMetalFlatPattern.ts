@@ -12,6 +12,7 @@ import type { FeatureId } from '../shared/intent/types';
 import type { Region } from '../shared/intent/region';
 import type { ShapeBackend } from '../kernel/backends/backend';
 import type { ParamTable } from '../shared/runtime/paramTable';
+import { resolveParams } from '../shared/runtime/resolveParams';
 import { initOcct, OcctBackend } from '../kernel/backends/occt/occtBackend';
 import { flatBlankRecordId, flattenPattern } from '../kernel/backends/occt/flattenPattern';
 import { flatBlankInnerLoops } from '../kernel/backends/occt/flatBlankLoops';
@@ -40,5 +41,11 @@ export async function flattenPatternWithHoles(
     blank = run.shapes.get(blankId);
   }
   const holes = blank instanceof OcctBackend ? flatBlankInnerLoops(blank) : [];
-  return flattenPattern(records, terminalId, { holes });
+  // The lowerers receive parameter-resolved records, but this JS-side outline
+  // reconstruction reads the sketch commands directly. Resolve that same
+  // source record set here so a ParamRef-driven blank agrees with its BREP.
+  const resolvedRecords = paramTable
+    ? records.map(record => resolveParams(record, paramTable) as FeatureRecord)
+    : records;
+  return flattenPattern(resolvedRecords, terminalId, { holes });
 }

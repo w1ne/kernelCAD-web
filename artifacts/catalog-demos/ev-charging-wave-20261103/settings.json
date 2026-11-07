@@ -1,0 +1,290 @@
+{
+  "kit": "ev-charging-infrastructure",
+  "generatedOn": "2026-11-03",
+  "assetCount": 50,
+  "sourceCommand": "python3 artifacts/catalog-demos/ev-charging-wave-20261103/generate_ev_charging_assets.py",
+  "catalogCommand": "npx tsx scripts/buildAssetCatalog.ts",
+  "previewCommand": "npx tsx scripts/renderCatalogPreviews.ts",
+  "knobs": {
+    "scale": {
+      "default": 1,
+      "min": 0.7,
+      "max": 1.3,
+      "step": 0.05
+    },
+    "color": "asset-specific hex color"
+  },
+  "triangleBudget": 2400,
+  "materialCount": 1,
+  "verificationScope": {
+    "covered": [
+      "local source and index",
+      "low-poly mesh export",
+      "triangle and material audit",
+      "catalog integration suite",
+      "preview files and URLs",
+      "local generated catalog pages",
+      "current public website snapshot"
+    ],
+    "notCovered": [
+      "deployed behavior for this branch",
+      "electrical engineering",
+      "charging performance",
+      "safety certification",
+      "site suitability",
+      "physical acceptance"
+    ]
+  },
+  "assets": [
+    {
+      "id": "home-ac-wallbox",
+      "title": "Home AC wallbox",
+      "profile": "wallbox"
+    },
+    {
+      "id": "dual-outlet-wallbox",
+      "title": "Dual-outlet wallbox",
+      "profile": "dual-wallbox"
+    },
+    {
+      "id": "curbside-ac-charger-post",
+      "title": "Curbside AC charger post",
+      "profile": "ac-post"
+    },
+    {
+      "id": "destination-charging-pedestal",
+      "title": "Destination charging pedestal",
+      "profile": "destination-pedestal"
+    },
+    {
+      "id": "streetlight-charger-arm",
+      "title": "Streetlight charger arm",
+      "profile": "streetlight-charger"
+    },
+    {
+      "id": "ac-charging-bollard",
+      "title": "AC charging bollard",
+      "profile": "ac-bollard"
+    },
+    {
+      "id": "dual-port-ac-pedestal",
+      "title": "Dual-port AC pedestal",
+      "profile": "dual-ac-pedestal"
+    },
+    {
+      "id": "curbside-lamp-charger",
+      "title": "Curbside lamp charger",
+      "profile": "lamp-charger"
+    },
+    {
+      "id": "compact-dc-fast-charger",
+      "title": "Compact DC fast charger",
+      "profile": "compact-dc"
+    },
+    {
+      "id": "dual-connector-dc-dispenser",
+      "title": "Dual-connector DC dispenser",
+      "profile": "dual-dispenser"
+    },
+    {
+      "id": "high-power-charge-dispenser",
+      "title": "High-power charge dispenser",
+      "profile": "high-power-dispenser"
+    },
+    {
+      "id": "remote-charger-power-cabinet",
+      "title": "Remote charger power cabinet",
+      "profile": "power-cabinet"
+    },
+    {
+      "id": "modular-charger-power-stack",
+      "title": "Modular charger power stack",
+      "profile": "module-stack"
+    },
+    {
+      "id": "outdoor-charger-switchboard",
+      "title": "Outdoor charger switchboard",
+      "profile": "switchboard"
+    },
+    {
+      "id": "fleet-depot-dc-dispenser",
+      "title": "Fleet depot DC dispenser",
+      "profile": "fleet-dispenser"
+    },
+    {
+      "id": "bus-depot-pantograph-post",
+      "title": "Bus depot pantograph post",
+      "profile": "pantograph-post"
+    },
+    {
+      "id": "overhead-pantograph-head",
+      "title": "Overhead pantograph head",
+      "profile": "pantograph-head"
+    },
+    {
+      "id": "mobile-fast-charge-cart",
+      "title": "Mobile fast-charge cart",
+      "profile": "mobile-cart"
+    },
+    {
+      "id": "ccs-combo-2-connector",
+      "title": "CCS Combo 2 connector",
+      "profile": "connector-ccs2"
+    },
+    {
+      "id": "ccs-combo-1-connector",
+      "title": "CCS Combo 1 connector",
+      "profile": "connector-ccs1"
+    },
+    {
+      "id": "nacs-connector",
+      "title": "NACS connector",
+      "profile": "connector-nacs"
+    },
+    {
+      "id": "chademo-connector",
+      "title": "CHAdeMO connector",
+      "profile": "connector-chademo"
+    },
+    {
+      "id": "j1772-ac-connector",
+      "title": "J1772 AC connector",
+      "profile": "connector-j1772"
+    },
+    {
+      "id": "coiled-charging-cable-reel",
+      "title": "Coiled charging cable reel",
+      "profile": "cable-reel"
+    },
+    {
+      "id": "liquid-cooled-charging-cable",
+      "title": "Liquid-cooled charging cable",
+      "profile": "cooled-cable"
+    },
+    {
+      "id": "overhead-cable-management-boom",
+      "title": "Overhead cable management boom",
+      "profile": "cable-boom"
+    },
+    {
+      "id": "charger-cable-retractor",
+      "title": "Charger cable retractor",
+      "profile": "cable-retractor"
+    },
+    {
+      "id": "charger-cable-holster-bollard",
+      "title": "Cable holster bollard",
+      "profile": "holster-bollard"
+    },
+    {
+      "id": "wall-mounted-connector-holster",
+      "title": "Wall-mounted connector holster",
+      "profile": "wall-holster"
+    },
+    {
+      "id": "parking-cable-protection-ramp",
+      "title": "Parking cable protection ramp",
+      "profile": "cable-ramp"
+    },
+    {
+      "id": "ev-service-disconnect-cabinet",
+      "title": "EV service disconnect cabinet",
+      "profile": "disconnect-cabinet"
+    },
+    {
+      "id": "ev-metering-pedestal",
+      "title": "EV metering pedestal",
+      "profile": "meter-pedestal"
+    },
+    {
+      "id": "ev-site-distribution-panel",
+      "title": "EV site distribution panel",
+      "profile": "distribution-panel"
+    },
+    {
+      "id": "site-energy-management-controller",
+      "title": "Site energy management controller",
+      "profile": "energy-controller"
+    },
+    {
+      "id": "charging-payment-terminal",
+      "title": "Charging payment terminal",
+      "profile": "payment-terminal"
+    },
+    {
+      "id": "rfid-access-reader-pedestal",
+      "title": "RFID access reader pedestal",
+      "profile": "rfid-pedestal"
+    },
+    {
+      "id": "charger-status-display-post",
+      "title": "Charger status display post",
+      "profile": "status-post"
+    },
+    {
+      "id": "ev-emergency-stop-station",
+      "title": "EV emergency-stop station",
+      "profile": "emergency-stop"
+    },
+    {
+      "id": "charger-load-management-panel",
+      "title": "Charger load-management panel",
+      "profile": "load-panel"
+    },
+    {
+      "id": "overhead-cable-balance-arm",
+      "title": "Overhead cable balance arm",
+      "profile": "balance-arm"
+    },
+    {
+      "id": "fleet-charging-canopy",
+      "title": "Fleet charging canopy",
+      "profile": "fleet-canopy"
+    },
+    {
+      "id": "solar-ev-carport",
+      "title": "Solar EV carport",
+      "profile": "solar-carport"
+    },
+    {
+      "id": "charger-canopy-column-base",
+      "title": "Charger canopy column base",
+      "profile": "canopy-base"
+    },
+    {
+      "id": "charging-island-plinth",
+      "title": "Charging island plinth",
+      "profile": "charging-plinth"
+    },
+    {
+      "id": "parking-wheel-stop",
+      "title": "Parking wheel stop",
+      "profile": "wheel-stop"
+    },
+    {
+      "id": "ev-parking-bay-sign",
+      "title": "EV parking bay sign",
+      "profile": "bay-sign"
+    },
+    {
+      "id": "charging-station-direction-sign",
+      "title": "Charging station direction sign",
+      "profile": "direction-sign"
+    },
+    {
+      "id": "ev-charger-protection-bollard",
+      "title": "Charger protection bollard",
+      "profile": "protection-bollard"
+    },
+    {
+      "id": "battery-buffer-charger-container",
+      "title": "Battery-buffer charger container",
+      "profile": "buffer-container"
+    },
+    {
+      "id": "vehicle-to-grid-power-cabinet",
+      "title": "Vehicle-to-grid power cabinet",
+      "profile": "v2g-cabinet"
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+# MP4 visual inspection
+
+Reviewed `contact-sheet.png`, which contains one decoded frame every three seconds from the 30-second H.264 demo, and inspected the full-resolution source comparison frame. The title, actual model source, matching preview, parameter range, all seven contact sheets, and final local-verification frame are readable. The final frame distinguishes the local branch from production deployment and physical acceptance. The corrected carrier satchel now shows an attached body, flap, pocket, and handle. The assets are deliberately low-poly scene props; adjacent conveyor modules share a visual language but their distinct functions are named in the tiles.

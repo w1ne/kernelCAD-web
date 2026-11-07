@@ -28,6 +28,21 @@ describe('shape.dimension()', () => {
     expect(dims[0]).not.toHaveProperty('virtual');
   });
 
+  it('stores a bilateral number and drawing plus/minus as signed deviations', async () => {
+    const run = await records(`
+      return box(10, 10, 10)
+        .dimension({ id: 'slot', kind: 'linear', from: [0,0,0], to: [10,0,0], tol: 0.1 })
+        .dimension({ id: 'tab', kind: 'linear', from: [0,0,0], to: [8,0,0], tol: { plus: 0.2, minus: 0.05 } });`);
+    const dims = run.records.filter(r => r.kind === 'drawingDimension');
+    expect(dims[0]!.metadata).toMatchObject({ id: 'slot', tol: { upper: 0.1, lower: -0.1 } });
+    expect(dims[1]!.metadata).toMatchObject({ id: 'tab', tol: { upper: 0.2, lower: -0.05 } });
+  });
+
+  it('refuses a fit-class string on shape.dimension', async () => {
+    await expect(records(`return box(1,1,1).dimension({ kind: 'linear', from: [0,0,0], to: [1,0,0], tol: 'H7' });`))
+      .rejects.toThrow(/dimension: tol[\s\S]*fit class/);
+  });
+
   it.each([
     [`{ kind: 'linear', from: [0,0,0] }`, 'to'],
     [`{ kind: 'diameter' }`, 'edge'],

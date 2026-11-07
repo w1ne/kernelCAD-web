@@ -1,0 +1,35 @@
+// SPDX-License-Identifier: CC0-1.0
+// Original generic alpine expedition scene prop, millimetres, Z up, base at z = 0.
+
+meta({
+  name: "insulated-flask",
+  license: 'CC0-1.0',
+  title: "Insulated mountain flask",
+  description: "Double-wall flask with a shoulder, screw cap, protective base and carry loop. Knobs: overall scale and asset color.",
+  tags: ["alpine expedition", "mountaineering", "insulated mountain flask", "low poly", "scene prop", "CC0"],
+  kit: 'alpine-expedition',
+  category: 'prop',
+  origin: 'base',
+  compat: ['alpine', 'mountaineering', 'outdoor', 'expedition', 'scene'],
+  triangleBudget: 2400,
+});
+
+const scale = param('scale', 1, { min: 0.75, max: 1.25, step: 0.05, label: 'Overall scale' });
+const color = param('color', "#7a8582", { label: 'Asset color' });
+const baseZ = 0;
+const p = assembly("insulated-flask");
+const c = (x: number, y: number, z: number, h: number, r: number, n = 10) => cylinder(h, r, n).translate(x, y, z - baseZ).scale(scale).color(color);
+const ring = (x: number, y: number, z: number, h: number, r: number, wall: number, n = 12, axis = 'z') => {
+  let part = cylinder(h, r, n).subtract(cylinder(h + 2, r - wall, n).translate(0, 0, -1)).translate(0, 0, -h / 2);
+  if (axis === 'x') part = part.rotateY(90);
+  if (axis === 'y') part = part.rotateX(90);
+  return part.translate(x, y, z - baseZ).scale(scale).color(color);
+};
+
+p.part("flask-body", c(0, 0, 0, 360, 92, 12));
+p.part("neck", c(0, 0, 355, 75, 58, 10));
+p.part("screw-cap", c(0, 0, 420, 84, 68, 10));
+p.part("base-guard", c(0, 0, 0, 48, 98, 10));
+p.part("carry-loop", ring(95, 0, 450, 28, 48, 14, 8, "y"));
+
+return p.model();

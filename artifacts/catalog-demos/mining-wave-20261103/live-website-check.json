@@ -1,0 +1,14 @@
+{
+  "checkedAt": "2026-11-03T01:09:20.355146+00:00",
+  "command": "curl -L --max-time 25 -sS -w \"\\n%{http_code}\"",
+  "homepage": "https://kernelcad.com/",
+  "homepageStatus": 200,
+  "homepageContainsAssetRail": true,
+  "assetsJsonStatus": 200,
+  "assetsWithPreview": 543,
+  "assetsWithoutPreview": 0,
+  "previewPathsResolve": true,
+  "catalogStatus": 404,
+  "branchDeployed": false,
+  "note": "Snapshot of the current public site; this feature branch has not been deployed."
+}

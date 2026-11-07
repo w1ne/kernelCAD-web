@@ -342,8 +342,13 @@ export async function export3mfWithReportAsync(
     ? layoutWithModifiers(meshed, partPindex, partSlot, arrange, slicer, options)
     : layoutParts(meshed, partPindex, partSlot, arrange, slicer, options);
 
+  // All resources share one ID namespace. Keep object IDs stable for build
+  // items and slicer sidecars, and allocate the material group after them.
+  const baseMaterialsId = [...layout.meshObjects, ...layout.componentObjects]
+    .reduce((maxId, object) => Math.max(maxId, object.id), 0) + 1;
+
   const objectEntries = [
-    ...layout.meshObjects.map((o) => meshObjectXml(o, mmPerUnit)),
+    ...layout.meshObjects.map((o) => meshObjectXml(o, mmPerUnit, baseMaterialsId)),
     ...layout.componentObjects.map((c) => [
       `  <object id="${c.id}" type="model" name="${escapeXml(c.name)}">`,
       `    <components>`,
@@ -368,7 +373,7 @@ export async function export3mfWithReportAsync(
   <metadata name="Description">${escapeXml(`Made with ${KERNELCAD_NAME} (${KERNELCAD_HOMEPAGE})`)}</metadata>
   <metadata name="CreationDate">${isoDate}</metadata>
   <resources>
-    <basematerials id="${BASEMATERIALS_ID}">
+    <basematerials id="${baseMaterialsId}">
 ${baseMaterialEntries}
     </basematerials>
 ${objectEntries}
@@ -408,8 +413,6 @@ ${embedSource ? '  <Default Extension="ts" ContentType="text/plain" />\n' : ''}$
   }
   return { bytes: zipSync(files), bedWarnings: layout.bedWarnings, meshWarnings };
 }
-
-const BASEMATERIALS_ID = 1;
 
 /**
  * One `<base>` per distinct (name, colour): the name is the part's
@@ -800,7 +803,7 @@ function mergedBounds(all: readonly Bounds3[]): Bounds3 {
 }
 
 /** `<object>` XML; vertex coordinates are mm divided by `mmPerUnit`. */
-function meshObjectXml(o: MeshObject, mmPerUnit: number): string {
+function meshObjectXml(o: MeshObject, mmPerUnit: number, baseMaterialsId: number): string {
   const verts = o.mesh.vertices;
   const vertexNodes: string[] = [];
   for (let v = 0; v < verts.length; v += 3) {
@@ -812,13 +815,13 @@ function meshObjectXml(o: MeshObject, mmPerUnit: number): string {
   const triNodes: string[] = [];
   for (let t = 0; t < tris.length; t += 3) {
     const own = o.trianglePindex?.[t / 3];
-    const props = own === undefined || own === o.pindex ? '' : ` pid="${BASEMATERIALS_ID}" p1="${own}"`;
+    const props = own === undefined || own === o.pindex ? '' : ` pid="${baseMaterialsId}" p1="${own}"`;
     triNodes.push(
       `        <triangle v1="${tris[t]}" v2="${tris[t + 1]}" v3="${tris[t + 2]}"${props} />`,
     );
   }
   return [
-    `  <object id="${o.id}" type="model" name="${escapeXml(o.name)}" pid="${BASEMATERIALS_ID}" pindex="${o.pindex}">`,
+    `  <object id="${o.id}" type="model" name="${escapeXml(o.name)}" pid="${baseMaterialsId}" pindex="${o.pindex}">`,
     `    <mesh>`,
     `      <vertices>`,
     ...vertexNodes,

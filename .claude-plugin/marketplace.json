@@ -5,14 +5,14 @@
     "url": "https://kernelcad.com"
   },
   "metadata": {
-    "description": "CAD parts, STEP, schematics",
+    "description": "Manufacturing CAD & Schematics",
     "version": "0.17.4"
   },
   "plugins": [
     {
       "name": "kernelcad",
       "source": "./plugins/kernelcad",
-      "description": "Agent-first CAD over the hosted kernelCAD MCP: editable .kcad.ts source, design_loop review, cookbooks, Studio viewer, STEP/STL/3MF export, and electronics checks (netlist and ERC). No local OpenCASCADE install.",
+      "description": "Create and edit dimensioned parametric manufacturing CAD parts and assemblies from natural-language prompts. Design mounting plates, brackets, enclosures, gears and fixtures for 3D printing or CNC; inspect interactive models; run supported geometry and manufacturability checks; and export STEP, STL, 3MF, DXF or PDF drawings. For schematics, export connectivity netlists and run electrical rule checks (ERC).",
       "version": "0.17.4",
       "author": {
         "name": "kernelCAD",
@@ -23,7 +23,18 @@
       "license": "MIT",
       "keywords": [
         "cad",
-        "mcp",
+        "parametric",
+        "mechanical-design",
+        "parts",
+        "assemblies",
+        "enclosures",
+        "brackets",
+        "gears",
+        "motor-mounts",
+        "3d-printing",
+        "cnc",
+        "manufacturing",
+        "drawings",
         "step",
         "stl",
         "3mf",
@@ -33,7 +44,14 @@
         "schematic",
         "netlist",
         "erc",
-        "pcb"
+        "manufacturing-cad",
+        "mechanical-cad",
+        "mounting-plate",
+        "m4",
+        "dxf",
+        "pdf",
+        "mcp",
+        "skills"
       ],
       "category": "productivity"
     }

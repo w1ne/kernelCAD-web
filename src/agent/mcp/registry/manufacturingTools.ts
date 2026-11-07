@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { dfmReviewTool } from '../tools/dfmReview';
+import { dfmFixRecheckTool } from '../tools/dfmFixRecheck';
 import { PRINTER_PROFILE_IDS } from '../../../kernel/export/gcode/printerProfiles';
 import type { ToolRegistryEntry } from './types';
 
@@ -65,5 +66,53 @@ export const manufacturingToolEntries: ToolRegistryEntry[] = [
       },
     },
     handler: input => dfmReviewTool(input as unknown as Parameters<typeof dfmReviewTool>[0]),
+  },
+];
+
+/**
+ * Appended at the tail of TOOL_REGISTRY. The manufacturability family already
+ * occupies index 50 (`dfm_review`); inserting here would renumber every tool
+ * after it. kernelCAD-server pins that order.
+ */
+export const manufacturingFixRecheckToolEntries: ToolRegistryEntry[] = [
+  {
+    definition: {
+      name: 'dfm_fix_recheck',
+      description:
+        'Use this when a dfm_review finding should get one safe parameter edit and the same review again. ' +
+        "Pass { file | code } and the same process options as dfm_review, or a single process (not both process and processes). " +
+        'Runs dfm_review, applies at most one edit, then reviews the edited source. The only edits are: an existing fillet or filletIntersection radius raised to the check limit; ' +
+        'a shell() thickness raised to the minimum wall plus 0.01 mm; a draft() angle raised to the minimum draft. ' +
+        'A sharp corner, a thin solid that is not a shell(), an undrafted face, a param()-driven value, and every other finding are not edited. ' +
+        "Optional finding_id is a check id such as 'fdm.min-wall'. Optional diagnostic_code is a dfm.* code or that same check id. " +
+        'When either is set, a finding that is not safe does not fall through to a different check. ' +
+        'material is copied onto the report and does not change the numeric gates. ' +
+        "Returns { ok, applied, status: 'applied'|'no-safe-fix'|'invalid', processes, material?, before, after?, cleared, remaining, suggestions, change?, new_code?, refusal?, diagnostics, bounds: { maxApplies: 1, appliedCount } }. " +
+        'new_code is present only when applied is true. The caller persists it. Nothing is written.',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          ...manufacturingToolEntries[0].definition.inputSchema.properties,
+          process: {
+            type: 'string',
+            enum: ['fdm', 'cnc', 'sheet-metal', 'injection-molding'],
+            description: "One process. Use processes for several. Not both.",
+          },
+          material: {
+            type: 'string',
+            description: 'Recorded on the report. Does not change the numeric gates.',
+          },
+          finding_id: {
+            type: 'string',
+            description: "dfm_review check id to fix, for example 'fdm.min-wall'. Omit to take the first safe finding.",
+          },
+          diagnostic_code: {
+            type: 'string',
+            description: 'A dfm.* diagnostic code, or the same check id as finding_id.',
+          },
+        },
+      },
+    },
+    handler: input => dfmFixRecheckTool(input as unknown as Parameters<typeof dfmFixRecheckTool>[0]),
   },
 ];

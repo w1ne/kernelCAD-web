@@ -1,0 +1,12 @@
+{
+  "packageName": "kernelcad",
+  "fileCount": 4611,
+  "vetClinicSourceFiles": 50,
+  "vetClinicPreviewFiles": 50,
+  "catalogIndexIncluded": true,
+  "commercialSpecificPaths": [],
+  "exports": {
+    "./package.json": "./package.json"
+  },
+  "pass": true
+}

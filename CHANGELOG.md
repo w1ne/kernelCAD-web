@@ -1,5 +1,101 @@
 # Unreleased
 
+- `metricThreadFromDiameter` and `resolve_metric_thread` map a nominal diameter
+  (12 mm → M12×1.75) or a tap drill (D − P; 5 mm → M6) to the ISO 261 coarse
+  designation. `hole` / `holes` accept `thread: true` to fill that pitch.
+  `threadedHole` accepts `diameter` as well as `spec`. A clearance bore is
+  refused; ISO 273 stays on `clearanceFitForHoleDiameter`.
+  a model's bounding box, a plate/blank/bar stock, and an end mill, and can
+  emit mill G-code. Origin is the stock corner. This is a bbox heuristic, not
+  a collision-checked post, and it is separate from the FDM slicer `gcode` export.
+- `load_scan_reference` reads an ASCII PLY, little-endian binary PLY, or XYZ
+  cloud as a non-solid reference (bbox and centroid in millimetres).
+  `fit_model_to_scan` compares a parametric model's bounding box and reports
+  translation, scale, and per-axis clearance. Booleans on the cloud are refused.
+  `lib.fromSTL` and `mesh_to_features` are unchanged.
+- `dfm_fix_recheck` runs `dfm_review`, applies at most one safe edit (an
+  existing fillet radius, `shell()` thickness, or `draft()` angle), and
+  reviews the edited source. The caller persists `new_code`. Nothing is
+  written. Other findings come back as suggestions.
+- `estimate_cost` returns a labelled offline USD heuristic for 3d-print, cnc,
+  and sheet-cut from part volume, bounding box, and any declared material,
+  FabProcess, or StockSpec. It is not a supplier quote.
+- `analyze_tolerance_stack` returns a labelled 1D worst-case and RSS stack from
+  explicit contributors or from `shape.dimension` tolerances. A missing
+  tolerance is refused. It is not a full GD&T capability study.
+- GLB `asset.extras.kernelcad.stats` and the `asset_manifest` tool now include
+  `materials`, `drawCalls`, `parts`, `hasRig` and `hasIk` beside `triangles`,
+  `sizeM` and `minUpM`.
+- Construction Equipment catalog wave: 60 original parametric low-poly CC0
+  assets for paving, compaction, concrete placement, formwork/rebar and site
+  logistics in the new `catalog/kits/construction-equipment` kit. The generated
+  catalog grows from 1,015 to 1,075 audited assets. Kit documentation and the
+  reproducible local demo bundle are in
+  `catalog/kits/construction-equipment/README.md` and
+  `artifacts/catalog-demos/construction-equipment-wave-20261102/`.
+- Farm Machinery catalog wave: 60 original parametric low-poly CC0 assets
+  covering field tractors, implements, planting, crop care, forage, harvest,
+  grain handling and irrigation in the new `catalog/kits/farm-machinery` kit.
+  The generated catalog grows from 955 to 1,015 assets. Kit documentation and
+  the reproducible local demo bundle are in
+  `catalog/kits/farm-machinery/README.md` and
+  `artifacts/catalog-demos/farm-machinery-wave-20261102/`.
+- Laboratory infrastructure catalog wave: 60 original parametric low-poly
+  laboratory benches, storage, service systems, extraction enclosures and
+  cleanroom fixtures in the new `catalog/kits/lab-infrastructure` kit. The
+  generated catalog grows from 895 to 955 assets. The kit README and local demo
+  bundle are in `catalog/kits/lab-infrastructure/README.md` and
+  `artifacts/catalog-demos/lab-infrastructure-wave-20261102/`.
+- Industrial plant catalog wave: 60 original parametric low-poly CC0 factory
+  assets covering process equipment, power and controls, material handling,
+  lifting, access and safety in the new `catalog/kits/industrial-plant` kit.
+  The generated catalog grows from 835 to 895 assets. The kit README and
+  reproducible local demo bundle are in `catalog/kits/industrial-plant/README.md`
+  and `artifacts/catalog-demos/industrial-plant-wave-20261102/`.
+- Solar energy catalog wave: 40 original parametric low-poly CC0 photovoltaic
+  modules, mounting systems, storage and grid equipment, sensing and service
+  props in the new `catalog/kits/solar-energy` kit, growing the catalog from
+  795 to 835 assets. The kit README and reviewed local demo bundle are in
+  `catalog/kits/solar-energy/README.md` and
+  `artifacts/catalog-demos/solar-energy-wave-20261102/`.
+- Airfield catalog wave: 40 original parametric low-poly CC0 aircraft, apron
+  service vehicles and airport fixtures in the new `catalog/kits/airfield` kit,
+  growing the generated catalog from 755 to 795 assets. The kit README and
+  reviewed local demo bundle are in `catalog/kits/airfield/README.md` and
+  `artifacts/catalog-demos/airfield-wave-20261102/`.
+- Asset catalog: 40 original parametric low-poly CC0 sports assets in the new
+  `catalog/kits/sports` kit, bringing the catalog from 543 to 583 assets. The
+  kit README and reviewed demo bundle are in `catalog/kits/sports/README.md`
+  and `artifacts/catalog-demos/sports-wave-20261102/`.
+- Outdoor gear catalog wave: 12 original parametric low-poly CC0 assets in the
+  new `catalog/kits/outdoor-gear` kit: a backpack, sleeping bag, camp chair
+  and stove, hiking boots and poles, binoculars, compass, canteen, map case,
+  hammock and fishing rod. The catalog grows from 583 to 595 assets. Kit
+  README, generated previews and the reproducible demo bundle:
+  `docs/demos/catalog-wave-2/`.
+- Music catalog wave: 40 original parametric low-poly CC0 instruments and stage
+  props in the new `catalog/kits/music` kit, growing the catalog from 595 to
+  635 assets. The kit README and reviewed local demo bundle are in
+  `catalog/kits/music/README.md` and
+  `artifacts/catalog-demos/music-wave-20261102/`.
+- Photo/video studio catalog wave: 40 original parametric low-poly CC0 camera,
+  lens, lighting, support and production props in the new
+  `catalog/kits/photo-video-studio` kit, growing the catalog from 635 to 675
+  audited assets. The kit README and reviewed local demo bundle are in
+  `catalog/kits/photo-video-studio/README.md` and
+  `artifacts/catalog-demos/photo-video-studio-wave-20261102/`.
+- Railway catalog wave: 40 original parametric low-poly CC0 locomotives,
+  rolling stock, track pieces, signals and station props in the new
+  `catalog/kits/railway` kit, growing the catalog from 715 to 755 audited
+  assets. The kit README and reviewed local demo bundle are in
+  `catalog/kits/railway/README.md` and
+  `artifacts/catalog-demos/railway-wave-20261102/`.
+- Marine catalog wave: 40 original parametric low-poly CC0 nautical safety,
+  dockside, navigation, fishing and harbor props in the new `catalog/kits/marine`
+  kit, growing the catalog from 675 to 715 audited assets. The kit README and
+  reviewed local demo bundle are in `catalog/kits/marine/README.md` and
+  `artifacts/catalog-demos/marine-wave-20261102/`.
+
 - Asset catalog wave 1: 60 new original parametric low-poly assets (CC0) in
   five new kits, 12 each: `catalog/kits/tools-equipment` (hammers, wrench,
   drill, saws, chainsaw, pliers, spade, pickaxe, sawhorse, rolling tool

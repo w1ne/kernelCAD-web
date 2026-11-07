@@ -1,0 +1,22 @@
+{
+  "reason": "Two source corrections followed the full catalog preview pass: carrier-route-sequence-rack base origin and carrier-satchel visual assembly.",
+  "rerenders": [
+    {
+      "command": "npx tsx scripts/renderCatalogPreviews.ts carrier-route-sequence-rack",
+      "asset": "postal-logistics/carrier-route-sequence-rack",
+      "triangles": 144,
+      "status": "rendered"
+    },
+    {
+      "command": "npx tsx scripts/renderCatalogPreviews.ts carrier-satchel",
+      "asset": "postal-logistics/carrier-satchel",
+      "triangles": 120,
+      "status": "rendered"
+    }
+  ],
+  "followUp": [
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "npx vitest run tests/integration/catalog/"
+  ],
+  "followUpStatus": "passed"
+}

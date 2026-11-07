@@ -1,0 +1,5 @@
+LOCAL HANDOFF
+Local catalog pages generated
+Integration gate passed
+Deploy pending PR merge
+No hardware acceptance

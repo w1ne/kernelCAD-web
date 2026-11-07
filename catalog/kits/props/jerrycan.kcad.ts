@@ -15,6 +15,7 @@ meta({
   triangleBudget: 220,
 });
 
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const can = param('can', '#4f5f38', { label: 'Can' });
 const press = param('press', '#5c6d42', { label: 'X pressing' });
 const handle = param('handle', '#3f4c2c', { label: 'Handle' });
@@ -35,7 +36,7 @@ const blk = (x0: number, y0: number, z0: number, x1: number, y1: number, z1: num
 const j = assembly('jerrycan');
 // Body: side profile with chamfered top corners, extruded through Y.
 const prof: [number, number][] = [[-W / 2, 0], [W / 2, 0], [W / 2, H - 50], [W / 2 - 50, H], [-W / 2 + 50, H], [-W / 2, H - 50]];
-j.part('can', extrudePolygon(prof, T).rotateX(90).translate(0, T / 2, 0).color(can));
+j.part('can', extrudePolygon(prof, T).rotateX(90).translate(0, T / 2, 0).color(can).scale(overallScale));
 // X pressing: two crossed raised strips on each flat face.
 const diag = Math.atan2(H - 120, W - 80) * 180 / Math.PI;
 const dl = Math.hypot(W - 80, H - 120);
@@ -43,7 +44,7 @@ let k = 0;
 for (const sy of [-1, 1]) {
   for (const a of [diag, -diag]) {
     k++;
-    j.part(`x-${k}`, box(dl, 14, 34, true).rotateY(-a).translate(0, sy * (T / 2 + 5), H / 2 - 20).color(press));
+    j.part(`x-${k}`, box(dl, 14, 34, true).rotateY(-a).translate(0, sy * (T / 2 + 5), H / 2 - 20).color(press).scale(overallScale));
   }
 }
 // Three-bar handle above the top.
@@ -51,8 +52,8 @@ j.part('handle', blk(-W / 2 + 40, -60, H - 2, -W / 2 + 70, 60, H + 70)
   .union(blk(-25, -60, H - 2, 5, 60, H + 70))
   .union(blk(W / 2 - 150, -60, H - 2, W / 2 - 120, 60, H + 70))
   .union(blk(-W / 2 + 40, -15, H + 50, W / 2 - 120, 15, H + 85))
-  .color(handle));
+  .color(handle).scale(overallScale));
 // Angled spout cap at the front corner.
-j.part('cap', blk(-28, -28, 0, 28, 28, 60).rotateY(45).translate(W / 2 - 50, 0, H - 30).color(cap));
+j.part('cap', blk(-28, -28, 0, 28, 28, 60).rotateY(45).translate(W / 2 - 50, 0, H - 30).color(cap).scale(overallScale));
 
 return j.model();

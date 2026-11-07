@@ -1,0 +1,18 @@
+{
+  "command": "npm pack --dry-run --ignore-scripts --json",
+  "packageName": "kernelcad",
+  "packageVersion": "0.17.4",
+  "fileCount": 4406,
+  "theatreProductionSources": 52,
+  "theatreProductionSourcesPacked": 52,
+  "theatreProductionPreviewsPacked": 52,
+  "catalogIndexPacked": true,
+  "packageExports": [
+    "./package.json"
+  ],
+  "productPaths": [],
+  "missing": [],
+  "wroteTarball": false,
+  "ranLifecycleScripts": false,
+  "passed": true
+}

@@ -1,0 +1,22 @@
+{
+  "video": "artifacts/catalog-demos/railway-wave-20261102/railway-kit.mp4",
+  "bytes": 319251,
+  "sha256": "49974906442ade948da80080f27aea3195e190d94f848ac39233a837f43a490d",
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "pixelFormat": "yuv420p",
+  "durationSeconds": 24.0,
+  "decodedFrameSamples": [
+    "artifacts/catalog-demos/railway-wave-20261102/video-review/decoded-01.png",
+    "artifacts/catalog-demos/railway-wave-20261102/video-review/decoded-02.png",
+    "artifacts/catalog-demos/railway-wave-20261102/video-review/decoded-03.png",
+    "artifacts/catalog-demos/railway-wave-20261102/video-review/decoded-04.png",
+    "artifacts/catalog-demos/railway-wave-20261102/video-review/decoded-05.png",
+    "artifacts/catalog-demos/railway-wave-20261102/video-review/decoded-06.png",
+    "artifacts/catalog-demos/railway-wave-20261102/video-review/decoded-07.png",
+    "artifacts/catalog-demos/railway-wave-20261102/video-review/decoded-08.png"
+  ],
+  "contactSheet": "artifacts/catalog-demos/railway-wave-20261102/video-review/contact-sheet.png",
+  "manualVisualInspection": true
+}

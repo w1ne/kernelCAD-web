@@ -28,7 +28,7 @@ import { mechanismSimToolEntries } from './registry/mechanismSimTools';
 import { meshReconstructToolEntries } from './registry/meshReconstructTools';
 import { cookbookExecutionToolEntries } from './registry/cookbookExecutionTools';
 import { importToolEntries } from './registry/importTools';
-import { manufacturingToolEntries } from './registry/manufacturingTools';
+import { manufacturingFixRecheckToolEntries, manufacturingToolEntries } from './registry/manufacturingTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
 import { rayPickToolEntries } from './registry/rayPickTools';
 import { surfaceBlendToolEntries } from './registry/surfaceBlendTools';
@@ -39,6 +39,10 @@ import { meshBooleanToolEntries } from './registry/meshBooleanTools';
 import { explodeViewToolEntries } from './registry/explodeViewTools';
 import { assetManifestToolEntries } from './registry/assetManifestTools';
 import { assetCatalogToolEntries } from './registry/assetCatalogTools';
+import { costEstimateToolEntries } from './registry/costTools';
+import { toleranceStackToolEntries } from './registry/toleranceTools';
+import { scanReferenceToolEntries } from './registry/scanReferenceTools';
+import { metricThreadToolEntries } from './registry/metricThreadTools';
 
 const EXPECTED_TOOL_NAMES = [
   'evaluate_script',
@@ -110,6 +114,12 @@ const EXPECTED_TOOL_NAMES = [
   'get_kit',
   'run_cfd',
   'cfd_summary',
+  'dfm_fix_recheck',
+  'estimate_cost',
+  'analyze_tolerance_stack',
+  'load_scan_reference',
+  'fit_model_to_scan',
+  'resolve_metric_thread',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -217,9 +227,15 @@ describe('toolRegistry public contract', () => {
   it('wires the moved core runtime handlers through the public dispatcher', async () => {
     const evalResult = await callMcpTool('evaluate_script', {
       code: 'return box(10, 10, 10);',
-      dryRun: true,
+      dry_run: true,
     });
     expect(evalResult).toMatchObject({ ok: true, dryRun: true, featureCount: 1 });
+
+    const aliasResult = await callMcpTool('evaluate_script', {
+      code: 'return box(10, 10, 10);',
+      dryRun: true,
+    });
+    expect(aliasResult).toMatchObject({ ok: true, dryRun: true, featureCount: 1 });
 
     const diffResult = await callMcpTool('diff_scripts', {});
     expect(diffResult).toMatchObject({
@@ -422,8 +438,14 @@ describe('toolRegistry public contract', () => {
        'get_kit',
        'run_cfd',
        'cfd_summary',
+       'dfm_fix_recheck',
+       'estimate_cost',
+       'analyze_tolerance_stack',
+       'load_scan_reference',
+       'fit_model_to_scan',
+       'resolve_metric_thread',
      ]);
-    expect(TOOL_REGISTRY).toHaveLength(67);
+    expect(TOOL_REGISTRY).toHaveLength(73);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
@@ -481,26 +503,92 @@ describe('toolRegistry public contract', () => {
 
   it('appends the generic blockout assembly generator at the registry tail', () => {
     expect(blockoutToolEntries.map(entry => entry.definition.name)).toEqual(['blockout_assembly']);
-    expect(TOOL_REGISTRY.slice(-10, -9)).toEqual(blockoutToolEntries);
+    expect(TOOL_REGISTRY.slice(
+      -blockoutToolEntries.length - assetManifestToolEntries.length - assetCatalogToolEntries.length - cfdToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - metricThreadToolEntries.length,
+      -assetManifestToolEntries.length - assetCatalogToolEntries.length - cfdToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - metricThreadToolEntries.length,
+    )).toEqual(blockoutToolEntries);
     expect(blockoutToolEntries[0].definition.description).toMatch(/^Use this when /);
   });
 
   it('appends the read-only asset manifest tool after the historical blockout tail', () => {
     expect(assetManifestToolEntries.map(entry => entry.definition.name)).toEqual(['asset_manifest']);
-    expect(TOOL_REGISTRY.slice(-9, -8)).toEqual(assetManifestToolEntries);
+    expect(TOOL_REGISTRY.slice(
+      -assetManifestToolEntries.length - assetCatalogToolEntries.length - cfdToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - metricThreadToolEntries.length,
+      -assetCatalogToolEntries.length - cfdToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - metricThreadToolEntries.length,
+    )).toEqual(assetManifestToolEntries);
   });
 
   it('appends the read-only asset catalog family before the CFD tail', () => {
-    expect(TOOL_REGISTRY.slice(-assetCatalogToolEntries.length - cfdToolEntries.length, -cfdToolEntries.length)).toEqual(assetCatalogToolEntries);
+    expect(TOOL_REGISTRY.slice(
+      -assetCatalogToolEntries.length - cfdToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
+      -cfdToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
+    )).toEqual(assetCatalogToolEntries);
     expect(assetCatalogToolEntries.map(entry => entry.definition.name)).toEqual([
       'search_assets', 'get_asset', 'find_matching', 'get_variant', 'list_kits', 'get_kit',
     ]);
   });
 
-  it('appends the CFD family (run_cfd, cfd_summary) at the registry tail', () => {
+  it('appends the CFD family (run_cfd, cfd_summary) before assembly checks', () => {
     expect(cfdToolEntries.map(entry => entry.definition.name)).toEqual(['run_cfd', 'cfd_summary']);
-    expect(TOOL_REGISTRY.slice(-cfdToolEntries.length)).toEqual(cfdToolEntries);
+    expect(TOOL_REGISTRY.slice(
+      -cfdToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
+      -manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
+    )).toEqual(cfdToolEntries);
     expect(cfdToolEntries[0].definition.description).toMatch(/^Use this when /);
+  });
+
+  it('appends dfm_fix_recheck without moving dfm_review', () => {
+    expect(manufacturingFixRecheckToolEntries.map(entry => entry.definition.name)).toEqual(['dfm_fix_recheck']);
+    expect(TOOL_REGISTRY.slice(
+      -manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
+      -costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
+    )).toEqual(manufacturingFixRecheckToolEntries);
+    expect(TOOL_REGISTRY[50]?.definition.name).toBe('dfm_review');
+    expect(manufacturingFixRecheckToolEntries[0].definition.description).toMatch(/^Use this when /);
+  });
+
+
+  it('appends estimate_cost immediately before the tolerance stack', () => {
+    expect(costEstimateToolEntries.map(entry => entry.definition.name)).toEqual(['estimate_cost']);
+    expect(TOOL_REGISTRY.slice(
+      -costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
+      -toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
+    )).toEqual(costEstimateToolEntries);
+    expect(costEstimateToolEntries[0].definition.description).toMatch(/^Use this when /);
+    expect(costEstimateToolEntries[0].definition.description).toMatch(/not supplier quotes/i);
+  });
+
+  it('appends analyze_tolerance_stack immediately before the scan references', () => {
+    expect(toleranceStackToolEntries.map(entry => entry.definition.name)).toEqual(['analyze_tolerance_stack']);
+    expect(TOOL_REGISTRY.slice(
+      -toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length),
+      -scanReferenceToolEntries.length - (metricThreadToolEntries.length),
+    )).toEqual(toleranceStackToolEntries);
+    expect(toleranceStackToolEntries[0].definition.description).toMatch(/^Use this when /);
+    expect(toleranceStackToolEntries[0].definition.description).toMatch(/not a full GD&T/i);
+    expect(toleranceStackToolEntries[0].definition.description).toMatch(/ISO 2768/i);
+  });
+
+  it('appends the scan reference tools immediately before resolve_metric_thread', () => {
+    expect(scanReferenceToolEntries.map(entry => entry.definition.name)).toEqual([
+      'load_scan_reference',
+      'fit_model_to_scan',
+    ]);
+    expect(TOOL_REGISTRY.slice(
+      -(scanReferenceToolEntries.length + (metricThreadToolEntries.length)),
+      -(metricThreadToolEntries.length),
+    )).toEqual(scanReferenceToolEntries);
+    expect(scanReferenceToolEntries[0].definition.description).toMatch(/^Use this when /);
+    expect(scanReferenceToolEntries[0].definition.description).toMatch(/not a BREP/i);
+    expect(scanReferenceToolEntries[1].definition.description).toMatch(/not a solid/i);
+  });
+
+
+  it('appends resolve_metric_thread at the registry tail', () => {
+    expect(metricThreadToolEntries.map(entry => entry.definition.name)).toEqual(['resolve_metric_thread']);
+    expect(TOOL_REGISTRY.slice(-metricThreadToolEntries.length)).toEqual(metricThreadToolEntries);
+    expect(metricThreadToolEntries[0].definition.description).toMatch(/^Use this when /);
+    expect(metricThreadToolEntries[0].definition.description).toMatch(/clearanceFitForHoleDiameter/);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

@@ -1,0 +1,4 @@
+04 / PREVIEW
+npm run catalog:previews
+50 software-rendered PNG previews
+Flat-shaded assets for scenes

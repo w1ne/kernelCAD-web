@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { FeatureId, FeatureKind, FeatureRef, Param, Vec3, Vec3Param } from '../../shared/intent/types';
+import type { StockSpec } from '../../shared/stock';
 import { KernelError } from '../../shared/intent/kernelError';
 import { toParam } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
@@ -81,6 +82,8 @@ export interface AssemblyPartCaptureOpts {
   at?: Vec3Param;
   /** Canonical engineering-material name from `arm.part(..., { material })`. */
   materialName?: string;
+  /** Declared blank from `arm.part(..., { stock })`. */
+  stock?: StockSpec;
   connectors?: Record<string, AssemblyConnectorFrameStoredLike>;
   placedBy?: {
     connector: string;
@@ -135,6 +138,7 @@ export function buildAssemblyPartFeatureSpec(
       ...(opts.at !== undefined ? { at: opts.at } : {}),
       ...(opts.connectors !== undefined ? { connectors: opts.connectors } : {}),
       ...(opts.materialName !== undefined ? { materialName: opts.materialName } : {}),
+      ...(opts.stock !== undefined ? { stock: opts.stock } : {}),
       ...(opts.placedBy !== undefined ? {
         placedBy: {
           connector: opts.placedBy.connector,

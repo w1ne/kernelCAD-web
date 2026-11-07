@@ -121,3 +121,7 @@ eval/benchmarks/cadgenbench/runs/
 
 # Static catalog SEO pages (npm run catalog:pages)
 site-build/
+
+# Python bytecode from the demo capture scripts (never source)
+__pycache__/
+*.pyc
