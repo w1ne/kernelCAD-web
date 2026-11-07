@@ -79872,13 +79872,18 @@
       "id": "bale-accumulator",
       "kit": "farm-machinery",
       "title": "Bale accumulator",
-      "description": "Rear bale accumulator with twin collection decks, guide rails and discharge gate. Editable scale and painted steel, exposed steel controls with weathered and high-visibility presets.",
+      "description": "Flat-8 small square bale accumulator at real size: sloping inlet chute and drawbar to the baler, slatted bed with a hydraulic side pusher, rear tilting release tines, side guide rails, two flotation wheels and parking stand, carrying straw bales with twine bands. Bale count choice empty, half or full pack. Material controls: frame paint, straw, tyres and twine/steel; harvestRed, blueYard and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "bale accumulator",
+        "flat 8",
+        "small square bales",
+        "hay",
+        "straw",
+        "baler",
         "farm machinery",
         "agriculture",
-        "field equipment",
         "low poly",
         "CC0"
       ],
@@ -79891,8 +79896,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/bale-accumulator.kcad.ts",
       "preview": "/assets/farm-machinery-bale-accumulator.png",
-      "sourceSha256": "6a2870ef796a3876e9034926169b4a9ba604527a014e80775e5f8b4db01cccef",
-      "triangleBudget": 2200,
+      "sourceSha256": "625d61f5c1cc437b3e99660a62b5d711e55b0365d7c4f343d6e6d242d68a2ea1",
+      "triangleBudget": 4000,
       "params": [
         {
           "name": "scale",
@@ -79904,59 +79909,156 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteelColor",
-          "type": "color",
-          "default": "#397747",
-          "label": "Painted steel"
+          "name": "load",
+          "type": "choice",
+          "default": "half pack",
+          "label": "Bales on the bed",
+          "choices": [
+            "empty",
+            "half pack",
+            "full pack"
+          ]
         },
         {
-          "name": "steelColor",
+          "name": "framePaint",
           "type": "color",
-          "default": "#929b9b",
-          "label": "Exposed steel"
+          "default": "#3d7a3a",
+          "label": "Frame paint"
+        },
+        {
+          "name": "straw",
+          "type": "color",
+          "default": "#d9bd6a",
+          "label": "Straw bales"
+        },
+        {
+          "name": "tyreRubber",
+          "type": "color",
+          "default": "#262a2b",
+          "label": "Tyres"
+        },
+        {
+          "name": "steelTwine",
+          "type": "color",
+          "default": "#9aa3a6",
+          "label": "Tines, rims and twine"
         }
       ],
       "presets": {
-        "weathered": {
-          "paintedSteelColor": "#53694d",
-          "steelColor": "#737d7b"
+        "harvestRed": {
+          "framePaint": "#b52a22"
         },
-        "highVisibility": {
-          "paintedSteelColor": "#db762c",
-          "steelColor": "#abb2ad"
+        "blueYard": {
+          "framePaint": "#2c5b9a",
+          "steelTwine": "#c8cdd0"
+        },
+        "weathered": {
+          "framePaint": "#56684c",
+          "straw": "#b19a5e",
+          "steelTwine": "#7b8180"
         }
       },
       "stats": {
-        "triangles": 84,
+        "triangles": 1148,
         "sizeM": [
-          1.638,
-          1.1695,
-          2.393
+          2.8,
+          1,
+          3.675009
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteelColor",
-          "color": "#397747",
+          "name": "framePaint",
+          "color": "#3d7a3a",
           "parts": [
-            "hay-frame",
+            "bed-rail-left",
+            "bed-rail-right",
+            "bed-crossmember-rear",
+            "bed-crossmember-front",
+            "pusher-plate",
+            "pusher-cylinder",
+            "inlet-chute",
+            "chute-side-in",
+            "chute-side-out",
             "drawbar",
-            "collection-deck-0",
-            "collection-deck-1"
+            "guide-post-left--890",
+            "guide-post-left-0",
+            "guide-post-left-890",
+            "guide-rail-left",
+            "guide-post-right--890",
+            "guide-post-right-0",
+            "guide-post-right-890",
+            "guide-rail-right",
+            "tine-tilt-shaft",
+            "stub-axle-left",
+            "stub-axle-right",
+            "parking-stand",
+            "parking-foot"
           ],
-          "param": "paintedSteelColor"
+          "param": "framePaint"
         },
         {
-          "name": "steelColor",
-          "color": "#929b9b",
+          "name": "steelTwine",
+          "color": "#9aa3a6",
           "parts": [
-            "guide-rail--1",
-            "guide-rail-1",
-            "discharge-gate"
+            "bed-slat-0",
+            "bed-slat-1",
+            "bed-slat-2",
+            "bed-slat-3",
+            "bed-slat-4",
+            "bed-slat-5",
+            "bed-slat-6",
+            "bed-slat-7",
+            "bed-slat-8",
+            "pusher-rod",
+            "hitch-eye",
+            "release-tine-0",
+            "release-tine-1",
+            "release-tine-2",
+            "release-tine-3",
+            "release-tine-4",
+            "release-tine-5",
+            "release-tine-6",
+            "release-tine-7",
+            "release-tine-8",
+            "release-tine-9",
+            "rim-left",
+            "rim-right",
+            "bale-0-twine-a",
+            "bale-0-twine-b",
+            "bale-1-twine-a",
+            "bale-1-twine-b",
+            "bale-2-twine-a",
+            "bale-2-twine-b",
+            "bale-3-twine-a",
+            "bale-3-twine-b",
+            "bale-4-twine-a",
+            "bale-4-twine-b"
           ],
-          "param": "steelColor"
+          "param": "steelTwine"
+        },
+        {
+          "name": "tyreRubber",
+          "color": "#262a2b",
+          "parts": [
+            "tyre-left",
+            "tyre-right"
+          ],
+          "param": "tyreRubber"
+        },
+        {
+          "name": "straw",
+          "color": "#d9bd6a",
+          "parts": [
+            "bale-0",
+            "bale-1",
+            "bale-2",
+            "bale-3",
+            "bale-4"
+          ],
+          "param": "straw"
         }
       ]
     },
@@ -80738,13 +80840,18 @@
       "id": "corn-header",
       "kit": "farm-machinery",
       "title": "Corn header",
-      "description": "Row-crop corn header with multiple tapered snouts, gathering chains and cross auger. Editable scale and painted steel, exposed steel controls with weathered and high-visibility presets.",
+      "description": "Row-crop corn header at real size on 762 mm (30 in) rows: lofted pointed snouts between the rows, stalk rolls and gathering-chain lugs in each row gap, stripper plates, a deep auger trough with a flighted cross auger, tall back sheet with feeder-house opening, end sheets, rear drive shaft with row gearboxes, and skid shoes. Row choice 6 or 8. Material controls: header paint, snout polymer, drive steel, chain and rubber; harvestRed, fieldYellow and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "corn header",
+        "maize header",
+        "combine header",
+        "row crop",
+        "snouts",
+        "stalk rolls",
         "farm machinery",
         "agriculture",
-        "field equipment",
         "low poly",
         "CC0"
       ],
@@ -80757,8 +80864,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/corn-header.kcad.ts",
       "preview": "/assets/farm-machinery-corn-header.png",
-      "sourceSha256": "18221d7fcd8399e42e6a01dbed7cf821320d0bb653e8a6d4e7388c6dc2e43f0e",
-      "triangleBudget": 2200,
+      "sourceSha256": "f264ce3f450c7378adfb14920c8fdbd14b4c41d2aa68656ac4832c4b6c11c406",
+      "triangleBudget": 6000,
       "params": [
         {
           "name": "scale",
@@ -80770,73 +80877,299 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteelColor",
-          "type": "color",
-          "default": "#397747",
-          "label": "Painted steel"
+          "name": "rows",
+          "type": "choice",
+          "default": "8 rows",
+          "label": "Row units",
+          "choices": [
+            "6 rows",
+            "8 rows"
+          ]
         },
         {
-          "name": "steelColor",
+          "name": "headerPaint",
           "type": "color",
-          "default": "#929b9b",
-          "label": "Exposed steel"
+          "default": "#3d7a3a",
+          "label": "Header paint"
+        },
+        {
+          "name": "snoutPolymer",
+          "type": "color",
+          "default": "#e2b523",
+          "label": "Snout polymer"
+        },
+        {
+          "name": "driveSteel",
+          "type": "color",
+          "default": "#9aa3a6",
+          "label": "Drive and roll steel"
+        },
+        {
+          "name": "chainDark",
+          "type": "color",
+          "default": "#2b2e30",
+          "label": "Chains, rubber and openings"
         }
       ],
       "presets": {
-        "weathered": {
-          "paintedSteelColor": "#53694d",
-          "steelColor": "#737d7b"
+        "harvestRed": {
+          "headerPaint": "#b52a22",
+          "snoutPolymer": "#c9302a",
+          "chainDark": "#262626"
         },
-        "highVisibility": {
-          "paintedSteelColor": "#db762c",
-          "steelColor": "#abb2ad"
+        "fieldYellow": {
+          "headerPaint": "#e0a51c",
+          "snoutPolymer": "#2f3336",
+          "driveSteel": "#a8aeb0"
+        },
+        "weathered": {
+          "headerPaint": "#55684a",
+          "snoutPolymer": "#a99551",
+          "driveSteel": "#7b8180",
+          "chainDark": "#3a3530"
         }
       },
       "stats": {
-        "triangles": 252,
+        "triangles": 3800,
         "sizeM": [
-          3.6,
-          1.275,
-          1.509
+          6.376,
+          1.21,
+          2.379179
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteelColor",
-          "color": "#397747",
+          "name": "headerPaint",
+          "color": "#3d7a3a",
           "parts": [
-            "header-floor",
-            "cutterbar",
-            "end-divider--1",
-            "end-divider-1",
-            "row-snout-0",
-            "row-snout-1",
-            "row-snout-2",
-            "row-snout-3",
-            "row-snout-4",
-            "row-snout-5",
-            "row-snout-6",
-            "row-snout-7"
+            "auger-trough",
+            "back-sheet-top-lip",
+            "end-sheet-left",
+            "skid-strut-left",
+            "end-sheet-right",
+            "skid-strut-right",
+            "cross-auger-tube",
+            "main-gearbox",
+            "row-deck-0",
+            "row-gearbox-0",
+            "row-deck-1",
+            "row-gearbox-1",
+            "row-deck-2",
+            "row-gearbox-2",
+            "row-deck-3",
+            "row-gearbox-3",
+            "row-deck-4",
+            "row-gearbox-4",
+            "row-deck-5",
+            "row-gearbox-5",
+            "row-deck-6",
+            "row-gearbox-6",
+            "row-deck-7",
+            "row-gearbox-7"
           ],
-          "param": "paintedSteelColor"
+          "param": "headerPaint"
         },
         {
-          "name": "steelColor",
-          "color": "#929b9b",
+          "name": "chainDark",
+          "color": "#2b2e30",
           "parts": [
-            "gathering-chain-0",
-            "gathering-chain-1",
-            "gathering-chain-2",
-            "gathering-chain-3",
-            "gathering-chain-4",
-            "gathering-chain-5",
-            "gathering-chain-6",
-            "gathering-chain-7",
-            "cross-auger"
+            "feeder-opening",
+            "gathering-chain-0-l",
+            "chain-lug-0-l-0",
+            "chain-lug-0-l-1",
+            "chain-lug-0-l-2",
+            "chain-lug-0-l-3",
+            "chain-lug-0-l-4",
+            "gathering-chain-0-r",
+            "chain-lug-0-r-0",
+            "chain-lug-0-r-1",
+            "chain-lug-0-r-2",
+            "chain-lug-0-r-3",
+            "chain-lug-0-r-4",
+            "gathering-chain-1-l",
+            "chain-lug-1-l-0",
+            "chain-lug-1-l-1",
+            "chain-lug-1-l-2",
+            "chain-lug-1-l-3",
+            "chain-lug-1-l-4",
+            "gathering-chain-1-r",
+            "chain-lug-1-r-0",
+            "chain-lug-1-r-1",
+            "chain-lug-1-r-2",
+            "chain-lug-1-r-3",
+            "chain-lug-1-r-4",
+            "gathering-chain-2-l",
+            "chain-lug-2-l-0",
+            "chain-lug-2-l-1",
+            "chain-lug-2-l-2",
+            "chain-lug-2-l-3",
+            "chain-lug-2-l-4",
+            "gathering-chain-2-r",
+            "chain-lug-2-r-0",
+            "chain-lug-2-r-1",
+            "chain-lug-2-r-2",
+            "chain-lug-2-r-3",
+            "chain-lug-2-r-4",
+            "gathering-chain-3-l",
+            "chain-lug-3-l-0",
+            "chain-lug-3-l-1",
+            "chain-lug-3-l-2",
+            "chain-lug-3-l-3",
+            "chain-lug-3-l-4",
+            "gathering-chain-3-r",
+            "chain-lug-3-r-0",
+            "chain-lug-3-r-1",
+            "chain-lug-3-r-2",
+            "chain-lug-3-r-3",
+            "chain-lug-3-r-4",
+            "gathering-chain-4-l",
+            "chain-lug-4-l-0",
+            "chain-lug-4-l-1",
+            "chain-lug-4-l-2",
+            "chain-lug-4-l-3",
+            "chain-lug-4-l-4",
+            "gathering-chain-4-r",
+            "chain-lug-4-r-0",
+            "chain-lug-4-r-1",
+            "chain-lug-4-r-2",
+            "chain-lug-4-r-3",
+            "chain-lug-4-r-4",
+            "gathering-chain-5-l",
+            "chain-lug-5-l-0",
+            "chain-lug-5-l-1",
+            "chain-lug-5-l-2",
+            "chain-lug-5-l-3",
+            "chain-lug-5-l-4",
+            "gathering-chain-5-r",
+            "chain-lug-5-r-0",
+            "chain-lug-5-r-1",
+            "chain-lug-5-r-2",
+            "chain-lug-5-r-3",
+            "chain-lug-5-r-4",
+            "gathering-chain-6-l",
+            "chain-lug-6-l-0",
+            "chain-lug-6-l-1",
+            "chain-lug-6-l-2",
+            "chain-lug-6-l-3",
+            "chain-lug-6-l-4",
+            "gathering-chain-6-r",
+            "chain-lug-6-r-0",
+            "chain-lug-6-r-1",
+            "chain-lug-6-r-2",
+            "chain-lug-6-r-3",
+            "chain-lug-6-r-4",
+            "gathering-chain-7-l",
+            "chain-lug-7-l-0",
+            "chain-lug-7-l-1",
+            "chain-lug-7-l-2",
+            "chain-lug-7-l-3",
+            "chain-lug-7-l-4",
+            "gathering-chain-7-r",
+            "chain-lug-7-r-0",
+            "chain-lug-7-r-1",
+            "chain-lug-7-r-2",
+            "chain-lug-7-r-3",
+            "chain-lug-7-r-4"
           ],
-          "param": "steelColor"
+          "param": "chainDark"
+        },
+        {
+          "name": "driveSteel",
+          "color": "#9aa3a6",
+          "parts": [
+            "feeder-flange",
+            "skid-shoe-left",
+            "skid-shoe-right",
+            "skid-shoe-centre",
+            "auger-flight-0",
+            "auger-flight-1",
+            "auger-flight-2",
+            "auger-flight-3",
+            "auger-flight-4",
+            "auger-flight-5",
+            "auger-flight-6",
+            "auger-flight-7",
+            "auger-flight-11",
+            "auger-flight-12",
+            "auger-flight-13",
+            "auger-flight-14",
+            "auger-flight-15",
+            "auger-flight-16",
+            "auger-flight-17",
+            "auger-flight-18",
+            "auger-paddle-a",
+            "auger-paddle-b",
+            "drive-shaft",
+            "drive-input",
+            "stripper-plate-0-l",
+            "stalk-roll-0-l",
+            "stripper-plate-0-r",
+            "stalk-roll-0-r",
+            "row-gearbox-cap-0",
+            "stripper-plate-1-l",
+            "stalk-roll-1-l",
+            "stripper-plate-1-r",
+            "stalk-roll-1-r",
+            "row-gearbox-cap-1",
+            "stripper-plate-2-l",
+            "stalk-roll-2-l",
+            "stripper-plate-2-r",
+            "stalk-roll-2-r",
+            "row-gearbox-cap-2",
+            "stripper-plate-3-l",
+            "stalk-roll-3-l",
+            "stripper-plate-3-r",
+            "stalk-roll-3-r",
+            "row-gearbox-cap-3",
+            "stripper-plate-4-l",
+            "stalk-roll-4-l",
+            "stripper-plate-4-r",
+            "stalk-roll-4-r",
+            "row-gearbox-cap-4",
+            "stripper-plate-5-l",
+            "stalk-roll-5-l",
+            "stripper-plate-5-r",
+            "stalk-roll-5-r",
+            "row-gearbox-cap-5",
+            "stripper-plate-6-l",
+            "stalk-roll-6-l",
+            "stripper-plate-6-r",
+            "stalk-roll-6-r",
+            "row-gearbox-cap-6",
+            "stripper-plate-7-l",
+            "stalk-roll-7-l",
+            "stripper-plate-7-r",
+            "stalk-roll-7-r",
+            "row-gearbox-cap-7",
+            "snout-skid-0",
+            "snout-skid-1",
+            "snout-skid-2",
+            "snout-skid-3",
+            "snout-skid-4",
+            "snout-skid-5",
+            "snout-skid-6",
+            "snout-skid-7",
+            "snout-skid-8"
+          ],
+          "param": "driveSteel"
+        },
+        {
+          "name": "snoutPolymer",
+          "color": "#e2b523",
+          "parts": [
+            "snout-0",
+            "snout-1",
+            "snout-2",
+            "snout-3",
+            "snout-4",
+            "snout-5",
+            "snout-6",
+            "snout-7",
+            "snout-8"
+          ],
+          "param": "snoutPolymer"
         }
       ]
     },
@@ -82226,13 +82559,18 @@
       "id": "grain-header",
       "kit": "farm-machinery",
       "title": "Grain header",
-      "description": "Wide grain platform header with reel, cutter bar, end dividers and center feeder opening. Editable scale and painted steel, exposed steel controls with weathered and high-visibility presets.",
+      "description": "Auger grain platform at real size: full-width cutterbar with pointed knife guards, pick-up reel with six-arm spiders, bats and spring tines on support arms with lift cylinders, floor and auger trough with a flighted cross auger and centre fingers, back sheet with feeder-house opening, end sheets with pointed crop dividers and skid shoes. Width choice 25 or 35 ft. Material controls: header paint, reel paint, knife steel and tines; harvestRed, fieldYellow and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "grain header",
+        "grain platform",
+        "combine header",
+        "reel",
+        "cutterbar",
+        "auger",
         "farm machinery",
         "agriculture",
-        "field equipment",
         "low poly",
         "CC0"
       ],
@@ -82245,8 +82583,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/grain-header.kcad.ts",
       "preview": "/assets/farm-machinery-grain-header.png",
-      "sourceSha256": "6098430f0829465d216b224d18579fb44a3b44eb8d9fd215a7c0cffac7d4a384",
-      "triangleBudget": 2200,
+      "sourceSha256": "2bdc97525cca52fd832da040004a40fe1c95ab57338e243074d7cf861f1d36f6",
+      "triangleBudget": 9000,
       "params": [
         {
           "name": "scale",
@@ -82258,73 +82596,319 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteelColor",
-          "type": "color",
-          "default": "#397747",
-          "label": "Painted steel"
+          "name": "width",
+          "type": "choice",
+          "default": "25 ft",
+          "label": "Platform width",
+          "choices": [
+            "25 ft",
+            "35 ft"
+          ]
         },
         {
-          "name": "steelColor",
+          "name": "headerPaint",
           "type": "color",
-          "default": "#929b9b",
-          "label": "Exposed steel"
+          "default": "#3d7a3a",
+          "label": "Header paint"
+        },
+        {
+          "name": "reelPaint",
+          "type": "color",
+          "default": "#e0b22a",
+          "label": "Reel paint"
+        },
+        {
+          "name": "knifeSteel",
+          "type": "color",
+          "default": "#9aa3a6",
+          "label": "Knife, auger and shaft steel"
+        },
+        {
+          "name": "tineDark",
+          "type": "color",
+          "default": "#2b2e30",
+          "label": "Tines, openings and rubber"
         }
       ],
       "presets": {
-        "weathered": {
-          "paintedSteelColor": "#53694d",
-          "steelColor": "#737d7b"
+        "harvestRed": {
+          "headerPaint": "#b52a22",
+          "reelPaint": "#b52a22",
+          "tineDark": "#262626"
         },
-        "highVisibility": {
-          "paintedSteelColor": "#db762c",
-          "steelColor": "#abb2ad"
+        "fieldYellow": {
+          "headerPaint": "#e0a51c",
+          "reelPaint": "#2f3336",
+          "knifeSteel": "#a8aeb0"
+        },
+        "weathered": {
+          "headerPaint": "#55684a",
+          "reelPaint": "#a99551",
+          "knifeSteel": "#7b8180",
+          "tineDark": "#3a3530"
         }
       },
       "stats": {
-        "triangles": 252,
+        "triangles": 3824,
         "sizeM": [
-          4.2,
-          1.105,
-          1.5035
+          7.694,
+          1.918576,
+          1.91
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteelColor",
-          "color": "#397747",
+          "name": "headerPaint",
+          "color": "#3d7a3a",
           "parts": [
-            "header-floor",
-            "cutterbar",
-            "end-divider--1",
-            "end-divider-1",
-            "snout-0",
-            "snout-1",
-            "snout-2",
-            "snout-3",
-            "snout-4",
-            "snout-5",
-            "snout-6",
-            "snout-7"
+            "platform-pan",
+            "back-sheet-top-lip",
+            "end-sheet-left",
+            "crop-divider-left",
+            "end-sheet-right",
+            "crop-divider-right",
+            "cross-auger-tube",
+            "drive-gearbox",
+            "reel-support-arm-left",
+            "reel-bearing-left",
+            "reel-support-arm-right",
+            "reel-bearing-right"
           ],
-          "param": "paintedSteelColor"
+          "param": "headerPaint"
         },
         {
-          "name": "steelColor",
-          "color": "#929b9b",
+          "name": "tineDark",
+          "color": "#2b2e30",
           "parts": [
-            "reel-shaft",
-            "reel-spoke-0",
-            "reel-spoke-1",
-            "reel-spoke-2",
-            "reel-spoke-3",
-            "reel-spoke-4",
-            "reel-spoke-5",
-            "reel-spoke-6",
-            "reel-spoke-7"
+            "feeder-opening",
+            "tine-0-0",
+            "tine-0-1",
+            "tine-0-2",
+            "tine-0-3",
+            "tine-0-4",
+            "tine-0-5",
+            "tine-0-6",
+            "tine-0-7",
+            "tine-0-8",
+            "tine-0-9",
+            "tine-0-10",
+            "tine-0-11",
+            "tine-0-12",
+            "tine-0-13",
+            "tine-0-14",
+            "tine-0-15",
+            "tine-0-16",
+            "tine-0-17",
+            "tine-1-0",
+            "tine-1-1",
+            "tine-1-2",
+            "tine-1-3",
+            "tine-1-4",
+            "tine-1-5",
+            "tine-1-6",
+            "tine-1-7",
+            "tine-1-8",
+            "tine-1-9",
+            "tine-1-10",
+            "tine-1-11",
+            "tine-1-12",
+            "tine-1-13",
+            "tine-1-14",
+            "tine-1-15",
+            "tine-1-16",
+            "tine-1-17",
+            "tine-2-0",
+            "tine-2-1",
+            "tine-2-2",
+            "tine-2-3",
+            "tine-2-4",
+            "tine-2-5",
+            "tine-2-6",
+            "tine-2-7",
+            "tine-2-8",
+            "tine-2-9",
+            "tine-2-10",
+            "tine-2-11",
+            "tine-2-12",
+            "tine-2-13",
+            "tine-2-14",
+            "tine-2-15",
+            "tine-2-16",
+            "tine-2-17",
+            "tine-3-0",
+            "tine-3-1",
+            "tine-3-2",
+            "tine-3-3",
+            "tine-3-4",
+            "tine-3-5",
+            "tine-3-6",
+            "tine-3-7",
+            "tine-3-8",
+            "tine-3-9",
+            "tine-3-10",
+            "tine-3-11",
+            "tine-3-12",
+            "tine-3-13",
+            "tine-3-14",
+            "tine-3-15",
+            "tine-3-16",
+            "tine-3-17",
+            "tine-4-0",
+            "tine-4-1",
+            "tine-4-2",
+            "tine-4-3",
+            "tine-4-4",
+            "tine-4-5",
+            "tine-4-6",
+            "tine-4-7",
+            "tine-4-8",
+            "tine-4-9",
+            "tine-4-10",
+            "tine-4-11",
+            "tine-4-12",
+            "tine-4-13",
+            "tine-4-14",
+            "tine-4-15",
+            "tine-4-16",
+            "tine-4-17",
+            "tine-5-0",
+            "tine-5-1",
+            "tine-5-2",
+            "tine-5-3",
+            "tine-5-4",
+            "tine-5-5",
+            "tine-5-6",
+            "tine-5-7",
+            "tine-5-8",
+            "tine-5-9",
+            "tine-5-10",
+            "tine-5-11",
+            "tine-5-12",
+            "tine-5-13",
+            "tine-5-14",
+            "tine-5-15",
+            "tine-5-16",
+            "tine-5-17",
+            "lift-cylinder-left",
+            "lift-cylinder-right"
           ],
-          "param": "steelColor"
+          "param": "tineDark"
+        },
+        {
+          "name": "knifeSteel",
+          "color": "#9aa3a6",
+          "parts": [
+            "feeder-flange",
+            "cutterbar",
+            "knife-guard-0",
+            "knife-guard-1",
+            "knife-guard-2",
+            "knife-guard-3",
+            "knife-guard-4",
+            "knife-guard-5",
+            "knife-guard-6",
+            "knife-guard-7",
+            "knife-guard-8",
+            "knife-guard-9",
+            "knife-guard-10",
+            "knife-guard-11",
+            "knife-guard-12",
+            "knife-guard-13",
+            "knife-guard-14",
+            "knife-guard-15",
+            "knife-guard-16",
+            "knife-guard-17",
+            "knife-guard-18",
+            "knife-guard-19",
+            "knife-guard-20",
+            "knife-guard-21",
+            "knife-guard-22",
+            "knife-guard-23",
+            "knife-guard-24",
+            "knife-guard-25",
+            "knife-guard-26",
+            "knife-guard-27",
+            "knife-guard-28",
+            "knife-guard-29",
+            "knife-guard-30",
+            "knife-guard-31",
+            "knife-guard-32",
+            "divider-rod-left",
+            "skid-shoe-left",
+            "divider-rod-right",
+            "skid-shoe-right",
+            "skid-shoe-centre",
+            "auger-flight-0",
+            "auger-flight-1",
+            "auger-flight-2",
+            "auger-flight-3",
+            "auger-flight-4",
+            "auger-flight-5",
+            "auger-flight-6",
+            "auger-flight-7",
+            "auger-flight-8",
+            "auger-flight-9",
+            "auger-flight-12",
+            "auger-flight-13",
+            "auger-flight-14",
+            "auger-flight-15",
+            "auger-flight-16",
+            "auger-flight-17",
+            "auger-flight-18",
+            "auger-flight-19",
+            "auger-flight-20",
+            "auger-flight-21",
+            "auger-finger-0",
+            "auger-finger-1",
+            "auger-finger-2",
+            "auger-finger-3",
+            "auger-finger-4",
+            "auger-finger-5",
+            "drive-shaft",
+            "lift-rod-left",
+            "lift-rod-right"
+          ],
+          "param": "knifeSteel"
+        },
+        {
+          "name": "reelPaint",
+          "color": "#e0b22a",
+          "parts": [
+            "reel-tube",
+            "reel-arm-0-0",
+            "reel-arm-0-1",
+            "reel-arm-0-2",
+            "reel-arm-0-3",
+            "reel-arm-0-4",
+            "reel-arm-0-5",
+            "reel-arm-1-0",
+            "reel-arm-1-1",
+            "reel-arm-1-2",
+            "reel-arm-1-3",
+            "reel-arm-1-4",
+            "reel-arm-1-5",
+            "reel-arm-2-0",
+            "reel-arm-2-1",
+            "reel-arm-2-2",
+            "reel-arm-2-3",
+            "reel-arm-2-4",
+            "reel-arm-2-5",
+            "reel-arm-3-0",
+            "reel-arm-3-1",
+            "reel-arm-3-2",
+            "reel-arm-3-3",
+            "reel-arm-3-4",
+            "reel-arm-3-5",
+            "reel-bat-0",
+            "reel-bat-1",
+            "reel-bat-2",
+            "reel-bat-3",
+            "reel-bat-4",
+            "reel-bat-5"
+          ],
+          "param": "reelPaint"
         }
       ]
     },
@@ -83395,13 +83979,18 @@
       "id": "pallet-fork-attachment",
       "kit": "farm-machinery",
       "title": "Tractor pallet-fork attachment",
-      "description": "Quick-attach fork carriage with adjustable-looking tines and raised back guard. Editable scale and painted steel, exposed steel controls with weathered and high-visibility presets.",
+      "description": "Quick-attach pallet-fork frame at real size: 1.22 m carriage with top and bottom fork bars between uprights, quick-attach hooks and latch plates with pull handles on the back, a welded brick guard, and two forged L-shaped tines with tapered blades, hook heels and lock pins. Tine spread and tine length are editable. Material controls: frame paint, forged tine steel and zinc hardware; yardOrange, loaderYellow and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "pallet forks",
+        "fork frame",
+        "quick attach",
+        "loader attachment",
+        "tines",
+        "brick guard",
         "farm machinery",
         "agriculture",
-        "field equipment",
         "low poly",
         "CC0"
       ],
@@ -83414,8 +84003,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/pallet-fork-attachment.kcad.ts",
       "preview": "/assets/farm-machinery-pallet-fork-attachment.png",
-      "sourceSha256": "7321168ba62fdb6014446ab4e1b740e70190b71f55e16a56d4b22bdb3f8b0bfb",
-      "triangleBudget": 2200,
+      "sourceSha256": "544a970ab4df9fba1439404acacd941b64b84401a8c737a1879df8486bc4e62d",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -83427,57 +84016,127 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteelColor",
-          "type": "color",
-          "default": "#397747",
-          "label": "Painted steel"
+          "name": "tineSpread",
+          "type": "choice",
+          "default": "640",
+          "label": "Tine spread, centre to centre (mm)",
+          "choices": [
+            "400",
+            "640",
+            "900"
+          ]
         },
         {
-          "name": "steelColor",
+          "name": "tineLength",
+          "type": "choice",
+          "default": "48 in",
+          "label": "Tine length",
+          "choices": [
+            "42 in",
+            "48 in"
+          ]
+        },
+        {
+          "name": "framePaint",
           "type": "color",
-          "default": "#929b9b",
-          "label": "Exposed steel"
+          "default": "#3d7a3a",
+          "label": "Frame paint"
+        },
+        {
+          "name": "tineForged",
+          "type": "color",
+          "default": "#2c2f31",
+          "label": "Forged tine steel"
+        },
+        {
+          "name": "hardwareZinc",
+          "type": "color",
+          "default": "#c9c4a2",
+          "label": "Pins, latches and handles"
         }
       ],
       "presets": {
-        "weathered": {
-          "paintedSteelColor": "#53694d",
-          "steelColor": "#737d7b"
+        "yardOrange": {
+          "framePaint": "#d9661f",
+          "tineForged": "#2a2a2a"
         },
-        "highVisibility": {
-          "paintedSteelColor": "#db762c",
-          "steelColor": "#abb2ad"
+        "loaderYellow": {
+          "framePaint": "#e3b21d",
+          "tineForged": "#33302b",
+          "hardwareZinc": "#b9bdc0"
+        },
+        "weathered": {
+          "framePaint": "#56684c",
+          "tineForged": "#5a4a3c",
+          "hardwareZinc": "#8d8a78"
         }
       },
       "stats": {
-        "triangles": 60,
+        "triangles": 732,
         "sizeM": [
-          0.88,
-          0.5876,
-          0.947
+          1.22,
+          1.207716,
+          1.45
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteelColor",
-          "color": "#397747",
+          "name": "framePaint",
+          "color": "#3d7a3a",
           "parts": [
-            "mounting-frame",
-            "crossbar"
+            "top-fork-bar",
+            "bottom-fork-bar",
+            "upright-left",
+            "qa-hook-left-380",
+            "qa-hook-left-560",
+            "latch-plate-left",
+            "upright-right",
+            "qa-hook-right-380",
+            "qa-hook-right-560",
+            "latch-plate-right",
+            "back-brace",
+            "guard-post-left",
+            "guard-post-right",
+            "guard-top-rail",
+            "guard-mid-rail",
+            "guard-bar-1",
+            "guard-bar-2",
+            "guard-bar-3",
+            "guard-bar-4",
+            "guard-bar-5",
+            "guard-bar-6"
           ],
-          "param": "paintedSteelColor"
+          "param": "framePaint"
         },
         {
-          "name": "steelColor",
-          "color": "#929b9b",
+          "name": "hardwareZinc",
+          "color": "#c9c4a2",
           "parts": [
-            "fork-carriage",
-            "fork-tine--1",
-            "fork-tine-1"
+            "latch-pin-left",
+            "latch-handle-left",
+            "latch-spring-left",
+            "latch-pin-right",
+            "latch-handle-right",
+            "latch-spring-right",
+            "tine-lock-pin-left",
+            "tine-lock-ring-left",
+            "tine-lock-pin-right",
+            "tine-lock-ring-right"
           ],
-          "param": "steelColor"
+          "param": "hardwareZinc"
+        },
+        {
+          "name": "tineForged",
+          "color": "#2c2f31",
+          "parts": [
+            "tine-left",
+            "tine-heel-left",
+            "tine-right",
+            "tine-heel-right"
+          ],
+          "param": "tineForged"
         }
       ]
     },
@@ -86142,13 +86801,17 @@
       "id": "tractor-ballast-weight",
       "kit": "farm-machinery",
       "title": "Tractor ballast weight",
-      "description": "Rear-mounted counterweight block with mounting frame and raised lifting loop. Editable scale and painted steel, exposed steel controls with weathered and high-visibility presets.",
+      "description": "Three-point tractor ballast at real size: a sculpted cast-iron block with chamfered shoulders, stepped cheeks and a front badge, or a stack of suitcase weights with handles on a hanger bar, carried by a steel frame with two lower-link pins, a top-link mast and pin, linch pins and a lifting eye. Style choice cast block or suitcase stack. Material controls: cast iron, frame steel, pins and badge; tractorGreen, deepRed and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "ballast weight",
+        "counterweight",
+        "suitcase weights",
+        "three point hitch",
+        "tractor",
         "farm machinery",
         "agriculture",
-        "field equipment",
         "low poly",
         "CC0"
       ],
@@ -86161,8 +86824,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/farm-machinery/tractor-ballast-weight.kcad.ts",
       "preview": "/assets/farm-machinery-tractor-ballast-weight.png",
-      "sourceSha256": "5e61ea41b4d0d0b9e019461070cac72ffbe4d34015b51d10ebc871a668eade37",
-      "triangleBudget": 2200,
+      "sourceSha256": "f01a2bcc03b18dce77287df739f02184b79077857d745d3e8a54fa8c21f21726",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -86174,57 +86837,118 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteelColor",
-          "type": "color",
-          "default": "#397747",
-          "label": "Painted steel"
+          "name": "style",
+          "type": "choice",
+          "default": "cast block",
+          "label": "Ballast style",
+          "choices": [
+            "cast block",
+            "suitcase stack"
+          ]
         },
         {
-          "name": "steelColor",
+          "name": "castIron",
           "type": "color",
-          "default": "#929b9b",
-          "label": "Exposed steel"
+          "default": "#3a3f3d",
+          "label": "Cast iron"
+        },
+        {
+          "name": "frameSteel",
+          "type": "color",
+          "default": "#3d7a3a",
+          "label": "Frame paint"
+        },
+        {
+          "name": "pinZinc",
+          "type": "color",
+          "default": "#c7c9c2",
+          "label": "Pins and lifting eye"
+        },
+        {
+          "name": "badge",
+          "type": "color",
+          "default": "#e0b22a",
+          "label": "Badge and decals"
         }
       ],
       "presets": {
-        "weathered": {
-          "paintedSteelColor": "#53694d",
-          "steelColor": "#737d7b"
+        "tractorGreen": {
+          "castIron": "#2f6a33",
+          "frameSteel": "#2f3336",
+          "badge": "#e3c020"
         },
-        "highVisibility": {
-          "paintedSteelColor": "#db762c",
-          "steelColor": "#abb2ad"
+        "deepRed": {
+          "castIron": "#a8261f",
+          "frameSteel": "#2b2b2b",
+          "badge": "#e6e6e0"
+        },
+        "weathered": {
+          "castIron": "#55473b",
+          "frameSteel": "#4f5b4a",
+          "pinZinc": "#8f8b80",
+          "badge": "#a99551"
         }
       },
       "stats": {
-        "triangles": 60,
+        "triangles": 388,
         "sizeM": [
-          0.62,
-          0.5012,
-          0.4162
+          1.04,
+          0.92,
+          0.666
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteelColor",
-          "color": "#397747",
+          "name": "castIron",
+          "color": "#3a3f3d",
           "parts": [
-            "mounting-frame",
-            "crossbar",
-            "mounting-lugs",
-            "lift-loop"
+            "cast-core",
+            "cast-cheek-left",
+            "cast-shoulder-left",
+            "cast-cheek-right",
+            "cast-shoulder-right"
           ],
-          "param": "paintedSteelColor"
+          "param": "castIron"
         },
         {
-          "name": "steelColor",
-          "color": "#929b9b",
+          "name": "badge",
+          "color": "#e0b22a",
           "parts": [
-            "weight-block"
+            "front-badge",
+            "badge-stripe"
           ],
-          "param": "steelColor"
+          "param": "badge"
+        },
+        {
+          "name": "pinZinc",
+          "color": "#c7c9c2",
+          "parts": [
+            "lift-eye-left-leg",
+            "lift-eye-right-leg",
+            "lift-eye-top",
+            "lower-link-pin-left",
+            "lower-link-linch-left",
+            "lower-link-pin-right",
+            "lower-link-linch-right",
+            "top-link-pin"
+          ],
+          "param": "pinZinc"
+        },
+        {
+          "name": "frameSteel",
+          "color": "#3d7a3a",
+          "parts": [
+            "back-plate",
+            "lower-link-lug-left",
+            "mast-plate-left",
+            "mast-brace-left",
+            "lower-link-lug-right",
+            "mast-plate-right",
+            "mast-brace-right"
+          ],
+          "param": "frameSteel"
         }
       ]
     },
