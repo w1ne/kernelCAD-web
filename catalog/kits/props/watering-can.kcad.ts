@@ -15,6 +15,7 @@ meta({
   triangleBudget: 240,
 });
 
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const can = param('can', '#3f8a5a', { label: 'Can' });
 const rose = param('rose', '#c9a43a', { label: 'Spout rose' });
 const grip = param('grip', '#2f6a44', { label: 'Handle' });
@@ -38,15 +39,15 @@ w.part('can', ngon(R).extrude(H).translate(-60, 0, 0)
   .union(ngon(R * 0.98).loft(ngon(R * 0.55), { spacing: 40, ruled: true }).translate(-60, 0, H - 1))
   // Spout: a thin tapering hexagonal tube rising forward at 40 degrees.
   .union(ngon(24, 6).loft(ngon(13, 6), { spacing: 360, ruled: true }).rotateY(50).translate(-60 + R * 0.7, 0, 50))
-  .color(can));
+  .color(can).scale(overallScale));
 const tipX = -60 + R * 0.7 + 360 * Math.sin((50 * Math.PI) / 180);
 const tipZ = 50 + 360 * Math.cos((50 * Math.PI) / 180);
-w.part('rose', ngon(18, 6).loft(ngon(42, 8), { spacing: 45, ruled: true }).rotateY(50).translate(tipX - 12, 0, tipZ - 10).color(rose));
+w.part('rose', ngon(18, 6).loft(ngon(42, 8), { spacing: 45, ruled: true }).rotateY(50).translate(tipX - 12, 0, tipZ - 10).color(rose).scale(overallScale));
 // Handle: a back loop and a top bar.
 w.part('handle', box(28, 26, 150, true).translate(-60 - R + 10, 0, H - 20)
   .union(box(R * 1.6, 26, 26, true).translate(-60 - R * 0.25, 0, H + 70))
   .union(box(26, 26, 90, true).translate(-60 + R * 0.4, 0, H + 30))
   .union(box(80, 26, 26, true).translate(-60 - R + 30, 0, H + 55).rotateY(0))
-  .color(grip));
+  .color(grip).scale(overallScale));
 
 return w.model();

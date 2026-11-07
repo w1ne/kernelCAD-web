@@ -18,7 +18,7 @@ import { geometryAuthoringToolEntries } from './registry/geometryAuthoringTools'
 import { feaToolEntries } from './registry/feaTools';
 import { drawingImportToolEntries } from './registry/drawingImportTools';
 import { geometryDiffToolEntries } from './registry/geometryDiffTools';
-import { inspectionVerificationAssemblyChecksToolEntries, inspectionVerificationPreludeToolEntries, inspectionVerificationQueryToolEntries, inspectionVerificationRepairToolEntries } from './registry/inspectionVerificationTools';
+import { inspectionVerificationPreludeToolEntries, inspectionVerificationQueryToolEntries, inspectionVerificationRepairToolEntries } from './registry/inspectionVerificationTools';
 import { printToolEntries } from './registry/printTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
@@ -42,7 +42,6 @@ import { assetCatalogToolEntries } from './registry/assetCatalogTools';
 import { costEstimateToolEntries } from './registry/costTools';
 import { toleranceStackToolEntries } from './registry/toleranceTools';
 import { scanReferenceToolEntries } from './registry/scanReferenceTools';
-import { cncCamToolEntries } from './registry/cncCamTools';
 import { metricThreadToolEntries } from './registry/metricThreadTools';
 import { splitKeepPartsToolEntries } from './registry/splitKeepPartsTools';
 
@@ -116,13 +115,11 @@ const EXPECTED_TOOL_NAMES = [
   'get_kit',
   'run_cfd',
   'cfd_summary',
-  'assembly_checks',
   'dfm_fix_recheck',
   'estimate_cost',
   'analyze_tolerance_stack',
   'load_scan_reference',
   'fit_model_to_scan',
-  'plan_cnc_toolpaths',
   'resolve_metric_thread',
   'split_keep_parts',
 ] as const;
@@ -443,17 +440,15 @@ describe('toolRegistry public contract', () => {
        'get_kit',
        'run_cfd',
        'cfd_summary',
-       'assembly_checks',
        'dfm_fix_recheck',
        'estimate_cost',
        'analyze_tolerance_stack',
        'load_scan_reference',
        'fit_model_to_scan',
-       'plan_cnc_toolpaths',
        'resolve_metric_thread',
        'split_keep_parts',
      ]);
-    expect(TOOL_REGISTRY).toHaveLength(76);
+    expect(TOOL_REGISTRY).toHaveLength(74);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
@@ -511,19 +506,25 @@ describe('toolRegistry public contract', () => {
 
   it('appends the generic blockout assembly generator at the registry tail', () => {
     expect(blockoutToolEntries.map(entry => entry.definition.name)).toEqual(['blockout_assembly']);
-    expect(TOOL_REGISTRY.slice(-16 - (cncCamToolEntries.length + metricThreadToolEntries.length + splitKeepPartsToolEntries.length), -15 - (cncCamToolEntries.length + metricThreadToolEntries.length + splitKeepPartsToolEntries.length))).toEqual(blockoutToolEntries);
+    expect(TOOL_REGISTRY.slice(
+      -blockoutToolEntries.length - assetManifestToolEntries.length - assetCatalogToolEntries.length - cfdToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
+      -assetManifestToolEntries.length - assetCatalogToolEntries.length - cfdToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
+    )).toEqual(blockoutToolEntries);
     expect(blockoutToolEntries[0].definition.description).toMatch(/^Use this when /);
   });
 
   it('appends the read-only asset manifest tool after the historical blockout tail', () => {
     expect(assetManifestToolEntries.map(entry => entry.definition.name)).toEqual(['asset_manifest']);
-    expect(TOOL_REGISTRY.slice(-15 - (cncCamToolEntries.length + metricThreadToolEntries.length + splitKeepPartsToolEntries.length), -14 - (cncCamToolEntries.length + metricThreadToolEntries.length + splitKeepPartsToolEntries.length))).toEqual(assetManifestToolEntries);
+    expect(TOOL_REGISTRY.slice(
+      -assetManifestToolEntries.length - assetCatalogToolEntries.length - cfdToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
+      -assetCatalogToolEntries.length - cfdToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
+    )).toEqual(assetManifestToolEntries);
   });
 
   it('appends the read-only asset catalog family before the CFD tail', () => {
     expect(TOOL_REGISTRY.slice(
-      -assetCatalogToolEntries.length - cfdToolEntries.length - inspectionVerificationAssemblyChecksToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (cncCamToolEntries.length + metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
-      -cfdToolEntries.length - inspectionVerificationAssemblyChecksToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (cncCamToolEntries.length + metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
+      -assetCatalogToolEntries.length - cfdToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
+      -cfdToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
     )).toEqual(assetCatalogToolEntries);
     expect(assetCatalogToolEntries.map(entry => entry.definition.name)).toEqual([
       'search_assets', 'get_asset', 'find_matching', 'get_variant', 'list_kits', 'get_kit',
@@ -533,38 +534,28 @@ describe('toolRegistry public contract', () => {
   it('appends the CFD family (run_cfd, cfd_summary) before assembly checks', () => {
     expect(cfdToolEntries.map(entry => entry.definition.name)).toEqual(['run_cfd', 'cfd_summary']);
     expect(TOOL_REGISTRY.slice(
-      -cfdToolEntries.length - inspectionVerificationAssemblyChecksToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (cncCamToolEntries.length + metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
-      -inspectionVerificationAssemblyChecksToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (cncCamToolEntries.length + metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
+      -cfdToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
+      -manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
     )).toEqual(cfdToolEntries);
     expect(cfdToolEntries[0].definition.description).toMatch(/^Use this when /);
   });
 
-  it('appends dfm_fix_recheck after assembly_checks without moving dfm_review', () => {
+  it('appends dfm_fix_recheck without moving dfm_review', () => {
     expect(manufacturingFixRecheckToolEntries.map(entry => entry.definition.name)).toEqual(['dfm_fix_recheck']);
     expect(TOOL_REGISTRY.slice(
-      -manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (cncCamToolEntries.length + metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
-      -costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (cncCamToolEntries.length + metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
+      -manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
+      -costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
     )).toEqual(manufacturingFixRecheckToolEntries);
     expect(TOOL_REGISTRY[50]?.definition.name).toBe('dfm_review');
     expect(manufacturingFixRecheckToolEntries[0].definition.description).toMatch(/^Use this when /);
   });
 
-  it('appends assembly_checks before dfm_fix_recheck and estimate_cost', () => {
-    expect(inspectionVerificationAssemblyChecksToolEntries.map(entry => entry.definition.name)).toEqual(['assembly_checks']);
-    expect(TOOL_REGISTRY.slice(
-      -inspectionVerificationAssemblyChecksToolEntries.length - manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (cncCamToolEntries.length + metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
-      -manufacturingFixRecheckToolEntries.length - costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (cncCamToolEntries.length + metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
-    )).toEqual(inspectionVerificationAssemblyChecksToolEntries);
-    expect(inspectionVerificationAssemblyChecksToolEntries[0].definition.description).toMatch(/^Use this when /);
-    expect(inspectionVerificationAssemblyChecksToolEntries[0].definition.description).toMatch(/verify\(\{ check: 'assembly' \}\)/);
-    expect(inspectionVerificationAssemblyChecksToolEntries[0].definition.description).toMatch(/review_cad/);
-  });
 
   it('appends estimate_cost immediately before the tolerance stack', () => {
     expect(costEstimateToolEntries.map(entry => entry.definition.name)).toEqual(['estimate_cost']);
     expect(TOOL_REGISTRY.slice(
-      -costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (cncCamToolEntries.length + metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
-      -toleranceStackToolEntries.length - scanReferenceToolEntries.length - (cncCamToolEntries.length + metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
+      -costEstimateToolEntries.length - toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
+      -toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
     )).toEqual(costEstimateToolEntries);
     expect(costEstimateToolEntries[0].definition.description).toMatch(/^Use this when /);
     expect(costEstimateToolEntries[0].definition.description).toMatch(/not supplier quotes/i);
@@ -573,38 +564,28 @@ describe('toolRegistry public contract', () => {
   it('appends analyze_tolerance_stack immediately before the scan references', () => {
     expect(toleranceStackToolEntries.map(entry => entry.definition.name)).toEqual(['analyze_tolerance_stack']);
     expect(TOOL_REGISTRY.slice(
-      -toleranceStackToolEntries.length - scanReferenceToolEntries.length - (cncCamToolEntries.length + metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
-      -scanReferenceToolEntries.length - (cncCamToolEntries.length + metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
+      -toleranceStackToolEntries.length - scanReferenceToolEntries.length - (metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
+      -scanReferenceToolEntries.length - (metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
     )).toEqual(toleranceStackToolEntries);
     expect(toleranceStackToolEntries[0].definition.description).toMatch(/^Use this when /);
     expect(toleranceStackToolEntries[0].definition.description).toMatch(/not a full GD&T/i);
     expect(toleranceStackToolEntries[0].definition.description).toMatch(/ISO 2768/i);
   });
 
-  it('appends the scan reference tools immediately before the mill planner', () => {
+  it('appends the scan reference tools immediately before resolve_metric_thread', () => {
     expect(scanReferenceToolEntries.map(entry => entry.definition.name)).toEqual([
       'load_scan_reference',
       'fit_model_to_scan',
     ]);
     expect(TOOL_REGISTRY.slice(
-      -(scanReferenceToolEntries.length + (cncCamToolEntries.length + metricThreadToolEntries.length + splitKeepPartsToolEntries.length)),
-      -(cncCamToolEntries.length + metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
+      -(scanReferenceToolEntries.length + (metricThreadToolEntries.length + splitKeepPartsToolEntries.length)),
+      -(metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
     )).toEqual(scanReferenceToolEntries);
     expect(scanReferenceToolEntries[0].definition.description).toMatch(/^Use this when /);
     expect(scanReferenceToolEntries[0].definition.description).toMatch(/not a BREP/i);
     expect(scanReferenceToolEntries[1].definition.description).toMatch(/not a solid/i);
   });
 
-  it('appends the mill planner immediately before the metric-thread resolver', () => {
-    expect(cncCamToolEntries.map(entry => entry.definition.name)).toEqual(['plan_cnc_toolpaths']);
-    expect(TOOL_REGISTRY.slice(
-      -(cncCamToolEntries.length + metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
-      -(metricThreadToolEntries.length + splitKeepPartsToolEntries.length),
-    )).toEqual(cncCamToolEntries);
-    expect(cncCamToolEntries[0].definition.description).toMatch(/^Use this when /);
-    expect(cncCamToolEntries[0].definition.description).toMatch(/not collision-checked/i);
-    expect(cncCamToolEntries[0].definition.description).toMatch(/FDM slicer/i);
-  });
 
   it('appends resolve_metric_thread immediately before split_keep_parts', () => {
     expect(metricThreadToolEntries.map(entry => entry.definition.name)).toEqual(['resolve_metric_thread']);

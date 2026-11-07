@@ -30,9 +30,17 @@ describe('ci.yml develop push gate', () => {
     const detect = (jobs.changes.steps ?? []).map(s => s.run ?? '').join('\n');
     expect(detect).toMatch(/"\$EVENT" = "push" \] && \[ "\$REF" = "refs\/heads\/develop" \][\s\S]*push_gate=true/);
     for (const name of ['lint', 'build-and-checks']) expect(jobs[name].if ?? '', name).not.toContain('push_gate');
-    expect(jobs['catalog-index'].if).toBe("needs.changes.outputs.push_gate == 'true'");
     expect(jobs['catalog-index'].steps?.map(s => s.run ?? '').join('\n')).toContain('tests/integration/catalog/catalogIndex.test.ts');
     expect(jobs.test.needs).toContain('catalog-index');
+  });
+
+  it('runs the catalog index freshness gate as its own job on both PRs and pushes', () => {
+    // It rebuilds and exports every asset (2,100 today). As a dedicated job it
+    // never unbalances a shard, so it is required on the PR path too.
+    expect(jobs['catalog-index'].if).toBe("needs.changes.outputs.docs_only != 'true'");
+    // And therefore excluded from the sharded run, so no shard pays its cost.
+    const shardRuns = (jobs['test-shard'].steps ?? []).map(s => s.run ?? '').join('\n');
+    expect(shardRuns).toContain("--exclude 'tests/integration/catalog/catalogIndex.test.ts'");
   });
 
   it('leaves the full 8-shard suite on the PR path', () => {

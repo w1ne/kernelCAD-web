@@ -17,6 +17,7 @@ describe('asset catalog', () => {
     for (const asset of built.assets) {
       expect(asset.stats.triangles, asset.id).toBeLessThanOrEqual(asset.triangleBudget);
       expect(asset.stats.materials, asset.id).toBe(1);
+      expect(asset.params.some(param => ['number', 'boolean', 'choice'].includes(param.type)), `${asset.id} needs an editable size or configuration control`).toBe(true);
       expect(asset.stats.minUpM, asset.id).toBeCloseTo(asset.origin === 'base' ? 0 : asset.stats.minUpM, 6);
       expect(asset.preview, `${asset.id} needs a rendered homepage preview`).toBe(`/assets/${asset.kit}-${asset.id}.png`);
     }

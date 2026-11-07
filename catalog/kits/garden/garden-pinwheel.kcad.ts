@@ -11,6 +11,7 @@ meta({
   triangleBudget: 220,
 });
 
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const blade = param('blade', '#d26842', { label: 'Blades' });
 const hub = param('hub', '#e0b64c', { label: 'Hub' });
 const pole = param('pole', '#76563b', { label: 'Stake' });
@@ -20,7 +21,7 @@ const partNames = new Map<string, number>();
 const addPart = (name: string, shape: ReturnType<typeof box>) => {
   const count = partNames.get(name) ?? 0;
   partNames.set(name, count + 1);
-  a.part(count === 0 ? name : `${name}-${count + 1}`, shape);
+  a.part(count === 0 ? name : `${name}-${count + 1}`, shape.scale(overallScale));
 };
 
 addPart('stake', cylinder(1050, 22).translate(0, 0, 0).color(pole));

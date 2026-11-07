@@ -24,6 +24,7 @@ meta({
   "triangleBudget": 400
 });
 
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const shell = param('shell', '#dce2e4', { label: 'Shell' });
 const accent = param('accent', '#4a8991', { label: 'Accent' });
 presets({
@@ -35,12 +36,12 @@ const b = (x: number, y: number, z: number, w: number, d: number, h: number) => 
 const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
 
 for (const side of [-1, 1]) {
-  p.part('side-rail-' + side, b(0, side * 195, 705, 28, 22, 570).color(shell));
-  p.part('rear-leg-' + side, b(-230, side * 195, 350, 24, 22, 700).color(shell));
-  p.part('front-leg-' + side, b(230, side * 195, 350, 24, 22, 700).color(shell));
-  p.part('grip-' + side, b(0, side * 195, 1010, 180, 42, 24).color(accent));
-  p.part('glide-' + side, c(230, side * 195, 0, 24, 18, 8).color(accent));
+  p.part('side-rail-' + side, b(0, side * 195, 705, 28, 22, 570).color(shell).scale(overallScale));
+  p.part('rear-leg-' + side, b(-230, side * 195, 350, 24, 22, 700).color(shell).scale(overallScale));
+  p.part('front-leg-' + side, b(230, side * 195, 350, 24, 22, 700).color(shell).scale(overallScale));
+  p.part('grip-' + side, b(0, side * 195, 1010, 180, 42, 24).color(accent).scale(overallScale));
+  p.part('glide-' + side, c(230, side * 195, 0, 24, 18, 8).color(accent).scale(overallScale));
 }
-p.part('top-bar', b(0, 0, 990, 430, 22, 22).color(shell));
+p.part('top-bar', b(0, 0, 990, 430, 22, 22).color(shell).scale(overallScale));
 
 return p.model();

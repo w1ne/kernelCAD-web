@@ -35,7 +35,7 @@ import type { TextureRef } from '../../shared/intent/textureRef';
 import { isTextureRef } from '../../shared/intent/textureRef';
 import type { TextureProjection } from '../../shared/intent/textureProjection';
 import { isTextureProjection } from '../../shared/intent/textureProjection';
-import { validateBendArgs } from '../sheetMetal'
+import { validateBendArgs } from '../sheetMetal';
 import type { Region } from '../../shared/intent/region';
 import type { DrawingDimensionSpec, DrawingToleranceSpec } from '../../shared/intent/drawingGdtRecord';
 import type { FeaStudyHandle, FeaStudyMetadata, FeaStudySpec } from '../../shared/intent/feaStudyRecord';
@@ -44,7 +44,9 @@ import { captureCfdStudy } from './cfdStudyRecord';
 import {
   type FilletContinuity, isFilletContinuity,
 } from '../../shared/intent/filletContinuityRecord';
+
 import { NONFINITE_TRANSFORM_GUIDANCE, invalidEditableVec3Components, invalidTransformVec3Error } from './transformGuards';
+
 export type EdgeSelector =
   | EdgeQuery
   | EdgeSegment
@@ -63,6 +65,7 @@ export type EdgeSelector =
   | Query<EdgeMarker>
   | Query<unknown>
   | undefined;
+
 export type { FaceSelector };
 
 /**
@@ -1023,7 +1026,6 @@ export class Shape {
     // include 'sheetMetalBend', so we replicate its body here).
     return this.session.bendFeature(this, angleParam, radiusParam, edgeRef as EdgeSelector | { face: FaceSelector | CanonicalFace | string });
   }
-
 
   /**
    * W2.2: Return the unfolded 2D flat-pattern of this bent sheet-metal Shape

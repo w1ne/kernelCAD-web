@@ -23,6 +23,7 @@ meta({
   "triangleBudget": 240
 });
 
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const shell = param('shell', '#e4e9eb', { label: 'Shell' });
 const accent = param('accent', '#4d9ca0', { label: 'Accent' });
 presets({
@@ -33,10 +34,10 @@ const p = assembly('digital-thermometer');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
 const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
 
-p.part('body', b(0, 0, 66, 22, 14, 132).color(shell));
-p.part('probe', c(0, 0, 0, 20, 5, 8).color(accent));
-p.part('display', b(0, -8, 88, 14, 3, 26).color(accent));
-p.part('button', c(0, -9, 58, 4, 4, 8).color(shell));
-p.part('end-cap', c(0, 0, 126, 12, 11, 8).color(accent));
+p.part('body', b(0, 0, 66, 22, 14, 132).color(shell).scale(overallScale));
+p.part('probe', c(0, 0, 0, 20, 5, 8).color(accent).scale(overallScale));
+p.part('display', b(0, -8, 88, 14, 3, 26).color(accent).scale(overallScale));
+p.part('button', c(0, -9, 58, 4, 4, 8).color(shell).scale(overallScale));
+p.part('end-cap', c(0, 0, 126, 12, 11, 8).color(accent).scale(overallScale));
 
 return p.model();

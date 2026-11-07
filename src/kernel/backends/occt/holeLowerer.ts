@@ -362,11 +362,11 @@ function buildOneTool(
   );
   const effectiveDepth = through ? throughDepth : (numericDepth ?? 0);
 
-  // Bore length: extend slightly past the floor / back plane so the boolean
-  // cleanly cuts through (avoid degenerate coplanar ops).
+  // Extend through cuts past the back plane. For blind cuts overshoot only
+  // outside the entry face; the floor must stay at the specified depth.
   const OVERSHOOT = 0.01;
   const lead = entry.lead ?? 0;
-  const cylinderLength = effectiveDepth + OVERSHOOT * 2 + lead;
+  const cylinderLength = effectiveDepth + OVERSHOOT * (through ? 2 : 1) + lead;
 
   // Position the cylinder so its base sits OVERSHOOT (+ lead) above the entry
   // plane, extending into the body for `cylinderLength`.
@@ -385,7 +385,9 @@ function buildOneTool(
   // Counterbore: a wider cylinder stacked at the entry plane, depth = cb.depth.
   if (counterbore) {
     const cbBase = add(entryPoint, scale(entry.axisIntoBody, -OVERSHOOT - lead));
-    const cbLen = counterbore.depth + OVERSHOOT * 2 + lead;
+    // Overshoot only outside the entry face. Extending the tool past the
+    // requested floor changes the actual counterbore depth and fit.
+    const cbLen = counterbore.depth + OVERSHOOT + lead;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cb = (replicad as any).makeCylinder(
       counterbore.diameter / 2,

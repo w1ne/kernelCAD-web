@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { assemblyChecksTool } from '../tools/assemblyChecks';
 import { inspectTool } from '../tools/inspect';
 import { queryTool } from '../tools/query';
 import { verifyTool } from '../tools/verify';
@@ -310,42 +309,10 @@ export const inspectionVerificationQueryToolEntries: ToolRegistryEntry[] = [quer
  *  at the end rather than next to its family. */
 export const inspectionVerificationRepairToolEntries: ToolRegistryEntry[] = [repairScriptToolEntry];
 
-const assemblyChecksToolEntry: ToolRegistryEntry = {
-  definition: {
-    name: 'assembly_checks',
-    description:
-      'Use this when you need a named assembly check instead of the full review. ' +
-      '`assembly_checks` is the entry for targeted checks: interference (default-pose overlap), floating (unconnected parts), joints (limits, axis, topology, plausibility), and stability (approximate support). ' +
-      'Pass `{ file?, code?, assembly?, checks? }`. `checks` is a subset of `interference`, `floating`, `joints`, `stability`; omit it to run all four. ' +
-      'Each check reuses the existing static assembly review. `stability` also runs the assembly-path support projection and says so when that path cannot run. ' +
-      '`verify({ check: \'assembly\' })` and `review_cad` remain available: verify assembly is the full static review, and review_cad adds the pose-envelope sweep and the physics probe.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        file: { type: 'string', description: 'Path to a .kcad.ts script. Omit both file and code to use the active session.' },
-        code: { type: 'string', description: 'Inline kernelCAD script source.' },
-        assembly: { type: 'string', description: 'Assembly name. Defaults to the first captured assembly.' },
-        checks: {
-          type: 'array',
-          items: { type: 'string', enum: ['interference', 'floating', 'joints', 'stability'] },
-          uniqueItems: true,
-          description: 'Checks to run. Default: interference, floating, joints, and stability.',
-        },
-      },
-    },
-  },
-  handler: input => assemblyChecksTool(input as unknown as Parameters<typeof assemblyChecksTool>[0]),
-};
-
-/** Same tail rule as repair_script: this inspection tool is appended at the
- *  end of TOOL_REGISTRY so earlier family indices stay put. */
-export const inspectionVerificationAssemblyChecksToolEntries: ToolRegistryEntry[] = [assemblyChecksToolEntry];
-
 // Aggregate export for tests and family-level audits. Production composition
 // intentionally splits these entries to preserve the historical public order.
 export const inspectionVerificationToolEntries: ToolRegistryEntry[] = [
   ...inspectionVerificationPreludeToolEntries,
   ...inspectionVerificationQueryToolEntries,
   ...inspectionVerificationRepairToolEntries,
-  ...inspectionVerificationAssemblyChecksToolEntries,
 ];

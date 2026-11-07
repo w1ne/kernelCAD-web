@@ -11,6 +11,7 @@ meta({
   triangleBudget: 300,
 });
 
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const coat = param('coat', '#4a6f53', { label: 'Coat' });
 const hat = param('hat', '#b64d3b', { label: 'Hat' });
 const skin = param('skin', '#dfc4a1', { label: 'Face' });
@@ -21,7 +22,7 @@ const partNames = new Map<string, number>();
 const addPart = (name: string, shape: ReturnType<typeof box>) => {
   const count = partNames.get(name) ?? 0;
   partNames.set(name, count + 1);
-  a.part(count === 0 ? name : `${name}-${count + 1}`, shape);
+  a.part(count === 0 ? name : `${name}-${count + 1}`, shape.scale(overallScale));
 };
 
 for (const x of [-41, 41]) addPart('boot', box(67, 87, 41, true).translate(x, -14, 20.5).color(hat));

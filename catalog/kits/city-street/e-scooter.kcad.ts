@@ -15,6 +15,7 @@ meta({
   triangleBudget: 260,
 });
 
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const body = param('body', '#e8e8e4', { label: 'Body' });
 const deck = param('deck', '#2a2c2e', { label: 'Deck grip' });
 const wheel = param('wheel', '#1b1c1d', { label: 'Wheels' });
@@ -45,18 +46,18 @@ const bar = (x0: number, z0: number, x1: number, z1: number, t: number, y = 0) =
 const R = 110;
 const es = assembly('e-scooter');
 for (const [tag, x] of [['rear', -500], ['front', 520]] as const) {
-  es.part(`wheel-${tag}`, ngon(R, 10, Math.PI / 2).extrude(50).translate(0, 0, -25).rotateX(90).translate(x, 0, R).color(wheel));
+  es.part(`wheel-${tag}`, ngon(R, 10, Math.PI / 2).extrude(50).translate(0, 0, -25).rotateX(90).translate(x, 0, R).color(wheel).scale(overallScale));
 }
-es.part('deck', blk(-440, -85, 80, 400, 85, 140).color(body));
-es.part('grip-tape', blk(-400, -70, 139, 360, 70, 148).color(deck));
-es.part('neck', bar(380, 120, 520, R, 60).color(body));
-es.part('stem', bar(520, R, 440, 1080, 50).color(body));
-es.part('fender', bar(-610, 180, -430, 200, 30).color(body));
-es.part('handlebar', box(50, 520, 40, true).translate(440, 0, 1090).color(body));
+es.part('deck', blk(-440, -85, 80, 400, 85, 140).color(body).scale(overallScale));
+es.part('grip-tape', blk(-400, -70, 139, 360, 70, 148).color(deck).scale(overallScale));
+es.part('neck', bar(380, 120, 520, R, 60).color(body).scale(overallScale));
+es.part('stem', bar(520, R, 440, 1080, 50).color(body).scale(overallScale));
+es.part('fender', bar(-610, 180, -430, 200, 30).color(body).scale(overallScale));
+es.part('handlebar', box(50, 520, 40, true).translate(440, 0, 1090).color(body).scale(overallScale));
 for (const side of [-1, 1]) {
-  es.part(`grip-${side < 0 ? 'l' : 'r'}`, box(56, 110, 46, true).translate(440, side * 230, 1090).color(grip));
+  es.part(`grip-${side < 0 ? 'l' : 'r'}`, box(56, 110, 46, true).translate(440, side * 230, 1090).color(grip).scale(overallScale));
 }
-es.part('lamp', blk(470, -30, 820, 510, 30, 860).color(grip));
-es.part('kickstand', box(24, 180, 20, true).rotateX(25).translate(-150, -150, 52).color(deck));
+es.part('lamp', blk(470, -30, 820, 510, 30, 860).color(grip).scale(overallScale));
+es.part('kickstand', box(24, 180, 20, true).rotateX(25).translate(-150, -150, 52).color(deck).scale(overallScale));
 
 return es.model();

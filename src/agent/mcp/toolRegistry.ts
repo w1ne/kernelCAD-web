@@ -16,7 +16,6 @@ import { geometryAuthoringToolEntries } from './registry/geometryAuthoringTools'
 import { drawingImportToolEntries } from './registry/drawingImportTools';
 import { geometryDiffToolEntries } from './registry/geometryDiffTools';
 import {
-  inspectionVerificationAssemblyChecksToolEntries,
   inspectionVerificationPreludeToolEntries,
   inspectionVerificationQueryToolEntries,
   inspectionVerificationRepairToolEntries,
@@ -43,7 +42,6 @@ import { cfdToolEntries } from './registry/cfdTools';
 import { costEstimateToolEntries } from './registry/costTools';
 import { toleranceStackToolEntries } from './registry/toleranceTools';
 import { scanReferenceToolEntries } from './registry/scanReferenceTools';
-import { cncCamToolEntries } from './registry/cncCamTools';
 import { metricThreadToolEntries } from './registry/metricThreadTools';
 import { splitKeepPartsToolEntries } from './registry/splitKeepPartsTools';
 import type { McpToolDefinition, ToolRegistryEntry } from './registry/types';
@@ -129,7 +127,6 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...cfdToolEntries,
   // Appended at the tail: targeted assembly checks. Belongs to the inspection
   // family, but index order is a public contract so it does not shift earlier slices.
-  ...inspectionVerificationAssemblyChecksToolEntries,
   // Appended at the tail: one DFM parameter edit, then the same dfm_review.
   // Stays out of manufacturingToolEntries so dfm_review keeps index 50.
   ...manufacturingFixRecheckToolEntries,
@@ -140,7 +137,6 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   // Appended after the tolerance stack: PLY/XYZ scan references. Not solids.
   ...scanReferenceToolEntries,
   // Appended after the scan tools: bbox mill toolpaths. Not FDM G-code.
-  ...cncCamToolEntries,
   // Appended after the mill planner: diameter → ISO metric coarse designation.
   ...metricThreadToolEntries,
   // Appended after the metric-thread resolver: shape.split keep-parts.

@@ -11,6 +11,7 @@ meta({
   triangleBudget: 220,
 });
 
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const stake = param('stake', '#76563b', { label: 'Stakes' });
 const label = param('label', '#eee4c9', { label: 'Labels' });
 const marker = param('marker', '#394542', { label: 'Marker tips' });
@@ -20,7 +21,7 @@ const partNames = new Map<string, number>();
 const addPart = (name: string, shape: ReturnType<typeof box>) => {
   const count = partNames.get(name) ?? 0;
   partNames.set(name, count + 1);
-  a.part(count === 0 ? name : `${name}-${count + 1}`, shape);
+  a.part(count === 0 ? name : `${name}-${count + 1}`, shape.scale(overallScale));
 };
 
 for (let i = 0; i < 5; i++) {

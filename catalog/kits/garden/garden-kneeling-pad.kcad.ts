@@ -11,6 +11,7 @@ meta({
   triangleBudget: 220,
 });
 
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const pad = param('pad', '#536d4c', { label: 'Pad' });
 const trim = param('trim', '#b39a69', { label: 'Trim' });
 const handle = param('handle', '#4b514b', { label: 'Handle' });
@@ -20,7 +21,7 @@ const partNames = new Map<string, number>();
 const addPart = (name: string, shape: ReturnType<typeof box>) => {
   const count = partNames.get(name) ?? 0;
   partNames.set(name, count + 1);
-  a.part(count === 0 ? name : `${name}-${count + 1}`, shape);
+  a.part(count === 0 ? name : `${name}-${count + 1}`, shape.scale(overallScale));
 };
 
 addPart('cushion', box(620, 420, 95, true).translate(0, 0, 47.5).color(pad));

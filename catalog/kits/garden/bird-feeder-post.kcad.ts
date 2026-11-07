@@ -11,6 +11,7 @@ meta({
   triangleBudget: 360,
 });
 
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const body = param('body', '#8c6744', { label: 'Feeder body' });
 const roof = param('roof', '#576147', { label: 'Roof' });
 const post = param('post', '#76563b', { label: 'Post' });
@@ -20,7 +21,7 @@ const partNames = new Map<string, number>();
 const addPart = (name: string, shape: ReturnType<typeof box>) => {
   const count = partNames.get(name) ?? 0;
   partNames.set(name, count + 1);
-  a.part(count === 0 ? name : `${name}-${count + 1}`, shape);
+  a.part(count === 0 ? name : `${name}-${count + 1}`, shape.scale(overallScale));
 };
 
 addPart('post', box(80, 80, 1600, true).translate(0, 0, 800).color(post));
