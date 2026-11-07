@@ -24948,7 +24948,7 @@
       "id": "honey-extractor",
       "kit": "apiary",
       "title": "Manual honey extractor",
-      "description": "Low-poly radial extractor drum with lid, center spindle, legs and hand crank. Material controls: stainless, enamel, rubber. Presets: brightStainless and warmHarvest.",
+      "description": "Hand-cranked tangential honey extractor: thin-walled stainless drum with rolled rim and conical floor, honey gate with lever and spout, three tubular legs on a brace ring with feet, top bar with gearbox, crank with turned grip, split lid with one half open onto a frame basket holding comb frames. Material controls: stainless steel, gearbox enamel, honey-gate polymer, comb wax, frame timber. Frame-load choice; brightStainless and warmHarvest presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -24956,6 +24956,8 @@
         "beekeeping",
         "honey",
         "agriculture",
+        "extractor",
+        "centrifuge",
         "low poly",
         "scene prop"
       ],
@@ -24968,8 +24970,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/honey-extractor.kcad.ts",
       "preview": "/assets/apiary-honey-extractor.png",
-      "sourceSha256": "3f97987fc2976b912f7da735309ba94f6544358fb19d34b3746b4bdb99091bae",
-      "triangleBudget": 1800,
+      "sourceSha256": "c139bd22ebb4c8350ef7558cc9b9f2fbfa748d992dc0ecafe19f64ca99fc1534",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -24981,42 +24983,68 @@
           "step": 0.05
         },
         {
+          "name": "frames",
+          "type": "choice",
+          "default": "loaded",
+          "label": "Frames in the basket",
+          "choices": [
+            "loaded",
+            "empty"
+          ]
+        },
+        {
           "name": "stainless",
           "type": "color",
-          "default": "#aeb9b7",
-          "label": "Stainless steel"
+          "default": "#b9c2c0",
+          "label": "Drum, legs and lid (stainless steel)"
         },
         {
           "name": "enamel",
           "type": "color",
-          "default": "#647b59",
-          "label": "Painted enamel"
+          "default": "#2f5f8a",
+          "label": "Gearbox and top bar (painted enamel)"
         },
         {
-          "name": "rubber",
+          "name": "polymer",
           "type": "color",
-          "default": "#333a3b",
-          "label": "Rubber"
+          "default": "#c8352b",
+          "label": "Honey gate and crank grip (polymer)"
+        },
+        {
+          "name": "comb",
+          "type": "color",
+          "default": "#e3b24a",
+          "label": "Capped comb (beeswax)"
+        },
+        {
+          "name": "timber",
+          "type": "color",
+          "default": "#c79a5c",
+          "label": "Frame bars (timber)"
         }
       ],
       "presets": {
         "brightStainless": {
-          "stainless": "#d9dfdc",
-          "enamel": "#91a66b",
-          "rubber": "#485152"
+          "stainless": "#dfe5e2",
+          "enamel": "#3c78a8",
+          "polymer": "#d8432f",
+          "comb": "#f0c860",
+          "timber": "#d9ad6e"
         },
         "warmHarvest": {
-          "stainless": "#788482",
-          "enamel": "#4b5f48",
-          "rubber": "#252b2c"
+          "stainless": "#8f9895",
+          "enamel": "#4a5a3a",
+          "polymer": "#2b2b2b",
+          "comb": "#c98a2a",
+          "timber": "#9c7444"
         }
       },
       "stats": {
-        "triangles": 280,
+        "triangles": 2544,
         "sizeM": [
-          0.54,
-          1.035,
-          0.57
+          0.565,
+          1.232,
+          0.632986
         ],
         "minUpM": 0,
         "materials": 1
@@ -25024,34 +25052,73 @@
       "palette": [
         {
           "name": "stainless",
-          "color": "#aeb9b7",
+          "color": "#b9c2c0",
           "parts": [
             "drum",
-            "base-ring",
-            "lid",
-            "spindle",
+            "rim-bead",
+            "drum-band",
+            "leg-90",
+            "leg-210",
+            "leg-330",
+            "leg-brace",
+            "gate-flange",
+            "crank-shaft",
             "crank-arm",
-            "drain-spout"
+            "spindle",
+            "lid-closed",
+            "lid-folded",
+            "basket-ring-top",
+            "basket-ring-low"
           ],
           "param": "stainless"
         },
         {
-          "name": "rubber",
-          "color": "#333a3b",
-          "parts": [
-            "crank-grip"
-          ],
-          "param": "rubber"
-        },
-        {
           "name": "enamel",
-          "color": "#647b59",
+          "color": "#2f5f8a",
           "parts": [
-            "leg-0",
-            "leg-1",
-            "leg-2"
+            "foot-90",
+            "foot-210",
+            "foot-330",
+            "top-bar",
+            "gearbox",
+            "crank-hub"
           ],
           "param": "enamel"
+        },
+        {
+          "name": "polymer",
+          "color": "#c8352b",
+          "parts": [
+            "gate-body",
+            "gate-spout",
+            "gate-lever",
+            "gate-lever-knob",
+            "crank-grip",
+            "lid-knob"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "comb",
+          "color": "#e3b24a",
+          "parts": [
+            "frame-0",
+            "frame-90",
+            "frame-180",
+            "frame-270"
+          ],
+          "param": "comb"
+        },
+        {
+          "name": "timber",
+          "color": "#c79a5c",
+          "parts": [
+            "frame-bar-0",
+            "frame-bar-90",
+            "frame-bar-180",
+            "frame-bar-270"
+          ],
+          "param": "timber"
         }
       ]
     },
@@ -25580,7 +25647,7 @@
       "id": "langstroth-hive",
       "kit": "apiary",
       "title": "Langstroth hive",
-      "description": "Stacked hive body, honey super, cover, entrance and raised stand. Material controls: timber, stainless, enamel. Presets: freshApiary and weatheredYard.",
+      "description": "Ten-frame Langstroth beehive on a timber stand: screened bottom board with landing lip and entrance reducer, painted deep brood box with hand holds, queen excluder, one to three medium honey supers in a second paint, inner cover, telescoping cover with galvanized roof sheet and an optional brick weight, plus bees at the entrance. Material controls: brood-box paint, super paint, hive timber, galvanized roof, brick. Super-count and lid-weight choices; freshApiary, weatheredYard and pastelYard presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -25588,6 +25655,9 @@
         "beekeeping",
         "honey",
         "agriculture",
+        "beehive",
+        "langstroth",
+        "hive",
         "low poly",
         "scene prop"
       ],
@@ -25600,8 +25670,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/langstroth-hive.kcad.ts",
       "preview": "/assets/apiary-langstroth-hive.png",
-      "sourceSha256": "9781a328c2d103dc733e49c8a391d454e12d2ec740eb5e38f44252988964ba2b",
-      "triangleBudget": 1800,
+      "sourceSha256": "e7003846e68a802d88df5503bd592ec25d60636cb09e278bbf3cedb345ac17c2",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -25613,42 +25683,86 @@
           "step": 0.05
         },
         {
+          "name": "supers",
+          "type": "choice",
+          "default": "2",
+          "label": "Honey supers",
+          "choices": [
+            "1",
+            "2",
+            "3"
+          ]
+        },
+        {
+          "name": "lidWeight",
+          "type": "choice",
+          "default": "brick",
+          "label": "Weight on the lid",
+          "choices": [
+            "brick",
+            "none"
+          ]
+        },
+        {
+          "name": "broodPaint",
+          "type": "color",
+          "default": "#e8e3d3",
+          "label": "Brood box (exterior paint)"
+        },
+        {
+          "name": "superPaint",
+          "type": "color",
+          "default": "#d8bd5c",
+          "label": "Honey supers (exterior paint)"
+        },
+        {
           "name": "timber",
           "type": "color",
           "default": "#b8874a",
-          "label": "Hive timber"
+          "label": "Stand, bottom board and inner cover (timber)"
         },
         {
-          "name": "stainless",
+          "name": "galvanized",
           "type": "color",
           "default": "#aeb9b7",
-          "label": "Stainless steel"
+          "label": "Roof sheet and queen excluder (galvanized steel)"
         },
         {
-          "name": "enamel",
+          "name": "brick",
           "type": "color",
-          "default": "#647b59",
-          "label": "Painted enamel"
+          "default": "#a2482f",
+          "label": "Lid brick"
         }
       ],
       "presets": {
         "freshApiary": {
+          "broodPaint": "#f3f0e6",
+          "superPaint": "#e6c867",
           "timber": "#d4a462",
-          "stainless": "#d9dfdc",
-          "enamel": "#91a66b"
+          "galvanized": "#d3dad8",
+          "brick": "#b0533a"
         },
         "weatheredYard": {
+          "broodPaint": "#b9b3a2",
+          "superPaint": "#9f8c4f",
           "timber": "#68543d",
-          "stainless": "#788482",
-          "enamel": "#4b5f48"
+          "galvanized": "#788482",
+          "brick": "#7c3c2a"
+        },
+        "pastelYard": {
+          "broodPaint": "#8fb7c9",
+          "superPaint": "#e2a2a6",
+          "timber": "#c09a68",
+          "galvanized": "#c2cbc9",
+          "brick": "#9c4a34"
         }
       },
       "stats": {
-        "triangles": 96,
+        "triangles": 1112,
         "sizeM": [
-          0.69,
-          0.973,
-          0.59
+          0.476,
+          1.088,
+          0.827603
         ],
         "minUpM": 0,
         "materials": 1
@@ -25658,30 +25772,107 @@
           "name": "timber",
           "color": "#b8874a",
           "parts": [
-            "stand-left",
-            "stand-right",
-            "bottom-board",
-            "brood-box",
-            "honey-super",
-            "telescoping-cover"
+            "stand-leg--180--260",
+            "stand-leg--180-260",
+            "stand-rail--180",
+            "stand-leg-180--260",
+            "stand-leg-180-260",
+            "stand-rail-180",
+            "stand-brace",
+            "landing-ramp",
+            "bottom-board-landing",
+            "bottom-rim-left",
+            "bottom-rim-right",
+            "bottom-rim-back",
+            "entrance-reducer-left",
+            "entrance-reducer-right",
+            "inner-cover",
+            "cover-rim"
           ],
           "param": "timber"
         },
         {
-          "name": "enamel",
-          "color": "#647b59",
+          "name": "entrance-shadow",
+          "color": "#1d1a16",
           "parts": [
-            "entrance-strip"
-          ],
-          "param": "enamel"
+            "entrance-shadow"
+          ]
         },
         {
-          "name": "stainless",
+          "name": "broodPaint",
+          "color": "#e8e3d3",
+          "parts": [
+            "brood-box"
+          ],
+          "param": "broodPaint"
+        },
+        {
+          "name": "brood-joint",
+          "color": "#3a2f22",
+          "parts": [
+            "brood-joint",
+            "super-joint-1"
+          ]
+        },
+        {
+          "name": "galvanized",
           "color": "#aeb9b7",
           "parts": [
-            "roof-sheet"
+            "queen-excluder",
+            "roof-sheet",
+            "roof-skirt-x-1",
+            "roof-skirt-x1",
+            "roof-skirt-y-1",
+            "roof-skirt-y1"
           ],
-          "param": "stainless"
+          "param": "galvanized"
+        },
+        {
+          "name": "superPaint",
+          "color": "#d8bd5c",
+          "parts": [
+            "honey-super-1",
+            "honey-super-2"
+          ],
+          "param": "superPaint"
+        },
+        {
+          "name": "brick",
+          "color": "#a2482f",
+          "parts": [
+            "lid-brick"
+          ],
+          "param": "brick"
+        },
+        {
+          "name": "bee-1-body",
+          "color": "#2b2117",
+          "parts": [
+            "bee-1-body",
+            "bee-2-body",
+            "bee-3-body",
+            "bee-4-body"
+          ]
+        },
+        {
+          "name": "bee-1-stripe",
+          "color": "#d9a33a",
+          "parts": [
+            "bee-1-stripe",
+            "bee-2-stripe",
+            "bee-3-stripe",
+            "bee-4-stripe"
+          ]
+        },
+        {
+          "name": "bee-1-wings",
+          "color": "#e9eef0",
+          "parts": [
+            "bee-1-wings",
+            "bee-2-wings",
+            "bee-3-wings",
+            "bee-4-wings"
+          ]
         }
       ]
     },
@@ -26085,7 +26276,7 @@
       "id": "observation-hive",
       "kit": "apiary",
       "title": "Observation hive",
-      "description": "Framed vertical viewing hive with stacked inspection panels, base and carry handle. Material controls: timber, glass. Presets: freshApiary and weatheredYard.",
+      "description": "Indoor observation beehive: tall one-comb-thick timber case with three stacked glazed windows showing honey comb above and capped brood below with clustered bees, glazing bars and glass reflections, inverted feeder jar on the top cap, clear entrance tube leaving the bottom corner, pivot post on a cross foot. Material controls: case timber, comb wax, capped brood, glass. Feeder-jar choice; freshApiary, weatheredYard and darkComb presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -26093,6 +26284,9 @@
         "beekeeping",
         "honey",
         "agriculture",
+        "beehive",
+        "observation hive",
+        "education",
         "low poly",
         "scene prop"
       ],
@@ -26105,8 +26299,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/observation-hive.kcad.ts",
       "preview": "/assets/apiary-observation-hive.png",
-      "sourceSha256": "11268151431795f7102529ed4f21d5f98710bee4aad27eb47e68d080564a049c",
-      "triangleBudget": 1800,
+      "sourceSha256": "fe21497a2e3a993551760105309bf0e7e4d4d5d32d378a579e6dd512ff24310a",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -26118,34 +26312,66 @@
           "step": 0.05
         },
         {
+          "name": "feeder",
+          "type": "choice",
+          "default": "jar",
+          "label": "Feeder jar on top",
+          "choices": [
+            "jar",
+            "none"
+          ]
+        },
+        {
           "name": "timber",
           "type": "color",
           "default": "#b8874a",
-          "label": "Hive timber"
+          "label": "Case, pedestal and glazing bars (timber)"
+        },
+        {
+          "name": "comb",
+          "type": "color",
+          "default": "#e8c262",
+          "label": "Honey comb (beeswax)"
+        },
+        {
+          "name": "brood",
+          "type": "color",
+          "default": "#a8723a",
+          "label": "Capped brood comb"
         },
         {
           "name": "glass",
           "type": "color",
-          "default": "#9ac1bd",
-          "label": "Tinted glass"
+          "default": "#cfe6e6",
+          "label": "Glass reflections, jar and entrance tube"
         }
       ],
       "presets": {
         "freshApiary": {
           "timber": "#d4a462",
-          "glass": "#c9dfd8"
+          "comb": "#f1d07a",
+          "brood": "#b98245",
+          "glass": "#e4f2f1"
         },
         "weatheredYard": {
           "timber": "#68543d",
-          "glass": "#6e9392"
+          "comb": "#c99a3e",
+          "brood": "#7c522a",
+          "glass": "#a9c4c2"
+        },
+        "darkComb": {
+          "timber": "#c39a63",
+          "comb": "#b07a2c",
+          "brood": "#5e3b1d",
+          "glass": "#d7ebea"
         }
       },
       "stats": {
-        "triangles": 108,
+        "triangles": 1092,
         "sizeM": [
-          0.52,
-          1.15,
-          0.33
+          0.890675,
+          1.554,
+          0.48
         ],
         "minUpM": 0,
         "materials": 1
@@ -26155,24 +26381,78 @@
           "name": "timber",
           "color": "#b8874a",
           "parts": [
-            "base",
-            "left-rail",
-            "right-rail",
-            "back",
-            "top",
-            "carry-handle"
+            "foot-x",
+            "foot-y",
+            "pivot-post",
+            "turntable",
+            "case-base",
+            "case-post--1",
+            "case-post-1",
+            "top-cap",
+            "top-cap-trim",
+            "glazing-bar-0",
+            "glazing-bar-1",
+            "entrance-block",
+            "feeder-collar"
           ],
           "param": "timber"
         },
         {
-          "name": "glass",
-          "color": "#9ac1bd",
+          "name": "comb",
+          "color": "#e8c262",
           "parts": [
-            "lower-panel",
-            "middle-panel",
-            "upper-panel"
+            "comb-back",
+            "feeder-syrup"
+          ],
+          "param": "comb"
+        },
+        {
+          "name": "brood",
+          "color": "#a8723a",
+          "parts": [
+            "brood-patch-0",
+            "brood-patch-1"
+          ],
+          "param": "brood"
+        },
+        {
+          "name": "glass",
+          "color": "#cfe6e6",
+          "parts": [
+            "reflection-0-a",
+            "reflection-0-b",
+            "reflection-1-a",
+            "reflection-1-b",
+            "reflection-2-a",
+            "reflection-2-b",
+            "entrance-tube-a",
+            "entrance-tube-b",
+            "feeder-jar",
+            "feeder-base"
           ],
           "param": "glass"
+        },
+        {
+          "name": "bee-1",
+          "color": "#2b2117",
+          "parts": [
+            "bee-1",
+            "bee-2",
+            "bee-3",
+            "bee-4",
+            "bee-5",
+            "bee-6",
+            "bee-7",
+            "bee-8",
+            "bee-9",
+            "bee-10",
+            "bee-11",
+            "bee-12",
+            "bee-13",
+            "bee-14",
+            "bee-15",
+            "bee-16"
+          ]
         }
       ]
     },
@@ -26782,7 +27062,7 @@
       "id": "solar-wax-melter",
       "kit": "apiary",
       "title": "Solar wax melter",
-      "description": "Angled-look insulated solar melter box with hinged lid frame, tray and support feet. Material controls: timber, glass, wax. Presets: freshApiary and weatheredYard.",
+      "description": "Solar beeswax melter: wedge-shaped insulated timber box with sloped glass facing the sun, black-painted interior, hinged double-glazed lid propped open, tilted stainless tray carrying dark old comb, mesh strainer at the low end and a stainless collecting pan with a set yellow wax block, on four legs. Material controls: box timber, lid glass, interior black paint, stainless tray and pan, beeswax. Lid open/closed choice; freshApiary and weatheredYard presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -26790,6 +27070,9 @@
         "beekeeping",
         "honey",
         "agriculture",
+        "beeswax",
+        "wax melter",
+        "solar",
         "low poly",
         "scene prop"
       ],
@@ -26802,8 +27085,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/solar-wax-melter.kcad.ts",
       "preview": "/assets/apiary-solar-wax-melter.png",
-      "sourceSha256": "452ed356c7e870b70eaaf148f578e839350b0ecb04b36e790d3b6c141fa9894e",
-      "triangleBudget": 1800,
+      "sourceSha256": "964337f40544ed25bffd4ea5728553ec200426b6fcb97bca552e7cc8f81c3cc4",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -26815,42 +27098,68 @@
           "step": 0.05
         },
         {
+          "name": "lid",
+          "type": "choice",
+          "default": "open",
+          "label": "Glazed lid",
+          "choices": [
+            "open",
+            "closed"
+          ]
+        },
+        {
           "name": "timber",
           "type": "color",
           "default": "#b8874a",
-          "label": "Hive timber"
+          "label": "Box, lid frame and legs (timber)"
         },
         {
           "name": "glass",
           "type": "color",
           "default": "#9ac1bd",
-          "label": "Tinted glass"
+          "label": "Lid glazing (glass)"
+        },
+        {
+          "name": "liner",
+          "type": "color",
+          "default": "#1f2224",
+          "label": "Interior (black heat-absorbing paint)"
+        },
+        {
+          "name": "stainless",
+          "type": "color",
+          "default": "#b9c2c0",
+          "label": "Tray, strainer and pan (stainless steel)"
         },
         {
           "name": "wax",
           "type": "color",
-          "default": "#e3c978",
-          "label": "Beeswax and foundation"
+          "default": "#e8c95f",
+          "label": "Melted beeswax"
         }
       ],
       "presets": {
         "freshApiary": {
           "timber": "#d4a462",
           "glass": "#c9dfd8",
+          "liner": "#25292b",
+          "stainless": "#dfe5e2",
           "wax": "#f1df9d"
         },
         "weatheredYard": {
           "timber": "#68543d",
           "glass": "#6e9392",
+          "liner": "#2e2a26",
+          "stainless": "#8f9895",
           "wax": "#bc9344"
         }
       },
       "stats": {
-        "triangles": 108,
+        "triangles": 488,
         "sizeM": [
-          0.65,
-          0.469,
-          0.4875
+          0.62,
+          1.086831,
+          0.585234
         ],
         "minUpM": 0,
         "materials": 1
@@ -26860,31 +27169,74 @@
           "name": "timber",
           "color": "#b8874a",
           "parts": [
+            "leg--260--185",
+            "leg--260-185",
+            "leg-260--185",
+            "leg-260-185",
             "body",
-            "lid-frame",
-            "front-support-left",
-            "front-support-right",
-            "rear-support-left",
-            "rear-support-right"
+            "lid-frame"
           ],
           "param": "timber"
+        },
+        {
+          "name": "liner",
+          "color": "#1f2224",
+          "parts": [
+            "liner-floor",
+            "liner-back",
+            "liner-side--1",
+            "liner-side-1"
+          ],
+          "param": "liner"
+        },
+        {
+          "name": "stainless",
+          "color": "#b9c2c0",
+          "parts": [
+            "wax-pan",
+            "tray",
+            "hinge--240",
+            "hinge-240"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "wax",
+          "color": "#e8c95f",
+          "parts": [
+            "wax-block",
+            "wax-drip"
+          ],
+          "param": "wax"
+        },
+        {
+          "name": "strainer",
+          "color": "#4d5254",
+          "parts": [
+            "strainer"
+          ]
+        },
+        {
+          "name": "old-comb-1",
+          "color": "#5c3d1e",
+          "parts": [
+            "old-comb-1",
+            "old-comb-2",
+            "old-comb-3",
+            "old-comb-4",
+            "old-comb-5",
+            "old-comb-6",
+            "old-comb-7"
+          ]
         },
         {
           "name": "glass",
           "color": "#9ac1bd",
           "parts": [
-            "lid-panel"
+            "lid-glass-outer",
+            "lid-glass-inner"
           ],
           "param": "glass"
-        },
-        {
-          "name": "wax",
-          "color": "#e3c978",
-          "parts": [
-            "tray",
-            "wax-drain"
-          ],
-          "param": "wax"
         }
       ]
     },
@@ -26985,7 +27337,7 @@
       "id": "top-bar-hive",
       "kit": "apiary",
       "title": "Top-bar hive",
-      "description": "Long low hive body with parallel top bars, end supports and a removable roof. Material controls: timber and stainless. Presets: freshApiary and weatheredYard.",
+      "description": "Kenyan-style top-bar hive: long trapezoid body with sloped sides, row of timber top bars with ends showing under the eave, painted trapezoid end boards, glazed observation window with an open shutter, round entrance holes, gabled galvanized roof with ridge cap, four legs with side rails. Material controls: hive timber, end-board paint, roof sheet, window glass. Window-shutter choice; freshApiary, weatheredYard and paintedRoof presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -26993,6 +27345,9 @@
         "beekeeping",
         "honey",
         "agriculture",
+        "beehive",
+        "top bar hive",
+        "kenyan hive",
         "low poly",
         "scene prop"
       ],
@@ -27005,8 +27360,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/top-bar-hive.kcad.ts",
       "preview": "/assets/apiary-top-bar-hive.png",
-      "sourceSha256": "1b71fe8b355aab2786e4b5ab3d07f746ae966a79485635e9ae909fc63578bb81",
-      "triangleBudget": 1800,
+      "sourceSha256": "bcea97b66e99cd073bd04bc8e528eea5d2ecf2f795f14a5f81fbfae7840a84e8",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -27018,34 +27373,66 @@
           "step": 0.05
         },
         {
+          "name": "shutter",
+          "type": "choice",
+          "default": "open",
+          "label": "Observation window shutter",
+          "choices": [
+            "open",
+            "closed"
+          ]
+        },
+        {
           "name": "timber",
           "type": "color",
           "default": "#b8874a",
-          "label": "Hive timber"
+          "label": "Body, bars and legs (hive timber)"
         },
         {
-          "name": "stainless",
+          "name": "endPaint",
+          "type": "color",
+          "default": "#5f7f58",
+          "label": "End boards and shutter (exterior paint)"
+        },
+        {
+          "name": "roofSheet",
           "type": "color",
           "default": "#aeb9b7",
-          "label": "Stainless steel"
+          "label": "Roof (galvanized sheet)"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#9ac1bd",
+          "label": "Observation window (glass)"
         }
       ],
       "presets": {
         "freshApiary": {
           "timber": "#d4a462",
-          "stainless": "#d9dfdc"
+          "endPaint": "#7fa06b",
+          "roofSheet": "#d3dad8",
+          "glass": "#c9dfd8"
         },
         "weatheredYard": {
           "timber": "#68543d",
-          "stainless": "#788482"
+          "endPaint": "#4b5f48",
+          "roofSheet": "#788482",
+          "glass": "#6e9392"
+        },
+        "paintedRoof": {
+          "timber": "#c39a63",
+          "endPaint": "#e8e2cf",
+          "roofSheet": "#9b3b2c",
+          "glass": "#a9cbc6"
         }
       },
       "stats": {
-        "triangles": 228,
+        "triangles": 716,
         "sizeM": [
-          1.16,
-          0.865,
-          0.565
+          1.15,
+          1.078,
+          0.64
         ],
         "minUpM": 0,
         "materials": 1
@@ -27055,11 +27442,15 @@
           "name": "timber",
           "color": "#b8874a",
           "parts": [
-            "leg-left",
-            "leg-right",
+            "leg--380--95",
+            "leg--380-95",
+            "leg-crossbar--380",
+            "leg-380--95",
+            "leg-380-95",
+            "leg-crossbar-380",
+            "side-rail--95",
+            "side-rail-95",
             "body",
-            "landing",
-            "top-bar-0",
             "top-bar-1",
             "top-bar-2",
             "top-bar-3",
@@ -27072,17 +27463,63 @@
             "top-bar-10",
             "top-bar-11",
             "top-bar-12",
-            "roof"
+            "top-bar-13",
+            "top-bar-14",
+            "top-bar-15",
+            "top-bar-16",
+            "top-bar-17",
+            "top-bar-18",
+            "top-bar-19",
+            "top-bar-20",
+            "top-bar-21",
+            "top-bar-22",
+            "top-bar-23",
+            "top-bar-24",
+            "top-bar-25",
+            "top-bar-26",
+            "window-frame",
+            "shutter-knob",
+            "landing-strip",
+            "roof-spacer--420",
+            "roof-spacer-420"
           ],
           "param": "timber"
         },
         {
-          "name": "stainless",
+          "name": "endPaint",
+          "color": "#5f7f58",
+          "parts": [
+            "end-board--1",
+            "end-board-1",
+            "shutter"
+          ],
+          "param": "endPaint"
+        },
+        {
+          "name": "glass",
+          "color": "#9ac1bd",
+          "parts": [
+            "window-glass"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "entrance--420",
+          "color": "#1d1a16",
+          "parts": [
+            "entrance--420",
+            "entrance--380",
+            "entrance--340"
+          ]
+        },
+        {
+          "name": "roofSheet",
           "color": "#aeb9b7",
           "parts": [
-            "roof-sheet"
+            "roof",
+            "roof-ridge"
           ],
-          "param": "stainless"
+          "param": "roofSheet"
         }
       ]
     },
