@@ -28509,16 +28509,17 @@
       "id": "flotation-tank",
       "kit": "archaeology-fieldwork",
       "title": "Soil flotation tank",
-      "description": "Open rectangular sample tank on a braced stand with a hose outlet and top rim. Material controls: molded polymer, stainless steel, rubber. Appearance presets: field ready and weathered.",
+      "description": "Siraf-style soil flotation machine at about real size: open 580 mm steel drum with rolling hoops on an angle-iron stand with cross bracing, water surface with floating flot, a sloping overflow spout with its water stream falling into a fine-mesh flot sieve on a bucket, a pressurised inlet with gate valve, handwheel and pressure gauge, a garden hose across the ground and a ball-valve drain tap. Material controls: drum paint, stainless steel, rubber, water; fieldReady, weathered and orangeDrum presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "archaeology",
         "excavation",
         "fieldwork",
-        "soil flotation tank",
-        "low poly",
-        "scene prop",
+        "flotation",
+        "archaeobotany",
+        "soil sampling",
+        "sieve",
         "CC0"
       ],
       "compat": [
@@ -28532,8 +28533,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/flotation-tank.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-flotation-tank.png",
-      "sourceSha256": "3245e65d1f93b6e06f7d043f97b3779dde1864865ec52307e630f48e49493838",
-      "triangleBudget": 2400,
+      "sourceSha256": "84e2d4514ef97ad5644e161702f5a125b5a251a7fa3683201fe07f5b7269b685",
+      "triangleBudget": 4200,
       "params": [
         {
           "name": "scale",
@@ -28545,76 +28546,297 @@
           "step": 0.05
         },
         {
-          "name": "polymer",
+          "name": "drumPaint",
           "type": "color",
-          "default": "#d2d8ce",
-          "label": "Molded polymer"
+          "default": "#2f68a0",
+          "label": "Drum paint"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#aab4b6",
-          "label": "Stainless steel"
+          "label": "Stainless steel and stand"
         },
         {
           "name": "rubber",
           "type": "color",
-          "default": "#343a3b",
-          "label": "Rubber"
+          "default": "#2f5b3a",
+          "label": "Rubber hose and seals"
+        },
+        {
+          "name": "water",
+          "type": "color",
+          "default": "#5f8f9a",
+          "label": "Water"
         }
       ],
       "presets": {
         "fieldReady": {
-          "polymer": "#e6e9df",
+          "drumPaint": "#3474b0",
           "stainlessSteel": "#c7cdcf",
-          "rubber": "#454c4d"
+          "rubber": "#3a7148",
+          "water": "#6a9ca6"
         },
         "weathered": {
-          "polymer": "#8d9890",
+          "drumPaint": "#4f6474",
           "stainlessSteel": "#7a8588",
-          "rubber": "#292f30"
+          "rubber": "#3c4a3e",
+          "water": "#6f7d6a"
+        },
+        "orangeDrum": {
+          "drumPaint": "#d9692b",
+          "stainlessSteel": "#b8c0c2",
+          "rubber": "#2b2f31",
+          "water": "#5f8f9a"
         }
       },
       "stats": {
-        "triangles": 196,
+        "triangles": 3396,
         "sizeM": [
-          0.684,
-          0.617,
-          0.448
+          2.498413,
+          1.405,
+          0.845
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#d2d8ce",
-          "parts": [
-            "tank-body",
-            "tank-rim-0",
-            "tank-rim-1",
-            "tank-rim-2",
-            "tank-rim-3"
-          ],
-          "param": "polymer"
-        },
-        {
           "name": "stainlessSteel",
           "color": "#aab4b6",
           "parts": [
-            "stand-leg-0",
-            "stand-leg-1",
-            "stand-leg-2",
-            "stand-leg-3",
-            "outlet-valve"
+            "leg--1--1",
+            "foot--1--1",
+            "leg-1--1",
+            "foot-1--1",
+            "leg-1-1",
+            "foot-1-1",
+            "leg--1-1",
+            "foot--1-1",
+            "rail-x--1",
+            "rail-y--1",
+            "brace-x--1",
+            "brace-y--1",
+            "rail-x-1",
+            "rail-y-1",
+            "brace-x-1",
+            "brace-y-1",
+            "spout-floor",
+            "spout-cheek--1",
+            "spout-cheek-1",
+            "sieve-base",
+            "sieve-wall-0",
+            "sieve-wall-1",
+            "sieve-wall-2",
+            "sieve-wall-3",
+            "sieve-wall-4",
+            "sieve-wall-5",
+            "sieve-wall-6",
+            "sieve-wall-7",
+            "sieve-wall-8",
+            "sieve-wall-9",
+            "sieve-wall-10",
+            "sieve-wall-11",
+            "sieve-wall-12",
+            "sieve-wall-13",
+            "sieve-wall-14",
+            "sieve-wall-15",
+            "sieve-wall-16",
+            "sieve-wall-17",
+            "sieve-wall-18",
+            "sieve-wall-19",
+            "sieve-band-0",
+            "sieve-band-1",
+            "sieve-band-2",
+            "sieve-band-3",
+            "sieve-band-4",
+            "sieve-band-5",
+            "sieve-band-6",
+            "sieve-band-7",
+            "sieve-band-8",
+            "sieve-band-9",
+            "sieve-band-10",
+            "sieve-band-11",
+            "sieve-band-12",
+            "sieve-band-13",
+            "sieve-band-14",
+            "sieve-band-15",
+            "sieve-band-16",
+            "sieve-band-17",
+            "sieve-band-18",
+            "sieve-band-19",
+            "inlet-pipe",
+            "inlet-flange",
+            "gate-valve-body",
+            "gate-valve-bonnet",
+            "gauge-tee",
+            "gauge-case",
+            "drain-pipe",
+            "drain-valve",
+            "drain-spout"
           ],
           "param": "stainlessSteel"
         },
         {
-          "name": "rubber",
-          "color": "#343a3b",
+          "name": "drumPaint",
+          "color": "#2f68a0",
           "parts": [
-            "outlet"
+            "drum-base",
+            "drum-body",
+            "rolling-hoop-770",
+            "rolling-hoop-1070",
+            "drum-wall-0",
+            "drum-wall-1",
+            "drum-wall-2",
+            "drum-wall-3",
+            "drum-wall-4",
+            "drum-wall-5",
+            "drum-wall-6",
+            "drum-wall-7",
+            "drum-wall-8",
+            "drum-wall-9",
+            "drum-wall-10",
+            "drum-wall-11",
+            "drum-wall-12",
+            "drum-wall-13",
+            "drum-wall-14",
+            "drum-wall-15",
+            "drum-wall-16",
+            "drum-wall-17",
+            "drum-wall-18",
+            "drum-wall-19",
+            "drum-wall-20",
+            "drum-wall-21",
+            "drum-wall-22",
+            "drum-wall-23",
+            "drum-chime-0",
+            "drum-chime-1",
+            "drum-chime-2",
+            "drum-chime-3",
+            "drum-chime-4",
+            "drum-chime-5",
+            "drum-chime-6",
+            "drum-chime-7",
+            "drum-chime-8",
+            "drum-chime-9",
+            "drum-chime-10",
+            "drum-chime-11",
+            "drum-chime-12",
+            "drum-chime-13",
+            "drum-chime-14",
+            "drum-chime-15",
+            "drum-chime-16",
+            "drum-chime-17",
+            "drum-chime-18",
+            "drum-chime-19",
+            "drum-chime-20",
+            "drum-chime-21",
+            "drum-chime-22",
+            "drum-chime-23"
+          ],
+          "param": "drumPaint"
+        },
+        {
+          "name": "water",
+          "color": "#5f8f9a",
+          "parts": [
+            "water-surface",
+            "spout-water",
+            "water-fall",
+            "splash"
+          ],
+          "param": "water"
+        },
+        {
+          "name": "flot-0",
+          "color": "#2a2420",
+          "parts": [
+            "flot-0",
+            "flot-1",
+            "flot-2",
+            "flot-3",
+            "flot-4",
+            "flot-5",
+            "flot-6",
+            "flot-7",
+            "flot-8",
+            "flot-9",
+            "flot-10",
+            "flot-11",
+            "flot-12",
+            "flot-13",
+            "flot-14",
+            "flot-15",
+            "flot-16",
+            "flot-17",
+            "flot-18",
+            "flot-19",
+            "flot-20",
+            "flot-21",
+            "flot-22",
+            "flot-23",
+            "flot-24",
+            "flot-25",
+            "flot-catch"
+          ]
+        },
+        {
+          "name": "bucket",
+          "color": "#d8d2bf",
+          "parts": [
+            "bucket"
+          ]
+        },
+        {
+          "name": "flot-mesh",
+          "color": "#d9d4c3",
+          "parts": [
+            "flot-mesh"
+          ]
+        },
+        {
+          "name": "handwheel",
+          "color": "#c23a2c",
+          "parts": [
+            "handwheel",
+            "gauge-needle",
+            "drain-lever",
+            "drain-lever-arm"
+          ]
+        },
+        {
+          "name": "gauge-face",
+          "color": "#eef0ea",
+          "parts": [
+            "gauge-face"
+          ]
+        },
+        {
+          "name": "hose-coupling",
+          "color": "#c9a23a",
+          "parts": [
+            "hose-coupling"
+          ]
+        },
+        {
+          "name": "rubber",
+          "color": "#2f5b3a",
+          "parts": [
+            "hose-0",
+            "hose-1",
+            "hose-2",
+            "hose-3",
+            "hose-4",
+            "hose-5",
+            "hose-6",
+            "hose-7",
+            "hose-8",
+            "hose-9",
+            "hose-10",
+            "hose-11",
+            "hose-12",
+            "hose-13",
+            "drain-seal"
           ],
           "param": "rubber"
         }
@@ -28835,16 +29057,17 @@
       "id": "hand-auger",
       "kit": "archaeology-fieldwork",
       "title": "Hand soil auger",
-      "description": "Manual soil auger with a T-handle, straight shaft and open helical-look cutting blades. Material controls: stainless steel, timber. Appearance presets: field ready and weathered.",
+      "description": "Manual screw soil auger at real size standing in its borehole: pointed screw tip and cutting lips, a three-turn helical flight carrying packed soil, a steel shaft with painted 100 mm depth bands, a pinned extension coupling, a quick-coupling socket and a painted T-handle with two turned timber grips, plus a ring of spoil around the hole. Material controls: stainless steel, timber, painted steel, soil; fieldReady, weathered and clayRed presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "archaeology",
         "excavation",
         "fieldwork",
-        "hand soil auger",
-        "low poly",
-        "scene prop",
+        "auger",
+        "soil auger",
+        "coring",
+        "hand tool",
         "CC0"
       ],
       "compat": [
@@ -28858,8 +29081,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/hand-auger.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-hand-auger.png",
-      "sourceSha256": "1b40aa09f5a1de88d10771fcaf073ae05f3aae65fd1cb14e69582eb1ddcc756f",
-      "triangleBudget": 2400,
+      "sourceSha256": "d318355933a78ce45c9a7d8f591bd2ee7de8e9e42466c8ba7a9dfe52e955610c",
+      "triangleBudget": 2800,
       "params": [
         {
           "name": "scale",
@@ -28879,49 +29102,181 @@
         {
           "name": "timber",
           "type": "color",
-          "default": "#8b6848",
+          "default": "#9a6c43",
           "label": "Timber"
+        },
+        {
+          "name": "paintedSteel",
+          "type": "color",
+          "default": "#d9582b",
+          "label": "Painted steel"
+        },
+        {
+          "name": "soil",
+          "type": "color",
+          "default": "#6b5038",
+          "label": "Soil"
         }
       ],
       "presets": {
         "fieldReady": {
           "stainlessSteel": "#c7cdcf",
-          "timber": "#a27850"
+          "timber": "#a27850",
+          "paintedSteel": "#e0632e",
+          "soil": "#6f5640"
         },
         "weathered": {
           "stainlessSteel": "#7a8588",
-          "timber": "#705a45"
+          "timber": "#705a45",
+          "paintedSteel": "#9b5a3a",
+          "soil": "#5b4a3a"
+        },
+        "clayRed": {
+          "stainlessSteel": "#b8c0c2",
+          "timber": "#b08055",
+          "paintedSteel": "#2f6b9a",
+          "soil": "#9a4e32"
         }
       },
       "stats": {
-        "triangles": 180,
+        "triangles": 2390,
         "sizeM": [
-          0.23,
-          0.744,
-          0.163489
+          0.66,
+          1.215,
+          0.663743
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
+          "name": "soil",
+          "color": "#6b5038",
+          "parts": [
+            "spoil-ring",
+            "spoil-clod-0",
+            "spoil-clod-1",
+            "spoil-clod-2",
+            "spoil-clod-3",
+            "spoil-clod-4",
+            "spoil-clod-5",
+            "spoil-clod-6",
+            "packed-soil-0",
+            "packed-soil-2",
+            "packed-soil-4",
+            "packed-soil-6",
+            "packed-soil-8",
+            "packed-soil-10",
+            "packed-soil-12",
+            "packed-soil-14",
+            "packed-soil-16",
+            "packed-soil-18",
+            "packed-soil-20",
+            "packed-soil-22",
+            "packed-soil-24",
+            "packed-soil-26",
+            "packed-soil-28"
+          ],
+          "param": "soil"
+        },
+        {
           "name": "stainlessSteel",
           "color": "#aab4b6",
           "parts": [
-            "shaft",
-            "cutting-flight-0",
-            "cutting-flight-1",
-            "cutting-flight-2",
-            "cutting-flight-3",
-            "cutting-tip"
+            "screw-tip",
+            "flight-0",
+            "flight-1",
+            "flight-2",
+            "flight-3",
+            "flight-4",
+            "flight-5",
+            "flight-6",
+            "flight-7",
+            "flight-8",
+            "flight-9",
+            "flight-10",
+            "flight-11",
+            "flight-12",
+            "flight-13",
+            "flight-14",
+            "flight-15",
+            "flight-16",
+            "flight-17",
+            "flight-18",
+            "flight-19",
+            "flight-20",
+            "flight-21",
+            "flight-22",
+            "flight-23",
+            "flight-24",
+            "flight-25",
+            "flight-26",
+            "flight-27",
+            "flight-28",
+            "flight-29",
+            "flight-30",
+            "flight-31",
+            "flight-32",
+            "flight-33",
+            "flight-34",
+            "flight-35",
+            "flight-36",
+            "flight-37",
+            "flight-38",
+            "flight-39",
+            "flight-40",
+            "flight-41",
+            "flight-42",
+            "flight-43",
+            "flight-44",
+            "flight-45",
+            "flight-46",
+            "flight-47",
+            "flight-48",
+            "flight-49",
+            "flight-50",
+            "flight-51",
+            "flight-52",
+            "flight-53",
+            "flight-54",
+            "flight-55",
+            "flight-56",
+            "flight-57",
+            "flight-58",
+            "flight-59",
+            "cutting-lip-a",
+            "cutting-lip-b",
+            "shaft-lower",
+            "extension-coupling",
+            "coupling-pin-ring",
+            "shaft-upper"
           ],
           "param": "stainlessSteel"
         },
         {
-          "name": "timber",
-          "color": "#8b6848",
+          "name": "paintedSteel",
+          "color": "#d9582b",
           "parts": [
-            "t-handle"
+            "depth-band-485",
+            "depth-band-585",
+            "depth-band-685",
+            "coupling-pin",
+            "depth-band-840",
+            "depth-band-940",
+            "quick-coupling",
+            "tee-socket",
+            "tee-bar",
+            "grip-cap--1",
+            "grip-cap-1"
+          ],
+          "param": "paintedSteel"
+        },
+        {
+          "name": "timber",
+          "color": "#9a6c43",
+          "parts": [
+            "grip--1",
+            "grip-1"
           ],
           "param": "timber"
         }
@@ -30119,16 +30474,17 @@
       "id": "round-point-shovel",
       "kit": "archaeology-fieldwork",
       "title": "Round point shovel",
-      "description": "Full-size digging shovel with a rounded blade, socket, long shaft and D grip. Material controls: timber, stainless steel, rubber. Appearance presets: field ready and weathered.",
+      "description": "Full-size round point digging shovel: pointed rounded blade dished across its width and set at a 15 degree lift, turned-over foot steps, pressed centre rib, riveted tubular socket, ash shaft with ferrule, split D-grip tines and rubber cross grip, and soil on the tip. Material controls: timber, painted blade steel, rubber, soil; fieldReady, weathered and bareSteel presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "archaeology",
         "excavation",
         "fieldwork",
+        "shovel",
         "round point shovel",
-        "low poly",
-        "scene prop",
+        "digging",
+        "hand tool",
         "CC0"
       ],
       "compat": [
@@ -30142,8 +30498,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/round-point-shovel.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-round-point-shovel.png",
-      "sourceSha256": "fad4e6434d18f1e4d8f334c66a444a70e322ac6aa50fe18c0f321645beceab9b",
-      "triangleBudget": 2400,
+      "sourceSha256": "6eaeed65bfdbad689a718a48ce4ebc4830ea2495c3b60e700f7492ec2d3f2bca",
+      "triangleBudget": 1200,
       "params": [
         {
           "name": "scale",
@@ -30157,69 +30513,111 @@
         {
           "name": "timber",
           "type": "color",
-          "default": "#8b6848",
+          "default": "#b48a5a",
           "label": "Timber"
         },
         {
-          "name": "stainlessSteel",
+          "name": "bladeSteel",
           "type": "color",
-          "default": "#aab4b6",
-          "label": "Stainless steel"
+          "default": "#b23a2e",
+          "label": "Painted blade steel"
         },
         {
           "name": "rubber",
           "type": "color",
-          "default": "#343a3b",
+          "default": "#2b2f31",
           "label": "Rubber"
+        },
+        {
+          "name": "soil",
+          "type": "color",
+          "default": "#6b5038",
+          "label": "Soil"
         }
       ],
       "presets": {
         "fieldReady": {
-          "timber": "#a27850",
-          "stainlessSteel": "#c7cdcf",
-          "rubber": "#454c4d"
+          "timber": "#c49866",
+          "bladeSteel": "#c8402f",
+          "rubber": "#3a3f41",
+          "soil": "#6f5640"
         },
         "weathered": {
-          "timber": "#705a45",
-          "stainlessSteel": "#7a8588",
-          "rubber": "#292f30"
+          "timber": "#7f6448",
+          "bladeSteel": "#7d4a33",
+          "rubber": "#292f30",
+          "soil": "#5b4a3a"
+        },
+        "bareSteel": {
+          "timber": "#a27850",
+          "bladeSteel": "#8f999e",
+          "rubber": "#24282a",
+          "soil": "#7a5f45"
         }
       },
       "stats": {
-        "triangles": 200,
+        "triangles": 708,
         "sizeM": [
-          0.32,
-          1.184986,
-          0.13
+          0.235539,
+          1.558776,
+          0.133251
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#aab4b6",
+          "name": "bladeSteel",
+          "color": "#b23a2e",
           "parts": [
-            "blade",
-            "shoulder"
+            "blade-right",
+            "blade-left",
+            "centre-rib",
+            "foot-step--1",
+            "foot-step-1",
+            "socket",
+            "socket-seam",
+            "ferrule"
           ],
-          "param": "stainlessSteel"
+          "param": "bladeSteel"
+        },
+        {
+          "name": "soil",
+          "color": "#6b5038",
+          "parts": [
+            "soil-smear--1",
+            "soil-smear-1",
+            "soil-tip-clod"
+          ],
+          "param": "soil"
+        },
+        {
+          "name": "rivet-430",
+          "color": "#9aa2a5",
+          "parts": [
+            "rivet-430",
+            "rivet-520",
+            "grip-rivet--1",
+            "grip-rivet-1"
+          ]
         },
         {
           "name": "timber",
-          "color": "#8b6848",
+          "color": "#b48a5a",
           "parts": [
-            "shaft"
+            "shaft",
+            "d-tine--1",
+            "d-tine-top--1",
+            "d-tine-1",
+            "d-tine-top-1"
           ],
           "param": "timber"
         },
         {
           "name": "rubber",
-          "color": "#343a3b",
+          "color": "#2b2f31",
           "parts": [
-            "d-grip-top",
-            "d-grip-side-left",
-            "d-grip-side-right"
+            "cross-grip"
           ],
           "param": "rubber"
         }
@@ -30739,16 +31137,17 @@
       "id": "site-camera",
       "kit": "archaeology-fieldwork",
       "title": "Field documentation camera",
-      "description": "Compact field camera with a short lens barrel, raised viewfinder and grip. Material controls: molded polymer, glass, rubber. Appearance presets: field ready and weathered.",
+      "description": "Interchangeable-lens field camera at real size: polymer body with a silver top plate and central viewfinder hump, leatherette band, deep rubber grip with shutter button, zoom lens with ribbed zoom and focus rings, aperture ring, front bezel and coated front element, mode and command dials, hot shoe, rear screen, eyecup and buttons, strap lugs and a woven strap lying behind. Material controls: molded polymer, top-plate metal, glass, rubber; fieldReady, weathered and fieldOrange presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "archaeology",
         "excavation",
         "fieldwork",
-        "field documentation camera",
-        "low poly",
-        "scene prop",
+        "camera",
+        "photography",
+        "documentation",
+        "mirrorless",
         "CC0"
       ],
       "compat": [
@@ -30762,7 +31161,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/site-camera.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-site-camera.png",
-      "sourceSha256": "fce59466c4afe30aee35aa396f6096b8d1b447c941f9a2af3025416fc0a5373f",
+      "sourceSha256": "2002d4318c61ff44347589b2537550d4bc9b20a3a2137c1b4ee2a1643ee83e1b",
       "triangleBudget": 2400,
       "params": [
         {
@@ -30777,40 +31176,54 @@
         {
           "name": "polymer",
           "type": "color",
-          "default": "#d2d8ce",
+          "default": "#30353a",
           "label": "Molded polymer"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#c3c8cb",
+          "label": "Top-plate metal"
         },
         {
           "name": "glass",
           "type": "color",
-          "default": "#63949c",
+          "default": "#3f7c95",
           "label": "Glass"
         },
         {
           "name": "rubber",
           "type": "color",
-          "default": "#343a3b",
+          "default": "#1d2022",
           "label": "Rubber"
         }
       ],
       "presets": {
         "fieldReady": {
-          "polymer": "#e6e9df",
-          "glass": "#94bdc3",
-          "rubber": "#454c4d"
+          "polymer": "#3a4045",
+          "metal": "#d4d8da",
+          "glass": "#5d97ad",
+          "rubber": "#26292b"
         },
         "weathered": {
-          "polymer": "#8d9890",
-          "glass": "#5d7b7f",
-          "rubber": "#292f30"
+          "polymer": "#4a4f50",
+          "metal": "#8f9392",
+          "glass": "#4b6d78",
+          "rubber": "#2f3131"
+        },
+        "fieldOrange": {
+          "polymer": "#e2732a",
+          "metal": "#2c3033",
+          "glass": "#3f7c95",
+          "rubber": "#24282a"
         }
       },
       "stats": {
-        "triangles": 232,
+        "triangles": 2004,
         "sizeM": [
-          0.24,
-          0.186,
-          0.2585
+          0.185138,
+          0.101,
+          0.26466
         ],
         "minUpM": 0,
         "materials": 1
@@ -30818,31 +31231,106 @@
       "palette": [
         {
           "name": "polymer",
-          "color": "#d2d8ce",
+          "color": "#30353a",
           "parts": [
-            "camera-body",
-            "viewfinder",
-            "shutter-button"
+            "body-lower",
+            "shutter-collar",
+            "front-dial",
+            "rear-button-0",
+            "rear-button-1",
+            "rear-button-2",
+            "rear-button-3",
+            "lens-base",
+            "lens-barrel",
+            "lens-front"
           ],
           "param": "polymer"
         },
         {
-          "name": "glass",
-          "color": "#63949c",
+          "name": "metal",
+          "color": "#c3c8cb",
           "parts": [
+            "top-plate",
+            "hot-shoe",
+            "shutter-button",
+            "mode-dial",
+            "command-dial",
+            "lens-release",
+            "strap-lug--1",
+            "strap-lug-1",
+            "rear-pad",
             "lens-mount",
-            "lens",
-            "lens-rim"
+            "aperture-ring"
+          ],
+          "param": "metal"
+        },
+        {
+          "name": "rubber",
+          "color": "#1d2022",
+          "parts": [
+            "leatherette",
+            "grip",
+            "rear-screen-frame",
+            "eyecup",
+            "zoom-ring",
+            "zoom-rib-0",
+            "zoom-rib-1",
+            "zoom-rib-2",
+            "zoom-rib-3",
+            "zoom-rib-4",
+            "focus-ring",
+            "front-bezel",
+            "strap-keeper"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "glass",
+          "color": "#3f7c95",
+          "parts": [
+            "viewfinder-window",
+            "eyepiece",
+            "front-element"
           ],
           "param": "glass"
         },
         {
-          "name": "rubber",
-          "color": "#343a3b",
+          "name": "mode-dial-mark",
+          "color": "#e9ecea",
           "parts": [
-            "grip"
-          ],
-          "param": "rubber"
+            "mode-dial-mark",
+            "lens-name-ring"
+          ]
+        },
+        {
+          "name": "rear-screen",
+          "color": "#22343c",
+          "parts": [
+            "rear-screen"
+          ]
+        },
+        {
+          "name": "front-element-centre",
+          "color": "#6fb0c4",
+          "parts": [
+            "front-element-centre"
+          ]
+        },
+        {
+          "name": "strap--1-0",
+          "color": "#9a3b2c",
+          "parts": [
+            "strap--1-0",
+            "strap--1-1",
+            "strap--1-2",
+            "strap--1-3",
+            "strap--1-4",
+            "strap-1-0",
+            "strap-1-1",
+            "strap-1-2",
+            "strap-1-3",
+            "strap-1-4"
+          ]
         }
       ]
     },
@@ -31779,16 +32267,17 @@
       "id": "total-station",
       "kit": "archaeology-fieldwork",
       "title": "Survey total station",
-      "description": "Tripod-mounted survey instrument with a telescope, visible field display, objective lens and three-leg support. Material controls: painted polymer, aluminum, glass, rubber. Appearance presets: field ready and weathered.",
+      "description": "Survey total station at about real size on a field tripod: three clamped extension legs with spiked shoes and foot pegs, head plate and centring screw, three-screw tribrach, rotating alidade with two standards and a carry handle, telescope on its trunnion axis with objective lens, EDM ring, sighting collimator and eyepiece, a screen and keypad on both faces, horizontal and vertical tangent knobs and a battery door. Material controls: painted polymer, aluminium, glass, rubber and dark trim; fieldReady, weathered and charcoalBody presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "archaeology",
         "excavation",
         "fieldwork",
-        "survey total station",
-        "low poly",
-        "scene prop",
+        "survey",
+        "total station",
+        "tripod",
+        "theodolite",
         "CC0"
       ],
       "compat": [
@@ -31802,8 +32291,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/archaeology-fieldwork/total-station.kcad.ts",
       "preview": "/assets/archaeology-fieldwork-total-station.png",
-      "sourceSha256": "9078ed8b933d9d847af10fd74831757d40bd7da890b31d6b2d101beaba828e63",
-      "triangleBudget": 2400,
+      "sourceSha256": "8479196a6ae6b3dcb7dcb08b762b958a16e0f2619fd86c324fd6d3a6c46e828e",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -31817,26 +32306,26 @@
         {
           "name": "paintedPolymer",
           "type": "color",
-          "default": "#d39b35",
+          "default": "#e0a92e",
           "label": "Painted polymer"
         },
         {
           "name": "aluminum",
           "type": "color",
-          "default": "#9eafb7",
-          "label": "Aluminum"
+          "default": "#b4c0c6",
+          "label": "Aluminium"
         },
         {
           "name": "glass",
           "type": "color",
-          "default": "#63949c",
+          "default": "#4f8fa6",
           "label": "Glass"
         },
         {
           "name": "rubber",
           "type": "color",
-          "default": "#343a3b",
-          "label": "Rubber"
+          "default": "#2c3133",
+          "label": "Rubber and dark trim"
         }
       ],
       "presets": {
@@ -31851,14 +32340,20 @@
           "aluminum": "#788990",
           "glass": "#5d7b7f",
           "rubber": "#292f30"
+        },
+        "charcoalBody": {
+          "paintedPolymer": "#4b5458",
+          "aluminum": "#c9cfd1",
+          "glass": "#5b8fa0",
+          "rubber": "#1f2325"
         }
       },
       "stats": {
-        "triangles": 292,
+        "triangles": 2572,
         "sizeM": [
-          0.644001,
-          0.884213,
-          0.570845
+          1.124534,
+          1.842,
+          0.973875
         ],
         "minUpM": 0,
         "materials": 1
@@ -31866,42 +32361,129 @@
       "palette": [
         {
           "name": "aluminum",
-          "color": "#9eafb7",
+          "color": "#b4c0c6",
           "parts": [
-            "tripod-leg-0",
-            "tripod-leg-1",
-            "tripod-leg-2",
-            "head-column",
-            "display-bezel"
+            "head-plate",
+            "leg-hinge-90",
+            "leg-lower-90",
+            "leg-hinge-210",
+            "leg-lower-210",
+            "leg-hinge-330",
+            "leg-lower-330",
+            "key--1-0-0",
+            "key--1-0-1",
+            "key--1-0-2",
+            "key--1-0-3",
+            "key--1-1-0",
+            "key--1-1-1",
+            "key--1-1-2",
+            "key--1-1-3",
+            "key-1-0-0",
+            "key-1-0-1",
+            "key-1-0-2",
+            "key-1-0-3",
+            "key-1-1-0",
+            "key-1-1-1",
+            "key-1-1-2",
+            "key-1-1-3",
+            "trunnion-left",
+            "trunnion-right"
           ],
           "param": "aluminum"
         },
         {
-          "name": "paintedPolymer",
-          "color": "#d39b35",
+          "name": "rubber",
+          "color": "#2c3133",
           "parts": [
-            "instrument-body",
-            "telescope"
+            "centring-screw",
+            "centring-knob",
+            "leg-clamp-90",
+            "leg-clamp-screw-90",
+            "leg-clamp-210",
+            "leg-clamp-screw-210",
+            "leg-clamp-330",
+            "leg-clamp-screw-330",
+            "tribrach-base",
+            "levelling-knob-0",
+            "levelling-knob-1",
+            "levelling-knob-2",
+            "tribrach-plate",
+            "circle-band",
+            "battery-door",
+            "handle-post-left",
+            "handle-post-right",
+            "carry-handle",
+            "panel--1",
+            "panel-1",
+            "h-tangent-knob",
+            "h-clamp",
+            "v-tangent-knob",
+            "edm-ring",
+            "eyepiece-tube",
+            "eyepiece",
+            "focus-ring",
+            "collimator"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "paintedPolymer",
+          "color": "#e0a92e",
+          "parts": [
+            "leg-upper-90--1",
+            "leg-upper-90-1",
+            "leg-upper-210--1",
+            "leg-upper-210-1",
+            "leg-upper-330--1",
+            "leg-upper-330-1",
+            "circle-housing",
+            "alidade-body",
+            "standard-left",
+            "standard-right",
+            "telescope-housing",
+            "objective-barrel"
           ],
           "param": "paintedPolymer"
         },
         {
-          "name": "glass",
-          "color": "#63949c",
+          "name": "leg-shoe-90",
+          "color": "#8e979a",
           "parts": [
-            "objective-lens",
-            "display-screen"
-          ],
-          "param": "glass"
+            "leg-shoe-90",
+            "leg-spike-90",
+            "leg-spike-tip-90",
+            "foot-peg-90",
+            "leg-shoe-210",
+            "leg-spike-210",
+            "leg-spike-tip-210",
+            "foot-peg-210",
+            "leg-shoe-330",
+            "leg-spike-330",
+            "leg-spike-tip-330",
+            "foot-peg-330",
+            "levelling-screw-0",
+            "levelling-screw-1",
+            "levelling-screw-2"
+          ]
         },
         {
-          "name": "rubber",
-          "color": "#343a3b",
+          "name": "circular-level",
+          "color": "#9bd3c2",
           "parts": [
-            "adjustment-knob-0",
-            "adjustment-knob-1"
+            "circular-level",
+            "screen--1",
+            "screen-1"
+          ]
+        },
+        {
+          "name": "glass",
+          "color": "#4f8fa6",
+          "parts": [
+            "objective-lens",
+            "eyepiece-lens",
+            "collimator-sight"
           ],
-          "param": "rubber"
+          "param": "glass"
         }
       ]
     },
