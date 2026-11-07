@@ -142695,10 +142695,15 @@
       "id": "fume-exhaust-riser",
       "kit": "lab-infrastructure",
       "title": "Fume exhaust riser",
-      "description": "Vertical laboratory exhaust riser with inspection band, support feet and a terminal cap. Editable material controls: enamel coating, stainless steel; presets: cleanroom and high visibility.",
+      "description": "Round flanged stainless exhaust riser: braced floor stand over a drain sump with condensate valve, flanged branch inlet, motorised backdraft damper with actuator, bolted access door, wall brackets, airflow-direction bands and a tapered discharge nozzle. Material controls: duct stainless, stand and bracket enamel, flange steel, actuator and label polymer. Cleanroom, high-visibility and PVC-duct presets.",
       "category": "structure",
       "origin": "base",
       "tags": [
+        "exhaust riser",
+        "fume exhaust",
+        "duct",
+        "damper",
+        "ventilation",
         "laboratory",
         "lab infrastructure",
         "research facility",
@@ -142714,8 +142719,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/lab-infrastructure/fume-exhaust-riser.kcad.ts",
       "preview": "/assets/lab-infrastructure-fume-exhaust-riser.png",
-      "sourceSha256": "bd95d676e4ef98667c8658f693056a02a2ec5df25ab7cb0e5f18e8274cff843c",
-      "triangleBudget": 1800,
+      "sourceSha256": "feab8f11adb08b058a4eb9e59cb429b8a888105a0a5bc8364dccae5999b42cc4",
+      "triangleBudget": 2200,
       "params": [
         {
           "name": "scale",
@@ -142727,34 +142732,56 @@
           "step": 0.05
         },
         {
-          "name": "enamel",
-          "type": "color",
-          "default": "#c9dedc",
-          "label": "Enamel coating"
-        },
-        {
           "name": "stainless",
           "type": "color",
           "default": "#b8c7ca",
-          "label": "Stainless steel"
+          "label": "Duct stainless"
+        },
+        {
+          "name": "enamel",
+          "type": "color",
+          "default": "#c9dedc",
+          "label": "Stand and bracket enamel"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#53666e",
+          "label": "Flange and bolt steel"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#e5a331",
+          "label": "Actuator and airflow-label polymer"
         }
       ],
       "presets": {
         "cleanroom": {
+          "stainless": "#d0d9d8",
           "enamel": "#e7f0ed",
-          "stainless": "#d0d9d8"
+          "steel": "#75888d",
+          "polymer": "#23a5a2"
         },
         "highVisibility": {
-          "enamel": "#f0f2e8",
-          "stainless": "#6f8488"
+          "stainless": "#8fa0a4",
+          "enamel": "#ffe000",
+          "steel": "#33464d",
+          "polymer": "#d8352a"
+        },
+        "pvcDuct": {
+          "stainless": "#8d9498",
+          "enamel": "#3e4a52",
+          "steel": "#5f676b",
+          "polymer": "#f08a1c"
         }
       },
       "stats": {
-        "triangles": 72,
+        "triangles": 1958,
         "sizeM": [
-          0.546,
-          2.115,
-          0.546
+          0.703416,
+          2.683,
+          0.98
         ],
         "minUpM": 0,
         "materials": 1
@@ -142764,21 +142791,78 @@
           "name": "enamel",
           "color": "#c9dedc",
           "parts": [
-            "duct-foot",
-            "inspection-band-0",
-            "inspection-band-1",
-            "inspection-band-2",
-            "terminal-cap"
+            "stand-leg-0",
+            "stand-brace-0",
+            "stand-leg-1",
+            "stand-brace-1",
+            "stand-leg-2",
+            "stand-brace-2",
+            "stand-leg-3",
+            "stand-brace-3",
+            "stand-ring",
+            "bracket-band-1450",
+            "bracket-arm-1450",
+            "bracket-band-2250",
+            "bracket-arm-2250"
           ],
           "param": "enamel"
+        },
+        {
+          "name": "steel",
+          "color": "#53666e",
+          "parts": [
+            "leg-pad-0",
+            "leg-pad-1",
+            "leg-pad-2",
+            "leg-pad-3",
+            "drain-valve",
+            "flange-600",
+            "flange-1300",
+            "flange-1900",
+            "flange-2350",
+            "branch-flange",
+            "branch-collar",
+            "damper-shaft",
+            "actuator-cover",
+            "damper-indicator",
+            "door-knob--90--130",
+            "door-knob-90--130",
+            "door-knob--90-130",
+            "door-knob-90-130",
+            "bracket-plate-1450",
+            "bracket-plate-2250",
+            "airflow-arrow-1150",
+            "airflow-arrow-1800",
+            "nozzle-throat"
+          ],
+          "param": "steel"
         },
         {
           "name": "stainless",
           "color": "#b8c7ca",
           "parts": [
-            "riser-shaft"
+            "drain-sump",
+            "drain-pipe",
+            "duct-0",
+            "duct-1",
+            "duct-2",
+            "branch-inlet",
+            "access-door",
+            "discharge-nozzle"
           ],
           "param": "stainless"
+        },
+        {
+          "name": "polymer",
+          "color": "#e5a331",
+          "parts": [
+            "drain-lever",
+            "damper-actuator",
+            "airflow-band-1150",
+            "airflow-band-1800",
+            "stack-band"
+          ],
+          "param": "polymer"
         }
       ]
     },
@@ -143738,10 +143822,14 @@
       "id": "laboratory-fume-hood",
       "kit": "lab-infrastructure",
       "title": "Laboratory fume hood",
-      "description": "Full-size bench fume enclosure with a work chamber, framed sash, base storage and exhaust crown. Editable material controls: enamel coating, tinted safety glass, polymer controls, stainless steel; presets: cleanroom and high visibility.",
+      "description": "Bench-mounted fume hood: open chamber between side posts with a sloped header, rising glass sash with pull bar, aerofoil sill on a dished epoxy worktop, slotted rear baffle, airflow monitor, gas cocks, three-door base cabinet and round exhaust collar. Material controls: enamel shell, epoxy worktop, sash glass, stainless baffle and sash frame, polymer controls. Closed, working or raised sash; cleanroom, high-visibility and teaching-lab presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "fume hood",
+        "fume cupboard",
+        "sash",
+        "exhaust",
         "laboratory",
         "lab infrastructure",
         "research facility",
@@ -143757,8 +143845,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/lab-infrastructure/laboratory-fume-hood.kcad.ts",
       "preview": "/assets/lab-infrastructure-laboratory-fume-hood.png",
-      "sourceSha256": "cf0b2eae18777dc1bc597dda13a00ccbec370bc6ada825e9363c75d1d2bd4d96",
-      "triangleBudget": 1800,
+      "sourceSha256": "3fd671e3464c0d711dca23087d96eb619e722d2476dcd9f337bff2ef734cb211",
+      "triangleBudget": 1600,
       "params": [
         {
           "name": "scale",
@@ -143770,93 +143858,161 @@
           "step": 0.05
         },
         {
+          "name": "sash",
+          "type": "choice",
+          "default": "working",
+          "label": "Sash position",
+          "choices": [
+            "closed",
+            "working",
+            "raised"
+          ]
+        },
+        {
           "name": "enamel",
           "type": "color",
           "default": "#c9dedc",
-          "label": "Enamel coating"
+          "label": "Shell and cabinet enamel"
+        },
+        {
+          "name": "epoxy",
+          "type": "color",
+          "default": "#2b3135",
+          "label": "Epoxy worktop and plinth"
         },
         {
           "name": "glass",
           "type": "color",
           "default": "#55b7ca",
-          "label": "Tinted safety glass"
-        },
-        {
-          "name": "polymer",
-          "type": "color",
-          "default": "#e5a331",
-          "label": "Polymer controls"
+          "label": "Sash safety glass"
         },
         {
           "name": "stainless",
           "type": "color",
           "default": "#b8c7ca",
-          "label": "Stainless steel"
+          "label": "Baffle, sash frame and collar stainless"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#e5a331",
+          "label": "Monitor, valve and pull polymer"
         }
       ],
       "presets": {
         "cleanroom": {
           "enamel": "#e7f0ed",
+          "epoxy": "#dfe5e3",
           "glass": "#8bd4dc",
-          "polymer": "#23a5a2",
-          "stainless": "#d0d9d8"
+          "stainless": "#d0d9d8",
+          "polymer": "#23a5a2"
         },
         "highVisibility": {
           "enamel": "#f0f2e8",
+          "epoxy": "#1b1f22",
           "glass": "#44d3e2",
-          "polymer": "#ffe000",
-          "stainless": "#6f8488"
+          "stainless": "#6f8488",
+          "polymer": "#ffe000"
+        },
+        "teachingLab": {
+          "enamel": "#e9e2cf",
+          "epoxy": "#3c4a3f",
+          "glass": "#7cc3c9",
+          "stainless": "#a9b2b3",
+          "polymer": "#c8402c"
         }
       },
       "stats": {
-        "triangles": 156,
+        "triangles": 1122,
         "sizeM": [
-          1.248,
-          2.35,
-          0.858
+          1.52,
+          2.643,
+          0.955
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
+          "name": "epoxy",
+          "color": "#2b3135",
+          "parts": [
+            "plinth",
+            "worktop",
+            "marine-edge-front",
+            "baffle-slot-960",
+            "baffle-slot-1540",
+            "baffle-slot-2090",
+            "monitor-alarm",
+            "collar-throat"
+          ],
+          "param": "epoxy"
+        },
+        {
           "name": "enamel",
           "color": "#c9dedc",
           "parts": [
-            "base-cabinet",
-            "side-cheek--1",
-            "side-cheek-1",
-            "rear-chamber-wall",
-            "sash-header",
-            "sash-rail",
-            "upper-housing"
+            "base-carcass",
+            "door-0",
+            "door-1",
+            "door-2",
+            "side-post--1",
+            "side-post-1",
+            "rear-wall",
+            "roof",
+            "header",
+            "outlet-face-1125",
+            "outlet-face-1175"
           ],
           "param": "enamel"
-        },
-        {
-          "name": "stainless",
-          "color": "#b8c7ca",
-          "parts": [
-            "work-surface",
-            "exhaust-neck"
-          ],
-          "param": "stainless"
         },
         {
           "name": "polymer",
           "color": "#e5a331",
           "parts": [
-            "control-button-0",
-            "control-button-1",
-            "control-button-2"
+            "door-pull-0",
+            "door-pull-1",
+            "door-pull-2",
+            "header-label",
+            "sash-pull-bar",
+            "airflow-monitor",
+            "outlet-plate",
+            "gas-handle-1080",
+            "gas-handle-1260"
           ],
           "param": "polymer"
+        },
+        {
+          "name": "stainless",
+          "color": "#b8c7ca",
+          "parts": [
+            "pull-post-0",
+            "pull-post-1",
+            "pull-post-2",
+            "cup-sink",
+            "aerofoil-sill",
+            "rear-baffle",
+            "sash-bottom-rail",
+            "sash-top-rail",
+            "sash-stile--1",
+            "pull-standoff--1",
+            "sash-stile-1",
+            "pull-standoff-1",
+            "gas-cock-1080",
+            "gas-barb-1080",
+            "gas-cock-1260",
+            "gas-barb-1260",
+            "exhaust-collar"
+          ],
+          "param": "stainless"
         },
         {
           "name": "glass",
           "color": "#55b7ca",
           "parts": [
-            "sash-glazing"
+            "light-lens",
+            "sash-glass",
+            "monitor-screen"
           ],
           "param": "glass"
         }
@@ -143866,10 +144022,15 @@
       "id": "laboratory-gas-cylinder-cabinet",
       "kit": "lab-infrastructure",
       "title": "Laboratory gas-cylinder cabinet",
-      "description": "Tall ventilated gas-cylinder enclosure with a pair of doors, top duct and retaining rail. Editable material controls: enamel coating, polymer controls, stainless steel, structural steel; presets: cleanroom and high visibility.",
+      "description": "Ventilated two-cylinder gas cabinet: steel enclosure, self-closing door with wired-glass view window, louvred air intake and hazard placard, two restrained gas cylinders with valves, stainless purge panel with regulators, gauges and pigtails, round exhaust collar and sprinkler head. Material controls: cabinet enamel, cylinder paint, window glass, stainless panel, polymer handle and placard. Door closed or open; cleanroom, high-visibility and oxygen-service presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "gas cabinet",
+        "gas cylinder",
+        "compressed gas",
+        "purge panel",
+        "regulator",
         "laboratory",
         "lab infrastructure",
         "research facility",
@@ -143885,8 +144046,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/lab-infrastructure/laboratory-gas-cylinder-cabinet.kcad.ts",
       "preview": "/assets/lab-infrastructure-laboratory-gas-cylinder-cabinet.png",
-      "sourceSha256": "bc340fd6911eb8209583090c8109fec3a04602bf67b7422ab1107f3b74dbf780",
-      "triangleBudget": 1800,
+      "sourceSha256": "6837bf3d74e48f13b20b58944bedc4bcab0ebcf402fa354ee4442671d2f2b80a",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -143898,94 +144059,187 @@
           "step": 0.05
         },
         {
+          "name": "door",
+          "type": "choice",
+          "default": "open",
+          "label": "Door",
+          "choices": [
+            "closed",
+            "open"
+          ]
+        },
+        {
           "name": "enamel",
           "type": "color",
           "default": "#c9dedc",
-          "label": "Enamel coating"
+          "label": "Cabinet enamel"
         },
         {
-          "name": "polymer",
+          "name": "cylinder",
           "type": "color",
-          "default": "#e5a331",
-          "label": "Polymer controls"
+          "default": "#4f6b3a",
+          "label": "Gas cylinder paint"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#55b7ca",
+          "label": "Wired-glass view window"
         },
         {
           "name": "stainless",
           "type": "color",
           "default": "#b8c7ca",
-          "label": "Stainless steel"
+          "label": "Purge panel, valves and duct stainless"
         },
         {
-          "name": "steel",
+          "name": "polymer",
           "type": "color",
-          "default": "#53666e",
-          "label": "Structural steel"
+          "default": "#e5a331",
+          "label": "Handle, straps and hazard placard"
         }
       ],
       "presets": {
         "cleanroom": {
           "enamel": "#e7f0ed",
-          "polymer": "#23a5a2",
+          "cylinder": "#6d7f86",
+          "glass": "#8bd4dc",
           "stainless": "#d0d9d8",
-          "steel": "#75888d"
+          "polymer": "#23a5a2"
         },
         "highVisibility": {
-          "enamel": "#f0f2e8",
-          "polymer": "#ffe000",
+          "enamel": "#f2d200",
+          "cylinder": "#b2302a",
+          "glass": "#44d3e2",
           "stainless": "#6f8488",
-          "steel": "#33464d"
+          "polymer": "#1f2a30"
+        },
+        "oxygenService": {
+          "enamel": "#d9dcd6",
+          "cylinder": "#eef0ec",
+          "glass": "#7fc4d0",
+          "stainless": "#a9b3b5",
+          "polymer": "#2f6fa8"
         }
       },
       "stats": {
-        "triangles": 144,
+        "triangles": 2740,
         "sizeM": [
-          0.9,
-          2.82,
-          0.6895
+          1.177883,
+          2.203,
+          1.310015
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
+          "name": "stainless",
+          "color": "#b8c7ca",
+          "parts": [
+            "foot-0",
+            "foot-1",
+            "foot-2",
+            "foot-3",
+            "cylinder-neck-0",
+            "cylinder-valve-0",
+            "valve-outlet-0",
+            "cylinder-neck-1",
+            "cylinder-valve-1",
+            "valve-outlet-1",
+            "strap-rail-700",
+            "strap-rail-1150",
+            "purge-panel",
+            "regulator-0",
+            "gauge-0--75",
+            "gauge-0-75",
+            "pigtail-down-0",
+            "pigtail-up-0",
+            "regulator-1",
+            "gauge-1--75",
+            "gauge-1-75",
+            "pigtail-down-1",
+            "pigtail-up-1",
+            "process-line",
+            "window-frame-bottom",
+            "window-frame-top",
+            "window-frame-left",
+            "window-frame-right",
+            "intake-frame",
+            "handle-escutcheon",
+            "handle-boss",
+            "hinge-330",
+            "hinge-1025",
+            "hinge-1720",
+            "exhaust-collar",
+            "sprinkler-body"
+          ],
+          "param": "stainless"
+        },
+        {
           "name": "enamel",
           "color": "#c9dedc",
           "parts": [
-            "cabinet-shell",
-            "door-0",
-            "door-1"
+            "floor-pan",
+            "back-panel",
+            "side-panel--1",
+            "side-panel-1",
+            "roof-panel",
+            "door-header",
+            "door-sill",
+            "gauge-face-0--75",
+            "gauge-face-0-75",
+            "gauge-face-1--75",
+            "gauge-face-1-75",
+            "door-leaf-left",
+            "door-leaf-right",
+            "door-leaf-below",
+            "door-leaf-above",
+            "intake-louvre-0",
+            "intake-louvre-1",
+            "intake-louvre-2",
+            "intake-louvre-3",
+            "intake-louvre-4",
+            "intake-louvre-5"
           ],
           "param": "enamel"
         },
         {
-          "name": "steel",
-          "color": "#53666e",
+          "name": "cylinder",
+          "color": "#4f6b3a",
           "parts": [
-            "cabinet-plinth"
+            "cylinder-0",
+            "cylinder-1",
+            "collar-throat"
           ],
-          "param": "steel"
+          "param": "cylinder"
         },
         {
           "name": "polymer",
           "color": "#e5a331",
           "parts": [
-            "door-pull-0",
-            "door-pull-1",
-            "vent-slot-0",
-            "vent-slot-1",
-            "vent-slot-2",
-            "vent-slot-3",
-            "vent-slot-4"
+            "valve-handwheel-0",
+            "strap-0-700",
+            "strap-0-1150",
+            "valve-handwheel-1",
+            "strap-1-700",
+            "strap-1-1150",
+            "regulator-knob-0",
+            "regulator-knob-1",
+            "handle-lever",
+            "hazard-placard",
+            "damper-quadrant",
+            "sprinkler-deflector"
           ],
           "param": "polymer"
         },
         {
-          "name": "stainless",
-          "color": "#b8c7ca",
+          "name": "glass",
+          "color": "#55b7ca",
           "parts": [
-            "exhaust-neck"
+            "view-window"
           ],
-          "param": "stainless"
+          "param": "glass"
         }
       ]
     },
@@ -144502,10 +144756,15 @@
       "id": "laboratory-utility-turret",
       "kit": "lab-infrastructure",
       "title": "Laboratory utility turret",
-      "description": "Floor-to-ceiling service turret with layered panels, utility sockets and a cap rail. Editable material controls: enamel coating, polymer controls, structural steel; presets: cleanroom and high visibility.",
+      "description": "Floor-to-ceiling service turret: rounded column between a flared floor shroud and ceiling collar, duplex power outlets and data plate facing the bench, and chrome laboratory cocks with hose barbs, colour-coded lever handles, index buttons and labels for gas, air and vacuum on both flanks. Material controls: column enamel, fitting chrome, faceplate polymer, gas, air and vacuum service codes. Cleanroom, high-visibility and European-code presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "service turret",
+        "utility pole",
+        "service column",
+        "gas cock",
+        "outlet",
         "laboratory",
         "lab infrastructure",
         "research facility",
@@ -144521,8 +144780,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/lab-infrastructure/laboratory-utility-turret.kcad.ts",
       "preview": "/assets/lab-infrastructure-laboratory-utility-turret.png",
-      "sourceSha256": "6d9686b276be08504ceae2edd3647d9861b198a21596bafc81d675f885db2903",
-      "triangleBudget": 1800,
+      "sourceSha256": "3a22d51f61e3cc52cd8aafe645d67f86ada830cee498abbd94fc0cac905af0c3",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -144537,77 +144796,174 @@
           "name": "enamel",
           "type": "color",
           "default": "#c9dedc",
-          "label": "Enamel coating"
+          "label": "Column enamel"
         },
         {
-          "name": "polymer",
+          "name": "chrome",
+          "type": "color",
+          "default": "#b8c7ca",
+          "label": "Cock, barb and collar chrome"
+        },
+        {
+          "name": "faceplate",
+          "type": "color",
+          "default": "#3a464d",
+          "label": "Outlet faceplate polymer"
+        },
+        {
+          "name": "gasCode",
+          "type": "color",
+          "default": "#2d62b5",
+          "label": "Gas service code"
+        },
+        {
+          "name": "airCode",
           "type": "color",
           "default": "#e5a331",
-          "label": "Polymer controls"
+          "label": "Compressed-air service code"
         },
         {
-          "name": "steel",
+          "name": "vacuumCode",
           "type": "color",
-          "default": "#53666e",
-          "label": "Structural steel"
+          "default": "#e8d21f",
+          "label": "Vacuum service code"
         }
       ],
       "presets": {
         "cleanroom": {
           "enamel": "#e7f0ed",
-          "polymer": "#23a5a2",
-          "steel": "#75888d"
+          "chrome": "#d0d9d8",
+          "faceplate": "#f2f4f2",
+          "gasCode": "#3d78c8",
+          "airCode": "#23a5a2",
+          "vacuumCode": "#c9c94a"
         },
         "highVisibility": {
           "enamel": "#f0f2e8",
-          "polymer": "#ffe000",
-          "steel": "#33464d"
+          "chrome": "#6f8488",
+          "faceplate": "#1f2a30",
+          "gasCode": "#1b4fd0",
+          "airCode": "#ff7a00",
+          "vacuumCode": "#ffe000"
+        },
+        "europeanCode": {
+          "enamel": "#d8d4c8",
+          "chrome": "#a9b2b3",
+          "faceplate": "#e9e7e0",
+          "gasCode": "#e8c51f",
+          "airCode": "#2f8fd0",
+          "vacuumCode": "#4d9a45"
         }
       },
       "stats": {
-        "triangles": 156,
+        "triangles": 3004,
         "sizeM": [
-          0.42,
-          2.13,
-          0.36
+          0.494,
+          2.7,
+          0.34
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
+          "name": "faceplate",
+          "color": "#3a464d",
+          "parts": [
+            "floor-shroud",
+            "front-reveal--1",
+            "front-reveal-1",
+            "outlet-plate-1080",
+            "outlet-plate-1300",
+            "data-plate"
+          ],
+          "param": "faceplate"
+        },
+        {
           "name": "enamel",
           "color": "#c9dedc",
           "parts": [
-            "turret-core",
-            "service-cap",
-            "turret-port-0",
-            "turret-port-1",
-            "turret-port-2",
-            "turret-port-3",
-            "turret-port-4"
+            "shroud-cap",
+            "column",
+            "receptacle-1080--45",
+            "receptacle-1080-45",
+            "receptacle-1300--45",
+            "receptacle-1300-45"
           ],
           "param": "enamel"
         },
         {
-          "name": "steel",
-          "color": "#53666e",
+          "name": "chrome",
+          "color": "#b8c7ca",
           "parts": [
-            "base-plinth"
+            "ceiling-collar",
+            "data-jack--25",
+            "data-jack-25",
+            "cock-flange--1-1450",
+            "cock-body--1-1450",
+            "cock-bonnet--1-1450",
+            "hose-barb--1-1450",
+            "cock-flange--1-1250",
+            "cock-body--1-1250",
+            "cock-bonnet--1-1250",
+            "hose-barb--1-1250",
+            "cock-flange--1-1050",
+            "cock-body--1-1050",
+            "cock-bonnet--1-1050",
+            "hose-barb--1-1050",
+            "cock-flange-1-1450",
+            "cock-body-1-1450",
+            "cock-bonnet-1-1450",
+            "hose-barb-1-1450",
+            "cock-flange-1-1250",
+            "cock-body-1-1250",
+            "cock-bonnet-1-1250",
+            "hose-barb-1-1250",
+            "cock-flange-1-1050",
+            "cock-body-1-1050",
+            "cock-bonnet-1-1050",
+            "hose-barb-1-1050"
           ],
-          "param": "steel"
+          "param": "chrome"
         },
         {
-          "name": "polymer",
+          "name": "gasCode",
+          "color": "#2d62b5",
+          "parts": [
+            "cock-handle--1-1450",
+            "index-button--1-1450",
+            "service-label--1-1450",
+            "cock-handle-1-1450",
+            "index-button-1-1450",
+            "service-label-1-1450"
+          ],
+          "param": "gasCode"
+        },
+        {
+          "name": "airCode",
           "color": "#e5a331",
           "parts": [
-            "port-socket-0",
-            "port-socket-1",
-            "port-socket-2",
-            "port-socket-3",
-            "port-socket-4"
+            "cock-handle--1-1250",
+            "index-button--1-1250",
+            "service-label--1-1250",
+            "cock-handle-1-1250",
+            "index-button-1-1250",
+            "service-label-1-1250"
           ],
-          "param": "polymer"
+          "param": "airCode"
+        },
+        {
+          "name": "vacuumCode",
+          "color": "#e8d21f",
+          "parts": [
+            "cock-handle--1-1050",
+            "index-button--1-1050",
+            "service-label--1-1050",
+            "cock-handle-1-1050",
+            "index-button-1-1050",
+            "service-label-1-1050"
+          ],
+          "param": "vacuumCode"
         }
       ]
     },
@@ -145090,13 +145446,18 @@
       "id": "laminar-flow-workbench",
       "kit": "lab-infrastructure",
       "title": "Laminar-flow workbench enclosure",
-      "description": "Open-front clean work enclosure with side panels, upper filter head and integrated bench. Editable material controls: enamel coating, tinted safety glass, polymer controls, stainless steel; presets: cleanroom and high visibility.",
+      "description": "Laminar-flow clean bench: white HEPA diffuser rear wall (horizontal flow) or ceiling (vertical flow with front sash), clear acrylic side panels, stainless work tray, blower housing with slatted prefilter grille, sloped switch panel with light and UV switches, four-leg tubular stand with levelling feet. Material controls: cabinet enamel, acrylic panels, HEPA diffuser, stainless tray and stand, polymer switches. Horizontal or vertical flow; cleanroom, high-visibility and pharma presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "laminar flow",
+        "clean bench",
+        "HEPA",
+        "flow hood",
         "laboratory",
         "lab infrastructure",
         "research facility",
+        "cleanroom",
         "low poly",
         "CC0"
       ],
@@ -145109,8 +145470,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/lab-infrastructure/laminar-flow-workbench.kcad.ts",
       "preview": "/assets/lab-infrastructure-laminar-flow-workbench.png",
-      "sourceSha256": "a851e9d890b9c4c1b552aa8c732938c5d4d26adad649b69a55cd0c11b583d432",
-      "triangleBudget": 1800,
+      "sourceSha256": "1d475efd1af4930b5a3d941caecaa38595f3174e6479d4fce565dabc24a28422",
+      "triangleBudget": 1200,
       "params": [
         {
           "name": "scale",
@@ -145122,77 +145483,101 @@
           "step": 0.05
         },
         {
+          "name": "flow",
+          "type": "choice",
+          "default": "horizontal",
+          "label": "Airflow direction",
+          "choices": [
+            "horizontal",
+            "vertical"
+          ]
+        },
+        {
           "name": "enamel",
           "type": "color",
           "default": "#c9dedc",
-          "label": "Enamel coating"
+          "label": "Cabinet enamel"
         },
         {
           "name": "glass",
           "type": "color",
           "default": "#55b7ca",
-          "label": "Tinted safety glass"
+          "label": "Acrylic side and sash panels"
         },
         {
-          "name": "polymer",
+          "name": "filter",
           "type": "color",
-          "default": "#e5a331",
-          "label": "Polymer controls"
+          "default": "#f1f3ef",
+          "label": "HEPA diffuser face"
         },
         {
           "name": "stainless",
           "type": "color",
           "default": "#b8c7ca",
-          "label": "Stainless steel"
+          "label": "Work tray, grille and stand stainless"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#e5a331",
+          "label": "Switch panel polymer"
         }
       ],
       "presets": {
         "cleanroom": {
           "enamel": "#e7f0ed",
           "glass": "#8bd4dc",
-          "polymer": "#23a5a2",
-          "stainless": "#d0d9d8"
+          "filter": "#ffffff",
+          "stainless": "#d0d9d8",
+          "polymer": "#23a5a2"
         },
         "highVisibility": {
           "enamel": "#f0f2e8",
           "glass": "#44d3e2",
-          "polymer": "#ffe000",
-          "stainless": "#6f8488"
+          "filter": "#f4f4ee",
+          "stainless": "#6f8488",
+          "polymer": "#ffe000"
+        },
+        "pharma": {
+          "enamel": "#dfe6ec",
+          "glass": "#9cc7dc",
+          "filter": "#eef2f5",
+          "stainless": "#aab6bd",
+          "polymer": "#2f6fa8"
         }
       },
       "stats": {
-        "triangles": 180,
+        "triangles": 868,
         "sizeM": [
-          1.144,
-          1.65,
-          0.7515
+          1.3,
+          1.916,
+          0.819888
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "enamel",
-          "color": "#c9dedc",
-          "parts": [
-            "base-cabinet",
-            "side-cheek--1",
-            "side-cheek-1",
-            "rear-chamber-wall",
-            "sash-header",
-            "sash-rail",
-            "upper-housing",
-            "workbench-legs"
-          ],
-          "param": "enamel"
-        },
-        {
           "name": "stainless",
           "color": "#b8c7ca",
           "parts": [
-            "work-surface",
-            "exhaust-neck",
-            "filter-grille"
+            "stand-leg-0",
+            "stand-leg-1",
+            "stand-leg-2",
+            "stand-leg-3",
+            "rail-x--1",
+            "rail-x-1",
+            "rail-y--1",
+            "rail-y-1",
+            "stand-top-frame",
+            "work-tray",
+            "tray-lip",
+            "diffuser-mullion-1",
+            "diffuser-mullion-2",
+            "diffuser-mullion-3",
+            "diffuser-transom",
+            "switch-3",
+            "prefilter-frame"
           ],
           "param": "stainless"
         },
@@ -145200,19 +145585,57 @@
           "name": "polymer",
           "color": "#e5a331",
           "parts": [
-            "control-button-0",
-            "control-button-1",
-            "control-button-2"
+            "levelling-foot-0",
+            "levelling-foot-1",
+            "levelling-foot-2",
+            "levelling-foot-3",
+            "switch-panel"
           ],
           "param": "polymer"
+        },
+        {
+          "name": "enamel",
+          "color": "#c9dedc",
+          "parts": [
+            "cabinet-base",
+            "front-post--1",
+            "front-post-1",
+            "back-wall",
+            "ceiling-panel",
+            "blower-housing",
+            "switch-0",
+            "switch-1",
+            "switch-2",
+            "prefilter-slat-0",
+            "prefilter-slat-1",
+            "prefilter-slat-2",
+            "prefilter-slat-3",
+            "prefilter-slat-4",
+            "prefilter-slat-5",
+            "prefilter-slat-6",
+            "prefilter-slat-7",
+            "prefilter-slat-8"
+          ],
+          "param": "enamel"
         },
         {
           "name": "glass",
           "color": "#55b7ca",
           "parts": [
-            "sash-glazing"
+            "side-panel--1",
+            "side-panel-1",
+            "display-window"
           ],
           "param": "glass"
+        },
+        {
+          "name": "filter",
+          "color": "#f1f3ef",
+          "parts": [
+            "rear-diffuser",
+            "light-lens"
+          ],
+          "param": "filter"
         }
       ]
     },
