@@ -13946,13 +13946,16 @@
       "id": "bumper-car",
       "kit": "amusement-park",
       "title": "Bumper car",
-      "description": "Single electric bumper car with four perimeter bumper rails, a low cockpit, overhead pickup mast, steering control, and four floor rollers. Controls: overall scale, fiberglass, stainlessSteel, rubber, enamel; festival and twilight material presets.",
+      "description": "Two-seat dodgem at about real size: moulded rubber bumper ring round a low chassis, sculpted fibreglass shell with a dipped nose and tall rear cowl, accent stripe and headlamps, padded bench seat, steering wheel on a raked column, and a sprung pickup pole with ceiling-grid shoe. Material controls: fiberglass shell, enamel accent, upholstery, rubber bumper, stainless pole. Festival, twilight and retro presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "bumper car",
+        "dodgem",
         "amusement park",
         "theme park",
-        "guest experience",
+        "fairground ride",
+        "ride vehicle",
         "low poly",
         "CC0",
         "attractions and queues"
@@ -13966,8 +13969,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/bumper-car.kcad.ts",
       "preview": "/assets/amusement-park-bumper-car.png",
-      "sourceSha256": "59ba13f717a6ba42029393013d2ce2ce7c26f7c62eded6181fb78964ddab7b90",
-      "triangleBudget": 1800,
+      "sourceSha256": "c383fefb59d5cd762afeb87757db0493ebaa4c4dcb1c7d49277ed798a61c2948",
+      "triangleBudget": 4800,
       "params": [
         {
           "name": "scale",
@@ -13981,48 +13984,59 @@
         {
           "name": "fiberglass",
           "type": "color",
-          "default": "#4d8290",
-          "label": "Painted fiberglass"
-        },
-        {
-          "name": "stainlessSteel",
-          "type": "color",
-          "default": "#b0b9b6",
-          "label": "Stainless steel"
-        },
-        {
-          "name": "rubber",
-          "type": "color",
-          "default": "#292f33",
-          "label": "Rubber"
+          "default": "#c8302c",
+          "label": "Painted fiberglass shell"
         },
         {
           "name": "enamel",
           "type": "color",
-          "default": "#cc684e",
-          "label": "Baked enamel"
+          "default": "#f2c230",
+          "label": "Enamel stripe and lamps"
+        },
+        {
+          "name": "upholstery",
+          "type": "color",
+          "default": "#2a3c6e",
+          "label": "Vinyl upholstery"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#22272b",
+          "label": "Rubber bumper and wheel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#c4cbcd",
+          "label": "Stainless pole and column"
         }
       ],
       "presets": {
         "festival": {
-          "fiberglass": "#d7a83f",
-          "stainlessSteel": "#d1d1c6",
-          "rubber": "#3c4245",
-          "enamel": "#edb34d"
+          "fiberglass": "#2f7fc1",
+          "enamel": "#f4f1e8",
+          "upholstery": "#d23b2f"
         },
         "twilight": {
-          "fiberglass": "#96566d",
-          "stainlessSteel": "#788b91",
-          "rubber": "#20262a",
-          "enamel": "#385b81"
+          "fiberglass": "#6b3d8f",
+          "enamel": "#5fd1d8",
+          "upholstery": "#1d1f2a",
+          "stainlessSteel": "#8d9aa0"
+        },
+        "retro": {
+          "fiberglass": "#e8dcc0",
+          "enamel": "#3a8f5c",
+          "upholstery": "#7a2f24",
+          "rubber": "#3a3532"
         }
       },
       "stats": {
-        "triangles": 440,
+        "triangles": 4566,
         "sizeM": [
-          1.429849,
-          1.3,
-          1.135
+          2.04,
+          2.72,
+          1.28
         ],
         "minUpM": 0,
         "materials": 1
@@ -14030,48 +14044,71 @@
       "palette": [
         {
           "name": "stainlessSteel",
-          "color": "#b0b9b6",
+          "color": "#c4cbcd",
           "parts": [
-            "floor-pan",
+            "chassis",
             "steering-column",
-            "power-pickup"
+            "steering-hub",
+            "steering-spoke-0",
+            "steering-spoke-1",
+            "steering-spoke-2",
+            "pole-mast",
+            "pole-spring-0",
+            "pole-spring-1",
+            "pole-spring-2",
+            "pole-spring-3",
+            "pole-spring-4",
+            "pole-spring-5",
+            "pole-tip"
           ],
           "param": "stainlessSteel"
         },
         {
           "name": "rubber",
-          "color": "#292f33",
+          "color": "#22272b",
           "parts": [
-            "bumper-front",
-            "bumper-rear",
-            "bumper-left",
-            "bumper-right",
+            "wheel-drive",
+            "wheel-caster-left",
+            "wheel-caster-right",
+            "bumper-roll",
+            "bumper-lip",
+            "floor-mat",
             "steering-wheel",
-            "roller-0",
-            "roller-1",
-            "roller-2",
-            "roller-3"
+            "pole-boot"
           ],
           "param": "rubber"
         },
         {
           "name": "fiberglass",
-          "color": "#4d8290",
+          "color": "#c8302c",
           "parts": [
-            "nose"
+            "shell",
+            "dash"
           ],
           "param": "fiberglass"
         },
         {
           "name": "enamel",
-          "color": "#cc684e",
+          "color": "#f2c230",
           "parts": [
-            "seat-pan",
-            "seat-back",
-            "seat-bolster-left",
-            "seat-bolster-right"
+            "accent-stripe",
+            "headlamp-right",
+            "number-disc-right",
+            "headlamp-left",
+            "number-disc-left",
+            "pickup-shoe"
           ],
           "param": "enamel"
+        },
+        {
+          "name": "upholstery",
+          "color": "#2a3c6e",
+          "parts": [
+            "seat-cushion",
+            "seat-roll",
+            "seat-back"
+          ],
+          "param": "upholstery"
         }
       ]
     },
@@ -14518,16 +14555,21 @@
       "id": "cotton-candy-cart",
       "kit": "amusement-park",
       "title": "Cotton candy cart",
-      "description": "Push cart with a round candy bowl, umbrella mast, flavor tubs, push handle, and paired wheels. Controls: overall scale, powderCoat, stainlessSteel, acrylic; festival and twilight material presets.",
+      "description": "Midway cotton candy cart at about real size: wide stainless spinning bowl with spinner head and floss cloud inside a clear bubble shield, cone holder, bagged floss on a side rail, striped eight-gore umbrella on a mast, rounded powder-coated cabinet with sign panel and bottom shelf, two spoked wheels, legs and a bent push handle. Material controls: powder coat, stainless steel, acrylic shield, candy floss, umbrella canvas, tyre rubber. Festival, twilight and pastel presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "cotton candy",
+        "candy floss",
+        "fairy floss",
+        "concession cart",
+        "food cart",
         "amusement park",
         "theme park",
-        "guest experience",
+        "midway",
         "low poly",
         "CC0",
-        "concessions and rest areas"
+        "food and beverage"
       ],
       "compat": [
         "amusement-park",
@@ -14538,8 +14580,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/cotton-candy-cart.kcad.ts",
       "preview": "/assets/amusement-park-cotton-candy-cart.png",
-      "sourceSha256": "3b8fab205784050dc2ce170add48d6c05a8be3c7c36e8a0b6b4b9c7ea98dd107",
-      "triangleBudget": 1800,
+      "sourceSha256": "61dc471f130d6b1c75e644653d5e1c318c5b015b935317183cb7d844126605c3",
+      "triangleBudget": 4600,
       "params": [
         {
           "name": "scale",
@@ -14553,40 +14595,66 @@
         {
           "name": "powderCoat",
           "type": "color",
-          "default": "#477985",
-          "label": "Powder-coated steel"
+          "default": "#3f8fb0",
+          "label": "Powder-coated cabinet"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
-          "default": "#b0b9b6",
-          "label": "Stainless steel"
+          "default": "#c9d0d2",
+          "label": "Stainless bowl, counter and handle"
         },
         {
           "name": "acrylic",
           "type": "color",
-          "default": "#63aab8",
-          "label": "Tinted acrylic"
+          "default": "#bfe6ee",
+          "label": "Clear acrylic bubble shield"
+        },
+        {
+          "name": "candy",
+          "type": "color",
+          "default": "#f08ab8",
+          "label": "Candy floss and umbrella stripe"
+        },
+        {
+          "name": "canvas",
+          "type": "color",
+          "default": "#f6f2ea",
+          "label": "Umbrella canvas"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#26292c",
+          "label": "Tyre rubber"
         }
       ],
       "presets": {
         "festival": {
           "powderCoat": "#d47452",
           "stainlessSteel": "#d1d1c6",
-          "acrylic": "#79c8d2"
+          "acrylic": "#79c8d2",
+          "candy": "#e25a9a"
         },
         "twilight": {
           "powderCoat": "#35576f",
           "stainlessSteel": "#788b91",
-          "acrylic": "#41768b"
+          "acrylic": "#41768b",
+          "candy": "#b77ad8",
+          "canvas": "#2c2f45"
+        },
+        "pastel": {
+          "powderCoat": "#f3c8d8",
+          "candy": "#8fd0f0",
+          "canvas": "#fff7e0"
         }
       },
       "stats": {
-        "triangles": 372,
+        "triangles": 4276,
         "sizeM": [
-          1.91,
-          2.06,
-          1.41
+          2.266,
+          2.48,
+          1.92
         ],
         "minUpM": 0,
         "materials": 1
@@ -14594,37 +14662,109 @@
       "palette": [
         {
           "name": "powderCoat",
-          "color": "#477985",
+          "color": "#3f8fb0",
           "parts": [
-            "cart-bed",
-            "candy-bowl",
-            "umbrella-canopy",
-            "flavor-tub-0",
-            "flavor-tub-1",
-            "flavor-tub-2"
+            "cabinet",
+            "counter-edge",
+            "rim-right",
+            "rim-left",
+            "cone-holder"
           ],
           "param": "powderCoat"
         },
         {
           "name": "stainlessSteel",
-          "color": "#b0b9b6",
+          "color": "#c9d0d2",
           "parts": [
-            "cart-cabinet",
-            "spinner-hub",
-            "umbrella-pole",
-            "wheel-axle",
-            "axle-bracket-0",
-            "axle-bracket-1",
-            "wheel-0",
-            "wheel-1"
+            "bottom-shelf",
+            "counter",
+            "hub-right",
+            "spoke-r-0",
+            "spoke-r-1",
+            "spoke-r-2",
+            "spoke-r-3",
+            "spoke-r-4",
+            "spoke-r-5",
+            "leg-right",
+            "hub-left",
+            "spoke-l-0",
+            "spoke-l-1",
+            "spoke-l-2",
+            "spoke-l-3",
+            "spoke-l-4",
+            "spoke-l-5",
+            "leg-left",
+            "axle",
+            "handle-arm-r-0",
+            "handle-arm-r-1",
+            "handle-arm-l-0",
+            "handle-arm-l-1",
+            "machine-base",
+            "bowl",
+            "spinner-head",
+            "bag-rail",
+            "mast"
           ],
           "param": "stainlessSteel"
         },
         {
-          "name": "acrylic",
-          "color": "#63aab8",
+          "name": "candy",
+          "color": "#f08ab8",
           "parts": [
-            "push-handle"
+            "sign-panel-right",
+            "sign-panel-left",
+            "floss-cloud",
+            "floss-bag-0",
+            "floss-bag-2",
+            "floss-bag-4",
+            "umbrella-gore-0",
+            "umbrella-gore-2",
+            "umbrella-gore-4",
+            "umbrella-gore-6",
+            "finial"
+          ],
+          "param": "candy"
+        },
+        {
+          "name": "canvas",
+          "color": "#f6f2ea",
+          "parts": [
+            "sign-star-right",
+            "sign-star-left",
+            "paper-cone--20--20",
+            "paper-cone-25--10",
+            "paper-cone-0-25",
+            "bag-tie-0",
+            "bag-tie-1",
+            "bag-tie-2",
+            "bag-tie-3",
+            "bag-tie-4",
+            "umbrella-gore-1",
+            "umbrella-gore-3",
+            "umbrella-gore-5",
+            "umbrella-gore-7"
+          ],
+          "param": "canvas"
+        },
+        {
+          "name": "rubber",
+          "color": "#26292c",
+          "parts": [
+            "tyre-right",
+            "leg-foot-right",
+            "tyre-left",
+            "leg-foot-left",
+            "handle-grip"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "acrylic",
+          "color": "#bfe6ee",
+          "parts": [
+            "bubble-shield",
+            "floss-bag-1",
+            "floss-bag-3"
           ],
           "param": "acrylic"
         }
@@ -16486,13 +16626,17 @@
       "id": "junior-coaster-track-section",
       "kit": "amusement-park",
       "title": "Junior coaster track section",
-      "description": "Short display section of family coaster rail with cross ties, two supports, and a gentle rise. Controls: overall scale, steel, timber, concrete; festival and twilight material presets.",
+      "description": "Family roller coaster track section at about real size: twin tubular running rails on a round spine tube with triangular cross ties, smooth rise into a lift hill with a chain trough and anti-rollback teeth, Y-headed support columns in spine saddles, galvanised base plates and concrete footings. Material controls: track paint, support paint, galvanised steel, concrete. Festival, twilight and woodie presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "roller coaster",
+        "coaster track",
+        "junior coaster",
+        "family coaster",
+        "lift hill",
         "amusement park",
         "theme park",
-        "guest experience",
         "low poly",
         "CC0",
         "attractions and queues"
@@ -16506,8 +16650,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/junior-coaster-track-section.kcad.ts",
       "preview": "/assets/amusement-park-junior-coaster-track-section.png",
-      "sourceSha256": "0b86fb734e0628d72320bf1c2ba7e2d2ab68ed4e18ecdc5a617cc816aed44a35",
-      "triangleBudget": 1800,
+      "sourceSha256": "dead555c004de54a1e4c20f718a304cacb8cb73e142d3e6b668d42c4b983ab8e",
+      "triangleBudget": 4200,
       "params": [
         {
           "name": "scale",
@@ -16519,72 +16663,189 @@
           "step": 0.05
         },
         {
-          "name": "steel",
+          "name": "trackPaint",
           "type": "color",
-          "default": "#738087",
-          "label": "Painted steel"
+          "default": "#e2572b",
+          "label": "Painted track rails, spine and ties"
         },
         {
-          "name": "timber",
+          "name": "supportPaint",
           "type": "color",
-          "default": "#8a6748",
-          "label": "Sealed timber"
+          "default": "#2f6b8f",
+          "label": "Painted support columns"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#9aa3a8",
+          "label": "Galvanised base plates, trough and teeth"
         },
         {
           "name": "concrete",
           "type": "color",
           "default": "#92938b",
-          "label": "Concrete"
+          "label": "Concrete footings"
         }
       ],
       "presets": {
         "festival": {
-          "steel": "#9da3a0",
-          "timber": "#ab8051",
-          "concrete": "#aaa99e"
+          "trackPaint": "#f2c230",
+          "supportPaint": "#d23b2f",
+          "steel": "#9da3a0"
         },
         "twilight": {
+          "trackPaint": "#7b4fb3",
+          "supportPaint": "#24323d",
           "steel": "#4f626c",
-          "timber": "#604b3b",
-          "concrete": "#6f7477"
+          "concrete": "#6f716c"
+        },
+        "woodie": {
+          "trackPaint": "#5c5f62",
+          "supportPaint": "#a9805a",
+          "concrete": "#a4a39b"
         }
       },
       "stats": {
-        "triangles": 144,
+        "triangles": 3800,
         "sizeM": [
-          3.6,
-          1.147467,
-          1.02
+          6.006195,
+          2.350239,
+          0.9
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "timber",
-          "color": "#8a6748",
+          "name": "trackPaint",
+          "color": "#e2572b",
           "parts": [
-            "rail-0",
-            "rail-1",
-            "cross-tie-0",
-            "cross-tie-1",
-            "cross-tie-2",
-            "cross-tie-3",
-            "cross-tie-4",
-            "cross-tie-5",
-            "support-0",
-            "support-1",
-            "support-2"
+            "rail-right-0",
+            "rail-left-0",
+            "spine-0",
+            "rail-right-1",
+            "rail-left-1",
+            "spine-1",
+            "rail-right-2",
+            "rail-left-2",
+            "spine-2",
+            "rail-right-3",
+            "rail-left-3",
+            "spine-3",
+            "rail-right-4",
+            "rail-left-4",
+            "spine-4",
+            "rail-right-5",
+            "rail-left-5",
+            "spine-5",
+            "rail-right-6",
+            "rail-left-6",
+            "spine-6",
+            "rail-right-7",
+            "rail-left-7",
+            "spine-7",
+            "rail-right-8",
+            "rail-left-8",
+            "spine-8",
+            "rail-right-9",
+            "rail-left-9",
+            "spine-9",
+            "rail-right-10",
+            "rail-left-10",
+            "spine-10",
+            "rail-right-11",
+            "rail-left-11",
+            "spine-11",
+            "tie-0",
+            "tie-1",
+            "tie-2",
+            "tie-3",
+            "tie-4",
+            "tie-5",
+            "tie-6",
+            "tie-7",
+            "tie-8",
+            "tie-9",
+            "tie-10",
+            "tie-11",
+            "tie-12",
+            "tie-13",
+            "tie-14",
+            "tie-15",
+            "tie-16",
+            "tie-17",
+            "tie-18",
+            "tie-19",
+            "tie-20"
           ],
-          "param": "timber"
+          "param": "trackPaint"
+        },
+        {
+          "name": "steel",
+          "color": "#9aa3a8",
+          "parts": [
+            "spine-flange-start",
+            "spine-flange-end",
+            "chain-trough-0",
+            "ratchet-0-0",
+            "ratchet-0-1",
+            "ratchet-0-2",
+            "chain-trough-1",
+            "ratchet-1-0",
+            "ratchet-1-1",
+            "ratchet-1-2",
+            "chain-trough-2",
+            "ratchet-2-0",
+            "ratchet-2-1",
+            "ratchet-2-2",
+            "chain-trough-3",
+            "ratchet-3-0",
+            "ratchet-3-1",
+            "ratchet-3-2",
+            "chain-trough-4",
+            "ratchet-4-0",
+            "ratchet-4-1",
+            "ratchet-4-2",
+            "chain-trough-5",
+            "ratchet-5-0",
+            "ratchet-5-1",
+            "ratchet-5-2",
+            "base-plate--1800",
+            "anchor--1800--220--220",
+            "anchor--1800-220--220",
+            "anchor--1800-220-220",
+            "anchor--1800--220-220",
+            "base-plate-1400",
+            "anchor-1400--220--220",
+            "anchor-1400-220--220",
+            "anchor-1400-220-220",
+            "anchor-1400--220-220"
+          ],
+          "param": "steel"
         },
         {
           "name": "concrete",
           "color": "#92938b",
           "parts": [
-            "base-foot"
+            "footing--1800",
+            "footing-1400"
           ],
           "param": "concrete"
+        },
+        {
+          "name": "supportPaint",
+          "color": "#2f6b8f",
+          "parts": [
+            "column--1800",
+            "column-fork--1800-r",
+            "column-fork--1800-l",
+            "saddle--1800",
+            "column-1400",
+            "column-fork-1400-r",
+            "column-fork-1400-l",
+            "saddle-1400"
+          ],
+          "param": "supportPaint"
         }
       ]
     },
@@ -16899,13 +17160,17 @@
       "id": "log-flume-boat",
       "kit": "amusement-park",
       "title": "Log flume boat",
-      "description": "Two-seat flume boat with raised bow, open seating well, rear grab bar, and keel-like lower profile. Controls: overall scale, fiberglass, stainlessSteel, rubber; festival and twilight material presets.",
+      "description": "Log flume ride boat at about real size: round bark-finish fibreglass log hull with bark ridges, knots and a branch stub, rounded bow and sawn stern with end-grain rings, long carved cockpit with heartwood rim, four tandem padded bench rows with stainless grab bars, and rubber waterline rub strips. Material controls: bark fiberglass, heartwood, seat pads, stainless grab bars, rubber. Festival, twilight and birch presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "log flume",
+        "flume boat",
+        "log ride",
+        "water ride",
         "amusement park",
         "theme park",
-        "guest experience",
+        "ride vehicle",
         "low poly",
         "CC0",
         "attractions and queues"
@@ -16919,8 +17184,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/log-flume-boat.kcad.ts",
       "preview": "/assets/amusement-park-log-flume-boat.png",
-      "sourceSha256": "32333adde3d0a6678b3ca1d881116fbbefe1f73613a71c9b2480ae9116df113f",
-      "triangleBudget": 1800,
+      "sourceSha256": "da6e756b56c9be6b26e678711ec7bd8dad185f2e29d3118e832d4cda59be124f",
+      "triangleBudget": 5000,
       "params": [
         {
           "name": "scale",
@@ -16934,72 +17199,130 @@
         {
           "name": "fiberglass",
           "type": "color",
-          "default": "#4d8290",
-          "label": "Painted fiberglass"
+          "default": "#6b4a2f",
+          "label": "Bark-finish fiberglass hull"
+        },
+        {
+          "name": "heartwood",
+          "type": "color",
+          "default": "#d2a86c",
+          "label": "Heartwood rim and end grain"
+        },
+        {
+          "name": "seatPad",
+          "type": "color",
+          "default": "#2f6f7a",
+          "label": "Seat pads"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#b0b9b6",
-          "label": "Stainless steel"
+          "label": "Stainless grab bars"
         },
         {
           "name": "rubber",
           "type": "color",
           "default": "#292f33",
-          "label": "Rubber"
+          "label": "Rubber rub strips"
         }
       ],
       "presets": {
         "festival": {
-          "fiberglass": "#d7a83f",
-          "stainlessSteel": "#d1d1c6",
-          "rubber": "#3c4245"
+          "fiberglass": "#7a5232",
+          "heartwood": "#e7c07a",
+          "seatPad": "#c8452f"
         },
         "twilight": {
-          "fiberglass": "#96566d",
+          "fiberglass": "#4b3a33",
+          "heartwood": "#b08d6a",
+          "seatPad": "#3d2f5c",
           "stainlessSteel": "#788b91",
           "rubber": "#20262a"
+        },
+        "birch": {
+          "fiberglass": "#d9d3c4",
+          "heartwood": "#efdcb0",
+          "seatPad": "#3f6b3a"
         }
       },
       "stats": {
-        "triangles": 92,
+        "triangles": 4406,
         "sizeM": [
-          2.807715,
-          1.0525,
-          1.04
+          3.381,
+          1.206959,
+          1.441682
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#b0b9b6",
-          "parts": [
-            "keel",
-            "grab-bar"
-          ],
-          "param": "stainlessSteel"
-        },
-        {
           "name": "fiberglass",
-          "color": "#4d8290",
+          "color": "#6b4a2f",
           "parts": [
             "hull",
-            "bow-cap",
-            "seat-front",
-            "seat-rear"
+            "growth-ring-140",
+            "growth-ring-280",
+            "growth-ring-420",
+            "bark-ridge--160",
+            "bark-ridge--125",
+            "bark-ridge--90",
+            "bark-ridge--55",
+            "bark-ridge--20",
+            "bark-ridge-20",
+            "bark-ridge-160",
+            "branch-stub"
           ],
           "param": "fiberglass"
+        },
+        {
+          "name": "heartwood",
+          "color": "#d2a86c",
+          "parts": [
+            "heartwood-rim",
+            "end-grain",
+            "knot-700",
+            "knot--900",
+            "knot--300"
+          ],
+          "param": "heartwood"
         },
         {
           "name": "rubber",
           "color": "#292f33",
           "parts": [
-            "foot-well"
+            "rub-strip-right",
+            "rub-strip-left"
           ],
           "param": "rubber"
+        },
+        {
+          "name": "seatPad",
+          "color": "#2f6f7a",
+          "parts": [
+            "seat-0",
+            "seat-1",
+            "seat-2",
+            "seat-3"
+          ],
+          "param": "seatPad"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b0b9b6",
+          "parts": [
+            "grab-bar-0",
+            "grab-post-0-r",
+            "grab-post-0-l",
+            "grab-bar-1",
+            "grab-post-1-r",
+            "grab-post-1-l",
+            "grab-bar-2",
+            "grab-post-2-r",
+            "grab-post-2-l"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -18781,13 +19104,17 @@
       "id": "pirate-ship-ride-car",
       "kit": "amusement-park",
       "title": "Pirate ship ride car",
-      "description": "Static swinging-ship-shaped ride car with stepped seating rows, a raised prow, and a central keel. Controls: overall scale, timber, steel, canvas; festival and twilight material presets.",
+      "description": "Family swinging pirate-ship gondola at about real size: pointed galleon hull with a deep sheer, painted lower hull and timber upper strakes with gilt wales and shields, seat rows stepping up toward bow and stern with lap bars, steel hanger arms to the swing hubs, bowsprit, stern lanterns, and a short mast with square sail and pennant. Material controls: timber, hull paint, gilt trim, steel, sail canvas. Festival, twilight and black-pearl presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "pirate ship",
+        "swinging ship",
+        "swing boat",
+        "pendulum ride",
         "amusement park",
         "theme park",
-        "guest experience",
+        "ride vehicle",
         "low poly",
         "CC0",
         "attractions and queues"
@@ -18801,8 +19128,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/pirate-ship-ride-car.kcad.ts",
       "preview": "/assets/amusement-park-pirate-ship-ride-car.png",
-      "sourceSha256": "f4ae12dfdeefd6aa8c96f1c21571485242e024548f655b7eb299bf900dec54db",
-      "triangleBudget": 1800,
+      "sourceSha256": "ca91b8c5d175a4d0e7a0771200614e0e021755947fe1f31c9f024ef17d1ab9e6",
+      "triangleBudget": 4400,
       "params": [
         {
           "name": "scale",
@@ -18816,70 +19143,141 @@
         {
           "name": "timber",
           "type": "color",
-          "default": "#8a6748",
-          "label": "Sealed timber"
+          "default": "#8a5a36",
+          "label": "Sealed timber strakes and seats"
+        },
+        {
+          "name": "hullPaint",
+          "type": "color",
+          "default": "#7d1f1d",
+          "label": "Painted lower hull"
+        },
+        {
+          "name": "gilt",
+          "type": "color",
+          "default": "#d4a63a",
+          "label": "Gilt wales, shields and lanterns"
         },
         {
           "name": "steel",
           "type": "color",
-          "default": "#738087",
-          "label": "Painted steel"
+          "default": "#5c666d",
+          "label": "Painted steel hangers and lap bars"
         },
         {
           "name": "canvas",
           "type": "color",
-          "default": "#e0c98e",
-          "label": "Canvas"
+          "default": "#ece0c0",
+          "label": "Sail canvas"
         }
       ],
       "presets": {
         "festival": {
           "timber": "#ab8051",
+          "hullPaint": "#1f5f8b",
+          "gilt": "#f0c64a",
           "steel": "#9da3a0",
           "canvas": "#eddaa9"
         },
         "twilight": {
           "timber": "#604b3b",
+          "hullPaint": "#3b2a4f",
+          "gilt": "#b89a5a",
           "steel": "#4f626c",
           "canvas": "#a85e4f"
+        },
+        "blackPearl": {
+          "timber": "#3a2c24",
+          "hullPaint": "#161616",
+          "gilt": "#c9a14a",
+          "canvas": "#2b2b2b"
         }
       },
       "stats": {
-        "triangles": 116,
+        "triangles": 3972,
         "sizeM": [
-          3.0464,
-          1.815,
-          0.76
+          7.566577,
+          5.39,
+          2.86
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "steel",
-          "color": "#738087",
+          "name": "hullPaint",
+          "color": "#7d1f1d",
           "parts": [
-            "keel",
-            "mast"
+            "lower-hull",
+            "pennant"
           ],
-          "param": "steel"
+          "param": "hullPaint"
         },
         {
           "name": "timber",
-          "color": "#8a6748",
+          "color": "#8a5a36",
           "parts": [
-            "hull",
-            "prow",
-            "stern",
-            "seat-row-0",
-            "seat-row-1",
-            "seat-row-2"
+            "upper-strakes",
+            "seat-row-stern-0",
+            "seat-row-stern-1",
+            "seat-row-stern-2",
+            "seat-row-bow-0",
+            "seat-row-bow-1",
+            "seat-row-bow-2",
+            "midships-deck",
+            "bowsprit",
+            "mast",
+            "crows-nest",
+            "yard"
           ],
           "param": "timber"
         },
         {
+          "name": "gilt",
+          "color": "#d4a63a",
+          "parts": [
+            "wale-upper",
+            "wale-lower",
+            "shield-starboard--1800",
+            "shield-starboard--900",
+            "shield-starboard-0",
+            "shield-starboard-900",
+            "shield-starboard-1800",
+            "shield-port--1800",
+            "shield-port--900",
+            "shield-port-0",
+            "shield-port-900",
+            "shield-port-1800",
+            "figurehead",
+            "stern-lantern-starboard",
+            "stern-lantern-port"
+          ],
+          "param": "gilt"
+        },
+        {
+          "name": "steel",
+          "color": "#5c666d",
+          "parts": [
+            "lap-bar-stern-0",
+            "lap-bar-stern-1",
+            "lap-bar-stern-2",
+            "lap-bar-bow-0",
+            "lap-bar-bow-1",
+            "lap-bar-bow-2",
+            "hanger-starboard-aft",
+            "hanger-starboard-fwd",
+            "hanger-tie-starboard",
+            "swing-hub-starboard",
+            "hanger-port-aft",
+            "hanger-port-fwd",
+            "hanger-tie-port",
+            "swing-hub-port"
+          ],
+          "param": "steel"
+        },
+        {
           "name": "canvas",
-          "color": "#e0c98e",
+          "color": "#ece0c0",
           "parts": [
             "sail"
           ],
