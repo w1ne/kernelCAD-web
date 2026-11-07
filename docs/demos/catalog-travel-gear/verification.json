@@ -1,0 +1,748 @@
+{
+  "checkedAt": "2026-11-02T20:10:11.957Z",
+  "totalAssets": 659,
+  "kit": "travel-gear",
+  "addedAssets": 12,
+  "assets": [
+    {
+      "id": "duffel-bag",
+      "triangles": 180,
+      "knobs": [
+        "length",
+        "carry",
+        "fabric",
+        "trim"
+      ]
+    },
+    {
+      "id": "foldable-umbrella",
+      "triangles": 198,
+      "knobs": [
+        "diameter",
+        "state",
+        "handle",
+        "canopy",
+        "fittings"
+      ]
+    },
+    {
+      "id": "garment-bag",
+      "triangles": 128,
+      "knobs": [
+        "length",
+        "hanger",
+        "cover",
+        "trim"
+      ]
+    },
+    {
+      "id": "luggage-scale",
+      "triangles": 160,
+      "knobs": [
+        "size",
+        "hook",
+        "body",
+        "strap"
+      ]
+    },
+    {
+      "id": "luggage-tag",
+      "triangles": 84,
+      "knobs": [
+        "size",
+        "face",
+        "tag",
+        "strap"
+      ]
+    },
+    {
+      "id": "packing-cube",
+      "triangles": 48,
+      "knobs": [
+        "size",
+        "layout",
+        "fabric",
+        "trim"
+      ]
+    },
+    {
+      "id": "passport-wallet",
+      "triangles": 36,
+      "knobs": [
+        "size",
+        "layout",
+        "cover",
+        "lining"
+      ]
+    },
+    {
+      "id": "rolling-suitcase",
+      "triangles": 312,
+      "knobs": [
+        "size",
+        "handle",
+        "shell",
+        "trim"
+      ]
+    },
+    {
+      "id": "sleep-mask",
+      "triangles": 112,
+      "knobs": [
+        "shape",
+        "strap",
+        "fabric",
+        "band"
+      ]
+    },
+    {
+      "id": "toiletry-bag",
+      "triangles": 48,
+      "knobs": [
+        "layout",
+        "size",
+        "fabric",
+        "trim"
+      ]
+    },
+    {
+      "id": "travel-adapter",
+      "triangles": 136,
+      "knobs": [
+        "plug",
+        "ports",
+        "body",
+        "pins"
+      ]
+    },
+    {
+      "id": "travel-neck-pillow",
+      "triangles": 182,
+      "knobs": [
+        "size",
+        "shape",
+        "clasp",
+        "fabric"
+      ]
+    }
+  ],
+  "choiceAudit": [
+    {
+      "id": "duffel-bag",
+      "param": "length",
+      "value": "450",
+      "triangles": 180,
+      "triangleBudget": 650,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "duffel-bag",
+      "param": "length",
+      "value": "550",
+      "triangles": 180,
+      "triangleBudget": 650,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "duffel-bag",
+      "param": "length",
+      "value": "650",
+      "triangles": 180,
+      "triangleBudget": 650,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "duffel-bag",
+      "param": "carry",
+      "value": "handles",
+      "triangles": 180,
+      "triangleBudget": 650,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "duffel-bag",
+      "param": "carry",
+      "value": "shoulder strap",
+      "triangles": 156,
+      "triangleBudget": 650,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "foldable-umbrella",
+      "param": "diameter",
+      "value": "900",
+      "triangles": 198,
+      "triangleBudget": 650,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "foldable-umbrella",
+      "param": "diameter",
+      "value": "1000",
+      "triangles": 198,
+      "triangleBudget": 650,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "foldable-umbrella",
+      "param": "diameter",
+      "value": "1150",
+      "triangles": 198,
+      "triangleBudget": 650,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "foldable-umbrella",
+      "param": "state",
+      "value": "open",
+      "triangles": 198,
+      "triangleBudget": 650,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "foldable-umbrella",
+      "param": "state",
+      "value": "folded",
+      "triangles": 92,
+      "triangleBudget": 650,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "foldable-umbrella",
+      "param": "handle",
+      "value": "crook",
+      "triangles": 198,
+      "triangleBudget": 650,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "foldable-umbrella",
+      "param": "handle",
+      "value": "straight",
+      "triangles": 218,
+      "triangleBudget": 650,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "garment-bag",
+      "param": "length",
+      "value": "short",
+      "triangles": 128,
+      "triangleBudget": 420,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "garment-bag",
+      "param": "length",
+      "value": "long",
+      "triangles": 128,
+      "triangleBudget": 420,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "garment-bag",
+      "param": "hanger",
+      "value": "hook",
+      "triangles": 128,
+      "triangleBudget": 420,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "garment-bag",
+      "param": "hanger",
+      "value": "loop",
+      "triangles": 60,
+      "triangleBudget": 420,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "luggage-scale",
+      "param": "size",
+      "value": "compact",
+      "triangles": 160,
+      "triangleBudget": 320,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "luggage-scale",
+      "param": "size",
+      "value": "large",
+      "triangles": 160,
+      "triangleBudget": 320,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "luggage-scale",
+      "param": "hook",
+      "value": "standard",
+      "triangles": 160,
+      "triangleBudget": 320,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "luggage-scale",
+      "param": "hook",
+      "value": "wide",
+      "triangles": 160,
+      "triangleBudget": 320,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "luggage-tag",
+      "param": "size",
+      "value": "small",
+      "triangles": 84,
+      "triangleBudget": 260,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "luggage-tag",
+      "param": "size",
+      "value": "standard",
+      "triangles": 84,
+      "triangleBudget": 260,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "luggage-tag",
+      "param": "size",
+      "value": "large",
+      "triangles": 84,
+      "triangleBudget": 260,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "luggage-tag",
+      "param": "face",
+      "value": "window",
+      "triangles": 84,
+      "triangleBudget": 260,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "luggage-tag",
+      "param": "face",
+      "value": "plain",
+      "triangles": 72,
+      "triangleBudget": 260,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "packing-cube",
+      "param": "size",
+      "value": "small",
+      "triangles": 48,
+      "triangleBudget": 420,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "packing-cube",
+      "param": "size",
+      "value": "medium",
+      "triangles": 48,
+      "triangleBudget": 420,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "packing-cube",
+      "param": "size",
+      "value": "large",
+      "triangles": 48,
+      "triangleBudget": 420,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "packing-cube",
+      "param": "layout",
+      "value": "cube",
+      "triangles": 48,
+      "triangleBudget": 420,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "packing-cube",
+      "param": "layout",
+      "value": "shoe",
+      "triangles": 48,
+      "triangleBudget": 420,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "passport-wallet",
+      "param": "size",
+      "value": "compact",
+      "triangles": 36,
+      "triangleBudget": 420,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "passport-wallet",
+      "param": "size",
+      "value": "standard",
+      "triangles": 36,
+      "triangleBudget": 420,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "passport-wallet",
+      "param": "layout",
+      "value": "closed",
+      "triangles": 36,
+      "triangleBudget": 420,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "passport-wallet",
+      "param": "layout",
+      "value": "open",
+      "triangles": 60,
+      "triangleBudget": 420,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "rolling-suitcase",
+      "param": "size",
+      "value": "cabin",
+      "triangles": 312,
+      "triangleBudget": 900,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "rolling-suitcase",
+      "param": "size",
+      "value": "check-in",
+      "triangles": 312,
+      "triangleBudget": 900,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "rolling-suitcase",
+      "param": "handle",
+      "value": "retracted",
+      "triangles": 312,
+      "triangleBudget": 900,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "rolling-suitcase",
+      "param": "handle",
+      "value": "extended",
+      "triangles": 312,
+      "triangleBudget": 900,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "sleep-mask",
+      "param": "shape",
+      "value": "contoured",
+      "triangles": 112,
+      "triangleBudget": 340,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "sleep-mask",
+      "param": "shape",
+      "value": "flat",
+      "triangles": 100,
+      "triangleBudget": 340,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "sleep-mask",
+      "param": "strap",
+      "value": "narrow",
+      "triangles": 112,
+      "triangleBudget": 340,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "sleep-mask",
+      "param": "strap",
+      "value": "wide",
+      "triangles": 112,
+      "triangleBudget": 340,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "toiletry-bag",
+      "param": "layout",
+      "value": "case",
+      "triangles": 48,
+      "triangleBudget": 420,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "toiletry-bag",
+      "param": "layout",
+      "value": "hanging",
+      "triangles": 116,
+      "triangleBudget": 420,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "toiletry-bag",
+      "param": "size",
+      "value": "compact",
+      "triangles": 48,
+      "triangleBudget": 420,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "toiletry-bag",
+      "param": "size",
+      "value": "standard",
+      "triangles": 48,
+      "triangleBudget": 420,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "travel-adapter",
+      "param": "plug",
+      "value": "EU",
+      "triangles": 136,
+      "triangleBudget": 360,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "travel-adapter",
+      "param": "plug",
+      "value": "UK",
+      "triangles": 84,
+      "triangleBudget": 360,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "travel-adapter",
+      "param": "plug",
+      "value": "US",
+      "triangles": 72,
+      "triangleBudget": 360,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "travel-adapter",
+      "param": "ports",
+      "value": "1",
+      "triangles": 124,
+      "triangleBudget": 360,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "travel-adapter",
+      "param": "ports",
+      "value": "2",
+      "triangles": 136,
+      "triangleBudget": 360,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "travel-neck-pillow",
+      "param": "size",
+      "value": "child",
+      "triangles": 182,
+      "triangleBudget": 560,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "travel-neck-pillow",
+      "param": "size",
+      "value": "adult",
+      "triangles": 182,
+      "triangleBudget": 560,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "travel-neck-pillow",
+      "param": "shape",
+      "value": "classic",
+      "triangles": 182,
+      "triangleBudget": 560,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "travel-neck-pillow",
+      "param": "shape",
+      "value": "wrap",
+      "triangles": 194,
+      "triangleBudget": 560,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "travel-neck-pillow",
+      "param": "clasp",
+      "value": "with clasp",
+      "triangles": 182,
+      "triangleBudget": 560,
+      "materials": 1,
+      "minUpM": 0
+    },
+    {
+      "id": "travel-neck-pillow",
+      "param": "clasp",
+      "value": "no clasp",
+      "triangles": 182,
+      "triangleBudget": 560,
+      "materials": 1,
+      "minUpM": 0
+    }
+  ],
+  "variants": [
+    {
+      "id": "rolling-suitcase",
+      "want": "check-in retracted",
+      "params": {
+        "size": "check-in",
+        "handle": "retracted"
+      },
+      "unmatched": [],
+      "defaultTriangles": 312,
+      "resolvedTriangles": 312,
+      "triangleBudget": 900,
+      "defaultMaterials": 1,
+      "resolvedMaterials": 1,
+      "defaultMinUpM": 0,
+      "resolvedMinUpM": 0,
+      "renderFrame": {
+        "frameHeightM": 1.0742108346949348,
+        "cameraOffsetYM": 0.10517413075258214
+      },
+      "defaultGlbSha256": "efd52a715747b1da43be44384db71122e684b9388ada544e46a2265767228a50",
+      "resolvedGlbSha256": "cf1464928275550bbb21a8ba0b1db7ec2698e846c183f2868cf7d46c8c93a5ec"
+    },
+    {
+      "id": "passport-wallet",
+      "want": "open compact",
+      "params": {
+        "layout": "open",
+        "size": "compact"
+      },
+      "unmatched": [],
+      "defaultTriangles": 36,
+      "resolvedTriangles": 60,
+      "triangleBudget": 420,
+      "defaultMaterials": 1,
+      "resolvedMaterials": 1,
+      "defaultMinUpM": 0,
+      "resolvedMinUpM": 0,
+      "renderFrame": {
+        "frameHeightM": 0.3263892985892034,
+        "cameraOffsetYM": 0.027973239891955257
+      },
+      "defaultGlbSha256": "3661787ce8dcd0d08f15c249e7efa3d83f3cc4245b7dd0fc1d689809adb0d51e",
+      "resolvedGlbSha256": "e4aca37de01503dd2cb68a209cafb48be09ee7caef4cf1cde27dd5f616510036"
+    },
+    {
+      "id": "foldable-umbrella",
+      "want": "folded straight",
+      "params": {
+        "state": "folded",
+        "handle": "straight"
+      },
+      "unmatched": [],
+      "defaultTriangles": 198,
+      "resolvedTriangles": 112,
+      "triangleBudget": 650,
+      "defaultMaterials": 1,
+      "resolvedMaterials": 1,
+      "defaultMinUpM": 0,
+      "resolvedMinUpM": 0,
+      "renderFrame": {
+        "frameHeightM": 0.9788124018478025,
+        "cameraOffsetYM": 0.007244798060061989
+      },
+      "defaultGlbSha256": "5deda90fff80cee4892c9933187a043ee7551efb09b81394264aa39eb1ec2e22",
+      "resolvedGlbSha256": "8bc0277572ce8ee06cbfb50f4782991b357467b5d7e4dc05dbad89a4c9b0af9e"
+    }
+  ],
+  "settings": {
+    "kit": "travel-gear",
+    "width": 1280,
+    "height": 720,
+    "frameRate": 2,
+    "videoFrameRate": 24,
+    "videoCodec": "libx264",
+    "pixelFormat": "yuv420p",
+    "crf": 24,
+    "render": "software render of exported low-poly GLB triangles",
+    "auditAllChoices": true,
+    "variants": [
+      {
+        "id": "rolling-suitcase",
+        "want": "check-in retracted"
+      },
+      {
+        "id": "passport-wallet",
+        "want": "open compact"
+      },
+      {
+        "id": "foldable-umbrella",
+        "want": "folded straight"
+      }
+    ]
+  },
+  "claims": {
+    "originalGeometry": true,
+    "localCatalogWorkflow": true,
+    "softwareRender": true,
+    "threeJsRendered": false,
+    "engineImportTested": false,
+    "deployedBehavior": false,
+    "simulation": false,
+    "hardwareAcceptance": false
+  }
+}
