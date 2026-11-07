@@ -1,0 +1,23 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' artifacts/catalog-demos/theatre-production-silhouette-20261106/render_variants.ts
+ellipsoidal-reflector-spotlight/default/3/4: 1442 tris
+ellipsoidal-reflector-spotlight/19deg/3/4: 1442 tris
+ellipsoidal-reflector-spotlight/50deg/3/4: 1428 tris
+ellipsoidal-reflector-spotlight/houseShow/3/4: 1442 tris
+ellipsoidal-reflector-spotlight/touring/3/4: 1442 tris
+fresnel-wash-fixture/default/3/4: 1144 tris
+fresnel-wash-fixture/no-barn-door/3/4: 1000 tris
+fresnel-wash-fixture/houseShow/3/4: 1144 tris
+fresnel-wash-fixture/touring/3/4: 1144 tris
+par-can-fixture/default/3/4: 1056 tris
+par-can-fixture/floor/3/4: 964 tris
+par-can-fixture/houseShow/3/4: 1056 tris
+par-can-fixture/touring/3/4: 1056 tris
+motorized-chain-hoist/default/3/4: 1796 tris
+motorized-chain-hoist/climbing/3/4: 1736 tris
+motorized-chain-hoist/houseShow/3/4: 1796 tris
+motorized-chain-hoist/touring/3/4: 1796 tris
+spotlight-followspot-stand/default/3/4: 2024 tris
+spotlight-followspot-stand/pedestal/3/4: 1864 tris
+spotlight-followspot-stand/houseShow/3/4: 2024 tris
+spotlight-followspot-stand/touring/3/4: 2024 tris

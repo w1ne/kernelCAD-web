@@ -1,0 +1,42 @@
+{
+  "video": "grid-substation-silhouette-refinement.mp4",
+  "durationSeconds": 15.041667,
+  "bytes": 143187,
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "decodedFrames": [
+    {
+      "timeSeconds": 1,
+      "path": "decoded-01.png",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "timeSeconds": 4,
+      "path": "decoded-02.png",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "timeSeconds": 7,
+      "path": "decoded-03.png",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "timeSeconds": 10,
+      "path": "decoded-04.png",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "timeSeconds": 13,
+      "path": "decoded-05.png",
+      "width": 1280,
+      "height": 720
+    }
+  ],
+  "contactSheet": "video-review/contact-sheet.png",
+  "inspectionMethod": "ffprobe metadata plus five decoded frames for visual inspection"
+}

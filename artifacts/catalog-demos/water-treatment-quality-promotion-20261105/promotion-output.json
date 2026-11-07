@@ -1,0 +1,1182 @@
+{
+  "kit": "water-treatment",
+  "assetsPromoted": 50,
+  "newAssetIds": 0,
+  "materialControls": 139,
+  "controlsPerAsset": {
+    "min": 2,
+    "max": 4
+  },
+  "presetEntries": 100,
+  "loftedCylinderSilhouettes": 45,
+  "inclinedLamellaPlates": 6,
+  "records": [
+    {
+      "id": "activated-carbon-filter-vessel",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "vessel": "coatedSteel",
+        "top-dome": "coatedSteel",
+        "bottom-dome": "coatedSteel",
+        "hatch": "coatedSteel",
+        "port-upper": "stainlessSteel",
+        "port-lower": "stainlessSteel",
+        "leg--170": "structuralSteel",
+        "leg-0": "structuralSteel",
+        "leg-170": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "aeration-basin",
+      "materialControls": [
+        "concrete",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "basin-floor": "concrete",
+        "wall-front": "concrete",
+        "wall-back": "concrete",
+        "divider": "concrete",
+        "walkway": "structuralSteel",
+        "header-left": "stainlessSteel",
+        "header-right": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "aeration-header-bridge",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "walkway": "structuralSteel",
+        "post--470": "structuralSteel",
+        "post-470": "structuralSteel",
+        "rail-front": "structuralSteel",
+        "rail-back": "structuralSteel",
+        "header-a": "stainlessSteel",
+        "header-b": "stainlessSteel",
+        "step-0": "coatedSteel",
+        "step-1": "coatedSteel",
+        "step-2": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "air-release-valve-assembly",
+      "materialControls": [
+        "coatedSteel",
+        "stainlessSteel",
+        "warningAmber"
+      ],
+      "partAssignments": {
+        "flange": "stainlessSteel",
+        "body": "coatedSteel",
+        "bonnet": "coatedSteel",
+        "vent": "stainlessSteel",
+        "cap": "coatedSteel",
+        "tag": "warningAmber"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "backwash-pump-skid",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "base": "structuralSteel",
+        "pump-a": "coatedSteel",
+        "pump-b": "coatedSteel",
+        "motor-a": "coatedSteel",
+        "motor-b": "coatedSteel",
+        "suction-header": "stainlessSteel",
+        "discharge-header": "stainlessSteel",
+        "foot--420": "structuralSteel",
+        "foot-420": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "bar-screen-channel",
+      "materialControls": [
+        "concrete",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "channel-base": "concrete",
+        "wall-left": "concrete",
+        "wall-right": "concrete",
+        "screen-bar-0": "stainlessSteel",
+        "screen-bar-1": "stainlessSteel",
+        "screen-bar-2": "stainlessSteel",
+        "screen-bar-3": "stainlessSteel",
+        "screen-bar-4": "stainlessSteel",
+        "screen-bar-5": "stainlessSteel",
+        "screen-bar-6": "stainlessSteel",
+        "top-crossbar": "concrete"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": false
+    },
+    {
+      "id": "belt-filter-press",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "base": "structuralSteel",
+        "roller-0": "stainlessSteel",
+        "roller-1": "stainlessSteel",
+        "roller-2": "stainlessSteel",
+        "roller-3": "stainlessSteel",
+        "frame-left": "structuralSteel",
+        "frame-right": "structuralSteel",
+        "collection-pan": "coatedSteel",
+        "upper-beam": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "check-valve-assembly",
+      "materialControls": [
+        "coatedSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "body": "coatedSteel",
+        "flange-left": "stainlessSteel",
+        "flange-right": "stainlessSteel",
+        "cover": "coatedSteel",
+        "hinge": "coatedSteel",
+        "inspection-bolt": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "chemical-storage-tank",
+      "materialControls": [
+        "coatedSteel",
+        "stainlessSteel",
+        "instrumentGlass"
+      ],
+      "partAssignments": {
+        "containment": "coatedSteel",
+        "tank": "coatedSteel",
+        "roof": "coatedSteel",
+        "hatch": "coatedSteel",
+        "level-strip": "instrumentGlass",
+        "drain": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "chlorine-dosing-skid",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "tray": "structuralSteel",
+        "day-tank": "coatedSteel",
+        "pump": "coatedSteel",
+        "control": "coatedSteel",
+        "tube-0": "stainlessSteel",
+        "tube-1": "stainlessSteel",
+        "tube-2": "stainlessSteel",
+        "tube-3": "stainlessSteel",
+        "top-rail": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "chlorine-residual-analyzer",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "instrumentGlass"
+      ],
+      "partAssignments": {
+        "base": "structuralSteel",
+        "cabinet": "coatedSteel",
+        "head": "coatedSteel",
+        "display": "instrumentGlass",
+        "sample-line": "coatedSteel",
+        "support-post": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "circular-clarifier",
+      "materialControls": [
+        "concrete",
+        "structuralSteel"
+      ],
+      "partAssignments": {
+        "tank": "concrete",
+        "rim": "concrete",
+        "feed-well": "concrete",
+        "bridge": "structuralSteel",
+        "drive": "concrete",
+        "walkway": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "coagulant-mixing-tank",
+      "materialControls": [
+        "coatedSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "tank": "coatedSteel",
+        "rim": "coatedSteel",
+        "shaft": "stainlessSteel",
+        "gearbox": "coatedSteel",
+        "impeller-left": "stainlessSteel",
+        "impeller-right": "stainlessSteel",
+        "inlet": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "coarse-screen-panel",
+      "materialControls": [
+        "structuralSteel",
+        "stainlessSteel",
+        "warningAmber"
+      ],
+      "partAssignments": {
+        "frame-left": "structuralSteel",
+        "frame-right": "structuralSteel",
+        "frame-top": "structuralSteel",
+        "frame-bottom": "structuralSteel",
+        "bar-0": "stainlessSteel",
+        "bar-1": "stainlessSteel",
+        "bar-2": "stainlessSteel",
+        "bar-3": "stainlessSteel",
+        "bar-4": "stainlessSteel",
+        "bar-5": "stainlessSteel",
+        "bar-6": "stainlessSteel",
+        "grip": "warningAmber"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": false
+    },
+    {
+      "id": "dewatering-screw-conveyor",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "base": "structuralSteel",
+        "trough": "coatedSteel",
+        "hopper": "coatedSteel",
+        "discharge": "stainlessSteel",
+        "drive": "coatedSteel",
+        "leg--250": "structuralSteel",
+        "leg-260": "structuralSteel",
+        "guard": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "dual-pump-manifold-skid",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "base": "structuralSteel",
+        "pump-0": "coatedSteel",
+        "pump-1": "coatedSteel",
+        "suction-header": "stainlessSteel",
+        "discharge-header": "stainlessSteel",
+        "branch-0": "coatedSteel",
+        "branch-1": "coatedSteel",
+        "frame-post--500": "structuralSteel",
+        "frame-post-500": "structuralSteel",
+        "top-frame": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "effluent-weir-channel",
+      "materialControls": [
+        "concrete",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "floor": "concrete",
+        "wall-front": "concrete",
+        "wall-back": "concrete",
+        "weir-plate": "stainlessSteel",
+        "notch-0": "stainlessSteel",
+        "notch-1": "stainlessSteel",
+        "notch-2": "stainlessSteel",
+        "notch-3": "stainlessSteel",
+        "notch-4": "stainlessSteel",
+        "notch-5": "stainlessSteel",
+        "notch-6": "stainlessSteel",
+        "notch-7": "stainlessSteel",
+        "notch-8": "stainlessSteel",
+        "collection-trough": "concrete"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": false
+    },
+    {
+      "id": "electromagnetic-flow-meter",
+      "materialControls": [
+        "coatedSteel",
+        "stainlessSteel",
+        "instrumentGlass"
+      ],
+      "partAssignments": {
+        "body": "coatedSteel",
+        "flange-low": "stainlessSteel",
+        "flange-high": "stainlessSteel",
+        "electronics-head": "coatedSteel",
+        "display": "instrumentGlass"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "equalization-basin",
+      "materialControls": [
+        "concrete",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "floor": "stainlessSteel",
+        "wall-front": "concrete",
+        "wall-back": "concrete",
+        "wall-left": "concrete",
+        "wall-right": "concrete",
+        "mixer-pedestal": "concrete",
+        "mixer-arm": "concrete",
+        "mixer-hub": "concrete"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "ferric-dosing-tank",
+      "materialControls": [
+        "coatedSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "bund": "coatedSteel",
+        "tank": "coatedSteel",
+        "lid": "coatedSteel",
+        "vent": "stainlessSteel",
+        "level-column": "coatedSteel",
+        "outlet": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "fine-bubble-diffuser-grid",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel",
+        "polymer"
+      ],
+      "partAssignments": {
+        "header-left": "stainlessSteel",
+        "header-right": "stainlessSteel",
+        "lateral-0": "coatedSteel",
+        "lateral-1": "coatedSteel",
+        "lateral-2": "coatedSteel",
+        "lateral-3": "coatedSteel",
+        "lateral-4": "coatedSteel",
+        "lateral-5": "coatedSteel",
+        "lateral-6": "coatedSteel",
+        "lateral-7": "coatedSteel",
+        "diffuser-0": "polymer",
+        "diffuser-1": "polymer",
+        "diffuser-2": "polymer",
+        "diffuser-3": "polymer",
+        "diffuser-4": "polymer",
+        "diffuser-5": "polymer",
+        "diffuser-6": "polymer",
+        "foot--360": "structuralSteel",
+        "foot-360": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "flocculation-tank",
+      "materialControls": [
+        "coatedSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "tank": "coatedSteel",
+        "rim": "coatedSteel",
+        "shaft": "stainlessSteel",
+        "mixer-arm-a": "coatedSteel",
+        "mixer-arm-b": "coatedSteel",
+        "paddle-a": "coatedSteel",
+        "paddle-b": "coatedSteel",
+        "motor": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "flow-meter-spool",
+      "materialControls": [
+        "coatedSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "spool": "stainlessSteel",
+        "flange-low": "stainlessSteel",
+        "flange-high": "stainlessSteel",
+        "sensor-boss": "stainlessSteel",
+        "transmitter": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "grit-classifier",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "trough": "coatedSteel",
+        "feed-hopper": "coatedSteel",
+        "discharge": "stainlessSteel",
+        "leg--330": "structuralSteel",
+        "leg-330": "structuralSteel",
+        "drive": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "grit-removal-chamber",
+      "materialControls": [
+        "concrete",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "basin-floor": "concrete",
+        "wall-left": "concrete",
+        "wall-right": "concrete",
+        "end-wall": "concrete",
+        "hopper": "concrete",
+        "draw-off": "concrete",
+        "inlet-lip": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "high-lift-pump-skid",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "base": "structuralSteel",
+        "motor": "coatedSteel",
+        "motor-cap": "coatedSteel",
+        "pump-body": "coatedSteel",
+        "discharge": "stainlessSteel",
+        "suction": "stainlessSteel",
+        "coupling-guard": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "horizontal-split-case-pump",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel",
+        "elastomer"
+      ],
+      "partAssignments": {
+        "base": "structuralSteel",
+        "pump-case": "coatedSteel",
+        "suction": "stainlessSteel",
+        "discharge": "stainlessSteel",
+        "motor": "coatedSteel",
+        "coupling": "elastomer",
+        "foot--380": "structuralSteel",
+        "foot-120": "structuralSteel",
+        "foot-390": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "intake-gate-hoist",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "base-left": "structuralSteel",
+        "base-right": "structuralSteel",
+        "upright-left": "coatedSteel",
+        "upright-right": "coatedSteel",
+        "beam": "structuralSteel",
+        "drum": "coatedSteel",
+        "chain": "stainlessSteel",
+        "gate-plate": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "knife-gate-valve-assembly",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel",
+        "warningAmber"
+      ],
+      "partAssignments": {
+        "gate-body": "coatedSteel",
+        "pipe-left": "stainlessSteel",
+        "pipe-right": "stainlessSteel",
+        "bonnet": "coatedSteel",
+        "stem": "coatedSteel",
+        "handwheel": "warningAmber",
+        "mount-foot": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "lamella-clarifier",
+      "materialControls": [
+        "concrete",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "tank-floor": "concrete",
+        "wall-left": "concrete",
+        "wall-right": "concrete",
+        "plate-pack": "structuralSteel",
+        "plate-0": "stainlessSteel",
+        "plate-1": "stainlessSteel",
+        "plate-2": "stainlessSteel",
+        "plate-3": "stainlessSteel",
+        "plate-4": "stainlessSteel",
+        "plate-5": "stainlessSteel",
+        "inlet-box": "stainlessSteel",
+        "launder": "concrete"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": false
+    },
+    {
+      "id": "lime-slurry-tank",
+      "materialControls": [
+        "coatedSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "tank": "coatedSteel",
+        "rim": "coatedSteel",
+        "shaft": "stainlessSteel",
+        "motor": "coatedSteel",
+        "paddle-a": "coatedSteel",
+        "paddle-b": "coatedSteel",
+        "outlet": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "membrane-filtration-rack",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "polymer"
+      ],
+      "partAssignments": {
+        "base-left": "structuralSteel",
+        "base-right": "structuralSteel",
+        "membrane-0": "polymer",
+        "membrane-1": "polymer",
+        "membrane-2": "polymer",
+        "membrane-3": "polymer",
+        "manifold-left": "coatedSteel",
+        "manifold-right": "coatedSteel",
+        "post--430": "structuralSteel",
+        "post-430": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "pressure-reducing-valve-assembly",
+      "materialControls": [
+        "coatedSteel",
+        "stainlessSteel",
+        "warningAmber"
+      ],
+      "partAssignments": {
+        "body": "coatedSteel",
+        "flange-left": "stainlessSteel",
+        "flange-right": "stainlessSteel",
+        "bonnet": "coatedSteel",
+        "actuator": "coatedSteel",
+        "stem": "coatedSteel",
+        "handwheel": "warningAmber"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "pressure-sand-filter-vessel",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "shell": "coatedSteel",
+        "top-head": "coatedSteel",
+        "bottom-head": "coatedSteel",
+        "manway": "coatedSteel",
+        "inlet": "stainlessSteel",
+        "outlet": "stainlessSteel",
+        "foot--190": "structuralSteel",
+        "foot-190": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "pressure-transmitter-stand",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "base": "structuralSteel",
+        "post": "structuralSteel",
+        "crossbar": "coatedSteel",
+        "manifold": "coatedSteel",
+        "transmitter-0": "coatedSteel",
+        "transmitter-1": "coatedSteel",
+        "tap-0": "stainlessSteel",
+        "tap-1": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "process-pipe-rack",
+      "materialControls": [
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "pipe-0": "stainlessSteel",
+        "pipe-1": "stainlessSteel",
+        "pipe-2": "stainlessSteel",
+        "pipe-3": "stainlessSteel",
+        "portal-leg--520": "structuralSteel",
+        "portal-leg-520": "structuralSteel",
+        "portal-top-a": "stainlessSteel",
+        "portal-top-b": "stainlessSteel",
+        "cross-brace": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "pump-station-control-panel",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "instrumentGlass"
+      ],
+      "partAssignments": {
+        "plinth": "structuralSteel",
+        "body": "coatedSteel",
+        "hood": "coatedSteel",
+        "door-left": "coatedSteel",
+        "door-right": "coatedSteel",
+        "lamp-0": "instrumentGlass",
+        "lamp-1": "instrumentGlass",
+        "lamp-2": "instrumentGlass",
+        "handle": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "rapid-sand-filter",
+      "materialControls": [
+        "concrete",
+        "structuralSteel",
+        "stainlessSteel",
+        "filterMedia"
+      ],
+      "partAssignments": {
+        "bed": "concrete",
+        "wall-front": "concrete",
+        "wall-back": "concrete",
+        "wall-left": "concrete",
+        "wall-right": "concrete",
+        "media-layer": "filterMedia",
+        "underdrain": "stainlessSteel",
+        "cover-beam": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "raw-water-intake-cage",
+      "materialControls": [
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "base": "structuralSteel",
+        "post--360--300": "structuralSteel",
+        "post--360-300": "structuralSteel",
+        "post-360--300": "structuralSteel",
+        "post-360-300": "structuralSteel",
+        "rail-160": "structuralSteel",
+        "rail-400": "structuralSteel",
+        "rail-640": "structuralSteel",
+        "screen-0": "stainlessSteel",
+        "screen-1": "stainlessSteel",
+        "screen-2": "stainlessSteel",
+        "screen-3": "stainlessSteel",
+        "screen-4": "stainlessSteel",
+        "screen-5": "stainlessSteel",
+        "screen-6": "stainlessSteel",
+        "screen-7": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": false
+    },
+    {
+      "id": "reverse-osmosis-skid",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "skid": "structuralSteel",
+        "pressure-tube-0": "stainlessSteel",
+        "pressure-tube-1": "stainlessSteel",
+        "pressure-tube-2": "stainlessSteel",
+        "header-front": "stainlessSteel",
+        "header-back": "stainlessSteel",
+        "feed-pump": "coatedSteel",
+        "control-box": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "sample-tap-station",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "base": "structuralSteel",
+        "cabinet": "coatedSteel",
+        "hood": "coatedSteel",
+        "spout": "coatedSteel",
+        "drip-tray": "structuralSteel",
+        "pipe-left": "stainlessSteel",
+        "pipe-right": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "sludge-thickener-tank",
+      "materialControls": [
+        "concrete",
+        "structuralSteel"
+      ],
+      "partAssignments": {
+        "tank": "concrete",
+        "rim": "concrete",
+        "feed-well": "concrete",
+        "bridge": "structuralSteel",
+        "drive": "concrete",
+        "scraper-arm": "concrete",
+        "skirt": "concrete"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "sodium-hypochlorite-cabinet",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "base": "structuralSteel",
+        "cabinet": "coatedSteel",
+        "roof": "coatedSteel",
+        "door-left": "coatedSteel",
+        "door-right": "coatedSteel",
+        "vent-0": "stainlessSteel",
+        "vent-1": "stainlessSteel",
+        "vent-2": "stainlessSteel",
+        "vent-3": "stainlessSteel",
+        "vent-4": "stainlessSteel",
+        "pipe-left": "stainlessSteel",
+        "pipe-right": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "static-mixer-spool",
+      "materialControls": [
+        "coatedSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "pipe": "stainlessSteel",
+        "flange-low": "stainlessSteel",
+        "flange-high": "stainlessSteel",
+        "mixer-housing": "coatedSteel",
+        "access-cover": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "submersible-lift-station-pump",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel"
+      ],
+      "partAssignments": {
+        "motor-body": "coatedSteel",
+        "pump-head": "coatedSteel",
+        "intake-base": "structuralSteel",
+        "intake-slot-0": "coatedSteel",
+        "intake-slot-1": "coatedSteel",
+        "intake-slot-2": "coatedSteel",
+        "intake-slot-3": "coatedSteel",
+        "intake-slot-4": "coatedSteel",
+        "intake-slot-5": "coatedSteel",
+        "handle-left": "coatedSteel",
+        "handle-right": "coatedSteel",
+        "cable": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "surface-aerator",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "pontoon-left": "structuralSteel",
+        "pontoon-right": "structuralSteel",
+        "bridge": "structuralSteel",
+        "motor": "coatedSteel",
+        "shaft": "stainlessSteel",
+        "guard": "structuralSteel",
+        "guard-post--180--180": "structuralSteel",
+        "guard-post--180-180": "structuralSteel",
+        "guard-post-180--180": "structuralSteel",
+        "guard-post-180-180": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "turbidity-analyzer-panel",
+      "materialControls": [
+        "coatedSteel",
+        "stainlessSteel",
+        "instrumentGlass"
+      ],
+      "partAssignments": {
+        "panel": "coatedSteel",
+        "hood": "coatedSteel",
+        "display": "instrumentGlass",
+        "sample-cell": "instrumentGlass",
+        "port-left": "stainlessSteel",
+        "port-right": "stainlessSteel",
+        "label-strip": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "uv-disinfection-channel",
+      "materialControls": [
+        "concrete",
+        "structuralSteel",
+        "instrumentGlass"
+      ],
+      "partAssignments": {
+        "channel-floor": "concrete",
+        "wall-front": "concrete",
+        "wall-back": "concrete",
+        "bridge": "structuralSteel",
+        "lamp-0": "instrumentGlass",
+        "lamp-1": "instrumentGlass",
+        "lamp-2": "instrumentGlass",
+        "lamp-3": "instrumentGlass",
+        "lamp-4": "instrumentGlass",
+        "frame-post--520": "structuralSteel",
+        "frame-post-520": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "vertical-turbine-pump",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel"
+      ],
+      "partAssignments": {
+        "base-plate": "structuralSteel",
+        "column": "coatedSteel",
+        "discharge-elbow": "stainlessSteel",
+        "outlet": "stainlessSteel",
+        "motor-pedestal": "coatedSteel",
+        "motor": "coatedSteel",
+        "coupling-cover": "coatedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    },
+    {
+      "id": "water-filter-cartridge-housing",
+      "materialControls": [
+        "coatedSteel",
+        "structuralSteel",
+        "stainlessSteel",
+        "instrumentGlass"
+      ],
+      "partAssignments": {
+        "canister": "coatedSteel",
+        "lid": "coatedSteel",
+        "clamp-ring": "instrumentGlass",
+        "inlet": "stainlessSteel",
+        "outlet": "stainlessSteel",
+        "leg--130": "structuralSteel",
+        "leg-0": "structuralSteel",
+        "leg-130": "structuralSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "loftedCylinderProfile": true
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "source": "catalog/kits/data-center-infrastructure/enclosed-it-rack.kcad.ts",
+  "sourceSha256": "e7b1416073a5912db00bd62aea141453c4e9e9b363cca6f2ad6f677ef4874eac",
+  "preset": "highVisibility",
+  "appliedOverrides": {
+    "steel": "#d99b22",
+    "rubber": "#2a3033",
+    "polymer": "#263e48"
+  },
+  "triangles": 400,
+  "triangleBudget": 2200,
+  "output": "variants/enclosed-it-rack-highVisibility.png",
+  "workflow": "evaluate the authored preset, export the resolved low-poly GLB, and software-render its mesh"
+}

@@ -1,0 +1,76 @@
+{
+  "round": "2026-11-06",
+  "kit": "recycling-facility",
+  "asset": "horizontal-baler",
+  "assetIdsAdded": 0,
+  "assetsInKit": 153,
+  "catalogAssets": 2390,
+  "materialControls": [
+    "paintedSteel",
+    "stainlessSteel",
+    "rubber",
+    "recoveredMaterial"
+  ],
+  "materialControlsAddedThisRound": [
+    "rubber",
+    "recoveredMaterial"
+  ],
+  "namedPresets": [
+    "weathered",
+    "highVisibility"
+  ],
+  "triangleCount": 676,
+  "triangleBudget": 1800,
+  "previewRendered": true,
+  "previewSha256": "df4ba0f98cb7ef86417dc8babe947d22873b0f345a5dffc5fb7faaab84552569",
+  "sourceSha256": "9fca920f5402ce6747f93496fe3824680c40b8b74be4c8f5c85b040b2fa8d913",
+  "sourceSha256MatchesIndex": true,
+  "indexedPreview": "/assets/recycling-facility-horizontal-baler.png",
+  "qualityKit": "153/153 assets pass (1 rich kits, 0 thin kits)",
+  "qualityGlobal": "2390/2390 assets pass (49 rich kits, 0 thin kits)",
+  "eslint": "passed",
+  "integration": {
+    "passed": true,
+    "files": 4,
+    "tests": 15,
+    "durationSeconds": 272.23
+  },
+  "cliEvaluate": {
+    "passed": true,
+    "features": 75
+  },
+  "localPageChecks": {
+    "page_exists": true,
+    "page_title": true,
+    "open_mouth_description": true,
+    "material_controls": true,
+    "presets": true,
+    "preview_exists": true,
+    "preview_hash_matches": true,
+    "source_hash_matches_index": true,
+    "preview_path_indexed": true,
+    "triangle_budget_honest": true
+  },
+  "localPageChecksPassed": true,
+  "renderInspect": {
+    "attempted": true,
+    "status": "cdp_attach_timeout",
+    "existingChromePort": 9223,
+    "duplicateBrowserLaunched": false,
+    "visualFallback": "default and two source-driven preset software renders were opened and inspected"
+  },
+  "deployment": "not deployed; live behavior not claimed",
+  "physicalAcceptance": "not evaluated; visualization asset only",
+  "video": {
+    "path": "horizontal-baler-refinement.mp4",
+    "bytes": 164020,
+    "codec": "h264",
+    "width": 1280,
+    "height": 720,
+    "fps": "30/1",
+    "durationSeconds": 12.0,
+    "decodedSamplesReviewed": 5,
+    "contactSheet": "video-review/contact-sheet.png"
+  },
+  "posterSha256": "70bb457a99500023c6beabd69d46ccdd96c217388e7f47fe6d9926670fffcab3"
+}

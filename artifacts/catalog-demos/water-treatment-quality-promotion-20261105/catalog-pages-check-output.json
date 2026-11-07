@@ -1,0 +1,8 @@
+{
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-water-treatment-quality-20261105",
+  "kitPages": 50,
+  "pageAndPreviewPairs": 50,
+  "hubListsKit": true,
+  "missing": [],
+  "passed": true
+}

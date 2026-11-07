@@ -1,0 +1,5 @@
+EXIT CODE: 0
+(node:4102485) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+{"id":"ride-on-power-trowel","triangles":1112,"budget":2200,"sizeM":[1.044,0.544434,0.504],"minUpM":0,"materials":1,"knobs":["scale:number","bladeCount:choice","rotorSize:choice","equipmentPaintColor:color","structuralSteelColor:color","rubberColor:color","seatVinylColor:color"],"palette":["structuralSteelColor=#89969a","equipmentPaintColor=#e1a31b","seatVinylColor=#32383a","rubberColor=#303638"]}
+wrote /home/andrii/worktrees/kernelCAD-web/catalog-2000/artifacts/catalog-demos/construction-equipment-silhouette-20261106/asset-renders/ride-on-power-trowel.png

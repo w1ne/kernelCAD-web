@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-11-05T15:55:01.442080+00:00",
+  "homepage": {
+    "url": "https://kernelcad.com/",
+    "status": 200,
+    "hasKernelCADTitle": true
+  },
+  "assetIndex": {
+    "url": "https://kernelcad.com/assets.json",
+    "status": 200,
+    "generatedAt": "2026-11-05T13:01:21.597Z",
+    "miningRows": 50,
+    "miningRowsWithPreview": 50,
+    "miningRowsWithPresets": 0
+  },
+  "catalogHub": {
+    "url": "https://kernelcad.com/catalog/",
+    "status": 404
+  },
+  "branchStatus": "not deployed; public index is the pre-promotion baseline",
+  "passed": true
+}

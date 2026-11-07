@@ -84,7 +84,7 @@ describe('partFileExport', () => {
     expect(text).toContain('0\nSECTION\n2\nHEADER');
     // The Ø5 hole survives: a closed 48-vertex loop on the cut layer whose
     // leftmost vertex is the hole's west point (10 - 2.5, 12.5).
-    expect(text).toContain('0\nLWPOLYLINE\n8\ncut\n90\n48\n70\n1');
+    expect(text).toContain('0\nLWPOLYLINE\n100\nAcDbEntity\n8\ncut\n100\nAcDbPolyline\n90\n48\n70\n1');
     expect(text).toContain('10\n7.500000\n20\n12.500000');
     // Outer cut loop + the hole loop + the single bend line on the BEND layer.
     expect((text.match(/LWPOLYLINE/g) ?? []).length).toBeGreaterThanOrEqual(3);

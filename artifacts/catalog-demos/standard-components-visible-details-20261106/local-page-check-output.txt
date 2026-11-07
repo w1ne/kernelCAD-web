@@ -1,0 +1,26 @@
+EXIT CODE: 0
+{
+  "scope": "local generated pages only",
+  "checks": {
+    "catalog hub exists": true,
+    "timing-belt-pulley: page exists": true,
+    "timing-belt-pulley: updated description": true,
+    "timing-belt-pulley: preview linked": true,
+    "timing-belt-pulley: material controls": true,
+    "timing-belt-pulley: named presets": true,
+    "timing-belt-pulley: linked from hub": true,
+    "door-hinge: page exists": true,
+    "door-hinge: updated description": true,
+    "door-hinge: preview linked": true,
+    "door-hinge: material controls": true,
+    "door-hinge: named presets": true,
+    "door-hinge: linked from hub": true,
+    "din-rail-terminal-block: page exists": true,
+    "din-rail-terminal-block: updated description": true,
+    "din-rail-terminal-block: preview linked": true,
+    "din-rail-terminal-block: material controls": true,
+    "din-rail-terminal-block: named presets": true,
+    "din-rail-terminal-block: linked from hub": true
+  },
+  "passed": true
+}

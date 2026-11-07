@@ -1,0 +1,55 @@
+  THIN   airfield                      0/40   colours/asset=1.00
+  THIN   alpine-expedition             0/50   colours/asset=1.00
+  RICH   amusement-park               70/70   colours/asset=3.03
+  MIXED  apiary                        1/50   colours/asset=1.04
+  THIN   archaeology-fieldwork         0/50   colours/asset=1.00
+  THIN   beverage-bottling-line        0/50   colours/asset=1.00
+  RICH   characters                   35/35   colours/asset=4.74
+  MIXED  city-street                  61/65   colours/asset=3.09
+  RICH   construction-equipment       60/60   colours/asset=3.70
+  RICH   containers                   12/12   colours/asset=3.92
+  THIN   data-center-infrastructure    0/50   colours/asset=1.00
+  RICH   electronics                  12/12   colours/asset=3.92
+  THIN   ev-charging-infrastructure    0/50   colours/asset=1.00
+  RICH   farm-machinery               60/60   colours/asset=3.72
+  RICH   fire-rescue                  60/60   colours/asset=4.18
+  RICH   fire-station                 70/70   colours/asset=3.29
+  RICH   food-kitchen                 12/12   colours/asset=4.00
+  RICH   garden                       40/40   colours/asset=2.75
+  RICH   grid-substation              80/80   colours/asset=2.99
+  THIN   hydroponics                   0/52   colours/asset=1.00
+  RICH   industrial-plant             60/60   colours/asset=2.27
+  RICH   interior                     72/72   colours/asset=3.24
+  RICH   lab-infrastructure           60/60   colours/asset=3.22
+  RICH   lighting                     12/12   colours/asset=3.58
+  THIN   marine                        0/40   colours/asset=1.00
+  RICH   medical                      40/40   colours/asset=2.00
+  THIN   mining                        0/50   colours/asset=1.00
+  THIN   music                         0/40   colours/asset=1.00
+  MIXED  nature                       63/66   colours/asset=2.62
+  THIN   office                        0/40   colours/asset=1.00
+  MIXED  outdoor-gear                  1/12   colours/asset=2.92
+  THIN   photo-video-studio            0/40   colours/asset=1.00
+  THIN   postal-logistics              0/52   colours/asset=1.00
+  MIXED  props                        44/45   colours/asset=3.33
+  THIN   railway                       0/40   colours/asset=1.00
+  RICH   recycling-facility          153/153  colours/asset=2.51
+  THIN   retail-store                  0/48   colours/asset=1.00
+  RICH   shipyard                     70/70   colours/asset=2.54
+  THIN   solar-energy                  0/40   colours/asset=1.00
+  THIN   space-exploration             0/52   colours/asset=1.00
+  THIN   sports                        0/40   colours/asset=1.00
+  THIN   standard-components           0/50   colours/asset=1.00
+  RICH   telecom-infrastructure       56/56   colours/asset=2.55
+  RICH   terrain                      30/30   colours/asset=4.17
+  THIN   theatre-production            0/52   colours/asset=1.00
+  RICH   tools-equipment              12/12   colours/asset=3.33
+  THIN   vet-clinic                    0/50   colours/asset=1.00
+  RICH   water-treatment              50/50   colours/asset=2.78
+  THIN   wind-energy                   0/50   colours/asset=1.00
+
+  1296/2390 assets pass (22 rich kits, 22 thin kits)
+  1094 thin assets = 46% of the catalog
+
+  worst 1:
+    1c 0p 0g  catalog/kits/airfield/runway-edge-light.kcad.ts

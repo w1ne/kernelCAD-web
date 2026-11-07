@@ -18,6 +18,10 @@ const cut = param('cut', 'mummy', { choices: ['mummy', 'rectangular'], label: 'C
 const shell = param('shell', '#3f6980', { label: 'Shell' });
 const lining = param('lining', '#c4b28c', { label: 'Lining and hood' });
 const zipper = param('zipper', '#d9d4c5', { label: 'Zipper' });
+presets({
+  coldWeather: { shell: '#365b73', lining: '#c3b89d', zipper: '#e0d9c7' },
+  summer: { shell: '#d16b3f', lining: '#d9c6a0', zipper: '#f1e4cc' },
+});
 
 const bag = assembly('sleeping-bag');
 const outline = cut.value === 'mummy'

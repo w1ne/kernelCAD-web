@@ -1,0 +1,1097 @@
+[
+  {
+    "id": "american-football",
+    "source": "catalog/kits/sports/american-football.kcad.ts",
+    "sha256Before": "cd48d4a79c00c50c2f1b47e978f5d39cf37901664bc0eaf768ea0a79eed26ed4",
+    "sha256After": "854ab53efb387cebae3bb63860b0f7206f0a000a770806c9e0811f7a29b23215",
+    "colorKnobs": [
+      {
+        "name": "pebbledLeather",
+        "label": "Pebbled leather",
+        "default": "#98552f"
+      },
+      {
+        "name": "ivoryLaces",
+        "label": "Ivory lacing",
+        "default": "#efe8d6"
+      },
+      {
+        "name": "endStripePaint",
+        "label": "End stripe paint",
+        "default": "#e9e1d0"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 1,
+    "additionalGeometry": true,
+    "description": "Elongated pebbled football with pointed ends, contrasting end stripes and raised cross-laces across the crown."
+  },
+  {
+    "id": "badminton-racket",
+    "source": "catalog/kits/sports/badminton-racket.kcad.ts",
+    "sha256Before": "e5d643aae668e19445a8b7ddb27d31f8e11989772b53d0bf52272a03ebc81d1b",
+    "sha256After": "6d710aa8622f16df64c2c145d632798bc7d80e527b7289e82317c6f42bb3a2e0",
+    "colorKnobs": [
+      {
+        "name": "graphiteFrame",
+        "label": "Graphite frame",
+        "default": "#596d62"
+      },
+      {
+        "name": "nylonStrings",
+        "label": "Nylon strings",
+        "default": "#e8e4d8"
+      },
+      {
+        "name": "gripRubber",
+        "label": "Grip rubber",
+        "default": "#343a38"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 11,
+    "additionalGeometry": false,
+    "description": "Lightweight low-poly badminton racket with a slim shaft and oval head."
+  },
+  {
+    "id": "barbell",
+    "source": "catalog/kits/sports/barbell.kcad.ts",
+    "sha256Before": "1c37ac7fdccb00d7013ab947490734f4d459506a0eb6e656588e72ad8cb65041",
+    "sha256After": "84502df3cdd94b181b5536948b6feeb610ec16767dec7f85923b5a1527c7a627",
+    "colorKnobs": [
+      {
+        "name": "chromedSteel",
+        "label": "Chrome steel",
+        "default": "#9da9ad"
+      },
+      {
+        "name": "bumperRubber",
+        "label": "Bumper plate rubber",
+        "default": "#30363a"
+      },
+      {
+        "name": "knurlSteel",
+        "label": "Knurled grip steel",
+        "default": "#c0c7c6"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 5,
+    "additionalGeometry": true,
+    "description": "Low-poly barbell with a long horizontal shaft and stacked spherical plate forms."
+  },
+  {
+    "id": "baseball",
+    "source": "catalog/kits/sports/baseball.kcad.ts",
+    "sha256Before": "0801287efb39f53a82021dc0a490237cb045755d5b125407ef3a389ba9c7f838",
+    "sha256After": "439a76bcfaa24275a1b9c8412f535a56ac9bff59a803a12acd18e454f75423af",
+    "colorKnobs": [
+      {
+        "name": "coverLeather",
+        "label": "Ball cover",
+        "default": "#eee9dd"
+      },
+      {
+        "name": "redStitching",
+        "label": "Red stitching",
+        "default": "#c73732"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 800,
+    "partsRecolored": 1,
+    "additionalGeometry": true,
+    "description": "White faceted baseball with paired raised red seam lines tracing the familiar curved path."
+  },
+  {
+    "id": "baseball-bat",
+    "source": "catalog/kits/sports/baseball-bat.kcad.ts",
+    "sha256Before": "f37a4d08c4f3949dc522d92f624581f073dc23f9377d028ecf5a9acba3f31a9d",
+    "sha256After": "be7214effaab0cfbb75c742c19d34874c1c00318aaebf953d0f1fd4e7c770ead",
+    "colorKnobs": [
+      {
+        "name": "mapleWood",
+        "label": "Maple bat wood",
+        "default": "#9b7046"
+      },
+      {
+        "name": "gripTape",
+        "label": "Grip tape",
+        "default": "#30363a"
+      },
+      {
+        "name": "endGrain",
+        "label": "End-grain wood",
+        "default": "#c39a64"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 4,
+    "additionalGeometry": false,
+    "description": "Upright low-poly baseball bat with a narrow grip and widened barrel."
+  },
+  {
+    "id": "baseball-glove",
+    "source": "catalog/kits/sports/baseball-glove.kcad.ts",
+    "sha256Before": "2a3e903221023b35699ac2b7633ae039d9d0211200fba40c67a562206c321459",
+    "sha256After": "2f8b38dcf97e501316626f05ddcfa629d08fe759e218fef9c19c7565fc0e4344",
+    "colorKnobs": [
+      {
+        "name": "gloveLeather",
+        "label": "Glove leather",
+        "default": "#9a5938"
+      },
+      {
+        "name": "palmLining",
+        "label": "Palm lining",
+        "default": "#6c4632"
+      },
+      {
+        "name": "laceCord",
+        "label": "Lace cord",
+        "default": "#ddb987"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 7,
+    "additionalGeometry": true,
+    "description": "Open mitt-shaped glove prop with a broad palm, wrist cuff and raised finger pads."
+  },
+  {
+    "id": "basketball",
+    "source": "catalog/kits/sports/basketball.kcad.ts",
+    "sha256Before": "387cbb8db98b480cfba0f0e958a99d2b9d13c26a3c59c328458b7b8334862301",
+    "sha256After": "f723f26f117856133882e14e6f11e2d58d3ff424abf1904eada248d6858ce82f",
+    "colorKnobs": [
+      {
+        "name": "pebbledCover",
+        "label": "Pebbled ball cover",
+        "default": "#d47a32"
+      },
+      {
+        "name": "channelRubber",
+        "label": "Channel rubber",
+        "default": "#302c29"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 800,
+    "partsRecolored": 1,
+    "additionalGeometry": true,
+    "description": "Faceted orange basketball with two dark curved channel seams wrapping around the pebbled cover."
+  },
+  {
+    "id": "basketball-hoop",
+    "source": "catalog/kits/sports/basketball-hoop.kcad.ts",
+    "sha256Before": "a2060e1809001fe1bb0dada519942b9c027c5d7e5ab492039a67cb69fd9ce95c",
+    "sha256After": "749a3289ebca06a27cd79335dbfbf04c98568b201b17928de32d609b441eb981",
+    "colorKnobs": [
+      {
+        "name": "powderCoat",
+        "label": "Powder-coated steel",
+        "default": "#647987"
+      },
+      {
+        "name": "backboardPolycarbonate",
+        "label": "Backboard polycarbonate",
+        "default": "#d8e3df"
+      },
+      {
+        "name": "rimSteel",
+        "label": "Rim steel",
+        "default": "#d34a3b"
+      },
+      {
+        "name": "netNylon",
+        "label": "Net nylon",
+        "default": "#eee8d8"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 900,
+    "partsRecolored": 5,
+    "additionalGeometry": true,
+    "description": "Freestanding basketball hoop with a weighted base, clear backboard, red rim and tapered hanging net cords."
+  },
+  {
+    "id": "batting-helmet",
+    "source": "catalog/kits/sports/batting-helmet.kcad.ts",
+    "sha256Before": "91866932e9502375d65e1f23182690a046e87bc664e540229bd3294fb36004be",
+    "sha256After": "b38ad095f8c97abc62a5b434c66c2791e02d4bfa494e21bc3c28db54ce0c2a07",
+    "colorKnobs": [
+      {
+        "name": "helmetPolymer",
+        "label": "Helmet shell polymer",
+        "default": "#4c6f9d"
+      },
+      {
+        "name": "impactFoam",
+        "label": "Impact foam",
+        "default": "#292e33"
+      },
+      {
+        "name": "faceGuardSteel",
+        "label": "Face guard steel",
+        "default": "#aab4b5"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 4,
+    "additionalGeometry": true,
+    "description": "Protective batting helmet prop with a domed shell, face brim and side guards."
+  },
+  {
+    "id": "cricket-bat",
+    "source": "catalog/kits/sports/cricket-bat.kcad.ts",
+    "sha256Before": "fed6a89b487571d964ac95a12e148dc0e9499941903f3ae1547af1963ce52115",
+    "sha256After": "d7696a294ae0f46a4e3ad6e1fe2f2f08cbca01c8e0b3115d6913595f50c66820",
+    "colorKnobs": [
+      {
+        "name": "willowWood",
+        "label": "Willow bat wood",
+        "default": "#9a754d"
+      },
+      {
+        "name": "rubberGrip",
+        "label": "Rubber grip",
+        "default": "#303638"
+      },
+      {
+        "name": "edgeTape",
+        "label": "Edge tape",
+        "default": "#e6e1d4"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 4,
+    "additionalGeometry": true,
+    "description": "Low-poly cricket bat with a wide flat blade, shoulders and slim handle."
+  },
+  {
+    "id": "cricket-wicket",
+    "source": "catalog/kits/sports/cricket-wicket.kcad.ts",
+    "sha256Before": "4acabc6ce95c82c296099e2857995c64ed12bc9167afce313861109ae5788420",
+    "sha256After": "f16c4141001536b3e5de2b576d309da83ea182dfa1beb4f36b8633ba9b5dc9cd",
+    "colorKnobs": [
+      {
+        "name": "wicketTimber",
+        "label": "Wicket timber",
+        "default": "#b18b5f"
+      },
+      {
+        "name": "groundRubber",
+        "label": "Ground rubber",
+        "default": "#5b625d"
+      },
+      {
+        "name": "bailPaint",
+        "label": "Bail paint",
+        "default": "#e8e1d0"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 6,
+    "additionalGeometry": false,
+    "description": "Three-stump wicket set on a low ground plate with two cross bails."
+  },
+  {
+    "id": "dumbbell",
+    "source": "catalog/kits/sports/dumbbell.kcad.ts",
+    "sha256Before": "dfa6ff31e604e3a2b83bce4ec3879bfc61a268611f4498fad176f6cdd21c5878",
+    "sha256After": "7c400da6250e5d596f1941339aa6b90e980753a69b88953086167396ee93875c",
+    "colorKnobs": [
+      {
+        "name": "knurledSteel",
+        "label": "Knurled handle steel",
+        "default": "#aab4b8"
+      },
+      {
+        "name": "rubberWeight",
+        "label": "Rubber weights",
+        "default": "#30363a"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 3,
+    "additionalGeometry": false,
+    "description": "Compact low-poly dumbbell with a horizontal handle and weighted ends."
+  },
+  {
+    "id": "exercise-ball",
+    "source": "catalog/kits/sports/exercise-ball.kcad.ts",
+    "sha256Before": "5e6a8dd3bd806b02da76d8e882af4980c9a314d42b3617fdf65fa3b3c03b3067",
+    "sha256After": "f30ef621591ac5562960bdb4221ffa226531d4bbca8149d5ef9298c0716b2095",
+    "colorKnobs": [
+      {
+        "name": "vinylCover",
+        "label": "Exercise ball vinyl",
+        "default": "#7c9ab2"
+      },
+      {
+        "name": "seamTape",
+        "label": "Reinforced seam tape",
+        "default": "#eee8dc"
+      },
+      {
+        "name": "valvePolymer",
+        "label": "Valve polymer",
+        "default": "#333b40"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 1,
+    "additionalGeometry": true,
+    "description": "Large vinyl fitness ball with raised reinforcing seams and a distinct inflation valve."
+  },
+  {
+    "id": "foam-roller",
+    "source": "catalog/kits/sports/foam-roller.kcad.ts",
+    "sha256Before": "51c55fe101360436e88cc8a314215565a543445f8702ded6c4c5ceb61b925750",
+    "sha256After": "0ca8020eec2d1b970e82dd510332c663c6427bb55839177f12018874e5298268",
+    "colorKnobs": [
+      {
+        "name": "evaFoam",
+        "label": "EVA roller foam",
+        "default": "#537d78"
+      },
+      {
+        "name": "corePolymer",
+        "label": "Core polymer",
+        "default": "#263135"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 1,
+    "additionalGeometry": true,
+    "description": "Textured foam roller with a dark polymer core and contrasting end rings."
+  },
+  {
+    "id": "golf-bag",
+    "source": "catalog/kits/sports/golf-bag.kcad.ts",
+    "sha256Before": "2b4a5a36a2e96b22578fb533c60b1af5184f879e113ed1307fcf8c3a9fc5afdc",
+    "sha256After": "1ca562d501459dd0c6f1976989b74b2d87b32827ea9c508975e7a578b0f6f33d",
+    "colorKnobs": [
+      {
+        "name": "nylonFabric",
+        "label": "Bag nylon fabric",
+        "default": "#42675d"
+      },
+      {
+        "name": "rimAluminium",
+        "label": "Rim aluminium",
+        "default": "#aab4b5"
+      },
+      {
+        "name": "clubSteel",
+        "label": "Club steel",
+        "default": "#8b969a"
+      },
+      {
+        "name": "strapWebbing",
+        "label": "Strap webbing",
+        "default": "#c2b9a3"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 7,
+    "additionalGeometry": true,
+    "description": "Upright golf bag with a broad lower body, tapered-looking rim and club tops."
+  },
+  {
+    "id": "golf-club",
+    "source": "catalog/kits/sports/golf-club.kcad.ts",
+    "sha256Before": "56d48e1e99ccc7d2d4845353bd82eb9b26cc1dcfc793a0599c14173ff12abbe3",
+    "sha256After": "4f9e0d9b98b658ff55a5bf4b9db20d14c8fad19377ab9aa6bcd9c3a09e714da4",
+    "colorKnobs": [
+      {
+        "name": "stainlessSteel",
+        "label": "Club-head stainless steel",
+        "default": "#abb6b9"
+      },
+      {
+        "name": "graphiteShaft",
+        "label": "Graphite shaft",
+        "default": "#3c444a"
+      },
+      {
+        "name": "gripRubber",
+        "label": "Grip rubber",
+        "default": "#242d32"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 3,
+    "additionalGeometry": false,
+    "description": "Low-poly golf club with a metal head, long shaft and top grip."
+  },
+  {
+    "id": "gym-bench",
+    "source": "catalog/kits/sports/gym-bench.kcad.ts",
+    "sha256Before": "d2c0ced3944f05d3bb0526f15cb5537638e558ab94db2716fcedb4cf6db0d53c",
+    "sha256After": "4c0308a3527f08cf42ddf4dbb826705160d769b6493b3869185b11dc21518c9e",
+    "colorKnobs": [
+      {
+        "name": "vinylUpholstery",
+        "label": "Vinyl upholstery",
+        "default": "#344f5c"
+      },
+      {
+        "name": "frameSteel",
+        "label": "Frame steel",
+        "default": "#8e999d"
+      },
+      {
+        "name": "footRubber",
+        "label": "Foot rubber",
+        "default": "#30363a"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 6,
+    "additionalGeometry": false,
+    "description": "Low-poly adjustable bench prop with padded top, support frame and floor feet."
+  },
+  {
+    "id": "hockey-puck",
+    "source": "catalog/kits/sports/hockey-puck.kcad.ts",
+    "sha256Before": "58225e4ce5ba8843ad3e7b2130bdbabc3067c439cddd6a5337635b3b1804838f",
+    "sha256After": "4027039ceb4cd3cb1394bd58eafc9e9ac96d1eadeb3329cbe6a224f65dd60db1",
+    "colorKnobs": [
+      {
+        "name": "vulcanizedRubber",
+        "label": "Vulcanized puck rubber",
+        "default": "#383d42"
+      },
+      {
+        "name": "faceRubber",
+        "label": "Face rubber",
+        "default": "#252a2e"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 1,
+    "additionalGeometry": true,
+    "description": "Dense cylindrical hockey puck with a molded rubber sidewall and inset dark face band."
+  },
+  {
+    "id": "hockey-stick",
+    "source": "catalog/kits/sports/hockey-stick.kcad.ts",
+    "sha256Before": "8205b121d4e415da8fd519b753909f40ed8650eeb46c3fb6a68fe2c3381a1400",
+    "sha256After": "5d1e4407d65bb67a29a3dbb0437b8a305d6e7755d35c0983739c42a7e8c18664",
+    "colorKnobs": [
+      {
+        "name": "compositeShaft",
+        "label": "Composite shaft",
+        "default": "#8a6844"
+      },
+      {
+        "name": "bladeTape",
+        "label": "Blade tape",
+        "default": "#e7e0d0"
+      },
+      {
+        "name": "gripTape",
+        "label": "Grip tape",
+        "default": "#30363a"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 3,
+    "additionalGeometry": true,
+    "description": "Low-poly field hockey stick with a long shaft and hooked blade."
+  },
+  {
+    "id": "inline-skate",
+    "source": "catalog/kits/sports/inline-skate.kcad.ts",
+    "sha256Before": "5941afb08470c26aa32855f9157bf74a9af9950e850b35492046854d29ea8127",
+    "sha256After": "9cdb439a6664c82b3e061f5a03c33398b5d71c166c5738bacb3bc369e0c6635d",
+    "colorKnobs": [
+      {
+        "name": "syntheticBoot",
+        "label": "Synthetic boot fabric",
+        "default": "#465c70"
+      },
+      {
+        "name": "aluminiumFrame",
+        "label": "Frame aluminium",
+        "default": "#9ea9ac"
+      },
+      {
+        "name": "urethaneWheel",
+        "label": "Urethane wheels",
+        "default": "#d6d4ca"
+      },
+      {
+        "name": "moldedCuff",
+        "label": "Molded cuff polymer",
+        "default": "#35424d"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 6,
+    "additionalGeometry": false,
+    "description": "Low-poly inline skate boot with a cuff, chassis and three aligned wheels."
+  },
+  {
+    "id": "jump-rope",
+    "source": "catalog/kits/sports/jump-rope.kcad.ts",
+    "sha256Before": "65b189bd9db7df969a9302fcd6221ae1bfd1b9be88f966c8aafb379447b81e00",
+    "sha256After": "e69e32360eb2fcdebf800cdda77a48bed825eb99ca8f72d8a180365337445396",
+    "colorKnobs": [
+      {
+        "name": "braidedNylon",
+        "label": "Braided nylon rope",
+        "default": "#bd5c4b"
+      },
+      {
+        "name": "handlePolymer",
+        "label": "Handle polymer",
+        "default": "#4d5557"
+      },
+      {
+        "name": "gripFoam",
+        "label": "Grip foam",
+        "default": "#d5c7a9"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 5,
+    "additionalGeometry": false,
+    "description": "Jump rope prop with a low-poly loop and two upright grip handles."
+  },
+  {
+    "id": "kettlebell",
+    "source": "catalog/kits/sports/kettlebell.kcad.ts",
+    "sha256Before": "bda6d6058089df8ed24eef33da2ea85c8ded3a958c932d15e561788cee4a578a",
+    "sha256After": "6c52fde822541d03243b86a914047554fffe5d6d1f1e8aedea549a00fb931081",
+    "colorKnobs": [
+      {
+        "name": "castIron",
+        "label": "Cast iron body",
+        "default": "#555e63"
+      },
+      {
+        "name": "handleSteel",
+        "label": "Handle steel",
+        "default": "#aab4b7"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 4,
+    "additionalGeometry": false,
+    "description": "Low-poly kettlebell with a rounded body and raised ring handle."
+  },
+  {
+    "id": "lacrosse-stick",
+    "source": "catalog/kits/sports/lacrosse-stick.kcad.ts",
+    "sha256Before": "e9fdaf93e06b43b0a1957a2212635c8803bc872928c5fce719bc962b9c1d5815",
+    "sha256After": "cd229ab961de7b860bd9efa1fe4c211e7dbeab80772467767f6f1581d70ba73d",
+    "colorKnobs": [
+      {
+        "name": "graphiteShaft",
+        "label": "Graphite shaft",
+        "default": "#59666b"
+      },
+      {
+        "name": "headPolymer",
+        "label": "Head polymer",
+        "default": "#e4e1d8"
+      },
+      {
+        "name": "pocketNylon",
+        "label": "Pocket nylon",
+        "default": "#d5d2c7"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 3,
+    "additionalGeometry": true,
+    "description": "Lacrosse stick with a long graphite shaft, molded open head and a visible crossed nylon pocket."
+  },
+  {
+    "id": "shuttlecock",
+    "source": "catalog/kits/sports/shuttlecock.kcad.ts",
+    "sha256Before": "f01b5531d1ef4917fceae5963035d28af7ab8e10889bf6799735bfb0fa82d517",
+    "sha256After": "2a613cb67f07f57e722375b6af97e400552b5057dfbde9dee0ec5a09956763f7",
+    "colorKnobs": [
+      {
+        "name": "cork",
+        "label": "Cork tip",
+        "default": "#b6945d"
+      },
+      {
+        "name": "featherNylon",
+        "label": "Skirt nylon",
+        "default": "#e8e4d8"
+      },
+      {
+        "name": "crownTape",
+        "label": "Crown binding tape",
+        "default": "#d9b94a"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 3,
+    "additionalGeometry": false,
+    "description": "Low-poly badminton shuttlecock with a rounded cork tip and flared skirt."
+  },
+  {
+    "id": "skateboard",
+    "source": "catalog/kits/sports/skateboard.kcad.ts",
+    "sha256Before": "00063352204f8e005fa9952b6e7505af9c869f796411ad277c5e791387c75ece",
+    "sha256After": "d46a49db4149bdfa573af89ab159d182bf34208b1208bd996a98af32afb41cc3",
+    "colorKnobs": [
+      {
+        "name": "mapleDeck",
+        "label": "Maple deck",
+        "default": "#a75e3b"
+      },
+      {
+        "name": "truckAluminium",
+        "label": "Truck aluminium",
+        "default": "#8d999d"
+      },
+      {
+        "name": "urethaneWheel",
+        "label": "Urethane wheels",
+        "default": "#34383b"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 7,
+    "additionalGeometry": false,
+    "description": "Low-poly skateboard deck with two trucks and four wheels."
+  },
+  {
+    "id": "soccer-ball",
+    "source": "catalog/kits/sports/soccer-ball.kcad.ts",
+    "sha256Before": "c466d58102430e87b813eec20f049d6c55e4ebde10f02ccc2055b6857db421b5",
+    "sha256After": "868b4c1a12b4aacb23e7c695b526219edba1c5fad886d378bfefa0418e183480",
+    "colorKnobs": [
+      {
+        "name": "ballCover",
+        "label": "Ball cover",
+        "default": "#ece8d6"
+      },
+      {
+        "name": "panelPolymer",
+        "label": "Panel polymer",
+        "default": "#272c30"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 800,
+    "partsRecolored": 1,
+    "additionalGeometry": true,
+    "description": "Ivory faceted soccer ball with contrasting pentagonal panel patches distributed over the spherical cover."
+  },
+  {
+    "id": "soccer-goal",
+    "source": "catalog/kits/sports/soccer-goal.kcad.ts",
+    "sha256Before": "8977bc04433d07bd7e08f2046e3cff0001c3c0c09968c3a73b52cd0832ba3c63",
+    "sha256After": "a0ff2ad15029221e77dc1786baec11d78a9e4ee0b4817702f581215c266fd3bb",
+    "colorKnobs": [
+      {
+        "name": "goalAluminium",
+        "label": "Goal aluminium",
+        "default": "#dce2df"
+      },
+      {
+        "name": "netNylon",
+        "label": "Net nylon",
+        "default": "#728078"
+      },
+      {
+        "name": "groundRubber",
+        "label": "Ground rubber",
+        "default": "#343b3e"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 1400,
+    "partsRecolored": 3,
+    "additionalGeometry": true,
+    "description": "Portable soccer goal with an aluminium frame and an open knotted-looking net grid across its roof, sides and floor."
+  },
+  {
+    "id": "sports-water-bottle",
+    "source": "catalog/kits/sports/sports-water-bottle.kcad.ts",
+    "sha256Before": "1c2686d52c226c5a8e78c16e782394538740c714830dd90d8ac8ced09c7ba27a",
+    "sha256After": "9345c17bc2d765ad485876e2de5f1399aa2a703417a2545cb660888f06d943f6",
+    "colorKnobs": [
+      {
+        "name": "stainlessSteel",
+        "label": "Bottle stainless steel",
+        "default": "#8fa1a6"
+      },
+      {
+        "name": "capPolymer",
+        "label": "Cap polymer",
+        "default": "#30393c"
+      },
+      {
+        "name": "siliconeGrip",
+        "label": "Silicone grip band",
+        "default": "#d34c3d"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 4,
+    "additionalGeometry": true,
+    "description": "Reusable sports bottle with a brushed steel body, polymer cap and contrasting silicone grip band."
+  },
+  {
+    "id": "starting-block",
+    "source": "catalog/kits/sports/starting-block.kcad.ts",
+    "sha256Before": "791bc8352970d6dc1ff20994e831737bf8009945a6c20c96af338ff6e9b6b141",
+    "sha256After": "b3d8dc890d20227a4d47f7dcad139a81ea9f4328a50f73a95ca5226959839590",
+    "colorKnobs": [
+      {
+        "name": "anodizedAluminium",
+        "label": "Anodized aluminium",
+        "default": "#8b989b"
+      },
+      {
+        "name": "pedalRubber",
+        "label": "Pedal rubber",
+        "default": "#344b5b"
+      },
+      {
+        "name": "trackMat",
+        "label": "Track mat",
+        "default": "#3a4042"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 5,
+    "additionalGeometry": true,
+    "description": "Track starting block prop with a low base rail and two angled-looking foot pads."
+  },
+  {
+    "id": "tennis-ball",
+    "source": "catalog/kits/sports/tennis-ball.kcad.ts",
+    "sha256Before": "427794462962f3f2e12bc58dcee018d0265cb6e6202b0c541e589f3eba2a4c4a",
+    "sha256After": "5500cca0310c7357422b5abc3c84257e6cca4b813e3dffff11777cebed432003",
+    "colorKnobs": [
+      {
+        "name": "feltCover",
+        "label": "Felt cover",
+        "default": "#b6c84c"
+      },
+      {
+        "name": "seamTape",
+        "label": "Seam tape",
+        "default": "#f0ebdf"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 800,
+    "partsRecolored": 1,
+    "additionalGeometry": true,
+    "description": "Compact felt tennis ball with a continuous curved ivory seam around its spherical surface."
+  },
+  {
+    "id": "tennis-net",
+    "source": "catalog/kits/sports/tennis-net.kcad.ts",
+    "sha256Before": "8a7abf00f81a5322d7d58042cf04559eeeca494a7c9ab17846cb143d14ac7dbb",
+    "sha256After": "a5b5e52e932e1b976f603226f9b7877d7fa4d5eee27fad27c4c75617ed87f76a",
+    "colorKnobs": [
+      {
+        "name": "powderCoat",
+        "label": "Powder-coated steel",
+        "default": "#6d7471"
+      },
+      {
+        "name": "netNylon",
+        "label": "Net nylon",
+        "default": "#dddccf"
+      },
+      {
+        "name": "baseRubber",
+        "label": "Base rubber",
+        "default": "#303638"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 5,
+    "additionalGeometry": true,
+    "description": "Practice tennis net with taut vertical and horizontal mesh cords, a reinforced top band and grounded posts."
+  },
+  {
+    "id": "tennis-racket",
+    "source": "catalog/kits/sports/tennis-racket.kcad.ts",
+    "sha256Before": "7a5dbafe0cd6d0fed476b23d60d9fde7cb1a3909e9e559264225e0e165b32aef",
+    "sha256After": "d13591332d8a530b107fc0671d38a7d0c346b6d4841e61e0dd66c6d730f50510",
+    "colorKnobs": [
+      {
+        "name": "graphiteFrame",
+        "label": "Graphite frame",
+        "default": "#5b6870"
+      },
+      {
+        "name": "nylonStrings",
+        "label": "Nylon strings",
+        "default": "#e7e3d7"
+      },
+      {
+        "name": "gripTape",
+        "label": "Grip tape",
+        "default": "#343a3d"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 14,
+    "additionalGeometry": false,
+    "description": "Low-poly tennis racket with an oval head and long handle."
+  },
+  {
+    "id": "track-hurdle",
+    "source": "catalog/kits/sports/track-hurdle.kcad.ts",
+    "sha256Before": "aeb0ad4d202a4117ddb2c749dc176b251f7359e29c9b71c2fbd633b83dd1fa69",
+    "sha256After": "cf6964b91445097112101618af6e4660a2bae041cb6cb18faaf8ab15fe8edecb",
+    "colorKnobs": [
+      {
+        "name": "anodizedAluminium",
+        "label": "Anodized aluminium",
+        "default": "#a5b0b2"
+      },
+      {
+        "name": "crossbarPolymer",
+        "label": "Crossbar polymer",
+        "default": "#d9c554"
+      },
+      {
+        "name": "footRubber",
+        "label": "Foot rubber",
+        "default": "#333a3d"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 5,
+    "additionalGeometry": false,
+    "description": "Portable low-poly running hurdle with two feet, uprights and a crossbar."
+  },
+  {
+    "id": "treadmill",
+    "source": "catalog/kits/sports/treadmill.kcad.ts",
+    "sha256Before": "76c2febcbfcc1a53e3911f78be7fee65aa98fd8cede29b4cfa96a85fc9b2f4e1",
+    "sha256After": "fd026e2178a576bc435a432b1d7d5f769715d3d4809cf19d3afbff9808bbc568",
+    "colorKnobs": [
+      {
+        "name": "frameSteel",
+        "label": "Frame steel",
+        "default": "#5b676c"
+      },
+      {
+        "name": "runningBeltRubber",
+        "label": "Running belt rubber",
+        "default": "#282d31"
+      },
+      {
+        "name": "consoleGlass",
+        "label": "Console glass",
+        "default": "#70a7b7"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 6,
+    "additionalGeometry": false,
+    "description": "Low-poly treadmill with running deck, front uprights, hand rails and console."
+  },
+  {
+    "id": "trophy-cup",
+    "source": "catalog/kits/sports/trophy-cup.kcad.ts",
+    "sha256Before": "3c944a95a02edb41e03d3c9d9f090ba625ac30e9f03ad81626b74ca3522ae840",
+    "sha256After": "79a4d25250af22cc576923072f08d5204245de48a4c2649f21b0279179cd98cb",
+    "colorKnobs": [
+      {
+        "name": "goldPlating",
+        "label": "Gold-plated metal",
+        "default": "#c6a640"
+      },
+      {
+        "name": "walnutBase",
+        "label": "Walnut base",
+        "default": "#765139"
+      },
+      {
+        "name": "engravingInlay",
+        "label": "Engraving inlay",
+        "default": "#f0db88"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 6,
+    "additionalGeometry": false,
+    "description": "Low-poly award cup with an open bowl, stem, handles and stepped base."
+  },
+  {
+    "id": "volleyball",
+    "source": "catalog/kits/sports/volleyball.kcad.ts",
+    "sha256Before": "fd0150fa839942655437a230d1f5cfba3d872e523f5ec32d857a8dd79d88ce7f",
+    "sha256After": "4fc9eeba56dc8f7c7aa36f882a414375dce60e2c15da7c28de1090e4c1d3406c",
+    "colorKnobs": [
+      {
+        "name": "panelFabric",
+        "label": "Ball panel fabric",
+        "default": "#e7e2d6"
+      },
+      {
+        "name": "seamTape",
+        "label": "Seam tape",
+        "default": "#3e88a5"
+      },
+      {
+        "name": "panelAccent",
+        "label": "Panel accent fabric",
+        "default": "#d3b642"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 800,
+    "partsRecolored": 1,
+    "additionalGeometry": true,
+    "description": "Panelled volleyball with contrasting curved seam bands that divide its soft spherical cover."
+  },
+  {
+    "id": "volleyball-net",
+    "source": "catalog/kits/sports/volleyball-net.kcad.ts",
+    "sha256Before": "023fe0d08d761d6af035fc52c897fea459640481b9c3eb2fb6538d04f1a8071f",
+    "sha256After": "8ae3e1e74b7a48cc1225a08e66185509931b9601aaff9a516cc286c5d309129a",
+    "colorKnobs": [
+      {
+        "name": "powderCoat",
+        "label": "Powder-coated steel",
+        "default": "#697573"
+      },
+      {
+        "name": "meshNylon",
+        "label": "Mesh nylon",
+        "default": "#dddccf"
+      },
+      {
+        "name": "safetyBand",
+        "label": "Top safety band",
+        "default": "#f0eee3"
+      },
+      {
+        "name": "baseRubber",
+        "label": "Base rubber",
+        "default": "#303638"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 5,
+    "additionalGeometry": true,
+    "description": "Portable volleyball net with a dense open cord grid, pale safety band and weighted ground feet."
+  },
+  {
+    "id": "weight-plate",
+    "source": "catalog/kits/sports/weight-plate.kcad.ts",
+    "sha256Before": "8c0fabd1aabc208b7bc98b32be4a6c9235d8f5a195d0aa86fec5786e2bf7adbc",
+    "sha256After": "a05a98956e1de9c456b2d9e860794bda15084366a9edde71f7748d5dc29f5be5",
+    "colorKnobs": [
+      {
+        "name": "castIron",
+        "label": "Cast iron plate",
+        "default": "#5b666b"
+      },
+      {
+        "name": "boreSteel",
+        "label": "Bore sleeve steel",
+        "default": "#b4bdbe"
+      },
+      {
+        "name": "markingPaint",
+        "label": "Weight marking paint",
+        "default": "#d5d0bf"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 1,
+    "additionalGeometry": true,
+    "description": "Cast-iron gym plate with a central sleeved bore and a contrasting painted weight marker."
+  },
+  {
+    "id": "yoga-block",
+    "source": "catalog/kits/sports/yoga-block.kcad.ts",
+    "sha256Before": "fda4f946ed3ec855765775675d646dad5156a6d496a9ac1ea93aff5249747dab",
+    "sha256After": "edd523a9df14f1eeac99647db137acf9a029733c910e61c28665ede2b8d68d5f",
+    "colorKnobs": [
+      {
+        "name": "evaFoam",
+        "label": "EVA foam",
+        "default": "#8c6b78"
+      },
+      {
+        "name": "tractionFoam",
+        "label": "Textured grip foam",
+        "default": "#70535f"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 1,
+    "additionalGeometry": true,
+    "description": "Rectangular EVA yoga block with raised traction ribs across its broad support face."
+  },
+  {
+    "id": "yoga-mat",
+    "source": "catalog/kits/sports/yoga-mat.kcad.ts",
+    "sha256Before": "09e2b9b2df631815ac02d64ecca8077175be19f0278a1f348f2218c8ef245b8b",
+    "sha256After": "ba417ee909a73ac9548a290cf7fdcaa523bbc36bf2de473a130a1e11ebe3733a",
+    "colorKnobs": [
+      {
+        "name": "foamRubber",
+        "label": "Foam rubber mat",
+        "default": "#6b8978"
+      },
+      {
+        "name": "carryWebbing",
+        "label": "Carry webbing",
+        "default": "#c2b49a"
+      },
+      {
+        "name": "edgeBinding",
+        "label": "Edge binding",
+        "default": "#3d534b"
+      }
+    ],
+    "preset": "clubColors",
+    "triangleBudget": 600,
+    "partsRecolored": 2,
+    "additionalGeometry": true,
+    "description": "Rolled yoga mat prop with a flat practice surface and cylindrical roll."
+  }
+]

@@ -1,0 +1,32 @@
+
+ RUN  v4.0.18 /home/andrii/worktrees/kernelCAD-web/catalog-2000
+
+ ❯ tests/integration/catalog/catalogIndex.test.ts (2 tests | 1 failed) 219583ms
+     × every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh 219177ms
+     ✓ every characters-kit asset ships a GLB rig with a pivot per joint 81ms
+ ✓ tests/integration/catalog/catalogStudioLink.test.ts (4 tests) 151512ms
+     ✓ every committed catalog asset opens with exactly the knobs its index row lists  150446ms
+     ✓ refuses refs that do not name a catalog row, and sources that no longer match the index  316ms
+ ✓ tests/integration/catalog/assetModule.test.ts (4 tests) 630ms
+ ✓ tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 281ms
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 14 passed (15)
+   Start at  06:36:49
+   Duration  382.10s (transform 5.33s, setup 122ms, import 9.38s, tests 372.01s, environment 1ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/catalogIndex.test.ts > asset catalog > every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh
+AssertionError: motorized-chain-hoist: expected 0.021 to be close to +0, received difference is 0.021, but expected 5e-7
+ ❯ tests/integration/catalog/catalogIndex.test.ts:20:44
+     18|       expect(asset.stats.triangles, asset.id).toBeLessThanOrEqual(asse…
+     19|       expect(asset.stats.materials, asset.id).toBe(1);
+     20|       expect(asset.stats.minUpM, asset.id).toBeCloseTo(asset.origin ==…
+       |                                            ^
+     21|       expect(asset.preview, `${asset.id} needs a rendered homepage pre…
+     22|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

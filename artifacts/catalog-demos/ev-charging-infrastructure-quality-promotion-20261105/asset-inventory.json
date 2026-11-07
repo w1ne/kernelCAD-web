@@ -1,0 +1,1926 @@
+{
+  "kit": "ev-charging-infrastructure",
+  "assetCount": 50,
+  "assetIdsPreserved": true,
+  "materialControls": 159,
+  "presetEntries": 100,
+  "triangles": {
+    "minimum": 92,
+    "maximum": 492
+  },
+  "assets": [
+    {
+      "id": "ac-charging-bollard",
+      "sourceSha256": "553212d33ea76e374fa46f2a6421b59536a7124ea612cf64502750ea167a15dd",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#79cfda"
+        },
+        {
+          "name": "cableElastomer",
+          "label": "Cable elastomer",
+          "default": "#1b2427"
+        },
+        {
+          "name": "safetyPolymer",
+          "label": "Safety-colored polymer",
+          "default": "#f0b13c"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "cableElastomer": "#1a2522",
+          "safetyPolymer": "#f3bd2f"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "cableElastomer": "#111719",
+          "safetyPolymer": "#ffbf24"
+        }
+      },
+      "triangles": 340,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-ac-charging-bollard.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/ac-charging-bollard.png"
+    },
+    {
+      "id": "battery-buffer-charger-container",
+      "sourceSha256": "7976b7400552aa1cb9e08cab357b137da1b93daf1d9171b9fe96b57c81d63e1c",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "engineeringPolymer",
+          "label": "Engineering polymer",
+          "default": "#657f84"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "engineeringPolymer": "#263a36",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "engineeringPolymer": "#222d32",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 244,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-battery-buffer-charger-container.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/battery-buffer-charger-container.png"
+    },
+    {
+      "id": "bus-depot-pantograph-post",
+      "sourceSha256": "693a5d07922f8ad2d7b257b5b1e6259174a9b15eeca74988050ab8147fa859bc",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "engineeringPolymer",
+          "label": "Engineering polymer",
+          "default": "#657f84"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "engineeringPolymer": "#263a36",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "engineeringPolymer": "#222d32",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 288,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-bus-depot-pantograph-post.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/bus-depot-pantograph-post.png"
+    },
+    {
+      "id": "ccs-combo-1-connector",
+      "sourceSha256": "83239859bfcb27a2ce92b1ab4baa2c815607160e45c90d1cc0a36d0b559a9ba6",
+      "params": [
+        {
+          "name": "engineeringPolymer",
+          "label": "Engineering polymer",
+          "default": "#657f84"
+        },
+        {
+          "name": "cableElastomer",
+          "label": "Cable elastomer",
+          "default": "#1b2427"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "engineeringPolymer": "#263a36",
+          "cableElastomer": "#1a2522"
+        },
+        "nightService": {
+          "engineeringPolymer": "#222d32",
+          "cableElastomer": "#111719"
+        }
+      },
+      "triangles": 180,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-ccs-combo-1-connector.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/ccs-combo-1-connector.png"
+    },
+    {
+      "id": "ccs-combo-2-connector",
+      "sourceSha256": "760fd4124dfdd5c196e26e5808b22c251e06456320d7b70b2f3f0022e9474a70",
+      "params": [
+        {
+          "name": "engineeringPolymer",
+          "label": "Engineering polymer",
+          "default": "#657f84"
+        },
+        {
+          "name": "cableElastomer",
+          "label": "Cable elastomer",
+          "default": "#1b2427"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "engineeringPolymer": "#263a36",
+          "cableElastomer": "#1a2522"
+        },
+        "nightService": {
+          "engineeringPolymer": "#222d32",
+          "cableElastomer": "#111719"
+        }
+      },
+      "triangles": 180,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-ccs-combo-2-connector.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/ccs-combo-2-connector.png"
+    },
+    {
+      "id": "chademo-connector",
+      "sourceSha256": "c8325b9a47199b3cb840f1a799151d126a3dc87f5e09ad285e9b4e787ead8752",
+      "params": [
+        {
+          "name": "engineeringPolymer",
+          "label": "Engineering polymer",
+          "default": "#657f84"
+        },
+        {
+          "name": "cableElastomer",
+          "label": "Cable elastomer",
+          "default": "#1b2427"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "engineeringPolymer": "#263a36",
+          "cableElastomer": "#1a2522"
+        },
+        "nightService": {
+          "engineeringPolymer": "#222d32",
+          "cableElastomer": "#111719"
+        }
+      },
+      "triangles": 180,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-chademo-connector.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/chademo-connector.png"
+    },
+    {
+      "id": "charger-cable-holster-bollard",
+      "sourceSha256": "795f9a0d5730b8b70c85df76fffb6e923626800175a79bfb4261d0fd5ef7a64b",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "engineeringPolymer",
+          "label": "Engineering polymer",
+          "default": "#657f84"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "engineeringPolymer": "#263a36",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "engineeringPolymer": "#222d32",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 200,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-charger-cable-holster-bollard.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/charger-cable-holster-bollard.png"
+    },
+    {
+      "id": "charger-cable-retractor",
+      "sourceSha256": "69a2e7b53c5ac0fb22bc7e6786acc78446b00d404a4cf612f093bff2d3436794",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "cableElastomer",
+          "label": "Cable elastomer",
+          "default": "#1b2427"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "cableElastomer": "#1a2522",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "cableElastomer": "#111719",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 244,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-charger-cable-retractor.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/charger-cable-retractor.png"
+    },
+    {
+      "id": "charger-canopy-column-base",
+      "sourceSha256": "7e5423f8850b23812dfb4b35f13f419bd45f275312a3361278b2109a5c5d51bd",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 260,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-charger-canopy-column-base.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/charger-canopy-column-base.png"
+    },
+    {
+      "id": "charger-load-management-panel",
+      "sourceSha256": "b96b6679fb1c0eb12d50f4f1b18a94bb51929ea407914f75bb2d3a425351f5a9",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#79cfda"
+        },
+        {
+          "name": "safetyPolymer",
+          "label": "Safety-colored polymer",
+          "default": "#f0b13c"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "safetyPolymer": "#f3bd2f",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "safetyPolymer": "#ffbf24",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 244,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-charger-load-management-panel.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/charger-load-management-panel.png"
+    },
+    {
+      "id": "charger-status-display-post",
+      "sourceSha256": "20daadc1ccc16469e8dda6d16ce1b18afbd2c7458156d009b39abaff56e0e206",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#79cfda"
+        },
+        {
+          "name": "safetyPolymer",
+          "label": "Safety-colored polymer",
+          "default": "#f0b13c"
+        },
+        {
+          "name": "engineeringPolymer",
+          "label": "Engineering polymer",
+          "default": "#657f84"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "safetyPolymer": "#f3bd2f",
+          "engineeringPolymer": "#263a36"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "safetyPolymer": "#ffbf24",
+          "engineeringPolymer": "#222d32"
+        }
+      },
+      "triangles": 252,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-charger-status-display-post.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/charger-status-display-post.png"
+    },
+    {
+      "id": "charging-island-plinth",
+      "sourceSha256": "3fb00c2e098d55a478d07f04ad34f756ca5e6d2f06e515e385bae2e52315ed8e",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 224,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-charging-island-plinth.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/charging-island-plinth.png"
+    },
+    {
+      "id": "charging-payment-terminal",
+      "sourceSha256": "f629548870dc86e2a262243985a56455d5c753bae1a6ad0866358afc1b3c2a47",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#79cfda"
+        },
+        {
+          "name": "engineeringPolymer",
+          "label": "Engineering polymer",
+          "default": "#657f84"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "engineeringPolymer": "#263a36",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "engineeringPolymer": "#222d32",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 128,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-charging-payment-terminal.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/charging-payment-terminal.png"
+    },
+    {
+      "id": "charging-station-direction-sign",
+      "sourceSha256": "dad0f9fc2bfcc355b97ed8598da680230f23787d339995171e5015b5b98907ee",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "safetyPolymer",
+          "label": "Safety-colored polymer",
+          "default": "#f0b13c"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "safetyPolymer": "#f3bd2f",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "safetyPolymer": "#ffbf24",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 148,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-charging-station-direction-sign.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/charging-station-direction-sign.png"
+    },
+    {
+      "id": "coiled-charging-cable-reel",
+      "sourceSha256": "a53f278fb1507da83fc4e6078a4441adfeb2bfe1522d8ab9048aed3cdb5d6b91",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "cableElastomer",
+          "label": "Cable elastomer",
+          "default": "#1b2427"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "cableElastomer": "#1a2522",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "cableElastomer": "#111719",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 276,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-coiled-charging-cable-reel.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/coiled-charging-cable-reel.png"
+    },
+    {
+      "id": "compact-dc-fast-charger",
+      "sourceSha256": "8a7cf0bca7503dd7e9b9daa6cfefedf5d0a08bf90d956749171078bc0a6cc997",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#79cfda"
+        },
+        {
+          "name": "cableElastomer",
+          "label": "Cable elastomer",
+          "default": "#1b2427"
+        },
+        {
+          "name": "safetyPolymer",
+          "label": "Safety-colored polymer",
+          "default": "#f0b13c"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "cableElastomer": "#1a2522",
+          "safetyPolymer": "#f3bd2f"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "cableElastomer": "#111719",
+          "safetyPolymer": "#ffbf24"
+        }
+      },
+      "triangles": 492,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-compact-dc-fast-charger.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/compact-dc-fast-charger.png"
+    },
+    {
+      "id": "curbside-ac-charger-post",
+      "sourceSha256": "7d6babc5f4d9704376352671343bed17f8eb0455b0adc6ae386b5fd16135cb97",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#79cfda"
+        },
+        {
+          "name": "cableElastomer",
+          "label": "Cable elastomer",
+          "default": "#1b2427"
+        },
+        {
+          "name": "safetyPolymer",
+          "label": "Safety-colored polymer",
+          "default": "#f0b13c"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "cableElastomer": "#1a2522",
+          "safetyPolymer": "#f3bd2f"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "cableElastomer": "#111719",
+          "safetyPolymer": "#ffbf24"
+        }
+      },
+      "triangles": 340,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-curbside-ac-charger-post.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/curbside-ac-charger-post.png"
+    },
+    {
+      "id": "curbside-lamp-charger",
+      "sourceSha256": "16a099eed3c75acbb51f0b1b0abec5b73e4b54ccc5db213d86fb09fb878459af",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#79cfda"
+        },
+        {
+          "name": "engineeringPolymer",
+          "label": "Engineering polymer",
+          "default": "#657f84"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "engineeringPolymer": "#263a36",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "engineeringPolymer": "#222d32",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 212,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-curbside-lamp-charger.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/curbside-lamp-charger.png"
+    },
+    {
+      "id": "destination-charging-pedestal",
+      "sourceSha256": "61b3dc7ee0ff40f3d3681b801c01f27e43f99042e0b4314366650d01aaa5f9e4",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#79cfda"
+        },
+        {
+          "name": "cableElastomer",
+          "label": "Cable elastomer",
+          "default": "#1b2427"
+        },
+        {
+          "name": "safetyPolymer",
+          "label": "Safety-colored polymer",
+          "default": "#f0b13c"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "cableElastomer": "#1a2522",
+          "safetyPolymer": "#f3bd2f"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "cableElastomer": "#111719",
+          "safetyPolymer": "#ffbf24"
+        }
+      },
+      "triangles": 340,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-destination-charging-pedestal.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/destination-charging-pedestal.png"
+    },
+    {
+      "id": "dual-connector-dc-dispenser",
+      "sourceSha256": "498ba514135a70a4f87e05857d45f60403c84b956f092ef592719602fda111ce",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#79cfda"
+        },
+        {
+          "name": "cableElastomer",
+          "label": "Cable elastomer",
+          "default": "#1b2427"
+        },
+        {
+          "name": "safetyPolymer",
+          "label": "Safety-colored polymer",
+          "default": "#f0b13c"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "cableElastomer": "#1a2522",
+          "safetyPolymer": "#f3bd2f"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "cableElastomer": "#111719",
+          "safetyPolymer": "#ffbf24"
+        }
+      },
+      "triangles": 364,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-dual-connector-dc-dispenser.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/dual-connector-dc-dispenser.png"
+    },
+    {
+      "id": "dual-outlet-wallbox",
+      "sourceSha256": "e54aeef90c6ab03de3f7b6f8da7565609388ef7a70f9cae50259c04b6bab42b3",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#79cfda"
+        },
+        {
+          "name": "safetyPolymer",
+          "label": "Safety-colored polymer",
+          "default": "#f0b13c"
+        },
+        {
+          "name": "engineeringPolymer",
+          "label": "Engineering polymer",
+          "default": "#657f84"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "safetyPolymer": "#f3bd2f",
+          "engineeringPolymer": "#263a36"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "safetyPolymer": "#ffbf24",
+          "engineeringPolymer": "#222d32"
+        }
+      },
+      "triangles": 252,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-dual-outlet-wallbox.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/dual-outlet-wallbox.png"
+    },
+    {
+      "id": "dual-port-ac-pedestal",
+      "sourceSha256": "8a467dc5a46a978c0ea2f1d2e6da269e75c00169fb10b3f2dabaa079a8d2626e",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#79cfda"
+        },
+        {
+          "name": "safetyPolymer",
+          "label": "Safety-colored polymer",
+          "default": "#f0b13c"
+        },
+        {
+          "name": "engineeringPolymer",
+          "label": "Engineering polymer",
+          "default": "#657f84"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "safetyPolymer": "#f3bd2f",
+          "engineeringPolymer": "#263a36"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "safetyPolymer": "#ffbf24",
+          "engineeringPolymer": "#222d32"
+        }
+      },
+      "triangles": 352,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-dual-port-ac-pedestal.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/dual-port-ac-pedestal.png"
+    },
+    {
+      "id": "ev-charger-protection-bollard",
+      "sourceSha256": "5bb9bed4e1bfad5d80594d7810eca61ef89c53e6e511c156d257142930669991",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 308,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-ev-charger-protection-bollard.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/ev-charger-protection-bollard.png"
+    },
+    {
+      "id": "ev-emergency-stop-station",
+      "sourceSha256": "73092e583402fa0d4dbab5277b9636b6d06ddf2993f330483457e9f1a3c787ac",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "safetyPolymer",
+          "label": "Safety-colored polymer",
+          "default": "#f0b13c"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "safetyPolymer": "#f3bd2f",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "safetyPolymer": "#ffbf24",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 136,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-ev-emergency-stop-station.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/ev-emergency-stop-station.png"
+    },
+    {
+      "id": "ev-metering-pedestal",
+      "sourceSha256": "c8fb63e8a77f2c071345ebd25b5a22abaf03550c4fd87673e8e052b4ac3c13a7",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#79cfda"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 148,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-ev-metering-pedestal.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/ev-metering-pedestal.png"
+    },
+    {
+      "id": "ev-parking-bay-sign",
+      "sourceSha256": "c2cae57dd63d83d8962e04fe2f0a70b53c1db903bdf6e3a9542a6e0468e13e2b",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "safetyPolymer",
+          "label": "Safety-colored polymer",
+          "default": "#f0b13c"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "safetyPolymer": "#f3bd2f",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "safetyPolymer": "#ffbf24",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 92,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-ev-parking-bay-sign.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/ev-parking-bay-sign.png"
+    },
+    {
+      "id": "ev-service-disconnect-cabinet",
+      "sourceSha256": "a2a6c7f11cba9242cc381966816648da76c3ca23ec8aea3f35f09c21cb9fb214",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#79cfda"
+        },
+        {
+          "name": "safetyPolymer",
+          "label": "Safety-colored polymer",
+          "default": "#f0b13c"
+        },
+        {
+          "name": "engineeringPolymer",
+          "label": "Engineering polymer",
+          "default": "#657f84"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "safetyPolymer": "#f3bd2f",
+          "engineeringPolymer": "#263a36"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "safetyPolymer": "#ffbf24",
+          "engineeringPolymer": "#222d32"
+        }
+      },
+      "triangles": 300,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-ev-service-disconnect-cabinet.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/ev-service-disconnect-cabinet.png"
+    },
+    {
+      "id": "ev-site-distribution-panel",
+      "sourceSha256": "cee81fe14b2be28dde95fb6380718761e39e748c3b021eaccc73ec8084848885",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#79cfda"
+        },
+        {
+          "name": "safetyPolymer",
+          "label": "Safety-colored polymer",
+          "default": "#f0b13c"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "safetyPolymer": "#f3bd2f",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "safetyPolymer": "#ffbf24",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 344,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-ev-site-distribution-panel.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/ev-site-distribution-panel.png"
+    },
+    {
+      "id": "fleet-charging-canopy",
+      "sourceSha256": "f549654bac88e4cce8506d41d92fa207b549dd16c86648bc493a6865b0e39464",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "cableElastomer",
+          "label": "Cable elastomer",
+          "default": "#1b2427"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "cableElastomer": "#1a2522",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "cableElastomer": "#111719",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 388,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-fleet-charging-canopy.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/fleet-charging-canopy.png"
+    },
+    {
+      "id": "fleet-depot-dc-dispenser",
+      "sourceSha256": "5fe86f83e39627c658f933a030b946cb1dea7212dd740bcf244909cfff6121b7",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#79cfda"
+        },
+        {
+          "name": "cableElastomer",
+          "label": "Cable elastomer",
+          "default": "#1b2427"
+        },
+        {
+          "name": "safetyPolymer",
+          "label": "Safety-colored polymer",
+          "default": "#f0b13c"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "cableElastomer": "#1a2522",
+          "safetyPolymer": "#f3bd2f"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "cableElastomer": "#111719",
+          "safetyPolymer": "#ffbf24"
+        }
+      },
+      "triangles": 364,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-fleet-depot-dc-dispenser.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/fleet-depot-dc-dispenser.png"
+    },
+    {
+      "id": "high-power-charge-dispenser",
+      "sourceSha256": "ac819ef56edb43bcea64a9c840bdf8dbe5a6926b56f25f35becce35aad0d5e2b",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#79cfda"
+        },
+        {
+          "name": "cableElastomer",
+          "label": "Cable elastomer",
+          "default": "#1b2427"
+        },
+        {
+          "name": "safetyPolymer",
+          "label": "Safety-colored polymer",
+          "default": "#f0b13c"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "cableElastomer": "#1a2522",
+          "safetyPolymer": "#f3bd2f"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "cableElastomer": "#111719",
+          "safetyPolymer": "#ffbf24"
+        }
+      },
+      "triangles": 376,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-high-power-charge-dispenser.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/high-power-charge-dispenser.png"
+    },
+    {
+      "id": "home-ac-wallbox",
+      "sourceSha256": "ec4209305e5d93ba510361c403ec4892d9c9bd32043550689d52930706765f8d",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#79cfda"
+        },
+        {
+          "name": "safetyPolymer",
+          "label": "Safety-colored polymer",
+          "default": "#f0b13c"
+        },
+        {
+          "name": "engineeringPolymer",
+          "label": "Engineering polymer",
+          "default": "#657f84"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "safetyPolymer": "#f3bd2f",
+          "engineeringPolymer": "#263a36"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "safetyPolymer": "#ffbf24",
+          "engineeringPolymer": "#222d32"
+        }
+      },
+      "triangles": 208,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-home-ac-wallbox.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/home-ac-wallbox.png"
+    },
+    {
+      "id": "j1772-ac-connector",
+      "sourceSha256": "a237c71807f37aa5c9c3e0ddef375bbd4af553794c37ca2872f19253a179f6a6",
+      "params": [
+        {
+          "name": "engineeringPolymer",
+          "label": "Engineering polymer",
+          "default": "#657f84"
+        },
+        {
+          "name": "cableElastomer",
+          "label": "Cable elastomer",
+          "default": "#1b2427"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "engineeringPolymer": "#263a36",
+          "cableElastomer": "#1a2522"
+        },
+        "nightService": {
+          "engineeringPolymer": "#222d32",
+          "cableElastomer": "#111719"
+        }
+      },
+      "triangles": 168,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-j1772-ac-connector.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/j1772-ac-connector.png"
+    },
+    {
+      "id": "liquid-cooled-charging-cable",
+      "sourceSha256": "62f69e1c2409f6af28ca96a1b12c8b0239a1a43ab3d03abf82c21fae741f8451",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "cableElastomer",
+          "label": "Cable elastomer",
+          "default": "#1b2427"
+        },
+        {
+          "name": "engineeringPolymer",
+          "label": "Engineering polymer",
+          "default": "#657f84"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "cableElastomer": "#1a2522",
+          "engineeringPolymer": "#263a36"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "cableElastomer": "#111719",
+          "engineeringPolymer": "#222d32"
+        }
+      },
+      "triangles": 376,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-liquid-cooled-charging-cable.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/liquid-cooled-charging-cable.png"
+    },
+    {
+      "id": "mobile-fast-charge-cart",
+      "sourceSha256": "bd45d11c537cfab8b99002db6d40d62c74c74ad8b7b74e5afc411747cc54600d",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#79cfda"
+        },
+        {
+          "name": "cableElastomer",
+          "label": "Cable elastomer",
+          "default": "#1b2427"
+        },
+        {
+          "name": "safetyPolymer",
+          "label": "Safety-colored polymer",
+          "default": "#f0b13c"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "cableElastomer": "#1a2522",
+          "safetyPolymer": "#f3bd2f"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "cableElastomer": "#111719",
+          "safetyPolymer": "#ffbf24"
+        }
+      },
+      "triangles": 384,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-mobile-fast-charge-cart.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/mobile-fast-charge-cart.png"
+    },
+    {
+      "id": "modular-charger-power-stack",
+      "sourceSha256": "31edbf299fe2e6ea2943c8d7b36ae182a611e23cb3d97a60a8db0c750874d282",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "engineeringPolymer",
+          "label": "Engineering polymer",
+          "default": "#657f84"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "engineeringPolymer": "#263a36",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "engineeringPolymer": "#222d32",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 156,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-modular-charger-power-stack.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/modular-charger-power-stack.png"
+    },
+    {
+      "id": "nacs-connector",
+      "sourceSha256": "0edc7fa342a25a3137bc5227a5a0216f5514035320884e92b3dca4e46694f629",
+      "params": [
+        {
+          "name": "engineeringPolymer",
+          "label": "Engineering polymer",
+          "default": "#657f84"
+        },
+        {
+          "name": "cableElastomer",
+          "label": "Cable elastomer",
+          "default": "#1b2427"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "engineeringPolymer": "#263a36",
+          "cableElastomer": "#1a2522"
+        },
+        "nightService": {
+          "engineeringPolymer": "#222d32",
+          "cableElastomer": "#111719"
+        }
+      },
+      "triangles": 176,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-nacs-connector.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/nacs-connector.png"
+    },
+    {
+      "id": "outdoor-charger-switchboard",
+      "sourceSha256": "7edf153c629565fd2efb1f1e045712df6bea49b533477c6fc5c99a164b4cc064",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#79cfda"
+        },
+        {
+          "name": "safetyPolymer",
+          "label": "Safety-colored polymer",
+          "default": "#f0b13c"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "safetyPolymer": "#f3bd2f",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "safetyPolymer": "#ffbf24",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 344,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-outdoor-charger-switchboard.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/outdoor-charger-switchboard.png"
+    },
+    {
+      "id": "overhead-cable-balance-arm",
+      "sourceSha256": "e915572787cd3b9ab598ee908236dc45094cd729a2a62d73487367c855889bfc",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "cableElastomer",
+          "label": "Cable elastomer",
+          "default": "#1b2427"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "cableElastomer": "#1a2522",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "cableElastomer": "#111719",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 288,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-overhead-cable-balance-arm.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/overhead-cable-balance-arm.png"
+    },
+    {
+      "id": "overhead-cable-management-boom",
+      "sourceSha256": "de68bf2b8c433a3441994808df65743af63d23275e2e998d36a90559a19f878f",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "cableElastomer",
+          "label": "Cable elastomer",
+          "default": "#1b2427"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "cableElastomer": "#1a2522",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "cableElastomer": "#111719",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 244,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-overhead-cable-management-boom.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/overhead-cable-management-boom.png"
+    },
+    {
+      "id": "overhead-pantograph-head",
+      "sourceSha256": "22ac97dd4534cc502f38c028d007f8b6e9a33da3af870acc758ceaacbd9baf55",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "engineeringPolymer",
+          "label": "Engineering polymer",
+          "default": "#657f84"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "engineeringPolymer": "#263a36",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "engineeringPolymer": "#222d32",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 180,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-overhead-pantograph-head.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/overhead-pantograph-head.png"
+    },
+    {
+      "id": "parking-cable-protection-ramp",
+      "sourceSha256": "a8da51f1170bbe77c0aa17309e60fb343104e53b5f7a8655d3b4a907db809bc0",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 160,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-parking-cable-protection-ramp.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/parking-cable-protection-ramp.png"
+    },
+    {
+      "id": "parking-wheel-stop",
+      "sourceSha256": "3be2bb68e90b1373549f487576bda7f5828a8d36a5144ced61fddceca26915e3",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "engineeringPolymer",
+          "label": "Engineering polymer",
+          "default": "#657f84"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "engineeringPolymer": "#263a36",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "engineeringPolymer": "#222d32",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 136,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-parking-wheel-stop.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/parking-wheel-stop.png"
+    },
+    {
+      "id": "remote-charger-power-cabinet",
+      "sourceSha256": "4506e10a7c48b09f4f9bbc03c89f8770c20c178e4ce883ad3a3785af694a10e2",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 176,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-remote-charger-power-cabinet.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/remote-charger-power-cabinet.png"
+    },
+    {
+      "id": "rfid-access-reader-pedestal",
+      "sourceSha256": "6451c365b43c2d3b30e670b8783789ed70b8054c6edfae6a3590f060d2ac0221",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#79cfda"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 104,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-rfid-access-reader-pedestal.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/rfid-access-reader-pedestal.png"
+    },
+    {
+      "id": "site-energy-management-controller",
+      "sourceSha256": "2861706f6da1a1ccd2acb06c5366a0bf9943d34ea50ac0569442622ebd64dfb6",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#79cfda"
+        },
+        {
+          "name": "safetyPolymer",
+          "label": "Safety-colored polymer",
+          "default": "#f0b13c"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "safetyPolymer": "#f3bd2f",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "safetyPolymer": "#ffbf24",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 240,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-site-energy-management-controller.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/site-energy-management-controller.png"
+    },
+    {
+      "id": "solar-ev-carport",
+      "sourceSha256": "797eb3052c339ff39fc73b802fbe82b1454bf3636d897281264a5ec9e26c867f",
+      "params": [
+        {
+          "name": "pvLaminate",
+          "label": "Photovoltaic laminate",
+          "default": "#1c4562"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "pvLaminate": "#173d59",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "pvLaminate": "#102d45",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 276,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-solar-ev-carport.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/solar-ev-carport.png"
+    },
+    {
+      "id": "streetlight-charger-arm",
+      "sourceSha256": "ee9de8fe30a0848e6a3643417a104115b1295cee5fc6e07200c1e01dde85e714",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#79cfda"
+        },
+        {
+          "name": "engineeringPolymer",
+          "label": "Engineering polymer",
+          "default": "#657f84"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "engineeringPolymer": "#263a36",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "engineeringPolymer": "#222d32",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 212,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-streetlight-charger-arm.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/streetlight-charger-arm.png"
+    },
+    {
+      "id": "vehicle-to-grid-power-cabinet",
+      "sourceSha256": "f0e831f8316cf59195c934814fd8e3f6dd7b247ad8d900c124e51b7699f03547",
+      "params": [
+        {
+          "name": "powderCoat",
+          "label": "Powder-coated metal",
+          "default": "#397f90"
+        },
+        {
+          "name": "displayGlass",
+          "label": "Display glass",
+          "default": "#79cfda"
+        },
+        {
+          "name": "safetyPolymer",
+          "label": "Safety-colored polymer",
+          "default": "#f0b13c"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "powderCoat": "#28765f",
+          "displayGlass": "#46b8c4",
+          "safetyPolymer": "#f3bd2f",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "powderCoat": "#3f5059",
+          "displayGlass": "#11bfd0",
+          "safetyPolymer": "#ffbf24",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 244,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-vehicle-to-grid-power-cabinet.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/vehicle-to-grid-power-cabinet.png"
+    },
+    {
+      "id": "wall-mounted-connector-holster",
+      "sourceSha256": "1eb35f86cf3b200b36bb00b2544271e4d1aeb14a0deaf602d00a8d7f98a77891",
+      "params": [
+        {
+          "name": "engineeringPolymer",
+          "label": "Engineering polymer",
+          "default": "#657f84"
+        },
+        {
+          "name": "stainlessSteel",
+          "label": "Stainless steel",
+          "default": "#b5c0c2"
+        }
+      ],
+      "presets": {
+        "fleetReady": {
+          "engineeringPolymer": "#263a36",
+          "stainlessSteel": "#c2c9c8"
+        },
+        "nightService": {
+          "engineeringPolymer": "#222d32",
+          "stainlessSteel": "#c8cecd"
+        }
+      },
+      "triangles": 104,
+      "triangleBudget": 2400,
+      "preview": "/assets/ev-charging-infrastructure-wall-mounted-connector-holster.png",
+      "previewFile": "catalog/kits/ev-charging-infrastructure/previews/wall-mounted-connector-holster.png"
+    }
+  ]
+}

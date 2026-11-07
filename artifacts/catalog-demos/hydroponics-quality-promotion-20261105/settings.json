@@ -1,0 +1,29 @@
+{
+  "date": "2026-11-05",
+  "branch": "feat/catalog-2000",
+  "prePromotionHead": "5cddb841c",
+  "kit": "hydroponics",
+  "existingAssets": 52,
+  "newAssetIds": 0,
+  "baselineQuality": "1296/2390 (54.23% pass; 45.77% thin)",
+  "materialControls": 152,
+  "materialControlsPerAsset": [2, 4],
+  "presets": ["weathered", "highVisibility"],
+  "presetEntries": 104,
+  "geometryEnhancements": [
+    "Profiled lofts for the existing cylinder forms",
+    "Curved polyethylene roof for greenhouse-tunnel-bay",
+    "Open guard rails and swept rotors for both greenhouse fans",
+    "Cylindrical motor, coupling guard and pump volute for circulation-pump-skid"
+  ],
+  "sourcePromotion": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/hydroponics-quality-promotion-20261105/promote_hydroponics.py",
+  "previewRender": "xargs -a artifacts/catalog-demos/hydroponics-quality-promotion-20261105/preview-asset-ids.txt npx tsx scripts/renderCatalogPreviews.ts",
+  "indexBuild": "npx tsx scripts/buildAssetCatalog.ts",
+  "qualityGate": "python3 scripts/checkCatalogQuality.py --kit hydroponics",
+  "eslint": "npx eslint catalog/kits/hydroponics/",
+  "catalogIntegration": "npx vitest run tests/integration/catalog/",
+  "localPages": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-hydroponics-quality-20261105; PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/hydroponics-quality-promotion-20261105/verify_hydroponics_pages.py /tmp/kernelcad-hydroponics-quality-20261105",
+  "presetRender": "npx tsx artifacts/catalog-demos/hydroponics-quality-promotion-20261105/render_hydroponics_variant.ts",
+  "demo": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/hydroponics-quality-promotion-20261105/capture_hydroponics_demo.py; PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/hydroponics-quality-promotion-20261105/inspect_hydroponics_demo.py",
+  "claimBoundary": "Local source, index, preview, static-page and software-render validation only. No deployment, crop yield, process performance, sensor calibration, equipment rating, physical fit or physical acceptance is claimed."
+}

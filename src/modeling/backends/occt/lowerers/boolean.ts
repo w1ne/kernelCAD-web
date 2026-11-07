@@ -23,7 +23,7 @@ import type { EdgeHistoryMap, HistoryMap } from '../../../../kernel/naming/evolu
  *  merged face/edge lineage. `replicad.cast` downcasts the raw TopoDS_Shape to
  *  the correct OCCT subtype (Solid or Compound) and wraps it in the matching
  *  Replicad class; boolean ops always yield a 3D solid or compound. */
-function mergeEdges(
+export function mergeEdges(
   inputMaps: readonly (EdgeHistoryMap | undefined)[],
   result: BooleanHistoryResult,
 ): EdgeHistoryMap {
@@ -41,7 +41,7 @@ function mergeEdges(
   return out;
 }
 
-function wrapBooleanResult(
+export function wrapBooleanResult(
   result: BooleanHistoryResult,
   faceMap: HistoryMap,
   edgeMap: EdgeHistoryMap,

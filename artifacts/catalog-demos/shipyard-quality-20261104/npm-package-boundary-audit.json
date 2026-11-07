@@ -1,0 +1,29 @@
+{
+  "packageName": "kernelcad",
+  "packageVersion": "0.17.4",
+  "shipyardSources": 70,
+  "shipyardPreviews": 70,
+  "shipyardReadme": true,
+  "shipyardKitMetadata": true,
+  "noCommercialImplementationPathsInPackage": true,
+  "noCommercialLogicTermsInNewAssets": true,
+  "allowedTechnicalVocabulary": [
+    {
+      "term": "checkout",
+      "context": "electrical equipment test checkout"
+    },
+    {
+      "term": "checkout",
+      "context": "electrical equipment test checkout"
+    }
+  ],
+  "builtJavaScriptFilesScanned": 2,
+  "builtCommercialWorkflowTerms": [],
+  "noCommercialWorkflowTermsInBuiltJavaScript": true,
+  "packageExportsUnchanged": true,
+  "noPackageOrDeploymentWorkflowChanges": true,
+  "unexpectedProtectedPaths": [],
+  "forbiddenPackagePaths": [],
+  "commercialLogicTerms": [],
+  "passed": true
+}

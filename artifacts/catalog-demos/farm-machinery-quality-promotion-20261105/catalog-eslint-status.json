@@ -1,0 +1,6 @@
+{
+  "command": "npx eslint catalog/kits/farm-machinery/",
+  "status": "pass",
+  "exitCode": 0,
+  "evidence": "checks/eslint.log"
+}

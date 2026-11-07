@@ -1,0 +1,38 @@
+
+ RUN  v4.0.18 /home/andrii/worktrees/kernelCAD-web/catalog-2000
+
+ ✓ tests/integration/catalog/assetModule.test.ts (4 tests) 682ms
+ ✓ tests/integration/catalog/assetCatalogTools.test.ts (5 tests) 309ms
+ ✓ tests/integration/catalog/catalogStudioLink.test.ts (4 tests) 162271ms
+     ✓ every committed catalog asset opens with exactly the knobs its index row lists  161063ms
+     ✓ refuses refs that do not name a catalog row, and sources that no longer match the index  334ms
+ ❯ tests/integration/catalog/catalogIndex.test.ts (2 tests | 1 failed) 238696ms
+     × every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh 238254ms
+     ✓ every characters-kit asset ships a GLB rig with a pivot per joint 77ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/catalog/catalogIndex.test.ts > asset catalog > every catalog source builds, exports inside its triangle budget on one material, and the committed index is fresh
+AssertionError: honey-jar: expected 2 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ tests/integration/catalog/catalogIndex.test.ts:19:47
+     17|     for (const asset of built.assets) {
+     18|       expect(asset.stats.triangles, asset.id).toBeLessThanOrEqual(asse…
+     19|       expect(asset.stats.materials, asset.id).toBe(1);
+       |                                               ^
+     20|       expect(asset.stats.minUpM, asset.id).toBeCloseTo(asset.origin ==…
+     21|       expect(asset.preview, `${asset.id} needs a rendered homepage pre…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 14 passed (15)
+   Start at  20:21:04
+   Duration  243.04s (transform 13.93s, setup 367ms, import 18.61s, tests 401.96s, environment 1ms)

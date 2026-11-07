@@ -1,0 +1,5 @@
+{
+  "command": "npx tsx artifacts/catalog-demos/mining-quality-promotion-20261105/render_mining_variant.ts",
+  "status": "PASS",
+  "preset": "continuous-miner.highVisibility"
+}

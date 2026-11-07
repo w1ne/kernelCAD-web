@@ -1,0 +1,5 @@
+wrote /home/andrii/worktrees/kernelCAD-web/catalog-2000/catalog/index.json
+
+real	4m52.486s
+user	5m15.086s
+sys	0m7.978s

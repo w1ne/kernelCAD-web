@@ -1,0 +1,49 @@
+{
+  "captureMethod": "Chrome DevTools screencast from the user's already-running Chrome/CDP session",
+  "browserLaunchedByTask": false,
+  "page": "local amusement-park-demo.html",
+  "viewport": [1440, 900],
+  "output": "amusement-park-demo.mp4",
+  "video": {
+    "durationSeconds": 19.458333,
+    "codec": "H.264/AVC",
+    "pixelFormat": "yuv420p",
+    "frameRate": 24,
+    "sizeBytes": 328055,
+    "sha256": "6f34d96c0c18651f81692b6a4e738f85f1a0e06899d57396d0c406b17171d763"
+  },
+  "workflowResult": {
+    "assetsInGallery": 70,
+    "visibleAfterReset": 70,
+    "zoneFilters": 5,
+    "steps": [
+      {
+        "stage": "default observation wheel",
+        "details": "620 triangles; one material; CC0-1.0; budget 1800; bounds 1780 × 5539 × 3635 mm"
+      },
+      {
+        "stage": "generated scale-1.25 wheel mesh",
+        "details": "620 triangles; one material; CC0-1.0; budget 1800; bounds 2225 × 6923 × 4544 mm"
+      },
+      {
+        "stage": "midway game",
+        "asset": "Ring toss game counter"
+      },
+      {
+        "stage": "concession cart",
+        "asset": "Cotton candy cart"
+      }
+    ]
+  },
+  "visualInspection": {
+    "sampledAtSeconds": [5, 8, 11, 17],
+    "checked": [
+      "gallery layout and local-only caption",
+      "default and scale-1.25 parameter states and bounds",
+      "midway game preview",
+      "cotton-candy cart preview"
+    ],
+    "result": "readable, all selected assets and parameter states visible"
+  },
+  "claimBoundary": "Local catalog preview and software mesh validation only; not deployed and no hardware, ride-safety, or operational acceptance claim."
+}

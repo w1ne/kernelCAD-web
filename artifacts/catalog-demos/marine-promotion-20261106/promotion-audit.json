@@ -1,0 +1,998 @@
+{
+  "kit": "marine",
+  "assets": [
+    {
+      "id": "anchor-chain",
+      "title": "Anchor chain",
+      "components": 6,
+      "materials": [
+        "galvanizedSteel",
+        "stainlessSteel"
+      ],
+      "assignments": {
+        "link-1": "galvanizedSteel",
+        "link-2": "galvanizedSteel",
+        "link-3": "galvanizedSteel",
+        "link-4": "galvanizedSteel",
+        "link-5": "galvanizedSteel",
+        "terminal-shackle": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "Articulated chain links lead to a terminal shackle.",
+      "originalColor": "#53595d"
+    },
+    {
+      "id": "anchor-winch",
+      "title": "Anchor winch",
+      "components": 8,
+      "materials": [
+        "paintedSteel",
+        "stainlessSteel",
+        "rubber"
+      ],
+      "assignments": {
+        "base": "paintedSteel",
+        "cheek-left": "paintedSteel",
+        "cheek-right": "paintedSteel",
+        "drum": "paintedSteel",
+        "drum-flange-left": "stainlessSteel",
+        "drum-flange-right": "stainlessSteel",
+        "crank-arm": "paintedSteel",
+        "crank-handle": "rubber"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "Twin cheek plates hold a winding drum and hand crank.",
+      "originalColor": "#4e5458"
+    },
+    {
+      "id": "anchor",
+      "title": "Marine anchor",
+      "components": 6,
+      "materials": [
+        "galvanizedSteel",
+        "stainlessSteel"
+      ],
+      "assignments": {
+        "shank": "galvanizedSteel",
+        "stock": "galvanizedSteel",
+        "crown": "galvanizedSteel",
+        "fluke-left": "galvanizedSteel",
+        "fluke-right": "galvanizedSteel",
+        "ring": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A long shank, cross-stock, ring, and splayed flukes form the holding profile.",
+      "originalColor": "#4a5054"
+    },
+    {
+      "id": "bait-bucket",
+      "title": "Bait bucket",
+      "components": 7,
+      "materials": [
+        "marinePolymer",
+        "stainlessSteel",
+        "rubber"
+      ],
+      "assignments": {
+        "tub": "marinePolymer",
+        "base-band": "marinePolymer",
+        "rim": "stainlessSteel",
+        "lid": "marinePolymer",
+        "handle-left": "stainlessSteel",
+        "handle-right": "stainlessSteel",
+        "handle-grip": "rubber"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A tapered bait tub has a fitted lid, rim, wire handles, and a grip.",
+      "originalColor": "#53606a"
+    },
+    {
+      "id": "binnacle-compass",
+      "title": "Binnacle compass",
+      "components": 7,
+      "materials": [
+        "timber",
+        "brass",
+        "marineGlass",
+        "stainlessSteel"
+      ],
+      "assignments": {
+        "base": "timber",
+        "pedestal": "timber",
+        "shoulder": "brass",
+        "compass-bowl": "brass",
+        "hood": "marineGlass",
+        "mount-left": "stainlessSteel",
+        "mount-right": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A raised compass bowl and hood sit above a tapered pedestal and mounting feet.",
+      "originalColor": "#6b5940"
+    },
+    {
+      "id": "boat-cleat",
+      "title": "Boat cleat",
+      "components": 6,
+      "materials": [
+        "stainlessSteel",
+        "brass"
+      ],
+      "assignments": {
+        "base-plate": "stainlessSteel",
+        "bridge": "stainlessSteel",
+        "horn-left": "stainlessSteel",
+        "horn-right": "stainlessSteel",
+        "mount-left": "brass",
+        "mount-right": "brass"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "Two raised horns bridge a deck plate with paired mounting feet.",
+      "originalColor": "#777d80"
+    },
+    {
+      "id": "boat-fender",
+      "title": "Boat fender",
+      "components": 5,
+      "materials": [
+        "rubber",
+        "stainlessSteel"
+      ],
+      "assignments": {
+        "body": "rubber",
+        "top-eye": "stainlessSteel",
+        "bottom-eye": "stainlessSteel",
+        "cap-top": "rubber",
+        "cap-bottom": "rubber"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "An inflated cylindrical fender has end caps and reinforced eye loops.",
+      "originalColor": "#53616a"
+    },
+    {
+      "id": "boat-hook",
+      "title": "Boat hook",
+      "components": 5,
+      "materials": [
+        "timber",
+        "stainlessSteel",
+        "safetyAmber"
+      ],
+      "assignments": {
+        "shaft": "timber",
+        "collar": "stainlessSteel",
+        "hook-spine": "stainlessSteel",
+        "hook-tip": "safetyAmber",
+        "crossbar": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A long pole ends in a guarded hook with a crossbar and ferrule.",
+      "originalColor": "#6b6250"
+    },
+    {
+      "id": "boat-oar",
+      "title": "Boat oar",
+      "components": 4,
+      "materials": [
+        "timber",
+        "rubber",
+        "stainlessSteel"
+      ],
+      "assignments": {
+        "shaft": "timber",
+        "blade": "timber",
+        "grip": "rubber",
+        "collar": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A tapered shaft connects a broad blade, hand grip, and collar.",
+      "originalColor": "#805d3d"
+    },
+    {
+      "id": "boat-paddle",
+      "title": "Boat paddle",
+      "components": 4,
+      "materials": [
+        "timber",
+        "stainlessSteel",
+        "rubber"
+      ],
+      "assignments": {
+        "shaft": "timber",
+        "blade": "timber",
+        "blade-neck": "stainlessSteel",
+        "t-grip": "rubber"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A long shaft carries a wide blade, reinforced neck, and T-grip.",
+      "originalColor": "#75583d"
+    },
+    {
+      "id": "boat-trailer",
+      "title": "Boat trailer",
+      "components": 11,
+      "materials": [
+        "paintedSteel",
+        "galvanizedSteel",
+        "rubber",
+        "stainlessSteel"
+      ],
+      "assignments": {
+        "main-beam": "paintedSteel",
+        "axle": "galvanizedSteel",
+        "wheel-left": "rubber",
+        "wheel-right": "rubber",
+        "bunk-left": "paintedSteel",
+        "bunk-right": "paintedSteel",
+        "winch-post": "paintedSteel",
+        "winch-drum": "stainlessSteel",
+        "coupler": "stainlessSteel",
+        "jack-post": "paintedSteel",
+        "jack-foot": "paintedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A road trailer combines a long beam, axle, two wheels, bunks, and winch post.",
+      "originalColor": "#464b4f"
+    },
+    {
+      "id": "cargo-ship",
+      "title": "Cargo ship",
+      "components": 10,
+      "materials": [
+        "paintedHull",
+        "nonskidCoating",
+        "stainlessSteel",
+        "cargoCoating"
+      ],
+      "assignments": {
+        "hull": "paintedHull",
+        "deck": "nonskidCoating",
+        "bridge": "paintedHull",
+        "bridge-top": "stainlessSteel",
+        "container-1": "cargoCoating",
+        "container-2": "cargoCoating",
+        "container-3": "cargoCoating",
+        "container-4": "cargoCoating",
+        "container-5": "cargoCoating",
+        "container-6": "cargoCoating"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A faceted hull carries six container blocks behind a raised bridge.",
+      "originalColor": "#4c5b60"
+    },
+    {
+      "id": "channel-marker-buoy",
+      "title": "Channel marker buoy",
+      "components": 6,
+      "materials": [
+        "safetyVinyl",
+        "safetyAmber",
+        "galvanizedSteel"
+      ],
+      "assignments": {
+        "float": "safetyVinyl",
+        "float-cap": "safetyAmber",
+        "mast": "galvanizedSteel",
+        "daymark": "safetyAmber",
+        "top-ball": "safetyVinyl",
+        "keel-weight": "galvanizedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A weighted float supports a marker mast, daymark, and top ball.",
+      "originalColor": "#df4f39"
+    },
+    {
+      "id": "coiled-mooring-rope",
+      "title": "Coiled mooring rope",
+      "components": 5,
+      "materials": [
+        "ropeFiber",
+        "stainlessSteel"
+      ],
+      "assignments": {
+        "coil-outer": "ropeFiber",
+        "coil-middle": "ropeFiber",
+        "coil-inner": "ropeFiber",
+        "loose-end": "ropeFiber",
+        "eye-splice": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "Three rope turns lead into a loose end and spliced eye.",
+      "originalColor": "#9c8258"
+    },
+    {
+      "id": "crab-trap",
+      "title": "Crab trap",
+      "components": 8,
+      "materials": [
+        "galvanizedSteel",
+        "nylonNetting",
+        "ropeFiber"
+      ],
+      "assignments": {
+        "base-ring": "galvanizedSteel",
+        "top-ring": "galvanizedSteel",
+        "rib-1": "galvanizedSteel",
+        "rib-2": "galvanizedSteel",
+        "rib-3": "galvanizedSteel",
+        "rib-4": "galvanizedSteel",
+        "bait-cage": "nylonNetting",
+        "handle": "ropeFiber"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A ribbed trap frame surrounds a bait cage and lifting handle.",
+      "originalColor": "#7a6547"
+    },
+    {
+      "id": "dock-bollard",
+      "title": "Dock bollard",
+      "components": 5,
+      "materials": [
+        "paintedSteel",
+        "stainlessSteel"
+      ],
+      "assignments": {
+        "foot": "paintedSteel",
+        "column": "stainlessSteel",
+        "cap": "stainlessSteel",
+        "horn-left": "stainlessSteel",
+        "horn-right": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A flared foot and capped column support two opposing mooring horns.",
+      "originalColor": "#4d5357"
+    },
+    {
+      "id": "dock-ladder",
+      "title": "Dock ladder",
+      "components": 7,
+      "materials": [
+        "galvanizedSteel",
+        "stainlessSteel"
+      ],
+      "assignments": {
+        "rail-left": "galvanizedSteel",
+        "rail-right": "galvanizedSteel",
+        "rung-1": "stainlessSteel",
+        "rung-2": "stainlessSteel",
+        "rung-3": "stainlessSteel",
+        "rung-4": "stainlessSteel",
+        "rung-5": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "Two tall side rails carry evenly spaced horizontal rungs.",
+      "originalColor": "#777c7e"
+    },
+    {
+      "id": "dock-piling",
+      "title": "Dock piling",
+      "components": 4,
+      "materials": [
+        "timber",
+        "galvanizedSteel"
+      ],
+      "assignments": {
+        "pile": "timber",
+        "cap": "galvanizedSteel",
+        "collar": "galvanizedSteel",
+        "base-shoe": "galvanizedSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A timber pile has a protective cap, collar, and base shoe.",
+      "originalColor": "#70533a"
+    },
+    {
+      "id": "fish-crate",
+      "title": "Fish crate",
+      "components": 9,
+      "materials": [
+        "timber",
+        "stainlessSteel"
+      ],
+      "assignments": {
+        "base": "timber",
+        "long-side-front": "timber",
+        "long-side-back": "timber",
+        "end-left": "timber",
+        "end-right": "timber",
+        "rim-front": "stainlessSteel",
+        "rim-back": "stainlessSteel",
+        "corner-left": "stainlessSteel",
+        "corner-right": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "An open slatted crate has a solid base, perimeter rim, and corner plates.",
+      "originalColor": "#637057"
+    },
+    {
+      "id": "fishing-boat",
+      "title": "Fishing boat",
+      "components": 8,
+      "materials": [
+        "paintedHull",
+        "nonskidCoating",
+        "marineGlass",
+        "stainlessSteel"
+      ],
+      "assignments": {
+        "hull": "paintedHull",
+        "deck": "nonskidCoating",
+        "wheelhouse": "paintedHull",
+        "front-window": "marineGlass",
+        "roof": "paintedHull",
+        "mast": "paintedHull",
+        "stern-rail": "stainlessSteel",
+        "bow-rail": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A faceted working hull carries a wheelhouse, glazed front, mast, and bow and stern rails.",
+      "originalColor": "#465a62"
+    },
+    {
+      "id": "fishing-net",
+      "title": "Fishing net",
+      "components": 9,
+      "materials": [
+        "ropeFiber",
+        "nylonNetting"
+      ],
+      "assignments": {
+        "top-rope": "ropeFiber",
+        "bottom-rope": "ropeFiber",
+        "side-left": "ropeFiber",
+        "side-right": "ropeFiber",
+        "net-1": "nylonNetting",
+        "net-2": "nylonNetting",
+        "net-3": "nylonNetting",
+        "net-4": "nylonNetting",
+        "net-5": "nylonNetting"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "Crossed net strands hang from reinforced side ropes and top and bottom lines.",
+      "originalColor": "#72654d"
+    },
+    {
+      "id": "inflatable-life-raft",
+      "title": "Inflatable life raft",
+      "components": 7,
+      "materials": [
+        "safetyVinyl",
+        "stainlessSteel",
+        "canvas"
+      ],
+      "assignments": {
+        "floor": "safetyVinyl",
+        "rail-front": "safetyVinyl",
+        "rail-back": "safetyVinyl",
+        "rail-left": "safetyVinyl",
+        "rail-right": "safetyVinyl",
+        "canopy-pole": "stainlessSteel",
+        "canopy": "canvas"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "An inflatable perimeter surrounds a raft floor beneath a raised canopy.",
+      "originalColor": "#d4b24e"
+    },
+    {
+      "id": "life-jacket",
+      "title": "Life jacket",
+      "components": 7,
+      "materials": [
+        "safetyFabric",
+        "safetyFoam",
+        "nylonWebbing",
+        "marineHardware"
+      ],
+      "assignments": {
+        "torso": "safetyFabric",
+        "left-flotation": "safetyFoam",
+        "right-flotation": "safetyFoam",
+        "collar-left": "safetyFabric",
+        "collar-right": "safetyFabric",
+        "waist-strap": "nylonWebbing",
+        "buckle": "marineHardware"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A shaped torso has paired flotation panels, a collar, waist strap, and buckle.",
+      "originalColor": "#e15a38"
+    },
+    {
+      "id": "life-raft-canister",
+      "title": "Life raft canister",
+      "components": 7,
+      "materials": [
+        "paintedFiberglass",
+        "nylonWebbing",
+        "stainlessSteel"
+      ],
+      "assignments": {
+        "shell": "paintedFiberglass",
+        "end-left": "paintedFiberglass",
+        "end-right": "paintedFiberglass",
+        "strap-left": "nylonWebbing",
+        "strap-right": "nylonWebbing",
+        "cradle-left": "stainlessSteel",
+        "cradle-right": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A cylindrical raft canister is retained by two straps in a paired cradle.",
+      "originalColor": "#d6a849"
+    },
+    {
+      "id": "life-ring",
+      "title": "Life ring",
+      "components": 6,
+      "materials": [
+        "safetyFoam",
+        "nylonWebbing",
+        "ropeFiber"
+      ],
+      "assignments": {
+        "ring-body": "safetyFoam",
+        "strap-1": "nylonWebbing",
+        "strap-2": "nylonWebbing",
+        "strap-3": "nylonWebbing",
+        "strap-4": "nylonWebbing",
+        "rope-loop": "ropeFiber"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A buoyant ring is marked by four cross straps and a retrieval loop.",
+      "originalColor": "#d5503e"
+    },
+    {
+      "id": "lobster-pot",
+      "title": "Lobster pot",
+      "components": 9,
+      "materials": [
+        "timber",
+        "nylonNetting",
+        "stainlessSteel"
+      ],
+      "assignments": {
+        "base": "timber",
+        "top": "timber",
+        "post-left-front": "timber",
+        "post-right-front": "timber",
+        "post-left-back": "timber",
+        "post-right-back": "timber",
+        "entry-funnel-left": "nylonNetting",
+        "entry-funnel-right": "nylonNetting",
+        "handle": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A tapered pot frame has opposed entry funnels and a top handle.",
+      "originalColor": "#8b6340"
+    },
+    {
+      "id": "magnetic-compass",
+      "title": "Marine magnetic compass",
+      "components": 6,
+      "materials": [
+        "brass",
+        "stainlessSteel",
+        "paperCard",
+        "safetyAmber"
+      ],
+      "assignments": {
+        "housing": "brass",
+        "bezel": "stainlessSteel",
+        "card": "paperCard",
+        "lubber-line": "safetyAmber",
+        "mount-ear-left": "stainlessSteel",
+        "mount-ear-right": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A marked compass card sits inside a bezel with a lubber line and mounting ears.",
+      "originalColor": "#ba9b51"
+    },
+    {
+      "id": "mooring-buoy",
+      "title": "Mooring buoy",
+      "components": 4,
+      "materials": [
+        "safetyVinyl",
+        "galvanizedSteel",
+        "stainlessSteel"
+      ],
+      "assignments": {
+        "float-body": "safetyVinyl",
+        "top-cap": "safetyVinyl",
+        "lifting-eye": "galvanizedSteel",
+        "chain-shackle": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A buoyant float carries a lifting eye and a lower chain shackle.",
+      "originalColor": "#c7503d"
+    },
+    {
+      "id": "motorboat",
+      "title": "Motorboat",
+      "components": 7,
+      "materials": [
+        "paintedHull",
+        "nonskidCoating",
+        "marineGlass",
+        "stainlessSteel"
+      ],
+      "assignments": {
+        "hull": "paintedHull",
+        "deck": "nonskidCoating",
+        "console": "paintedHull",
+        "windshield": "marineGlass",
+        "seat-front": "paintedHull",
+        "seat-rear": "paintedHull",
+        "motor-mount": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A pointed hull supports a cockpit console, glazed screen, paired seats, and motor mount.",
+      "originalColor": "#4b6572"
+    },
+    {
+      "id": "outboard-motor",
+      "title": "Outboard motor",
+      "components": 10,
+      "materials": [
+        "paintedAluminum",
+        "stainlessSteel",
+        "bronze",
+        "rubber"
+      ],
+      "assignments": {
+        "powerhead": "paintedAluminum",
+        "top-cover": "paintedAluminum",
+        "midsection": "stainlessSteel",
+        "gearcase": "stainlessSteel",
+        "skeg": "stainlessSteel",
+        "prop-shaft": "stainlessSteel",
+        "prop-blade-1": "bronze",
+        "prop-blade-2": "bronze",
+        "tiller": "rubber",
+        "clamp": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A cowled powerhead narrows through a leg to a skeg and three-blade propeller.",
+      "originalColor": "#50565a"
+    },
+    {
+      "id": "porthole",
+      "title": "Ship porthole",
+      "components": 6,
+      "materials": [
+        "brass",
+        "marineGlass",
+        "stainlessSteel"
+      ],
+      "assignments": {
+        "frame": "brass",
+        "inner-glass": "marineGlass",
+        "lug-top": "stainlessSteel",
+        "lug-bottom": "stainlessSteel",
+        "lug-left": "stainlessSteel",
+        "lug-right": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A glazed round opening is held by a thick frame and four mounting lugs.",
+      "originalColor": "#8a744a"
+    },
+    {
+      "id": "rescue-lifeboat",
+      "title": "Rescue lifeboat",
+      "components": 7,
+      "materials": [
+        "safetyVinyl",
+        "nonskidCoating",
+        "marineGlass",
+        "safetyAmber"
+      ],
+      "assignments": {
+        "hull": "safetyVinyl",
+        "deck": "nonskidCoating",
+        "cabin": "safetyVinyl",
+        "front-window": "marineGlass",
+        "side-window": "marineGlass",
+        "roof": "safetyVinyl",
+        "beacon": "safetyAmber"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A deep rescue hull carries a raised cabin, glazed windows, and roof beacon.",
+      "originalColor": "#e45c3a"
+    },
+    {
+      "id": "sailboat",
+      "title": "Sailboat",
+      "components": 7,
+      "materials": [
+        "paintedHull",
+        "nonskidCoating",
+        "timber",
+        "canvas"
+      ],
+      "assignments": {
+        "hull": "paintedHull",
+        "deck": "nonskidCoating",
+        "mast": "timber",
+        "boom": "timber",
+        "main-sail": "canvas",
+        "cockpit": "paintedHull",
+        "seat": "paintedHull"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A narrow hull carries a mast, boom, triangular sail, and open cockpit.",
+      "originalColor": "#7a5840"
+    },
+    {
+      "id": "sextant",
+      "title": "Sextant",
+      "components": 7,
+      "materials": [
+        "brass",
+        "stainlessSteel",
+        "marineGlass",
+        "timber"
+      ],
+      "assignments": {
+        "arc": "brass",
+        "frame-left": "brass",
+        "frame-right": "brass",
+        "index-arm": "stainlessSteel",
+        "telescope": "marineGlass",
+        "eyepiece": "marineGlass",
+        "handle": "timber"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A graduated arc and index arm frame a telescope above a hand grip.",
+      "originalColor": "#a18b5d"
+    },
+    {
+      "id": "ship-bell",
+      "title": "Ship bell",
+      "components": 6,
+      "materials": [
+        "bronze",
+        "brass",
+        "stainlessSteel"
+      ],
+      "assignments": {
+        "bell": "bronze",
+        "skirt": "bronze",
+        "stem": "brass",
+        "crown": "brass",
+        "loop": "brass",
+        "clapper": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A flared bell hangs from a crown and loop around a visible clapper.",
+      "originalColor": "#887447"
+    },
+    {
+      "id": "ship-horn",
+      "title": "Ship horn",
+      "components": 6,
+      "materials": [
+        "paintedSteel",
+        "stainlessSteel"
+      ],
+      "assignments": {
+        "trumpet-body": "paintedSteel",
+        "mouth": "stainlessSteel",
+        "rear-cap": "stainlessSteel",
+        "mount-base": "paintedSteel",
+        "support-left": "stainlessSteel",
+        "support-right": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A trumpet body flares to a broad mouth above a supported mounting base.",
+      "originalColor": "#5d6468"
+    },
+    {
+      "id": "ship-wheel",
+      "title": "Ship wheel",
+      "components": 8,
+      "materials": [
+        "timber",
+        "brass"
+      ],
+      "assignments": {
+        "rim": "timber",
+        "hub": "brass",
+        "spoke-1": "timber",
+        "spoke-2": "timber",
+        "spoke-3": "timber",
+        "handle-top": "brass",
+        "handle-left": "brass",
+        "handle-right": "brass"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A circular rim surrounds a hub with radial spokes and projecting handles.",
+      "originalColor": "#72553a"
+    },
+    {
+      "id": "throw-rope-bag",
+      "title": "Throw rope bag",
+      "components": 5,
+      "materials": [
+        "safetyFabric",
+        "ropeFiber",
+        "nylonWebbing",
+        "rubber"
+      ],
+      "assignments": {
+        "bag": "safetyFabric",
+        "shoulder": "safetyFabric",
+        "top-loop": "ropeFiber",
+        "base-band": "nylonWebbing",
+        "side-grip": "rubber"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A compact throw bag has a shoulder, grab loop, reinforced base, and side grip.",
+      "originalColor": "#e6a744"
+    },
+    {
+      "id": "tugboat",
+      "title": "Harbor tugboat",
+      "components": 8,
+      "materials": [
+        "paintedHull",
+        "nonskidCoating",
+        "marineGlass",
+        "rubber"
+      ],
+      "assignments": {
+        "hull": "paintedHull",
+        "deck": "nonskidCoating",
+        "cabin": "paintedHull",
+        "bridge": "paintedHull",
+        "front-glass": "marineGlass",
+        "stack-one": "paintedHull",
+        "stack-two": "paintedHull",
+        "bow-fender": "rubber"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A low working hull carries a raised bridge, paired stacks, front glazing, and bow fender.",
+      "originalColor": "#3f5965"
+    },
+    {
+      "id": "yacht",
+      "title": "Motor yacht",
+      "components": 8,
+      "materials": [
+        "paintedFiberglass",
+        "nonskidCoating",
+        "marineGlass",
+        "stainlessSteel"
+      ],
+      "assignments": {
+        "hull": "paintedFiberglass",
+        "deck": "nonskidCoating",
+        "lower-cabin": "paintedFiberglass",
+        "upper-cabin": "paintedFiberglass",
+        "window-band": "marineGlass",
+        "roof": "paintedFiberglass",
+        "swim-platform": "nonskidCoating",
+        "bow-rail": "stainlessSteel"
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "feature": "A long white hull carries two cabin levels, a dark window band, swim platform, and bow rail.",
+      "originalColor": "#e2e0d4"
+    }
+  ]
+}

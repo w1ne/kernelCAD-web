@@ -1,0 +1,4 @@
+fire-station/apparatus-exhaust-capture-rail: 104 tris
+fire-station/bay-washdown-hose-reel: 200 tris
+fire-station/exhaust-capture-nozzle: 124 tris
+fire-station/retractable-exhaust-hose-reel: 124 tris

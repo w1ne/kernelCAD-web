@@ -1,0 +1,78 @@
+{
+  "baselineIndexAssetCount": 2390,
+  "currentIndexAssetCount": 2390,
+  "addedAssetIds": [],
+  "removedAssetIds": [],
+  "changedAssets": [
+    {
+      "id": "substation-dead-tank-breaker",
+      "title": "Dead tank circuit breaker",
+      "source": "catalog/kits/grid-substation/substation-dead-tank-breaker.kcad.ts",
+      "sourceSha256": "d526bc26e6efb66ac350e78e441ddf8c4e0ff12108bbbd507a6feb088b7f965c",
+      "sourceHashMatchesIndex": true,
+      "preview": "/assets/grid-substation-substation-dead-tank-breaker.png",
+      "previewFileExists": true,
+      "colorControls": [
+        "galvanizedSteel",
+        "powderCoat",
+        "porcelain",
+        "copper"
+      ],
+      "presets": [
+        "maintenance",
+        "weathered"
+      ],
+      "triangles": 1012,
+      "triangleBudget": 1800,
+      "withinTriangleBudget": true
+    },
+    {
+      "id": "substation-oil-containment-bund",
+      "title": "Oil containment bund",
+      "source": "catalog/kits/grid-substation/substation-oil-containment-bund.kcad.ts",
+      "sourceSha256": "a886936c20d6e453b46fdad8b07f063f74de60af3d84b1532454830dbd49eff6",
+      "sourceHashMatchesIndex": true,
+      "preview": "/assets/grid-substation-substation-oil-containment-bund.png",
+      "previewFileExists": true,
+      "colorControls": [
+        "concrete",
+        "stainlessSteel"
+      ],
+      "presets": [
+        "maintenance",
+        "weathered"
+      ],
+      "triangles": 616,
+      "triangleBudget": 1800,
+      "withinTriangleBudget": true
+    },
+    {
+      "id": "substation-grading-ring-stand",
+      "title": "Grading ring stand",
+      "source": "catalog/kits/grid-substation/substation-grading-ring-stand.kcad.ts",
+      "sourceSha256": "055bc24e4c6e4e77530f25abdddbc1de0791d99dcd4d6d1614fed381a51a2418",
+      "sourceHashMatchesIndex": true,
+      "preview": "/assets/grid-substation-substation-grading-ring-stand.png",
+      "previewFileExists": true,
+      "colorControls": [
+        "galvanizedSteel",
+        "porcelain",
+        "copper"
+      ],
+      "presets": [
+        "maintenance",
+        "weathered"
+      ],
+      "triangles": 256,
+      "triangleBudget": 1800,
+      "withinTriangleBudget": true
+    }
+  ],
+  "catalogQualityGate": {
+    "exitCode": 0,
+    "output": "2390/2390 assets pass (49 rich kits, 0 thin kits)",
+    "passed": true
+  },
+  "issues": [],
+  "passed": true
+}

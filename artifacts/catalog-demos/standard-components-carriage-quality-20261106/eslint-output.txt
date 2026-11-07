@@ -1,0 +1,2 @@
+COMMAND: npx eslint catalog/kits/standard-components/
+EXIT CODE: 0

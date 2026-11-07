@@ -1,0 +1,628 @@
+{
+  "checkedAt": "2026-11-05T14:41:56.802Z",
+  "sourceHead": "040183755d13b44753fad4439dd75356907eb2bf",
+  "sourceWorktreeDirty": true,
+  "sourceWorktreeStatus": "M examples/manufacturing-showcase/moulded-housing.kcad.ts",
+  "provenance": "Annotated still sequence from local kernelcad CLI renders of the checked-out example sources. sourceHead records the base commit, sourceWorktreeDirty reports whether example inputs differ from it, and per-case source hashes identify the exact inputs. The generator runs evaluate and neutral-file export commands for every case. It is not a screen recording, deployed-site capture, machine toolpath, fabricated part or physical acceptance.",
+  "video": "manufacturing-workflow.mp4",
+  "videoSha256": "5641642309a66a9dc8be3690db7cdc268711a0d9d4d0fa4d670e52ec3306304d",
+  "durationSec": 37.041667,
+  "canvas": "1920x1080",
+  "codec": "H.264, yuv420p, 24 fps",
+  "slides": [
+    {
+      "title": "Source → evaluate → export",
+      "durationSec": 4
+    },
+    {
+      "source": "examples/manufacturing-showcase/cut-motor-plate.kcad.ts",
+      "durationSec": 4,
+      "sourceSha256": "8b0fe0609e465285e3f64d393cd4bcbe01f3f2b840530ba268aa5ada00c71245",
+      "renderSha256": "eda2f3a4c0f3119e8fd5dd0eee16a459ae97265b275a3b7adfd1d81992e8e558",
+      "format": "dxf",
+      "artifactBytes": 1853,
+      "artifactSha256": "85888931fee25d65ca315ae0f401618db07beb484300377b90d50bfe22ce95b4",
+      "evaluateCommand": [
+        "kernelcad",
+        "evaluate",
+        "--json",
+        "examples/manufacturing-showcase/cut-motor-plate.kcad.ts"
+      ],
+      "exportCommand": [
+        "kernelcad",
+        "export",
+        "dxf",
+        "examples/manufacturing-showcase/cut-motor-plate.kcad.ts",
+        "-o",
+        "cut-motor-plate.dxf",
+        "--json"
+      ],
+      "renderCommand": [
+        "kernelcad",
+        "render",
+        "--preset",
+        "publish",
+        "--background",
+        "dark",
+        "--no-watermark",
+        "--pose",
+        "45,65",
+        "-o",
+        "<temp>/cut-motor-plate.png",
+        "examples/manufacturing-showcase/cut-motor-plate.kcad.ts"
+      ],
+      "testCheck": "DXF loops, edited hole centres and diameters are read back.",
+      "openWork": "Confirm the motor drawing, tolerances, cutter compensation and physical fit."
+    },
+    {
+      "source": "examples/manufacturing-showcase/bearing-block.kcad.ts",
+      "durationSec": 4,
+      "sourceSha256": "411f4cda5466ae98e800ffc32336bfe600d2118098f98683ba9de7d42f1561c4",
+      "renderSha256": "571a3e5f25bd5235dc06a5d354a382fbc79768766391b45d55230c1237f6320a",
+      "format": "step",
+      "artifactBytes": 37603,
+      "artifactSha256": "e28439d4decfa207e97ab9b7e1969cd620d0b530910e6bff74a5f4c03c36dfb0",
+      "evaluateCommand": [
+        "kernelcad",
+        "evaluate",
+        "--json",
+        "examples/manufacturing-showcase/bearing-block.kcad.ts"
+      ],
+      "exportCommand": [
+        "kernelcad",
+        "export",
+        "step",
+        "examples/manufacturing-showcase/bearing-block.kcad.ts",
+        "-o",
+        "bearing-block.step",
+        "--json"
+      ],
+      "renderCommand": [
+        "kernelcad",
+        "render",
+        "--preset",
+        "publish",
+        "--background",
+        "dark",
+        "--no-watermark",
+        "-o",
+        "<temp>/bearing-block.png",
+        "examples/manufacturing-showcase/bearing-block.kcad.ts"
+      ],
+      "testCheck": "Seat-depth volume and CNC undercut/internal-corner gates.",
+      "openWork": "Choose the bearing fit, machining setup and shop process."
+    },
+    {
+      "source": "examples/manufacturing-showcase/bent-mounting-bracket.kcad.ts",
+      "durationSec": 4,
+      "sourceSha256": "f14b2d37e9d8e9e120cbfb9c3b15f7d09d10ea0fc2fd13164ed1c90ca11e570e",
+      "renderSha256": "0ee26cd8e13e9ea2615051f5a522c76aa14aad8bfca5a2e12cedb7191e56430f",
+      "format": "dxf",
+      "artifactBytes": 5849,
+      "artifactSha256": "4f57ea352aaa7c3b9444d570881ae84fbafc98f62bbf9e0b5f0e1a8e7b12cc3b",
+      "evaluateCommand": [
+        "kernelcad",
+        "evaluate",
+        "--json",
+        "examples/manufacturing-showcase/bent-mounting-bracket.kcad.ts"
+      ],
+      "exportCommand": [
+        "kernelcad",
+        "export",
+        "dxf",
+        "examples/manufacturing-showcase/bent-mounting-bracket.kcad.ts",
+        "-o",
+        "bent-mounting-bracket.dxf",
+        "--json"
+      ],
+      "renderCommand": [
+        "kernelcad",
+        "render",
+        "--preset",
+        "publish",
+        "--background",
+        "dark",
+        "--no-watermark",
+        "-o",
+        "<temp>/bent-mounting-bracket.png",
+        "examples/manufacturing-showcase/bent-mounting-bracket.kcad.ts"
+      ],
+      "testCheck": "Flat-pattern DXF readback: four holes, bend line and sheet metadata.",
+      "openWork": "Confirm stock, K-factor, tooling and physical bend/fit."
+    },
+    {
+      "source": "examples/manufacturing-showcase/shoulder-spacer.kcad.ts",
+      "durationSec": 4,
+      "sourceSha256": "4e7344bededb6c0ecbd4613ca7208a596dd82db160ccc1ee079ecb2740ab454b",
+      "renderSha256": "cff1172be0ea832b9c918d0c81095d695c34ffe5650ce93cf9b0f20df424102e",
+      "format": "step",
+      "artifactBytes": 13104,
+      "artifactSha256": "8baebf6568dc1aa3c63f39ac1910a9fa8a26a9c0f608a8a141bcbc7e9940bc4b",
+      "evaluateCommand": [
+        "kernelcad",
+        "evaluate",
+        "--json",
+        "examples/manufacturing-showcase/shoulder-spacer.kcad.ts"
+      ],
+      "exportCommand": [
+        "kernelcad",
+        "export",
+        "step",
+        "examples/manufacturing-showcase/shoulder-spacer.kcad.ts",
+        "-o",
+        "shoulder-spacer.step",
+        "--json"
+      ],
+      "renderCommand": [
+        "kernelcad",
+        "render",
+        "--preset",
+        "publish",
+        "--background",
+        "dark",
+        "--no-watermark",
+        "-o",
+        "<temp>/shoulder-spacer.png",
+        "examples/manufacturing-showcase/shoulder-spacer.kcad.ts"
+      ],
+      "testCheck": "Revolved profile, STEP round-trip, envelope and analytic volume.",
+      "openWork": "Set tolerances and edge breaks; verify the physical mating fit."
+    },
+    {
+      "source": "examples/manufacturing-showcase/electronics-enclosure.kcad.ts",
+      "durationSec": 4,
+      "sourceSha256": "d157d45d5c536000ffd360bf3d8a41ffd6c736ac6e3bb9ed474d5e220d42415f",
+      "renderSha256": "c273f579832a26f561b8b11225e041c7a1448b0d6fc74cb6ecaa5a2655f716df",
+      "format": "3mf",
+      "artifactBytes": 268104,
+      "artifactSha256": "a7140f2ac60015f1eb7cb17a0ea281c01cebaeb0d8cd79a07848131b4a013df7",
+      "evaluateCommand": [
+        "kernelcad",
+        "evaluate",
+        "--json",
+        "examples/manufacturing-showcase/electronics-enclosure.kcad.ts"
+      ],
+      "exportCommand": [
+        "kernelcad",
+        "export",
+        "3mf",
+        "examples/manufacturing-showcase/electronics-enclosure.kcad.ts",
+        "-o",
+        "electronics-enclosure.3mf",
+        "--json"
+      ],
+      "renderCommand": [
+        "kernelcad",
+        "render",
+        "--preset",
+        "publish",
+        "--background",
+        "dark",
+        "--no-watermark",
+        "--pose",
+        "45,65",
+        "--hide",
+        "lid",
+        "-o",
+        "<temp>/electronics-enclosure.png",
+        "examples/manufacturing-showcase/electronics-enclosure.kcad.ts"
+      ],
+      "testCheck": "Separate watertight STL meshes; named 3MF objects and bed layout.",
+      "openWork": "Check board/fastener fit, material and slicer settings; print and assemble."
+    },
+    {
+      "source": "examples/manufacturing-showcase/moulded-housing.kcad.ts",
+      "durationSec": 4,
+      "sourceSha256": "b644efb6ac995f2310941f763bded288ef958d3df3a3476f5778b4b518ebd95c",
+      "renderSha256": "595153d31a8f96944ca22cfab20e6d6f33a094bb2acbf7368b024a0b8b41e79e",
+      "format": "step",
+      "artifactBytes": 573390,
+      "artifactSha256": "b8db5fa97d0f75675e707286ada6ae8469f8afaff7cbdee38f4fa0a14a0ca620",
+      "evaluateCommand": [
+        "kernelcad",
+        "evaluate",
+        "--json",
+        "examples/manufacturing-showcase/moulded-housing.kcad.ts"
+      ],
+      "exportCommand": [
+        "kernelcad",
+        "export",
+        "step",
+        "examples/manufacturing-showcase/moulded-housing.kcad.ts",
+        "-o",
+        "moulded-housing.step",
+        "--json"
+      ],
+      "renderCommand": [
+        "kernelcad",
+        "render",
+        "--preset",
+        "publish",
+        "--background",
+        "dark",
+        "--no-watermark",
+        "--pose",
+        "45,65",
+        "-o",
+        "<temp>/moulded-housing.png",
+        "examples/manufacturing-showcase/moulded-housing.kcad.ts"
+      ],
+      "testCheck": "Moulding DFM passes range endpoints; pilot/rib edits are checked and trapped core fails.",
+      "openWork": "Confirm resin/pilot fit and review rib-root radii, flow, gate, ejectors, parting and tooling."
+    },
+    {
+      "source": "examples/manufacturing-showcase/bearing-shaft-assembly.kcad.ts",
+      "durationSec": 4,
+      "sourceSha256": "5bd171a0f0c1b46bab0e4c7e2bb75700c63e97a29132bef375d3eb62ebda77f4",
+      "renderSha256": "360223397f6eddef7a7af94ab8bc23b070ac483c2626035e6a15d743de39c93e",
+      "format": "step",
+      "artifactBytes": 96947,
+      "artifactSha256": "52f0595eb4729a1a94892df6c3217c899792b3a73a73b0f46f279ce47a4572b1",
+      "evaluateCommand": [
+        "kernelcad",
+        "evaluate",
+        "--json",
+        "examples/manufacturing-showcase/bearing-shaft-assembly.kcad.ts"
+      ],
+      "exportCommand": [
+        "kernelcad",
+        "export",
+        "step",
+        "examples/manufacturing-showcase/bearing-shaft-assembly.kcad.ts",
+        "-o",
+        "bearing-shaft-assembly.step",
+        "--json"
+      ],
+      "renderCommand": [
+        "kernelcad",
+        "render",
+        "--preset",
+        "publish",
+        "--background",
+        "dark",
+        "--no-watermark",
+        "-o",
+        "<temp>/bearing-shaft-assembly.png",
+        "examples/manufacturing-showcase/bearing-shaft-assembly.kcad.ts"
+      ],
+      "testCheck": "Four named parts; default mate and motion review.",
+      "openWork": "Specify bearing fits, screws, external fixture/load path and physical motion."
+    },
+    {
+      "title": "Evidence boundary",
+      "durationSec": 5
+    }
+  ],
+  "cases": [
+    {
+      "slug": "cut-motor-plate",
+      "source": "examples/manufacturing-showcase/cut-motor-plate.kcad.ts",
+      "sourceSha256": "8b0fe0609e465285e3f64d393cd4bcbe01f3f2b840530ba268aa5ada00c71245",
+      "evaluateCommand": [
+        "kernelcad",
+        "evaluate",
+        "--json",
+        "examples/manufacturing-showcase/cut-motor-plate.kcad.ts"
+      ],
+      "evaluation": {
+        "ok": true,
+        "featureCount": 4,
+        "errorDiagnostics": 0
+      },
+      "exportCommand": [
+        "kernelcad",
+        "export",
+        "dxf",
+        "examples/manufacturing-showcase/cut-motor-plate.kcad.ts",
+        "-o",
+        "cut-motor-plate.dxf",
+        "--json"
+      ],
+      "artifact": {
+        "format": "dxf",
+        "bytes": 1853,
+        "sha256": "85888931fee25d65ca315ae0f401618db07beb484300377b90d50bfe22ce95b4",
+        "errorDiagnostics": 0
+      },
+      "renderCommand": [
+        "kernelcad",
+        "render",
+        "--preset",
+        "publish",
+        "--background",
+        "dark",
+        "--no-watermark",
+        "--pose",
+        "45,65",
+        "-o",
+        "<temp>/cut-motor-plate.png",
+        "examples/manufacturing-showcase/cut-motor-plate.kcad.ts"
+      ],
+      "renderSha256": "eda2f3a4c0f3119e8fd5dd0eee16a459ae97265b275a3b7adfd1d81992e8e558",
+      "testCheck": "DXF loops, edited hole centres and diameters are read back.",
+      "openWork": "Confirm the motor drawing, tolerances, cutter compensation and physical fit."
+    },
+    {
+      "slug": "bearing-block",
+      "source": "examples/manufacturing-showcase/bearing-block.kcad.ts",
+      "sourceSha256": "411f4cda5466ae98e800ffc32336bfe600d2118098f98683ba9de7d42f1561c4",
+      "evaluateCommand": [
+        "kernelcad",
+        "evaluate",
+        "--json",
+        "examples/manufacturing-showcase/bearing-block.kcad.ts"
+      ],
+      "evaluation": {
+        "ok": true,
+        "featureCount": 3,
+        "errorDiagnostics": 0
+      },
+      "exportCommand": [
+        "kernelcad",
+        "export",
+        "step",
+        "examples/manufacturing-showcase/bearing-block.kcad.ts",
+        "-o",
+        "bearing-block.step",
+        "--json"
+      ],
+      "artifact": {
+        "format": "step",
+        "bytes": 37603,
+        "sha256": "e28439d4decfa207e97ab9b7e1969cd620d0b530910e6bff74a5f4c03c36dfb0",
+        "errorDiagnostics": 0
+      },
+      "renderCommand": [
+        "kernelcad",
+        "render",
+        "--preset",
+        "publish",
+        "--background",
+        "dark",
+        "--no-watermark",
+        "-o",
+        "<temp>/bearing-block.png",
+        "examples/manufacturing-showcase/bearing-block.kcad.ts"
+      ],
+      "renderSha256": "571a3e5f25bd5235dc06a5d354a382fbc79768766391b45d55230c1237f6320a",
+      "testCheck": "Seat-depth volume and CNC undercut/internal-corner gates.",
+      "openWork": "Choose the bearing fit, machining setup and shop process."
+    },
+    {
+      "slug": "bent-mounting-bracket",
+      "source": "examples/manufacturing-showcase/bent-mounting-bracket.kcad.ts",
+      "sourceSha256": "f14b2d37e9d8e9e120cbfb9c3b15f7d09d10ea0fc2fd13164ed1c90ca11e570e",
+      "evaluateCommand": [
+        "kernelcad",
+        "evaluate",
+        "--json",
+        "examples/manufacturing-showcase/bent-mounting-bracket.kcad.ts"
+      ],
+      "evaluation": {
+        "ok": true,
+        "featureCount": 4,
+        "errorDiagnostics": 0
+      },
+      "exportCommand": [
+        "kernelcad",
+        "export",
+        "dxf",
+        "examples/manufacturing-showcase/bent-mounting-bracket.kcad.ts",
+        "-o",
+        "bent-mounting-bracket.dxf",
+        "--json"
+      ],
+      "artifact": {
+        "format": "dxf",
+        "bytes": 5849,
+        "sha256": "4f57ea352aaa7c3b9444d570881ae84fbafc98f62bbf9e0b5f0e1a8e7b12cc3b",
+        "errorDiagnostics": 0
+      },
+      "renderCommand": [
+        "kernelcad",
+        "render",
+        "--preset",
+        "publish",
+        "--background",
+        "dark",
+        "--no-watermark",
+        "-o",
+        "<temp>/bent-mounting-bracket.png",
+        "examples/manufacturing-showcase/bent-mounting-bracket.kcad.ts"
+      ],
+      "renderSha256": "0ee26cd8e13e9ea2615051f5a522c76aa14aad8bfca5a2e12cedb7191e56430f",
+      "testCheck": "Flat-pattern DXF readback: four holes, bend line and sheet metadata.",
+      "openWork": "Confirm stock, K-factor, tooling and physical bend/fit."
+    },
+    {
+      "slug": "shoulder-spacer",
+      "source": "examples/manufacturing-showcase/shoulder-spacer.kcad.ts",
+      "sourceSha256": "4e7344bededb6c0ecbd4613ca7208a596dd82db160ccc1ee079ecb2740ab454b",
+      "evaluateCommand": [
+        "kernelcad",
+        "evaluate",
+        "--json",
+        "examples/manufacturing-showcase/shoulder-spacer.kcad.ts"
+      ],
+      "evaluation": {
+        "ok": true,
+        "featureCount": 2,
+        "errorDiagnostics": 0
+      },
+      "exportCommand": [
+        "kernelcad",
+        "export",
+        "step",
+        "examples/manufacturing-showcase/shoulder-spacer.kcad.ts",
+        "-o",
+        "shoulder-spacer.step",
+        "--json"
+      ],
+      "artifact": {
+        "format": "step",
+        "bytes": 13104,
+        "sha256": "8baebf6568dc1aa3c63f39ac1910a9fa8a26a9c0f608a8a141bcbc7e9940bc4b",
+        "errorDiagnostics": 0
+      },
+      "renderCommand": [
+        "kernelcad",
+        "render",
+        "--preset",
+        "publish",
+        "--background",
+        "dark",
+        "--no-watermark",
+        "-o",
+        "<temp>/shoulder-spacer.png",
+        "examples/manufacturing-showcase/shoulder-spacer.kcad.ts"
+      ],
+      "renderSha256": "cff1172be0ea832b9c918d0c81095d695c34ffe5650ce93cf9b0f20df424102e",
+      "testCheck": "Revolved profile, STEP round-trip, envelope and analytic volume.",
+      "openWork": "Set tolerances and edge breaks; verify the physical mating fit."
+    },
+    {
+      "slug": "electronics-enclosure",
+      "source": "examples/manufacturing-showcase/electronics-enclosure.kcad.ts",
+      "sourceSha256": "d157d45d5c536000ffd360bf3d8a41ffd6c736ac6e3bb9ed474d5e220d42415f",
+      "evaluateCommand": [
+        "kernelcad",
+        "evaluate",
+        "--json",
+        "examples/manufacturing-showcase/electronics-enclosure.kcad.ts"
+      ],
+      "evaluation": {
+        "ok": true,
+        "featureCount": 36,
+        "errorDiagnostics": 0
+      },
+      "exportCommand": [
+        "kernelcad",
+        "export",
+        "3mf",
+        "examples/manufacturing-showcase/electronics-enclosure.kcad.ts",
+        "-o",
+        "electronics-enclosure.3mf",
+        "--json"
+      ],
+      "artifact": {
+        "format": "3mf",
+        "bytes": 268104,
+        "sha256": "a7140f2ac60015f1eb7cb17a0ea281c01cebaeb0d8cd79a07848131b4a013df7",
+        "errorDiagnostics": 0
+      },
+      "renderCommand": [
+        "kernelcad",
+        "render",
+        "--preset",
+        "publish",
+        "--background",
+        "dark",
+        "--no-watermark",
+        "--pose",
+        "45,65",
+        "--hide",
+        "lid",
+        "-o",
+        "<temp>/electronics-enclosure.png",
+        "examples/manufacturing-showcase/electronics-enclosure.kcad.ts"
+      ],
+      "renderSha256": "c273f579832a26f561b8b11225e041c7a1448b0d6fc74cb6ecaa5a2655f716df",
+      "testCheck": "Separate watertight STL meshes; named 3MF objects and bed layout.",
+      "openWork": "Check board/fastener fit, material and slicer settings; print and assemble."
+    },
+    {
+      "slug": "moulded-housing",
+      "source": "examples/manufacturing-showcase/moulded-housing.kcad.ts",
+      "sourceSha256": "b644efb6ac995f2310941f763bded288ef958d3df3a3476f5778b4b518ebd95c",
+      "evaluateCommand": [
+        "kernelcad",
+        "evaluate",
+        "--json",
+        "examples/manufacturing-showcase/moulded-housing.kcad.ts"
+      ],
+      "evaluation": {
+        "ok": true,
+        "featureCount": 69,
+        "errorDiagnostics": 0
+      },
+      "exportCommand": [
+        "kernelcad",
+        "export",
+        "step",
+        "examples/manufacturing-showcase/moulded-housing.kcad.ts",
+        "-o",
+        "moulded-housing.step",
+        "--json"
+      ],
+      "artifact": {
+        "format": "step",
+        "bytes": 573390,
+        "sha256": "b8db5fa97d0f75675e707286ada6ae8469f8afaff7cbdee38f4fa0a14a0ca620",
+        "errorDiagnostics": 0
+      },
+      "renderCommand": [
+        "kernelcad",
+        "render",
+        "--preset",
+        "publish",
+        "--background",
+        "dark",
+        "--no-watermark",
+        "--pose",
+        "45,65",
+        "-o",
+        "<temp>/moulded-housing.png",
+        "examples/manufacturing-showcase/moulded-housing.kcad.ts"
+      ],
+      "renderSha256": "595153d31a8f96944ca22cfab20e6d6f33a094bb2acbf7368b024a0b8b41e79e",
+      "testCheck": "Moulding DFM passes range endpoints; pilot/rib edits are checked and trapped core fails.",
+      "openWork": "Confirm resin/pilot fit and review rib-root radii, flow, gate, ejectors, parting and tooling."
+    },
+    {
+      "slug": "bearing-shaft-assembly",
+      "source": "examples/manufacturing-showcase/bearing-shaft-assembly.kcad.ts",
+      "sourceSha256": "5bd171a0f0c1b46bab0e4c7e2bb75700c63e97a29132bef375d3eb62ebda77f4",
+      "evaluateCommand": [
+        "kernelcad",
+        "evaluate",
+        "--json",
+        "examples/manufacturing-showcase/bearing-shaft-assembly.kcad.ts"
+      ],
+      "evaluation": {
+        "ok": true,
+        "featureCount": 16,
+        "errorDiagnostics": 0
+      },
+      "exportCommand": [
+        "kernelcad",
+        "export",
+        "step",
+        "examples/manufacturing-showcase/bearing-shaft-assembly.kcad.ts",
+        "-o",
+        "bearing-shaft-assembly.step",
+        "--json"
+      ],
+      "artifact": {
+        "format": "step",
+        "bytes": 96947,
+        "sha256": "52f0595eb4729a1a94892df6c3217c899792b3a73a73b0f46f279ce47a4572b1",
+        "errorDiagnostics": 0
+      },
+      "renderCommand": [
+        "kernelcad",
+        "render",
+        "--preset",
+        "publish",
+        "--background",
+        "dark",
+        "--no-watermark",
+        "-o",
+        "<temp>/bearing-shaft-assembly.png",
+        "examples/manufacturing-showcase/bearing-shaft-assembly.kcad.ts"
+      ],
+      "renderSha256": "360223397f6eddef7a7af94ab8bc23b070ac483c2626035e6a15d743de39c93e",
+      "testCheck": "Four named parts; default mate and motion review.",
+      "openWork": "Specify bearing fits, screws, external fixture/load path and physical motion."
+    }
+  ]
+}

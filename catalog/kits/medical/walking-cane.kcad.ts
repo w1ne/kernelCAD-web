@@ -2,7 +2,7 @@ meta({
   "name": "walking-cane",
   "license": "CC0-1.0",
   "title": "Walking cane",
-  "description": "Simple walking cane with a long shaft, hooked handle and rubber foot for a medical or recovery scene.",
+  "description": "Simple walking cane with a long shaft, hooked handle and rubber foot for a medical or recovery scene. Material controls: Hardwood shaft, Molded hand grip, Rubber ferrule.",
   "tags": [
     "walking cane",
     "mobility aid",
@@ -23,20 +23,22 @@ meta({
   "triangleBudget": 220
 });
 
+// A walking cane pairs a hardwood shaft with a shaped hand grip and broad rubber ferrule.
 const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
-const shell = param('shell', '#8a6748', { label: 'Shell' });
-const accent = param('accent', '#2a555d', { label: 'Accent' });
+const hardwood = param('hardwood', '#8a6748', { label: 'Hardwood shaft' });
+const medicalPolymer = param('medicalPolymer', '#2a555d', { label: 'Molded hand grip' });
+const rubber = param('rubber', '#303b3e', { label: 'Rubber ferrule' });
 presets({
-  clinic: { shell: '#f1f3f4', accent: '#2d9893' },
-  emergency: { shell: '#ebe8df', accent: '#c9413b' },
+  clinic: { hardwood: '#957653', medicalPolymer: '#4b8c85', rubber: '#4b5658' },
+  emergency: { hardwood: '#785a42', medicalPolymer: '#c9413b', rubber: '#514c49' },
 });
 const p = assembly('walking-cane');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
 const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
 
-p.part('shaft', c(0, 0, 0, 790, 12, 8).color(shell).scale(overallScale));
-p.part('handle-stem', c(0, 0, 775, 44, 11, 8).color(accent).scale(overallScale));
-p.part('crook', b(-18, 0, 815, 52, 18, 16).color(accent).scale(overallScale));
-p.part('foot', c(0, 0, 0, 34, 17, 8).color(accent).scale(overallScale));
+p.part('shaft', c(0, 0, 0, 790, 12, 8).color(hardwood).scale(overallScale));
+p.part('handle-stem', c(0, 0, 775, 44, 11, 8).color(medicalPolymer).scale(overallScale));
+p.part('crook', b(-18, 0, 815, 52, 18, 16).color(medicalPolymer).scale(overallScale));
+p.part('foot', c(0, 0, 0, 34, 17, 8).color(rubber).scale(overallScale));
 
 return p.model();

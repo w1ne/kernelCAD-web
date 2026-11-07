@@ -1,0 +1,26 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' artifacts/catalog-demos/vet-clinic-silhouette-20261106/render_vet_variants.ts
+(node:799248) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+basket-muzzle/default/3/4: 1260 tris
+basket-muzzle/no-forehead/3/4: 1184 tris
+basket-muzzle/clinicClean/3/4: 1260 tris
+basket-muzzle/softTeal/3/4: 1260 tris
+hard-sided-pet-carrier/default/3/4: 1060 tris
+hard-sided-pet-carrier/small/3/4: 1060 tris
+hard-sided-pet-carrier/large/3/4: 1060 tris
+hard-sided-pet-carrier/clinicClean/3/4: 1060 tris
+hard-sided-pet-carrier/softTeal/3/4: 1060 tris
+kennel-bowl-rail/default/3/4: 1632 tris
+kennel-bowl-rail/two/3/4: 1260 tris
+kennel-bowl-rail/four/3/4: 2004 tris
+kennel-bowl-rail/clinicClean/3/4: 1632 tris
+kennel-bowl-rail/softTeal/3/4: 1632 tris
+exam-step-stool/default/3/4: 864 tris
+exam-step-stool/no-rail/3/4: 724 tris
+exam-step-stool/clinicClean/3/4: 864 tris
+exam-step-stool/softTeal/3/4: 864 tris
+specimen-transport-cooler/default/3/4: 744 tris
+specimen-transport-cooler/strap/3/4: 620 tris
+specimen-transport-cooler/clinicClean/3/4: 744 tris
+specimen-transport-cooler/softTeal/3/4: 744 tris

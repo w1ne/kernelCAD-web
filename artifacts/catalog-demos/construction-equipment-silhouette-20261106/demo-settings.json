@@ -1,0 +1,176 @@
+{
+  "kit": "construction-equipment",
+  "assetCount": 60,
+  "previewAssetIDs": [
+    "adjustable-formwork-prop",
+    "articulated-dump-truck",
+    "asphalt-distributor-truck",
+    "asphalt-paver-screed",
+    "asphalt-transfer-conveyor",
+    "backhoe-loader",
+    "cold-planer-milling-machine",
+    "concrete-batch-plant",
+    "concrete-beam-form",
+    "concrete-column-form",
+    "concrete-form-tie",
+    "concrete-formwork-panel",
+    "concrete-placement-bucket",
+    "concrete-pump-truck",
+    "concrete-vibrator-needle",
+    "construction-personnel-elevator",
+    "crawler-dozer",
+    "drywall-panel-lift",
+    "grade-rod-and-prism-pole",
+    "jobsite-tile-saw",
+    "laser-level-tripod",
+    "lowboy-equipment-trailer",
+    "masonry-mixer",
+    "mast-climbing-work-platform",
+    "mobile-fuel-tank",
+    "modular-shoring-frame",
+    "motor-grader",
+    "pipe-roller-stand",
+    "pneumatic-tire-roller",
+    "portable-air-compressor",
+    "portable-core-drill-stand",
+    "portable-floor-grinder",
+    "portable-material-hoist",
+    "portable-site-water-tank",
+    "rebar-bending-machine",
+    "rebar-cage",
+    "rebar-cutting-machine",
+    "rebar-straightener-coil",
+    "ride-on-concrete-saw",
+    "ride-on-power-trowel",
+    "rigid-haul-truck",
+    "road-reclaimer",
+    "rough-terrain-forklift",
+    "single-drum-soil-compactor",
+    "skid-steer-loader",
+    "slab-edge-form",
+    "tandem-vibratory-roller",
+    "telescopic-handler",
+    "towable-light-tower",
+    "track-asphalt-paver",
+    "tracked-concrete-buggy",
+    "trailer-concrete-line-pump",
+    "transit-mixer-truck",
+    "trench-roller",
+    "vibrating-concrete-screed",
+    "walk-behind-concrete-saw",
+    "walk-behind-floor-scarifier",
+    "walk-behind-power-trowel",
+    "water-tanker-truck",
+    "wheel-asphalt-paver"
+  ],
+  "sources": [
+    {
+      "id": "towable-light-tower",
+      "source": "catalog/kits/construction-equipment/towable-light-tower.kcad.ts",
+      "beforeSourceSha256": "6d92179fd2e58df6c132063d3621c84a53b65b6645ee82265f16d9ecb5fef48c",
+      "triangleBudget": 2200,
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor",
+        "tireRubberColor",
+        "lampLensColor"
+      ],
+      "shapeChoices": {
+        "mastHeight": [
+          "1200",
+          "1800",
+          "2400"
+        ],
+        "lampCount": [
+          "2",
+          "4",
+          "6"
+        ]
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "defaultPreview": "catalog/kits/construction-equipment/previews/towable-light-tower.png"
+    },
+    {
+      "id": "ride-on-power-trowel",
+      "source": "catalog/kits/construction-equipment/ride-on-power-trowel.kcad.ts",
+      "beforeSourceSha256": "351c384656e2896062037a36aa096125fea8dc144ddaa0e750563bc78e5c3705",
+      "triangleBudget": 2200,
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor",
+        "rubberColor",
+        "seatVinylColor"
+      ],
+      "shapeChoices": {
+        "bladeCount": [
+          "4",
+          "6"
+        ],
+        "rotorSize": [
+          "compact",
+          "standard",
+          "wide"
+        ]
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "defaultPreview": "catalog/kits/construction-equipment/previews/ride-on-power-trowel.png"
+    },
+    {
+      "id": "concrete-batch-plant",
+      "source": "catalog/kits/construction-equipment/concrete-batch-plant.kcad.ts",
+      "beforeSourceSha256": "066806c0cb62ba8fe1e389f21b45795e023a2156d26201cb2234e4c9737764b6",
+      "triangleBudget": 2200,
+      "materialControls": [
+        "equipmentPaintColor",
+        "structuralSteelColor",
+        "aggregateColor",
+        "cementSiloColor"
+      ],
+      "shapeChoices": {
+        "aggregateBinCount": [
+          "2",
+          "3",
+          "4"
+        ],
+        "siloHeight": [
+          "1200",
+          "1500",
+          "1900"
+        ]
+      },
+      "presets": [
+        "weathered",
+        "highVisibility"
+      ],
+      "defaultPreview": "catalog/kits/construction-equipment/previews/concrete-batch-plant.png"
+    }
+  ],
+  "comparisonDate": "2026-11-06",
+  "video": {
+    "width": 1280,
+    "height": 720,
+    "fps": 30,
+    "frameSeconds": 3,
+    "codec": "H.264 / yuv420p"
+  },
+  "workflow": [
+    "npx tsx scripts/checkCatalogAsset.ts catalog/kits/construction-equipment/<id>.kcad.ts --png artifacts/catalog-demos/construction-equipment-silhouette-20261106/asset-renders/<id>.png",
+    "npx tsx artifacts/catalog-demos/construction-equipment-silhouette-20261106/render_construction_equipment_variants.ts",
+    "npx tsx scripts/renderCatalogPreviews.ts <all 60 construction-equipment IDs>",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "python3 artifacts/catalog-demos/construction-equipment-silhouette-20261106/verify_catalog_index.py",
+    "npx tsx scripts/buildCatalogPages.ts <temporary output directory>",
+    "python3 artifacts/catalog-demos/construction-equipment-silhouette-20261106/verify_local_pages.py <temporary output directory>",
+    "python3 scripts/checkCatalogQuality.py --kit construction-equipment",
+    "python3 scripts/checkCatalogQuality.py",
+    "npx eslint catalog/kits/construction-equipment/",
+    "npx vitest run tests/integration/catalog/"
+  ],
+  "claims": "Local source evaluation, software-rendered previews, static-page generation and catalog checks only. The branch is not deployed. No equipment specification, operating simulation, safety, manufacturing, performance or physical acceptance claim."
+}

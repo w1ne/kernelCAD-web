@@ -1,0 +1,53 @@
+# Grid Substation kit
+
+Eighty original low-poly utility-yard scene assets. Sources use millimetres and Z up. Each asset exposes overall scale plus two to four named material controls, with `weathered` and `maintenance` finish presets. Distinct equipment geometry includes repeated steel, porcelain, copper, concrete, glass, and insulating-polymer components where each material belongs. The 1,800-triangle ceiling remains the default and is raised only for an asset whose reviewed geometry requires it. All geometry is dedicated to the public domain under CC0 1.0.
+
+## Incoming lines and structures
+
+`Overhead line gantry` (`substation-overhead-line-gantry`), `Bus coupler gantry` (`substation-bus-coupler-gantry`), `Shield wire mast` (`substation-shield-wire-mast`), `Dead end crossarm support` (`substation-dead-end-crossarm`), `Strain insulator string` (`substation-strain-insulator-string`), `Station post insulator` (`substation-station-post-insulator`), `Tubular busbar bridge` (`substation-tubular-busbar-bridge`), `Busbar expansion joint` (`substation-busbar-expansion-joint`), `Phase spacer damper` (`substation-phase-spacer-damper`), `Lightning protection mast` (`substation-lightning-mast`), `Cable riser frame` (`substation-cable-riser-frame`), `Bay identification post` (`substation-bay-identification-post`).
+
+## Primary switching equipment
+
+`Three pole disconnector` (`substation-three-pole-disconnector`), `Center break disconnector` (`substation-center-break-disconnector`), `Vertical break disconnector` (`substation-vertical-break-disconnector`), `Earthing switch stand` (`substation-earthing-switch-stand`), `Dead tank circuit breaker` (`substation-dead-tank-breaker`), `Live tank circuit breaker` (`substation-live-tank-breaker`), `Gas insulated breaker module` (`substation-gas-insulated-breaker-module`), `Current transformer` (`substation-current-transformer`), `Optical current transformer` (`substation-optical-current-transformer`), `Inductive voltage transformer` (`substation-inductive-voltage-transformer`), `Capacitive voltage transformer` (`substation-capacitive-voltage-transformer`), `Coupling capacitor` (`substation-coupling-capacitor`), `Surge arrester` (`substation-surge-arrester`), `Line trap` (`substation-line-trap`), `Grading ring stand` (`substation-grading-ring-stand`), `Bus post insulator stack` (`substation-bus-post-insulator`), `High voltage cable termination` (`substation-hv-cable-termination`), `GIS bus duct terminal` (`substation-gis-busduct-terminal`).
+
+## Transformer bay and auxiliaries
+
+`Main power transformer` (`substation-main-power-transformer`), `Station service transformer` (`substation-station-service-transformer`), `Transformer radiator bank` (`substation-transformer-radiator-bank`), `Transformer cooling fan unit` (`substation-transformer-cooling-fan`), `Transformer oil conservator` (`substation-transformer-conservator`), `Transformer bushing turret` (`substation-bushing-turret`), `Tap changer drive cabinet` (`substation-tap-changer-drive-cabinet`), `Silica gel breather` (`substation-silica-gel-breather`), `Pressure relief device` (`substation-pressure-relief-device`), `Transformer oil sampling station` (`substation-transformer-oil-sampling-station`), `Transformer fire wall` (`substation-transformer-fire-wall`), `Oil containment bund` (`substation-oil-containment-bund`), `Transformer rail bogie` (`substation-transformer-rail-bogie`), `Oil cooling pump skid` (`substation-oil-cooling-pump-skid`).
+
+## Protection and control
+
+`Protection and control kiosk` (`substation-protection-control-kiosk`), `Bay control cabinet` (`substation-bay-control-cabinet`), `Protection relay rack` (`substation-protection-relay-rack`), `RTU and gateway cabinet` (`substation-rtu-gateway-cabinet`), `Station battery rack` (`substation-station-battery-rack`), `Battery charger cabinet` (`substation-battery-charger-cabinet`), `DC distribution panel` (`substation-dc-distribution-panel`), `AC station service board` (`substation-ac-station-service-board`), `Control room console` (`substation-control-room-console`), `Mimic board cabinet` (`substation-mimic-board-cabinet`), `Metering marshalling box` (`substation-metering-marshalling-box`), `Fiber communications cabinet` (`substation-fiber-communications-cabinet`), `Synchronism check panel` (`substation-synchronism-check-panel`), `Disturbance recorder cabinet` (`substation-disturbance-recorder-cabinet`).
+
+## Cable and grounding
+
+`Precast cable trench section` (`substation-precast-cable-trench`), `Cable trench cover module` (`substation-cable-trench-cover`), `Cable ladder section` (`substation-cable-ladder-section`), `Cable junction pit` (`substation-cable-junction-pit`), `Ground grid test well` (`substation-ground-grid-test-well`), `Ground conductor clamp` (`substation-ground-conductor-clamp`), `Ground bar pedestal` (`substation-ground-bar-pedestal`), `Power cable reel` (`substation-power-cable-reel`).
+
+## Maintenance and safety
+
+`Protection relay test cart` (`substation-protection-relay-test-cart`), `Breaker timing analyzer cart` (`substation-breaker-timing-analyzer-cart`), `Breaker service trolley` (`substation-hydraulic-breaker-service-trolley`), `Portable HV test divider` (`substation-portable-hv-test-divider`), `Insulated operating stick cabinet` (`substation-insulated-stick-cabinet`), `Yard barrier section` (`substation-yard-barrier-section`), `Chain gate barrier` (`substation-chain-gate-barrier`), `High voltage warning sign` (`substation-high-voltage-warning-sign`), `Fire suppression cylinder bank` (`substation-fire-suppression-cylinder-bank`), `Fire monitor post` (`substation-fire-monitor-post`), `Oil water separator` (`substation-oil-water-separator`), `Yard light mast` (`substation-yard-light-mast`), `Maintenance access platform` (`substation-maintenance-access-platform`), `Portable work canopy` (`substation-portable-work-canopy`).
+
+## Signature equipment rebuild
+
+Five hero assets are rebuilt at about real size from faceted lathes, lofted
+shedded insulators and braced steel members:
+`substation-main-power-transformer` (ribbed tank on a rail-wheeled base, six
+panel radiators with underslung fans, tall HV and short LV bushings on turrets,
+bracketed conservator with Buchholz pipe and breather, tap-changer and
+marshalling cabinets, ladder), `substation-live-tank-breaker` (three slim
+columns of support insulator, mid flange, interrupter and head on a common
+braced beam with the mechanism cabinet), `substation-dead-tank-breaker` (three
+earthed horizontal tanks, each with two splayed bushings on CT housings, on a
+raised frame with an end cabinet), `substation-three-pole-disconnector` (a
+double-side-break isolator: three posts per phase, a rotating centre post with
+a copper blade between jaw contacts, coupling rod and motor-operating box) and
+`substation-overhead-line-gantry` (tapering four-legged lattice columns and a
+lattice crossbeam with earth-wire peaks, strain strings of cap-and-pin discs,
+sagging conductors and down-drop jumpers). Each has four material-named
+controls and three presets; triangle budgets are 6,000 to 10,000 (actual
+4,508 to 9,400).
+
+## Preview and verification
+
+The [grid substation wave bundle](../../../artifacts/catalog-demos/grid-substation-wave-20261103/README.md) records the original source recipes. The [quality-promotion handoff](../../../artifacts/catalog-demos/grid-substation-quality-promotion-20261104/README.md) records the 80-asset material and geometry promotion, refreshed previews, validation, and inspected MP4 walkthrough. The [silhouette-refinement handoff](../../../artifacts/catalog-demos/grid-substation-silhouette-refinement-20261106/README.md) records three in-place placement and shape corrections, refreshed kit previews, checks, and an inspected MP4.
+
+These are generic visualization props. They do not specify voltage or current ratings, clearances, fault performance, switching procedures, electrical safety, grid compliance, or operational acceptance. Catalog checks do not establish electrical or field safety.

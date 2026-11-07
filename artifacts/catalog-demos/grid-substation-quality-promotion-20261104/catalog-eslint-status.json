@@ -1,0 +1,6 @@
+{
+  "command": "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH npx --silent eslint catalog/kits/grid-substation/",
+  "node": "v22.23.4",
+  "exitCode": 0,
+  "passed": true
+}

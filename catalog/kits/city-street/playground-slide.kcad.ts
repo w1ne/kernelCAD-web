@@ -1,13 +1,14 @@
-// Original kernelCAD low-poly playground slide: a raised deck on four posts
-// with side rails and a gabled roof, a raked ladder with rungs and a trough
-// chute that runs down to a flat run-out. Millimetres, Z up, ladder at -X,
-// chute toward +X.
+// A roofed park-slide tower on four posts, with a raised deck, guarded sides,
+// a raked rung ladder and a U-trough chute ending at a supported run-out. The
+// tower, ladder, roof and continuous slide path make the playground equipment
+// recognizable in the default preview. Millimetres, Z up, ladder at -X, chute
+// toward +X.
 
 meta({
   name: 'playground-slide',
   license: 'CC0-1.0',
   title: 'Playground slide',
-  description: 'Playground slide tower with ladder, roofed deck, railings and a trough chute with run-out. Knobs: roof, frame, deck, slide and roof colours.',
+  description: 'Roofed playground slide tower with ladder, deck, side rails and a supported U-trough chute. Knobs: roof presence, galvanized steel, HDPE deck, stainless-steel slide and roof-polyethylene colours.',
   tags: ['slide', 'playground', 'play equipment', 'kids', 'park', 'ladder', 'tower', 'street'],
   kit: 'city-street',
   category: 'structure',
@@ -17,14 +18,14 @@ meta({
 });
 
 const roofed = param('roofed', 'yes', { choices: ['yes', 'no'], label: 'Roof' });
-const frame = param('frame', '#2a7fc8', { label: 'Frame' });
-const deck = param('deck', '#b07a45', { label: 'Deck and rungs' });
-const slide = param('slide', '#f2c418', { label: 'Slide' });
-const roof = param('roof', '#c8352b', { label: 'Roof' });
+const galvanizedSteel = param('galvanizedSteel', '#8d969e', { label: 'Galvanized steel' });
+const hdpe = param('hdpe', '#2a7fc8', { label: 'HDPE deck' });
+const stainlessSteel = param('stainlessSteel', '#c4c7ca', { label: 'Stainless-steel slide' });
+const roofPolyethylene = param('roofPolyethylene', '#c8352b', { label: 'Roof polyethylene' });
 
 presets({
-  green: { frame: '#2f7d4a', slide: '#e8432e', roof: '#f2c418' },
-  natural: { frame: '#8a5c33', slide: '#2a7fc8', roof: '#2f6b4a' },
+  park: { galvanizedSteel: '#2f7d4a', hdpe: '#e7c78e', stainlessSteel: '#e8432e', roofPolyethylene: '#f2c418' },
+  coastal: { galvanizedSteel: '#455a64', hdpe: '#d8d4c9', stainlessSteel: '#2a7fc8', roofPolyethylene: '#f2f1ea' },
 });
 
 const blk = (x0: number, y0: number, z0: number, x1: number, y1: number, z1: number) =>
@@ -44,23 +45,27 @@ const elev = (pts: [number, number][], w: number) => extrudePolygon(pts, w).tran
 const ox = -780;
 const dz = 1500;
 const ps = assembly('playground-slide');
-const add = (name: string, s: Shape, c: typeof frame) => ps.part(name, s.translate(ox, 0, 0).color(c));
+const place = (s: Shape) => s.translate(ox, 0, 0);
+const addSteel = (name: string, s: Shape) => ps.part(name, place(s).color(galvanizedSteel));
+const addHdpe = (name: string, s: Shape) => ps.part(name, place(s).color(hdpe));
+const addStainless = (name: string, s: Shape) => ps.part(name, place(s).color(stainlessSteel));
+const addCanopy = (name: string, s: Shape) => ps.part(name, place(s).color(roofPolyethylene));
 for (const [k, [px, py]] of [[-1, -1], [1, -1], [-1, 1], [1, 1]].entries()) {
-  add(`post-${k + 1}`, blk(px * 450 - 40, py * 450 - 40, 0, px * 450 + 40, py * 450 + 40, roofed.value === 'yes' ? 2500 : 2200), frame);
+  addSteel(`post-${k + 1}`, blk(px * 450 - 40, py * 450 - 40, 0, px * 450 + 40, py * 450 + 40, roofed.value === 'yes' ? 2500 : 2200));
 }
-add('deck', blk(-450, -450, dz - 50, 450, 450, dz), deck);
+addHdpe('deck', blk(-450, -450, dz - 50, 450, 450, dz));
 for (const side of [-1, 1]) {
-  add(`rail-${side < 0 ? 'l' : 'r'}`, blk(-450, side * 450 - 20, 2100, 450, side * 450 + 20, 2150), frame);
-  add(`rail-mid-${side < 0 ? 'l' : 'r'}`, blk(-450, side * 450 - 20, 1800, 450, side * 450 + 20, 1840), frame);
-  add(`ladder-rail-${side < 0 ? 'l' : 'r'}`, bar(-1285, 35, -450, dz, 50, side * 280), frame);
+  addSteel(`rail-${side < 0 ? 'l' : 'r'}`, blk(-450, side * 450 - 20, 2100, 450, side * 450 + 20, 2150));
+  addSteel(`rail-mid-${side < 0 ? 'l' : 'r'}`, blk(-450, side * 450 - 20, 1800, 450, side * 450 + 20, 1840));
+  addSteel(`ladder-rail-${side < 0 ? 'l' : 'r'}`, bar(-1285, 35, -450, dz, 50, side * 280));
 }
 for (let r = 1; r <= 4; r++) {
   const z = (dz * r) / 5;
   const x = -1300 + (850 * z) / dz;
-  add(`rung-${r}`, blk(x - 30, -280, z - 20, x + 30, 280, z + 20), deck);
+  addSteel(`rung-${r}`, blk(x - 30, -280, z - 20, x + 30, 280, z + 20));
 }
 if (roofed.value === 'yes') {
-  add('roof', elev([[-600, 2480], [600, 2480], [0, 2900]], 1100), roof);
+  addCanopy('roof', elev([[-600, 2480], [600, 2480], [0, 2900]], 1100));
 }
 // Chute: a U-trough laid along +X, tilted down and hung off the deck edge.
 const a = 33;
@@ -68,8 +73,8 @@ const drop = dz - 250;
 const len = drop / Math.sin((a * Math.PI) / 180);
 const run = len * Math.cos((a * Math.PI) / 180);
 const trough: [number, number][] = [[-300, 0], [300, 0], [300, 180], [260, 180], [260, 40], [-260, 40], [-260, 180], [-300, 180]];
-add('chute', sideProfile(trough, 0, len).rotateY(a).translate(440, 0, dz - 20), slide);
-add('run-out', sideProfile(trough, 430 + run - 30, 520).translate(0, 0, 250 - 20 - 25), slide);
-add('run-out-leg', blk(430 + run + 380, -200, 0, 430 + run + 460, 200, 210), frame);
+addStainless('chute', sideProfile(trough, 0, len).rotateY(a).translate(440, 0, dz - 20));
+addStainless('run-out', sideProfile(trough, 430 + run - 30, 520).translate(0, 0, 250 - 20 - 25));
+addSteel('run-out-leg', blk(430 + run + 380, -200, 0, 430 + run + 460, 200, 210));
 
 return ps.model();

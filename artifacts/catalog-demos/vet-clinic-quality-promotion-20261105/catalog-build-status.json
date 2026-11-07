@@ -1,0 +1,9 @@
+{
+  "command": "npx tsx scripts/buildAssetCatalog.ts",
+  "exitCode": 0,
+  "indexRegenerated": true,
+  "catalogAssets": 2390,
+  "changedKitRows": 50,
+  "previewPathsPresent": 50,
+  "sourceHashesVerifiedBy": "tests/integration/catalog/catalogIndex.test.ts"
+}

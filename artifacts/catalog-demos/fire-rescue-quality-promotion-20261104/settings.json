@@ -1,0 +1,57 @@
+{
+  "date": "2026-11-04",
+  "scope": {
+    "kit": "fire-rescue",
+    "existingAssetCount": 60,
+    "newAssets": 0,
+    "purpose": "Promote existing scene assets with material-specific controls, named palette presets, visible form details, and regenerated previews."
+  },
+  "runtime": {
+    "node": "v22.23.4",
+    "python": "v3.14.9",
+    "ffmpeg": "6.1.1"
+  },
+  "sourceReplay": {
+    "restoreOriginalSources": "python3 -B artifacts/catalog-demos/fire-rescue-wave-20261102/generate_fire_rescue_assets.py",
+    "promotion": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/fire-rescue-quality-promotion-20261104/promote_fire_rescue_assets.py",
+    "promotionScript": "promote_fire_rescue_assets.py",
+    "notes": "The promotion replay expects the original generated sources. It replaces the two generic palette knobs with 2–4 material-specific color controls per asset, adds weathered and highVisibility presets, adds visible details to vehicles, the nozzle and protective gear, and retains all 60 IDs."
+  },
+  "previewAndIndex": {
+    "renderCommand": "mapfile -t asset_ids < <(find catalog/kits/fire-rescue -maxdepth 1 -type f -name '*.kcad.ts' -printf '%f\\n' | sed 's/\\.kcad\\.ts$//'); npx tsx scripts/renderCatalogPreviews.ts \"${asset_ids[@]}\"",
+    "renderedPreviews": 60,
+    "indexCommand": "npx tsx scripts/buildAssetCatalog.ts",
+    "renderLog": "catalog-preview-render-output.txt",
+    "indexLog": "catalog-index-build-output.txt"
+  },
+  "checks": {
+    "qualityGate": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/checkCatalogQuality.py --kit fire-rescue",
+    "eslint": "npx eslint catalog/kits/fire-rescue/",
+    "integration": "npx vitest run tests/integration/catalog/",
+    "pagesBuild": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-fire-rescue-quality-promotion-20261104",
+    "pagesVerification": "python3 -B artifacts/catalog-demos/fire-rescue-quality-promotion-20261104/verify_fire_rescue_pages.py /tmp/kernelcad-fire-rescue-quality-promotion-20261104",
+    "variantRenders": "npx tsx artifacts/catalog-demos/fire-rescue-quality-promotion-20261104/render_fire_rescue_variants.ts"
+  },
+  "websiteBaseline": {
+    "url": "https://kernelcad.com/",
+    "assetEndpoint": "https://kernelcad.com/assets.json",
+    "assetEndpointGeneratedAt": "2026-11-04T21:55:56.241Z",
+    "assets": 2116,
+    "previewBackedAssets": 2116,
+    "fireRescueIds": 60,
+    "fireRescuePresetsAtBaseline": 0,
+    "verificationBoundary": "The branch is not deployed. These values describe the live baseline before this promotion, not the promoted branch."
+  },
+  "demo": {
+    "variantSource": "render_fire_rescue_variants.ts",
+    "variantSourceCommand": "npx tsx artifacts/catalog-demos/fire-rescue-quality-promotion-20261104/render_fire_rescue_variants.ts",
+    "captureSource": "capture_fire_rescue_promotion_demo.py",
+    "captureCommand": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/fire-rescue-quality-promotion-20261104/capture_fire_rescue_promotion_demo.py",
+    "video": "fire-rescue-quality-promotion.mp4",
+    "resolution": "1280x720",
+    "durationSeconds": 21,
+    "frames": 7,
+    "inspectionSource": "inspect_fire_rescue_demo.py",
+    "inspectionCommand": "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/fire-rescue-quality-promotion-20261104/inspect_fire_rescue_demo.py"
+  }
+}

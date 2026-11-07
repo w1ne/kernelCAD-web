@@ -5,7 +5,7 @@
     "url": "https://kernelcad.com"
   },
   "metadata": {
-    "description": "Parametric CAD and drawings",
+    "description": "Design and edit 3D CAD parts",
     "version": "0.17.4"
   },
   "plugins": [

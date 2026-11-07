@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-06",
+  "scope": "Focused silhouette and material-zone improvement for the existing linear-guide-carriage asset",
+  "source": "catalog/kits/standard-components/linear-guide-carriage.kcad.ts",
+  "beforeSource": "artifacts/catalog-demos/standard-components-carriage-quality-20261106/before/linear-guide-carriage.kcad.ts",
+  "beforePreview": "artifacts/catalog-demos/standard-components-carriage-quality-20261106/before/linear-guide-carriage.png",
+  "defaultPreview": "catalog/kits/standard-components/previews/linear-guide-carriage.png",
+  "variantInvocation": "npx tsx artifacts/catalog-demos/standard-components-carriage-quality-20261106/render_carriage_variants.ts",
+  "variants": [
+    {
+      "id": "compact-default",
+      "size": "compact",
+      "preset": "default"
+    },
+    {
+      "id": "standard-dark",
+      "size": "standard",
+      "preset": "dark"
+    },
+    {
+      "id": "standard-brass",
+      "size": "standard",
+      "preset": "brass"
+    },
+    {
+      "id": "standard-weathered",
+      "size": "standard",
+      "preset": "weathered"
+    },
+    {
+      "id": "large-default",
+      "size": "large",
+      "preset": "default"
+    }
+  ],
+  "materialZones": {
+    "steel": "body and mounting pad",
+    "polymer": "paired end wipers",
+    "brass": "grease fitting"
+  },
+  "geometry": [
+    "open underside rail channel",
+    "four recessed top mounting wells",
+    "U-shaped polymer wiper ends",
+    "raised brass grease fitting"
+  ],
+  "previewInvocation": "npx tsx scripts/renderCatalogPreviews.ts angle-bracket base-mounting-plate beam-coupling blind-flange bulkhead-adapter cable-clamp cable-gland caster-wheel clevis-pin din-rail din-rail-end-stop din-rail-terminal-block door-hinge drawer-slide-channel flange-bearing-housing flat-joining-plate gusset-bracket handle-pull handwheel hose-barb-adapter jaw-coupling knurled-knob leveling-foot linear-guide-carriage linear-guide-rail panel-clamp piano-hinge pillow-block-housing pipe-coupling pipe-elbow-45 pipe-elbow-90 pipe-flange pipe-reducer pipe-saddle-clamp pipe-tee pipe-union retaining-ring rubber-bumper shaft-collar shaft-coupling shim-pack split-shaft-collar square-mounting-flange t-slot-angle-bracket t-slot-end-cap timing-belt-pulley tube-clamp tubular-spacer u-bracket v-belt-pulley",
+  "qualityGate": "python3 scripts/checkCatalogQuality.py --kit standard-components",
+  "wholeCatalogQualityGate": "python3 scripts/checkCatalogQuality.py",
+  "assetCheck": "npx tsx scripts/checkCatalogAsset.ts catalog/kits/standard-components/linear-guide-carriage.kcad.ts",
+  "lint": "npx eslint catalog/kits/standard-components/",
+  "catalogBuild": "npx tsx scripts/buildAssetCatalog.ts",
+  "catalogPagesBuild": "npm run catalog:pages",
+  "integrationGate": "npx vitest run tests/integration/catalog/",
+  "localPageCheck": "python3 artifacts/catalog-demos/standard-components-carriage-quality-20261106/verify_local_page.py",
+  "verificationRecord": "python3 artifacts/catalog-demos/standard-components-carriage-quality-20261106/record_carriage_verification.py",
+  "demoCapture": "python3 artifacts/catalog-demos/standard-components-carriage-quality-20261106/capture_carriage_demo.py",
+  "videoInspection": "python3 artifacts/catalog-demos/standard-components-carriage-quality-20261106/inspect_carriage_video.py",
+  "captionBoundary": "Local source-to-preview workflow and parametric variants only. Deployed behavior and physical acceptance are not verified.",
+  "video": "artifacts/catalog-demos/standard-components-carriage-quality-20261106/linear-guide-carriage-quality.mp4",
+  "captureInvocation": "python3 artifacts/catalog-demos/standard-components-carriage-quality-20261106/capture_carriage_demo.py",
+  "canvas": {
+    "width": 1280,
+    "height": 720
+  },
+  "frames": 5,
+  "durationSeconds": 15,
+  "ffmpeg": "ffmpeg -framerate 1/3 -c:v libx264 -r 24 -pix_fmt yuv420p -crf 23 -movflags +faststart",
+  "provenance": "Generated from the checked-in .kcad.ts source, actual named preset values and local catalog preview. Deployment is not shown."
+}

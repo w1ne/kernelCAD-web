@@ -1,0 +1,4 @@
+(node:35909) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+alpine-expedition/alpine-helmet: 326 tris
+alpine-expedition/basecamp-dome-tent: 236 tris

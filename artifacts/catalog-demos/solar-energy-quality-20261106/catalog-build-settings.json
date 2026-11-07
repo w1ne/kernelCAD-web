@@ -1,0 +1,9 @@
+{
+  "command": "npx tsx scripts/buildAssetCatalog.ts",
+  "scope": "full catalog index, generated from all catalog/kits/*/*.kcad.ts sources",
+  "index": "catalog/index.json",
+  "assetCount": 2390,
+  "solarEnergyAssets": 40,
+  "manualIndexEdits": false,
+  "result": "exit 0; catalog/index.json regenerated"
+}

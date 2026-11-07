@@ -13,7 +13,7 @@ if [[ ! -f "$fontfile" ]]; then
   exit 1
 fi
 
-asset_ids=(angle-bracket pipe-tee handwheel timing-belt-pulley handle-pull)
+asset_ids=(caster-wheel jaw-coupling handwheel t-slot-end-cap panel-clamp)
 caption_ids=(01-source 02-validate 03-catalog 04-previews 05-handoff)
 for i in 0 1 2 3 4; do
   n=$((i + 1))
@@ -22,7 +22,7 @@ for i in 0 1 2 3 4; do
   ffmpeg -hide_banner -loglevel error -y \
     -f lavfi -i 'color=c=0xf1f4f6:s=1280x720:d=1' \
     -i "$preview_dir/${asset_ids[$i]}.png" \
-    -filter_complex "[1:v]scale=600:600:force_original_aspect_ratio=decrease:flags=lanczos,pad=600:600:(ow-iw)/2:(oh-ih)/2:color=0xf1f4f6[asset];[0:v][asset]overlay=640:36,drawtext=fontfile=$fontfile:textfile=$demo_dir/captions/$caption.txt:expansion=none:fontcolor=0x17212b:fontsize=32:line_spacing=14:x=42:y=75:box=1:boxcolor=white@0.92:boxborderw=24,drawtext=text='Local validation and previews only | deployment pending PR merge | no hardware acceptance':x=44:y=680:fontcolor=0x46515d:fontsize=16" \
+    -filter_complex "[1:v]scale=600:600:force_original_aspect_ratio=decrease:flags=lanczos,pad=600:600:(ow-iw)/2:(oh-ih)/2:color=0xf1f4f6[asset];[0:v][asset]overlay=660:36,drawtext=fontfile=$fontfile:textfile=$demo_dir/captions/$caption.txt:expansion=none:fontcolor=0x17212b:fontsize=27:line_spacing=18:x=42:y=88:box=1:boxcolor=white@0.92:boxborderw=24,drawtext=text='Local source and previews only | follow-up review pending | deployment not verified | no physical acceptance':x=44:y=680:fontcolor=0x46515d:fontsize=15" \
     -frames:v 1 "$tmp_dir/frame-$frame.png"
 done
 

@@ -1,0 +1,90 @@
+{
+  "checks": [
+    {
+      "name": "kitQuality",
+      "command": [
+        "python3",
+        "scripts/checkCatalogQuality.py",
+        "--kit",
+        "photo-video-studio"
+      ],
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "passed": true,
+      "output": "kitquality-output.txt"
+    },
+    {
+      "name": "catalogQuality",
+      "command": [
+        "python3",
+        "scripts/checkCatalogQuality.py"
+      ],
+      "exitCode": 1,
+      "expectedExitCode": 1,
+      "passed": true,
+      "output": "catalogquality-output.txt"
+    },
+    {
+      "name": "eslint",
+      "command": [
+        "npx",
+        "eslint",
+        "catalog/kits/photo-video-studio/"
+      ],
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "passed": true,
+      "output": "eslint-output.txt"
+    },
+    {
+      "name": "integration",
+      "command": [
+        "npx",
+        "vitest",
+        "run",
+        "tests/integration/catalog/"
+      ],
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "passed": true,
+      "output": "integration-output.txt"
+    },
+    {
+      "name": "indexCheck",
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/buildAssetCatalog.ts",
+        "--check"
+      ],
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "passed": true,
+      "output": "indexcheck-output.txt"
+    },
+    {
+      "name": "catalogPages",
+      "command": [
+        "npx",
+        "tsx",
+        "scripts/buildCatalogPages.ts",
+        "/tmp/kernelcad-photo-video-studio-pages"
+      ],
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "passed": true,
+      "output": "catalogpages-output.txt"
+    }
+  ],
+  "kitPassing": 40,
+  "kitTotal": 40,
+  "catalogPassing": 2291,
+  "catalogTotal": 2390,
+  "catalogPassRate": "95.9%",
+  "catalogThinRemaining": 99,
+  "catalogThinRate": "4.1%",
+  "eslint": "passed",
+  "integrationFiles": 4,
+  "integrationTests": 15,
+  "localPagesPresent": true
+}

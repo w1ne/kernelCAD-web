@@ -33,6 +33,8 @@ import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { Region, Vec2 } from '../../../shared/intent/region';
 import type { FeatureId } from '../../../shared/intent/types';
 import type { ShapeBackend } from '../../../kernel/backends/backend';
+import type { ParamTable } from '../../../shared/runtime/paramTable';
+import { resolveParams } from '../../../shared/runtime/resolveParams';
 import { computeBendAllowance } from '../../sheetMetal';
 import { flattenPatternWithHoles } from '../../sheetMetalFlatPattern';
 
@@ -292,13 +294,15 @@ export async function checkSheetMetal(
   terminalId: string,
   settings: SheetMetalSettings,
   lowered?: ReadonlyMap<FeatureId, ShapeBackend>,
+  paramTable?: ParamTable,
 ): Promise<SheetMetalPartReport | undefined> {
   const root = sheetMetalRootOf(records, terminalId);
   if (root === undefined) return undefined;
-  const region = await flattenPatternWithHoles(records, terminalId, lowered);
+  const resolvedRoot = paramTable ? resolveParams(root, paramTable) as FeatureRecord : root;
+  const region = await flattenPatternWithHoles(records, terminalId, lowered, paramTable);
   return analyzeSheetMetalFlat(region, {
-    thickness: evaluated(root, 'thickness'),
-    kFactor: evaluated(root, 'kFactor'),
+    thickness: evaluated(resolvedRoot, 'thickness'),
+    kFactor: evaluated(resolvedRoot, 'kFactor'),
     settings,
     terminalId,
     bendIds: bendIdsOf(records, terminalId),

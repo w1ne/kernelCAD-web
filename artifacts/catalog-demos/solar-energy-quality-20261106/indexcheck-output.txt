@@ -1,0 +1,8 @@
+Catalog integration suite: passed 4 files / 15 tests.
+The suite opened all committed catalog sources, checked sourceSha256 freshness,
+checked the generated index, and confirmed each Studio asset exposes the knobs
+listed by its index row.
+
+Solar-specific verification: 40/40 sourceSha256 values equal the SHA-256 of the
+committed source files; all 40 indexed preview paths exist; all 40 triangle
+counts are within their declared budgets. See verification.json.

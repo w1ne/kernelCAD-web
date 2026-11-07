@@ -1,0 +1,7 @@
+{
+  "command": "npx vitest run tests/integration/catalog/",
+  "passed": true,
+  "filesPassed": 4,
+  "testsPassed": 15,
+  "output": "catalog-test-output.txt"
+}

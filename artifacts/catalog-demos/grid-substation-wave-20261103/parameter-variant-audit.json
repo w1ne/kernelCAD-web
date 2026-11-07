@@ -1,0 +1,33 @@
+{
+  "asset": "substation-main-power-transformer",
+  "defaultScale": 1.0,
+  "variantScale": 1.2,
+  "defaultTriangles": 580,
+  "variantTriangles": 580,
+  "triangleBudget": 1800,
+  "defaultMaterials": 1,
+  "variantMaterials": 1,
+  "defaultBoundsM": [
+    6.4,
+    4.816,
+    3.276
+  ],
+  "variantBoundsM": [
+    7.68,
+    5.7792,
+    3.9312
+  ],
+  "boundsRatios": [
+    1.2,
+    1.2,
+    1.2
+  ],
+  "variantKnobs": [
+    "scale",
+    "color"
+  ],
+  "variantWithinBudget": true,
+  "oneMaterial": true,
+  "scaleChangesBounds": true,
+  "passed": true
+}

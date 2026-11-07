@@ -18,6 +18,10 @@ const capacity = param('capacity', '750', { choices: ['500', '750', '1000'], lab
 const flask = param('flask', '#536d51', { label: 'Flask' });
 const cap = param('cap', '#343a36', { label: 'Cap' });
 const loop = param('loop', '#9d7548', { label: 'Carry loop' });
+presets({
+  field: { flask: '#596f4e', cap: '#343b36', loop: '#b28a52' },
+  alpine: { flask: '#6c8da0', cap: '#37424a', loop: '#ded6bd' },
+});
 
 const ml = Number(capacity.value);
 const height = 230 + (ml - 500) * 0.12;

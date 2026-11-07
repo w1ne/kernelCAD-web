@@ -1,0 +1,8 @@
+(node:220504) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+langstroth-hive/freshApiary: 96 tris
+langstroth-hive/weatheredYard: 96 tris
+bee-smoker/fieldReady: 284 tris
+bee-smoker/sunWorn: 284 tris
+honey-jar/goldenHarvest: 188 tris
+honey-jar/paleSpring: 188 tris

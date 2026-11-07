@@ -1,9 +1,9 @@
-// Original low-poly veterinary clinic scene asset. Millimetres, Z up, base origin.
+// Stacked feline condo: Four-compartment feline housing unit with shelves, entry openings and a low climbing step. Separate molded polymer, vinyl upholstery surfaces keep its component silhouette readable.
 meta({
   name: "stacked-feline-condo",
   license: 'CC0-1.0',
   title: "Stacked feline condo",
-  description: "Four-compartment feline housing unit with shelves, entry openings and a low climbing step." + ' Editable overall scale and asset color.',
+  description: "Four-compartment feline housing unit with shelves, entry openings and a low climbing step. Material controls: molded polymer, vinyl upholstery. Presets: clinicClean and softTeal.",
   tags: ["veterinary", "animal clinic", "animal health", "stacked", "feline", "condo", "low poly", "CC0"],
   kit: 'vet-clinic',
   category: 'prop',
@@ -13,7 +13,22 @@ meta({
 });
 
 const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
-const color = param('color', "#8d7f70", { label: 'Asset color' });
+const polymerColor = param('polymerColor', '#d3dfdc', { label: 'Molded polymer' });
+const upholsteryColor = param('upholsteryColor', '#62858a', { label: 'Vinyl upholstery' });
+
+presets({
+  clinicClean: { polymerColor: '#e8ece8' },
+  softTeal: { polymerColor: '#9bbfc0', upholsteryColor: '#47767d' },
+});
+
+const finishFor = (name: string) => {
+  switch (name) {
+    case "middle-shelf": return upholsteryColor;
+    case "climb-step-one": return upholsteryColor;
+    case "climb-step-two": return upholsteryColor;
+  }
+  return polymerColor;
+};
 const p = assembly("stacked-feline-condo");
 
 const b = (name: string, size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
@@ -21,7 +36,7 @@ const b = (name: string, size: [number, number, number], at: [number, number, nu
   if (rotation?.[0]) shape = shape.rotate([1, 0, 0], rotation[0]);
   if (rotation?.[1]) shape = shape.rotate([0, 1, 0], rotation[1]);
   if (rotation?.[2]) shape = shape.rotate([0, 0, 1], rotation[2]);
-  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(color));
+  p.part(name, shape.translate(at[0], at[1], at[2]).scale(scale).color(finishFor(name)));
 };
 
 b("base", [1320, 620, 100], [0, 0, 50]);

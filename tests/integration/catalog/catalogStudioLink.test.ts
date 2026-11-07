@@ -125,7 +125,7 @@ describe('open a catalog asset in Studio by ?catalog=<kit>/<id>', () => {
       expect(loaded.asset.id, asset.id).toBe(asset.id);
       expect(Object.keys(params), asset.id).toEqual(asset.params.map((p) => p.name));
     }
-  }, 300_000);
+  }, 600_000);
 
   it('refuses refs that do not name a catalog row, and sources that no longer match the index', async () => {
     const fetchText = twoKitCatalog();

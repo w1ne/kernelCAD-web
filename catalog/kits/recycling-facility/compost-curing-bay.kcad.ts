@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: CC0-1.0
-// Original low-poly recycling-facility scene prop, millimetres, Z up.
+// Compost curing bay: an open-top steel body with a rolled rim and side reinforcing ribs. Low-poly visualization geometry in millimetres, Z up.
 
 meta({
   name: "compost-curing-bay",
   license: 'CC0-1.0',
   title: "Compost curing bay",
-  description: "Compost curing bay as original low-poly scene equipment for a recycling and materials-recovery facility. Visualization geometry only. Knobs: overall scale and asset color.",
+  description: "Compost curing bay: an open-top steel body with a rolled rim and side reinforcing ribs. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
   tags: ["recycling", "materials recovery", "waste management", "organics", "low poly", "scene prop"],
   kit: "recycling-facility",
   category: 'prop',
@@ -15,18 +15,23 @@ meta({
 });
 
 const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });
-const color = param('color', "#71804f", { label: 'Asset color' });
+const paintedSteel = param('paintedSteel', '#71804f', { label: 'Painted steel' });
+const stainlessSteel = param('stainlessSteel', '#a8b4b6', { label: 'Stainless steel' });
+presets({
+  weathered: { paintedSteel: '#717952', stainlessSteel: '#9ea7a5' },
+  highVisibility: { paintedSteel: '#d77632' },
+});
 const b = (x:number,y:number,z:number,w:number,d:number,h:number) => box(w,d,h,true).translate(x,y,z+h/2).scale(scale);
 
 const p = assembly("compost-curing-bay");
-p.part("floor-pan", b(0,0,0,1180,820,70).color(color));
-p.part("front-wall", b(0,-372.0,70,1180,76,990).color(color));
-p.part("rear-wall", b(0,372.0,70,1180,76,990).color(color));
-p.part("left-wall", b(-552.0,0,70,76,700,990).color(color));
-p.part("right-wall", b(552.0,0,70,76,700,990).color(color));
-p.part("front-rim", b(0,-390.0,1060,1210,45,48).color(color));
-p.part("rear-rim", b(0,390.0,1060,1210,45,48).color(color));
-p.part("side-rib-left", b(-510.0,0,140,50,650,900).color(color));
-p.part("side-rib-right", b(510.0,0,140,50,650,900).color(color));
+p.part("floor-pan", b(0,0,0,1180,820,70).color(paintedSteel));
+p.part("front-wall", b(0,-372.0,70,1180,76,990).color(paintedSteel));
+p.part("rear-wall", b(0,372.0,70,1180,76,990).color(paintedSteel));
+p.part("left-wall", b(-552.0,0,70,76,700,990).color(paintedSteel));
+p.part("right-wall", b(552.0,0,70,76,700,990).color(paintedSteel));
+p.part("front-rim", b(0,-390.0,1060,1210,45,48).color(stainlessSteel));
+p.part("rear-rim", b(0,390.0,1060,1210,45,48).color(stainlessSteel));
+p.part("side-rib-left", b(-510.0,0,140,50,650,900).color(stainlessSteel));
+p.part("side-rib-right", b(510.0,0,140,50,650,900).color(stainlessSteel));
 
 return p.model();

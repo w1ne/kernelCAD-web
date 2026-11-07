@@ -1,0 +1,37 @@
+{
+  "sourceSha256Matches": true,
+  "previewPathIndexed": true,
+  "previewFileExists": true,
+  "params": [
+    {
+      "name": "size",
+      "type": "choice",
+      "label": "Model size"
+    },
+    {
+      "name": "steel",
+      "type": "color",
+      "label": "Steel"
+    },
+    {
+      "name": "polymer",
+      "type": "color",
+      "label": "Engineering polymer"
+    },
+    {
+      "name": "brass",
+      "type": "color",
+      "label": "Brass"
+    }
+  ],
+  "presets": [
+    "brass",
+    "dark",
+    "weathered"
+  ],
+  "triangleCount": 408,
+  "triangleBudget": 460,
+  "kitAssetCount": 50,
+  "catalogAssetCount": 2390,
+  "passed": true
+}

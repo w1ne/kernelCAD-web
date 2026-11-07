@@ -1,0 +1,35 @@
+{
+  "asset": "recycling-facility/horizontal-baler",
+  "triangleBudget": 1800,
+  "defaultPreview": "catalog/kits/recycling-facility/previews/horizontal-baler.png",
+  "beforePreview": "before-horizontal-baler.png",
+  "previewSize": 512,
+  "video": {
+    "width": 1280,
+    "height": 720,
+    "fps": 30,
+    "frameSeconds": 3,
+    "codec": "H.264 / yuv420p"
+  },
+  "presetOverrides": {
+    "weathered": {
+      "paintedSteel": "#5b665f",
+      "stainlessSteel": "#929b99",
+      "rubber": "#383b3a",
+      "recoveredMaterial": "#8f7754"
+    },
+    "highVisibility": {
+      "paintedSteel": "#d77632",
+      "stainlessSteel": "#d0d5d3",
+      "rubber": "#292d2f",
+      "recoveredMaterial": "#c49b5b"
+    }
+  },
+  "workflow": [
+    "npx tsx scripts/renderCatalogPreviews.ts horizontal-baler",
+    "npx tsx scripts/buildAssetCatalog.ts",
+    "npx eslint catalog/kits/recycling-facility/",
+    "npx vitest run tests/integration/catalog/"
+  ],
+  "claims": "Local source rendering and catalog checks only; no deployment, equipment performance, safety or physical acceptance claim."
+}

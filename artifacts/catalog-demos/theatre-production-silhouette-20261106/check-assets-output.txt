@@ -1,0 +1,7 @@
+npm notice run kernelcad@0.17.4 npx
+npm notice run 'tsx' artifacts/catalog-demos/theatre-production-silhouette-20261106/check_assets.ts ellipsoidal-reflector-spotlight fresnel-wash-fixture par-can-fixture motorized-chain-hoist spotlight-followspot-stand
+ellipsoidal-reflector-spotlight: 1442/1800 tris, size 0.64 x 0.578 x 0.75599 m, minUp -0.156
+fresnel-wash-fixture: 1144/1800 tris, size 0.68 x 0.718451 x 0.611259 m, minUp -0.291451
+par-can-fixture: 1056/1800 tris, size 0.6 x 0.685565 x 0.698354 m, minUp -0.265565
+motorized-chain-hoist: 1796/2400 tris, size 0.931965 x 1.938 x 0.9 m, minUp 0.01
+spotlight-followspot-stand: 2024/2400 tris, size 1.123872 x 1.622 x 1.457965 m, minUp 0

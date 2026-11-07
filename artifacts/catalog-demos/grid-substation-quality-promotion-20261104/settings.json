@@ -1,0 +1,42 @@
+{
+  "kit": "grid-substation",
+  "baselineCommit": "853a4daa7",
+  "existingAssetCount": 80,
+  "idPolicy": "retain all existing source IDs; add none",
+  "materialControlsPerAsset": {
+    "minimum": 2,
+    "maximum": 4
+  },
+  "presets": [
+    "weathered",
+    "maintenance"
+  ],
+  "defaultTriangleBudget": 1800,
+  "commands": [
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/grid-substation-wave-20261103/generate_grid_substation_assets.py",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/grid-substation-quality-promotion-20261104/promote_grid_substation_quality.py --apply",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH node --import ./artifacts/catalog-demos/grid-substation-quality-promotion-20261104/node-preload.mjs --import tsx scripts/renderCatalogPreviews.ts",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH node --import ./artifacts/catalog-demos/grid-substation-quality-promotion-20261104/node-preload.mjs --import tsx scripts/buildAssetCatalog.ts",
+    "PYTHONDONTWRITEBYTECODE=1 python3 scripts/checkCatalogQuality.py --kit grid-substation",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH npx --silent eslint catalog/kits/grid-substation/",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH NODE_OPTIONS=--import=./artifacts/catalog-demos/grid-substation-quality-promotion-20261104/node-preload.mjs npx vitest run tests/integration/catalog/",
+    "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH node --import ./artifacts/catalog-demos/grid-substation-quality-promotion-20261104/node-preload.mjs --import tsx scripts/buildCatalogPages.ts /tmp/kernelcad-grid-substation-quality-promotion-20261104",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/grid-substation-quality-promotion-20261104/verify_grid_substation_pages.py /tmp/kernelcad-grid-substation-quality-promotion-20261104",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/grid-substation-quality-promotion-20261104/record_promotion_results.py",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/grid-substation-quality-promotion-20261104/capture_grid_substation_demo.py",
+    "PYTHONDONTWRITEBYTECODE=1 python3 artifacts/catalog-demos/grid-substation-quality-promotion-20261104/inspect_grid_substation_video.py"
+  ],
+  "runtime": {
+    "node": "v22.23.4",
+    "preload": "node-preload.mjs",
+    "previewRenderer": "scripts/renderCatalogPreviews.ts",
+    "previewSize": "512x512",
+    "demoFrames": 7,
+    "demoFrameSize": "1280x720",
+    "demoSecondsPerFrame": 3,
+    "demoDurationSeconds": 21,
+    "videoCodec": "H.264 / libx264",
+    "videoFrameRate": 24,
+    "videoPixelFormat": "yuv420p"
+  }
+}

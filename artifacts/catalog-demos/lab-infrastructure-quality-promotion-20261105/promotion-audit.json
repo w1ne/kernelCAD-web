@@ -1,0 +1,60 @@
+{
+  "kit": "lab-infrastructure",
+  "assetsPromoted": 60,
+  "newAssetsAdded": 0,
+  "newAssetIds": [],
+  "overallQualityGateBeforeRound": "1180/2390 assets pass (49.37%)",
+  "materialKnobsMin": 2,
+  "materialKnobsMax": 4,
+  "materialKnobsTotal": 193,
+  "materialColorParamsBefore": 120,
+  "materialColorParamsAfter": 193,
+  "netMaterialColorParamsAdded": 73,
+  "materialControlsPerAsset": {
+    "2": 9,
+    "3": 29,
+    "4": 22
+  },
+  "presetNamesPerAsset": [
+    "cleanroom",
+    "highVisibility"
+  ],
+  "presetEntriesTotal": 120,
+  "silhouetteGeometryAssets": 15,
+  "geometryEnhancements": [
+    "articulated-extraction-snorkel",
+    "balance-isolation-bench",
+    "benchtop-extraction-enclosure",
+    "canopy-extraction-hood",
+    "chemical-weighing-enclosure",
+    "cleanroom-pass-through-chamber",
+    "ductless-fume-enclosure",
+    "laboratory-faucet-set",
+    "laboratory-fume-hood",
+    "laboratory-water-service-console",
+    "laboratory-washup-station",
+    "laminar-flow-workbench",
+    "ultra-low-temperature-freezer",
+    "undercounter-laboratory-freezer",
+    "vibration-isolation-table"
+  ],
+  "previewsRendered": 60,
+  "indexedRowsWithPreview": 60,
+  "catalogRows": 2390,
+  "sourceHashesFresh": true,
+  "sourceHashMismatches": [],
+  "missingPreviews": [],
+  "triangleRange": [
+    48,
+    624
+  ],
+  "triangleBudgetsHonest": true,
+  "triangleBudgetIssues": [],
+  "qualityGate": "60/60 pass",
+  "overallQualityGate": "1240/2390 assets pass (51.88%)",
+  "passingAssetsGainedThisRound": 60,
+  "thinAssetsRemaining": 1150,
+  "overallPassRate": "51.88%",
+  "catalogIdSetUnchanged": true,
+  "problems": []
+}

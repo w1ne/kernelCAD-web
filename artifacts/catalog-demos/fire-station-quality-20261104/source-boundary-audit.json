@@ -1,0 +1,6 @@
+{
+  "workingTreePathsAudited": 184,
+  "runtimeOrDeploymentOrPackageChanges": [],
+  "packageAudit": "npm-pack-audit.json",
+  "status": "passed"
+}

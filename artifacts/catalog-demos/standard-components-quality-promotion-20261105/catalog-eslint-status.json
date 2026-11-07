@@ -1,0 +1,5 @@
+{
+  "command": "npx eslint catalog/kits/standard-components/",
+  "exitCode": 0,
+  "durationSeconds": 1.7
+}

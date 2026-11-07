@@ -1,0 +1,9 @@
+{
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-recycling-facility-promotion-20261104",
+  "kitPages": 153,
+  "assetsInIndex": 2390,
+  "pageAndPreviewPairs": 153,
+  "hubListsKit": true,
+  "missing": [],
+  "passed": true
+}

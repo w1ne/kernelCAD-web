@@ -1,0 +1,6 @@
+{
+  "command": "npx eslint catalog/kits/recycling-facility/",
+  "passed": true,
+  "errors": 0,
+  "output": "catalog-eslint-final-output.txt"
+}

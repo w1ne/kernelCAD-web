@@ -44,7 +44,7 @@ Low-poly crates, barrels, containers, tools, carts and market pieces at real-wor
 | rowboat | Beached wooden rowboat with pointed bow, thwart seats and oars | lengthM, seats, oars, hull, trim, inside, oar | 324 |
 | mine-cart | Flared steel mine cart on a track segment, empty or heaped with ore | load, track, cart, band, steel, sleeper, ore | 392 |
 | firewood-stack | Split firewood pyramid with pale cut ends between stakes, optional roof | rows, roof, bark, cut, stake | 352 |
-| sandbags | Staggered wall of pillowed sandbags, straight or curved | courses, perCourse, layout, bag, bag2 | 484 |
+| sandbags | Staggered wall of pillow-shaped woven-canvas bags with closure seams, straight or curved | courses, perCourse, layout, canvasColor, alternateCanvasColor, stitchingThreadColor | 748 |
 | potion-bottles | Cluster of corked round, square and conical potion flasks | count, brewA, brewB, brewC, glass, cork | 332 |
 | candelabra | Brass candelabra or candlestick with drip cups, candles and flames | candles, height, metal, wax, flame | 296 |
 | hanging-sign | Shop sign hung from a bracket post, with mug, sword or boot emblem | emblem, shape, post, iron, board, mark | 204 |

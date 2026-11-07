@@ -18,6 +18,10 @@ const length = param('length', '1800', { choices: ['1800', '2100', '2400'], labe
 const shaft = param('shaft', '#4c6875', { label: 'Shaft' });
 const grip = param('grip', '#aa7b4c', { label: 'Grip' });
 const reel = param('reel', '#3d4140', { label: 'Reel and guides' });
+presets({
+  river: { shaft: '#4c6875', grip: '#aa7b4c', reel: '#3d4140' },
+  coastal: { shaft: '#246b77', grip: '#886247', reel: '#535e61' },
+});
 
 const rodLength = Number(length.value);
 const fishing = assembly('fishing-rod');

@@ -1,0 +1,29 @@
+{
+  "source": "catalog/kits/office/scissors.kcad.ts",
+  "sourceSha256": "7ba93a1efb5a6a335f26f4c39d8e7109ebd8dc5f20b20112b08d64ae0b28fd35",
+  "invocation": "npx tsx artifacts/catalog-demos/office-scissors-detail-20261106/render_scissors_presets.ts",
+  "exporter": "runAndExport(format=\"glb\", options={ format: \"glb\", style: \"lowpoly\", lowpoly: { maxTriangles: 360 } })",
+  "renderer": "scripts/lib/glbSoftwareRender.ts:renderTrianglesPng",
+  "variants": [
+    {
+      "preset": "professional",
+      "values": {
+        "stainlessSteel": "#aeb7ba",
+        "polymer": "#c95045",
+        "brass": "#c19a4b"
+      },
+      "triangles": 316,
+      "png": "variants/scissors-professional.png"
+    },
+    {
+      "preset": "classroom",
+      "values": {
+        "stainlessSteel": "#c0c6c8",
+        "polymer": "#4f7992",
+        "brass": "#d2a548"
+      },
+      "triangles": 316,
+      "png": "variants/scissors-classroom.png"
+    }
+  ]
+}

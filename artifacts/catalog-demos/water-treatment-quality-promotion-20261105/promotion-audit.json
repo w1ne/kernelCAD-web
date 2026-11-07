@@ -1,0 +1,27 @@
+{
+  "kit": "water-treatment",
+  "assetsPromoted": 50,
+  "newAssetIds": 0,
+  "indexedRowsWithPreview": 50,
+  "sourceHashesCurrent": 50,
+  "materialControls": 139,
+  "materialControlsPerAsset": {
+    "min": 2,
+    "max": 4
+  },
+  "presetEntries": 100,
+  "loftedCylinderSilhouettes": 45,
+  "inclinedLamellaPlates": 6,
+  "triangles": {
+    "min": 132,
+    "max": 676,
+    "maxBudget": 2200,
+    "withinDeclaredBudgets": true
+  },
+  "qualityGate": "50/50 pass",
+  "eslint": "PASS",
+  "catalogIntegration": "PASS",
+  "localPages": true,
+  "failures": [],
+  "passed": true
+}

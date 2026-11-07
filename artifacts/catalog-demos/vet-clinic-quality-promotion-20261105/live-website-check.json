@@ -1,0 +1,19 @@
+{
+  "checkedAt": "2026-11-05 UTC; exact wall time not captured",
+  "method": "existing Chrome CDP session and profile; read-only fetch",
+  "homepage": {
+    "url": "https://kernelcad.com/",
+    "status": 200,
+    "title": "kernelCAD — vibe manufacturing from idea to part",
+    "headline": "Vibe manufacturing. From idea to part."
+  },
+  "assetsEndpoint": {
+    "url": "https://kernelcad.com/assets.json",
+    "status": 200,
+    "generatedAt": "2026-11-05T07:49:43.772Z",
+    "previewedRows": 2116,
+    "existingVetClinicRows": 50
+  },
+  "branchDeployment": "not deployed; this is the prior public baseline",
+  "verificationAfterDeployment": "pending merge and marketing deployment"
+}

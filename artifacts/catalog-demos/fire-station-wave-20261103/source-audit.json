@@ -1,0 +1,1198 @@
+{
+  "expected": 70,
+  "audited": 70,
+  "passed": 70,
+  "failed": [],
+  "assets": [
+    {
+      "id": "apparatus-bay-bollard",
+      "origin": "base",
+      "triangles": 100,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.26,
+        0.9,
+        0.26
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "apparatus-bay-sectional-door",
+      "origin": "base",
+      "triangles": 168,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        3.4,
+        3.3,
+        0.14
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "apparatus-exhaust-capture-rail",
+      "origin": "ceiling",
+      "triangles": 104,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        4.2,
+        2.606,
+        0.22
+      ],
+      "minUpM": -1.896
+    },
+    {
+      "id": "bay-column-protector",
+      "origin": "base",
+      "triangles": 96,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.73,
+        0.62,
+        0.545086
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "bay-door-control-station",
+      "origin": "wall",
+      "triangles": 168,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.271,
+        0.43,
+        0.125
+      ],
+      "minUpM": 1.285
+    },
+    {
+      "id": "bay-hose-test-rack",
+      "origin": "base",
+      "triangles": 316,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.6,
+        1.059,
+        0.5
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "bay-trench-drain",
+      "origin": "base",
+      "triangles": 560,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        3.6,
+        0.2,
+        0.21
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "bay-utility-hose-station",
+      "origin": "wall",
+      "triangles": 244,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.63,
+        0.797,
+        0.2375
+      ],
+      "minUpM": 1.188
+    },
+    {
+      "id": "bay-warning-beacon",
+      "origin": "wall",
+      "triangles": 124,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.19,
+        0.48,
+        0.164
+      ],
+      "minUpM": 1.64
+    },
+    {
+      "id": "bay-washdown-hose-reel",
+      "origin": "wall",
+      "triangles": 200,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.44,
+        1.11,
+        0.2325
+      ],
+      "minUpM": 0.46
+    },
+    {
+      "id": "boot-wash-scrubber",
+      "origin": "base",
+      "triangles": 144,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.76,
+        0.35,
+        0.52
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "breathing-air-cascade-bank",
+      "origin": "base",
+      "triangles": 336,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.36,
+        1.875,
+        0.37
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "clean-gear-cabinet",
+      "origin": "base",
+      "triangles": 144,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.98,
+        1.9,
+        0.661
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "clean-turnout-gear-locker",
+      "origin": "base",
+      "triangles": 180,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.78,
+        1.95,
+        0.751
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "clean-zone-handwash-sink",
+      "origin": "base",
+      "triangles": 128,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.88,
+        1.38,
+        0.46
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "contaminated-gear-bagging-cart",
+      "origin": "base",
+      "triangles": 236,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.86,
+        0.86,
+        0.697
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "contaminated-gear-rinse-sink",
+      "origin": "base",
+      "triangles": 184,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.05,
+        1.31,
+        0.67
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "decon-boot-brush-set",
+      "origin": "base",
+      "triangles": 240,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.58,
+        0.585,
+        0.39
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "decon-chemical-cabinet",
+      "origin": "base",
+      "triangles": 96,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.94,
+        1.8,
+        0.594
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "decon-eyewash-station",
+      "origin": "base",
+      "triangles": 200,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.4,
+        0.862,
+        0.36
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "decon-shower-control-station",
+      "origin": "wall",
+      "triangles": 168,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.35,
+        0.52,
+        0.132
+      ],
+      "minUpM": 1.19
+    },
+    {
+      "id": "decon-shower-stall",
+      "origin": "base",
+      "triangles": 148,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.1,
+        2.18,
+        1
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "dirty-laundry-drop-cabinet",
+      "origin": "wall",
+      "triangles": 60,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.78,
+        0.96,
+        0.4482
+      ],
+      "minUpM": 0.8
+    },
+    {
+      "id": "exhaust-capture-nozzle",
+      "origin": "base",
+      "triangles": 124,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.34,
+        0.37,
+        0.207
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "facepiece-drying-cabinet",
+      "origin": "base",
+      "triangles": 316,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.8,
+        1.45,
+        0.553
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "fire-hose-washing-machine",
+      "origin": "base",
+      "triangles": 236,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1,
+        0.94,
+        0.763
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "gear-glove-drying-cabinet",
+      "origin": "base",
+      "triangles": 224,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.7,
+        1.09,
+        0.775
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "gear-inspection-bench",
+      "origin": "base",
+      "triangles": 140,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.5,
+        1,
+        0.76
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "hose-drying-tower",
+      "origin": "base",
+      "triangles": 236,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.2,
+        3.15,
+        0.36
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "hose-spin-dryer",
+      "origin": "base",
+      "triangles": 124,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.65,
+        0.96,
+        0.652
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "hot-zone-boundary-sign",
+      "origin": "wall",
+      "triangles": 84,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.92,
+        0.69,
+        0.117
+      ],
+      "minUpM": 1.29
+    },
+    {
+      "id": "radio-charging-rack",
+      "origin": "wall",
+      "triangles": 372,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.16,
+        0.88,
+        0.2275
+      ],
+      "minUpM": 1.035
+    },
+    {
+      "id": "retractable-exhaust-hose-reel",
+      "origin": "ceiling",
+      "triangles": 124,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.52,
+        1.625,
+        0.45
+      ],
+      "minUpM": -1.4625
+    },
+    {
+      "id": "scba-cylinder-drying-rack",
+      "origin": "wall",
+      "triangles": 248,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.4,
+        0.8825,
+        0.57
+      ],
+      "minUpM": 0.91
+    },
+    {
+      "id": "scba-cylinder-fill-bank",
+      "origin": "base",
+      "triangles": 236,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.98,
+        1.03,
+        0.864
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "scba-cylinder-storage-rack",
+      "origin": "base",
+      "triangles": 260,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.5,
+        1.21,
+        0.435
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "scba-fill-control-panel",
+      "origin": "wall",
+      "triangles": 300,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.68,
+        1.0925,
+        0.212
+      ],
+      "minUpM": 0.9575
+    },
+    {
+      "id": "scba-washing-machine",
+      "origin": "base",
+      "triangles": 104,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.96,
+        1.48,
+        0.946
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "station-air-compressor",
+      "origin": "base",
+      "triangles": 224,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.275,
+        1.1,
+        0.935
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "station-airlock-door-closer",
+      "origin": "base",
+      "triangles": 60,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.92,
+        2.2,
+        0.211831
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "station-alerting-control-console",
+      "origin": "base",
+      "triangles": 192,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.4,
+        1.275,
+        0.84
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "station-alerting-speaker",
+      "origin": "wall",
+      "triangles": 80,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.32,
+        0.44,
+        0.285
+      ],
+      "minUpM": 1.48
+    },
+    {
+      "id": "station-boot-drying-rack",
+      "origin": "wall",
+      "triangles": 312,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.6,
+        0.72,
+        0.21
+      ],
+      "minUpM": 0.82
+    },
+    {
+      "id": "station-call-board",
+      "origin": "wall",
+      "triangles": 156,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.6,
+        1.13,
+        0.101
+      ],
+      "minUpM": 1.005
+    },
+    {
+      "id": "station-callout-light-strip",
+      "origin": "wall",
+      "triangles": 108,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.45,
+        0.25,
+        0.101
+      ],
+      "minUpM": 1.73
+    },
+    {
+      "id": "station-clean-gear-hamper",
+      "origin": "base",
+      "triangles": 224,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.8,
+        0.82,
+        0.735
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "station-clean-room-airlock-cabinet",
+      "origin": "base",
+      "triangles": 84,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.08,
+        1.115,
+        0.824
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "station-clean-zone-clock",
+      "origin": "wall",
+      "triangles": 208,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.62,
+        0.62,
+        0.230952
+      ],
+      "minUpM": 1.44
+    },
+    {
+      "id": "station-decon-tool-rack",
+      "origin": "wall",
+      "triangles": 132,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.26,
+        1.128,
+        0.187
+      ],
+      "minUpM": 0.816
+    },
+    {
+      "id": "station-door-traffic-signal",
+      "origin": "wall",
+      "triangles": 124,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.26,
+        0.646,
+        0.2
+      ],
+      "minUpM": 1.484
+    },
+    {
+      "id": "station-electrical-transfer-cabinet",
+      "origin": "base",
+      "triangles": 72,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.03,
+        2.21,
+        0.7225
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "station-equipment-service-cart",
+      "origin": "base",
+      "triangles": 260,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.82,
+        1.051,
+        0.521
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "station-facepiece-cleaning-sink",
+      "origin": "base",
+      "triangles": 304,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.17,
+        1.37,
+        0.6
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "station-fitness-weight-rack",
+      "origin": "base",
+      "triangles": 304,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.5,
+        1.12,
+        0.48
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "station-gear-tag-printer",
+      "origin": "base",
+      "triangles": 104,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.66,
+        0.62,
+        0.645
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "station-hand-sanitizer-dispenser",
+      "origin": "wall",
+      "triangles": 60,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.23,
+        0.4675,
+        0.1845
+      ],
+      "minUpM": 1.2225
+    },
+    {
+      "id": "station-key-control-cabinet",
+      "origin": "base",
+      "triangles": 488,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.9125,
+        0.98,
+        0.3625
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "station-maintenance-workbench",
+      "origin": "base",
+      "triangles": 120,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.8,
+        1.86,
+        0.76
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "station-pager-locker",
+      "origin": "base",
+      "triangles": 260,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.1625,
+        1.25,
+        0.482
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "station-response-map-cabinet",
+      "origin": "wall",
+      "triangles": 96,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.5,
+        1.11,
+        0.171
+      ],
+      "minUpM": 1.09
+    },
+    {
+      "id": "station-standby-generator",
+      "origin": "base",
+      "triangles": 140,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.765,
+        1.73,
+        0.76
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "station-training-whiteboard",
+      "origin": "wall",
+      "triangles": 168,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.8,
+        1.14,
+        0.187
+      ],
+      "minUpM": 1.01
+    },
+    {
+      "id": "station-turnout-gear-inspection-light",
+      "origin": "base",
+      "triangles": 124,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.815,
+        1.55,
+        0.38
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "station-utility-sink",
+      "origin": "base",
+      "triangles": 140,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.9,
+        1.495,
+        0.62
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "transition-zone-airlock-bench",
+      "origin": "base",
+      "triangles": 168,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.4,
+        1.1,
+        0.64
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "transition-zone-floor-mat",
+      "origin": "base",
+      "triangles": 204,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.6,
+        0.028,
+        0.948
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "turnout-bench-with-boot-cubbies",
+      "origin": "base",
+      "triangles": 260,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.6,
+        1.18,
+        0.52
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "turnout-gear-drying-cabinet",
+      "origin": "base",
+      "triangles": 148,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.98,
+        1.8,
+        0.7
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "turnout-gear-extractor",
+      "origin": "base",
+      "triangles": 140,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        0.94,
+        1.29,
+        1.14
+      ],
+      "minUpM": 0
+    },
+    {
+      "id": "turnout-gear-open-drying-rack",
+      "origin": "base",
+      "triangles": 308,
+      "budget": 1800,
+      "materials": 1,
+      "knobs": [
+        "scale:number",
+        "color:color"
+      ],
+      "sizeM": [
+        1.44,
+        1.98,
+        0.572
+      ],
+      "minUpM": 0
+    }
+  ]
+}

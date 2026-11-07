@@ -1,0 +1,3 @@
+(node:1376842) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+rendered hydroponics/circulation-pump-skid from indexed highVisibility preset (3 material controls)

@@ -1,0 +1,7 @@
+{
+  "command": "git diff --name-only + git ls-files --others --exclude-standard + source boundary allowlist",
+  "changedPathCount": 152,
+  "unexpectedPaths": [],
+  "privateProductPaths": [],
+  "passed": true
+}

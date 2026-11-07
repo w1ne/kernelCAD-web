@@ -1,0 +1,50 @@
+{
+  "command": "npx tsx scripts/buildCatalogPages.ts /tmp/kernelcad-nature-pages-20261106",
+  "outputRoot": "/tmp/kernelcad-nature-pages-20261106/catalog",
+  "workspacePages": 2390,
+  "assetsChecked": 3,
+  "hubBuilt": true,
+  "deployed": false,
+  "pages": [
+    {
+      "id": "cairn",
+      "path": "/tmp/kernelcad-nature-pages-20261106/catalog/nature/cairn/index.html",
+      "materialLabels": [
+        "Stone",
+        "Accent stones"
+      ],
+      "presets": [
+        "dark",
+        "sandstone"
+      ],
+      "previewCopied": true
+    },
+    {
+      "id": "pebble-cluster",
+      "path": "/tmp/kernelcad-nature-pages-20261106/catalog/nature/pebble-cluster/index.html",
+      "materialLabels": [
+        "Stone",
+        "Accent stones"
+      ],
+      "presets": [
+        "beach",
+        "dark",
+        "red"
+      ],
+      "previewCopied": true
+    },
+    {
+      "id": "dead-tree",
+      "path": "/tmp/kernelcad-nature-pages-20261106/catalog/nature/dead-tree/index.html",
+      "materialLabels": [
+        "Bark",
+        "Exposed heartwood"
+      ],
+      "presets": [
+        "bleached",
+        "charred"
+      ],
+      "previewCopied": true
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "command": "PATH=/home/andrii/.nvm/versions/node/v22.23.4/bin:$PATH NODE_OPTIONS=--import=./artifacts/catalog-demos/grid-substation-quality-promotion-20261104/node-preload.mjs npx vitest run tests/integration/catalog/",
+  "node": "v22.23.4",
+  "testFiles": 4,
+  "tests": 15,
+  "passed": true,
+  "exitCode": 0,
+  "durationSeconds": 249.1
+}

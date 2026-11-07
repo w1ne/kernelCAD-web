@@ -1,0 +1,1055 @@
+{
+  "date": "2026-11-05",
+  "kit": "standard-components",
+  "assets": [
+    {
+      "id": "angle-bracket",
+      "source": "catalog/kits/standard-components/angle-bracket.kcad.ts",
+      "sourceSha256": "bfa233e87b62be5c5e279f4790bbdf011b6ebafaf391019f9eab731af7a45b28",
+      "preview": "catalog/kits/standard-components/previews/angle-bracket.png",
+      "previewSha256": "b1924bb5c8547fc10d0276a55bb6cdba7f9a70e86ed62606074dde84df4cc8d3",
+      "triangleBudget": 360,
+      "triangles": 232,
+      "colorParams": [
+        "steel",
+        "stainless"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "base-mounting-plate",
+      "source": "catalog/kits/standard-components/base-mounting-plate.kcad.ts",
+      "sourceSha256": "168ad147693e639e8dbeadab27a413439241a516b99b70896c87e3001b821aa7",
+      "preview": "catalog/kits/standard-components/previews/base-mounting-plate.png",
+      "previewSha256": "4166e39a99bb067fe5927f77fa55502533baac1ca533cbe978f758d53321b7d4",
+      "triangleBudget": 300,
+      "triangles": 264,
+      "colorParams": [
+        "steel",
+        "brass"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "beam-coupling",
+      "source": "catalog/kits/standard-components/beam-coupling.kcad.ts",
+      "sourceSha256": "9e328fbe69b74e08f88c26e0676c6aa23c61b8d84df6bd79672e22397d775b68",
+      "preview": "catalog/kits/standard-components/previews/beam-coupling.png",
+      "previewSha256": "2637c7c734214e971be10ee29507335e433542bd707b1c86ff124496ca69c3b6",
+      "triangleBudget": 480,
+      "triangles": 428,
+      "colorParams": [
+        "steel",
+        "aluminum"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "blind-flange",
+      "source": "catalog/kits/standard-components/blind-flange.kcad.ts",
+      "sourceSha256": "c664bbdbda6f4b223c2aec9bd4f9a686470d784280d65a9df285b88b4bd90eb2",
+      "preview": "catalog/kits/standard-components/previews/blind-flange.png",
+      "previewSha256": "e96e1311859af0f9692fe03b56d5e78495de0e96200648c80f56c6c09062d84f",
+      "triangleBudget": 340,
+      "triangles": 296,
+      "colorParams": [
+        "castIron",
+        "bronze"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "bulkhead-adapter",
+      "source": "catalog/kits/standard-components/bulkhead-adapter.kcad.ts",
+      "sourceSha256": "bc422c07194006826f4db862c32b3bb41b28f3a4830914f032f535f23cb562e9",
+      "preview": "catalog/kits/standard-components/previews/bulkhead-adapter.png",
+      "previewSha256": "0dc4ce3a8d4118a6c178ad9ff4f69f039bd86f783fcc912f5738056aa33941a0",
+      "triangleBudget": 340,
+      "triangles": 288,
+      "colorParams": [
+        "stainless",
+        "brass"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "cable-clamp",
+      "source": "catalog/kits/standard-components/cable-clamp.kcad.ts",
+      "sourceSha256": "8dce46398c4966221c4282719ff75979aa95f7b4d655935ebe4070b113e074a4",
+      "preview": "catalog/kits/standard-components/previews/cable-clamp.png",
+      "previewSha256": "1bf58a83c0b2d486b6d6e094f277be6e36876fffaaddc7e1f7209cda1d020f36",
+      "triangleBudget": 300,
+      "triangles": 132,
+      "colorParams": [
+        "steel",
+        "rubber"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "cable-gland",
+      "source": "catalog/kits/standard-components/cable-gland.kcad.ts",
+      "sourceSha256": "169ab289279c7e9a85f7b0643eee2a5f096e5cbb8b87436acc00b7de3afdfae6",
+      "preview": "catalog/kits/standard-components/previews/cable-gland.png",
+      "previewSha256": "509c795a27038185877e6c92e1683043e14e502121e44da9cc8515e4ae6ae207",
+      "triangleBudget": 420,
+      "triangles": 384,
+      "colorParams": [
+        "polymer",
+        "rubber"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "caster-wheel",
+      "source": "catalog/kits/standard-components/caster-wheel.kcad.ts",
+      "sourceSha256": "397b85d05eb1b036eafdd54a2696da5c222404e223b75920110cc7745d6bd73c",
+      "preview": "catalog/kits/standard-components/previews/caster-wheel.png",
+      "previewSha256": "14486637cdbe9daa27b837f57364a02b04d5f0c981fac6306268b8d7a60f7a17",
+      "triangleBudget": 380,
+      "triangles": 200,
+      "colorParams": [
+        "steel",
+        "zinc",
+        "rubber"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "clevis-pin",
+      "source": "catalog/kits/standard-components/clevis-pin.kcad.ts",
+      "sourceSha256": "70b2e15e74a916cf23ae0aea672fe7232ffee5539d07e54baac02599960647d9",
+      "preview": "catalog/kits/standard-components/previews/clevis-pin.png",
+      "previewSha256": "14f73410cfa8f962a8fd7ed4137938295f073f2f00dcaa3136008d694e68c3cd",
+      "triangleBudget": 280,
+      "triangles": 156,
+      "colorParams": [
+        "steel",
+        "stainless"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "din-rail-end-stop",
+      "source": "catalog/kits/standard-components/din-rail-end-stop.kcad.ts",
+      "sourceSha256": "db50b7840d511e370a08ca14943c75607a846839f201bc1a13bd0248a80a6d2d",
+      "preview": "catalog/kits/standard-components/previews/din-rail-end-stop.png",
+      "previewSha256": "3b6308dca4463ee0d890e2579152aadf7c03fc9d6d59df33aeea135b1498febd",
+      "triangleBudget": 300,
+      "triangles": 80,
+      "colorParams": [
+        "steel",
+        "zinc"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "din-rail-terminal-block",
+      "source": "catalog/kits/standard-components/din-rail-terminal-block.kcad.ts",
+      "sourceSha256": "45e767a3a936b2bffb292e97933cfc548e0471beeb1196e4a895df4a6b88515f",
+      "preview": "catalog/kits/standard-components/previews/din-rail-terminal-block.png",
+      "previewSha256": "f892ca223df924d5f70c18324c1c6cddd680c2def8a68daad898ffe5440a830a",
+      "triangleBudget": 320,
+      "triangles": 120,
+      "colorParams": [
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "din-rail",
+      "source": "catalog/kits/standard-components/din-rail.kcad.ts",
+      "sourceSha256": "ba0de3b93354ce866a8edd169afe498483f420fd930878b8f62254d8fc7bd174",
+      "preview": "catalog/kits/standard-components/previews/din-rail.png",
+      "previewSha256": "796cd4ee3b0a12a76b68cfd23adbae5ba05357f814326e8740ae534abec14e4f",
+      "triangleBudget": 300,
+      "triangles": 48,
+      "colorParams": [
+        "steel",
+        "stainless",
+        "aluminum"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "door-hinge",
+      "source": "catalog/kits/standard-components/door-hinge.kcad.ts",
+      "sourceSha256": "eb81bb9acafd468d8236e5e52578930a79bdcf222b204fa65e0c42b8a36d5ae8",
+      "preview": "catalog/kits/standard-components/previews/door-hinge.png",
+      "previewSha256": "6d0f1f35f736796a56470a501ef28a6666d89f78e642628fc98bb33fc60f0c76",
+      "triangleBudget": 360,
+      "triangles": 244,
+      "colorParams": [
+        "steel",
+        "brass"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "drawer-slide-channel",
+      "source": "catalog/kits/standard-components/drawer-slide-channel.kcad.ts",
+      "sourceSha256": "15596208b5f12660793a5113698ec5723efe278b7fa4c5cac8062b7f0da30f99",
+      "preview": "catalog/kits/standard-components/previews/drawer-slide-channel.png",
+      "previewSha256": "019b3df5c572f02a27b121c2cc91319be10a66518de60ced4195ea115605734a",
+      "triangleBudget": 340,
+      "triangles": 60,
+      "colorParams": [
+        "steel",
+        "stainless"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "flange-bearing-housing",
+      "source": "catalog/kits/standard-components/flange-bearing-housing.kcad.ts",
+      "sourceSha256": "2e801e10ef9ac669aacdecf3b1db3edde3b0b8b17477462ebbfa0ee74c652aab",
+      "preview": "catalog/kits/standard-components/previews/flange-bearing-housing.png",
+      "previewSha256": "705ad0dd1c2bdd2a640fed889cbd64c327ad3589790e2b9e8e89d5305dc40d4e",
+      "triangleBudget": 360,
+      "triangles": 212,
+      "colorParams": [
+        "castIron",
+        "bronze"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "flat-joining-plate",
+      "source": "catalog/kits/standard-components/flat-joining-plate.kcad.ts",
+      "sourceSha256": "3593b99d346b231e01536ebe2bfe67ee9704cc5c706bc93ed8cdfce80360f28e",
+      "preview": "catalog/kits/standard-components/previews/flat-joining-plate.png",
+      "previewSha256": "a1642401c22a8a8a6d4b3753af619c78b7d41206003c44712ec745c58a44f5d1",
+      "triangleBudget": 620,
+      "triangles": 572,
+      "colorParams": [
+        "steel",
+        "zinc"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "gusset-bracket",
+      "source": "catalog/kits/standard-components/gusset-bracket.kcad.ts",
+      "sourceSha256": "20acff40cb86d0fbd983781f17d5c49f4b464926c40b4fcb1eba78b332612675",
+      "preview": "catalog/kits/standard-components/previews/gusset-bracket.png",
+      "previewSha256": "53bdaa573cbbac43365f91fd2dc1282de18894643a61086cf9114fe7009684c6",
+      "triangleBudget": 380,
+      "triangles": 32,
+      "colorParams": [
+        "steel",
+        "stainless"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "handle-pull",
+      "source": "catalog/kits/standard-components/handle-pull.kcad.ts",
+      "sourceSha256": "fb55eaeb7b8b8a89e583e6f7c23b472b3ee798a9639ad6a1b8b35a018648c96b",
+      "preview": "catalog/kits/standard-components/previews/handle-pull.png",
+      "previewSha256": "edfaab85368c79ac0e99af31acf154369dcd16a6929766da7d5efbce52d65c4b",
+      "triangleBudget": 320,
+      "triangles": 220,
+      "colorParams": [
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "handwheel",
+      "source": "catalog/kits/standard-components/handwheel.kcad.ts",
+      "sourceSha256": "f6aee5c69b7e8e530cebcb9db43971b5bc83b31932c08963a5f3cac04116298d",
+      "preview": "catalog/kits/standard-components/previews/handwheel.png",
+      "previewSha256": "8193d025ac349ee8b93a0eb8b1b6c62f511850a9a1fe0e8b3691f8ece8280391",
+      "triangleBudget": 340,
+      "triangles": 176,
+      "colorParams": [
+        "steel",
+        "castIron",
+        "brass"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "hose-barb-adapter",
+      "source": "catalog/kits/standard-components/hose-barb-adapter.kcad.ts",
+      "sourceSha256": "ee842872ed1e12b7beb0b97803f3fa0a7633958e57a61575b04dfe9ff2703f14",
+      "preview": "catalog/kits/standard-components/previews/hose-barb-adapter.png",
+      "previewSha256": "f2f8c3a015362a1b4c6bf75cb1c95ddb753e346d90ccb5200b8261fc97dfa198",
+      "triangleBudget": 500,
+      "triangles": 448,
+      "colorParams": [
+        "steel",
+        "stainless",
+        "brass"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "jaw-coupling",
+      "source": "catalog/kits/standard-components/jaw-coupling.kcad.ts",
+      "sourceSha256": "c6324db61764a7335ce924832fecb8db59bcd8b8cf388e9ad8a2280b8470f4df",
+      "preview": "catalog/kits/standard-components/previews/jaw-coupling.png",
+      "previewSha256": "a5f9f3757b47225df4eec13ce7da1cdc47c17d7357f6a70017c0a51897749a72",
+      "triangleBudget": 360,
+      "triangles": 236,
+      "colorParams": [
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "knurled-knob",
+      "source": "catalog/kits/standard-components/knurled-knob.kcad.ts",
+      "sourceSha256": "765c46070da9d853a7aa961551c6011cac086c44b9647e343160300d00a117ee",
+      "preview": "catalog/kits/standard-components/previews/knurled-knob.png",
+      "previewSha256": "47f495902503e7a4b4f3c1a20fade1526bb305704061d48666756603abf69aae",
+      "triangleBudget": 300,
+      "triangles": 228,
+      "colorParams": [
+        "steel",
+        "aluminum",
+        "polymer"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "leveling-foot",
+      "source": "catalog/kits/standard-components/leveling-foot.kcad.ts",
+      "sourceSha256": "34d05ad6742e62fb515c865b2763cf7a503d171b4c0c8305d8d301f6c0d761de",
+      "preview": "catalog/kits/standard-components/previews/leveling-foot.png",
+      "previewSha256": "489209d5f3a644b34d2162897da02ce4bbcd1846b631283d7c7378d06612a504",
+      "triangleBudget": 280,
+      "triangles": 132,
+      "colorParams": [
+        "steel",
+        "zinc",
+        "rubber"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "linear-guide-carriage",
+      "source": "catalog/kits/standard-components/linear-guide-carriage.kcad.ts",
+      "sourceSha256": "800526ad65ba66dd5b8691bf15abef7163341cccd40225210442dc1305762380",
+      "preview": "catalog/kits/standard-components/previews/linear-guide-carriage.png",
+      "previewSha256": "4faedee2bc4d06a9ccac19462617b4e0668bbed8d9150c01421b5354531eebf3",
+      "triangleBudget": 340,
+      "triangles": 40,
+      "colorParams": [
+        "steel",
+        "castIron"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "linear-guide-rail",
+      "source": "catalog/kits/standard-components/linear-guide-rail.kcad.ts",
+      "sourceSha256": "556238ab9b74cd8a4596103f0e14952e201c46f04e75ab6e55fa148a2bc6139b",
+      "preview": "catalog/kits/standard-components/previews/linear-guide-rail.png",
+      "previewSha256": "6fa3a680cb8443c934ab40b971adb3ec5209a2a17f450ed27dda4e476dc755f2",
+      "triangleBudget": 300,
+      "triangles": 232,
+      "colorParams": [
+        "steel",
+        "aluminum"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "panel-clamp",
+      "source": "catalog/kits/standard-components/panel-clamp.kcad.ts",
+      "sourceSha256": "871b45d97cafd067a9783869c007484729ec700bb3eedb391ab20cf8f1b239e1",
+      "preview": "catalog/kits/standard-components/previews/panel-clamp.png",
+      "previewSha256": "9cf9577adb030c5cb99ae944dbbd5ecd59164b4dfdd196d1a236f08bff0732fc",
+      "triangleBudget": 320,
+      "triangles": 80,
+      "colorParams": [
+        "steel",
+        "zinc",
+        "rubber"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "piano-hinge",
+      "source": "catalog/kits/standard-components/piano-hinge.kcad.ts",
+      "sourceSha256": "0e7016ba2fca89baf51a1c6cb782d1bcfe7e5592012dcd13d3bbf7675d14efb6",
+      "preview": "catalog/kits/standard-components/previews/piano-hinge.png",
+      "previewSha256": "4433e5cd3072547146ee3b31dbce619a156e3512d2027f5ab762722303202842",
+      "triangleBudget": 380,
+      "triangles": 332,
+      "colorParams": [
+        "steel",
+        "stainless"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "pillow-block-housing",
+      "source": "catalog/kits/standard-components/pillow-block-housing.kcad.ts",
+      "sourceSha256": "c3120ac5119ea007b16b811b5f6dab3924aa48a077b2500c76a8382dca05d6b8",
+      "preview": "catalog/kits/standard-components/previews/pillow-block-housing.png",
+      "previewSha256": "bc39c0c88e6656c61ecc9443b37ffc054c1d767ab6bdb02648197e94c99241da",
+      "triangleBudget": 360,
+      "triangles": 132,
+      "colorParams": [
+        "zinc",
+        "castIron",
+        "bronze"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "pipe-coupling",
+      "source": "catalog/kits/standard-components/pipe-coupling.kcad.ts",
+      "sourceSha256": "e848da3d9e106fc9c12813db7718ccb942971f004664470972c917bfc83eea75",
+      "preview": "catalog/kits/standard-components/previews/pipe-coupling.png",
+      "previewSha256": "44464951b115bf7a95b5795ee188701886584c492305bccddfbc767dc4488271",
+      "triangleBudget": 320,
+      "triangles": 288,
+      "colorParams": [
+        "steel",
+        "stainless"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "pipe-elbow-45",
+      "source": "catalog/kits/standard-components/pipe-elbow-45.kcad.ts",
+      "sourceSha256": "bff9f78ef828fa5f6eb7df65dbe38867f2f5be030aef88c7f9398e51a610136c",
+      "preview": "catalog/kits/standard-components/previews/pipe-elbow-45.png",
+      "previewSha256": "783b4a4627b6945c15fc3cdca0b4c8bc9a7d4d955e8c6e0117df98a715a562af",
+      "triangleBudget": 360,
+      "triangles": 236,
+      "colorParams": [
+        "steel",
+        "bronze"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "pipe-elbow-90",
+      "source": "catalog/kits/standard-components/pipe-elbow-90.kcad.ts",
+      "sourceSha256": "5fd8998f66717461b16eb3ff4940d8936044c9b2b0c9610e0038cb9974b96d8d",
+      "preview": "catalog/kits/standard-components/previews/pipe-elbow-90.png",
+      "previewSha256": "05336e15364293500171825d3e59b225b1dc7093ca216a2e030b499bfe36f10b",
+      "triangleBudget": 380,
+      "triangles": 236,
+      "colorParams": [
+        "steel",
+        "bronze"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "pipe-flange",
+      "source": "catalog/kits/standard-components/pipe-flange.kcad.ts",
+      "sourceSha256": "8cfefec718dee503b774639532b4e7f73281712d5f820acee8e86c5ef8d7472c",
+      "preview": "catalog/kits/standard-components/previews/pipe-flange.png",
+      "previewSha256": "d0455750a051d1238e3ba30a112b853e608f4cff83843e9e167de1093ff18f59",
+      "triangleBudget": 450,
+      "triangles": 400,
+      "colorParams": [
+        "stainless",
+        "castIron"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "pipe-reducer",
+      "source": "catalog/kits/standard-components/pipe-reducer.kcad.ts",
+      "sourceSha256": "a4bf0ec6210f32c023530754c0d2cee4e37107bf315af2129a475de1dce84d82",
+      "preview": "catalog/kits/standard-components/previews/pipe-reducer.png",
+      "previewSha256": "8c3e88c192eceac59a087d293f049c81428bac8f28a2ee58b528726e4eca0320",
+      "triangleBudget": 340,
+      "triangles": 288,
+      "colorParams": [
+        "steel",
+        "bronze"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "pipe-saddle-clamp",
+      "source": "catalog/kits/standard-components/pipe-saddle-clamp.kcad.ts",
+      "sourceSha256": "cb2e238838959455351d4f0272e50b026030a5df58a7e6165ddb135ce2b0380d",
+      "preview": "catalog/kits/standard-components/previews/pipe-saddle-clamp.png",
+      "previewSha256": "7d5f677e5d19698bde3369db6f919ca7c1206f3468bdfd553c03a814c1384516",
+      "triangleBudget": 360,
+      "triangles": 132,
+      "colorParams": [
+        "steel",
+        "rubber"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "pipe-tee",
+      "source": "catalog/kits/standard-components/pipe-tee.kcad.ts",
+      "sourceSha256": "35d13e50e8ed799ae1ccafecb6a666ed2b59d9f0e7fd0d13f4d86b424d5370a7",
+      "preview": "catalog/kits/standard-components/previews/pipe-tee.png",
+      "previewSha256": "9e74c33c05721247ce9063dd02f77475074ae0d6b78cbbb5b80874aaf79d14f0",
+      "triangleBudget": 360,
+      "triangles": 192,
+      "colorParams": [
+        "steel",
+        "bronze"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "pipe-union",
+      "source": "catalog/kits/standard-components/pipe-union.kcad.ts",
+      "sourceSha256": "c1e03300a64d860e8f26e8dbe6954befa3f7de37441f886c8398c6e6090d7ada",
+      "preview": "catalog/kits/standard-components/previews/pipe-union.png",
+      "previewSha256": "5e0a816c55ec371b5255940e2e431756a758848eb6410bf1ffd733f5bb7a7d21",
+      "triangleBudget": 340,
+      "triangles": 256,
+      "colorParams": [
+        "steel",
+        "brass"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "retaining-ring",
+      "source": "catalog/kits/standard-components/retaining-ring.kcad.ts",
+      "sourceSha256": "4989077f5c9ce32574072dea809f5a9809b550b72e81b471fb2556ff38dfa0dd",
+      "preview": "catalog/kits/standard-components/previews/retaining-ring.png",
+      "previewSha256": "e478a4e7a9022b164cd1fcfd69a67fa278de9c31fae9473cb240751eb7109608",
+      "triangleBudget": 300,
+      "triangles": 124,
+      "colorParams": [
+        "stainless",
+        "springSteel"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "rubber-bumper",
+      "source": "catalog/kits/standard-components/rubber-bumper.kcad.ts",
+      "sourceSha256": "2d4be457dc5538c2fa4cdd2e461cafd279ce639dd6f5d0917521ff49660f6771",
+      "preview": "catalog/kits/standard-components/previews/rubber-bumper.png",
+      "previewSha256": "677d36ef438624726f8dd2d2dfe51804bc8c2a9ac221f66e8e9cc5f1c3a100e9",
+      "triangleBudget": 260,
+      "triangles": 132,
+      "colorParams": [
+        "steel",
+        "rubber"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "shaft-collar",
+      "source": "catalog/kits/standard-components/shaft-collar.kcad.ts",
+      "sourceSha256": "b046549659f6a6372449bfa84f77c54c608f28acb2d8e9448e97134c87366018",
+      "preview": "catalog/kits/standard-components/previews/shaft-collar.png",
+      "previewSha256": "9dfcb1e78cdcb027812a70516e6e39da7aca3c0b8ff7e1c3e8c288c046f4dbb7",
+      "triangleBudget": 300,
+      "triangles": 140,
+      "colorParams": [
+        "steel",
+        "zinc"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "shaft-coupling",
+      "source": "catalog/kits/standard-components/shaft-coupling.kcad.ts",
+      "sourceSha256": "fd7cad44bf51a921b00b7124dc40a534079599941abf94997fe2687f850155b1",
+      "preview": "catalog/kits/standard-components/previews/shaft-coupling.png",
+      "previewSha256": "179ecaf558b267dc7d703c017ca23703ef863dafcb68292d92822b44769264d9",
+      "triangleBudget": 340,
+      "triangles": 288,
+      "colorParams": [
+        "steel",
+        "bronze"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "shim-pack",
+      "source": "catalog/kits/standard-components/shim-pack.kcad.ts",
+      "sourceSha256": "fcba8cf93a1f7b655e475458ee14348de501e2443dcac6c0861dcc35464bcbdf",
+      "preview": "catalog/kits/standard-components/previews/shim-pack.png",
+      "previewSha256": "2793342780c8c1630894219510827724ca12525c8258013fdfcd24cf64bd903f",
+      "triangleBudget": 280,
+      "triangles": 60,
+      "colorParams": [
+        "steel",
+        "stainless",
+        "brass"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "split-shaft-collar",
+      "source": "catalog/kits/standard-components/split-shaft-collar.kcad.ts",
+      "sourceSha256": "d38927450976ad75461423266bebd767760ab1683d44340f67d7e8f3d262e698",
+      "preview": "catalog/kits/standard-components/previews/split-shaft-collar.png",
+      "previewSha256": "261a1b1d29a46393d9d1441c6ee97daf263e8b438fcce08d2bbf965e099e2774",
+      "triangleBudget": 300,
+      "triangles": 112,
+      "colorParams": [
+        "steel",
+        "zinc"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "square-mounting-flange",
+      "source": "catalog/kits/standard-components/square-mounting-flange.kcad.ts",
+      "sourceSha256": "1e8988a11a7a8e2ab7e76131cbc5aa167eb1fbb55bb3695e9ea1d13405900a19",
+      "preview": "catalog/kits/standard-components/previews/square-mounting-flange.png",
+      "previewSha256": "18105ca6c38dcc2ebcdc91882493af00094423ea1d76a1d2ba340cc689ec53ce",
+      "triangleBudget": 360,
+      "triangles": 316,
+      "colorParams": [
+        "stainless",
+        "castIron"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "t-slot-angle-bracket",
+      "source": "catalog/kits/standard-components/t-slot-angle-bracket.kcad.ts",
+      "sourceSha256": "6ee080db9d9f64127456609f385510057c6083ab19c28e7b5dded18021f76462",
+      "preview": "catalog/kits/standard-components/previews/t-slot-angle-bracket.png",
+      "previewSha256": "24d62d8379ef958d5417a0e0bf81e58b9f5fdb4d464b7373284499f760ff6f87",
+      "triangleBudget": 380,
+      "triangles": 40,
+      "colorParams": [
+        "steel",
+        "aluminum"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "t-slot-end-cap",
+      "source": "catalog/kits/standard-components/t-slot-end-cap.kcad.ts",
+      "sourceSha256": "cafa5c749eb25ebbbe8c5bc33a50106b2d933ea95fa23268522765cdc407d179",
+      "preview": "catalog/kits/standard-components/previews/t-slot-end-cap.png",
+      "previewSha256": "7913e31bd2c792eb9de6bd6e1b95792ea5695d54ba77384407976f03e05b46cf",
+      "triangleBudget": 300,
+      "triangles": 156,
+      "colorParams": [
+        "aluminum",
+        "polymer"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "timing-belt-pulley",
+      "source": "catalog/kits/standard-components/timing-belt-pulley.kcad.ts",
+      "sourceSha256": "b84b6fe4f4648661a97b2b417782ef8e117dc89d9816f049ad187473b06dd85b",
+      "preview": "catalog/kits/standard-components/previews/timing-belt-pulley.png",
+      "previewSha256": "3a6995de2558d8f7046b9db8b6a7c674a27698783522bff1b5f85ec77bbbb63c",
+      "triangleBudget": 340,
+      "triangles": 288,
+      "colorParams": [
+        "steel",
+        "aluminum"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "tube-clamp",
+      "source": "catalog/kits/standard-components/tube-clamp.kcad.ts",
+      "sourceSha256": "0c3bcf45c5f72b1b375e577271d2d321a4c10ac1a0b94f256316bf4430bbe23d",
+      "preview": "catalog/kits/standard-components/previews/tube-clamp.png",
+      "previewSha256": "7aaa6dae43551bc5ff135b6171bccf4dba8bc09342da3efb64ecca0a098e2970",
+      "triangleBudget": 340,
+      "triangles": 164,
+      "colorParams": [
+        "steel",
+        "zinc",
+        "rubber"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "tubular-spacer",
+      "source": "catalog/kits/standard-components/tubular-spacer.kcad.ts",
+      "sourceSha256": "5e2a149dbbc6a8a5f5614033c9049b8b1b95afec97783ba939d1f091d6125f49",
+      "preview": "catalog/kits/standard-components/previews/tubular-spacer.png",
+      "previewSha256": "ad07413585de91738a212822a234c4229376061f98f86d45331aa3435cd9fbe5",
+      "triangleBudget": 260,
+      "triangles": 192,
+      "colorParams": [
+        "steel",
+        "polymer"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "u-bracket",
+      "source": "catalog/kits/standard-components/u-bracket.kcad.ts",
+      "sourceSha256": "f6facc17f2fcffed341214f578f950ca7bddf338251647668df7f566869f3a4b",
+      "preview": "catalog/kits/standard-components/previews/u-bracket.png",
+      "previewSha256": "77be51418712a5bdb033d2abe40101f0d9211f5cb3dbcfb5f630dffadc72cb20",
+      "triangleBudget": 320,
+      "triangles": 80,
+      "colorParams": [
+        "steel",
+        "stainless"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    },
+    {
+      "id": "v-belt-pulley",
+      "source": "catalog/kits/standard-components/v-belt-pulley.kcad.ts",
+      "sourceSha256": "6fd99f7c19869bb3dc3f603052c801f65e2fa5029d82e437740183110ace0b9f",
+      "preview": "catalog/kits/standard-components/previews/v-belt-pulley.png",
+      "previewSha256": "2e1b5e0acefe6b3e06c35d1d565f269367690e663d1a85055c147e6d5e7ff9ce",
+      "triangleBudget": 420,
+      "triangles": 384,
+      "colorParams": [
+        "steel",
+        "castIron"
+      ],
+      "presets": [
+        "brass",
+        "dark",
+        "weathered"
+      ]
+    }
+  ],
+  "assetCount": 50,
+  "allSourceHashesMatchIndex": true,
+  "allPreviewFilesPresent": true,
+  "demonstration": {
+    "video": {
+      "path": "catalog/kits/standard-components/demo/workflow.mp4",
+      "sha256": "b815ea86e14825d80c96a9af18d1a0ef89175d45aac1c4962378146c02350e39",
+      "bytes": 154936
+    },
+    "settings": {
+      "path": "catalog/kits/standard-components/demo/settings.json",
+      "sha256": "1a3b399f49a85f3ed5153fa89028e447505a647664d871c3cccb4972768c859a",
+      "bytes": 3707
+    },
+    "videoSource": {
+      "path": "catalog/kits/standard-components/demo/make-demo.sh",
+      "sha256": "13f09be3285e91db12649eb1e06b1b1fd0e3b779fff950e34a26b26c3c114a5f",
+      "bytes": 2323
+    },
+    "captions": [
+      {
+        "path": "catalog/kits/standard-components/demo/captions/01-source.txt",
+        "sha256": "80c3173ff8e28f44a848f67877c658cac54cd278b933ba8452cd9d075196c749",
+        "bytes": 137
+      },
+      {
+        "path": "catalog/kits/standard-components/demo/captions/02-validate.txt",
+        "sha256": "7ab8fd13e1fdd8afa1395e2be7d82314c04cb45847952ba12a42e1fdfb76c9ed",
+        "bytes": 140
+      },
+      {
+        "path": "catalog/kits/standard-components/demo/captions/03-catalog.txt",
+        "sha256": "ec818da5d951f0b2488296c8645c300d7a8f5d727f2874af368af37f8ea8fb00",
+        "bytes": 93
+      },
+      {
+        "path": "catalog/kits/standard-components/demo/captions/04-previews.txt",
+        "sha256": "53db6251e78c79ed002bbceabdd173e4add4c7d22ca3965d52e155e5d9bc89c4",
+        "bytes": 146
+      },
+      {
+        "path": "catalog/kits/standard-components/demo/captions/05-handoff.txt",
+        "sha256": "69cdc148cd691ab5bd153557b3626f0f9f1b9ef9307a3c7baa1fe495dcc7fa27",
+        "bytes": 158
+      }
+    ],
+    "inspectionFrames": [
+      {
+        "path": "artifacts/catalog-demos/standard-components-quality-promotion-20261105/demo-frames/caster.png",
+        "sha256": "d525385a3a654baa5bad6184e86055645f87cf228a3abd42c0690047871e233f",
+        "bytes": 135914
+      },
+      {
+        "path": "artifacts/catalog-demos/standard-components-quality-promotion-20261105/demo-frames/handoff.png",
+        "sha256": "b97c1962dfb38b43c26a785542993e6011388d675c642243b650997e31eb2424",
+        "bytes": 150411
+      },
+      {
+        "path": "artifacts/catalog-demos/standard-components-quality-promotion-20261105/demo-frames/t-slot-cap.png",
+        "sha256": "51390db4bc4d48dee0a6a8fe05fcc73bb8798473b9d573bbe88591679d624128",
+        "bytes": 146362
+      }
+    ],
+    "metadata": {
+      "programs": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "width": 1280,
+          "height": 720,
+          "r_frame_rate": "24/1"
+        }
+      ],
+      "format": {
+        "duration": "15.000000",
+        "size": "154936"
+      }
+    }
+  },
+  "verification": {
+    "qualityGate": "python3 scripts/checkCatalogQuality.py --kit standard-components",
+    "qualityGateStatus": {
+      "command": "python3 scripts/checkCatalogQuality.py --kit standard-components",
+      "exitCode": 0,
+      "durationSeconds": 0.1
+    },
+    "lintStatus": {
+      "command": "npx eslint catalog/kits/standard-components/",
+      "exitCode": 0,
+      "durationSeconds": 1.7
+    },
+    "indexBuildStatus": {
+      "command": "npx tsx scripts/buildAssetCatalog.ts",
+      "exitCode": 0,
+      "durationSeconds": 256.5
+    },
+    "integrationStatus": {
+      "command": "npx vitest run tests/integration/catalog/",
+      "exitCode": 0,
+      "durationSeconds": 241.0
+    },
+    "catalogPageBuildStatus": {
+      "command": "npm run catalog:pages",
+      "exitCode": 0,
+      "durationSeconds": 2.3
+    },
+    "focusedPageCheckStatus": {
+      "command": "python3 catalog/kits/standard-components/demo/check-static-pages.py",
+      "exitCode": 0,
+      "durationSeconds": 0.0
+    },
+    "indexIntegrityStatus": {
+      "exitCode": 0,
+      "assets": 50,
+      "sourceHashesMatched": 50,
+      "previewsPresent": 50
+    },
+    "globalQuality": {
+      "exitCode": 1,
+      "expectedExitCode": 1,
+      "reason": "the remaining thin kits are outside this round; standard-components passes separately",
+      "pass": 1854,
+      "total": 2390,
+      "passRatePercent": 77.6,
+      "thinAssets": 536,
+      "remainingThinKits": 11,
+      "roundKit": "standard-components",
+      "roundKitPassed": true
+    },
+    "renderInspectStatus": {
+      "command": "npx kernelcad render inspect catalog/kits/standard-components/caster-wheel.kcad.ts artifacts/catalog-demos/standard-components-quality-promotion-20261105/caster-wheel-inspection --views front,right,top,iso --width 512 --height 512 --environment softbox --shading flat --screenshot-timeout 30000 --no-watermark",
+      "browser": "existing Chrome via PW_CDP_URL=http://127.0.0.1:9223",
+      "exitCode": 1,
+      "durationSeconds": 33.1
+    }
+  },
+  "allPreviewPathsIndexed": true,
+  "allAssetsHaveTwoToFourMaterialColorParams": true,
+  "allAssetsHaveDarkBrassWeatheredPresets": true
+}

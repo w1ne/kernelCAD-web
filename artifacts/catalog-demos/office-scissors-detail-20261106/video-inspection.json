@@ -1,0 +1,18 @@
+{
+  "file": "office-scissors-detail.mp4",
+  "codec": "h264",
+  "width": 1280,
+  "height": 720,
+  "frameRate": "24/1",
+  "durationSeconds": 15,
+  "sizeBytes": 161415,
+  "probeCommand": "ffprobe -v error -show_entries format=duration,size -show_entries stream=codec_name,width,height,r_frame_rate -of json office-scissors-detail.mp4",
+  "sampledFrames": [
+    { "timeSeconds": 1.5, "file": "video-review/frame-01.png", "review": "Title, geometry and 316/360 budget are legible; local-only caption is present." },
+    { "timeSeconds": 4.5, "file": "video-review/frame-02.png", "review": "Source excerpt wraps cleanly; the preview shows connected red handles and silver blades." },
+    { "timeSeconds": 7.5, "file": "video-review/frame-03.png", "review": "Before/after comparison shows the former handle gap and the new joined tangs." },
+    { "timeSeconds": 10.5, "file": "video-review/frame-04.png", "review": "Professional and classroom renders show the same geometry with distinct palettes." },
+    { "timeSeconds": 13.5, "file": "video-review/frame-05.png", "review": "Local verification counts and undeployed status are legible; no hardware claim is made." }
+  ],
+  "reviewResult": "passed"
+}
