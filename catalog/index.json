@@ -246430,14 +246430,16 @@
       "id": "batting-helmet",
       "kit": "sports",
       "title": "Batting helmet",
-      "description": "Protective batting helmet prop with a domed shell, face brim and side guards. Material controls: helmet shell polymer, impact foam, face guard steel.",
+      "description": "Double-flap batting helmet: lofted egg-shaped crown, moulded bill, ear flaps with ear holes, wrap-round rear skirt, dark foam liner at the rim, crown team stripe and a bent-wire steel face guard. Material controls: helmet shell polymer, impact foam, face guard steel, decal accent; clubColors, matteBlack and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "batting helmet",
-        "helmet",
+        "baseball helmet",
+        "softball",
         "baseball",
-        "sports equipment",
+        "face guard",
+        "helmet",
         "low poly",
         "CC0"
       ],
@@ -246450,8 +246452,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/batting-helmet.kcad.ts",
       "preview": "/assets/sports-batting-helmet.png",
-      "sourceSha256": "b38ad095f8c97abc62a5b434c66c2791e02d4bfa494e21bc3c28db54ce0c2a07",
-      "triangleBudget": 600,
+      "sourceSha256": "af834ac55f069d48801490777127882f52cc276a2c646acc721186ab12fb4508",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -246465,7 +246467,7 @@
         {
           "name": "helmetPolymer",
           "type": "color",
-          "default": "#4c6f9d",
+          "default": "#24477e",
           "label": "Helmet shell polymer"
         },
         {
@@ -246479,20 +246481,37 @@
           "type": "color",
           "default": "#aab4b5",
           "label": "Face guard steel"
+        },
+        {
+          "name": "decalAccent",
+          "type": "color",
+          "default": "#e9e4d8",
+          "label": "Decal and stripe"
         }
       ],
       "presets": {
         "clubColors": {
           "helmetPolymer": "#d74336",
           "impactFoam": "#292e33"
+        },
+        "matteBlack": {
+          "helmetPolymer": "#25282c",
+          "faceGuardSteel": "#3a3e42",
+          "decalAccent": "#d0a23c"
+        },
+        "weathered": {
+          "helmetPolymer": "#4f607a",
+          "impactFoam": "#3d3d3a",
+          "faceGuardSteel": "#8f9290",
+          "decalAccent": "#bfb8a6"
         }
       },
       "stats": {
-        "triangles": 92,
+        "triangles": 2304,
         "sizeM": [
-          0.16964,
-          0.11808,
-          0.130354
+          0.324466,
+          0.223909,
+          0.22927
         ],
         "minUpM": 0,
         "materials": 1
@@ -246500,30 +246519,80 @@
       "palette": [
         {
           "name": "helmetPolymer",
-          "color": "#4c6f9d",
+          "color": "#24477e",
           "parts": [
-            "shell",
-            "brim"
+            "crown",
+            "bill",
+            "rear-skirt",
+            "ear-flap-left",
+            "flap-front-edge-left",
+            "ear-flap-right",
+            "flap-front-edge-right"
           ],
           "param": "helmetPolymer"
-        },
-        {
-          "name": "faceGuardSteel",
-          "color": "#aab4b5",
-          "parts": [
-            "ear-guard-left",
-            "ear-guard-right"
-          ],
-          "param": "faceGuardSteel"
         },
         {
           "name": "impactFoam",
           "color": "#292e33",
           "parts": [
-            "left-temple-padding",
-            "right-temple-padding"
+            "foam-liner",
+            "rear-skirt-liner",
+            "ear-flap-left-liner",
+            "ear-hole-left",
+            "ear-vent-left-1",
+            "ear-vent-left-2",
+            "ear-vent-left-3",
+            "ear-flap-right-liner",
+            "ear-hole-right",
+            "ear-vent-right-1",
+            "ear-vent-right-2",
+            "ear-vent-right-3"
           ],
           "param": "impactFoam"
+        },
+        {
+          "name": "decalAccent",
+          "color": "#e9e4d8",
+          "parts": [
+            "crown-stripe",
+            "flap-decal-left",
+            "flap-decal-right"
+          ],
+          "param": "decalAccent"
+        },
+        {
+          "name": "faceGuardSteel",
+          "color": "#aab4b5",
+          "parts": [
+            "cage-top-bar-1",
+            "cage-top-bar-2",
+            "cage-top-bar-3",
+            "cage-top-bar-4",
+            "cage-top-bar-5",
+            "cage-top-bar-6",
+            "cage-top-bar-7",
+            "cage-top-bar-8",
+            "cage-chin-bar-1",
+            "cage-chin-bar-2",
+            "cage-chin-bar-3",
+            "cage-chin-bar-4",
+            "cage-chin-bar-5",
+            "cage-chin-bar-6",
+            "cage-chin-bar-7",
+            "cage-chin-bar-8",
+            "cage-upright--24",
+            "cage-upright-0",
+            "cage-upright-24",
+            "cage-mount-left",
+            "cage-chin-mount-left",
+            "cage-bolt-top-left",
+            "cage-bolt-chin-left",
+            "cage-mount-right",
+            "cage-chin-mount-right",
+            "cage-bolt-top-right",
+            "cage-bolt-chin-right"
+          ],
+          "param": "faceGuardSteel"
         }
       ]
     },
@@ -247215,12 +247284,14 @@
       "id": "gym-bench",
       "kit": "sports",
       "title": "Gym bench",
-      "description": "Low-poly adjustable bench prop with padded top, support frame and floor feet. Material controls: vinyl upholstery, frame steel, foot rubber.",
+      "description": "Adjustable FID weight bench: square-tube spine on front and rear stabiliser feet, upholstered seat and backrest pads on dark boards, back support arm in a toothed adjustment ladder, transport wheels and rear handle. Controls: backrest position (flat, 30-degree incline, 55-degree steep, 80-degree upright), vinyl upholstery, frame steel, foot rubber, adjuster accent; clubColors, homeBlack and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "gym bench",
         "weight bench",
+        "adjustable bench",
+        "incline bench",
         "gym",
         "training",
         "low poly",
@@ -247235,8 +247306,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/gym-bench.kcad.ts",
       "preview": "/assets/sports-gym-bench.png",
-      "sourceSha256": "4c0308a3527f08cf42ddf4dbb826705160d769b6493b3869185b11dc21518c9e",
-      "triangleBudget": 600,
+      "sourceSha256": "60c94f94e577c62b0c5f0432875b5ee675790a750ec3856590ce78a1900b6a7a",
+      "triangleBudget": 1600,
       "params": [
         {
           "name": "scale",
@@ -247248,56 +247319,83 @@
           "step": 0.05
         },
         {
+          "name": "backPosition",
+          "type": "choice",
+          "default": "incline",
+          "label": "Backrest position",
+          "choices": [
+            "flat",
+            "incline",
+            "steep",
+            "upright"
+          ]
+        },
+        {
           "name": "vinylUpholstery",
           "type": "color",
-          "default": "#344f5c",
+          "default": "#2f3a44",
           "label": "Vinyl upholstery"
         },
         {
           "name": "frameSteel",
           "type": "color",
-          "default": "#8e999d",
-          "label": "Frame steel"
+          "default": "#c4362f",
+          "label": "Frame steel (powder coat)"
         },
         {
           "name": "footRubber",
           "type": "color",
           "default": "#30363a",
-          "label": "Foot rubber"
+          "label": "Foot rubber and pad boards"
+        },
+        {
+          "name": "adjusterAccent",
+          "type": "color",
+          "default": "#b9c2c6",
+          "label": "Adjuster and pin metal"
         }
       ],
       "presets": {
         "clubColors": {
           "vinylUpholstery": "#87463d",
           "frameSteel": "#8e999d"
+        },
+        "homeBlack": {
+          "vinylUpholstery": "#25282b",
+          "frameSteel": "#3a3f44",
+          "adjusterAccent": "#d7a63a"
+        },
+        "weathered": {
+          "vinylUpholstery": "#4a4542",
+          "frameSteel": "#8a5a50",
+          "footRubber": "#3b3b38",
+          "adjusterAccent": "#8b8f8c"
         }
       },
       "stats": {
-        "triangles": 72,
+        "triangles": 1052,
         "sizeM": [
-          0.33,
-          0.345,
-          0.112
+          1.507119,
+          0.821282,
+          0.63
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "vinylUpholstery",
-          "color": "#344f5c",
-          "parts": [
-            "pad"
-          ],
-          "param": "vinylUpholstery"
-        },
-        {
           "name": "frameSteel",
-          "color": "#8e999d",
+          "color": "#c4362f",
           "parts": [
-            "front-leg",
-            "rear-leg",
-            "crossbar"
+            "spine",
+            "rear-post",
+            "front-foot",
+            "rear-foot",
+            "front-post",
+            "seat-post",
+            "seat-bracket",
+            "hinge-bracket",
+            "support-arm"
           ],
           "param": "frameSteel"
         },
@@ -247305,10 +247403,56 @@
           "name": "footRubber",
           "color": "#30363a",
           "parts": [
-            "front-foot",
-            "rear-foot"
+            "front-end-cap-left",
+            "front-wheel-left",
+            "rear-pad-left",
+            "front-pad-left",
+            "front-end-cap-right",
+            "front-wheel-right",
+            "rear-pad-right",
+            "front-pad-right",
+            "rear-handle-grip",
+            "seat-board",
+            "seat-piping",
+            "backrest-board",
+            "backrest-piping",
+            "pop-pin-knob"
           ],
           "param": "footRubber"
+        },
+        {
+          "name": "adjusterAccent",
+          "color": "#b9c2c6",
+          "parts": [
+            "rear-handle",
+            "rear-handle-2",
+            "hinge-pin",
+            "arm-roller",
+            "ladder-base",
+            "ladder-tooth-1-l",
+            "ladder-tooth-1-r",
+            "ladder-tooth-2-l",
+            "ladder-tooth-2-r",
+            "ladder-tooth-3-l",
+            "ladder-tooth-3-r",
+            "ladder-tooth-4-l",
+            "ladder-tooth-4-r",
+            "ladder-tooth-5-l",
+            "ladder-tooth-5-r",
+            "ladder-tooth-6-l",
+            "ladder-tooth-6-r",
+            "pop-pin"
+          ],
+          "param": "adjusterAccent"
+        },
+        {
+          "name": "vinylUpholstery",
+          "color": "#2f3a44",
+          "parts": [
+            "seat-cushion",
+            "backrest-cushion"
+          ],
+          "param": "vinylUpholstery"
         }
       ]
     },
@@ -247400,7 +247544,7 @@
       "id": "hockey-stick",
       "kit": "sports",
       "title": "Field hockey stick",
-      "description": "Low-poly field hockey stick with a long shaft and hooked blade. Material controls: composite shaft, blade tape, grip tape.",
+      "description": "Field hockey stick at 36.5 inch: oval composite shaft with a low bow, flat-faced J-hook head with a curled toe and protective edge tape, maker graphics, spiral-wrapped towelling grip and end cap. Material controls: composite shaft, blade tape, grip tape, graphic accent; clubColors, neonGraphics and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -247420,8 +247564,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/hockey-stick.kcad.ts",
       "preview": "/assets/sports-hockey-stick.png",
-      "sourceSha256": "5d1e4407d65bb67a29a3dbb0437b8a305d6e7755d35c0983739c42a7e8c18664",
-      "triangleBudget": 600,
+      "sourceSha256": "36b9c0d5113312d381be023eaa031d9db89206df7ceed1a07b82a393fd802d02",
+      "triangleBudget": 1600,
       "params": [
         {
           "name": "scale",
@@ -247435,34 +247579,51 @@
         {
           "name": "compositeShaft",
           "type": "color",
-          "default": "#8a6844",
+          "default": "#22262b",
           "label": "Composite shaft"
         },
         {
           "name": "bladeTape",
           "type": "color",
           "default": "#e7e0d0",
-          "label": "Blade tape"
+          "label": "Blade and edge tape"
         },
         {
           "name": "gripTape",
           "type": "color",
           "default": "#30363a",
           "label": "Grip tape"
+        },
+        {
+          "name": "graphicAccent",
+          "type": "color",
+          "default": "#e0482f",
+          "label": "Graphic accent"
         }
       ],
       "presets": {
         "clubColors": {
           "compositeShaft": "#344c68",
           "bladeTape": "#d54c3e"
+        },
+        "neonGraphics": {
+          "compositeShaft": "#16191c",
+          "graphicAccent": "#b8e23a",
+          "gripTape": "#e9eae4"
+        },
+        "weathered": {
+          "compositeShaft": "#4a4a46",
+          "bladeTape": "#b8ad97",
+          "gripTape": "#57544d",
+          "graphicAccent": "#9a5a48"
         }
       },
       "stats": {
-        "triangles": 84,
+        "triangles": 1288,
         "sizeM": [
-          0.112,
-          0.62,
-          0.022
+          0.119986,
+          0.925,
+          0.047549
         ],
         "minUpM": 0,
         "materials": 1
@@ -247470,9 +247631,13 @@
       "palette": [
         {
           "name": "compositeShaft",
-          "color": "#8a6844",
+          "color": "#22262b",
           "parts": [
-            "shaft"
+            "head",
+            "shaft-lower",
+            "shaft-bow",
+            "shaft-upper",
+            "end-cap"
           ],
           "param": "compositeShaft"
         },
@@ -247480,19 +247645,37 @@
           "name": "bladeTape",
           "color": "#e7e0d0",
           "parts": [
-            "blade",
-            "heel"
+            "edge-tape",
+            "graphic-panel"
           ],
           "param": "bladeTape"
+        },
+        {
+          "name": "graphicAccent",
+          "color": "#e0482f",
+          "parts": [
+            "face-stripe",
+            "graphic-band",
+            "graphic-stripe-1",
+            "graphic-stripe-2",
+            "grip-finish-tape"
+          ],
+          "param": "graphicAccent"
         },
         {
           "name": "gripTape",
           "color": "#30363a",
           "parts": [
+            "grip-sleeve",
             "grip-wrap-1",
             "grip-wrap-2",
             "grip-wrap-3",
-            "grip-wrap-4"
+            "grip-wrap-4",
+            "grip-wrap-5",
+            "grip-wrap-6",
+            "grip-wrap-7",
+            "grip-wrap-8",
+            "grip-wrap-9"
           ],
           "param": "gripTape"
         }
@@ -248498,11 +248681,13 @@
       "id": "starting-block",
       "kit": "sports",
       "title": "Track starting block",
-      "description": "Track starting block prop with a low base rail and two angled-looking foot pads. Material controls: anodized aluminium, pedal rubber, track mat.",
+      "description": "Track starting block: anodised aluminium centre rail with a notched adjustment rack, track spikes in carrier blocks underneath, a front and a steeper rear pedal on clamp carriages, each with rubber face pads, triangular side cheeks and a release lever, and a front carry bar. Material controls: anodized aluminium, pedal frame, pedal rubber, spike steel; clubColors, competitionBlue and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "starting block",
+        "starting blocks",
+        "sprint",
         "track",
         "athletics",
         "field sport",
@@ -248518,8 +248703,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/starting-block.kcad.ts",
       "preview": "/assets/sports-starting-block.png",
-      "sourceSha256": "b3d8dc890d20227a4d47f7dcad139a81ea9f4328a50f73a95ca5226959839590",
-      "triangleBudget": 600,
+      "sourceSha256": "70cf5992f779ee3a0c663229335c081611071027a0c3a5891e5a4e1d6bd6ad67",
+      "triangleBudget": 1600,
       "params": [
         {
           "name": "scale",
@@ -248533,34 +248718,52 @@
         {
           "name": "anodizedAluminium",
           "type": "color",
-          "default": "#8b989b",
-          "label": "Anodized aluminium"
+          "default": "#b3bdc1",
+          "label": "Anodized aluminium rail"
+        },
+        {
+          "name": "pedalFrame",
+          "type": "color",
+          "default": "#c8392f",
+          "label": "Pedal frame (powder coat)"
         },
         {
           "name": "pedalRubber",
           "type": "color",
-          "default": "#344b5b",
+          "default": "#2b3034",
           "label": "Pedal rubber"
         },
         {
-          "name": "trackMat",
+          "name": "spikeSteel",
           "type": "color",
-          "default": "#3a4042",
-          "label": "Track mat"
+          "default": "#6c757a",
+          "label": "Spike and rack steel"
         }
       ],
       "presets": {
         "clubColors": {
           "anodizedAluminium": "#8b989b",
-          "pedalRubber": "#ba4d3f"
+          "pedalRubber": "#ba4d3f",
+          "pedalFrame": "#3a4248"
+        },
+        "competitionBlue": {
+          "anodizedAluminium": "#c7cfd2",
+          "pedalFrame": "#2a5fa6",
+          "pedalRubber": "#1f2326"
+        },
+        "weathered": {
+          "anodizedAluminium": "#8d9293",
+          "pedalFrame": "#8d5248",
+          "pedalRubber": "#45474a",
+          "spikeSteel": "#6d6158"
         }
       },
       "stats": {
-        "triangles": 72,
+        "triangles": 1324,
         "sizeM": [
-          0.255,
-          0.095,
-          0.064
+          0.8,
+          0.262345,
+          0.3
         ],
         "minUpM": 0,
         "materials": 1
@@ -248568,30 +248771,97 @@
       "palette": [
         {
           "name": "anodizedAluminium",
-          "color": "#8b989b",
+          "color": "#b3bdc1",
           "parts": [
-            "base-rail"
+            "rail",
+            "carry-bar"
           ],
           "param": "anodizedAluminium"
         },
         {
           "name": "pedalRubber",
-          "color": "#344b5b",
+          "color": "#2b3034",
           "parts": [
-            "front-pedal",
-            "rear-pedal",
-            "front-heel-stop",
-            "rear-heel-stop"
+            "front-end-cap",
+            "rear-end-cap",
+            "carry-grip-l",
+            "carry-grip-r",
+            "front-pedal-pad",
+            "front-pedal-rib-1",
+            "front-pedal-rib-2",
+            "front-pedal-rib-3",
+            "front-pedal-rib-4",
+            "front-pedal-rib-5",
+            "front-pedal-lever-knob",
+            "rear-pedal-pad",
+            "rear-pedal-rib-1",
+            "rear-pedal-rib-2",
+            "rear-pedal-rib-3",
+            "rear-pedal-rib-4",
+            "rear-pedal-rib-5",
+            "rear-pedal-lever-knob"
           ],
           "param": "pedalRubber"
         },
         {
-          "name": "trackMat",
-          "color": "#3a4042",
+          "name": "spikeSteel",
+          "color": "#6c757a",
           "parts": [
-            "track-grip-pad"
+            "rack-tooth-1",
+            "rack-tooth-2",
+            "rack-tooth-3",
+            "rack-tooth-4",
+            "rack-tooth-5",
+            "rack-tooth-6",
+            "rack-tooth-7",
+            "rack-tooth-8",
+            "rack-tooth-9",
+            "rack-tooth-10",
+            "rack-tooth-11",
+            "rack-tooth-12",
+            "rack-tooth-13",
+            "rack-tooth-14",
+            "rack-tooth-15",
+            "rack-tooth-16",
+            "rack-tooth-17",
+            "rack-tooth-18",
+            "rack-tooth-19",
+            "rack-tooth-20",
+            "rack-tooth-21",
+            "rack-tooth-22",
+            "rack-tooth-23",
+            "rack-tooth-24",
+            "spike-carrier-1-l",
+            "spike-1-l",
+            "spike-carrier-1-r",
+            "spike-1-r",
+            "spike-carrier-2-l",
+            "spike-2-l",
+            "spike-carrier-2-r",
+            "spike-2-r",
+            "spike-carrier-3-l",
+            "spike-3-l",
+            "spike-carrier-3-r",
+            "spike-3-r",
+            "front-pedal-lever",
+            "rear-pedal-lever"
           ],
-          "param": "trackMat"
+          "param": "spikeSteel"
+        },
+        {
+          "name": "pedalFrame",
+          "color": "#c8392f",
+          "parts": [
+            "front-pedal-carriage",
+            "front-pedal-plate",
+            "front-pedal-cheek-l",
+            "front-pedal-cheek-r",
+            "rear-pedal-carriage",
+            "rear-pedal-plate",
+            "rear-pedal-cheek-l",
+            "rear-pedal-cheek-r"
+          ],
+          "param": "pedalFrame"
         }
       ]
     },
@@ -249018,11 +249288,12 @@
       "id": "treadmill",
       "kit": "sports",
       "title": "Treadmill",
-      "description": "Low-poly treadmill with running deck, front uprights, hand rails and console. Material controls: frame steel, running belt rubber, console glass.",
+      "description": "Motorised treadmill: running belt between aluminium side rails over front and rear rollers, moulded motor hood, uprights to a tilted console with screen, buttons and safety key, and foam-gripped handrails. Material controls: frame steel, running belt rubber, console glass, hood plastic; clubColors, homeWhite and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "treadmill",
+        "running machine",
         "cardio",
         "gym",
         "training",
@@ -249038,8 +249309,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/treadmill.kcad.ts",
       "preview": "/assets/sports-treadmill.png",
-      "sourceSha256": "fd026e2178a576bc435a432b1d7d5f769715d3d4809cf19d3afbff9808bbc568",
-      "triangleBudget": 600,
+      "sourceSha256": "0d127a8364955643bb22b1720090e82222386333c710512e9cbae16984e1c3b9",
+      "triangleBudget": 1600,
       "params": [
         {
           "name": "scale",
@@ -249053,7 +249324,7 @@
         {
           "name": "frameSteel",
           "type": "color",
-          "default": "#5b676c",
+          "default": "#9aa4a9",
           "label": "Frame steel"
         },
         {
@@ -249065,22 +249336,41 @@
         {
           "name": "consoleGlass",
           "type": "color",
-          "default": "#70a7b7",
+          "default": "#4fb3d9",
           "label": "Console glass"
+        },
+        {
+          "name": "hoodPlastic",
+          "type": "color",
+          "default": "#30353a",
+          "label": "Hood and console plastic"
         }
       ],
       "presets": {
         "clubColors": {
           "frameSteel": "#496b52",
-          "runningBeltRubber": "#282d31"
+          "runningBeltRubber": "#282d31",
+          "hoodPlastic": "#2f3a34"
+        },
+        "homeWhite": {
+          "frameSteel": "#c9cdd0",
+          "runningBeltRubber": "#33373a",
+          "consoleGlass": "#4f8fb5",
+          "hoodPlastic": "#e6e7e4"
+        },
+        "weathered": {
+          "frameSteel": "#6f7470",
+          "runningBeltRubber": "#3a3a37",
+          "consoleGlass": "#7d9a9f",
+          "hoodPlastic": "#56585a"
         }
       },
       "stats": {
-        "triangles": 72,
+        "triangles": 948,
         "sizeM": [
-          0.42,
-          0.388,
-          0.142
+          1.91,
+          1.41,
+          0.779455
         ],
         "minUpM": 0,
         "materials": 1
@@ -249090,28 +249380,72 @@
           "name": "runningBeltRubber",
           "color": "#282d31",
           "parts": [
-            "deck"
+            "running-belt",
+            "belt-underside",
+            "rear-roller",
+            "front-roller",
+            "levelling-foot-left",
+            "transport-wheel-left",
+            "levelling-foot-right",
+            "transport-wheel-right",
+            "handrail-grip-left",
+            "handrail-grip-right"
           ],
           "param": "runningBeltRubber"
         },
         {
-          "name": "frameSteel",
-          "color": "#5b676c",
+          "name": "hoodPlastic",
+          "color": "#30353a",
           "parts": [
-            "front-upright-left",
-            "front-upright-right",
-            "console",
-            "left-foot"
+            "deck-board",
+            "rear-end-cap-left",
+            "rear-end-cap-right",
+            "motor-hood",
+            "console-body",
+            "bottle-tray"
+          ],
+          "param": "hoodPlastic"
+        },
+        {
+          "name": "frameSteel",
+          "color": "#9aa4a9",
+          "parts": [
+            "side-rail-left",
+            "foot-rail-left",
+            "side-rail-right",
+            "foot-rail-right",
+            "rear-crossbar",
+            "hood-badge",
+            "upright-left",
+            "handrail-left",
+            "pulse-sensor-left",
+            "upright-right",
+            "handrail-right",
+            "pulse-sensor-right",
+            "screen-bezel",
+            "speed-button-1",
+            "speed-button-2",
+            "speed-button-3"
           ],
           "param": "frameSteel"
         },
         {
           "name": "consoleGlass",
-          "color": "#70a7b7",
+          "color": "#4fb3d9",
           "parts": [
-            "console-screen"
+            "console-screen",
+            "speed-button-4",
+            "speed-button-5",
+            "speed-button-6"
           ],
           "param": "consoleGlass"
+        },
+        {
+          "name": "safety-key",
+          "color": "#c7342c",
+          "parts": [
+            "safety-key"
+          ]
         }
       ]
     },
