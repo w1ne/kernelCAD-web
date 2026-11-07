@@ -249546,11 +249546,13 @@
       "id": "golf-club",
       "kit": "sports",
       "title": "Golf club",
-      "description": "Low-poly golf club with a metal head, long shaft and top grip. Material controls: club-head stainless steel, graphite shaft, grip rubber.",
+      "description": "Golf driver at about real size: 45.5 inch club with a 460 cc pear-shaped head, scored titanium face, painted crown with alignment mark, sole plate, hosel and ferrule, tapering graphite shaft at a 58 degree lie with a shaft band, and a rubber grip with an end cap. Material controls: crown paint, club-head titanium, graphite shaft, grip rubber, accent; clubColors, tourWhite and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "golf club",
+        "golf driver",
+        "driver",
         "golf",
         "sports equipment",
         "low poly",
@@ -249565,8 +249567,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/golf-club.kcad.ts",
       "preview": "/assets/sports-golf-club.png",
-      "sourceSha256": "4f9e0d9b98b658ff55a5bf4b9db20d14c8fad19377ab9aa6bcd9c3a09e714da4",
-      "triangleBudget": 600,
+      "sourceSha256": "513e2d86f543c328c07acec5ea367e29a9ace56e0ff8e8eb3e9941a6340fa154",
+      "triangleBudget": 2000,
       "params": [
         {
           "name": "scale",
@@ -249578,10 +249580,16 @@
           "step": 0.05
         },
         {
+          "name": "crownPaint",
+          "type": "color",
+          "default": "#1e2329",
+          "label": "Crown paint"
+        },
+        {
           "name": "stainlessSteel",
           "type": "color",
-          "default": "#abb6b9",
-          "label": "Club-head stainless steel"
+          "default": "#b9c2c6",
+          "label": "Club-head titanium"
         },
         {
           "name": "graphiteShaft",
@@ -249594,20 +249602,39 @@
           "type": "color",
           "default": "#242d32",
           "label": "Grip rubber"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#d8452f",
+          "label": "Ferrule, band and logo accent"
         }
       ],
       "presets": {
         "clubColors": {
-          "stainlessSteel": "#abb6b9",
-          "graphiteShaft": "#3c444a"
+          "crownPaint": "#244a7a",
+          "accent": "#f0c23a"
+        },
+        "tourWhite": {
+          "crownPaint": "#ecebe6",
+          "graphiteShaft": "#1c1f22",
+          "accent": "#2f8fd8",
+          "gripRubber": "#3d4246"
+        },
+        "weathered": {
+          "crownPaint": "#3b3d3e",
+          "stainlessSteel": "#8f9497",
+          "graphiteShaft": "#5b5f60",
+          "gripRubber": "#4b4a45",
+          "accent": "#8a5a44"
         }
       },
       "stats": {
-        "triangles": 100,
+        "triangles": 1624,
         "sizeM": [
-          0.118,
-          0.695,
-          0.044
+          0.417894,
+          0.97777,
+          0.622579
         ],
         "minUpM": 0,
         "materials": 1
@@ -249615,11 +249642,41 @@
       "palette": [
         {
           "name": "stainlessSteel",
-          "color": "#abb6b9",
+          "color": "#b9c2c6",
           "parts": [
-            "club-head"
+            "sole",
+            "face",
+            "hosel"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "crownPaint",
+          "color": "#1e2329",
+          "parts": [
+            "crown",
+            "face-score-1",
+            "face-score-2",
+            "face-score-3",
+            "face-score-4",
+            "face-score-5",
+            "face-score-6"
+          ],
+          "param": "crownPaint"
+        },
+        {
+          "name": "accent",
+          "color": "#d8452f",
+          "parts": [
+            "alignment-mark",
+            "crown-logo",
+            "sole-weight",
+            "ferrule",
+            "shaft-band",
+            "grip-collar",
+            "grip-cap"
+          ],
+          "param": "accent"
         },
         {
           "name": "graphiteShaft",
@@ -250044,12 +250101,13 @@
       "id": "inline-skate",
       "kit": "sports",
       "title": "Inline skate",
-      "description": "Low-poly inline skate boot with a cuff, chassis and three aligned wheels. Material controls: synthetic boot fabric, frame aluminium, urethane wheels, molded cuff polymer.",
+      "description": "Recreational inline skate at about real size: soft boot with toe cap, laces, padded tongue and heel counter; hinged moulded cuff with power strap and buckle; extruded aluminium frame with four 80 mm wheels, hub cores and axle bolts; heel brake pad. Material controls: synthetic boot fabric, molded cuff polymer, frame aluminium, urethane wheels, lace and strap accent; clubColors, aggressive and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "inline skate",
         "roller skate",
+        "rollerblade",
         "skating",
         "sports equipment",
         "low poly",
@@ -250064,8 +250122,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/inline-skate.kcad.ts",
       "preview": "/assets/sports-inline-skate.png",
-      "sourceSha256": "9cdb439a6664c82b3e061f5a03c33398b5d71c166c5738bacb3bc369e0c6635d",
-      "triangleBudget": 600,
+      "sourceSha256": "d86d7131feab76efd74676fefd78edcc2e9f238ef673ae27a71b84b15612a50d",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -250079,78 +250137,132 @@
         {
           "name": "syntheticBoot",
           "type": "color",
-          "default": "#465c70",
+          "default": "#3d5a78",
           "label": "Synthetic boot fabric"
+        },
+        {
+          "name": "moldedCuff",
+          "type": "color",
+          "default": "#24292e",
+          "label": "Molded cuff polymer"
         },
         {
           "name": "aluminiumFrame",
           "type": "color",
-          "default": "#9ea9ac",
+          "default": "#aeb7bb",
           "label": "Frame aluminium"
         },
         {
           "name": "urethaneWheel",
           "type": "color",
-          "default": "#d6d4ca",
+          "default": "#e9e4d2",
           "label": "Urethane wheels"
         },
         {
-          "name": "moldedCuff",
+          "name": "strapAccent",
           "type": "color",
-          "default": "#35424d",
-          "label": "Molded cuff polymer"
+          "default": "#e4572e",
+          "label": "Laces, strap and hubs"
         }
       ],
       "presets": {
         "clubColors": {
           "syntheticBoot": "#c04d40",
-          "aluminiumFrame": "#9ea9ac"
+          "strapAccent": "#f2f0e8"
+        },
+        "aggressive": {
+          "syntheticBoot": "#1d1f22",
+          "moldedCuff": "#1d1f22",
+          "aluminiumFrame": "#4b5257",
+          "urethaneWheel": "#86c540",
+          "strapAccent": "#86c540"
+        },
+        "weathered": {
+          "syntheticBoot": "#5b6670",
+          "moldedCuff": "#3c3f41",
+          "aluminiumFrame": "#8a9094",
+          "urethaneWheel": "#c2b48f",
+          "strapAccent": "#9a6a4a"
         }
       },
       "stats": {
-        "triangles": 270,
+        "triangles": 1892,
         "sizeM": [
-          0.17,
-          0.195,
-          0.084
+          0.354,
+          0.359095,
+          0.126
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "syntheticBoot",
-          "color": "#465c70",
-          "parts": [
-            "boot"
-          ],
-          "param": "syntheticBoot"
-        },
-        {
-          "name": "moldedCuff",
-          "color": "#35424d",
-          "parts": [
-            "cuff"
-          ],
-          "param": "moldedCuff"
-        },
-        {
           "name": "aluminiumFrame",
-          "color": "#9ea9ac",
+          "color": "#aeb7bb",
           "parts": [
-            "chassis"
+            "frame-rail-left",
+            "frame-rail-right",
+            "frame-top-plate",
+            "axle-bolt-1",
+            "axle-bolt-2",
+            "axle-bolt-3",
+            "axle-bolt-4",
+            "cuff-pivot-left",
+            "cuff-pivot-right",
+            "buckle"
           ],
           "param": "aluminiumFrame"
         },
         {
           "name": "urethaneWheel",
-          "color": "#d6d4ca",
+          "color": "#e9e4d2",
           "parts": [
-            "wheel-front",
-            "wheel-middle",
-            "wheel-rear"
+            "wheel-1",
+            "wheel-2",
+            "wheel-3",
+            "wheel-4",
+            "brake-pad"
           ],
           "param": "urethaneWheel"
+        },
+        {
+          "name": "strapAccent",
+          "color": "#e4572e",
+          "parts": [
+            "hub-1",
+            "hub-2",
+            "hub-3",
+            "hub-4",
+            "lace-1",
+            "lace-2",
+            "lace-3",
+            "lace-4",
+            "lace-5",
+            "power-strap"
+          ],
+          "param": "strapAccent"
+        },
+        {
+          "name": "moldedCuff",
+          "color": "#24292e",
+          "parts": [
+            "brake-arm",
+            "sole",
+            "toe-cap",
+            "heel-counter",
+            "cuff"
+          ],
+          "param": "moldedCuff"
+        },
+        {
+          "name": "syntheticBoot",
+          "color": "#3d5a78",
+          "parts": [
+            "boot-upper",
+            "tongue",
+            "cuff-liner"
+          ],
+          "param": "syntheticBoot"
         }
       ]
     },
@@ -250258,7 +250370,7 @@
       "id": "kettlebell",
       "kit": "sports",
       "title": "Kettlebell",
-      "description": "Low-poly kettlebell with a rounded body and raised ring handle. Material controls: cast iron body, handle steel.",
+      "description": "Cast-iron kettlebell at about real size: cannonball body on a flat base, one-piece horns and round grip bar, painted weight-colour band, raised weight plate with markings and a rubber floor ring. The weight choice (8-32 kg) sizes the bell as cast iron does. Material controls: cast iron body, handle finish, weight colour band, base rubber; competition, powderCoat and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -250266,6 +250378,7 @@
         "free weights",
         "gym",
         "training",
+        "cast iron",
         "low poly",
         "CC0"
       ],
@@ -250278,8 +250391,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/kettlebell.kcad.ts",
       "preview": "/assets/sports-kettlebell.png",
-      "sourceSha256": "6c52fde822541d03243b86a914047554fffe5d6d1f1e8aedea549a00fb931081",
-      "triangleBudget": 600,
+      "sourceSha256": "09d84742dd1e088c5202b4a2e0e9f18b213b337de6363ef475abfdf638523485",
+      "triangleBudget": 1600,
       "params": [
         {
           "name": "scale",
@@ -250291,30 +250404,67 @@
           "step": 0.05
         },
         {
+          "name": "weight",
+          "type": "choice",
+          "default": "16kg",
+          "label": "Weight",
+          "choices": [
+            "8kg",
+            "12kg",
+            "16kg",
+            "24kg",
+            "32kg"
+          ]
+        },
+        {
           "name": "castIron",
           "type": "color",
-          "default": "#555e63",
+          "default": "#2d3236",
           "label": "Cast iron body"
         },
         {
           "name": "handleSteel",
           "type": "color",
-          "default": "#aab4b7",
-          "label": "Handle steel"
+          "default": "#4a5257",
+          "label": "Handle finish"
+        },
+        {
+          "name": "weightBand",
+          "type": "color",
+          "default": "#e2b733",
+          "label": "Weight colour band"
+        },
+        {
+          "name": "baseRubber",
+          "type": "color",
+          "default": "#1c1e20",
+          "label": "Base rubber"
         }
       ],
       "presets": {
-        "clubColors": {
+        "competition": {
+          "castIron": "#e2b733",
+          "handleSteel": "#aab4b7",
+          "weightBand": "#f4f2ea"
+        },
+        "powderCoat": {
           "castIron": "#3f687f",
-          "handleSteel": "#aab4b7"
+          "handleSteel": "#3f687f",
+          "weightBand": "#e8e6df"
+        },
+        "weathered": {
+          "castIron": "#4f4740",
+          "handleSteel": "#6b6158",
+          "weightBand": "#a7883e",
+          "baseRubber": "#3a3835"
         }
       },
       "stats": {
-        "triangles": 290,
+        "triangles": 1192,
         "sizeM": [
-          0.095527,
-          0.138,
-          0.083138
+          0.213,
+          0.289,
+          0.2165
         ],
         "minUpM": 0,
         "materials": 1
@@ -250322,19 +250472,40 @@
       "palette": [
         {
           "name": "castIron",
-          "color": "#555e63",
+          "color": "#2d3236",
           "parts": [
-            "body"
+            "body",
+            "weight-mark-1",
+            "weight-mark-2"
           ],
           "param": "castIron"
         },
         {
-          "name": "handleSteel",
-          "color": "#aab4b7",
+          "name": "baseRubber",
+          "color": "#1c1e20",
           "parts": [
-            "handle",
-            "handle-foot-left",
-            "handle-foot-right"
+            "base-ring"
+          ],
+          "param": "baseRubber"
+        },
+        {
+          "name": "weightBand",
+          "color": "#e2b733",
+          "parts": [
+            "weight-band",
+            "weight-plate"
+          ],
+          "param": "weightBand"
+        },
+        {
+          "name": "handleSteel",
+          "color": "#4a5257",
+          "parts": [
+            "horn-left",
+            "bend-left",
+            "horn-right",
+            "bend-right",
+            "grip-bar"
           ],
           "param": "handleSteel"
         }
@@ -250552,13 +250723,15 @@
       "id": "skateboard",
       "kit": "sports",
       "title": "Skateboard",
-      "description": "Low-poly skateboard deck with two trucks and four wheels. Material controls: maple deck, truck aluminium, urethane wheels.",
+      "description": "Street skateboard at about real size: 8.0 x 31.9 inch popsicle deck with kicked nose and tail, seven-ply maple edge, grip tape and an underside graphic; two kingpin trucks with baseplates, hangers, bushings and axles; four 54 mm urethane wheels with bearing cores. Material controls: maple deck, grip tape, truck aluminium, urethane wheels, graphic accent; clubColors, neonCruiser and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "skateboard",
         "skateboarding",
         "board sport",
+        "popsicle deck",
+        "trucks",
         "low poly",
         "CC0"
       ],
@@ -250571,8 +250744,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/skateboard.kcad.ts",
       "preview": "/assets/sports-skateboard.png",
-      "sourceSha256": "d46a49db4149bdfa573af89ab159d182bf34208b1208bd996a98af32afb41cc3",
-      "triangleBudget": 600,
+      "sourceSha256": "fc5f2d233489a8774927d00fd8cda52552e36881cc95262c414737245383072a",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -250586,34 +250759,59 @@
         {
           "name": "mapleDeck",
           "type": "color",
-          "default": "#a75e3b",
-          "label": "Maple deck"
+          "default": "#c99a63",
+          "label": "Maple deck plies"
+        },
+        {
+          "name": "gripTape",
+          "type": "color",
+          "default": "#26282a",
+          "label": "Grip tape"
         },
         {
           "name": "truckAluminium",
           "type": "color",
-          "default": "#8d999d",
+          "default": "#a9b2b6",
           "label": "Truck aluminium"
         },
         {
           "name": "urethaneWheel",
           "type": "color",
-          "default": "#34383b",
+          "default": "#efe9d6",
           "label": "Urethane wheels"
+        },
+        {
+          "name": "graphicAccent",
+          "type": "color",
+          "default": "#d9432f",
+          "label": "Graphic and bushings"
         }
       ],
       "presets": {
         "clubColors": {
-          "mapleDeck": "#527c9c",
-          "truckAluminium": "#8d999d"
+          "graphicAccent": "#2f6fb0",
+          "urethaneWheel": "#f1d24a"
+        },
+        "neonCruiser": {
+          "mapleDeck": "#7fc6c0",
+          "graphicAccent": "#e83f8c",
+          "urethaneWheel": "#9de24f",
+          "truckAluminium": "#2b2e33"
+        },
+        "weathered": {
+          "mapleDeck": "#9c7a55",
+          "gripTape": "#4a4a48",
+          "truckAluminium": "#7e8487",
+          "urethaneWheel": "#bfb59a",
+          "graphicAccent": "#8f4a3a"
         }
       },
       "stats": {
-        "triangles": 348,
+        "triangles": 2336,
         "sizeM": [
-          0.31,
-          0.121,
-          0.140957
+          0.81,
+          0.138043,
+          0.212
         ],
         "minUpM": 0,
         "materials": 1
@@ -250621,29 +250819,74 @@
       "palette": [
         {
           "name": "mapleDeck",
-          "color": "#a75e3b",
+          "color": "#c99a63",
           "parts": [
             "deck"
           ],
           "param": "mapleDeck"
         },
         {
-          "name": "truckAluminium",
-          "color": "#8d999d",
+          "name": "gripTape",
+          "color": "#26282a",
           "parts": [
-            "front-truck",
-            "rear-truck"
+            "grip-tape",
+            "front-bearing-left",
+            "front-bearing-right",
+            "rear-bearing-left",
+            "rear-bearing-right"
+          ],
+          "param": "gripTape"
+        },
+        {
+          "name": "graphicAccent",
+          "color": "#d9432f",
+          "parts": [
+            "graphic-band",
+            "graphic-chevron",
+            "front-bushing-1",
+            "front-bushing-2",
+            "rear-bushing-1",
+            "rear-bushing-2"
+          ],
+          "param": "graphicAccent"
+        },
+        {
+          "name": "truckAluminium",
+          "color": "#a9b2b6",
+          "parts": [
+            "front-baseplate",
+            "front-pivot-block",
+            "front-kingpin",
+            "front-hanger",
+            "front-axle",
+            "front-axle-nut-left",
+            "front-axle-nut-right",
+            "front-bolt-il",
+            "front-bolt-ol",
+            "front-bolt-ir",
+            "front-bolt-or",
+            "rear-baseplate",
+            "rear-pivot-block",
+            "rear-kingpin",
+            "rear-hanger",
+            "rear-axle",
+            "rear-axle-nut-left",
+            "rear-axle-nut-right",
+            "rear-bolt-il",
+            "rear-bolt-ol",
+            "rear-bolt-ir",
+            "rear-bolt-or"
           ],
           "param": "truckAluminium"
         },
         {
           "name": "urethaneWheel",
-          "color": "#34383b",
+          "color": "#efe9d6",
           "parts": [
-            "wheel-front-left",
-            "wheel-front-right",
-            "wheel-rear-left",
-            "wheel-rear-right"
+            "front-wheel-left",
+            "front-wheel-right",
+            "rear-wheel-left",
+            "rear-wheel-right"
           ],
           "param": "urethaneWheel"
         }
@@ -251547,14 +251790,14 @@
       "id": "track-hurdle",
       "kit": "sports",
       "title": "Track hurdle",
-      "description": "Portable low-poly running hurdle with two feet, uprights and a crossbar. Material controls: anodized aluminium, crossbar polymer, foot rubber.",
+      "description": "Competition track hurdle at about real size: 1.2 m striped top board on two telescoping uprights with height-lock knobs, L-shaped steel bases with diagonal braces, sliding counterweights and rubber end caps. The heightClass choice sets the board to the youth, women's 100 m, men's 400 m or men's 110 m height. Material controls: anodized aluminium, painted base steel, board polymer, board stripes, foot rubber; clubColors, trainingYellow and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "track hurdle",
         "hurdle",
         "athletics",
-        "track",
+        "track and field",
         "low poly",
         "CC0"
       ],
@@ -251567,8 +251810,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/track-hurdle.kcad.ts",
       "preview": "/assets/sports-track-hurdle.png",
-      "sourceSha256": "cf6964b91445097112101618af6e4660a2bae041cb6cb18faaf8ab15fe8edecb",
-      "triangleBudget": 600,
+      "sourceSha256": "3b0d651dd02d1392cdefb0d02acf9667a7552e48520bd0daf1a4cd874b14544c",
+      "triangleBudget": 1600,
       "params": [
         {
           "name": "scale",
@@ -251580,64 +251823,155 @@
           "step": 0.05
         },
         {
+          "name": "heightClass",
+          "type": "choice",
+          "default": "women100m",
+          "label": "Set height",
+          "choices": [
+            "youth",
+            "women100m",
+            "men400m",
+            "men110m"
+          ]
+        },
+        {
           "name": "anodizedAluminium",
           "type": "color",
-          "default": "#a5b0b2",
-          "label": "Anodized aluminium"
+          "default": "#bcc4c7",
+          "label": "Anodized aluminium uprights"
+        },
+        {
+          "name": "baseSteel",
+          "type": "color",
+          "default": "#2c3136",
+          "label": "Painted base steel"
         },
         {
           "name": "crossbarPolymer",
           "type": "color",
-          "default": "#d9c554",
-          "label": "Crossbar polymer"
+          "default": "#f3f1ea",
+          "label": "Board polymer"
+        },
+        {
+          "name": "boardStripe",
+          "type": "color",
+          "default": "#1d1f21",
+          "label": "Board stripes"
         },
         {
           "name": "footRubber",
           "type": "color",
-          "default": "#333a3d",
+          "default": "#3a3f42",
           "label": "Foot rubber"
         }
       ],
       "presets": {
         "clubColors": {
           "anodizedAluminium": "#a5b0b2",
-          "crossbarPolymer": "#d84b40"
+          "boardStripe": "#d84b40",
+          "baseSteel": "#2f4f7a"
+        },
+        "trainingYellow": {
+          "crossbarPolymer": "#f2cf3a",
+          "boardStripe": "#24272a",
+          "baseSteel": "#3d4247"
+        },
+        "weathered": {
+          "anodizedAluminium": "#8f9699",
+          "baseSteel": "#5a4f45",
+          "crossbarPolymer": "#d8d2c2",
+          "boardStripe": "#4a4743",
+          "footRubber": "#55534e"
         }
       },
       "stats": {
-        "triangles": 124,
+        "triangles": 1052,
         "sizeM": [
-          0.318,
-          0.177,
-          0.024
+          0.716,
+          0.838,
+          1.228
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "anodizedAluminium",
-          "color": "#a5b0b2",
-          "parts": [
-            "left-upright",
-            "right-upright"
-          ],
-          "param": "anodizedAluminium"
-        },
-        {
           "name": "crossbarPolymer",
-          "color": "#d9c554",
+          "color": "#f3f1ea",
           "parts": [
-            "crossbar"
+            "top-board"
           ],
           "param": "crossbarPolymer"
         },
         {
-          "name": "footRubber",
-          "color": "#333a3d",
+          "name": "boardStripe",
+          "color": "#1d1f21",
           "parts": [
-            "left-foot",
-            "right-foot"
+            "stripe-1-back",
+            "stripe-1-front",
+            "stripe-2-back",
+            "stripe-2-front",
+            "stripe-3-back",
+            "stripe-3-front",
+            "stripe-4-back",
+            "stripe-4-front",
+            "stripe-5-back",
+            "stripe-5-front"
+          ],
+          "param": "boardStripe"
+        },
+        {
+          "name": "anodizedAluminium",
+          "color": "#bcc4c7",
+          "parts": [
+            "left-board-bracket",
+            "left-outer-tube",
+            "left-inner-tube",
+            "left-counterweight",
+            "right-board-bracket",
+            "right-outer-tube",
+            "right-inner-tube",
+            "right-counterweight"
+          ],
+          "param": "anodizedAluminium"
+        },
+        {
+          "name": "baseSteel",
+          "color": "#2c3136",
+          "parts": [
+            "left-sleeve-collar",
+            "left-height-mark-1",
+            "left-height-mark-2",
+            "left-height-mark-3",
+            "left-height-mark-4",
+            "left-base-foot",
+            "left-cross-foot",
+            "left-brace",
+            "right-sleeve-collar",
+            "right-height-mark-1",
+            "right-height-mark-2",
+            "right-height-mark-3",
+            "right-height-mark-4",
+            "right-base-foot",
+            "right-cross-foot",
+            "right-brace"
+          ],
+          "param": "baseSteel"
+        },
+        {
+          "name": "footRubber",
+          "color": "#3a3f42",
+          "parts": [
+            "left-lock-knob",
+            "left-weight-screw",
+            "left-end-cap-back",
+            "left-end-cap-out",
+            "left-end-cap-in",
+            "right-lock-knob",
+            "right-weight-screw",
+            "right-end-cap-back",
+            "right-end-cap-out",
+            "right-end-cap-in"
           ],
           "param": "footRubber"
         }
