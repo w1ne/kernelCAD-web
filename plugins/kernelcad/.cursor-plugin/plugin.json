@@ -38,8 +38,7 @@
     "m4",
     "dxf",
     "pdf",
-    "mcp",
-    "skills"
+    "mcp"
   ],
   "skills": "./skills/",
   "mcpServers": {
