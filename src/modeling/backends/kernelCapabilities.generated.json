@@ -12,6 +12,7 @@
         "assemblyModel",
         "assemblyPart",
         "boolean",
+        "booleanSplit",
         "box",
         "cameraTarget",
         "cfdStudy",
