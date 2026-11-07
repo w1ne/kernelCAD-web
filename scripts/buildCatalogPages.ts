@@ -3,7 +3,11 @@
 // Export one static, indexable HTML page per catalog asset for kernelcad.com.
 //   npx tsx scripts/buildCatalogPages.ts [outDir]   (default: site-build/)
 //
-// Writes, from catalog/index.json only:
+// Writes pages and previews from catalog/index.json only. The complete static
+// site build (including source-generated GLB/STEP downloads) is
+// scripts/buildCatalogSite.ts.
+//
+// Writes:
 //   <outDir>/catalog/index.html                     hub listing every kit and asset
 //   <outDir>/catalog/<kit>/<id>/index.html          one page per asset
 //   <outDir>/catalog/<kit>/<id>/preview.png         copied from catalog/kits/<kit>/previews/
@@ -17,6 +21,7 @@ import { join, resolve } from 'node:path';
 
 export const ORIGIN = 'https://kernelcad.com/';
 export const STUDIO = 'https://app.kernelcad.com/studio';
+export const MODEL_VIEWER_CDN = 'https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js';
 const DESCRIPTION_MAX = 160;
 
 export interface CatalogParam {
@@ -85,6 +90,67 @@ export function assetUrl(asset: Pick<CatalogAsset, 'kit' | 'id'>): string {
     return `${ORIGIN}${assetPath(asset)}`;
 }
 
+export function assetGlbPath(asset: Pick<CatalogAsset, 'kit' | 'id'>): string {
+    return `${assetPath(asset)}${asset.id}.glb`;
+}
+
+export function assetStepPath(asset: Pick<CatalogAsset, 'kit' | 'id'>): string {
+    return `${assetPath(asset)}${asset.id}.step`;
+}
+
+export function presetSlug(name: string): string {
+    return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'preset';
+}
+
+export function assetPresetGlbPath(asset: Pick<CatalogAsset, 'kit' | 'id'>, name: string): string {
+    return `${assetPath(asset)}${asset.id}-${presetSlug(name)}.glb`;
+}
+
+export interface CatalogPresetVariant {
+    readonly name: string;
+    readonly values: Readonly<Record<string, unknown>>;
+    readonly summary: string;
+    readonly filename: string;
+}
+
+export function catalogPresetVariantPath(asset: Pick<CatalogAsset, 'kit' | 'id'>, variant: CatalogPresetVariant): string {
+    return `${assetPath(asset)}${variant.filename}`;
+}
+
+/** Default plus authored presets, with a real choice-param state if needed. */
+export function catalogPresetVariants(asset: CatalogAsset): CatalogPresetVariant[] {
+    const variants: CatalogPresetVariant[] = [
+        { name: 'Default', values: {}, summary: 'Default parameter values', filename: `${asset.id}.glb` },
+        ...Object.entries(asset.presets ?? {}).map(([name, values]) => ({
+            name,
+            values,
+            summary: presetSummary(asset, values),
+            filename: `${asset.id}-${presetSlug(name)}.glb`,
+        })),
+    ];
+    const usedSlugs = new Set(variants.slice(1).map((variant) => presetSlug(variant.name)));
+    if (variants.length < 3) {
+        for (const param of asset.params) {
+            const alternative = param.choices?.find((value) => !Object.is(value, param.default)
+                && !Object.values(asset.presets ?? {}).some((preset) => Object.is(preset[param.name], value)));
+            if (alternative === undefined) continue;
+            const label = `Alternate ${param.label ?? param.name}: ${String(alternative)}`;
+            const baseSlug = presetSlug(label);
+            let slug = baseSlug;
+            for (let suffix = 2; usedSlugs.has(slug); suffix++) slug = `${baseSlug}-${suffix}`;
+            usedSlugs.add(slug);
+            variants.push({
+                name: label,
+                values: { [param.name]: alternative },
+                summary: `${param.label ?? param.name}: ${String(alternative)}`,
+                filename: `${asset.id}-${slug}.glb`,
+            });
+            break;
+        }
+    }
+    return variants;
+}
+
 /** Cut at a word boundary so the snippet stays <= max characters. */
 export function metaDescription(text: string, max = DESCRIPTION_MAX): string {
     const clean = text.replace(/\s+/g, ' ').trim();
@@ -131,6 +197,14 @@ const NAV = `    <nav class="nav">
     </nav>`;
 
 const STYLE = `  <style>
+    :root { --ink: #242522; --ink-soft: #444640; --ink-faint: #77796f; --card-stage: #f1eee5; --rule: #d8d4c9; --blueprint: #285fbd; --on-blueprint: #fff; }
+    body { margin: 0; color: var(--ink); background: #faf9f6; }
+    .page-wrap { max-width: 1120px; margin: 0 auto; padding: 0 1.25rem; }
+    .nav { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.1rem 0; border-bottom: 1px solid var(--rule); }
+    .nav-mark, .nav-links a { color: var(--ink-soft); text-decoration: none; }
+    .nav-mark { display: flex; align-items: center; gap: 0.45rem; font-family: 'Inter', sans-serif; }
+    .nav-mark .k { width: 1.8rem; height: 1.8rem; }
+    .nav-links { display: flex; flex-wrap: wrap; gap: 1rem; font: 0.85rem 'JetBrains Mono', monospace; }
     .catalog { max-width: 960px; margin: 0 auto; padding: 1rem 0 4rem; font-family: 'Inter', sans-serif; color: var(--ink-soft); line-height: 1.6; }
     .catalog h1 { font-family: 'Source Serif 4', serif; font-size: 2.2rem; color: var(--ink); margin: 1.5rem 0 0.5rem; }
     .catalog h2 { font-family: 'Source Serif 4', serif; font-size: 1.3rem; color: var(--ink); margin: 2rem 0 0.5rem; }
@@ -138,6 +212,19 @@ const STYLE = `  <style>
     .catalog .crumbs { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink-faint); }
     .catalog .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 2rem; align-items: start; }
     .catalog .hero img { width: 100%; height: auto; background: var(--card-stage); border: 1px solid var(--rule); border-radius: 6px; }
+    .catalog .asset-viewer { min-width: 0; }
+    .catalog .model-stage { position: relative; width: 100%; aspect-ratio: 1; overflow: hidden; background: var(--card-stage); border: 1px solid var(--rule); border-radius: 6px; }
+    .catalog .model-fallback, .catalog model-viewer { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+    .catalog .model-fallback { object-fit: contain; }
+    .catalog model-viewer { background: transparent; }
+    .catalog .variant-list, .catalog .downloads { display: flex; flex-wrap: wrap; gap: 0.55rem; margin: 0.75rem 0; }
+    .catalog .variant-list button, .catalog .downloads a, .catalog .copy-prompt { border: 1px solid var(--rule); border-radius: 5px; padding: 0.45rem 0.7rem; color: var(--ink-soft); background: var(--card-stage); font: inherit; cursor: pointer; }
+    .catalog .variant-list button[aria-pressed="true"], .catalog .downloads a:first-child { color: var(--on-blueprint); background: var(--blueprint); border-color: var(--blueprint); text-decoration: none; }
+    .catalog .downloads a { text-decoration: none; }
+    .catalog .variant-summary, .catalog .fine-print { font-size: 0.86rem; color: var(--ink-faint); }
+    .catalog .mcp-prompt { overflow: auto; padding: 0.8rem; white-space: pre-wrap; overflow-wrap: anywhere; background: var(--card-stage); border: 1px solid var(--rule); border-radius: 5px; }
+    .catalog .copy-prompt { cursor: pointer; }
+    .catalog .copy-prompt:hover, .catalog .variant-list button:hover, .catalog .downloads a:hover { border-color: var(--blueprint); }
     .catalog dl { display: grid; grid-template-columns: max-content 1fr; gap: 0.3rem 1rem; margin: 1rem 0; }
     .catalog dt { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink-faint); }
     .catalog dd { margin: 0; }
@@ -266,6 +353,64 @@ ${items.join('\n')}
       </ul>`;
 }
 
+function presetSummary(asset: CatalogAsset, values: Readonly<Record<string, unknown>>): string {
+    const byName = new Map(asset.params.map((param) => [param.name, param]));
+    return Object.entries(values).map(([name, value]) => `${byName.get(name)?.label ?? name}: ${String(value)}`).join('; ');
+}
+
+function modelVariants(asset: CatalogAsset): string {
+    const variants = catalogPresetVariants(asset);
+    const seen = new Set<string>();
+    return variants.map((variant, index) => {
+        if (seen.has(variant.filename)) throw new Error(`${asset.kit}/${asset.id} has preset names that collide after filename normalization: ${variant.name}`);
+        seen.add(variant.filename);
+        return `        <button type="button" data-asset-variant data-src="${escapeHtml(variant.filename)}" data-filename="${escapeHtml(variant.filename)}" data-summary="${escapeHtml(variant.summary)}" aria-pressed="${index === 0 ? 'true' : 'false'}">${escapeHtml(variant.name)}</button>`;
+    }).join('\n');
+}
+
+function assetInteractionScript(): string {
+    return `  <script data-catalog-interactions>
+    (() => {
+      const viewer = document.querySelector('#asset-viewer');
+      const glb = document.querySelector('#download-glb');
+      const summary = document.querySelector('#variant-summary');
+      const fallback = document.querySelector('#model-fallback');
+      for (const button of document.querySelectorAll('[data-asset-variant]')) {
+        button.addEventListener('click', () => {
+          const src = button.getAttribute('data-src');
+          const filename = button.getAttribute('data-filename');
+          if (!src || !filename) return;
+          viewer.setAttribute('src', src);
+          glb.setAttribute('href', src);
+          glb.setAttribute('download', filename);
+          glb.textContent = 'Download GLB · ' + button.textContent.trim();
+          summary.textContent = button.getAttribute('data-summary') || '';
+          for (const choice of document.querySelectorAll('[data-asset-variant]')) {
+            choice.setAttribute('aria-pressed', choice === button ? 'true' : 'false');
+          }
+          if (fallback) fallback.hidden = false;
+        });
+      }
+      viewer?.addEventListener('load', () => { if (fallback) fallback.hidden = true; });
+      document.querySelector('[data-copy-prompt]')?.addEventListener('click', async (event) => {
+        const button = event.currentTarget;
+        const prompt = document.querySelector('#mcp-prompt')?.textContent || '';
+        try {
+          await navigator.clipboard.writeText(prompt);
+          button.textContent = 'Copied';
+        } catch {
+          const range = document.createRange();
+          range.selectNodeContents(document.querySelector('#mcp-prompt'));
+          const selection = window.getSelection();
+          selection?.removeAllRanges();
+          selection?.addRange(range);
+          button.textContent = 'Select and copy the prompt';
+        }
+      });
+    })();
+  </script>`;
+}
+
 function factsList(asset: CatalogAsset, kit: CatalogKit | undefined): string {
     const license = licenseOf(asset);
     const tri = triangles(asset);
@@ -308,6 +453,8 @@ export function renderAssetPage(asset: CatalogAsset, kit: CatalogKit | undefined
     const image = `${url}preview.png`;
     const alt = previewAlt(asset);
     const studio = `${STUDIO}?catalog=${encodeURIComponent(asset.kit)}/${encodeURIComponent(asset.id)}`;
+    const studioAbsolute = `${STUDIO}?catalog=${encodeURIComponent(asset.kit)}/${encodeURIComponent(asset.id)}`;
+    const prompt = `Use this free kernelCAD catalog asset: ${url}\n\nThe hosted kernelCAD MCP at https://mcp.kernelcad.com/mcp currently does not expose catalog lookup or fetch tools. Do not guess tool names. Use the page's free GLB or STEP download if you can fetch public URLs, or open the source in kernelCAD Studio: ${studioAbsolute}. Tell me which file or workflow you used.`;
     const head = `  <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}" />
   <link rel="canonical" href="${url}" />
@@ -317,11 +464,28 @@ ${jsonForScript(productJsonLd(asset))}
   </script>
   <script type="application/ld+json">
 ${jsonForScript(breadcrumbJsonLd(asset, kit))}
-  </script>`;
+  </script>
+  <script type="module" src="${MODEL_VIEWER_CDN}"></script>`;
     const body = `      <p class="crumbs"><a href="/catalog/">Catalog</a> / <a href="/catalog/#kit-${escapeHtml(asset.kit)}">${escapeHtml(kit?.title ?? asset.kit)}</a> / ${escapeHtml(asset.title)}</p>
       <h1>${escapeHtml(asset.title)}</h1>
       <div class="hero">
-        <img src="preview.png" alt="${escapeHtml(alt)}" width="512" height="512" />
+        <section class="asset-viewer" aria-label="Interactive 3D model and preset viewer">
+          <div class="model-stage">
+            <img id="model-fallback" class="model-fallback" src="preview.png" alt="${escapeHtml(alt)}" width="512" height="512" />
+            <model-viewer id="asset-viewer" src="${escapeHtml(`${asset.id}.glb`)}" poster="preview.png" alt="Interactive 3D preview of ${escapeHtml(asset.title)}" camera-controls auto-rotate touch-action="pan-y" shadow-intensity="0.45" loading="eager"></model-viewer>
+          </div>
+          <p class="fine-print">This static page uses pre-rendered variants of the original kernelCAD source. Switch a preset to change the model; open it in Studio for arbitrary knob values.</p>
+          <div class="variant-list" role="group" aria-label="Choose a pre-rendered parameter preset">
+${modelVariants(asset)}
+          </div>
+          <p id="variant-summary" class="variant-summary">Default parameter values</p>
+          <h2>Download this model</h2>
+          <p class="fine-print">GLB follows the selected preset. STEP contains the default parameter values; use Studio to edit knobs before exporting a custom STEP file.</p>
+          <div class="downloads">
+            <a id="download-glb" href="${escapeHtml(`${asset.id}.glb`)}" download="${escapeHtml(`${asset.id}.glb`)}">Download GLB · Default</a>
+            <a href="${escapeHtml(`${asset.id}.step`)}" download="${escapeHtml(`${asset.id}.step`)}">Download STEP · Default</a>
+          </div>
+        </section>
         <div>
           <p>${escapeHtml(asset.description)}</p>
           <a class="cta" href="${studio}">Open in Studio</a>
@@ -332,9 +496,14 @@ ${factsList(asset, kit)}
       <p>${asset.params.length} parameter${asset.params.length === 1 ? '' : 's'} you can change in Studio before export.</p>
 ${knobTable(asset)}
 ${presetsSection(asset)}
+      <h2>Use with an agent</h2>
+      <p>The kernelCAD MCP endpoint is live, but its current tool list does not include catalog lookup or fetch tools. This prompt avoids calling a catalog tool that is not available yet.</p>
+      <p><a href="https://mcp.kernelcad.com/mcp">kernelCAD MCP endpoint</a></p>
+      <pre id="mcp-prompt" class="mcp-prompt">${escapeHtml(prompt)}</pre>
+      <button type="button" class="copy-prompt" data-copy-prompt>Copy agent prompt</button>
 ${siblingList(asset, siblings)}
       <p><a href="/catalog/">← Back to the full catalog</a></p>`;
-    return document(head, body);
+    return document(head, `${body}\n${assetInteractionScript()}`);
 }
 
 export const HUB_TITLE = 'Free low-poly 3D model catalog (CC0) | kernelCAD';
@@ -415,4 +584,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const outDir = resolve(process.argv[2] ?? join(repoRoot, 'site-build'));
     const count = writeCatalogSite(repoRoot, outDir);
     console.log(`wrote ${count} asset page(s) + hub, sitemap.xml and robots.txt to ${outDir}`);
+    const index = JSON.parse(readFileSync(join(repoRoot, 'catalog', 'index.json'), 'utf8')) as CatalogIndex;
+    console.log(`sitemap contains ${index.assets.length + 1} URL(s)`);
 }

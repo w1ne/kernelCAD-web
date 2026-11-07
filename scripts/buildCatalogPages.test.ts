@@ -4,7 +4,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { assetPath, assetUrl, escapeHtml, metaDescription, ORIGIN, writeCatalogSite, type CatalogIndex } from './buildCatalogPages';
+import { JSDOM } from 'jsdom';
+import { assetGlbPath, assetPath, assetStepPath, assetUrl, catalogPresetVariants, catalogPresetVariantPath, escapeHtml, metaDescription, ORIGIN, writeCatalogSite, type CatalogIndex } from './buildCatalogPages';
 
 const repoRoot = resolve(import.meta.dirname, '..');
 const index = JSON.parse(readFileSync(join(repoRoot, 'catalog', 'index.json'), 'utf8')) as CatalogIndex;
@@ -75,6 +76,61 @@ describe('catalog SEO page export', () => {
         const pages = [hub, ...index.assets.map((a) => readFileSync(join(out, assetPath(a), 'index.html'), 'utf8'))];
         const broken = new Set(pages.flatMap(catalogLinks).filter((file) => !existsSync(join(out, file))));
         expect([...broken]).toEqual([]);
+    });
+
+    it('puts a viewer, switchable source-generated GLB variants, downloads and honest MCP copy on every asset page', () => {
+        for (const asset of index.assets) {
+            const html = readFileSync(join(out, assetPath(asset), 'index.html'), 'utf8');
+            expect(html, `${asset.kit}/${asset.id} viewer`).toContain('<model-viewer id="asset-viewer"');
+            expect(html, `${asset.kit}/${asset.id} default GLB`).toContain(`href="${asset.id}.glb" download="${asset.id}.glb"`);
+            expect(html, `${asset.kit}/${asset.id} default STEP`).toContain(`href="${asset.id}.step" download="${asset.id}.step"`);
+            expect(html, `${asset.kit}/${asset.id} Studio link`).toContain(`https://app.kernelcad.com/studio?catalog=${asset.kit}/${asset.id}`);
+            expect(html, `${asset.kit}/${asset.id} honest MCP handoff`).toContain('does not expose catalog lookup or fetch tools');
+            expect(html, `${asset.kit}/${asset.id} copied prompt`).toContain('data-copy-prompt');
+            expect(html, `${asset.kit}/${asset.id} default download path`).toContain(assetGlbPath(asset).split('/').at(-1)!);
+            expect(html, `${asset.kit}/${asset.id} STEP path`).toContain(assetStepPath(asset).split('/').at(-1)!);
+            const variants = catalogPresetVariants(asset);
+            expect(variants.length, `${asset.kit}/${asset.id} preset count`).toBeGreaterThanOrEqual(3);
+            expect(variants.length, `${asset.kit}/${asset.id} preset count`).toBeLessThanOrEqual(5);
+            for (const variant of variants.slice(1)) {
+                expect(html, `${asset.kit}/${asset.id} preset ${variant.name}`).toContain(catalogPresetVariantPath(asset, variant).split('/').at(-1)!);
+            }
+        }
+    });
+
+    it('creates a third real choice-param preset for assets with one authored preset', () => {
+        const onePresetAssets = index.assets.filter((asset) => Object.keys(asset.presets ?? {}).length === 1);
+        expect(onePresetAssets.map((asset) => asset.id).sort()).toEqual(['reeds', 'seesaw', 'speed-bump']);
+        for (const asset of onePresetAssets) {
+            const variants = catalogPresetVariants(asset);
+            expect(variants).toHaveLength(3);
+            const choiceParam = asset.params.find((param) => param.choices?.length);
+            expect(choiceParam).toBeDefined();
+            expect(variants[2]!.values).toHaveProperty(choiceParam!.name);
+        }
+    });
+
+    it('switching a preset changes both the 3D viewer source and the matching GLB download', () => {
+        const asset = index.assets[0]!;
+        const html = readFileSync(join(out, assetPath(asset), 'index.html'), 'utf8');
+        const dom = new JSDOM(html, { runScripts: 'dangerously', url: assetUrl(asset) });
+        const { document, MouseEvent } = dom.window;
+        const viewer = document.querySelector('#asset-viewer')!;
+        const download = document.querySelector('#download-glb')!;
+        const buttons = [...document.querySelectorAll<HTMLButtonElement>('[data-asset-variant]')];
+
+        expect(buttons.length).toBeGreaterThan(1);
+        expect(viewer.getAttribute('src')).toBe(`${asset.id}.glb`);
+        expect(download.getAttribute('href')).toBe(`${asset.id}.glb`);
+        buttons[1]!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+        const selected = buttons[1]!;
+        expect(viewer.getAttribute('src')).toBe(selected.getAttribute('data-src'));
+        expect(download.getAttribute('href')).toBe(selected.getAttribute('data-src'));
+        expect(download.getAttribute('download')).toBe(selected.getAttribute('data-filename'));
+        expect(selected.getAttribute('aria-pressed')).toBe('true');
+        expect(buttons[0]!.getAttribute('aria-pressed')).toBe('false');
+        dom.window.close();
     });
 
     it('lists the hub and every asset page in sitemap.xml, and robots.txt allows them', () => {

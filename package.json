@@ -57,6 +57,7 @@
     "catalog:check": "npx tsx scripts/buildAssetCatalog.ts --check",
     "catalog:previews": "npx tsx scripts/renderCatalogPreviews.ts",
     "catalog:pages": "npx tsx scripts/buildCatalogPages.ts",
+    "catalog:site": "KCAD_CATALOG_BUILD=1 npx vitest run scripts/buildCatalogDownloads.test.ts --testNamePattern='writes complete static catalog site'",
     "cookbook:evaluate": "npx tsx scripts/cookbookEvaluate.ts",
     "cookbook:build": "npx tsx scripts/buildCookbookIndex.ts && npx tsx scripts/buildAuthoringReferences.ts",
     "skill:references": "npx tsx scripts/buildAuthoringReferences.ts",

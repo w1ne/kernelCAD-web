@@ -43,8 +43,9 @@ if (style.value === 'box') {
     mb.part(`leg-${i}`, box(50, 50, legH + 20, true).translate(x * (W / 2 - 30), y * (D / 2 - 30), (legH + 20) / 2).color(slot));
   }
   mb.part('body', box(W, D, bodyH, true).translate(0, 0, legH + bodyH / 2).color(body));
-  // Arched roof: a half-octagon profile in XZ, extruded through Y.
-  const arch: [number, number][] = [[-W / 2, 0]];
+  // Arched roof: a half-octagon profile in XZ, extruded through Y. Keep each
+  // endpoint once; a repeated first point makes an invalid zero-length edge.
+  const arch: [number, number][] = [];
   for (let k = 0; k <= 4; k++) {
     const a = Math.PI - (Math.PI * k) / 4;
     arch.push([(W / 2) * Math.cos(a), 150 * Math.sin(a)]);

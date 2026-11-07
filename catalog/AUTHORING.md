@@ -4,7 +4,9 @@ Catalog assets are original, parametric low-poly models for games and three.js
 scenes. Each one is a `.kcad.ts` program in `catalog/kits/<kit>/<id>.kcad.ts`
 that exports as a flat-shaded GLB in metres with one shared vertex-coloured
 material. `catalog/index.json` is generated from these sources; never edit it
-by hand.
+by hand. `npm run catalog:site` emits one static page per asset,
+source-generated GLB and STEP downloads, and a GLB for each authored preset.
+`npm run catalog:pages` remains the HTML-only page generator.
 
 ## Provenance
 
@@ -46,6 +48,10 @@ meta({
   `.add/.multiply`, never JS arithmetic. Give every knob a `label`.
 - Add `presets({ name: { knob: value } })` for 1–3 useful looks when they make
   sense (autumn, night, worn, painted).
+- The public static page switches among the default and these pre-rendered
+  presets. The selected preset controls the GLB download. STEP is generated
+  from default values; visitors can open the source in Studio to change any
+  knob before exporting custom STEP geometry.
 - Build with an `assembly()` and one `part()` per colour zone or moving piece
   when that helps. Each distinct colour becomes a palette zone named after its
   colour knob.
