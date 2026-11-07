@@ -121556,27 +121556,32 @@
       "id": "bridge-crane",
       "kit": "industrial-plant",
       "title": "Bridge crane",
-      "description": "Overhead bridge crane with twin runway girders, end trucks, a moving trolley and hanging hook. Controls: overall scale, steel, safety paint.",
+      "description": "Top-running double-girder bridge crane in one runway bay at about real size: I-section building columns with corbels and base plates, runway beams with rails and end stops, end trucks with wheels, bridge drive motors and buffers, two box girders with stiffeners and a capacity board, walkway with handrail, crab trolley with hoist drum, gearbox and motor, wire-rope falls, hook block with forged hook and a pendant controller. Material controls: crane girders, building steel, hoist machinery, hook and block; weathered, highVisibility and blue-crane presets.",
       "category": "structure",
       "origin": "base",
       "tags": [
         "industrial plant",
         "factory",
-        "process equipment",
-        "low poly",
+        "workshop",
+        "crane",
+        "overhead crane",
+        "bridge crane",
+        "hoist",
+        "lifting",
         "CC0"
       ],
       "compat": [
         "industrial-plant",
         "factory",
         "manufacturing",
-        "industrial-scene"
+        "industrial-scene",
+        "warehouse"
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/bridge-crane.kcad.ts",
       "preview": "/assets/industrial-plant-bridge-crane.png",
-      "sourceSha256": "38fb7760ab35ec1ed0a9d9c0aa6ed31db70b1597b6ad1c1a59206539eacb868f",
-      "triangleBudget": 1400,
+      "sourceSha256": "202720f34b14125a5a9da0b4694653a4deddad8cbb4d402177bf067abe6d5c29",
+      "triangleBudget": 6000,
       "params": [
         {
           "name": "scale",
@@ -121588,62 +121593,228 @@
           "step": 0.05
         },
         {
-          "name": "steel",
+          "name": "girder",
           "type": "color",
-          "default": "#758087",
-          "label": "Structural steel"
+          "default": "#e5b023",
+          "label": "Crane girders and end trucks"
         },
         {
-          "name": "safetyPaint",
+          "name": "building",
           "type": "color",
-          "default": "#e5ac42",
-          "label": "Safety paint"
+          "default": "#6b7378",
+          "label": "Building columns and runway"
+        },
+        {
+          "name": "hoist",
+          "type": "color",
+          "default": "#34495c",
+          "label": "Hoist machinery and trolley"
+        },
+        {
+          "name": "hook",
+          "type": "color",
+          "default": "#c7372c",
+          "label": "Hook block and hook"
         }
       ],
       "presets": {
         "weathered": {
-          "steel": "#575851",
-          "safetyPaint": "#9e722f"
+          "girder": "#a88a3c",
+          "building": "#55524c",
+          "hoist": "#3b4247",
+          "hook": "#8d3a2c"
         },
         "highVisibility": {
-          "safetyPaint": "#f5c640"
+          "girder": "#f5c640",
+          "hook": "#f08c00"
+        },
+        "blue-crane": {
+          "girder": "#2a5f9e",
+          "hook": "#e5b023"
         }
       },
       "stats": {
-        "triangles": 164,
+        "triangles": 4104,
         "sizeM": [
-          1.2744,
-          0.8772,
-          0.7904
+          7.2,
+          9.83,
+          10.7
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "safetyPaint",
-          "color": "#e5ac42",
+          "name": "building",
+          "color": "#6b7378",
           "parts": [
-            "base-rail-left",
-            "base-rail-right",
-            "runway-girder--1",
-            "runway-girder-1",
-            "trolley",
-            "hook-block"
+            "column--3000--1",
+            "base-plate--3000--1",
+            "corbel--3000--1",
+            "corbel-top--3000--1",
+            "column--3000-1",
+            "base-plate--3000-1",
+            "corbel--3000-1",
+            "corbel-top--3000-1",
+            "column-3000--1",
+            "base-plate-3000--1",
+            "corbel-3000--1",
+            "corbel-top-3000--1",
+            "column-3000-1",
+            "base-plate-3000-1",
+            "corbel-3000-1",
+            "corbel-top-3000-1",
+            "runway-beam--1",
+            "crane-rail--1",
+            "runway-beam-1",
+            "crane-rail-1",
+            "girder-rail--1",
+            "girder-rail-1"
           ],
-          "param": "safetyPaint"
+          "param": "building"
         },
         {
-          "name": "steel",
-          "color": "#758087",
+          "name": "end-stop--3600--1",
+          "color": "#1d1f21",
           "parts": [
-            "column--1",
-            "column-1",
-            "bridge-beam",
-            "chain",
+            "end-stop--3600--1",
+            "end-stop-3600--1",
+            "end-stop--3600-1",
+            "end-stop-3600-1",
+            "buffer--1700--1",
+            "buffer-1700--1",
+            "buffer--1700-1",
+            "buffer-1700-1",
+            "capacity-text",
+            "hook-block-cheek",
+            "hook-latch",
+            "pendant-cable",
+            "pendant-button-0",
+            "pendant-button-1",
+            "pendant-button-2"
+          ]
+        },
+        {
+          "name": "girder",
+          "color": "#e5b023",
+          "parts": [
+            "end-truck--1",
+            "end-truck-1",
+            "girder--1",
+            "girder-top-flange--1",
+            "girder-bottom-flange--1",
+            "stiffener--1--3900",
+            "stiffener--1--3000",
+            "stiffener--1--2100",
+            "stiffener--1--1200",
+            "stiffener--1--300",
+            "stiffener--1-600",
+            "stiffener--1-1500",
+            "stiffener--1-2400",
+            "stiffener--1-3300",
+            "girder-1",
+            "girder-top-flange-1",
+            "girder-bottom-flange-1",
+            "stiffener-1--3900",
+            "stiffener-1--3000",
+            "stiffener-1--2100",
+            "stiffener-1--1200",
+            "stiffener-1--300",
+            "stiffener-1-600",
+            "stiffener-1-1500",
+            "stiffener-1-2400",
+            "stiffener-1-3300",
+            "walkway-deck",
+            "walkway-toe",
+            "walkway-rail-7900",
+            "walkway-rail-8400",
+            "walkway-post--4300",
+            "walkway-post--3000",
+            "walkway-post--1700",
+            "walkway-post--400",
+            "walkway-post-900",
+            "walkway-post-2200",
+            "walkway-post-3500",
+            "walkway-bracket--3600",
+            "walkway-bracket--2000",
+            "walkway-bracket--400",
+            "walkway-bracket-1200",
+            "walkway-bracket-2800",
+            "hoist-motor",
+            "pendant-box"
+          ],
+          "param": "girder"
+        },
+        {
+          "name": "hoist",
+          "color": "#34495c",
+          "parts": [
+            "wheel--1350--1",
+            "wheel-flange--1350--1",
+            "wheel-1350--1",
+            "wheel-flange-1350--1",
+            "drive-gearbox--1",
+            "drive-motor--1",
+            "wheel--1350-1",
+            "wheel-flange--1350-1",
+            "wheel-1350-1",
+            "wheel-flange-1350-1",
+            "drive-gearbox-1",
+            "drive-motor-1",
+            "trolley-frame",
+            "trolley-wheel--1--650",
+            "trolley-wheel--1-650",
+            "trolley-wheel-1--650",
+            "trolley-wheel-1-650",
+            "hoist-drum",
+            "drum-bearing--700",
+            "drum-bearing-700",
+            "hoist-gearbox",
+            "trolley-cover",
+            "hook-crosshead",
+            "hook-nut"
+          ],
+          "param": "hoist"
+        },
+        {
+          "name": "capacity-board",
+          "color": "#f4f2ea",
+          "parts": [
+            "capacity-board"
+          ]
+        },
+        {
+          "name": "rope-wrap-0",
+          "color": "#9da3a6",
+          "parts": [
+            "rope-wrap-0",
+            "rope-wrap-1",
+            "rope-wrap-2",
+            "rope-wrap-3",
+            "rope-wrap-4",
+            "rope-wrap-5",
+            "rope-wrap-6",
+            "rope-wrap-7",
+            "rope-wrap-8",
+            "rope-wrap-9",
+            "rope-wrap-10",
+            "rope-wrap-11",
+            "rope--160--80",
+            "rope--160-80",
+            "rope-160--80",
+            "rope-160-80"
+          ]
+        },
+        {
+          "name": "hook",
+          "color": "#c7372c",
+          "parts": [
+            "hoist-brake",
+            "hook-block",
+            "hook-shank",
             "hook"
           ],
-          "param": "steel"
+          "param": "hook"
         }
       ]
     },
@@ -122244,14 +122415,18 @@
       "id": "centrifugal-pump",
       "kit": "industrial-plant",
       "title": "Centrifugal process pump",
-      "description": "Horizontal centrifugal pump with a volute housing, guarded coupling, motor and mounting skid. Controls: overall scale, steel, safety paint.",
+      "description": "End-suction centrifugal pump set at about real size: spiral volute casing with vertical discharge neck and axial suction nozzle, bolted flanges, ribbed bearing frame with oiler, half-round coupling guard, finned TEFC motor with fan cowl and terminal box on a drip-rim baseplate. Material controls: pump casing, motor paint, baseplate and guard, flanges and bolts; weathered, highVisibility and stainless presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "industrial plant",
         "factory",
         "process equipment",
-        "low poly",
+        "pump",
+        "centrifugal",
+        "end suction",
+        "volute",
+        "motor",
         "CC0"
       ],
       "compat": [
@@ -122263,8 +122438,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/centrifugal-pump.kcad.ts",
       "preview": "/assets/industrial-plant-centrifugal-pump.png",
-      "sourceSha256": "492ebd5808965c90e3e892928f3572de3796c8635f645e5c8ceab73843bd9240",
-      "triangleBudget": 1400,
+      "sourceSha256": "8bf1d5846b374fd4a2e750bfbbd9d43e60967e88278b5f6576ec28f58414382c",
+      "triangleBudget": 6000,
       "params": [
         {
           "name": "scale",
@@ -122276,61 +122451,183 @@
           "step": 0.05
         },
         {
-          "name": "steel",
+          "name": "casing",
           "type": "color",
-          "default": "#597785",
-          "label": "Structural steel"
+          "default": "#2f5f8f",
+          "label": "Pump casing and bearing frame"
         },
         {
-          "name": "safetyPaint",
+          "name": "motor",
           "type": "color",
-          "default": "#e7ad42",
-          "label": "Safety paint"
+          "default": "#3b6e4f",
+          "label": "Motor paint"
+        },
+        {
+          "name": "base",
+          "type": "color",
+          "default": "#e2a93a",
+          "label": "Baseplate and coupling guard"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#a7adb0",
+          "label": "Flanges, shaft and bolts"
         }
       ],
       "presets": {
         "weathered": {
-          "steel": "#575851",
-          "safetyPaint": "#9e722f"
+          "casing": "#3c5466",
+          "motor": "#4a5a4c",
+          "base": "#9e722f",
+          "metal": "#7d7a72"
         },
         "highVisibility": {
-          "safetyPaint": "#f5c640"
+          "base": "#f5c640"
+        },
+        "stainless": {
+          "casing": "#c3c8cb",
+          "metal": "#dfe2e3",
+          "motor": "#2f3a44"
         }
       },
       "stats": {
-        "triangles": 378,
+        "triangles": 4038,
         "sizeM": [
-          0.6544,
-          0.306,
-          0.24
+          1.804,
+          0.952,
+          0.71
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "safetyPaint",
-          "color": "#e7ad42",
+          "name": "base",
+          "color": "#e2a93a",
           "parts": [
-            "skid",
-            "coupling",
-            "volute",
-            "inlet",
-            "outlet"
+            "baseplate",
+            "base-end--820",
+            "base-end-880",
+            "coupling-guard"
           ],
-          "param": "safetyPaint"
+          "param": "base"
         },
         {
-          "name": "steel",
-          "color": "#597785",
+          "name": "metal",
+          "color": "#a7adb0",
           "parts": [
-            "motor-foot",
-            "motor",
-            "coupling-guard",
-            "pump-neck",
-            "outlet-flange"
+            "drain-boss",
+            "anchor--700--260",
+            "anchor--700-260",
+            "anchor--100--260",
+            "anchor--100-260",
+            "anchor-500--260",
+            "anchor-500-260",
+            "cable-gland",
+            "lifting-eye",
+            "motor-shaft",
+            "coupling-hub-a",
+            "coupling-hub-b",
+            "oiler-stem",
+            "vent-plug",
+            "casing-bolt-0",
+            "casing-bolt-1",
+            "casing-bolt-2",
+            "casing-bolt-3",
+            "casing-bolt-4",
+            "casing-bolt-5",
+            "casing-bolt-6",
+            "casing-bolt-7",
+            "casing-bolt-8",
+            "casing-bolt-9",
+            "discharge-flange",
+            "discharge-flange-bolt-0",
+            "discharge-flange-bolt-1",
+            "discharge-flange-bolt-2",
+            "discharge-flange-bolt-3",
+            "discharge-flange-bolt-4",
+            "discharge-flange-bolt-5",
+            "discharge-flange-bolt-6",
+            "discharge-flange-bolt-7",
+            "suction-flange",
+            "suction-flange-bolt-0",
+            "suction-flange-bolt-1",
+            "suction-flange-bolt-2",
+            "suction-flange-bolt-3",
+            "suction-flange-bolt-4",
+            "suction-flange-bolt-5",
+            "suction-flange-bolt-6",
+            "suction-flange-bolt-7",
+            "casing-drain"
           ],
-          "param": "steel"
+          "param": "metal"
+        },
+        {
+          "name": "motor",
+          "color": "#3b6e4f",
+          "parts": [
+            "motor-foot--690",
+            "motor-foot--340",
+            "motor-frame",
+            "motor-fin-0",
+            "motor-fin-1",
+            "motor-fin-2",
+            "motor-fin-3",
+            "motor-fin-4",
+            "motor-fin-5",
+            "motor-fin-6",
+            "motor-fin-7",
+            "motor-fin-8",
+            "fan-cowl",
+            "terminal-box",
+            "terminal-lid"
+          ],
+          "param": "motor"
+        },
+        {
+          "name": "cowl-slot-0",
+          "color": "#1d2124",
+          "parts": [
+            "cowl-slot-0",
+            "cowl-slot-1",
+            "cowl-slot-2",
+            "cowl-slot-3",
+            "cowl-slot-4",
+            "cowl-slot-5"
+          ]
+        },
+        {
+          "name": "casing",
+          "color": "#2f5f8f",
+          "parts": [
+            "bearing-frame",
+            "frame-rib-80",
+            "frame-rib-160",
+            "frame-rib-240",
+            "frame-foot",
+            "volute",
+            "back-cover",
+            "front-cover",
+            "casing-foot",
+            "discharge-neck",
+            "suction-nozzle"
+          ],
+          "param": "casing"
+        },
+        {
+          "name": "oiler-bulb",
+          "color": "#d8e6e8",
+          "parts": [
+            "oiler-bulb"
+          ]
+        },
+        {
+          "name": "discharge-gauge",
+          "color": "#f4f4f0",
+          "parts": [
+            "discharge-gauge"
+          ]
         }
       ]
     },
@@ -122755,27 +123052,32 @@
       "id": "distillation-column",
       "kit": "industrial-plant",
       "title": "Distillation column",
-      "description": "Slender distillation column with stacked tray bands, a crown nozzle and an operator platform. Controls: overall scale, steel, safety paint.",
+      "description": "Trayed distillation column at about real size: insulated shell with elliptical heads on a skirt and foundation, banded cladding, manways, feed, reflux and reboiler-return nozzles, three part-circle platforms with handrails and toe plates, a full-height caged ladder, an overhead vapour line dropping down the tower on clips, a top davit and a relief valve. Material controls: cladding, platforms and ladder, process piping, skirt and foundation; weathered, highVisibility and bare-steel presets.",
       "category": "structure",
       "origin": "base",
       "tags": [
         "industrial plant",
-        "factory",
+        "refinery",
+        "petrochemical",
         "process equipment",
-        "low poly",
+        "distillation",
+        "column",
+        "tower",
+        "platform",
         "CC0"
       ],
       "compat": [
         "industrial-plant",
         "factory",
         "manufacturing",
-        "industrial-scene"
+        "industrial-scene",
+        "refinery"
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/distillation-column.kcad.ts",
       "preview": "/assets/industrial-plant-distillation-column.png",
-      "sourceSha256": "d776e09deada524151f1068b8900d7a2bef30d0a0f2f2cd101930ef6cd5ce0d2",
-      "triangleBudget": 1400,
+      "sourceSha256": "15756775fb30666864eaca37a084ff0c425ed2546a2ab042a113089ade4d6654",
+      "triangleBudget": 9000,
       "params": [
         {
           "name": "scale",
@@ -122787,79 +123089,271 @@
           "step": 0.05
         },
         {
-          "name": "steel",
+          "name": "cladding",
           "type": "color",
-          "default": "#74838b",
-          "label": "Structural steel"
+          "default": "#c9cdcf",
+          "label": "Insulation cladding"
         },
         {
-          "name": "safetyPaint",
+          "name": "structure",
           "type": "color",
-          "default": "#e2b455",
-          "label": "Safety paint"
+          "default": "#e2b23c",
+          "label": "Platforms, handrails and ladder"
+        },
+        {
+          "name": "piping",
+          "type": "color",
+          "default": "#7d878d",
+          "label": "Process piping and flanges"
+        },
+        {
+          "name": "skirt",
+          "type": "color",
+          "default": "#8f938f",
+          "label": "Skirt and foundation"
         }
       ],
       "presets": {
         "weathered": {
-          "steel": "#575851",
-          "safetyPaint": "#9e722f"
+          "cladding": "#a9aaa4",
+          "structure": "#a37c33",
+          "piping": "#6a6258",
+          "skirt": "#77756e"
         },
         "highVisibility": {
-          "safetyPaint": "#f5c640"
+          "structure": "#f5c640"
+        },
+        "bare-steel": {
+          "cladding": "#5f6a70",
+          "piping": "#4d565b"
         }
       },
       "stats": {
-        "triangles": 528,
+        "triangles": 7706,
         "sizeM": [
-          0.4169,
-          1.568,
-          0.3573
+          4.8,
+          15.42,
+          3.9
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "steel",
-          "color": "#74838b",
+          "name": "skirt",
+          "color": "#8f938f",
           "parts": [
-            "shell",
-            "roof-cap",
-            "deck-post-0",
-            "deck-post-1",
-            "deck-post-2",
-            "foot-0",
-            "foot-1",
-            "foot-2",
-            "foot-3",
-            "side-flange",
-            "ladder-rung-0",
-            "ladder-rung-1",
-            "ladder-rung-2",
-            "ladder-rung-3",
-            "ladder-rung-4",
-            "ladder-rung-5"
+            "foundation",
+            "base-ring",
+            "skirt",
+            "anchor-chair-0",
+            "anchor-chair-1",
+            "anchor-chair-2",
+            "anchor-chair-3",
+            "anchor-chair-4",
+            "anchor-chair-5",
+            "anchor-chair-6",
+            "anchor-chair-7",
+            "anchor-chair-8",
+            "anchor-chair-9",
+            "anchor-chair-10",
+            "anchor-chair-11",
+            "skirt-vent"
           ],
-          "param": "steel"
+          "param": "skirt"
         },
         {
-          "name": "safetyPaint",
-          "color": "#e2b455",
+          "name": "skirt-opening",
+          "color": "#2a2d2f",
           "parts": [
-            "roof-lip",
-            "top-nozzle",
-            "service-deck-0",
-            "service-deck-1",
-            "service-deck-2",
-            "support-leg-0",
-            "support-leg-1",
-            "support-leg-2",
-            "support-leg-3",
-            "side-nozzle",
-            "ladder-left-rail",
-            "ladder-right-rail"
+            "skirt-opening"
+          ]
+        },
+        {
+          "name": "cladding",
+          "color": "#c9cdcf",
+          "parts": [
+            "shell"
           ],
-          "param": "safetyPaint"
+          "param": "cladding"
+        },
+        {
+          "name": "piping",
+          "color": "#7d878d",
+          "parts": [
+            "cladding-band-3300",
+            "cladding-band-4400",
+            "cladding-band-5500",
+            "cladding-band-6600",
+            "cladding-band-7700",
+            "cladding-band-8800",
+            "cladding-band-9900",
+            "cladding-band-11000",
+            "cladding-band-12100",
+            "cladding-band-13200",
+            "manway-0-neck",
+            "manway-0-flange",
+            "manway-davit-0",
+            "manway-1-neck",
+            "manway-1-flange",
+            "manway-davit-1",
+            "manway-2-neck",
+            "manway-2-flange",
+            "manway-davit-2",
+            "feed-neck",
+            "feed-flange",
+            "reflux-neck",
+            "reflux-flange",
+            "reboiler-return-neck",
+            "reboiler-return-flange",
+            "bottoms-neck",
+            "bottoms-flange",
+            "level-bridle",
+            "bridle-tap-2600",
+            "bridle-tap-3900",
+            "feed-line",
+            "feed-riser",
+            "reflux-riser",
+            "reflux-elbow",
+            "vapour-nozzle",
+            "vapour-flange",
+            "vapour-elbow-top",
+            "vapour-run",
+            "vapour-elbow-side",
+            "vapour-drop",
+            "vapour-elbow-base",
+            "vapour-outlet",
+            "davit-sheave"
+          ],
+          "param": "piping"
+        },
+        {
+          "name": "structure",
+          "color": "#e2b23c",
+          "parts": [
+            "vapour-clip-3000",
+            "vapour-clip-5600",
+            "vapour-clip-8200",
+            "vapour-clip-10800",
+            "platform-low-deck",
+            "platform-low-toe",
+            "platform-low-mid-rail",
+            "platform-low-top-rail",
+            "platform-low-post-100",
+            "platform-low-bracket-100",
+            "platform-low-post-129",
+            "platform-low-bracket-129",
+            "platform-low-post-158",
+            "platform-low-bracket-158",
+            "platform-low-post-186",
+            "platform-low-bracket-186",
+            "platform-low-post-215",
+            "platform-low-bracket-215",
+            "platform-low-post-244",
+            "platform-low-bracket-244",
+            "platform-low-post-273",
+            "platform-low-bracket-273",
+            "platform-low-post-301",
+            "platform-low-bracket-301",
+            "platform-low-post-330",
+            "platform-low-bracket-330",
+            "platform-mid-deck",
+            "platform-mid-toe",
+            "platform-mid-mid-rail",
+            "platform-mid-top-rail",
+            "platform-mid-post-30",
+            "platform-mid-bracket-30",
+            "platform-mid-post-61",
+            "platform-mid-bracket-61",
+            "platform-mid-post-93",
+            "platform-mid-bracket-93",
+            "platform-mid-post-124",
+            "platform-mid-bracket-124",
+            "platform-mid-post-156",
+            "platform-mid-bracket-156",
+            "platform-mid-post-187",
+            "platform-mid-bracket-187",
+            "platform-mid-post-219",
+            "platform-mid-bracket-219",
+            "platform-mid-post-250",
+            "platform-mid-bracket-250",
+            "platform-top-deck",
+            "platform-top-toe",
+            "platform-top-mid-rail",
+            "platform-top-top-rail",
+            "platform-top-post--40",
+            "platform-top-bracket--40",
+            "platform-top-post--11",
+            "platform-top-bracket--11",
+            "platform-top-post-18",
+            "platform-top-bracket-18",
+            "platform-top-post-47",
+            "platform-top-bracket-47",
+            "platform-top-post-76",
+            "platform-top-bracket-76",
+            "platform-top-post-104",
+            "platform-top-bracket-104",
+            "platform-top-post-133",
+            "platform-top-bracket-133",
+            "platform-top-post-162",
+            "platform-top-bracket-162",
+            "platform-top-post-191",
+            "platform-top-bracket-191",
+            "platform-top-post-220",
+            "platform-top-bracket-220",
+            "ladder-rail--230",
+            "ladder-rail-230",
+            "ladder-rung-300",
+            "ladder-rung-900",
+            "ladder-rung-1500",
+            "ladder-rung-2100",
+            "ladder-rung-2700",
+            "ladder-rung-3300",
+            "ladder-rung-3900",
+            "ladder-rung-4500",
+            "ladder-rung-5100",
+            "ladder-rung-5700",
+            "ladder-rung-6300",
+            "ladder-rung-6900",
+            "ladder-rung-7500",
+            "ladder-rung-8100",
+            "ladder-rung-8700",
+            "ladder-rung-9300",
+            "ladder-rung-9900",
+            "ladder-rung-10500",
+            "ladder-rung-11100",
+            "ladder-rung-11700",
+            "ladder-rung-12300",
+            "ladder-rung-12900",
+            "cage-hoop-2400",
+            "cage-hoop-3300",
+            "cage-hoop-4200",
+            "cage-hoop-5100",
+            "cage-hoop-6000",
+            "cage-hoop-6900",
+            "cage-hoop-7800",
+            "cage-hoop-8700",
+            "cage-hoop-9600",
+            "cage-hoop-10500",
+            "cage-hoop-11400",
+            "cage-hoop-12300",
+            "cage-strap--60",
+            "cage-strap--20",
+            "cage-strap-20",
+            "cage-strap-60",
+            "davit-post",
+            "davit-arm",
+            "davit-bracket-12900",
+            "davit-bracket-13300"
+          ],
+          "param": "structure"
+        },
+        {
+          "name": "relief-valve",
+          "color": "#b3261e",
+          "parts": [
+            "relief-valve"
+          ]
         }
       ]
     },
@@ -123379,27 +123873,32 @@
       "id": "forklift-truck",
       "kit": "industrial-plant",
       "title": "Forklift truck",
-      "description": "Warehouse forklift with a raised mast, overhead guard, counterweight, paired wheels and forks. Controls: overall scale, steel, safety paint, rubber.",
+      "description": "Counterbalance LPG forklift at about real size: rounded cast counterweight over steer wheels, drive tyres, two-stage mast with lift and tilt cylinders, fork carriage with load backrest and L-shaped tines, overhead guard with slatted roof and beacon, seat, steering column, step pods and a strapped LPG bottle. Material controls: body paint, mast and guard steel, tyres and seat, bottle and fittings; weathered, highVisibility and electric-blue presets.",
       "category": "vehicle",
       "origin": "base",
       "tags": [
         "industrial plant",
         "factory",
-        "process equipment",
-        "low poly",
+        "warehouse",
+        "forklift",
+        "lift truck",
+        "counterbalance",
+        "material handling",
+        "vehicle",
         "CC0"
       ],
       "compat": [
         "industrial-plant",
         "factory",
         "manufacturing",
-        "industrial-scene"
+        "industrial-scene",
+        "warehouse"
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/forklift-truck.kcad.ts",
       "preview": "/assets/industrial-plant-forklift-truck.png",
-      "sourceSha256": "26d88592d41294bb5dd6d5548b2e80e820a124d42c7cd3b691563c7b7fd27c86",
-      "triangleBudget": 1400,
+      "sourceSha256": "2b3513bf26b526d5f017469e6d1cf6013e9f063a60e8b866df502277bc22ebfe",
+      "triangleBudget": 5000,
       "params": [
         {
           "name": "scale",
@@ -123411,82 +123910,204 @@
           "step": 0.05
         },
         {
-          "name": "steel",
+          "name": "body",
           "type": "color",
-          "default": "#758187",
-          "label": "Structural steel"
+          "default": "#e3a51c",
+          "label": "Body and counterweight paint"
         },
         {
-          "name": "safetyPaint",
+          "name": "frame",
           "type": "color",
-          "default": "#e4a43c",
-          "label": "Safety paint"
+          "default": "#2c3135",
+          "label": "Mast, guard and forks steel"
         },
         {
           "name": "rubber",
           "type": "color",
-          "default": "#30363a",
-          "label": "Rubber"
+          "default": "#1c1e20",
+          "label": "Tyres, seat and floor mat"
+        },
+        {
+          "name": "fittings",
+          "type": "color",
+          "default": "#c9ccc8",
+          "label": "LPG bottle, hubs and chains"
         }
       ],
       "presets": {
         "weathered": {
-          "steel": "#575851",
-          "safetyPaint": "#9e722f",
-          "rubber": "#27292b"
+          "body": "#a87b2c",
+          "frame": "#3b3a36",
+          "rubber": "#2a2a28",
+          "fittings": "#9a9688"
         },
         "highVisibility": {
-          "safetyPaint": "#f5c640"
+          "body": "#f5c640",
+          "frame": "#1f2326"
+        },
+        "electric-blue": {
+          "body": "#2a5f9e",
+          "frame": "#2b2f33",
+          "fittings": "#e8e8e2"
         }
       },
       "stats": {
-        "triangles": 332,
+        "triangles": 3388,
         "sizeM": [
-          0.9735,
-          0.5974,
-          0.4048
+          3.11,
+          2.35,
+          1.14
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "steel",
-          "color": "#758187",
-          "parts": [
-            "chassis",
-            "guard-post-rear--1",
-            "guard-post-front--1",
-            "guard-post-rear-1",
-            "guard-post-front-1",
-            "mast-carriage"
-          ],
-          "param": "steel"
-        },
-        {
-          "name": "safetyPaint",
-          "color": "#e4a43c",
-          "parts": [
-            "counterweight",
-            "operator-seat",
-            "overhead-guard-roof",
-            "mast-rail--1",
-            "mast-rail-1",
-            "fork--1",
-            "fork-1"
-          ],
-          "param": "safetyPaint"
-        },
-        {
           "name": "rubber",
-          "color": "#30363a",
+          "color": "#1c1e20",
           "parts": [
-            "rear-wheel--1",
-            "front-wheel--1",
-            "rear-wheel-1",
-            "front-wheel-1"
+            "drive--1-tyre",
+            "steer--1-tyre",
+            "drive-1-tyre",
+            "steer-1-tyre",
+            "floor-plate",
+            "seat-cushion",
+            "seat-back",
+            "steering-wheel",
+            "steering-knob",
+            "lever-knob-0",
+            "lever-knob-1",
+            "lever-knob-2"
           ],
           "param": "rubber"
+        },
+        {
+          "name": "fittings",
+          "color": "#c9ccc8",
+          "parts": [
+            "drive--1-rim",
+            "steer--1-rim",
+            "drive-1-rim",
+            "steer-1-rim",
+            "lpg-bottle",
+            "lpg-valve-guard",
+            "mast-roller--1",
+            "tilt-rod--1",
+            "lift-chain--1",
+            "mast-roller-1",
+            "tilt-rod-1",
+            "lift-chain-1",
+            "lift-ram"
+          ],
+          "param": "fittings"
+        },
+        {
+          "name": "frame",
+          "color": "#2c3135",
+          "parts": [
+            "drive--1-hub",
+            "steer--1-hub",
+            "drive-1-hub",
+            "steer-1-hub",
+            "chassis-tub",
+            "step-tread--1",
+            "step-tread-1",
+            "tow-pin-housing",
+            "dash-top",
+            "steering-column",
+            "hydraulic-lever-0",
+            "hydraulic-lever-1",
+            "hydraulic-lever-2",
+            "guard-post-front--1",
+            "guard-post-rear--1",
+            "guard-side-rail--1",
+            "guard-post-front-1",
+            "guard-post-rear-1",
+            "guard-side-rail-1",
+            "guard-end-rail--830",
+            "guard-end-rail-160",
+            "guard-slat-0",
+            "guard-slat-1",
+            "guard-slat-2",
+            "guard-slat-3",
+            "guard-slat-4",
+            "guard-slat-5",
+            "guard-slat-6",
+            "beacon-base",
+            "lpg-valve",
+            "lpg-cradle",
+            "lpg-strap--260",
+            "lpg-strap-260",
+            "mast-outer--1",
+            "mast-inner--1",
+            "tilt-cylinder--1",
+            "mast-outer-1",
+            "mast-inner-1",
+            "tilt-cylinder-1",
+            "mast-crosshead-180",
+            "mast-crosshead-1200",
+            "mast-crosshead-2160",
+            "lift-cylinder",
+            "chain-sheave",
+            "sheave-beam",
+            "carriage-bar-240",
+            "carriage-bar-600",
+            "carriage-side--1",
+            "carriage-side-1",
+            "backrest-top",
+            "backrest-bar-0",
+            "backrest-bar-1",
+            "backrest-bar-2",
+            "backrest-bar-3",
+            "backrest-bar-4",
+            "backrest-bar-5",
+            "backrest-bar-6",
+            "fork--1",
+            "fork-hook--1",
+            "fork-1",
+            "fork-hook-1"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "body",
+          "color": "#e3a51c",
+          "parts": [
+            "step-pod--1",
+            "front-wing--1",
+            "step-pod-1",
+            "front-wing-1",
+            "counterweight-lower",
+            "counterweight-upper",
+            "engine-hood",
+            "cowl"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "tail-lamp--1",
+          "color": "#b3261e",
+          "parts": [
+            "tail-lamp--1",
+            "tail-lamp-1"
+          ]
+        },
+        {
+          "name": "beacon",
+          "color": "#f08c00",
+          "parts": [
+            "beacon"
+          ]
+        },
+        {
+          "name": "work-light--1",
+          "color": "#f1efe2",
+          "parts": [
+            "work-light--1",
+            "work-light-1",
+            "headlight--1",
+            "headlight-1"
+          ]
         }
       ]
     },
@@ -123827,14 +124448,18 @@
       "id": "industrial-boiler",
       "kit": "industrial-plant",
       "title": "Industrial boiler",
-      "description": "Compact industrial boiler with a firebox, raised flue, burner panel and pipe connections. Controls: overall scale, steel, safety paint, gauge glass.",
+      "description": "Packaged firetube steam boiler at about real size: banded cylindrical shell on saddles and a channel skid, dished front and rear doors with hinges and davits, burner and blower housing with air inlet and motor, gas train with shut-off valves, rear stack with rain cap, main steam stop valve with handwheel, twin safety valves, water column with gauge glass and level controls, and a control panel with gauges. Material controls: boiler shell, doors and skid, piping and valves, gauge glass; weathered, highVisibility and red-packaged presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "industrial plant",
         "factory",
         "process equipment",
-        "low poly",
+        "boiler",
+        "steam",
+        "firetube",
+        "burner",
+        "utility",
         "CC0"
       ],
       "compat": [
@@ -123846,8 +124471,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/industrial-plant/industrial-boiler.kcad.ts",
       "preview": "/assets/industrial-plant-industrial-boiler.png",
-      "sourceSha256": "0cecf54e34697f9e34f8b914611696bb49bee72dc8ed85a4903bb040c9ae343e",
-      "triangleBudget": 1400,
+      "sourceSha256": "67d21d8075844cdea2d1804622d2562045bd4aee47c14a5ca55f2dbaac907a49",
+      "triangleBudget": 8000,
       "params": [
         {
           "name": "scale",
@@ -123859,16 +124484,22 @@
           "step": 0.05
         },
         {
-          "name": "steel",
+          "name": "shell",
           "type": "color",
-          "default": "#737d82",
-          "label": "Structural steel"
+          "default": "#27537f",
+          "label": "Boiler shell"
         },
         {
-          "name": "safetyPaint",
+          "name": "trim",
           "type": "color",
-          "default": "#dfa741",
-          "label": "Safety paint"
+          "default": "#2e3337",
+          "label": "Doors, burner housing and skid"
+        },
+        {
+          "name": "piping",
+          "type": "color",
+          "default": "#9aa1a4",
+          "label": "Piping and valves"
         },
         {
           "name": "gaugeGlass",
@@ -123879,52 +124510,194 @@
       ],
       "presets": {
         "weathered": {
-          "steel": "#575851",
-          "safetyPaint": "#9e722f",
+          "shell": "#3f5568",
+          "trim": "#3c3a36",
+          "piping": "#7d776c",
           "gaugeGlass": "#78989b"
         },
         "highVisibility": {
-          "safetyPaint": "#f5c640"
+          "trim": "#f5c640"
+        },
+        "red-packaged": {
+          "shell": "#a8322a",
+          "trim": "#e6e4de"
         }
       },
       "stats": {
-        "triangles": 300,
+        "triangles": 3880,
         "sizeM": [
-          0.5795,
-          0.8451,
-          0.3872
+          5.67,
+          5.26,
+          2.48
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "safetyPaint",
-          "color": "#dfa741",
+          "name": "trim",
+          "color": "#2e3337",
           "parts": [
-            "base",
-            "burner-door",
-            "flue",
-            "pipe-0",
-            "pipe-1",
-            "pipe-2"
+            "skid-rail--750",
+            "skid-rail-750",
+            "skid-cross--2250",
+            "skid-cross--700",
+            "skid-cross-700",
+            "skid-cross-2850",
+            "saddle--1300",
+            "saddle-1300",
+            "jacket-band--1600",
+            "jacket-band--800",
+            "jacket-band-0",
+            "jacket-band-800",
+            "jacket-band-1600",
+            "lifting-lug--1000",
+            "lifting-lug-1000",
+            "front-door",
+            "front-hinge-800",
+            "front-hinge-2000",
+            "burner-housing",
+            "inlet-louvre-0",
+            "inlet-louvre-1",
+            "inlet-louvre-2",
+            "inlet-louvre-3",
+            "inlet-louvre-4",
+            "motor-cowl",
+            "control-panel",
+            "rear-door",
+            "rear-davit-post",
+            "rear-davit-arm",
+            "stack-collar",
+            "stack",
+            "stack-flange",
+            "rain-cap",
+            "rain-cap-strut-0",
+            "rain-cap-strut-120",
+            "rain-cap-strut-240"
           ],
-          "param": "safetyPaint"
+          "param": "trim"
         },
         {
-          "name": "steel",
-          "color": "#737d82",
+          "name": "shell",
+          "color": "#27537f",
           "parts": [
-            "boiler-shell",
-            "flue-cap"
+            "shell",
+            "blower-motor"
           ],
-          "param": "steel"
+          "param": "shell"
+        },
+        {
+          "name": "nameplate",
+          "color": "#d8d6cc",
+          "parts": [
+            "nameplate"
+          ]
+        },
+        {
+          "name": "air-inlet",
+          "color": "#1c1f22",
+          "parts": [
+            "air-inlet"
+          ]
+        },
+        {
+          "name": "piping",
+          "color": "#9aa1a4",
+          "parts": [
+            "flame-scanner",
+            "panel-gauge-bezel-0",
+            "panel-gauge-bezel-1",
+            "gas-train",
+            "gas-riser",
+            "gas-elbow",
+            "gas-regulator",
+            "steam-nozzle",
+            "steam-flange",
+            "stop-valve-body",
+            "stop-valve-bonnet",
+            "steam-header",
+            "safety-valve-inlet-700",
+            "safety-valve-outlet-700",
+            "safety-valve-lever-700",
+            "safety-valve-inlet-1050",
+            "safety-valve-outlet-1050",
+            "safety-valve-lever-1050",
+            "water-column",
+            "column-tap-1150",
+            "column-tap-2150",
+            "gauge-cock-1230",
+            "gauge-cock-2020",
+            "try-cock-1300",
+            "try-cock-1500",
+            "try-cock-1700",
+            "blowdown-valve",
+            "blowdown-pipe",
+            "pressure-gauge-bezel",
+            "feedwater-line",
+            "feedwater-tap",
+            "feedwater-drop",
+            "feed-valve--500",
+            "feed-valve--150"
+          ],
+          "param": "piping"
+        },
+        {
+          "name": "sight-port",
+          "color": "#f2c230",
+          "parts": [
+            "sight-port",
+            "rear-sight-port"
+          ]
+        },
+        {
+          "name": "panel-gauge-dial-0",
+          "color": "#f4f4f0",
+          "parts": [
+            "panel-gauge-dial-0",
+            "panel-gauge-dial-1",
+            "pressure-gauge-dial"
+          ]
+        },
+        {
+          "name": "panel-display",
+          "color": "#1f3b4d",
+          "parts": [
+            "panel-display"
+          ]
+        },
+        {
+          "name": "panel-lamp-green",
+          "color": "#2f9e44",
+          "parts": [
+            "panel-lamp-green"
+          ]
+        },
+        {
+          "name": "panel-lamp-red",
+          "color": "#c0392b",
+          "parts": [
+            "panel-lamp-red",
+            "gas-valve-1620",
+            "gas-actuator-1620",
+            "gas-valve-1880",
+            "gas-actuator-1880",
+            "stop-valve-handwheel",
+            "handwheel-spoke-0",
+            "handwheel-spoke-90",
+            "handwheel-spoke-180",
+            "handwheel-spoke-270",
+            "safety-valve-body-700",
+            "safety-valve-body-1050",
+            "level-control",
+            "level-control-head",
+            "feed-valve-wheel"
+          ]
         },
         {
           "name": "gaugeGlass",
           "color": "#91c6c8",
           "parts": [
-            "gauge"
+            "gauge-glass"
           ],
           "param": "gaugeGlass"
         }
