@@ -2564,6 +2564,25 @@
       ]
     },
     {
+      "id": "travel-gear",
+      "title": "Travel gear",
+      "description": "Original low-poly luggage and small travel accessories, modeled as editable kernelCAD assets with compact single-material exports.",
+      "assets": [
+        "duffel-bag",
+        "foldable-umbrella",
+        "garment-bag",
+        "luggage-scale",
+        "luggage-tag",
+        "packing-cube",
+        "passport-wallet",
+        "rolling-suitcase",
+        "sleep-mask",
+        "toiletry-bag",
+        "travel-adapter",
+        "travel-neck-pillow"
+      ]
+    },
+    {
       "id": "vet-clinic",
       "title": "Veterinary clinic",
       "description": "Original low-poly props for small-animal clinic reception, exam, treatment, imaging, surgery, diagnostics, inpatient housing, and grooming scenes.",
@@ -275062,6 +275081,1128 @@
             "grip"
           ],
           "param": "grip"
+        }
+      ]
+    },
+    {
+      "id": "duffel-bag",
+      "kit": "travel-gear",
+      "title": "Travel duffel bag",
+      "description": "Cylindrical soft-sided travel duffel with end panels, zipper seam and a selectable carry arrangement. Knobs: length, carry style and fabric colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "duffel bag",
+        "travel bag",
+        "weekender",
+        "luggage",
+        "travel"
+      ],
+      "compat": [
+        "travel",
+        "hotel",
+        "gym"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/travel-gear/duffel-bag.kcad.ts",
+      "preview": "/assets/travel-gear-duffel-bag.png",
+      "sourceSha256": "1c2ecc3b5bd8f25da6ed8b1dfe089732c1cf2591f4a861892f59d5f388653a9b",
+      "triangleBudget": 650,
+      "params": [
+        {
+          "name": "length",
+          "type": "choice",
+          "default": "550",
+          "label": "Bag length (mm)",
+          "choices": [
+            "450",
+            "550",
+            "650"
+          ]
+        },
+        {
+          "name": "carry",
+          "type": "choice",
+          "default": "handles",
+          "label": "Carry style",
+          "choices": [
+            "handles",
+            "shoulder strap"
+          ]
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#46645c",
+          "label": "Fabric"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#c18147",
+          "label": "Trim"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 180,
+        "sizeM": [
+          0.566,
+          0.292,
+          0.251
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "fabric",
+          "color": "#46645c",
+          "parts": [
+            "soft-body"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "trim",
+          "color": "#c18147",
+          "parts": [
+            "zipper-run",
+            "end-left",
+            "end-right",
+            "handle-leg-left",
+            "handle-leg-right",
+            "handle-grip"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "foldable-umbrella",
+      "kit": "travel-gear",
+      "title": "Foldable umbrella",
+      "description": "Compact umbrella with a selectable canopy diameter, open or folded state and straight or crook grip. Knobs: canopy, state, handle and colors.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "foldable umbrella",
+        "travel umbrella",
+        "rain",
+        "travel",
+        "compact"
+      ],
+      "compat": [
+        "travel",
+        "rain",
+        "outdoor"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/travel-gear/foldable-umbrella.kcad.ts",
+      "preview": "/assets/travel-gear-foldable-umbrella.png",
+      "sourceSha256": "2da39acaddd9d11a84176390e7e523dce499ae2c1b0fc3c9e5e2964fbe1b92b5",
+      "triangleBudget": 650,
+      "params": [
+        {
+          "name": "diameter",
+          "type": "choice",
+          "default": "1000",
+          "label": "Open canopy diameter (mm)",
+          "choices": [
+            "900",
+            "1000",
+            "1150"
+          ]
+        },
+        {
+          "name": "state",
+          "type": "choice",
+          "default": "open",
+          "label": "Umbrella state",
+          "choices": [
+            "open",
+            "folded"
+          ]
+        },
+        {
+          "name": "handle",
+          "type": "choice",
+          "default": "crook",
+          "label": "Grip style",
+          "choices": [
+            "crook",
+            "straight"
+          ]
+        },
+        {
+          "name": "canopy",
+          "type": "color",
+          "default": "#426783",
+          "label": "Canopy and sleeve"
+        },
+        {
+          "name": "fittings",
+          "type": "color",
+          "default": "#33383d",
+          "label": "Shaft and fittings"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 198,
+        "sizeM": [
+          0.88986,
+          0.868,
+          0.866025
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "fittings",
+          "color": "#33383d",
+          "parts": [
+            "shaft",
+            "runner",
+            "rib-0",
+            "rib-45",
+            "rib-90",
+            "rib-135",
+            "grip-stem",
+            "grip-return"
+          ],
+          "param": "fittings"
+        },
+        {
+          "name": "canopy",
+          "color": "#426783",
+          "parts": [
+            "canopy"
+          ],
+          "param": "canopy"
+        }
+      ]
+    },
+    {
+      "id": "garment-bag",
+      "kit": "travel-gear",
+      "title": "Garment bag",
+      "description": "Folded garment carrier with a full-length closure, top grip and a choice of hanger hook or shoulder loop. Knobs: length, hanger and fabric colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "garment bag",
+        "suit carrier",
+        "travel",
+        "clothing",
+        "luggage"
+      ],
+      "compat": [
+        "travel",
+        "hotel",
+        "wardrobe"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/travel-gear/garment-bag.kcad.ts",
+      "preview": "/assets/travel-gear-garment-bag.png",
+      "sourceSha256": "9a110c803abc1e15365c40957fa5361379feea4c576fc6669afe367df89d5c23",
+      "triangleBudget": 420,
+      "params": [
+        {
+          "name": "length",
+          "type": "choice",
+          "default": "long",
+          "label": "Garment length",
+          "choices": [
+            "short",
+            "long"
+          ]
+        },
+        {
+          "name": "hanger",
+          "type": "choice",
+          "default": "hook",
+          "label": "Top fitting",
+          "choices": [
+            "hook",
+            "loop"
+          ]
+        },
+        {
+          "name": "cover",
+          "type": "color",
+          "default": "#424c57",
+          "label": "Cover fabric"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#b17a49",
+          "label": "Trim"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 128,
+        "sizeM": [
+          0.61,
+          1.086,
+          0.111
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "cover",
+          "color": "#424c57",
+          "parts": [
+            "folded-cover"
+          ],
+          "param": "cover"
+        },
+        {
+          "name": "trim",
+          "color": "#b17a49",
+          "parts": [
+            "zipper",
+            "fold-band",
+            "top-grip",
+            "hanger-crossbar",
+            "hanger-arm-left",
+            "hanger-arm-right",
+            "hanger-hook"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "luggage-scale",
+      "kit": "travel-gear",
+      "title": "Luggage scale",
+      "description": "Handheld baggage scale with an upper grip, display and selectable lower hook size. Knobs: scale size, hook, body and strap colors.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "luggage scale",
+        "baggage scale",
+        "travel",
+        "weighing scale",
+        "luggage"
+      ],
+      "compat": [
+        "travel",
+        "airport",
+        "luggage"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/travel-gear/luggage-scale.kcad.ts",
+      "preview": "/assets/travel-gear-luggage-scale.png",
+      "sourceSha256": "38c54239c8371b286790cedb77dc6a0d235458c8858d1b89d7bddf4571840ee7",
+      "triangleBudget": 320,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "compact",
+          "label": "Scale size",
+          "choices": [
+            "compact",
+            "large"
+          ]
+        },
+        {
+          "name": "hook",
+          "type": "choice",
+          "default": "standard",
+          "label": "Lower hook",
+          "choices": [
+            "standard",
+            "wide"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#4e6472",
+          "label": "Scale housing"
+        },
+        {
+          "name": "strap",
+          "type": "color",
+          "default": "#25292c",
+          "label": "Grip and hook"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 160,
+        "sizeM": [
+          0.09512,
+          0.25666,
+          0.06642
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#4e6472",
+          "parts": [
+            "housing"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "strap",
+          "color": "#25292c",
+          "parts": [
+            "display",
+            "button",
+            "grip-left",
+            "grip-right",
+            "grip-bridge",
+            "hook-stem",
+            "hook-bar"
+          ],
+          "param": "strap"
+        }
+      ]
+    },
+    {
+      "id": "luggage-tag",
+      "kit": "travel-gear",
+      "title": "Luggage tag",
+      "description": "Small identification tag with a top strap and choice of address window or plain face. Knobs: tag size, face style and colors.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "luggage tag",
+        "bag tag",
+        "travel",
+        "identifier",
+        "luggage"
+      ],
+      "compat": [
+        "travel",
+        "airport",
+        "luggage"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/travel-gear/luggage-tag.kcad.ts",
+      "preview": "/assets/travel-gear-luggage-tag.png",
+      "sourceSha256": "3ed0cbf96fdd572e3ce0f54fdb4008c89158303ba38bd4119740b87b597f4f68",
+      "triangleBudget": 260,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Tag size",
+          "choices": [
+            "small",
+            "standard",
+            "large"
+          ]
+        },
+        {
+          "name": "face",
+          "type": "choice",
+          "default": "window",
+          "label": "Tag face",
+          "choices": [
+            "window",
+            "plain"
+          ]
+        },
+        {
+          "name": "tag",
+          "type": "color",
+          "default": "#4b7784",
+          "label": "Tag"
+        },
+        {
+          "name": "strap",
+          "type": "color",
+          "default": "#302b29",
+          "label": "Attachment strap"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 84,
+        "sizeM": [
+          0.092,
+          0.255,
+          0.028
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "tag",
+          "color": "#4b7784",
+          "parts": [
+            "tag-body",
+            "top-tab",
+            "window-slot"
+          ],
+          "param": "tag"
+        },
+        {
+          "name": "strap",
+          "color": "#302b29",
+          "parts": [
+            "strap-left",
+            "strap-right",
+            "strap-bridge",
+            "address-window"
+          ],
+          "param": "strap"
+        }
+      ]
+    },
+    {
+      "id": "packing-cube",
+      "kit": "travel-gear",
+      "title": "Packing cube",
+      "description": "Soft packing organizer with a top zipper, grab handle and cube or shoe-compartment proportions. Knobs: size, layout and fabric colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "packing cube",
+        "packing organizer",
+        "travel",
+        "luggage",
+        "organizer"
+      ],
+      "compat": [
+        "travel",
+        "hotel",
+        "luggage"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/travel-gear/packing-cube.kcad.ts",
+      "preview": "/assets/travel-gear-packing-cube.png",
+      "sourceSha256": "b4055d1dea79e96444abf44cea062430e3f16f741f9dccf6ff862d2bdfb9a943",
+      "triangleBudget": 420,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "medium",
+          "label": "Cube size",
+          "choices": [
+            "small",
+            "medium",
+            "large"
+          ]
+        },
+        {
+          "name": "layout",
+          "type": "choice",
+          "default": "cube",
+          "label": "Compartment shape",
+          "choices": [
+            "cube",
+            "shoe"
+          ]
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#5d6f7b",
+          "label": "Fabric"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#d39a54",
+          "label": "Zipper and handle"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 48,
+        "sizeM": [
+          0.3,
+          0.24,
+          0.279
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "fabric",
+          "color": "#5d6f7b",
+          "parts": [
+            "fabric-case"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "trim",
+          "color": "#d39a54",
+          "parts": [
+            "top-seam",
+            "grab-handle",
+            "front-panel"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "passport-wallet",
+      "kit": "travel-gear",
+      "title": "Passport wallet",
+      "description": "Compact travel folio with card slots and a passport sleeve, shown closed or open. Knobs: size, layout, cover and lining colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "passport wallet",
+        "passport cover",
+        "travel folio",
+        "travel",
+        "document holder"
+      ],
+      "compat": [
+        "travel",
+        "airport",
+        "documents"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/travel-gear/passport-wallet.kcad.ts",
+      "preview": "/assets/travel-gear-passport-wallet.png",
+      "sourceSha256": "0645f363b69cb5f8feb20737ab4bfa9f17314b73ade850f6157f28986d9fe1b2",
+      "triangleBudget": 420,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Folio size",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        },
+        {
+          "name": "layout",
+          "type": "choice",
+          "default": "closed",
+          "label": "Folio layout",
+          "choices": [
+            "closed",
+            "open"
+          ]
+        },
+        {
+          "name": "cover",
+          "type": "color",
+          "default": "#6c4335",
+          "label": "Cover"
+        },
+        {
+          "name": "lining",
+          "type": "color",
+          "default": "#bd9c71",
+          "label": "Lining and pockets"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 36,
+        "sizeM": [
+          0.21,
+          0.27,
+          0.025
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "cover",
+          "color": "#6c4335",
+          "parts": [
+            "outer-cover"
+          ],
+          "param": "cover"
+        },
+        {
+          "name": "lining",
+          "color": "#bd9c71",
+          "parts": [
+            "spine-band",
+            "closure-tab"
+          ],
+          "param": "lining"
+        }
+      ]
+    },
+    {
+      "id": "rolling-suitcase",
+      "kit": "travel-gear",
+      "title": "Rolling suitcase",
+      "description": "Modern hard-shell case with four spinner wheels, a telescoping handle and top grip. Knobs: size, handle, shell and trim colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "rolling suitcase",
+        "carry-on",
+        "luggage",
+        "spinner wheels",
+        "travel"
+      ],
+      "compat": [
+        "travel",
+        "airport",
+        "hotel"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/travel-gear/rolling-suitcase.kcad.ts",
+      "preview": "/assets/travel-gear-rolling-suitcase.png",
+      "sourceSha256": "b49a31aa0ce61d8dadce2e95a8b4ee6ce1b503d1cb1a69b74c1b8fe9ae62d18e",
+      "triangleBudget": 900,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "cabin",
+          "label": "Case size",
+          "choices": [
+            "cabin",
+            "check-in"
+          ]
+        },
+        {
+          "name": "handle",
+          "type": "choice",
+          "default": "extended",
+          "label": "Trolley handle",
+          "choices": [
+            "retracted",
+            "extended"
+          ]
+        },
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#356a84",
+          "label": "Shell"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#242c34",
+          "label": "Wheels and fittings"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 312,
+        "sizeM": [
+          0.33696,
+          0.82524,
+          0.22776
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "shell",
+          "color": "#356a84",
+          "parts": [
+            "hard-shell"
+          ],
+          "param": "shell"
+        },
+        {
+          "name": "trim",
+          "color": "#242c34",
+          "parts": [
+            "front-rib",
+            "top-grip",
+            "trolley-rail-left",
+            "trolley-rail-right",
+            "trolley-grip",
+            "spinner--1--1",
+            "spinner--1-1",
+            "spinner-1--1",
+            "spinner-1-1"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "sleep-mask",
+      "kit": "travel-gear",
+      "title": "Sleep mask",
+      "description": "Soft eye mask with a flat or contoured bridge and narrow or wide side strap. Knobs: mask shape, strap width and fabric colors.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "sleep mask",
+        "eye mask",
+        "travel",
+        "rest",
+        "airplane"
+      ],
+      "compat": [
+        "travel",
+        "airplane",
+        "train",
+        "sleep"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/travel-gear/sleep-mask.kcad.ts",
+      "preview": "/assets/travel-gear-sleep-mask.png",
+      "sourceSha256": "c2a634c3c6acce017308f8d45dd0d18476e2b613d70b3994ddd2bee708dbffd7",
+      "triangleBudget": 340,
+      "params": [
+        {
+          "name": "shape",
+          "type": "choice",
+          "default": "contoured",
+          "label": "Nose bridge",
+          "choices": [
+            "contoured",
+            "flat"
+          ]
+        },
+        {
+          "name": "strap",
+          "type": "choice",
+          "default": "wide",
+          "label": "Head strap",
+          "choices": [
+            "narrow",
+            "wide"
+          ]
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#6d536e",
+          "label": "Mask fabric"
+        },
+        {
+          "name": "band",
+          "type": "color",
+          "default": "#353139",
+          "label": "Head band"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 112,
+        "sizeM": [
+          0.646,
+          0.11032,
+          0.081043
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "fabric",
+          "color": "#6d536e",
+          "parts": [
+            "eye-panel",
+            "left-eye-pad",
+            "right-eye-pad",
+            "nose-bridge"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "band",
+          "color": "#353139",
+          "parts": [
+            "left-head-band",
+            "right-head-band"
+          ],
+          "param": "band"
+        }
+      ]
+    },
+    {
+      "id": "toiletry-bag",
+      "kit": "travel-gear",
+      "title": "Toiletry bag",
+      "description": "Travel wash kit with a top zipper, side grip and compact or hanging form. Knobs: layout, size and fabric colours.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "toiletry bag",
+        "wash kit",
+        "travel organizer",
+        "travel",
+        "luggage"
+      ],
+      "compat": [
+        "travel",
+        "hotel",
+        "bathroom"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/travel-gear/toiletry-bag.kcad.ts",
+      "preview": "/assets/travel-gear-toiletry-bag.png",
+      "sourceSha256": "ebe9761d3eb816a13caacfd6f008afefdb7ed109b5651a7be3ace5b25ba22afe",
+      "triangleBudget": 420,
+      "params": [
+        {
+          "name": "layout",
+          "type": "choice",
+          "default": "case",
+          "label": "Organizer layout",
+          "choices": [
+            "case",
+            "hanging"
+          ]
+        },
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Bag size",
+          "choices": [
+            "compact",
+            "standard"
+          ]
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#64765f",
+          "label": "Fabric"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#c48a4b",
+          "label": "Zipper and fittings"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 48,
+        "sizeM": [
+          0.385,
+          0.185,
+          0.1955
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "fabric",
+          "color": "#64765f",
+          "parts": [
+            "main-case"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "trim",
+          "color": "#c48a4b",
+          "parts": [
+            "zipper-seam",
+            "side-grip",
+            "front-pocket"
+          ],
+          "param": "trim"
+        }
+      ]
+    },
+    {
+      "id": "travel-adapter",
+      "kit": "travel-gear",
+      "title": "Travel plug adapter",
+      "description": "Compact universal plug adapter with selectable EU, UK or US prongs and one or two USB sockets. Knobs: plug standard, port count and colors.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "travel adapter",
+        "plug adapter",
+        "USB",
+        "travel",
+        "electrical"
+      ],
+      "compat": [
+        "travel",
+        "hotel",
+        "electronics"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/travel-gear/travel-adapter.kcad.ts",
+      "preview": "/assets/travel-gear-travel-adapter.png",
+      "sourceSha256": "ff0ce88d7d84ad09056aeb6a2977a3dccdc2b975da97b154847430603e940a0c",
+      "triangleBudget": 360,
+      "params": [
+        {
+          "name": "plug",
+          "type": "choice",
+          "default": "EU",
+          "label": "Plug prongs",
+          "choices": [
+            "EU",
+            "UK",
+            "US"
+          ]
+        },
+        {
+          "name": "ports",
+          "type": "choice",
+          "default": "2",
+          "label": "USB sockets",
+          "choices": [
+            "1",
+            "2"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "color",
+          "default": "#e4e3dc",
+          "label": "Adapter housing"
+        },
+        {
+          "name": "pins",
+          "type": "color",
+          "default": "#bbb8ae",
+          "label": "Metal contacts"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 136,
+        "sizeM": [
+          0.142,
+          0.11,
+          0.111
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "body",
+          "color": "#e4e3dc",
+          "parts": [
+            "housing",
+            "usb-port-1",
+            "usb-port-2"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "pins",
+          "color": "#bbb8ae",
+          "parts": [
+            "face-plate",
+            "eu-pin--24",
+            "eu-pin-24"
+          ],
+          "param": "pins"
+        }
+      ]
+    },
+    {
+      "id": "travel-neck-pillow",
+      "kit": "travel-gear",
+      "title": "Travel neck pillow",
+      "description": "U-shaped padded neck rest in child or adult size with a classic or wraparound front. Knobs: size, shape, clasp and fabric color.",
+      "category": "prop",
+      "origin": "base",
+      "tags": [
+        "travel neck pillow",
+        "neck rest",
+        "travel",
+        "comfort",
+        "airplane"
+      ],
+      "compat": [
+        "travel",
+        "airplane",
+        "train"
+      ],
+      "license": "CC0-1.0",
+      "source": "catalog/kits/travel-gear/travel-neck-pillow.kcad.ts",
+      "preview": "/assets/travel-gear-travel-neck-pillow.png",
+      "sourceSha256": "48bc7bc85e1877937fdfc842588db0212239a03bfb81c39d7e10c8de867afde5",
+      "triangleBudget": 560,
+      "params": [
+        {
+          "name": "size",
+          "type": "choice",
+          "default": "adult",
+          "label": "Pillow size",
+          "choices": [
+            "child",
+            "adult"
+          ]
+        },
+        {
+          "name": "shape",
+          "type": "choice",
+          "default": "classic",
+          "label": "Front shape",
+          "choices": [
+            "classic",
+            "wrap"
+          ]
+        },
+        {
+          "name": "clasp",
+          "type": "choice",
+          "default": "with clasp",
+          "label": "Front clasp",
+          "choices": [
+            "with clasp",
+            "no clasp"
+          ]
+        },
+        {
+          "name": "fabric",
+          "type": "color",
+          "default": "#55788a",
+          "label": "Pillow fabric"
+        }
+      ],
+      "presets": {},
+      "stats": {
+        "triangles": 182,
+        "sizeM": [
+          0.352519,
+          0.13888,
+          0.298905
+        ],
+        "minUpM": 0,
+        "materials": 1
+      },
+      "palette": [
+        {
+          "name": "fabric",
+          "color": "#55788a",
+          "parts": [
+            "rear-cushion",
+            "side-cushion-left",
+            "front-tip-left",
+            "side-cushion-right",
+            "front-tip-right"
+          ],
+          "param": "fabric"
         }
       ]
     },
