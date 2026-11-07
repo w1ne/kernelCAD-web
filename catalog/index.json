@@ -85736,14 +85736,18 @@
       "id": "aerial-ladder-fire-engine",
       "kit": "fire-rescue",
       "title": "Aerial ladder fire engine",
-      "description": "Fire apparatus with telescoping aerial ladder, stabilizer legs and tip platform. Material controls: ladder and metalwork, tire rubber, cab and locker finish, apparatus body paint; weathered and highVisibility presets.",
+      "description": "Rear-mount aerial ladder truck: turntable carrying a two-section truss ladder raised and extended over a flat-face crew cab with raised roof, sloped windshield, light bar and chrome bumper; body with roll-up locker doors and reflective stripe on tandem rear duals; four outrigger jacks out on ground pads and a waterway nozzle at the tip. Material controls: ladder and metalwork, tire rubber and glass, cab roof stripe and locker finish, apparatus body paint; weathered, highVisibility and whiteCab presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "aerial ladder",
+        "ladder truck",
+        "fire engine",
+        "fire truck",
         "fire rescue",
         "fire service",
         "emergency scene",
-        "low poly",
+        "vehicle",
         "CC0"
       ],
       "compat": [
@@ -85755,8 +85759,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/fire-rescue/aerial-ladder-fire-engine.kcad.ts",
       "preview": "/assets/fire-rescue-aerial-ladder-fire-engine.png",
-      "sourceSha256": "fbae386ae8573554cd80e802db9ee5566e54963c174b7ebca64d34967b5f4d32",
-      "triangleBudget": 2200,
+      "sourceSha256": "79bb830dd850263d82c7fa899e715c63f7dd563b840e25e30ad2178abd206940",
+      "triangleBudget": 6000,
       "params": [
         {
           "name": "scale",
@@ -85770,25 +85774,25 @@
         {
           "name": "metalworkColor",
           "type": "color",
-          "default": "#aab6ba",
+          "default": "#b4bdc1",
           "label": "Ladder and metalwork"
         },
         {
           "name": "tireRubberColor",
           "type": "color",
-          "default": "#262b2f",
-          "label": "Tire rubber"
+          "default": "#24292d",
+          "label": "Tire rubber and glass"
         },
         {
           "name": "cabPaintColor",
           "type": "color",
           "default": "#eee7d7",
-          "label": "Cab and locker finish"
+          "label": "Cab roof, stripe and locker finish"
         },
         {
           "name": "bodyPaintColor",
           "type": "color",
-          "default": "#c93630",
+          "default": "#c4302a",
           "label": "Apparatus body paint"
         }
       ],
@@ -85804,105 +85808,242 @@
           "tireRubberColor": "#272c30",
           "cabPaintColor": "#f4e7b1",
           "bodyPaintColor": "#e77f23"
+        },
+        "whiteCab": {
+          "metalworkColor": "#c9cfd2",
+          "tireRubberColor": "#202428",
+          "cabPaintColor": "#b8202a",
+          "bodyPaintColor": "#f1efe8"
         }
       },
       "stats": {
-        "triangles": 1092,
+        "triangles": 4310,
         "sizeM": [
-          1.7175,
-          1.643869,
-          0.8844
+          11.635422,
+          6.801644,
+          4.66
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "metalworkColor",
-          "color": "#aab6ba",
+          "name": "tireRubberColor",
+          "color": "#24292d",
           "parts": [
-            "frame",
-            "road-wheel-0--1-hub--1",
-            "road-wheel-0--1-hub-1",
-            "road-wheel-0-1-hub--1",
-            "road-wheel-0-1-hub-1",
-            "road-wheel-1--1-hub--1",
-            "road-wheel-1--1-hub-1",
-            "road-wheel-1-1-hub--1",
-            "road-wheel-1-1-hub-1",
+            "front-wheel--1-tyre",
+            "rear-wheel--2500--1-tyre",
+            "rear-wheel--3900--1-tyre",
+            "front-wheel-1-tyre",
+            "rear-wheel--2500-1-tyre",
+            "rear-wheel--3900-1-tyre",
             "windshield",
-            "side-window--1",
-            "side-window-1",
+            "door-window--1",
+            "crew-window-a--1",
+            "crew-window-b--1",
+            "door-window-1",
+            "crew-window-a-1",
+            "crew-window-b-1"
+          ],
+          "param": "tireRubberColor"
+        },
+        {
+          "name": "metalworkColor",
+          "color": "#b4bdc1",
+          "parts": [
+            "front-wheel--1-rim",
+            "rear-wheel--2500--1-rim",
+            "rear-wheel--3900--1-rim",
+            "front-wheel-1-rim",
+            "rear-wheel--2500-1-rim",
+            "rear-wheel--3900-1-rim",
+            "frame-rail--1",
+            "frame-rail-1",
+            "cab-step--1",
+            "cab-handrail--1",
+            "mirror-arm--1",
+            "mirror--1",
+            "cab-step-1",
+            "cab-handrail-1",
+            "mirror-arm-1",
+            "mirror-1",
+            "grille",
             "front-bumper",
-            "compartment-handle--1-0",
-            "compartment-handle--1-1",
-            "compartment-handle--1-2",
-            "compartment-handle-1-0",
-            "compartment-handle-1-1",
-            "compartment-handle-1-2",
-            "stabilizer-beam--1",
-            "stabilizer-foot--1",
-            "stabilizer-beam-1",
-            "stabilizer-foot-1",
-            "ladder-base",
-            "ladder-fly",
-            "ladder-rung--1-0",
-            "ladder-rung--1-1",
-            "ladder-rung--1-2",
-            "ladder-rung--1-3",
-            "ladder-rung--1-4",
-            "ladder-rung--1-5",
-            "ladder-rung--1-6",
-            "ladder-rung-1-0",
-            "ladder-rung-1-1",
-            "ladder-rung-1-2",
-            "ladder-rung-1-3",
-            "ladder-rung-1-4",
-            "ladder-rung-1-5",
-            "ladder-rung-1-6",
-            "ladder-tip-platform",
-            "front-grille",
-            "stabilizer-jack--1",
-            "stabilizer-jack-1"
+            "light-bar-base",
+            "locker-handle-0--1",
+            "locker-handle-1--1",
+            "locker-handle-2--1",
+            "locker-handle-3--1",
+            "body-rub-rail--1",
+            "locker-handle-0-1",
+            "locker-handle-1-1",
+            "locker-handle-2-1",
+            "locker-handle-3-1",
+            "body-rub-rail-1",
+            "rear-step",
+            "outrigger-beam-2400--1",
+            "outrigger-pad-2400--1",
+            "outrigger-beam-2400-1",
+            "outrigger-pad-2400-1",
+            "outrigger-beam--5000--1",
+            "outrigger-pad--5000--1",
+            "outrigger-beam--5000-1",
+            "outrigger-pad--5000-1",
+            "turntable",
+            "pivot-pin",
+            "ladder-base-chord--1",
+            "ladder-base-handrail--1",
+            "ladder-base-post-0--1",
+            "ladder-base-brace-0--1",
+            "ladder-base-post-1--1",
+            "ladder-base-brace-1--1",
+            "ladder-base-post-2--1",
+            "ladder-base-brace-2--1",
+            "ladder-base-post-3--1",
+            "ladder-base-brace-3--1",
+            "ladder-base-post-4--1",
+            "ladder-base-brace-4--1",
+            "ladder-base-post-5--1",
+            "ladder-base-brace-5--1",
+            "ladder-base-post-6--1",
+            "ladder-base-brace-6--1",
+            "ladder-base-post-7--1",
+            "ladder-base-brace-7--1",
+            "ladder-base-post-8--1",
+            "ladder-base-chord-1",
+            "ladder-base-handrail-1",
+            "ladder-base-post-0-1",
+            "ladder-base-brace-0-1",
+            "ladder-base-post-1-1",
+            "ladder-base-brace-1-1",
+            "ladder-base-post-2-1",
+            "ladder-base-brace-2-1",
+            "ladder-base-post-3-1",
+            "ladder-base-brace-3-1",
+            "ladder-base-post-4-1",
+            "ladder-base-brace-4-1",
+            "ladder-base-post-5-1",
+            "ladder-base-brace-5-1",
+            "ladder-base-post-6-1",
+            "ladder-base-brace-6-1",
+            "ladder-base-post-7-1",
+            "ladder-base-brace-7-1",
+            "ladder-base-post-8-1",
+            "ladder-base-rung-300",
+            "ladder-base-rung-660",
+            "ladder-base-rung-1020",
+            "ladder-base-rung-1380",
+            "ladder-base-rung-1740",
+            "ladder-base-rung-2100",
+            "ladder-base-rung-2460",
+            "ladder-base-rung-2820",
+            "ladder-base-rung-3180",
+            "ladder-base-rung-3540",
+            "ladder-base-rung-3900",
+            "ladder-base-rung-4260",
+            "ladder-base-rung-4620",
+            "ladder-base-rung-4980",
+            "ladder-base-rung-5340",
+            "ladder-base-rung-5700",
+            "ladder-base-rung-6060",
+            "ladder-base-rung-6420",
+            "ladder-base-rung-6780",
+            "ladder-base-rung-7140",
+            "ladder-base-rung-7500",
+            "ladder-base-rung-7860",
+            "ladder-base-rung-8220",
+            "ladder-base-rung-8580",
+            "ladder-base-rung-8940",
+            "ladder-fly-chord--1",
+            "ladder-fly-handrail--1",
+            "ladder-fly-post-0--1",
+            "ladder-fly-brace-0--1",
+            "ladder-fly-post-1--1",
+            "ladder-fly-brace-1--1",
+            "ladder-fly-post-2--1",
+            "ladder-fly-brace-2--1",
+            "ladder-fly-post-3--1",
+            "ladder-fly-brace-3--1",
+            "ladder-fly-post-4--1",
+            "ladder-fly-brace-4--1",
+            "ladder-fly-post-5--1",
+            "ladder-fly-brace-5--1",
+            "ladder-fly-post-6--1",
+            "ladder-fly-brace-6--1",
+            "ladder-fly-post-7--1",
+            "ladder-fly-brace-7--1",
+            "ladder-fly-post-8--1",
+            "ladder-fly-chord-1",
+            "ladder-fly-handrail-1",
+            "ladder-fly-post-0-1",
+            "ladder-fly-brace-0-1",
+            "ladder-fly-post-1-1",
+            "ladder-fly-brace-1-1",
+            "ladder-fly-post-2-1",
+            "ladder-fly-brace-2-1",
+            "ladder-fly-post-3-1",
+            "ladder-fly-brace-3-1",
+            "ladder-fly-post-4-1",
+            "ladder-fly-brace-4-1",
+            "ladder-fly-post-5-1",
+            "ladder-fly-brace-5-1",
+            "ladder-fly-post-6-1",
+            "ladder-fly-brace-6-1",
+            "ladder-fly-post-7-1",
+            "ladder-fly-brace-7-1",
+            "ladder-fly-post-8-1",
+            "ladder-fly-rung-9280",
+            "ladder-fly-rung-9640",
+            "ladder-fly-rung-10000",
+            "ladder-waterway",
+            "lift-ram--1",
+            "lift-ram-1"
           ],
           "param": "metalworkColor"
         },
         {
-          "name": "tireRubberColor",
-          "color": "#262b2f",
+          "name": "bodyPaintColor",
+          "color": "#c4302a",
           "parts": [
-            "road-wheel-0--1",
-            "road-wheel-0-1",
-            "road-wheel-1--1",
-            "road-wheel-1-1"
+            "crew-cab",
+            "light-bar",
+            "apparatus-body",
+            "tail-light--1",
+            "tail-light-1",
+            "pedestal--1",
+            "pedestal-1",
+            "operator-console",
+            "ladder-heel-plate",
+            "lift-cylinder--1",
+            "lift-cylinder-1"
           ],
-          "param": "tireRubberColor"
+          "param": "bodyPaintColor"
         },
         {
           "name": "cabPaintColor",
           "color": "#eee7d7",
           "parts": [
-            "crew-cab",
-            "warning-lightbar",
-            "compartment--1-0",
-            "compartment--1-1",
-            "compartment--1-2",
-            "compartment-1-0",
-            "compartment-1-1",
-            "compartment-1-2",
-            "headlamp-near",
-            "headlamp-far"
+            "cab-roof-cap",
+            "cab-front-roof",
+            "headlamp--1",
+            "headlamp-1",
+            "locker-door-0--1",
+            "locker-door-1--1",
+            "locker-door-2--1",
+            "locker-door-3--1",
+            "reflective-stripe--1",
+            "locker-door-0-1",
+            "locker-door-1-1",
+            "locker-door-2-1",
+            "locker-door-3-1",
+            "reflective-stripe-1",
+            "outrigger-jack-2400--1",
+            "outrigger-jack-2400-1",
+            "outrigger-jack--5000--1",
+            "outrigger-jack--5000-1",
+            "ladder-tip-nozzle"
           ],
           "param": "cabPaintColor"
-        },
-        {
-          "name": "bodyPaintColor",
-          "color": "#c93630",
-          "parts": [
-            "cab-roof",
-            "apparatus-body"
-          ],
-          "param": "bodyPaintColor"
         }
       ]
     },
@@ -87211,14 +87352,17 @@
       "id": "fire-hose-roll",
       "kit": "fire-rescue",
       "title": "Fire hose roll",
-      "description": "Compact rolled attack hose with paired loop bundles and coupling ends. Material controls: hose fabric, coupling metal, webbing and safety trim; weathered and highVisibility presets.",
+      "description": "Straight-rolled 45 mm attack hose: flat woven jacket wound into a spiral standing on edge, male coupling tucked in the centre, outer tail lying on the ground to a female coupling with swivel and rocker lugs, and a webbing strap through the centre with a carry loop. Material controls: hose fabric, coupling metal, webbing and safety trim; weathered, highVisibility and forestryGreen presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "fire hose",
+        "hose roll",
+        "attack hose",
+        "hose coupling",
         "fire rescue",
         "fire service",
         "emergency scene",
-        "low poly",
         "CC0"
       ],
       "compat": [
@@ -87230,8 +87374,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/fire-rescue/fire-hose-roll.kcad.ts",
       "preview": "/assets/fire-rescue-fire-hose-roll.png",
-      "sourceSha256": "9650210e79fdc5fb7b4f253050aa0c2f747de5564c1ed5739e567761816b8bb3",
-      "triangleBudget": 2200,
+      "sourceSha256": "b44086a81d4d8fedc945165103f4a1b026018e171bf118b681dec1156a2287af",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "scale",
@@ -87251,13 +87395,13 @@
         {
           "name": "couplingMetalColor",
           "type": "color",
-          "default": "#aeb9bc",
+          "default": "#c4bb9a",
           "label": "Coupling metal"
         },
         {
           "name": "webbingColor",
           "type": "color",
-          "default": "#dfc35b",
+          "default": "#2f3437",
           "label": "Webbing and safety trim"
         }
       ],
@@ -87265,20 +87409,25 @@
         "weathered": {
           "hoseFabricColor": "#965443",
           "couplingMetalColor": "#8c9698",
-          "webbingColor": "#b4a66c"
+          "webbingColor": "#4a4a44"
         },
         "highVisibility": {
           "hoseFabricColor": "#e17825",
           "couplingMetalColor": "#c1c2b5",
           "webbingColor": "#f2df62"
+        },
+        "forestryGreen": {
+          "hoseFabricColor": "#5f7a4a",
+          "couplingMetalColor": "#b9b7aa",
+          "webbingColor": "#d8c25a"
         }
       },
       "stats": {
-        "triangles": 388,
+        "triangles": 1624,
         "sizeM": [
-          0.604,
-          0.447,
-          0.428009
+          0.5585,
+          0.466,
+          0.095406
         ],
         "minUpM": 0,
         "materials": 1
@@ -87288,47 +87437,32 @@
           "name": "hoseFabricColor",
           "color": "#c94732",
           "parts": [
-            "hose-loop-0-0",
-            "hose-loop-0-1",
-            "hose-loop-0-2",
-            "hose-loop-0-3",
-            "hose-loop-0-4",
-            "hose-loop-0-5",
-            "hose-loop-0-6",
-            "hose-loop-0-7",
-            "hose-loop-0-8",
-            "hose-loop-0-9",
-            "hose-loop-0-10",
-            "hose-loop-0-11",
-            "hose-loop-1-0",
-            "hose-loop-1-1",
-            "hose-loop-1-2",
-            "hose-loop-1-3",
-            "hose-loop-1-4",
-            "hose-loop-1-5",
-            "hose-loop-1-6",
-            "hose-loop-1-7",
-            "hose-loop-1-8",
-            "hose-loop-1-9",
-            "hose-loop-1-10",
-            "hose-loop-1-11"
+            "hose-jacket-roll",
+            "hose-tail"
           ],
           "param": "hoseFabricColor"
         },
         {
           "name": "couplingMetalColor",
-          "color": "#aeb9bc",
+          "color": "#c4bb9a",
           "parts": [
-            "outer-coupling",
-            "inner-coupling"
+            "female-shank",
+            "female-swivel",
+            "rocker-lug-90",
+            "rocker-lug-210",
+            "rocker-lug-330",
+            "male-coupling",
+            "strap-buckle"
           ],
           "param": "couplingMetalColor"
         },
         {
           "name": "webbingColor",
-          "color": "#dfc35b",
+          "color": "#2f3437",
           "parts": [
-            "carry-strap"
+            "female-bore",
+            "strap",
+            "carry-loop"
           ],
           "param": "webbingColor"
         }
@@ -88806,14 +88940,18 @@
       "id": "folded-hose-pack",
       "kit": "fire-rescue",
       "title": "Folded fire hose pack",
-      "description": "Layered accordion fold of attack hose with a carrying strap and outlet coupling. Material controls: webbing and safety trim, hose fabric, coupling metal; weathered and highVisibility presets.",
+      "description": "High-rise standpipe hose pack: flat 65 mm hose flaked in an accordion in two side-by-side stacks with rounded folds at every layer end, cinched by two webbing straps with cam buckles, a carry handle on top, a shut-off nozzle with bail handle strapped to the load, and the female coupling hanging off the bottom layer. Material controls: webbing and safety trim, hose fabric, coupling metal, nozzle bail and grip; weathered, highVisibility and doubleJacketWhite presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "fire hose",
+        "hose pack",
+        "high-rise pack",
+        "standpipe",
+        "shoulder load",
         "fire rescue",
         "fire service",
         "emergency scene",
-        "low poly",
         "CC0"
       ],
       "compat": [
@@ -88825,8 +88963,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/fire-rescue/folded-hose-pack.kcad.ts",
       "preview": "/assets/fire-rescue-folded-hose-pack.png",
-      "sourceSha256": "f075b6d683f506bdccbaebcb3cb5c144a045bc27bc908e0230d78bc07036f2c9",
-      "triangleBudget": 2200,
+      "sourceSha256": "8968e9504467ecb552129c9e9ed5c7a05b80524c765e043949065909643bf31e",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -88840,7 +88978,7 @@
         {
           "name": "webbingColor",
           "type": "color",
-          "default": "#dfc35b",
+          "default": "#2f3437",
           "label": "Webbing and safety trim"
         },
         {
@@ -88852,76 +88990,92 @@
         {
           "name": "couplingMetalColor",
           "type": "color",
-          "default": "#aeb9bc",
+          "default": "#c4bb9a",
           "label": "Coupling metal"
+        },
+        {
+          "name": "nozzleColor",
+          "type": "color",
+          "default": "#e0b43a",
+          "label": "Nozzle bail and grip"
         }
       ],
       "presets": {
         "weathered": {
-          "webbingColor": "#b4a66c",
+          "webbingColor": "#4a4a44",
           "hoseFabricColor": "#965443",
-          "couplingMetalColor": "#8c9698"
+          "couplingMetalColor": "#8c9698",
+          "nozzleColor": "#a8925a"
         },
         "highVisibility": {
           "webbingColor": "#f2df62",
           "hoseFabricColor": "#e17825",
-          "couplingMetalColor": "#c1c2b5"
+          "couplingMetalColor": "#c1c2b5",
+          "nozzleColor": "#2f3437"
+        },
+        "doubleJacketWhite": {
+          "webbingColor": "#b2382e",
+          "hoseFabricColor": "#e9e5da",
+          "couplingMetalColor": "#b9c1c4",
+          "nozzleColor": "#3b6fb0"
         }
       },
       "stats": {
-        "triangles": 308,
+        "triangles": 2214,
         "sizeM": [
-          0.59,
-          0.194,
-          0.36
+          0.86,
+          0.363,
+          0.218497
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "webbingColor",
-          "color": "#dfc35b",
-          "parts": [
-            "pack-base",
-            "carry-strap"
-          ],
-          "param": "webbingColor"
-        },
-        {
           "name": "hoseFabricColor",
           "color": "#c94732",
           "parts": [
-            "fold-0-0",
-            "fold-0-1",
-            "fold-0-2",
-            "fold-0-3",
-            "fold-1-0",
-            "fold-1-1",
-            "fold-1-2",
-            "fold-1-3",
-            "fold-2-0",
-            "fold-2-1",
-            "fold-2-2",
-            "fold-2-3",
-            "fold-3-0",
-            "fold-3-1",
-            "fold-3-2",
-            "fold-3-3",
-            "fold-4-0",
-            "fold-4-1",
-            "fold-4-2",
-            "fold-4-3"
+            "hose-stack-a",
+            "hose-stack-b"
           ],
           "param": "hoseFabricColor"
         },
         {
           "name": "couplingMetalColor",
-          "color": "#aeb9bc",
+          "color": "#c4bb9a",
           "parts": [
-            "coupling"
+            "female-shank",
+            "female-swivel",
+            "rocker-lug-90",
+            "rocker-lug-210",
+            "rocker-lug-330",
+            "cam-buckle--170",
+            "cam-buckle-170",
+            "nozzle-coupling",
+            "nozzle-body",
+            "valve-ball"
           ],
           "param": "couplingMetalColor"
+        },
+        {
+          "name": "webbingColor",
+          "color": "#2f3437",
+          "parts": [
+            "cinch-strap--170",
+            "cinch-strap-170",
+            "carry-handle"
+          ],
+          "param": "webbingColor"
+        },
+        {
+          "name": "nozzleColor",
+          "color": "#e0b43a",
+          "parts": [
+            "handle-grip",
+            "nozzle-tip",
+            "bail-handle"
+          ],
+          "param": "nozzleColor"
         }
       ]
     },
@@ -89984,14 +90138,18 @@
       "id": "large-diameter-hose-roll",
       "kit": "fire-rescue",
       "title": "Large diameter supply hose roll",
-      "description": "Wide supply hose rolled into a broad stacked bundle with heavy couplings. Material controls: hose fabric, coupling metal, webbing and safety trim; weathered and highVisibility presets.",
+      "description": "Rolled 125 mm large-diameter supply hose: 200 mm wide flat jacket wound into a 0.7 m spiral standing on edge, a Storz coupling with ribbed collar and hooked lugs in the centre, the outer tail lying on the ground to a second Storz coupling with a blanking cap chain, and a wide webbing strap through the centre with a grab loop. Material controls: hose fabric, coupling metal, webbing and safety trim; weathered, highVisibility and municipalBlue presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "fire hose",
+        "supply hose",
+        "LDH",
+        "Storz coupling",
+        "hose roll",
         "fire rescue",
         "fire service",
         "emergency scene",
-        "low poly",
         "CC0"
       ],
       "compat": [
@@ -90003,8 +90161,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/fire-rescue/large-diameter-hose-roll.kcad.ts",
       "preview": "/assets/fire-rescue-large-diameter-hose-roll.png",
-      "sourceSha256": "03118c514a8d899e6117e57a6c703208413a386f4c4001c36cf16a77f4ceda04",
-      "triangleBudget": 2200,
+      "sourceSha256": "0f974087c8905f50e74a7979419b4ad06d2bf1b3d8fcb49b7ec1922b9e7fd34e",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -90018,40 +90176,45 @@
         {
           "name": "hoseFabricColor",
           "type": "color",
-          "default": "#c94732",
+          "default": "#d8c24a",
           "label": "Hose fabric"
         },
         {
           "name": "couplingMetalColor",
           "type": "color",
-          "default": "#aeb9bc",
+          "default": "#b9c1c4",
           "label": "Coupling metal"
         },
         {
           "name": "webbingColor",
           "type": "color",
-          "default": "#dfc35b",
+          "default": "#b2382e",
           "label": "Webbing and safety trim"
         }
       ],
       "presets": {
         "weathered": {
-          "hoseFabricColor": "#965443",
+          "hoseFabricColor": "#a8995a",
           "couplingMetalColor": "#8c9698",
-          "webbingColor": "#b4a66c"
+          "webbingColor": "#7d4a40"
         },
         "highVisibility": {
           "hoseFabricColor": "#e17825",
           "couplingMetalColor": "#c1c2b5",
           "webbingColor": "#f2df62"
+        },
+        "municipalBlue": {
+          "hoseFabricColor": "#3f6fa6",
+          "couplingMetalColor": "#c9cdcf",
+          "webbingColor": "#e8e3d4"
         }
       },
       "stats": {
-        "triangles": 532,
+        "triangles": 2312,
         "sizeM": [
-          0.724,
-          0.567,
-          0.550531
+          0.951786,
+          0.838,
+          0.212
         ],
         "minUpM": 0,
         "materials": 1
@@ -90059,61 +90222,38 @@
       "palette": [
         {
           "name": "hoseFabricColor",
-          "color": "#c94732",
+          "color": "#d8c24a",
           "parts": [
-            "hose-loop-0-0",
-            "hose-loop-0-1",
-            "hose-loop-0-2",
-            "hose-loop-0-3",
-            "hose-loop-0-4",
-            "hose-loop-0-5",
-            "hose-loop-0-6",
-            "hose-loop-0-7",
-            "hose-loop-0-8",
-            "hose-loop-0-9",
-            "hose-loop-0-10",
-            "hose-loop-0-11",
-            "hose-loop-1-0",
-            "hose-loop-1-1",
-            "hose-loop-1-2",
-            "hose-loop-1-3",
-            "hose-loop-1-4",
-            "hose-loop-1-5",
-            "hose-loop-1-6",
-            "hose-loop-1-7",
-            "hose-loop-1-8",
-            "hose-loop-1-9",
-            "hose-loop-1-10",
-            "hose-loop-1-11",
-            "hose-loop-2-0",
-            "hose-loop-2-1",
-            "hose-loop-2-2",
-            "hose-loop-2-3",
-            "hose-loop-2-4",
-            "hose-loop-2-5",
-            "hose-loop-2-6",
-            "hose-loop-2-7",
-            "hose-loop-2-8",
-            "hose-loop-2-9",
-            "hose-loop-2-10",
-            "hose-loop-2-11"
+            "hose-jacket-roll",
+            "hose-tail"
           ],
           "param": "hoseFabricColor"
         },
         {
           "name": "couplingMetalColor",
-          "color": "#aeb9bc",
+          "color": "#b9c1c4",
           "parts": [
-            "outer-coupling",
-            "inner-coupling"
+            "outer-storz-shank",
+            "outer-storz-collar",
+            "outer-storz-face",
+            "outer-storz-lug--1",
+            "outer-storz-lug-1",
+            "centre-storz-shank",
+            "centre-storz-collar",
+            "centre-storz-face",
+            "centre-storz-lug--1",
+            "centre-storz-lug-1",
+            "strap-buckle"
           ],
           "param": "couplingMetalColor"
         },
         {
           "name": "webbingColor",
-          "color": "#dfc35b",
+          "color": "#b2382e",
           "parts": [
-            "carry-strap"
+            "blanking-cap",
+            "strap",
+            "grab-loop"
           ],
           "param": "webbingColor"
         }
@@ -91003,14 +91143,19 @@
       "id": "quint-fire-apparatus",
       "kit": "fire-rescue",
       "title": "Quint fire apparatus",
-      "description": "Combined pumper and aerial apparatus with hosebed, pump panel and mounted ladder. Material controls: ladder and metalwork, tire rubber, cab and locker finish, apparatus body paint; weathered and highVisibility presets.",
+      "description": "Quint fire apparatus: flat-face crew cab with raised roof and light bar, pump house with side pump panel of gauges and capped discharges and a deck gun, open hosebed of loaded hose under a two-section truss aerial ladder bedded forward on a rest over the cab, rear turntable, stowed outriggers, side-racked ground ladder and roll-up lockers on tandem rear duals. Material controls: ladder and metalwork, tire rubber and glass, cab roof and locker finish, apparatus body paint, hose load; weathered, highVisibility and whiteCab presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "quint",
+        "fire apparatus",
+        "aerial ladder",
+        "pumper",
+        "fire truck",
         "fire rescue",
         "fire service",
         "emergency scene",
-        "low poly",
+        "vehicle",
         "CC0"
       ],
       "compat": [
@@ -91022,8 +91167,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/fire-rescue/quint-fire-apparatus.kcad.ts",
       "preview": "/assets/fire-rescue-quint-fire-apparatus.png",
-      "sourceSha256": "92a2345e0bea463902d3dc070f40317be7c2d455444a3f15ad684c61329f9f6b",
-      "triangleBudget": 2200,
+      "sourceSha256": "a8e3299d76e60ef83498feb0ae395f11397c670cb4100af720c177213c55c33d",
+      "triangleBudget": 7000,
       "params": [
         {
           "name": "scale",
@@ -91037,26 +91182,32 @@
         {
           "name": "metalworkColor",
           "type": "color",
-          "default": "#aab6ba",
+          "default": "#b4bdc1",
           "label": "Ladder and metalwork"
         },
         {
           "name": "tireRubberColor",
           "type": "color",
-          "default": "#262b2f",
-          "label": "Tire rubber"
+          "default": "#24292d",
+          "label": "Tire rubber and glass"
         },
         {
           "name": "cabPaintColor",
           "type": "color",
           "default": "#eee7d7",
-          "label": "Cab and locker finish"
+          "label": "Cab roof and locker finish"
         },
         {
           "name": "bodyPaintColor",
           "type": "color",
-          "default": "#c93630",
+          "default": "#c4302a",
           "label": "Apparatus body paint"
+        },
+        {
+          "name": "hoseColor",
+          "type": "color",
+          "default": "#d9b43a",
+          "label": "Hose load"
         }
       ],
       "presets": {
@@ -91064,117 +91215,279 @@
           "metalworkColor": "#879294",
           "tireRubberColor": "#3a3b39",
           "cabPaintColor": "#cfc4ae",
-          "bodyPaintColor": "#89534b"
+          "bodyPaintColor": "#89534b",
+          "hoseColor": "#a99353"
         },
         "highVisibility": {
           "metalworkColor": "#c5c7ab",
           "tireRubberColor": "#272c30",
           "cabPaintColor": "#f4e7b1",
-          "bodyPaintColor": "#e77f23"
+          "bodyPaintColor": "#e77f23",
+          "hoseColor": "#e6e2d6"
+        },
+        "whiteCab": {
+          "metalworkColor": "#c9cfd2",
+          "tireRubberColor": "#202428",
+          "cabPaintColor": "#b8202a",
+          "bodyPaintColor": "#f1efe8",
+          "hoseColor": "#c43a2c"
         }
       },
       "stats": {
-        "triangles": 1216,
+        "triangles": 6296,
         "sizeM": [
-          1.7175,
-          1.622869,
-          0.8844
+          11.03,
+          4.024532,
+          3.26
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "metalworkColor",
-          "color": "#aab6ba",
+          "name": "tireRubberColor",
+          "color": "#24292d",
           "parts": [
-            "frame",
-            "road-wheel-0--1-hub--1",
-            "road-wheel-0--1-hub-1",
-            "road-wheel-0-1-hub--1",
-            "road-wheel-0-1-hub-1",
-            "road-wheel-1--1-hub--1",
-            "road-wheel-1--1-hub-1",
-            "road-wheel-1-1-hub--1",
-            "road-wheel-1-1-hub-1",
+            "front-wheel--1-tyre",
+            "front-wheel--1-contact-patch",
+            "rear-wheel--2400--1-tyre",
+            "rear-wheel--2400--1-contact-patch",
+            "rear-wheel--3800--1-tyre",
+            "rear-wheel--3800--1-contact-patch",
+            "front-wheel-1-tyre",
+            "front-wheel-1-contact-patch",
+            "rear-wheel--2400-1-tyre",
+            "rear-wheel--2400-1-contact-patch",
+            "rear-wheel--3800-1-tyre",
+            "rear-wheel--3800-1-contact-patch",
             "windshield",
-            "side-window--1",
-            "side-window-1",
+            "door-window--1",
+            "crew-window-a--1",
+            "crew-window-b--1",
+            "door-window-1",
+            "crew-window-a-1",
+            "crew-window-b-1"
+          ],
+          "param": "tireRubberColor"
+        },
+        {
+          "name": "metalworkColor",
+          "color": "#b4bdc1",
+          "parts": [
+            "front-wheel--1-rim",
+            "rear-wheel--2400--1-rim",
+            "rear-wheel--3800--1-rim",
+            "front-wheel-1-rim",
+            "rear-wheel--2400-1-rim",
+            "rear-wheel--3800-1-rim",
+            "frame-rail--1",
+            "frame-rail-1",
+            "cab-step--1",
+            "cab-handrail--1",
+            "mirror-arm--1",
+            "mirror--1",
+            "cab-step-1",
+            "cab-handrail-1",
+            "mirror-arm-1",
+            "mirror-1",
+            "grille",
             "front-bumper",
-            "compartment-handle--1-0",
-            "compartment-handle--1-1",
-            "compartment-handle--1-2",
-            "compartment-handle-1-0",
-            "compartment-handle-1-1",
-            "compartment-handle-1-2",
-            "pump-control-panel--1",
-            "pump-control-panel-1",
-            "deck-monitor-base",
-            "deck-monitor-barrel",
-            "stabilizer-beam--1",
-            "stabilizer-foot--1",
-            "stabilizer-beam-1",
-            "stabilizer-foot-1",
-            "ladder-base",
-            "ladder-fly",
-            "ladder-rung--1-0",
-            "ladder-rung--1-1",
-            "ladder-rung--1-2",
-            "ladder-rung--1-3",
-            "ladder-rung--1-4",
-            "ladder-rung--1-5",
-            "ladder-rung--1-6",
-            "ladder-rung-1-0",
-            "ladder-rung-1-1",
-            "ladder-rung-1-2",
-            "ladder-rung-1-3",
-            "ladder-rung-1-4",
-            "ladder-rung-1-5",
-            "ladder-rung-1-6",
-            "ladder-tip-platform",
-            "front-grille",
-            "stabilizer-jack--1",
-            "stabilizer-jack-1"
+            "light-bar-base",
+            "locker-handle-0--1",
+            "locker-handle-1--1",
+            "locker-handle-2--1",
+            "body-rub-rail--1",
+            "locker-handle-0-1",
+            "locker-handle-1-1",
+            "locker-handle-2-1",
+            "body-rub-rail-1",
+            "rear-step",
+            "pump-panel--1",
+            "intake--1",
+            "discharge--300--1",
+            "discharge-0--1",
+            "discharge-300--1",
+            "pump-panel-1",
+            "intake-1",
+            "discharge--300-1",
+            "discharge-0-1",
+            "discharge-300-1",
+            "deck-gun-riser",
+            "deck-gun-elbow",
+            "deck-gun-barrel",
+            "hosebed-divider--380",
+            "hosebed-divider-380",
+            "ground-ladder-rail-2540",
+            "ground-ladder-rail-2850",
+            "ground-ladder-rung--3650",
+            "ground-ladder-rung--3320",
+            "ground-ladder-rung--2990",
+            "ground-ladder-rung--2660",
+            "ground-ladder-rung--2330",
+            "ground-ladder-rung--2000",
+            "ground-ladder-rung--1670",
+            "ground-ladder-rung--1340",
+            "ground-ladder-rung--1010",
+            "ground-ladder-rung--680",
+            "ground-ladder-rung--350",
+            "ground-ladder-rung--20",
+            "ground-ladder-rung-310",
+            "ground-ladder-rung-640",
+            "ground-ladder-rung-970",
+            "ground-ladder-rung-1300",
+            "outrigger-housing-1500--1",
+            "outrigger-pad-1500--1",
+            "outrigger-housing-1500-1",
+            "outrigger-pad-1500-1",
+            "outrigger-housing--5000--1",
+            "outrigger-pad--5000--1",
+            "outrigger-housing--5000-1",
+            "outrigger-pad--5000-1",
+            "turntable",
+            "pivot-pin",
+            "ladder-base-chord--1",
+            "ladder-base-handrail--1",
+            "ladder-base-post-0--1",
+            "ladder-base-brace-0--1",
+            "ladder-base-post-1--1",
+            "ladder-base-brace-1--1",
+            "ladder-base-post-2--1",
+            "ladder-base-brace-2--1",
+            "ladder-base-post-3--1",
+            "ladder-base-brace-3--1",
+            "ladder-base-post-4--1",
+            "ladder-base-brace-4--1",
+            "ladder-base-post-5--1",
+            "ladder-base-brace-5--1",
+            "ladder-base-post-6--1",
+            "ladder-base-brace-6--1",
+            "ladder-base-post-7--1",
+            "ladder-base-brace-7--1",
+            "ladder-base-post-8--1",
+            "ladder-base-chord-1",
+            "ladder-base-handrail-1",
+            "ladder-base-post-0-1",
+            "ladder-base-brace-0-1",
+            "ladder-base-post-1-1",
+            "ladder-base-brace-1-1",
+            "ladder-base-post-2-1",
+            "ladder-base-brace-2-1",
+            "ladder-base-post-3-1",
+            "ladder-base-brace-3-1",
+            "ladder-base-post-4-1",
+            "ladder-base-brace-4-1",
+            "ladder-base-post-5-1",
+            "ladder-base-brace-5-1",
+            "ladder-base-post-6-1",
+            "ladder-base-brace-6-1",
+            "ladder-base-post-7-1",
+            "ladder-base-brace-7-1",
+            "ladder-base-post-8-1",
+            "ladder-base-rung-300",
+            "ladder-base-rung-660",
+            "ladder-base-rung-1020",
+            "ladder-base-rung-1380",
+            "ladder-base-rung-1740",
+            "ladder-base-rung-2100",
+            "ladder-base-rung-2460",
+            "ladder-base-rung-2820",
+            "ladder-base-rung-3180",
+            "ladder-base-rung-3540",
+            "ladder-base-rung-3900",
+            "ladder-base-rung-4260",
+            "ladder-base-rung-4620",
+            "ladder-base-rung-4980",
+            "ladder-base-rung-5340",
+            "ladder-base-rung-5700",
+            "ladder-base-rung-6060",
+            "ladder-base-rung-6420",
+            "ladder-base-rung-6780",
+            "ladder-base-rung-7140",
+            "ladder-base-rung-7500",
+            "ladder-base-rung-7860",
+            "ladder-base-rung-8220",
+            "ladder-base-rung-8580",
+            "ladder-fly-chord--1",
+            "ladder-fly-handrail--1",
+            "ladder-fly-chord-1",
+            "ladder-fly-handrail-1",
+            "ladder-rest-post--1",
+            "ladder-rest-post-1",
+            "ladder-rest-bar"
           ],
           "param": "metalworkColor"
         },
         {
-          "name": "tireRubberColor",
-          "color": "#262b2f",
+          "name": "bodyPaintColor",
+          "color": "#c4302a",
           "parts": [
-            "road-wheel-0--1",
-            "road-wheel-0-1",
-            "road-wheel-1--1",
-            "road-wheel-1-1",
-            "hosebed"
+            "crew-cab",
+            "light-bar",
+            "apparatus-body",
+            "tail-light--1",
+            "tail-light-1",
+            "pump-house",
+            "hosebed-wall--1",
+            "hosebed-wall-1",
+            "pedestal--1",
+            "pedestal-1",
+            "operator-console",
+            "ladder-heel-plate"
           ],
-          "param": "tireRubberColor"
+          "param": "bodyPaintColor"
         },
         {
           "name": "cabPaintColor",
           "color": "#eee7d7",
           "parts": [
-            "crew-cab",
-            "warning-lightbar",
-            "compartment--1-0",
-            "compartment--1-1",
-            "compartment--1-2",
-            "compartment-1-0",
-            "compartment-1-1",
-            "compartment-1-2",
-            "headlamp-near",
-            "headlamp-far"
+            "cab-roof-cap",
+            "cab-front-roof",
+            "headlamp--1",
+            "headlamp-1",
+            "locker-door-0--1",
+            "locker-door-1--1",
+            "locker-door-2--1",
+            "reflective-stripe--1",
+            "locker-door-0-1",
+            "locker-door-1-1",
+            "locker-door-2-1",
+            "reflective-stripe-1",
+            "gauge--200-2500--1",
+            "gauge-200-2500--1",
+            "gauge--300-2150--1",
+            "gauge--100-2150--1",
+            "gauge-100-2150--1",
+            "gauge-300-2150--1",
+            "discharge-cap--300--1",
+            "discharge-cap-0--1",
+            "discharge-cap-300--1",
+            "gauge--200-2500-1",
+            "gauge-200-2500-1",
+            "gauge--300-2150-1",
+            "gauge--100-2150-1",
+            "gauge-100-2150-1",
+            "gauge-300-2150-1",
+            "discharge-cap--300-1",
+            "discharge-cap-0-1",
+            "discharge-cap-300-1",
+            "deck-gun-tip",
+            "outrigger-jack-1500--1",
+            "outrigger-jack-1500-1",
+            "outrigger-jack--5000--1",
+            "outrigger-jack--5000-1",
+            "ladder-tip-nozzle"
           ],
           "param": "cabPaintColor"
         },
         {
-          "name": "bodyPaintColor",
-          "color": "#c93630",
+          "name": "hoseColor",
+          "color": "#d9b43a",
           "parts": [
-            "cab-roof",
-            "apparatus-body"
+            "hose-load-0",
+            "hose-load-1",
+            "hose-load-2"
           ],
-          "param": "bodyPaintColor"
+          "param": "hoseColor"
         }
       ]
     },
