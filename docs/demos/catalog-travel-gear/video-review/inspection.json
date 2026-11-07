@@ -1,0 +1,30 @@
+{
+  "checkedAt": "2026-11-02T20:11:07Z",
+  "source": "generate.mts",
+  "settings": "settings.json",
+  "encodedVideo": {
+    "codec": "h264",
+    "width": 1280,
+    "height": 720,
+    "pixelFormat": "yuv420p",
+    "frameRate": "24/1",
+    "decodedFrames": 384,
+    "durationSeconds": 16.0,
+    "bytes": 153654,
+    "sha256": "33cfdb72305b5f4bf85874c36f6bb743f2cb1840263d743f00b1feaa49a8efcc"
+  },
+  "decodedReview": {
+    "sampledFrames": 8,
+    "contactSheet": "decoded-contact-sheet.png",
+    "visualReview": "Decoded and inspected the contact sheet plus detailed rolling-suitcase and passport-wallet frames. All 12 assets are visible in the overview. The check-in retracted handle, open compact folio and folded umbrella variants are visually distinct from their defaults; all requested values have no unmatched terms. Footer labels the output local and deployment as unverified."
+  },
+  "claims": {
+    "originalGeometry": true,
+    "localCatalogWorkflow": true,
+    "softwareRenderedGLB": true,
+    "deployedBehavior": false,
+    "engineImport": false,
+    "simulation": false,
+    "hardwareAcceptance": false
+  }
+}
