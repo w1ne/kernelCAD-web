@@ -164859,14 +164859,18 @@
       "id": "accordion",
       "kit": "music",
       "title": "Accordion",
-      "description": "Accordion with visible bellows ribs, button rows and a piano-key strip on its end.",
+      "description": "Piano accordion at real size: zig-zag pleated bellows with nickel corner guards between two lacquered cases, a fretted treble grille, a full ivory and ebony piano keyboard, register switches, a staggered grid of bass buttons and leather hand and shoulder straps. Material controls: case lacquer, bellows fabric, ivory and ebony keys, nickel hardware, leather straps. Concert, vintage and pearl presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "accordion",
+        "piano accordion",
+        "bellows",
+        "keyboard",
+        "squeezebox",
         "music",
         "instrument",
-        "orchestra",
+        "folk",
         "low poly",
         "CC0"
       ],
@@ -164879,8 +164883,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/accordion.kcad.ts",
       "preview": "/assets/music-accordion.png",
-      "sourceSha256": "4851ed50d8600e1a6631840d5c02fbe25864defdfe9af63e155f9496bfdddcd5",
-      "triangleBudget": 1800,
+      "sourceSha256": "db9c3ec0a6e30b6b00200046c842d27d6f79ca68f5cdcd71c2a64845529fa725",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -164907,29 +164911,53 @@
           "name": "ivory",
           "type": "color",
           "default": "#eee2c6",
-          "label": "Ivory keys"
+          "label": "Ivory keys and buttons"
+        },
+        {
+          "name": "ebony",
+          "type": "color",
+          "default": "#1c1a1d",
+          "label": "Ebony keys"
         },
         {
           "name": "nickel",
           "type": "color",
           "default": "#b6c0c4",
-          "label": "Nickel buttons"
+          "label": "Nickel grille and guards"
+        },
+        {
+          "name": "leather",
+          "type": "color",
+          "default": "#6b3f26",
+          "label": "Leather straps"
         }
       ],
       "presets": {
         "concert": {
-          "lacquer": "#25617a"
+          "lacquer": "#1f1d22",
+          "bellows": "#7d1d28",
+          "leather": "#2a2120"
         },
         "vintage": {
-          "lacquer": "#71323d"
+          "lacquer": "#71323d",
+          "bellows": "#2a2622",
+          "ivory": "#e4d3ae",
+          "nickel": "#a99d84",
+          "leather": "#7a4a2a"
+        },
+        "pearl": {
+          "lacquer": "#e9e4dc",
+          "bellows": "#24427a",
+          "nickel": "#d4dadc",
+          "leather": "#3a2a22"
         }
       },
       "stats": {
-        "triangles": 204,
+        "triangles": 2712,
         "sizeM": [
-          0.3145,
-          0.22,
-          0.086
+          0.553,
+          0.459,
+          0.236
         ],
         "minUpM": 0,
         "materials": 1
@@ -164939,23 +164967,72 @@
           "name": "lacquer",
           "color": "#b83b47",
           "parts": [
-            "left-end",
-            "right-end"
+            "treble-case",
+            "bass-case",
+            "fret-0",
+            "fret-1",
+            "fret-2",
+            "fret-3",
+            "fret-4",
+            "fret-5",
+            "fret-6",
+            "keyboard-bed"
           ],
           "param": "lacquer"
+        },
+        {
+          "name": "nickel",
+          "color": "#b6c0c4",
+          "parts": [
+            "bellows-frame--164",
+            "bellows-frame-114",
+            "guard-0--1--1",
+            "guard-0--1-1",
+            "guard-0-1--1",
+            "guard-0-1-1",
+            "guard-1--1--1",
+            "guard-1--1-1",
+            "guard-1-1--1",
+            "guard-1-1-1",
+            "guard-2--1--1",
+            "guard-2--1-1",
+            "guard-2-1--1",
+            "guard-2-1-1",
+            "guard-3--1--1",
+            "guard-3--1-1",
+            "guard-3-1--1",
+            "guard-3-1-1",
+            "guard-4--1--1",
+            "guard-4--1-1",
+            "guard-4-1--1",
+            "guard-4-1-1",
+            "guard-5--1--1",
+            "guard-5--1-1",
+            "guard-5-1--1",
+            "guard-5-1-1",
+            "guard-6--1--1",
+            "guard-6--1-1",
+            "guard-6-1--1",
+            "guard-6-1-1",
+            "guard-7--1--1",
+            "guard-7--1-1",
+            "guard-7-1--1",
+            "guard-7-1-1",
+            "guard-8--1--1",
+            "guard-8--1-1",
+            "guard-8-1--1",
+            "guard-8-1-1",
+            "grille",
+            "bass-button-2-3",
+            "strap-buckle"
+          ],
+          "param": "nickel"
         },
         {
           "name": "bellows",
           "color": "#302b34",
           "parts": [
-            "bellows",
-            "fold-01",
-            "fold-02",
-            "fold-03",
-            "fold-04",
-            "fold-05",
-            "fold-06",
-            "fold-07"
+            "bellows"
           ],
           "param": "bellows"
         },
@@ -164963,22 +165040,124 @@
           "name": "ivory",
           "color": "#eee2c6",
           "parts": [
-            "keyboard",
-            "key-one",
-            "key-two",
-            "key-three",
-            "key-four",
-            "key-five"
+            "grille-badge",
+            "key-01",
+            "key-02",
+            "key-03",
+            "key-04",
+            "key-05",
+            "key-06",
+            "key-07",
+            "key-08",
+            "key-09",
+            "key-10",
+            "key-11",
+            "key-12",
+            "key-13",
+            "key-14",
+            "key-15",
+            "key-16",
+            "key-17",
+            "key-18",
+            "key-19",
+            "key-20",
+            "key-21",
+            "key-22",
+            "key-23",
+            "key-24",
+            "register-0",
+            "register-1",
+            "register-2",
+            "register-3",
+            "register-4",
+            "register-5",
+            "bass-button-0-0",
+            "bass-button-0-1",
+            "bass-button-0-2",
+            "bass-button-0-3",
+            "bass-button-0-4",
+            "bass-button-0-5",
+            "bass-button-0-6",
+            "bass-button-0-7",
+            "bass-button-1-0",
+            "bass-button-1-1",
+            "bass-button-1-2",
+            "bass-button-1-3",
+            "bass-button-1-4",
+            "bass-button-1-5",
+            "bass-button-1-6",
+            "bass-button-1-7",
+            "bass-button-2-0",
+            "bass-button-2-1",
+            "bass-button-2-2",
+            "bass-button-2-4",
+            "bass-button-2-5",
+            "bass-button-2-6",
+            "bass-button-2-7",
+            "bass-button-3-0",
+            "bass-button-3-1",
+            "bass-button-3-2",
+            "bass-button-3-3",
+            "bass-button-3-4",
+            "bass-button-3-5",
+            "bass-button-3-6",
+            "bass-button-3-7",
+            "bass-button-4-0",
+            "bass-button-4-1",
+            "bass-button-4-2",
+            "bass-button-4-3",
+            "bass-button-4-4",
+            "bass-button-4-5",
+            "bass-button-4-6",
+            "bass-button-4-7",
+            "bass-button-5-0",
+            "bass-button-5-1",
+            "bass-button-5-2",
+            "bass-button-5-3",
+            "bass-button-5-4",
+            "bass-button-5-5",
+            "bass-button-5-6",
+            "bass-button-5-7"
           ],
           "param": "ivory"
         },
         {
-          "name": "nickel",
-          "color": "#b6c0c4",
+          "name": "ebony",
+          "color": "#1c1a1d",
           "parts": [
-            "button-row"
+            "sharp-01",
+            "sharp-02",
+            "sharp-04",
+            "sharp-05",
+            "sharp-06",
+            "sharp-08",
+            "sharp-09",
+            "sharp-11",
+            "sharp-12",
+            "sharp-13",
+            "sharp-15",
+            "sharp-16",
+            "sharp-18",
+            "sharp-19",
+            "sharp-20",
+            "sharp-22",
+            "sharp-23",
+            "foot--245",
+            "foot--185",
+            "foot-145",
+            "foot-195"
           ],
-          "param": "nickel"
+          "param": "ebony"
+        },
+        {
+          "name": "leather",
+          "color": "#6b3f26",
+          "parts": [
+            "hand-strap",
+            "shoulder-tab-90",
+            "shoulder-tab-380"
+          ],
+          "param": "leather"
         }
       ]
     },
@@ -166173,11 +166352,14 @@
       "id": "concert-harp",
       "kit": "music",
       "title": "Concert harp",
-      "description": "Concert harp with a triangular frame, soundboard, slanted pillar and a fan of strings.",
+      "description": "Concert pedal harp at real size: fluted column with a carved crown, S-curved neck with brass tuning discs, tapered soundbox with a spruce soundboard, a fan of strings with red C and dark F marker strings, and seven brass pedals on the pedestal. Material controls: maple frame, spruce soundboard, brass fittings, gut strings, C and F marker strings. Concert, vintage and gilded presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "concert harp",
+        "pedal harp",
+        "harp",
+        "strings",
         "music",
         "instrument",
         "orchestra",
@@ -166193,8 +166375,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/concert-harp.kcad.ts",
       "preview": "/assets/music-concert-harp.png",
-      "sourceSha256": "df4edeafd0e6c9b8cc129e91ae81cd078fc8bb864cb8f24363415e4e0b87f9a9",
-      "triangleBudget": 1800,
+      "sourceSha256": "38a8c127e3d961c60ab52cd87d5829481bf09f91905af230af5bcfc99f12c755",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -166212,32 +166394,61 @@
           "label": "Maple frame"
         },
         {
-          "name": "brass",
+          "name": "spruce",
           "type": "color",
-          "default": "#b78331",
-          "label": "Brass neck fittings"
+          "default": "#e8cf9a",
+          "label": "Spruce soundboard"
         },
         {
-          "name": "steel",
+          "name": "brass",
           "type": "color",
-          "default": "#bac5ca",
-          "label": "Steel strings"
+          "default": "#c79a3b",
+          "label": "Brass discs, crown and pedals"
+        },
+        {
+          "name": "gut",
+          "type": "color",
+          "default": "#efe4c8",
+          "label": "Gut strings"
+        },
+        {
+          "name": "cString",
+          "type": "color",
+          "default": "#c2322e",
+          "label": "C marker strings"
+        },
+        {
+          "name": "fString",
+          "type": "color",
+          "default": "#26304a",
+          "label": "F marker strings"
         }
       ],
       "presets": {
         "concert": {
-          "maple": "#d5a562"
+          "maple": "#d5a562",
+          "spruce": "#f0dcae"
         },
         "vintage": {
-          "maple": "#855331"
+          "maple": "#855331",
+          "spruce": "#c9a66a",
+          "brass": "#9c7a3a",
+          "gut": "#dccfa8"
+        },
+        "gilded": {
+          "maple": "#d9b45a",
+          "spruce": "#efe0b8",
+          "brass": "#e2bd52",
+          "cString": "#b4262a",
+          "fString": "#1d2a44"
         }
       },
       "stats": {
-        "triangles": 144,
+        "triangles": 2948,
         "sizeM": [
-          0.322131,
-          0.898196,
-          0.1
+          0.87,
+          1.895,
+          0.38
         ],
         "minUpM": 0,
         "materials": 1
@@ -166247,34 +166458,133 @@
           "name": "maple",
           "color": "#c19151",
           "parts": [
-            "soundboard",
-            "pillar",
-            "base"
+            "pedestal",
+            "soundbox",
+            "neck",
+            "column-shaft",
+            "crown-finial"
           ],
           "param": "maple"
         },
         {
           "name": "brass",
-          "color": "#b78331",
+          "color": "#c79a3b",
           "parts": [
-            "neck"
+            "foot--90--150",
+            "foot--90-150",
+            "foot-350--150",
+            "foot-350-150",
+            "pedal-1",
+            "pedal-2",
+            "pedal-3",
+            "pedal-4",
+            "pedal-5",
+            "pedal-6",
+            "pedal-7",
+            "sound-hole-rim-20",
+            "sound-hole-rim-42",
+            "sound-hole-rim-64",
+            "column-plinth",
+            "flute-0",
+            "flute-1",
+            "flute-2",
+            "flute-3",
+            "flute-4",
+            "flute-5",
+            "flute-6",
+            "flute-7",
+            "crown",
+            "disc-01",
+            "disc-02",
+            "disc-03",
+            "disc-04",
+            "disc-05",
+            "disc-06",
+            "disc-07",
+            "disc-08",
+            "disc-09",
+            "disc-10",
+            "disc-11",
+            "disc-12",
+            "disc-13",
+            "disc-14",
+            "disc-15",
+            "disc-16",
+            "disc-17",
+            "disc-18",
+            "disc-19",
+            "disc-20",
+            "disc-21",
+            "disc-22",
+            "disc-23",
+            "disc-24",
+            "disc-25",
+            "disc-26",
+            "disc-27",
+            "disc-28",
+            "disc-29",
+            "disc-30"
           ],
           "param": "brass"
         },
         {
-          "name": "steel",
-          "color": "#bac5ca",
+          "name": "spruce",
+          "color": "#e8cf9a",
+          "parts": [
+            "soundboard"
+          ],
+          "param": "spruce"
+        },
+        {
+          "name": "gut",
+          "color": "#efe4c8",
           "parts": [
             "string-01",
-            "string-02",
             "string-03",
             "string-04",
             "string-05",
-            "string-06",
             "string-07",
-            "string-08"
+            "string-08",
+            "string-10",
+            "string-11",
+            "string-12",
+            "string-14",
+            "string-15",
+            "string-17",
+            "string-18",
+            "string-19",
+            "string-21",
+            "string-22",
+            "string-24",
+            "string-25",
+            "string-26",
+            "string-28",
+            "string-29"
           ],
-          "param": "steel"
+          "param": "gut"
+        },
+        {
+          "name": "cString",
+          "color": "#c2322e",
+          "parts": [
+            "string-02",
+            "string-09",
+            "string-16",
+            "string-23",
+            "string-30"
+          ],
+          "param": "cString"
+        },
+        {
+          "name": "fString",
+          "color": "#26304a",
+          "parts": [
+            "string-06",
+            "string-13",
+            "string-20",
+            "string-27"
+          ],
+          "param": "fString"
         }
       ]
     },
@@ -166959,14 +167269,17 @@
       "id": "harmonica",
       "kit": "music",
       "title": "Harmonica",
-      "description": "Compact harmonica with a rectangular body and repeated raised reed covers.",
+      "description": "Ten-hole diatonic harmonica at real size: comb with ten mouth holes between its tines, brass reed plates showing as a line top and bottom, pressed stainless covers with a front lip, flat crown, open rear vents and closed rounded ends, plus cover screws. Material controls: stainless covers, brass reed plates and screws, comb polymer. Concert, vintage and pearwood presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "harmonica",
+        "mouth organ",
+        "blues harp",
+        "diatonic",
         "music",
         "instrument",
-        "orchestra",
+        "blues",
         "low poly",
         "CC0"
       ],
@@ -166979,8 +167292,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/harmonica.kcad.ts",
       "preview": "/assets/music-harmonica.png",
-      "sourceSha256": "1e29df2f19ab5cba3fa236be0394e271cea3b0a3aafc4e38ba44e2e0fa223176",
-      "triangleBudget": 1800,
+      "sourceSha256": "4e0ffe08d7c5f95d4c777717710d20e769dd7fb73003c76070eed5a6d174c08e",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -166994,36 +167307,43 @@
         {
           "name": "stainless",
           "type": "color",
-          "default": "#aab6bc",
+          "default": "#c3ccd0",
           "label": "Stainless covers"
         },
         {
           "name": "brass",
           "type": "color",
-          "default": "#bd8731",
-          "label": "Brass reed plates"
+          "default": "#c9933a",
+          "label": "Brass reed plates and screws"
         },
         {
           "name": "polymer",
           "type": "color",
-          "default": "#282d33",
-          "label": "Polymer comb"
+          "default": "#2a2e34",
+          "label": "Comb polymer"
         }
       ],
       "presets": {
         "concert": {
-          "stainless": "#d5dfe2"
+          "stainless": "#e1e8ea",
+          "polymer": "#d8d2c4"
         },
         "vintage": {
-          "stainless": "#888f8d"
+          "stainless": "#8c928f",
+          "brass": "#9c7434",
+          "polymer": "#4a3a2c"
+        },
+        "pearwood": {
+          "stainless": "#d0d7d9",
+          "polymer": "#a8703e"
         }
       },
       "stats": {
-        "triangles": 120,
+        "triangles": 364,
         "sizeM": [
-          0.202,
-          0.06,
-          0.068
+          0.101,
+          0.022,
+          0.027
         ],
         "minUpM": 0,
         "materials": 1
@@ -167031,34 +167351,43 @@
       "palette": [
         {
           "name": "polymer",
-          "color": "#282d33",
+          "color": "#2a2e34",
           "parts": [
-            "body"
+            "comb-back",
+            "tine-0",
+            "tine-1",
+            "tine-2",
+            "tine-3",
+            "tine-4",
+            "tine-5",
+            "tine-6",
+            "tine-7",
+            "tine-8",
+            "tine-9",
+            "tine-10"
           ],
           "param": "polymer"
         },
         {
+          "name": "brass",
+          "color": "#c9933a",
+          "parts": [
+            "reed-plate--1",
+            "reed-plate-1",
+            "screw--44",
+            "screw-0",
+            "screw-45"
+          ],
+          "param": "brass"
+        },
+        {
           "name": "stainless",
-          "color": "#aab6bc",
+          "color": "#c3ccd0",
           "parts": [
             "top-cover",
             "bottom-cover"
           ],
           "param": "stainless"
-        },
-        {
-          "name": "brass",
-          "color": "#bd8731",
-          "parts": [
-            "reed-one",
-            "reed-two",
-            "reed-three",
-            "reed-four",
-            "reed-five",
-            "reed-six",
-            "reed-seven"
-          ],
-          "param": "brass"
         }
       ]
     },
@@ -167264,14 +167593,17 @@
       "id": "mechanical-metronome",
       "kit": "music",
       "title": "Mechanical metronome",
-      "description": "Stepped tapered mechanical metronome with a face scale, pendulum and sliding weight.",
+      "description": "Maelzel-style mechanical metronome at real size: tapered wooden case on a moulded plinth with a recessed front channel, ivory tempo scale with tick marks, steel pendulum with a brass sliding weight, brass winding key and turned apex finial. Material controls: walnut case, brass weight and key, steel pendulum, ivory scale; pendulum swing choice. Concert, vintage and ebonised presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "metronome",
         "mechanical metronome",
+        "pendulum",
+        "tempo",
         "music",
         "instrument",
-        "orchestra",
+        "practice",
         "low poly",
         "CC0"
       ],
@@ -167284,8 +167616,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/mechanical-metronome.kcad.ts",
       "preview": "/assets/music-mechanical-metronome.png",
-      "sourceSha256": "d1791c7b9e7891ec490badea95867b4469ffed1f302215236da43aede84aa1fd",
-      "triangleBudget": 1800,
+      "sourceSha256": "cd972718dda3371bcb6d571dafea56f82553dafc443260ce7db73ae34dcd118f",
+      "triangleBudget": 1400,
       "params": [
         {
           "name": "scale",
@@ -167297,6 +167629,17 @@
           "step": 0.05
         },
         {
+          "name": "swing",
+          "type": "choice",
+          "default": "left",
+          "label": "Pendulum position",
+          "choices": [
+            "rest",
+            "left",
+            "right"
+          ]
+        },
+        {
           "name": "walnut",
           "type": "color",
           "default": "#71462f",
@@ -167306,13 +167649,19 @@
           "name": "brass",
           "type": "color",
           "default": "#c19137",
-          "label": "Brass pendulum"
+          "label": "Brass weight, key and finial"
         },
         {
           "name": "steel",
           "type": "color",
           "default": "#aeb9be",
-          "label": "Steel slider"
+          "label": "Steel pendulum"
+        },
+        {
+          "name": "ivory",
+          "type": "color",
+          "default": "#efe6cf",
+          "label": "Ivory tempo scale"
         }
       ],
       "presets": {
@@ -167320,14 +167669,21 @@
           "walnut": "#8b5736"
         },
         "vintage": {
-          "walnut": "#50362d"
+          "walnut": "#50362d",
+          "brass": "#9c7a3a",
+          "ivory": "#e2d3ae"
+        },
+        "ebonised": {
+          "walnut": "#1f1b1c",
+          "brass": "#d1a543",
+          "ivory": "#f3efe6"
         }
       },
       "stats": {
-        "triangles": 162,
+        "triangles": 468,
         "sizeM": [
-          0.17,
-          0.296,
+          0.132,
+          0.241,
           0.118
         ],
         "minUpM": 0,
@@ -167338,11 +167694,21 @@
           "name": "walnut",
           "color": "#71462f",
           "parts": [
-            "lower-case",
-            "upper-step-one",
-            "upper-step-two",
-            "upper-step-three",
-            "base"
+            "plinth",
+            "case",
+            "channel-frame",
+            "tick-0",
+            "tick-1",
+            "tick-2",
+            "tick-3",
+            "tick-4",
+            "tick-5",
+            "tick-6",
+            "tick-7",
+            "tick-8",
+            "tick-9",
+            "tick-10",
+            "tick-11"
           ],
           "param": "walnut"
         },
@@ -167350,16 +167716,28 @@
           "name": "brass",
           "color": "#c19137",
           "parts": [
-            "top-cap"
+            "finial",
+            "pivot-boss",
+            "sliding-weight",
+            "key-shaft",
+            "key-butterfly"
           ],
           "param": "brass"
+        },
+        {
+          "name": "ivory",
+          "color": "#efe6cf",
+          "parts": [
+            "tempo-scale"
+          ],
+          "param": "ivory"
         },
         {
           "name": "steel",
           "color": "#aeb9be",
           "parts": [
             "pendulum-rod",
-            "slider-weight"
+            "pendulum-tip"
           ],
           "param": "steel"
         }
@@ -169046,11 +169424,14 @@
       "id": "xylophone",
       "kit": "music",
       "title": "Xylophone",
-      "description": "Tabletop xylophone with graduated wooden bars and crossed support legs.",
+      "description": "Concert xylophone at real size: piano-layout rows of arched rosewood bars, naturals in front and raised accidentals behind, graduated from bass to treble, a resonator tube under every bar shortening with pitch, cord rails on a steel A-frame stand with rubber casters, and a pair of mallets. Material controls: rosewood bars, brass resonators, steel frame, rubber casters and mallet heads. Concert, vintage and synthetic-bar presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "xylophone",
+        "mallet percussion",
+        "resonator",
+        "percussion",
         "music",
         "instrument",
         "orchestra",
@@ -169066,8 +169447,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/music/xylophone.kcad.ts",
       "preview": "/assets/music-xylophone.png",
-      "sourceSha256": "9d78c738c93a322bef08a42149d5a4d4b2e0b382d6bb463fc830f90f45457448",
-      "triangleBudget": 1800,
+      "sourceSha256": "03c3cf92a78aed06c8b353e180c91d1819f74feb8ab05434561789005c46dbfc",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -169085,10 +169466,22 @@
           "label": "Rosewood bars"
         },
         {
+          "name": "brass",
+          "type": "color",
+          "default": "#c9a24a",
+          "label": "Brass resonators"
+        },
+        {
           "name": "steel",
           "type": "color",
           "default": "#39444a",
-          "label": "Steel frame"
+          "label": "Steel frame and rails"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#c23a2c",
+          "label": "Rubber casters and mallet heads"
         }
       ],
       "presets": {
@@ -169096,15 +169489,23 @@
           "rosewood": "#b16b39"
         },
         "vintage": {
-          "rosewood": "#633c2c"
+          "rosewood": "#633c2c",
+          "brass": "#a8843f",
+          "steel": "#4a3f36"
+        },
+        "synthetic": {
+          "rosewood": "#3b2a26",
+          "brass": "#b9c3c7",
+          "steel": "#1f2427",
+          "rubber": "#e2b23a"
         }
       },
       "stats": {
-        "triangles": 152,
+        "triangles": 2712,
         "sizeM": [
-          0.249,
-          0.155,
-          0.195
+          1.226,
+          0.885,
+          0.649095
         ],
         "minUpM": 0,
         "materials": 1
@@ -169114,25 +169515,130 @@
           "name": "rosewood",
           "color": "#945631",
           "parts": [
-            "bar-one",
-            "bar-two",
-            "bar-three",
-            "bar-four",
-            "bar-five",
-            "mallet"
+            "natural-01",
+            "sharp-01",
+            "natural-02",
+            "sharp-02",
+            "natural-03",
+            "natural-04",
+            "sharp-04",
+            "natural-05",
+            "sharp-05",
+            "natural-06",
+            "sharp-06",
+            "natural-07",
+            "natural-08",
+            "sharp-08",
+            "natural-09",
+            "sharp-09",
+            "natural-10",
+            "natural-11",
+            "sharp-11",
+            "natural-12",
+            "sharp-12",
+            "natural-13",
+            "sharp-13",
+            "natural-14",
+            "natural-15",
+            "sharp-15",
+            "natural-16",
+            "sharp-16",
+            "natural-17",
+            "natural-18",
+            "sharp-18",
+            "natural-19",
+            "sharp-19",
+            "natural-20",
+            "sharp-20",
+            "natural-21",
+            "natural-22",
+            "mallet-shaft-6",
+            "mallet-shaft-9"
           ],
           "param": "rosewood"
+        },
+        {
+          "name": "brass",
+          "color": "#c9a24a",
+          "parts": [
+            "resonator-natural-01",
+            "resonator-sharp-01",
+            "resonator-natural-02",
+            "resonator-sharp-02",
+            "resonator-natural-03",
+            "resonator-natural-04",
+            "resonator-sharp-04",
+            "resonator-natural-05",
+            "resonator-sharp-05",
+            "resonator-natural-06",
+            "resonator-sharp-06",
+            "resonator-natural-07",
+            "resonator-natural-08",
+            "resonator-sharp-08",
+            "resonator-natural-09",
+            "resonator-sharp-09",
+            "resonator-natural-10",
+            "resonator-natural-11",
+            "resonator-sharp-11",
+            "resonator-natural-12",
+            "resonator-sharp-12",
+            "resonator-natural-13",
+            "resonator-sharp-13",
+            "resonator-natural-14",
+            "resonator-natural-15",
+            "resonator-sharp-15",
+            "resonator-natural-16",
+            "resonator-sharp-16",
+            "resonator-natural-17",
+            "resonator-natural-18",
+            "resonator-sharp-18",
+            "resonator-natural-19",
+            "resonator-sharp-19",
+            "resonator-natural-20",
+            "resonator-sharp-20",
+            "resonator-natural-21",
+            "resonator-natural-22"
+          ],
+          "param": "brass"
         },
         {
           "name": "steel",
           "color": "#39444a",
           "parts": [
-            "frame-left",
-            "frame-right",
-            "leg-left",
-            "leg-right"
+            "rail--120--1",
+            "rail--120-1",
+            "rail-150--1",
+            "rail-150-1",
+            "hanger--120",
+            "hanger-150",
+            "leg--585--260",
+            "caster-fork--585--260",
+            "leg--585-300",
+            "caster-fork--585-300",
+            "end-rail--585",
+            "end-foot--585",
+            "leg-585--260",
+            "caster-fork-585--260",
+            "leg-585-300",
+            "caster-fork-585-300",
+            "end-rail-585",
+            "end-foot-585",
+            "stretcher"
           ],
           "param": "steel"
+        },
+        {
+          "name": "rubber",
+          "color": "#c23a2c",
+          "parts": [
+            "caster--585--260",
+            "caster--585-300",
+            "caster-585--260",
+            "caster-585-300",
+            "mallet-head-6",
+            "mallet-head-9"
+          ],
+          "param": "rubber"
         }
       ]
     },
