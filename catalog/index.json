@@ -93905,7 +93905,7 @@
       "id": "breathing-air-cascade-bank",
       "kit": "fire-station",
       "title": "Breathing air cascade bank",
-      "description": "Three-cylinder high-pressure storage bank with shared header, gauges and protective frame. Editable scale and material colors; use the apparatus-red or clean-zone finish preset.",
+      "description": "Four-cylinder breathing-air cascade storage bank: tall domed high-pressure cylinders with painted breathing-air shoulder bands, a welded rack with base pan, uprights and hinged restraint straps, a valve and handwheel on every cylinder neck, high-pressure pigtails to a common header, and a front fill panel with one gauge and isolation valve per cylinder. Material controls: cylinder body, shoulder band, rack paint and brass valves; apparatus-red, clean-zone and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -93913,12 +93913,14 @@
         "station",
         "apparatus bay",
         "firefighter health",
-        "low poly",
         "CC0",
         "breathing",
         "air",
         "cascade",
-        "bank"
+        "bank",
+        "scba",
+        "high pressure",
+        "cylinder"
       ],
       "compat": [
         "fire",
@@ -93930,8 +93932,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/fire-station/breathing-air-cascade-bank.kcad.ts",
       "preview": "/assets/fire-station-breathing-air-cascade-bank.png",
-      "sourceSha256": "c09f84dbdd5419566a4d40679b150b1e9d816ba2dc9efbd417ba6198d2240ff7",
-      "triangleBudget": 1800,
+      "sourceSha256": "38c53dab59a91c57d7004841c7dfe988e6efbcca2c99f6534895ba2fbb896fda",
+      "triangleBudget": 9000,
       "params": [
         {
           "name": "scale",
@@ -93943,64 +93945,182 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "cylinder",
           "type": "color",
-          "default": "#b94338",
-          "label": "Powder coat"
+          "default": "#d9dcdc",
+          "label": "Cylinder body"
         },
         {
-          "name": "stainlessSteel",
+          "name": "shoulder",
           "type": "color",
-          "default": "#b4bec3",
-          "label": "Stainless steel"
+          "default": "#2f8a4e",
+          "label": "Breathing-air shoulder band"
+        },
+        {
+          "name": "rack",
+          "type": "color",
+          "default": "#b83d34",
+          "label": "Rack, straps and fill panel"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#c9a54a",
+          "label": "Valves, fittings and pigtails"
         }
       ],
       "presets": {
         "apparatus-red": {
-          "powderCoat": "#b83d34",
-          "stainlessSteel": "#c3c9cc"
+          "rack": "#b83d34"
         },
         "clean-zone": {
-          "powderCoat": "#4e8c87",
-          "stainlessSteel": "#d0d8db"
+          "rack": "#4e8c87",
+          "cylinder": "#eef0ee",
+          "shoulder": "#f2f2ee"
+        },
+        "eu-marking": {
+          "shoulder": "#f2f2ee",
+          "cylinder": "#2a2c2e",
+          "rack": "#3f4a50"
+        },
+        "weathered": {
+          "cylinder": "#a9aaa4",
+          "shoulder": "#4c6b55",
+          "rack": "#7d3a33",
+          "brass": "#9c8448"
         }
       },
       "stats": {
-        "triangles": 408,
+        "triangles": 4116,
         "sizeM": [
           1.36,
-          1.875,
-          0.37
+          1.93,
+          0.6
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#b4bec3",
+          "name": "rack",
+          "color": "#b83d34",
           "parts": [
-            "storage-cylinder-0",
-            "storage-cylinder-1",
-            "storage-cylinder-2",
-            "frame-upright-0",
-            "frame-upright-1",
-            "frame-upright-2",
-            "frame-upright-3",
-            "top-rail",
-            "header"
+            "base-pan",
+            "pan-lip",
+            "upright--660--200",
+            "upright--660-200",
+            "side-brace--660",
+            "upright-660--200",
+            "upright-660-200",
+            "side-brace-660",
+            "back-spine",
+            "front-rail",
+            "strap-0-520",
+            "strap-0-1300",
+            "strap-1-520",
+            "strap-1-1300",
+            "strap-2-520",
+            "strap-2-1300",
+            "strap-3-520",
+            "strap-3-1300",
+            "strap-bar-520",
+            "strap-bar-1300",
+            "fill-panel",
+            "panel-bracket--600",
+            "panel-bracket-600"
           ],
-          "param": "stainlessSteel"
+          "param": "rack"
         },
         {
-          "name": "powderCoat",
-          "color": "#b94338",
+          "name": "cylinder",
+          "color": "#d9dcdc",
           "parts": [
-            "gauge-0",
-            "gauge-1",
-            "gauge-2"
+            "cylinder-0",
+            "cylinder-1",
+            "cylinder-2",
+            "cylinder-3",
+            "gauge-bezel-0",
+            "gauge-bezel-1",
+            "gauge-bezel-2",
+            "gauge-bezel-3"
           ],
-          "param": "powderCoat"
+          "param": "cylinder"
+        },
+        {
+          "name": "shoulder",
+          "color": "#2f8a4e",
+          "parts": [
+            "shoulder-0",
+            "shoulder-1",
+            "shoulder-2",
+            "shoulder-3"
+          ],
+          "param": "shoulder"
+        },
+        {
+          "name": "brass",
+          "color": "#c9a54a",
+          "parts": [
+            "neck-0",
+            "valve-0",
+            "valve-stem-0",
+            "outlet-0",
+            "neck-1",
+            "valve-1",
+            "valve-stem-1",
+            "outlet-1",
+            "neck-2",
+            "valve-2",
+            "valve-stem-2",
+            "outlet-2",
+            "neck-3",
+            "valve-3",
+            "valve-stem-3",
+            "outlet-3",
+            "header",
+            "pigtail-drop-0",
+            "pigtail-run-0",
+            "pigtail-drop-1",
+            "pigtail-run-1",
+            "pigtail-drop-2",
+            "pigtail-run-2",
+            "pigtail-drop-3",
+            "pigtail-run-3",
+            "iso-valve-0",
+            "iso-valve-1",
+            "iso-valve-2",
+            "iso-valve-3",
+            "fill-outlet"
+          ],
+          "param": "brass"
+        },
+        {
+          "name": "handwheel-0",
+          "color": "#22262a",
+          "parts": [
+            "handwheel-0",
+            "handwheel-1",
+            "handwheel-2",
+            "handwheel-3",
+            "gauge-needle-0",
+            "iso-handle-0",
+            "gauge-needle-1",
+            "iso-handle-1",
+            "gauge-needle-2",
+            "iso-handle-2",
+            "gauge-needle-3",
+            "iso-handle-3"
+          ]
+        },
+        {
+          "name": "gauge-dial-0",
+          "color": "#f4f4f0",
+          "parts": [
+            "gauge-dial-0",
+            "gauge-dial-1",
+            "gauge-dial-2",
+            "gauge-dial-3"
+          ]
         }
       ]
     },
@@ -95782,7 +95902,7 @@
       "id": "hose-drying-tower",
       "kit": "fire-station",
       "title": "Hose drying tower",
-      "description": "Freestanding hose drying frame with an overhead spreader and four hanging bays. Editable scale and material colors; use the apparatus-red or clean-zone finish preset.",
+      "description": "Freestanding fire-hose drying tower: two braced masts on splayed feet, head beam with hoist sheave, rope and mast cleat, four padded saddle hooks, four lengths of flat jacketed hose hanging in doubled loops with brass couplings at the bottom, and a floor drip tray. Material controls: frame paint, hose jacket, couplings and saddle pads; apparatus-red, clean-zone, mixed-hose and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -95790,11 +95910,12 @@
         "station",
         "apparatus bay",
         "firefighter health",
-        "low poly",
         "CC0",
         "hose",
         "drying",
-        "tower"
+        "tower",
+        "rack",
+        "fire hose"
       ],
       "compat": [
         "fire",
@@ -95806,8 +95927,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/fire-station/hose-drying-tower.kcad.ts",
       "preview": "/assets/fire-station-hose-drying-tower.png",
-      "sourceSha256": "8ddbae09d9d8ff9f040d98500449ff63123b632fae7017bb27cf13fd43c79d6e",
-      "triangleBudget": 1800,
+      "sourceSha256": "e2cabf73f6149edbfbc1ecefd803903610925a97a12ed3ecfde348ff1b958cd6",
+      "triangleBudget": 6000,
       "params": [
         {
           "name": "scale",
@@ -95819,76 +95940,137 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "frame",
           "type": "color",
-          "default": "#637d83",
-          "label": "Powder coat"
+          "default": "#3f4a50",
+          "label": "Masts, head beam and tray"
         },
         {
-          "name": "stainlessSteel",
+          "name": "jacket",
           "type": "color",
-          "default": "#b4bec3",
-          "label": "Stainless steel"
+          "default": "#e8e2c8",
+          "label": "Hose jacket"
         },
         {
-          "name": "elastomer",
+          "name": "coupling",
           "type": "color",
-          "default": "#303539",
-          "label": "Elastomer"
+          "default": "#c9a54a",
+          "label": "Brass hose couplings"
+        },
+        {
+          "name": "pads",
+          "type": "color",
+          "default": "#252a2d",
+          "label": "Saddle pads, feet and rope"
         }
       ],
       "presets": {
         "apparatus-red": {
-          "powderCoat": "#b83d34",
-          "stainlessSteel": "#c3c9cc",
-          "elastomer": "#252a2d"
+          "frame": "#b83d34",
+          "jacket": "#f0ece0"
         },
         "clean-zone": {
-          "powderCoat": "#4e8c87",
-          "stainlessSteel": "#d0d8db",
-          "elastomer": "#30383b"
+          "frame": "#4e8c87",
+          "jacket": "#e9e9e4"
+        },
+        "mixed-hose": {
+          "jacket": "#c92a2a",
+          "coupling": "#b7bcbf"
+        },
+        "weathered": {
+          "frame": "#4b4a45",
+          "jacket": "#c9bf9e",
+          "coupling": "#9c8448",
+          "pads": "#3a3c3b"
         }
       },
       "stats": {
-        "triangles": 252,
+        "triangles": 2108,
         "sizeM": [
-          1.2,
-          3.15,
-          0.36
+          1.689,
+          3.19,
+          0.91
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "elastomer",
-          "color": "#303539",
+          "name": "frame",
+          "color": "#3f4a50",
           "parts": [
-            "foot-left",
-            "foot-right",
-            "hose-hook-0",
-            "hose-hook-1",
-            "hose-hook-2",
-            "hose-hook-3"
+            "foot--620",
+            "mast--620",
+            "foot-brace--620--1",
+            "foot-brace--620-1",
+            "foot-620",
+            "mast-620",
+            "foot-brace-620--1",
+            "foot-brace-620-1",
+            "head-beam",
+            "mid-tie",
+            "sheave-bracket",
+            "hook-arm-0",
+            "hook-arm-1",
+            "hook-arm-2",
+            "hook-arm-3",
+            "drip-tray",
+            "tray-lip--200",
+            "tray-lip-190"
           ],
-          "param": "elastomer"
+          "param": "frame"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b4bec3",
+          "name": "pads",
+          "color": "#252a2d",
           "parts": [
-            "mast-left",
-            "mast-right"
+            "foot-pad--620--400",
+            "foot-pad--620-400",
+            "foot-pad-620--400",
+            "foot-pad-620-400",
+            "sheave",
+            "rope",
+            "rope-cleat",
+            "saddle-0",
+            "saddle-1",
+            "saddle-2",
+            "saddle-3"
           ],
-          "param": "stainlessSteel"
+          "param": "pads"
         },
         {
-          "name": "powderCoat",
-          "color": "#637d83",
+          "name": "jacket",
+          "color": "#e8e2c8",
           "parts": [
-            "top-spreader"
+            "hose-0-leg--85",
+            "hose-0-leg-85",
+            "hose-0-bend",
+            "hose-1-leg--85",
+            "hose-1-leg-85",
+            "hose-1-bend",
+            "hose-2-leg--85",
+            "hose-2-leg-85",
+            "hose-2-bend",
+            "hose-3-leg--85",
+            "hose-3-leg-85",
+            "hose-3-bend"
           ],
-          "param": "powderCoat"
+          "param": "jacket"
+        },
+        {
+          "name": "coupling",
+          "color": "#c9a54a",
+          "parts": [
+            "coupling-0-a",
+            "coupling-0-b",
+            "coupling-1-a",
+            "coupling-1-b",
+            "coupling-2-a",
+            "coupling-2-b",
+            "coupling-3-a",
+            "coupling-3-b"
+          ],
+          "param": "coupling"
         }
       ]
     },
@@ -96208,7 +96390,7 @@
       "id": "retractable-exhaust-hose-reel",
       "kit": "fire-station",
       "title": "Retractable exhaust hose reel",
-      "description": "Ceiling hose reel with a compact motor housing, hose loop and tailpipe connector. Editable scale and material colors; use the apparatus-red or clean-zone finish preset.",
+      "description": "Ceiling-mounted spring-return vehicle-exhaust hose reel: steel ceiling bracket and side plates, wide drum with wound turns of flexible hose, spring housing and motor, hub outlet duct rising to the ceiling fan main, hanging hose with a rubber stop ball and a tailpipe boot with aluminium grip handle. Material controls: bracket paint, drum and spring housing, exhaust hose and tailpipe boot; apparatus-red, clean-zone and weathered presets.",
       "category": "prop",
       "origin": "ceiling",
       "tags": [
@@ -96216,12 +96398,13 @@
         "station",
         "apparatus bay",
         "firefighter health",
-        "low poly",
         "CC0",
         "retractable",
         "exhaust",
         "hose",
-        "reel"
+        "reel",
+        "diesel exhaust",
+        "ceiling"
       ],
       "compat": [
         "fire",
@@ -96233,8 +96416,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/fire-station/retractable-exhaust-hose-reel.kcad.ts",
       "preview": "/assets/fire-station-retractable-exhaust-hose-reel.png",
-      "sourceSha256": "6edba1b16462df8c219dd93f94631ea222d2c0dd8b138819e2a3dbf3c934d175",
-      "triangleBudget": 1800,
+      "sourceSha256": "700a3586537fa2009a5051b9b9625ad58fc7e426abfe367f049bd81ebf33ad3e",
+      "triangleBudget": 6000,
       "params": [
         {
           "name": "scale",
@@ -96246,72 +96429,123 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "bracket",
           "type": "color",
-          "default": "#637d83",
-          "label": "Powder coat"
+          "default": "#3f4a50",
+          "label": "Ceiling bracket and side plates"
         },
         {
-          "name": "stainlessSteel",
+          "name": "drum",
           "type": "color",
-          "default": "#b4bec3",
-          "label": "Stainless steel"
+          "default": "#e0b21f",
+          "label": "Drum, spring housing and duct"
         },
         {
-          "name": "elastomer",
+          "name": "hose",
           "type": "color",
-          "default": "#303539",
-          "label": "Elastomer"
+          "default": "#b83d34",
+          "label": "Exhaust hose"
+        },
+        {
+          "name": "boot",
+          "type": "color",
+          "default": "#252a2d",
+          "label": "Tailpipe boot and stop ball"
         }
       ],
       "presets": {
         "apparatus-red": {
-          "powderCoat": "#b83d34",
-          "stainlessSteel": "#c3c9cc",
-          "elastomer": "#252a2d"
+          "drum": "#b83d34",
+          "hose": "#2a2d30"
         },
         "clean-zone": {
-          "powderCoat": "#4e8c87",
-          "stainlessSteel": "#d0d8db",
-          "elastomer": "#30383b"
+          "bracket": "#e4e6e2",
+          "drum": "#4e8c87",
+          "hose": "#30383b"
+        },
+        "weathered": {
+          "bracket": "#4b4a45",
+          "drum": "#a88a3c",
+          "hose": "#7b3a30",
+          "boot": "#3a3c3b"
         }
       },
       "stats": {
-        "triangles": 164,
+        "triangles": 3296,
         "sizeM": [
-          0.52,
-          1.625,
-          0.45
+          1.62,
+          2.47,
+          0.855
         ],
-        "minUpM": -1.4625,
+        "minUpM": -2.47,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#637d83",
+          "name": "bracket",
+          "color": "#3f4a50",
           "parts": [
-            "motor-box",
-            "reel-drum"
+            "ceiling-plate",
+            "side-plate--440",
+            "axle-boss--440",
+            "side-plate-420",
+            "axle-boss-420",
+            "tie-rod--200",
+            "tie-rod-200",
+            "gear-motor",
+            "motor-cap",
+            "duct-collar"
           ],
-          "param": "powderCoat"
+          "param": "bracket"
         },
         {
-          "name": "elastomer",
-          "color": "#303539",
+          "name": "drum",
+          "color": "#e0b21f",
           "parts": [
-            "hose"
+            "drum-core",
+            "drum-flange--380",
+            "drum-flange-362",
+            "spring-housing",
+            "hub-swivel",
+            "duct-riser",
+            "duct-elbow"
           ],
-          "param": "elastomer"
+          "param": "drum"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b4bec3",
+          "name": "hose",
+          "color": "#b83d34",
           "parts": [
-            "tailpipe-coupler",
-            "mount-plate"
+            "hose-turn-0",
+            "hose-turn-1",
+            "hose-turn-2",
+            "hose-turn-3",
+            "hose-turn-4",
+            "hose-turn-5",
+            "hose-drop"
           ],
-          "param": "stainlessSteel"
+          "param": "hose"
+        },
+        {
+          "name": "duct-clamp--360",
+          "color": "#c3c9cc",
+          "parts": [
+            "duct-clamp--360",
+            "duct-clamp--140",
+            "boot-collar",
+            "grip-handle",
+            "grip-arm--2200",
+            "grip-arm--2050"
+          ]
+        },
+        {
+          "name": "boot",
+          "color": "#252a2d",
+          "parts": [
+            "stop-ball",
+            "tailpipe-boot"
+          ],
+          "param": "boot"
         }
       ]
     },
@@ -96908,7 +97142,7 @@
       "id": "station-air-compressor",
       "kit": "fire-station",
       "title": "Station breathing-air compressor",
-      "description": "Enclosed breathing-air compressor skid with vertical receiver and filter stack. Editable scale and material colors; use the apparatus-red or clean-zone finish preset.",
+      "description": "Skid-mounted three-stage breathing-air compressor: finned cylinders in a W over the crankcase, guarded cooling-fan flywheel with belt guard, finned electric motor with terminal box, two-cartridge purification tower, condensate drain manifold and an upright control panel with stage gauges, hour meter and start/stop buttons. Material controls: frame paint, compressor block, motor paint, filter housings and gauges; apparatus-red, clean-zone and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -96916,10 +97150,12 @@
         "station",
         "apparatus bay",
         "firefighter health",
-        "low poly",
         "CC0",
         "breathing-air",
-        "compressor"
+        "compressor",
+        "scba",
+        "fill station",
+        "high pressure"
       ],
       "compat": [
         "fire",
@@ -96931,8 +97167,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/fire-station/station-air-compressor.kcad.ts",
       "preview": "/assets/fire-station-station-air-compressor.png",
-      "sourceSha256": "ec415bf50d3326c4282ff23fd5ea923b4d2a88bbffca28361de890591c144ccf",
-      "triangleBudget": 1800,
+      "sourceSha256": "9a0c54b49a2bff47909899bb7ff35fdeeed53575d4f9bffa8e9167bbdce02b7c",
+      "triangleBudget": 9000,
       "params": [
         {
           "name": "scale",
@@ -96944,60 +97180,204 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "frame",
           "type": "color",
-          "default": "#557f88",
-          "label": "Powder coat"
+          "default": "#2f3438",
+          "label": "Skid frame and panel enclosure"
         },
         {
-          "name": "stainlessSteel",
+          "name": "block",
           "type": "color",
-          "default": "#b4bec3",
-          "label": "Stainless steel"
+          "default": "#9aa2a8",
+          "label": "Compressor block and fins"
+        },
+        {
+          "name": "motor",
+          "type": "color",
+          "default": "#2f6fa8",
+          "label": "Electric motor and fan guard"
+        },
+        {
+          "name": "filters",
+          "type": "color",
+          "default": "#d9dcdc",
+          "label": "Filter housings and gauges"
         }
       ],
       "presets": {
         "apparatus-red": {
-          "powderCoat": "#b83d34",
-          "stainlessSteel": "#c3c9cc"
+          "frame": "#9e2a22",
+          "motor": "#2d3236"
         },
         "clean-zone": {
-          "powderCoat": "#4e8c87",
-          "stainlessSteel": "#d0d8db"
+          "frame": "#e4e6e2",
+          "motor": "#3f8c86",
+          "filters": "#f2f2ee"
+        },
+        "weathered": {
+          "frame": "#3c3a36",
+          "block": "#7f7a70",
+          "motor": "#40596b",
+          "filters": "#bdb8aa"
         }
       },
       "stats": {
-        "triangles": 264,
+        "triangles": 5492,
         "sizeM": [
-          1.275,
-          1.1,
-          0.935
+          1.52,
+          1.43,
+          0.95
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#557f88",
+          "name": "frame",
+          "color": "#2f3438",
           "parts": [
-            "base",
-            "compressor-housing",
-            "receiver",
-            "control-box"
+            "skid-rail--380",
+            "skid-rail-380",
+            "skid-cross--640",
+            "skid-cross-0",
+            "skid-cross-640",
+            "deck",
+            "lift-eye--700--300",
+            "lift-eye--700-300",
+            "lift-eye-700--300",
+            "lift-eye-700-300",
+            "filter-cap--70",
+            "filter-band--70",
+            "filter-cap-70",
+            "filter-band-70",
+            "filter-bracket",
+            "drain-valve--250",
+            "drain-valve--130",
+            "drain-valve--10",
+            "panel-post--530",
+            "panel-post--130",
+            "control-panel",
+            "panel-hood",
+            "panel-conduit"
           ],
-          "param": "powderCoat"
+          "param": "frame"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b4bec3",
+          "name": "motor",
+          "color": "#2f6fa8",
           "parts": [
-            "filter-stack",
-            "filter-bowl-0",
-            "filter-bowl-1",
-            "filter-bowl-2"
+            "motor-foot--560",
+            "motor-foot--280",
+            "motor-frame",
+            "motor-fin-0",
+            "motor-fin-1",
+            "motor-fin-2",
+            "motor-fin-3",
+            "motor-fin-4",
+            "motor-fin-5",
+            "motor-fin-6",
+            "motor-fin-7",
+            "motor-fan-cowl",
+            "motor-terminal-box",
+            "belt-guard",
+            "fan-guard-ring",
+            "fan-guard-spoke-0",
+            "fan-guard-spoke-1",
+            "fan-guard-spoke-2",
+            "fan-guard-spoke-3",
+            "fan-guard-spoke-4",
+            "fan-guard-spoke-5",
+            "fan-guard-hub"
           ],
-          "param": "stainlessSteel"
+          "param": "motor"
+        },
+        {
+          "name": "block",
+          "color": "#9aa2a8",
+          "parts": [
+            "motor-shaft",
+            "crankcase",
+            "crankcase-cover",
+            "stage-1-0",
+            "stage-1-1",
+            "stage-1-2",
+            "stage-1-3",
+            "stage-1-4",
+            "stage-1-5",
+            "stage-1-6",
+            "stage-1-7",
+            "stage-1-8",
+            "stage-2-0",
+            "stage-2-1",
+            "stage-2-2",
+            "stage-2-3",
+            "stage-2-4",
+            "stage-2-5",
+            "stage-2-6",
+            "stage-2-7",
+            "stage-2-8",
+            "stage-3-0",
+            "stage-3-1",
+            "stage-3-2",
+            "stage-3-3",
+            "stage-3-4",
+            "stage-3-5",
+            "stage-3-6",
+            "stage-3-7",
+            "stage-3-8",
+            "intercooler",
+            "fan-shaft",
+            "flywheel",
+            "fan-blade-0",
+            "fan-blade-1",
+            "fan-blade-2",
+            "fan-blade-3",
+            "fan-blade-4",
+            "fan-blade-5",
+            "filter-feed",
+            "drain-manifold"
+          ],
+          "param": "block"
+        },
+        {
+          "name": "filters",
+          "color": "#d9dcdc",
+          "parts": [
+            "oil-sight-glass",
+            "filter-manifold",
+            "filter-housing--70",
+            "filter-housing-70",
+            "gauge-bezel-0",
+            "gauge-bezel-1",
+            "gauge-bezel-2",
+            "gauge-bezel-3"
+          ],
+          "param": "filters"
+        },
+        {
+          "name": "gauge-dial-0",
+          "color": "#f4f4f0",
+          "parts": [
+            "gauge-dial-0",
+            "gauge-dial-1",
+            "gauge-dial-2",
+            "gauge-dial-3",
+            "hour-meter"
+          ]
+        },
+        {
+          "name": "start-button",
+          "color": "#2f9e44",
+          "parts": [
+            "start-button"
+          ]
+        },
+        {
+          "name": "stop-button",
+          "color": "#c92a2a",
+          "parts": [
+            "stop-button"
+          ]
         }
       ]
     },
@@ -100342,7 +100722,7 @@
       "id": "turnout-gear-extractor",
       "kit": "fire-station",
       "title": "Turnout gear extractor",
-      "description": "Dedicated garment extractor with drum door, control panel and vibration feet. Editable scale and material colors; use the apparatus-red or clean-zone finish preset.",
+      "description": "Front-loading washer-extractor for turnout gear: stainless cabinet with painted side panels on a raised bolted base frame, round porthole door with domed glass bowl, hinge block and lever latch, sloped control console with display, keypad and emergency stop, chemical-injection manifold with supply hoses, water inlet valves and a drain valve housing. Material controls: stainless shell, painted panels and console, door glass and hoses/seals; apparatus-red, clean-zone and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -100350,11 +100730,13 @@
         "station",
         "apparatus bay",
         "firefighter health",
-        "low poly",
         "CC0",
         "turnout",
         "gear",
-        "extractor"
+        "extractor",
+        "washer",
+        "laundry",
+        "decontamination"
       ],
       "compat": [
         "fire",
@@ -100366,8 +100748,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/fire-station/turnout-gear-extractor.kcad.ts",
       "preview": "/assets/fire-station-turnout-gear-extractor.png",
-      "sourceSha256": "c8353970804e77751f134665b99b9fbfcb44c80d167ef27d63916c4023a1f035",
-      "triangleBudget": 1800,
+      "sourceSha256": "9d9dcc92848f5bc279de843785dd81b9a8eeaf29761d2e7ac30c762cc4e148cc",
+      "triangleBudget": 6000,
       "params": [
         {
           "name": "scale",
@@ -100379,91 +100761,152 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "shell",
           "type": "color",
-          "default": "#b94338",
-          "label": "Powder coat"
+          "default": "#c3c9cc",
+          "label": "Stainless cabinet and door ring"
         },
         {
-          "name": "stainlessSteel",
+          "name": "panels",
           "type": "color",
-          "default": "#b4bec3",
-          "label": "Stainless steel"
+          "default": "#b83d34",
+          "label": "Painted side panels and console"
         },
         {
-          "name": "elastomer",
+          "name": "glass",
           "type": "color",
-          "default": "#303539",
-          "label": "Elastomer"
+          "default": "#7fa6b8",
+          "label": "Door glass bowl"
         },
         {
-          "name": "polymer",
+          "name": "rubber",
           "type": "color",
-          "default": "#e8e4d9",
-          "label": "Polymer"
+          "default": "#252a2d",
+          "label": "Seals, feet and hoses"
         }
       ],
       "presets": {
         "apparatus-red": {
-          "powderCoat": "#b83d34",
-          "stainlessSteel": "#c3c9cc",
-          "elastomer": "#252a2d",
-          "polymer": "#e8e4d9"
+          "panels": "#b83d34"
         },
         "clean-zone": {
-          "powderCoat": "#4e8c87",
-          "stainlessSteel": "#d0d8db",
-          "elastomer": "#30383b",
-          "polymer": "#ece9e1"
+          "panels": "#4e8c87",
+          "shell": "#d0d8db"
+        },
+        "weathered": {
+          "shell": "#9ea4a4",
+          "panels": "#7d3a33",
+          "glass": "#6c858c",
+          "rubber": "#34383a"
         }
       },
       "stats": {
-        "triangles": 268,
+        "triangles": 1534,
         "sizeM": [
-          0.94,
-          1.29,
-          1.14
+          0.96,
+          1.484,
+          1.16
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#b94338",
+          "name": "panels",
+          "color": "#b83d34",
           "parts": [
-            "base",
+            "base-frame",
+            "side-panel--438",
+            "side-panel-430",
+            "soap-drawer",
+            "console",
+            "chem-manifold"
+          ],
+          "param": "panels"
+        },
+        {
+          "name": "rubber",
+          "color": "#252a2d",
+          "parts": [
+            "base-kick",
+            "foot--420--420",
+            "foot--420-420",
+            "foot-420--420",
+            "foot-420-420",
+            "door-gasket",
+            "hinge-pin-590",
+            "hinge-pin-810",
+            "latch-lever",
+            "chem-hose-0",
+            "chem-hose-1",
+            "chem-hose-2",
+            "chem-hose-3",
+            "chem-hose-4"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "shell",
+          "color": "#c3c9cc",
+          "parts": [
+            "drain-housing",
             "cabinet",
-            "control-panel"
+            "top-cap",
+            "door-ring",
+            "hinge-block",
+            "latch-body",
+            "key-0",
+            "key-1",
+            "key-2",
+            "key-3",
+            "key-4",
+            "key-5",
+            "chem-port-0",
+            "chem-port-1",
+            "chem-port-2",
+            "chem-port-3",
+            "chem-port-4",
+            "water-inlet--340",
+            "water-inlet--220"
           ],
-          "param": "powderCoat"
+          "param": "shell"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b4bec3",
+          "name": "glass",
+          "color": "#7fa6b8",
           "parts": [
-            "door-rim"
+            "door-glass"
           ],
-          "param": "stainlessSteel"
+          "param": "glass"
         },
         {
-          "name": "polymer",
-          "color": "#e8e4d9",
+          "name": "display",
+          "color": "#1c3a4a",
           "parts": [
-            "door-window"
-          ],
-          "param": "polymer"
+            "display"
+          ]
         },
         {
-          "name": "elastomer",
-          "color": "#303539",
+          "name": "estop-collar",
+          "color": "#e9c21f",
           "parts": [
-            "vibration-foot-0",
-            "vibration-foot-1",
-            "vibration-foot-2",
-            "vibration-foot-3"
-          ],
-          "param": "elastomer"
+            "estop-collar"
+          ]
+        },
+        {
+          "name": "estop-button",
+          "color": "#c92a2a",
+          "parts": [
+            "estop-button",
+            "water-valve--340"
+          ]
+        },
+        {
+          "name": "water-valve--220",
+          "color": "#2f6fbf",
+          "parts": [
+            "water-valve--220"
+          ]
         }
       ]
     },

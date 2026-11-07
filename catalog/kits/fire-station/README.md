@@ -6,8 +6,11 @@ storage and station readiness. Sources use millimetres and Z up. Floor-standing
 assets use a base origin; mounted and overhead fixtures declare wall or ceiling
 origins. Each asset has two to four material-specific color controls and named
 station finish presets. Path profiles, lofted forms and angled components give
-the fixtures faceted silhouettes within their 1,800-triangle ceilings. All
-geometry is dedicated to the public domain under CC0 1.0.
+the fixtures faceted silhouettes within their 1,800-triangle ceilings. The
+station air compressor, turnout gear extractor, retractable exhaust hose reel,
+breathing air cascade bank and hose drying tower are built in more detail from
+turned profiles and extruded sections, with ceilings of 6,000 to 9,000
+triangles. All geometry is dedicated to the public domain under CC0 1.0.
 
 ## Apparatus bay and wash operations
 

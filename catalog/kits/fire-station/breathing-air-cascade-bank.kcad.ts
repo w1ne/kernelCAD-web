@@ -1,81 +1,102 @@
-// Breathing air cascade bank: Three-cylinder high-pressure storage bank with shared header, gauges and protective frame. Millimetres, Z up, base origin.
+// SPDX-License-Identifier: CC0-1.0
+// Breathing air cascade bank: the rack of tall high-pressure storage
+// cylinders that a station's compressor charges so SCBA bottles can be
+// topped up in seconds. What makes it one: four tall, domed cylinders
+// standing in a welded rack, each held by two hinged restraint straps and
+// wearing a painted breathing-air shoulder band, a cylinder valve with a
+// handwheel on every neck, coiled high-pressure pigtails running to a
+// common header, and a front fill panel with a pressure gauge and isolation
+// valve per cylinder. Millimetres, Z up, base origin, the cylinders stand in
+// a row along X and the fill panel faces -Y.
 meta({
   name: "breathing-air-cascade-bank",
   license: 'CC0-1.0',
   title: "Breathing air cascade bank",
-  description: "Three-cylinder high-pressure storage bank with shared header, gauges and protective frame. Editable scale and material colors; use the apparatus-red or clean-zone finish preset.",
-  tags: ["fire", "station", "apparatus bay", "firefighter health", "low poly", "CC0", "breathing", "air", "cascade", "bank"],
+  description: "Four-cylinder breathing-air cascade storage bank: tall domed high-pressure cylinders with painted breathing-air shoulder bands, a welded rack with base pan, uprights and hinged restraint straps, a valve and handwheel on every cylinder neck, high-pressure pigtails to a common header, and a front fill panel with one gauge and isolation valve per cylinder. Material controls: cylinder body, shoulder band, rack paint and brass valves; apparatus-red, clean-zone and weathered presets.",
+  tags: ["fire", "station", "apparatus bay", "firefighter health", "CC0", "breathing", "air", "cascade", "bank", "scba", "high pressure", "cylinder"],
   kit: 'fire-station',
   category: 'prop',
   origin: "base",
   compat: ['fire', 'fire-station', 'station', 'apparatus-bay', 'interior'],
-  triangleBudget: 1800,
+  triangleBudget: 9000,
 });
 
 const scale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
-const powderCoat = param("powderCoat", "#b94338", { label: "Powder coat" });
-const stainlessSteel = param("stainlessSteel", "#b4bec3", { label: "Stainless steel" });
+const cylinder = param('cylinder', '#d9dcdc', { label: 'Cylinder body' });
+const shoulder = param('shoulder', '#2f8a4e', { label: 'Breathing-air shoulder band' });
+const rack = param('rack', '#b83d34', { label: 'Rack, straps and fill panel' });
+const brass = param('brass', '#c9a54a', { label: 'Valves, fittings and pigtails' });
 
 presets({
-  'apparatus-red': {"powderCoat": "#b83d34", "stainlessSteel": "#c3c9cc"},
-  'clean-zone': {"powderCoat": "#4e8c87", "stainlessSteel": "#d0d8db"},
+  'apparatus-red': { rack: '#b83d34' },
+  'clean-zone': { rack: '#4e8c87', cylinder: '#eef0ee', shoulder: '#f2f2ee' },
+  'eu-marking': { shoulder: '#f2f2ee', cylinder: '#2a2c2e', rack: '#3f4a50' },
+  weathered: { cylinder: '#a9aaa4', shoulder: '#4c6b55', rack: '#7d3a33', brass: '#9c8448' },
 });
+
 const p = assembly("breathing-air-cascade-bank");
+const add = (name, shape) => p.part(name, shape.scale(scale));
 
-const panelProfile = (w: number, d: number, corner: number) => {
-  const c = Math.max(0.5, Math.min(corner, w * 0.18, d * 0.18));
-  return path().moveTo(-w / 2 + c, -d / 2).lineTo(w / 2 - c, -d / 2)
-    .lineTo(w / 2, -d / 2 + c).lineTo(w / 2, d / 2 - c)
-    .lineTo(w / 2 - c, d / 2).lineTo(-w / 2 + c, d / 2)
-    .lineTo(-w / 2, d / 2 - c).lineTo(-w / 2, -d / 2 + c).close();
+// Turned profile [[radius, z], ...] about Z.
+const turned = (pts) => {
+  let pb = path().moveTo(pts[0][0], pts[0][1]);
+  for (const [r, z] of pts.slice(1)) pb = pb.lineTo(r, z);
+  return pb.close().revolve();
 };
-const profiledBox = (w: number, d: number, h: number) => {
-  const corner = Math.min(w, d) * 0.08;
-  const inset = Math.min(w, d) * 0.025;
-  return panelProfile(w, d, corner)
-    .loft(panelProfile(w - inset * 2, d - inset * 2, corner * 0.9), { spacing: h, ruled: true })
-    .translate(0, 0, -h / 2);
-};
+const ring = (r0, r1, z0, z1) => turned([[r0, z0], [r1, z0], [r1, z1], [r0, z1]]);
+const rod = (r, z0, z1) => turned([[0, z0], [r, z0], [r, z1], [0, z1]]);
+const blk = (x0, y0, z0, x1, y1, z1) => box(x1 - x0, y1 - y0, z1 - z0, true).translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
+// Turned parts with the axis along +X, and facing out of the -Y front.
+const alongX = (shape) => shape.rotateY(90);
+const facingFront = (shape) => shape.rotateX(90);
 
+// Fixed trade colours: gauge face white and the black handwheels and caps.
+const dial = '#f4f4f0', black = '#22262a';
 
-const b = (size: [number, number, number], at: [number, number, number], rotation?: [number, number, number]) => {
-  let shape = profiledBox(size[0], size[1], size[2]);
-  if (rotation?.[0]) shape = shape.rotateX(rotation[0]);
-  if (rotation?.[1]) shape = shape.rotateY(rotation[1]);
-  if (rotation?.[2]) shape = shape.rotateZ(rotation[2]);
-  return shape.translate(at[0], at[1], at[2]).scale(scale);
-};
-const ngon = (r: number, sides: number, rotation = 0) => {
-  let profile = path().moveTo(r * Math.cos(rotation), r * Math.sin(rotation));
-  for (let i = 1; i < sides; i++) {
-    const angle = rotation + 2 * Math.PI * i / sides;
-    profile = profile.lineTo(r * Math.cos(angle), r * Math.sin(angle));
-  }
-  return profile.close();
-};
-const profiledCylinder = (h: number, r: number, sides: number) =>
-  ngon(r, sides).loft(ngon(r * 0.95, sides, Math.PI / sides), { spacing: h, ruled: true });
-const c = (h: number, r: number, segments: number, at: [number, number, number], axis?: [number, number, number], degrees = 0) => {
-  let shape = profiledCylinder(h, r, segments);
-  if (axis && degrees) {
-    if (axis[0]) shape = shape.rotateX(degrees);
-    else if (axis[1]) shape = shape.rotateY(degrees);
-    else if (axis[2]) shape = shape.rotateZ(degrees);
-  }
-  return shape.translate(at[0], at[1], at[2]).scale(scale);
-};
+const R = 140, base = 90, neck = 1720; // cylinder radius, foot, shoulder top
+const xs = [-480, -160, 160, 480];
+const rackY = 0;
 
-p.part("storage-cylinder-0", c(1650, 155, 12, [-430, 0, 110]).color(stainlessSteel));
-p.part("storage-cylinder-1", c(1650, 155, 12, [0, 0, 110]).color(stainlessSteel));
-p.part("storage-cylinder-2", c(1650, 155, 12, [430, 0, 110]).color(stainlessSteel));
-p.part("frame-upright-0", b([60, 95, 1850], [-650, 160, 925]).color(stainlessSteel));
-p.part("frame-upright-1", b([60, 95, 1850], [-215, 160, 925]).color(stainlessSteel));
-p.part("frame-upright-2", b([60, 95, 1850], [215, 160, 925]).color(stainlessSteel));
-p.part("frame-upright-3", b([60, 95, 1850], [650, 160, 925]).color(stainlessSteel));
-p.part("top-rail", b([1360, 110, 70], [0, 160, 1840]).color(stainlessSteel));
-p.part("header", b([1270, 58, 58], [0, -60, 1570]).color(stainlessSteel));
-p.part("gauge-0", c(26, 58, 10, [-440, -105, 1690], [1, 0, 0], 90).color(powderCoat));
-p.part("gauge-1", c(26, 58, 10, [0, -105, 1690], [1, 0, 0], 90).color(powderCoat));
-p.part("gauge-2", c(26, 58, 10, [440, -105, 1690], [1, 0, 0], 90).color(powderCoat));
+// ---- Rack: base pan, corner uprights, back spine and top rail ----
+add('base-pan', blk(-680, -220, 0, 680, 220, base).color(rack));
+add('pan-lip', blk(-680, -230, base, 680, -210, base + 60).color(rack));
+for (const x of [-660, 660]) {
+  for (const y of [-200, 200]) add(`upright-${x}-${y}`, blk(x - 20, y - 20, base, x + 20, y + 20, 1800).color(rack));
+  add(`side-brace-${x}`, blk(x - 15, -200, 900, x + 15, 200, 940).color(rack));
+}
+add('back-spine', blk(-680, 180, 1760, 680, 220, 1820).color(rack));
+add('front-rail', blk(-680, -220, 1760, 680, -180, 1800).color(rack));
+
+// ---- Cylinders: domed body, shoulder band, neck, valve, handwheel ----
+xs.forEach((x, i) => {
+  add(`cylinder-${i}`, turned([[0, base], [R - 30, base], [R, base + 40], [R, neck - 120], [R - 20, neck - 50], [R - 60, neck - 10], [40, neck], [0, neck]]).translate(x, rackY, 0).color(cylinder));
+  add(`shoulder-${i}`, turned([[R - 1, neck - 260], [R + 3, neck - 260], [R + 3, neck - 120], [R - 17, neck - 48], [R - 21, neck - 48]]).translate(x, rackY, 0).color(shoulder));
+  add(`neck-${i}`, rod(36, neck, neck + 50).translate(x, rackY, 0).color(brass));
+  add(`valve-${i}`, blk(x - 45, rackY - 35, neck + 50, x + 45, rackY + 35, neck + 150).color(brass));
+  add(`valve-stem-${i}`, rod(10, neck + 150, neck + 190).translate(x, rackY, 0).color(brass));
+  add(`handwheel-${i}`, ring(30, 55, neck + 190, neck + 210).translate(x, rackY, 0).color(black));
+  add(`outlet-${i}`, facingFront(rod(16, 35, 80)).translate(x, rackY, neck + 100).color(brass));
+  // Two hinged restraint straps around each cylinder.
+  for (const z of [520, 1300]) add(`strap-${i}-${z}`, ring(R + 2, R + 14, z, z + 50).translate(x, rackY, 0).color(rack));
+});
+for (const z of [520, 1300]) add(`strap-bar-${z}`, blk(-680, R - 10, z, 680, R + 30, z + 50).color(rack));
+
+// ---- Pigtails down to the common header and the front fill panel ----
+const hz = 1450, panelY = -260;
+add('header', alongX(rod(22, -560, 560)).translate(0, panelY + 60, hz).color(brass));
+xs.forEach((x, i) => {
+  add(`pigtail-drop-${i}`, rod(10, hz, neck + 100).translate(x, rackY - 80, 0).color(brass));
+  add(`pigtail-run-${i}`, facingFront(rod(10, 0, 140)).translate(x, rackY - 80 + 0, hz).color(brass));
+});
+add('fill-panel', blk(-600, panelY, 1050, 600, panelY + 30, 1420).color(rack));
+for (const x of [-600, 600]) add(`panel-bracket-${x}`, blk(x - 15, panelY + 30, 1050, x + 15, -200, 1420).color(rack));
+xs.forEach((x, i) => {
+  add(`gauge-bezel-${i}`, facingFront(ring(0, 60, 0, 25)).translate(x, panelY, 1300).color(cylinder));
+  add(`gauge-dial-${i}`, facingFront(rod(52, 25, 28)).translate(x, panelY, 1300).color(dial));
+  add(`gauge-needle-${i}`, blk(-4, -2, 0, 4, 2, 44).rotateY(-50 + 30 * i).translate(x, panelY - 30, 1300).color(black));
+  add(`iso-valve-${i}`, facingFront(rod(28, 0, 60)).translate(x, panelY, 1140).color(brass));
+  add(`iso-handle-${i}`, blk(x - 70, panelY - 75, 1130, x + 70, panelY - 60, 1150).color(black));
+});
+add('fill-outlet', facingFront(turned([[0, 0], [40, 0], [40, 40], [25, 60], [25, 120], [0, 120]])).translate(0, panelY, 1080).color(brass));
 
 return p.model();
