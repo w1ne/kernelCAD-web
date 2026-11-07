@@ -24324,7 +24324,7 @@
       "id": "hive-frame",
       "kit": "apiary",
       "title": "Hive frame",
-      "description": "Wooden beehive frame with top bar, side rails, bottom bar and hanging ears. Material controls: timber, wax. Presets: freshApiary and weatheredYard.",
+      "description": "Langstroth deep Hoffman frame: top bar with hanging ears, self-spacing side bars wide at the shoulders, bottom bar, and drawn comb. Brood fill shows an oval of capped brood ringed by pollen under an arch of capped honey, with bees on the face; honey fill is capped edge to edge; foundation fill is a bare wax sheet on frame wires. Material controls: frame timber, open comb wax, honey cappings, capped brood, pollen. Fill choice; newFrame, darkBroodComb and heatherHoney presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -24332,6 +24332,10 @@
         "beekeeping",
         "honey",
         "agriculture",
+        "hive frame",
+        "comb",
+        "brood",
+        "langstroth",
         "low poly",
         "scene prop"
       ],
@@ -24344,8 +24348,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/hive-frame.kcad.ts",
       "preview": "/assets/apiary-hive-frame.png",
-      "sourceSha256": "b08a08f88fbe255c1b91b0bcb4fd9483aeb58432983aac0ef66778ef900878c4",
-      "triangleBudget": 1800,
+      "sourceSha256": "8541d9327505cfd0b3581b731cb20a9334e63436dec19b139505c21fe29443fc",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "scale",
@@ -24357,34 +24361,76 @@
           "step": 0.05
         },
         {
+          "name": "fill",
+          "type": "choice",
+          "default": "brood",
+          "label": "What the frame holds",
+          "choices": [
+            "brood",
+            "honey",
+            "foundation"
+          ]
+        },
+        {
           "name": "timber",
           "type": "color",
-          "default": "#b8874a",
-          "label": "Hive timber"
+          "default": "#c99a5e",
+          "label": "Top bar, side bars and bottom bar (frame timber)"
         },
         {
           "name": "wax",
           "type": "color",
-          "default": "#e3c978",
-          "label": "Beeswax and foundation"
+          "default": "#d9a948",
+          "label": "Open comb and foundation (beeswax)"
+        },
+        {
+          "name": "capping",
+          "type": "color",
+          "default": "#f1e2b0",
+          "label": "Honey cappings (white wax)"
+        },
+        {
+          "name": "brood",
+          "type": "color",
+          "default": "#b9824a",
+          "label": "Capped brood (porous cappings)"
+        },
+        {
+          "name": "pollen",
+          "type": "color",
+          "default": "#d9792a",
+          "label": "Stored pollen"
         }
       ],
       "presets": {
-        "freshApiary": {
-          "timber": "#d4a462",
-          "wax": "#f1df9d"
+        "newFrame": {
+          "timber": "#e2bd84",
+          "wax": "#f0cf6a",
+          "capping": "#fbf1cf",
+          "brood": "#c99158",
+          "pollen": "#e8a23a"
         },
-        "weatheredYard": {
-          "timber": "#68543d",
-          "wax": "#bc9344"
+        "darkBroodComb": {
+          "timber": "#8c6a43",
+          "wax": "#7a5326",
+          "capping": "#d8c48c",
+          "brood": "#6e4a2a",
+          "pollen": "#b8642a"
+        },
+        "heatherHoney": {
+          "timber": "#c99a5e",
+          "wax": "#b9772f",
+          "capping": "#e8d39a",
+          "brood": "#a6703f",
+          "pollen": "#9e5a8a"
         }
       },
       "stats": {
-        "triangles": 84,
+        "triangles": 818,
         "sizeM": [
-          0.625,
-          0.737,
-          0.05
+          0.482,
+          0.2325,
+          0.035708
         ],
         "minUpM": 0,
         "materials": 1
@@ -24392,24 +24438,77 @@
       "palette": [
         {
           "name": "timber",
-          "color": "#b8874a",
+          "color": "#c99a5e",
           "parts": [
             "top-bar",
-            "ear-left",
-            "ear-right",
-            "side-left",
-            "side-right",
+            "ear--1",
+            "ear-1",
+            "side-shoulder--1",
+            "side-bar--1",
+            "side-shoulder-1",
+            "side-bar-1",
             "bottom-bar"
           ],
           "param": "timber"
         },
         {
           "name": "wax",
-          "color": "#e3c978",
+          "color": "#d9a948",
           "parts": [
-            "wax-foundation"
+            "top-bar-groove",
+            "drawn-comb",
+            "open-cell--70",
+            "open-cell-40",
+            "open-cell-95",
+            "open-cell--20"
           ],
           "param": "wax"
+        },
+        {
+          "name": "capping",
+          "color": "#f1e2b0",
+          "parts": [
+            "honey-arch"
+          ],
+          "param": "capping"
+        },
+        {
+          "name": "pollen",
+          "color": "#d9792a",
+          "parts": [
+            "pollen-ring"
+          ],
+          "param": "pollen"
+        },
+        {
+          "name": "brood",
+          "color": "#b9824a",
+          "parts": [
+            "brood-cappings"
+          ],
+          "param": "brood"
+        },
+        {
+          "name": "bee--120",
+          "color": "#2a2116",
+          "parts": [
+            "bee--120",
+            "bee--30",
+            "bee-60",
+            "bee-130",
+            "bee-10"
+          ]
+        },
+        {
+          "name": "bee-stripe--120",
+          "color": "#d79a2b",
+          "parts": [
+            "bee-stripe--120",
+            "bee-stripe--30",
+            "bee-stripe-60",
+            "bee-stripe-130",
+            "bee-stripe-10"
+          ]
         }
       ]
     },
@@ -26168,7 +26267,7 @@
       "id": "nuc-hive-box",
       "kit": "apiary",
       "title": "Nucleus hive box",
-      "description": "Compact nucleus colony box with lid, handholds, entrance and bottom board. Material controls: timber, steel, polymer. Presets: freshApiary and weatheredYard.",
+      "description": "Five-frame Langstroth nucleus hive: long narrow painted deep box with box-joint corners and recessed hand holds, bottom board with landing lip and entrance slot, round polymer entrance disc, screened travel vent on the back, telescoping cover with folded galvanized top, transport ratchet strap with buckle. Material controls: box paint, timber, galvanized steel, polymer. Strap choice; freshApiary, weatheredYard and pastelYard presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -26176,6 +26275,10 @@
         "beekeeping",
         "honey",
         "agriculture",
+        "beehive",
+        "nuc",
+        "nucleus hive",
+        "langstroth",
         "low poly",
         "scene prop"
       ],
@@ -26188,8 +26291,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/nuc-hive-box.kcad.ts",
       "preview": "/assets/apiary-nuc-hive-box.png",
-      "sourceSha256": "d29aa881a5e5d8fc967aab08b0253c11ac4641b9fc2a9d9891161c9e0ac577c4",
-      "triangleBudget": 1800,
+      "sourceSha256": "7fc85e10e735c3fba60ea66d8fd041e0337f24e8abd74851b4ef0fe7fdcbb588",
+      "triangleBudget": 1200,
       "params": [
         {
           "name": "scale",
@@ -26201,42 +26304,66 @@
           "step": 0.05
         },
         {
+          "name": "strap",
+          "type": "choice",
+          "default": "yes",
+          "label": "Transport ratchet strap",
+          "choices": [
+            "yes",
+            "no"
+          ]
+        },
+        {
+          "name": "paint",
+          "type": "color",
+          "default": "#e9e1c8",
+          "label": "Box body (exterior paint)"
+        },
+        {
           "name": "timber",
           "type": "color",
           "default": "#b8874a",
-          "label": "Hive timber"
+          "label": "Bottom board, cover rim and joints (hive timber)"
         },
         {
           "name": "steel",
           "type": "color",
-          "default": "#647176",
-          "label": "Galvanized steel"
+          "default": "#b3bcbb",
+          "label": "Cover sheet, vent and buckle (galvanized steel)"
         },
         {
           "name": "polymer",
           "type": "color",
-          "default": "#67877b",
-          "label": "Molded polymer"
+          "default": "#d9a520",
+          "label": "Entrance disc and strap (polymer)"
         }
       ],
       "presets": {
         "freshApiary": {
+          "paint": "#f4efe0",
           "timber": "#d4a462",
-          "steel": "#b7c0be",
-          "polymer": "#d7e2d8"
+          "steel": "#d3dad8",
+          "polymer": "#e2b52a"
         },
         "weatheredYard": {
+          "paint": "#a9a28e",
           "timber": "#68543d",
-          "steel": "#716d63",
-          "polymer": "#3f5d54"
+          "steel": "#7a7f7c",
+          "polymer": "#5d6b44"
+        },
+        "pastelYard": {
+          "paint": "#9cc3d5",
+          "timber": "#c39a63",
+          "steel": "#c8cfcd",
+          "polymer": "#d4553a"
         }
       },
       "stats": {
-        "triangles": 84,
+        "triangles": 876,
         "sizeM": [
-          0.485,
-          0.545,
-          0.4
+          0.593,
+          0.294,
+          0.315019
         ],
         "minUpM": 0,
         "materials": 1
@@ -26246,29 +26373,85 @@
           "name": "timber",
           "color": "#b8874a",
           "parts": [
-            "base",
-            "body",
-            "rim",
-            "lid"
+            "cleat--90",
+            "cleat-90",
+            "bottom-board",
+            "landing-lip",
+            "finger--1--1-0",
+            "finger--1--1-1",
+            "finger--1--1-2",
+            "finger--1--1-3",
+            "finger--1--1-4",
+            "finger--1--1-5",
+            "finger--1-1-0",
+            "finger--1-1-1",
+            "finger--1-1-2",
+            "finger--1-1-3",
+            "finger--1-1-4",
+            "finger--1-1-5",
+            "finger-1--1-0",
+            "finger-1--1-1",
+            "finger-1--1-2",
+            "finger-1--1-3",
+            "finger-1--1-4",
+            "finger-1--1-5",
+            "finger-1-1-0",
+            "finger-1-1-1",
+            "finger-1-1-2",
+            "finger-1-1-3",
+            "finger-1-1-4",
+            "finger-1-1-5",
+            "vent-frame",
+            "cover-rim"
           ],
           "param": "timber"
         },
         {
-          "name": "steel",
-          "color": "#647176",
+          "name": "paint",
+          "color": "#e9e1c8",
           "parts": [
-            "handle-left",
-            "handle-right"
+            "box"
           ],
-          "param": "steel"
+          "param": "paint"
+        },
+        {
+          "name": "entrance-shadow",
+          "color": "#1d1a16",
+          "parts": [
+            "entrance-shadow",
+            "disc-slot",
+            "disc-hole--30-70",
+            "disc-hole-30-70",
+            "disc-hole-0-92"
+          ]
         },
         {
           "name": "polymer",
-          "color": "#67877b",
+          "color": "#d9a520",
           "parts": [
-            "entrance"
+            "entrance-disc",
+            "strap-top",
+            "strap-bottom",
+            "strap-side--1",
+            "strap-side-1"
           ],
           "param": "polymer"
+        },
+        {
+          "name": "steel",
+          "color": "#b3bcbb",
+          "parts": [
+            "disc-screw",
+            "vent-screen",
+            "cover-sheet",
+            "sheet-fold-x--1",
+            "sheet-fold-y--1",
+            "sheet-fold-x-1",
+            "sheet-fold-y-1",
+            "buckle-body",
+            "buckle-handle"
+          ],
+          "param": "steel"
         }
       ]
     },
@@ -26573,7 +26756,7 @@
       "id": "queen-cage",
       "kit": "apiary",
       "title": "Queen introduction cage",
-      "description": "Small ventilated queen cage with end plugs, hanging loop and cross bars. Material controls: polymer, stainless. Presets: freshApiary and weatheredYard.",
+      "description": "Three-hole wooden Benton queen cage: hardwood block with three drilled chambers, wire screen stapled over them, cork plugs in both ends, one chamber packed with white queen candy, tin hanging strap, and a marked queen with attendant workers inside. Material controls: cage timber, wire screen, cork, queen candy, queen marking colour. Hanging-strap choice; freshCage, usedCage and redYearMark presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -26581,6 +26764,9 @@
         "beekeeping",
         "honey",
         "agriculture",
+        "queen cage",
+        "benton cage",
+        "queen bee",
         "low poly",
         "scene prop"
       ],
@@ -26593,8 +26779,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/queen-cage.kcad.ts",
       "preview": "/assets/apiary-queen-cage.png",
-      "sourceSha256": "9c5134dada4e93b28069e62d90b29ff429161868f594239b63c38b0831ef62ca",
-      "triangleBudget": 1800,
+      "sourceSha256": "a7bf48341c986031230cd9bba8b9d8519ba14e87b1197a1c53805ef6a7b3bbd7",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -26606,60 +26792,206 @@
           "step": 0.05
         },
         {
-          "name": "polymer",
-          "type": "color",
-          "default": "#67877b",
-          "label": "Molded polymer"
+          "name": "strap",
+          "type": "choice",
+          "default": "yes",
+          "label": "Tin hanging strap",
+          "choices": [
+            "yes",
+            "no"
+          ]
         },
         {
-          "name": "stainless",
+          "name": "timber",
           "type": "color",
-          "default": "#aeb9b7",
-          "label": "Stainless steel"
+          "default": "#d8b07a",
+          "label": "Cage block (hardwood)"
+        },
+        {
+          "name": "screen",
+          "type": "color",
+          "default": "#8c9396",
+          "label": "Screen, staples and strap (steel wire)"
+        },
+        {
+          "name": "cork",
+          "type": "color",
+          "default": "#a87a4c",
+          "label": "End plugs (cork)"
+        },
+        {
+          "name": "candy",
+          "type": "color",
+          "default": "#f2ede0",
+          "label": "Queen candy (fondant)"
+        },
+        {
+          "name": "mark",
+          "type": "color",
+          "default": "#f4f4f0",
+          "label": "Queen marking dot (year colour)"
         }
       ],
       "presets": {
-        "freshApiary": {
-          "polymer": "#d7e2d8",
-          "stainless": "#d9dfdc"
+        "freshCage": {
+          "timber": "#e8c590",
+          "screen": "#a7aeb0",
+          "cork": "#b88a58",
+          "candy": "#fbf8ee",
+          "mark": "#f4f4f0"
         },
-        "weatheredYard": {
-          "polymer": "#3f5d54",
-          "stainless": "#788482"
+        "usedCage": {
+          "timber": "#9c7a50",
+          "screen": "#6d7173",
+          "cork": "#7d5a38",
+          "candy": "#d8ccaa",
+          "mark": "#e8d23a"
+        },
+        "redYearMark": {
+          "timber": "#d8b07a",
+          "screen": "#8c9396",
+          "cork": "#a87a4c",
+          "candy": "#f2ede0",
+          "mark": "#d0302a"
         }
       },
       "stats": {
-        "triangles": 96,
+        "triangles": 2518,
         "sizeM": [
-          0.19,
-          0.32,
-          0.106
+          0.111,
+          0.03025,
+          0.025
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#67877b",
+          "name": "timber",
+          "color": "#d8b07a",
           "parts": [
-            "cage-body",
-            "end-low",
-            "end-high",
-            "vent-0",
-            "vent-1",
-            "vent-2",
-            "vent-3"
+            "block"
           ],
-          "param": "polymer"
+          "param": "timber"
         },
         {
-          "name": "stainless",
-          "color": "#aeb9b7",
+          "name": "chamber-floor--27",
+          "color": "#8a6a44",
           "parts": [
-            "hanging-loop"
+            "chamber-floor--27",
+            "chamber-floor-0",
+            "chamber-floor-27"
+          ]
+        },
+        {
+          "name": "candy",
+          "color": "#f2ede0",
+          "parts": [
+            "candy"
           ],
-          "param": "stainless"
+          "param": "candy"
+        },
+        {
+          "name": "cork",
+          "color": "#a87a4c",
+          "parts": [
+            "cork--1",
+            "cork-1"
+          ],
+          "param": "cork"
+        },
+        {
+          "name": "queen-abdomen",
+          "color": "#b8742a",
+          "parts": [
+            "queen-abdomen"
+          ]
+        },
+        {
+          "name": "queen-thorax",
+          "color": "#2a2116",
+          "parts": [
+            "queen-thorax",
+            "queen-head",
+            "worker-24-body",
+            "worker-30-body",
+            "worker--18-body"
+          ]
+        },
+        {
+          "name": "mark",
+          "color": "#f4f4f0",
+          "parts": [
+            "queen-mark"
+          ],
+          "param": "mark"
+        },
+        {
+          "name": "queen-wing--1",
+          "color": "#d9dcd6",
+          "parts": [
+            "queen-wing--1",
+            "queen-wing-1"
+          ]
+        },
+        {
+          "name": "worker-24-stripe",
+          "color": "#d79a2b",
+          "parts": [
+            "worker-24-stripe",
+            "worker-30-stripe",
+            "worker--18-stripe"
+          ]
+        },
+        {
+          "name": "screen",
+          "color": "#8c9396",
+          "parts": [
+            "screen-long-0",
+            "screen-long-1",
+            "screen-long-2",
+            "screen-long-3",
+            "screen-long-4",
+            "screen-long-5",
+            "screen-long-6",
+            "screen-long-7",
+            "screen-cross-0",
+            "screen-cross-1",
+            "screen-cross-2",
+            "screen-cross-3",
+            "screen-cross-4",
+            "screen-cross-5",
+            "screen-cross-6",
+            "screen-cross-7",
+            "screen-cross-8",
+            "screen-cross-9",
+            "screen-cross-10",
+            "screen-cross-11",
+            "screen-cross-12",
+            "screen-cross-13",
+            "screen-cross-14",
+            "screen-cross-15",
+            "screen-cross-16",
+            "screen-cross-17",
+            "screen-cross-18",
+            "screen-cross-19",
+            "screen-cross-20",
+            "screen-cross-21",
+            "screen-cross-22",
+            "staple--38--1",
+            "staple--38-1",
+            "staple--13--1",
+            "staple--13-1",
+            "staple-13--1",
+            "staple-13-1",
+            "staple-38--1",
+            "staple-38-1",
+            "strap-flat",
+            "strap-riser",
+            "strap-hook",
+            "strap-staple"
+          ],
+          "param": "screen"
         }
       ]
     },
@@ -27244,7 +27576,7 @@
       "id": "swarm-trap",
       "kit": "apiary",
       "title": "Swarm trap box",
-      "description": "Tall bait-hive box with rain cover, entrance landing and hanging brackets. Material controls: timber, steel. Presets: freshApiary and weatheredYard.",
+      "description": "Bait hive swarm trap strapped to a tree: tall timber box of about 40 litres with one small round entrance and landing perch near the bottom of the front, side inspection door with turn buttons, pent roof with sheet covering, galvanized hanger plate lag-screwed to the trunk, ratchet strap round the trunk. Material controls: box timber, tree bark, roof sheet, galvanized steel, strap webbing. Mount choice (tree or free-standing); freshApiary, weatheredYard and greenRoof presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -27252,6 +27584,9 @@
         "beekeeping",
         "honey",
         "agriculture",
+        "swarm trap",
+        "bait hive",
+        "tree",
         "low poly",
         "scene prop"
       ],
@@ -27264,8 +27599,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/swarm-trap.kcad.ts",
       "preview": "/assets/apiary-swarm-trap.png",
-      "sourceSha256": "95af1de4e82b07e3e18603ec5b91dd2bda4578a68689514f7339f658da5e3d5b",
-      "triangleBudget": 1800,
+      "sourceSha256": "a950ed134eba5c78ef77f7a46f76bc9e50f8255f82bb087f776e80ae327bc874",
+      "triangleBudget": 1000,
       "params": [
         {
           "name": "scale",
@@ -27277,59 +27612,150 @@
           "step": 0.05
         },
         {
+          "name": "mount",
+          "type": "choice",
+          "default": "tree",
+          "label": "Mounted on a tree trunk",
+          "choices": [
+            "tree",
+            "none"
+          ]
+        },
+        {
           "name": "timber",
           "type": "color",
           "default": "#b8874a",
-          "label": "Hive timber"
+          "label": "Trap box and perch (timber)"
+        },
+        {
+          "name": "bark",
+          "type": "color",
+          "default": "#5b4a3a",
+          "label": "Tree trunk (bark)"
+        },
+        {
+          "name": "roofSheet",
+          "type": "color",
+          "default": "#3e4446",
+          "label": "Roof covering (sheet)"
         },
         {
           "name": "steel",
           "type": "color",
-          "default": "#647176",
-          "label": "Galvanized steel"
+          "default": "#9aa3a2",
+          "label": "Hanger, screws and buckle (galvanized steel)"
+        },
+        {
+          "name": "webbing",
+          "type": "color",
+          "default": "#d0682a",
+          "label": "Ratchet strap (webbing)"
         }
       ],
       "presets": {
         "freshApiary": {
           "timber": "#d4a462",
-          "steel": "#b7c0be"
+          "bark": "#6b5844",
+          "roofSheet": "#5a6266",
+          "steel": "#c3cbca",
+          "webbing": "#e08a2a"
         },
         "weatheredYard": {
-          "timber": "#68543d",
-          "steel": "#716d63"
+          "timber": "#7a6650",
+          "bark": "#4a3e33",
+          "roofSheet": "#2f3436",
+          "steel": "#716d63",
+          "webbing": "#4f6a3a"
+        },
+        "greenRoof": {
+          "timber": "#c9a06a",
+          "bark": "#5b4a3a",
+          "roofSheet": "#4d6b3c",
+          "steel": "#9aa3a2",
+          "webbing": "#2f5a8a"
         }
       },
       "stats": {
-        "triangles": 84,
+        "triangles": 740,
         "sizeM": [
-          0.46,
-          0.865,
-          0.475
+          0.543096,
+          1.615136,
+          0.743
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
+          "name": "bark",
+          "color": "#5b4a3a",
+          "parts": [
+            "trunk",
+            "branch-stub"
+          ],
+          "param": "bark"
+        },
+        {
+          "name": "trunk-cut",
+          "color": "#c8a878",
+          "parts": [
+            "trunk-cut",
+            "branch-cut"
+          ]
+        },
+        {
           "name": "timber",
           "color": "#b8874a",
           "parts": [
-            "body",
-            "base",
-            "roof",
-            "entrance",
-            "landing"
+            "box",
+            "floor-board",
+            "perch",
+            "perch-block",
+            "side-door",
+            "turn-button-990",
+            "turn-button-1310",
+            "roof"
           ],
           "param": "timber"
         },
         {
-          "name": "steel",
-          "color": "#647176",
+          "name": "entrance",
+          "color": "#1d1a16",
           "parts": [
-            "hanger-left",
-            "hanger-right"
+            "entrance"
+          ]
+        },
+        {
+          "name": "steel",
+          "color": "#9aa3a2",
+          "parts": [
+            "door-handle",
+            "hanger-plate",
+            "hanger-hook",
+            "lag-screw--35",
+            "lag-screw-35",
+            "buckle"
           ],
           "param": "steel"
+        },
+        {
+          "name": "roofSheet",
+          "color": "#3e4446",
+          "parts": [
+            "roof-sheet"
+          ],
+          "param": "roofSheet"
+        },
+        {
+          "name": "webbing",
+          "color": "#d0682a",
+          "parts": [
+            "strap-trunk",
+            "strap-side--1",
+            "strap-side-1",
+            "strap-front"
+          ],
+          "param": "webbing"
         }
       ]
     },
@@ -27527,7 +27953,7 @@
       "id": "top-feeder",
       "kit": "apiary",
       "title": "Hive top feeder",
-      "description": "Shallow top feeder with outer rim, central access well and removable cover. Material controls: polymer, glass. Presets: freshApiary and weatheredYard.",
+      "description": "Miller-style hive top feeder on a ten-frame Langstroth footprint: timber rim with corner joints, two moulded syrup reservoirs filled with sugar syrup and wooden floats, central bee access slot under a screened cap with mesh ladders, optional plywood cover. Material controls: rim timber, reservoir polymer, sugar syrup, mesh screen. Cover choice; freshApiary, weatheredYard and darkSyrup presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -27535,6 +27961,10 @@
         "beekeeping",
         "honey",
         "agriculture",
+        "feeder",
+        "top feeder",
+        "miller feeder",
+        "syrup",
         "low poly",
         "scene prop"
       ],
@@ -27547,8 +27977,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/apiary/top-feeder.kcad.ts",
       "preview": "/assets/apiary-top-feeder.png",
-      "sourceSha256": "7b90560015804c4a60b0299b033cbfb718e04acd95619732db68720c9f5a0d7e",
-      "triangleBudget": 1800,
+      "sourceSha256": "27133b020a06fc5a0b1e8ce1eec4a761288b9719d5daeb901d71dc0f5d692d14",
+      "triangleBudget": 1000,
       "params": [
         {
           "name": "scale",
@@ -27560,59 +27990,154 @@
           "step": 0.05
         },
         {
-          "name": "polymer",
-          "type": "color",
-          "default": "#67877b",
-          "label": "Molded polymer"
+          "name": "cover",
+          "type": "choice",
+          "default": "off",
+          "label": "Plywood cover",
+          "choices": [
+            "off",
+            "on"
+          ]
         },
         {
-          "name": "glass",
+          "name": "timber",
           "type": "color",
-          "default": "#9ac1bd",
-          "label": "Tinted glass"
+          "default": "#c4935a",
+          "label": "Rim and cover (hive timber)"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#2f3a3a",
+          "label": "Syrup reservoirs (moulded polymer)"
+        },
+        {
+          "name": "syrup",
+          "type": "color",
+          "default": "#d9a63a",
+          "label": "Sugar syrup"
+        },
+        {
+          "name": "mesh",
+          "type": "color",
+          "default": "#8e989a",
+          "label": "Screened cap and ladders (mesh)"
         }
       ],
       "presets": {
         "freshApiary": {
-          "polymer": "#d7e2d8",
-          "glass": "#c9dfd8"
+          "timber": "#dcb07a",
+          "polymer": "#e8e4d6",
+          "syrup": "#e9c25c",
+          "mesh": "#b5bdbe"
         },
         "weatheredYard": {
-          "polymer": "#3f5d54",
-          "glass": "#6e9392"
+          "timber": "#6e5840",
+          "polymer": "#2a2e2c",
+          "syrup": "#c58d2a",
+          "mesh": "#6d7476"
+        },
+        "darkSyrup": {
+          "timber": "#c4935a",
+          "polymer": "#5a6a3a",
+          "syrup": "#9a5a1a",
+          "mesh": "#8e989a"
         }
       },
       "stats": {
-        "triangles": 84,
+        "triangles": 620,
         "sizeM": [
-          0.65,
-          0.23,
-          0.52
+          0.505,
+          0.095,
+          0.4155
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#67877b",
+          "name": "timber",
+          "color": "#c4935a",
           "parts": [
-            "pan",
-            "rim-front",
-            "rim-back",
-            "rim-left",
-            "rim-right",
-            "cover"
+            "rim",
+            "floor",
+            "float--1--90",
+            "float--1-10",
+            "float--1-110",
+            "float-1--90",
+            "float-1-10",
+            "float-1-110",
+            "slot-wall--1",
+            "slot-wall-1"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "finger--1--1-8",
+          "color": "#a87a48",
+          "parts": [
+            "finger--1--1-8",
+            "finger--1--1-40",
+            "finger--1--1-72",
+            "finger--1-1-8",
+            "finger--1-1-40",
+            "finger--1-1-72",
+            "finger-1--1-8",
+            "finger-1--1-40",
+            "finger-1--1-72",
+            "finger-1-1-8",
+            "finger-1-1-40",
+            "finger-1-1-72"
+          ]
+        },
+        {
+          "name": "polymer",
+          "color": "#2f3a3a",
+          "parts": [
+            "reservoir--1",
+            "reservoir-lip--1",
+            "reservoir-1",
+            "reservoir-lip-1"
           ],
           "param": "polymer"
         },
         {
-          "name": "glass",
-          "color": "#9ac1bd",
+          "name": "syrup",
+          "color": "#d9a63a",
           "parts": [
-            "access-well"
+            "syrup--1",
+            "syrup-1"
           ],
-          "param": "glass"
+          "param": "syrup"
+        },
+        {
+          "name": "mesh",
+          "color": "#8e989a",
+          "parts": [
+            "slot-cap-top",
+            "slot-cap-side--1",
+            "mesh-ladder--1",
+            "slot-cap-side-1",
+            "mesh-ladder-1"
+          ],
+          "param": "mesh"
+        },
+        {
+          "name": "cap-rib--5",
+          "color": "#5c6466",
+          "parts": [
+            "cap-rib--5",
+            "cap-rib--4",
+            "cap-rib--3",
+            "cap-rib--2",
+            "cap-rib--1",
+            "cap-rib-0",
+            "cap-rib-1",
+            "cap-rib-2",
+            "cap-rib-3",
+            "cap-rib-4",
+            "cap-rib-5"
+          ]
         }
       ]
     },
