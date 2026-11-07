@@ -9,6 +9,7 @@ import {
 import { lowerAssemblyConnect, lowerAssemblyJoint, lowerAssemblyPart } from './assemblyParts';
 import { lowerAssemblyExport } from './assemblyExport';
 import { lowerBoolean } from './boolean';
+import { lowerBooleanSplit } from './booleanSplit';
 import { lowerCurve3d, lowerEmbossText, lowerProjectCurve, lowerVariableSweep } from './curves';
 import { lowerChamfer, lowerFillet } from './edgeFeatures';
 import { lowerFilletIntersection } from './filletIntersection';
@@ -58,6 +59,7 @@ export const LOWERERS: Partial<Record<FeatureKind, KindLowerer>> = {
   loft: lowerLoft,
   // booleans and edge/face features
   boolean: lowerBoolean,
+  booleanSplit: lowerBooleanSplit,
   fillet: lowerFillet,
   filletIntersection: lowerFilletIntersection,
   chamfer: lowerChamfer,

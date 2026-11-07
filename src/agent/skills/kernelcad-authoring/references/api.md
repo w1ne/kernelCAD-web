@@ -407,6 +407,14 @@ shape, not a copy.
 .union(...others: Shape[]): Shape
 .subtract(...others: Shape[]): Shape
 .intersect(...others: Shape[]): Shape
+// Keep the overlap and both leftovers. Default keep 'parts' returns a Scene
+// named intersection (A ∩ B), a_only (A − B) and b_only (B − A). A fragment
+// at or below 1e-6 mm³ is omitted, so disjoint operands return two parts.
+// keep 'intersection' | 'a_only' | 'b_only' returns that one Shape; an empty
+// request fails. subtract / intersect / union are unchanged. Face refs that
+// the cut splits stay ambiguous (feature.face-ref.ambiguous-after-split).
+// MCP: split_keep_parts.
+.split(other: Shape, opts?: { keep?: 'parts' | 'intersection' | 'a_only' | 'b_only' }): Scene | Shape
 
 // Edge features:
 // Simple form — single radius applied to matching edges:
