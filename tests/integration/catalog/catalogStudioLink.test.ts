@@ -89,11 +89,40 @@ describe('open a catalog asset in Studio by ?catalog=<kit>/<id>', () => {
     expect(params.head).toMatchObject({ type: 'color', value: '#e2b48c' });
   }, 120_000);
 
-  it('every committed catalog asset opens with exactly the knobs its index row lists', async () => {
+  // `catalogIndex.test.ts` already builds and exports EVERY committed asset and
+  // asserts the committed index is byte-identical to the rebuilt one, so each
+  // asset's `params` (derived from the evaluated script's param table) is
+  // checked there for the whole catalog. Re-evaluating all of them through the
+  // Studio path here only re-ran that same geometry: on the 2,100-asset catalog
+  // this one case cost ~156 s, the single largest cost in the entire suite.
+  // Keep the Studio-specific coverage (ref resolution -> load -> evaluate) on a
+  // deterministic sample that still touches every kit, so no kit is unverified.
+  function representativeSample(assets: CatalogIndex['assets']): CatalogIndex['assets'] {
+    const seen = new Set<string>();
+    const sample: CatalogIndex['assets'] = [];
+    for (const asset of assets) {
+      // Every kit's first asset (in index order), plus every 40th asset overall.
+      if (!seen.has(asset.kit)) {
+        seen.add(asset.kit);
+        sample.push(asset);
+      }
+    }
+    for (let i = 0; i < assets.length; i += 40) {
+      const asset = assets[i];
+      if (!sample.includes(asset)) sample.push(asset);
+    }
+    return sample;
+  }
+
+  it('a kit-representative sample opens with exactly the knobs its index row lists', async () => {
     const committed = JSON.parse(readFileSync(join(repoRoot, 'catalog/index.json'), 'utf8')) as CatalogIndex;
     expect(committed.assets.length).toBeGreaterThan(0);
-    for (const asset of committed.assets) {
-      const { params } = await openInStudio(catalogStudioPath(asset), servedCatalog(repoRoot));
+    const sample = representativeSample(committed.assets);
+    // Guard the sample itself: it must cover every kit, not silently collapse.
+    expect(new Set(sample.map((asset) => asset.kit)).size).toBe(committed.kits.length);
+    for (const asset of sample) {
+      const { loaded, params } = await openInStudio(catalogStudioPath(asset), servedCatalog(repoRoot));
+      expect(loaded.asset.id, asset.id).toBe(asset.id);
       expect(Object.keys(params), asset.id).toEqual(asset.params.map((p) => p.name));
     }
   }, 600_000);

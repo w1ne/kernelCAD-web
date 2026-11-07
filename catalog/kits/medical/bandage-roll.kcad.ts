@@ -24,6 +24,7 @@ meta({
 });
 
 // A rolled gauze cylinder exposes its hollow cardboard core and a loose wrapped tail.
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const cottonGauze = param('cottonGauze', '#e8e1cf', { label: 'Cotton gauze' });
 const compressionWrap = param('compressionWrap', '#cbb994', { label: 'Compression gauze' });
 const cardboard = param('cardboard', '#936b43', { label: 'Cardboard core' });
@@ -35,8 +36,8 @@ const p = assembly('bandage-roll');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
 const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
 
-p.part('roll', c(0, 0, 0, 34, 28, 10).subtract(c(0, 0, -1, 36, 11, 10)).color(cottonGauze));
-p.part('wrap-end', b(15, 0, 18, 9, 34, 34).color(compressionWrap));
-p.part('inner-core', c(0, 0, 0, 34, 10, 10).color(cardboard));
+p.part('roll', c(0, 0, 0, 34, 28, 10).subtract(c(0, 0, -1, 36, 11, 10)).color(cottonGauze).scale(overallScale));
+p.part('wrap-end', b(15, 0, 18, 9, 34, 34).color(compressionWrap).scale(overallScale));
+p.part('inner-core', c(0, 0, 0, 34, 10, 10).color(cardboard).scale(overallScale));
 
 return p.model();

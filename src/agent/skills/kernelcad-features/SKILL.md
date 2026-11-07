@@ -259,6 +259,12 @@ built, the hole fails with an error diagnostic; it is never cut without it.
 tapped hole. `diameter` is then the NOMINAL thread size (M6 → 6), and the hole
 drills the ISO 68-1 minor diameter `diameter − 1.0825 × pitch`.
 
+`thread: true` or `{ fromDiameter: true }` fills that coarse pitch from the
+ISO 261 table (`diameter: 12` → M12×1.75) and records `metadata.threadSpec`.
+`metricThreadFromDiameter(12)` returns the same numbers. A clearance bore
+(13.5 mm for an M12 close/normal fit) is not a tap. `threadedHole` accepts
+`diameter` instead of `spec`; when both are set they must agree within 0.05 mm.
+
 ```typescript
 // M6 × 1 nut thread with 0.05 mm of play; modeled: false keeps the bore only
 nutBlank.hole('top', {

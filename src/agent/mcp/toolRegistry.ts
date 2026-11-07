@@ -22,7 +22,7 @@ import {
 } from './registry/inspectionVerificationTools';
 import { printToolEntries } from './registry/printTools';
 import { importToolEntries } from './registry/importTools';
-import { manufacturingToolEntries } from './registry/manufacturingTools';
+import { manufacturingFixRecheckToolEntries, manufacturingToolEntries } from './registry/manufacturingTools';
 import { rayPickToolEntries } from './registry/rayPickTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
 import { surfaceBlendToolEntries } from './registry/surfaceBlendTools';
@@ -39,6 +39,10 @@ import { assetCatalogToolEntries } from './registry/assetCatalogTools';
 import { meshBooleanToolEntries } from './registry/meshBooleanTools';
 import { cookbookExecutionToolEntries } from './registry/cookbookExecutionTools';
 import { cfdToolEntries } from './registry/cfdTools';
+import { costEstimateToolEntries } from './registry/costTools';
+import { toleranceStackToolEntries } from './registry/toleranceTools';
+import { scanReferenceToolEntries } from './registry/scanReferenceTools';
+import { metricThreadToolEntries } from './registry/metricThreadTools';
 import type { McpToolDefinition, ToolRegistryEntry } from './registry/types';
 import { guardMcpToolArgs } from './sandboxArgs';
 import { foldMcpInputAliases } from './snakeCaseArgs';
@@ -120,6 +124,20 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...assetCatalogToolEntries,
   // Appended at the tail: steady CFD through OpenFOAM (run_cfd, cfd_summary).
   ...cfdToolEntries,
+  // Appended at the tail: targeted assembly checks. Belongs to the inspection
+  // family, but index order is a public contract so it does not shift earlier slices.
+  // Appended at the tail: one DFM parameter edit, then the same dfm_review.
+  // Stays out of manufacturingToolEntries so dfm_review keeps index 50.
+  ...manufacturingFixRecheckToolEntries,
+  // Appended after dfm_fix_recheck: offline fabrication cost heuristic.
+  ...costEstimateToolEntries,
+  // Appended after estimate_cost: 1D worst-case and RSS tolerance stack.
+  ...toleranceStackToolEntries,
+  // Appended after the tolerance stack: PLY/XYZ scan references. Not solids.
+  ...scanReferenceToolEntries,
+  // Appended after the scan tools: bbox mill toolpaths. Not FDM G-code.
+  // Appended after the mill planner: diameter → ISO metric coarse designation.
+  ...metricThreadToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints

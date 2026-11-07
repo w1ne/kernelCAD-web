@@ -24,6 +24,7 @@ meta({
 });
 
 // A handled first-aid case uses a molded shell, red medical cross and metal latches.
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const medicalPolymer = param('medicalPolymer', '#e8ecee', { label: 'Medical-grade polymer' });
 const medicalInk = param('medicalInk', '#c8403a', { label: 'Printed medical ink' });
 const stainlessSteel = param('stainlessSteel', '#aab4b7', { label: 'Stainless-steel latches' });
@@ -34,14 +35,14 @@ presets({
 const p = assembly('first-aid-kit');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
 
-p.part('case', b(0, 0, 41, 190, 120, 82).color(medicalPolymer));
-p.part('lid', b(0, 0, 88, 194, 124, 14).color(medicalPolymer));
-p.part('handle-left', b(-28, 0, 112, 18, 20, 32).color(medicalPolymer));
-p.part('handle-right', b(28, 0, 112, 18, 20, 32).color(medicalPolymer));
-p.part('handle-grip', b(0, 0, 128, 72, 20, 12).color(medicalPolymer));
-p.part('cross-vertical', b(0, -64, 44, 22, 4, 52).color(medicalInk));
-p.part('cross-horizontal', b(0, -64, 44, 54, 4, 20).color(medicalInk));
-p.part('latch-left', b(-58, -64, 12, 26, 8, 22).color(stainlessSteel));
-p.part('latch-right', b(58, -64, 12, 26, 8, 22).color(stainlessSteel));
+p.part('case', b(0, 0, 41, 190, 120, 82).color(medicalPolymer).scale(overallScale));
+p.part('lid', b(0, 0, 88, 194, 124, 14).color(medicalPolymer).scale(overallScale));
+p.part('handle-left', b(-28, 0, 112, 18, 20, 32).color(medicalPolymer).scale(overallScale));
+p.part('handle-right', b(28, 0, 112, 18, 20, 32).color(medicalPolymer).scale(overallScale));
+p.part('handle-grip', b(0, 0, 128, 72, 20, 12).color(medicalPolymer).scale(overallScale));
+p.part('cross-vertical', b(0, -64, 44, 22, 4, 52).color(medicalInk).scale(overallScale));
+p.part('cross-horizontal', b(0, -64, 44, 54, 4, 20).color(medicalInk).scale(overallScale));
+p.part('latch-left', b(-58, -64, 12, 26, 8, 22).color(stainlessSteel).scale(overallScale));
+p.part('latch-right', b(58, -64, 12, 26, 8, 22).color(stainlessSteel).scale(overallScale));
 
 return p.model();

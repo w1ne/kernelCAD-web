@@ -4,7 +4,7 @@
   "groupings": [
     {
       "title": "kernelCAD",
-      "description": "Parametric CAD and drawings",
+      "description": "Design and edit 3D CAD parts",
       "skills": [
         "kernelcad-design-loop",
         "kernelcad-cookbooks",

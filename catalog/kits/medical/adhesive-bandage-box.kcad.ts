@@ -25,6 +25,7 @@ meta({
 });
 
 // A paperboard first-aid carton reads through its red medical cross and the cotton dressings visible above it.
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const paperboard = param('paperboard', '#f4f0e6', { label: 'Paperboard carton' });
 const cottonGauze = param('cottonGauze', '#e8ddc5', { label: 'Cotton gauze' });
 const medicalInk = param('medicalInk', '#c8403a', { label: 'Printed medical ink' });
@@ -35,10 +36,10 @@ presets({
 const p = assembly('adhesive-bandage-box');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
 
-p.part('carton', b(0, 0, 24, 150, 74, 48).color(paperboard));
-p.part('cross-vertical', b(0, -39, 25, 24, 3, 30).color(medicalInk));
-p.part('cross-horizontal', b(0, -39, 25, 40, 3, 12).color(medicalInk));
-p.part('dressing', b(0, 68, 8, 94, 28, 16).color(cottonGauze));
-p.part('pad', b(0, 68, 17, 32, 30, 2).color(cottonGauze));
+p.part('carton', b(0, 0, 24, 150, 74, 48).color(paperboard).scale(overallScale));
+p.part('cross-vertical', b(0, -39, 25, 24, 3, 30).color(medicalInk).scale(overallScale));
+p.part('cross-horizontal', b(0, -39, 25, 40, 3, 12).color(medicalInk).scale(overallScale));
+p.part('dressing', b(0, 68, 8, 94, 28, 16).color(cottonGauze).scale(overallScale));
+p.part('pad', b(0, 68, 17, 32, 30, 2).color(cottonGauze).scale(overallScale));
 
 return p.model();

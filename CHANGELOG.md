@@ -1,5 +1,28 @@
 # Unreleased
 
+- `metricThreadFromDiameter` and `resolve_metric_thread` map a nominal diameter
+  (12 mm → M12×1.75) or a tap drill (D − P; 5 mm → M6) to the ISO 261 coarse
+  designation. `hole` / `holes` accept `thread: true` to fill that pitch.
+  `threadedHole` accepts `diameter` as well as `spec`. A clearance bore is
+  refused; ISO 273 stays on `clearanceFitForHoleDiameter`.
+  a model's bounding box, a plate/blank/bar stock, and an end mill, and can
+  emit mill G-code. Origin is the stock corner. This is a bbox heuristic, not
+  a collision-checked post, and it is separate from the FDM slicer `gcode` export.
+- `load_scan_reference` reads an ASCII PLY, little-endian binary PLY, or XYZ
+  cloud as a non-solid reference (bbox and centroid in millimetres).
+  `fit_model_to_scan` compares a parametric model's bounding box and reports
+  translation, scale, and per-axis clearance. Booleans on the cloud are refused.
+  `lib.fromSTL` and `mesh_to_features` are unchanged.
+- `dfm_fix_recheck` runs `dfm_review`, applies at most one safe edit (an
+  existing fillet radius, `shell()` thickness, or `draft()` angle), and
+  reviews the edited source. The caller persists `new_code`. Nothing is
+  written. Other findings come back as suggestions.
+- `estimate_cost` returns a labelled offline USD heuristic for 3d-print, cnc,
+  and sheet-cut from part volume, bounding box, and any declared material,
+  FabProcess, or StockSpec. It is not a supplier quote.
+- `analyze_tolerance_stack` returns a labelled 1D worst-case and RSS stack from
+  explicit contributors or from `shape.dimension` tolerances. A missing
+  tolerance is refused. It is not a full GD&T capability study.
 - GLB `asset.extras.kernelcad.stats` and the `asset_manifest` tool now include
   `materials`, `drawCalls`, `parts`, `hasRig` and `hasIk` beside `triangles`,
   `sizeM` and `minUpM`.

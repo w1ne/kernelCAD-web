@@ -24,6 +24,7 @@ meta({
 });
 
 // A laboratory flask has a broad conical body, narrow neck and visible liquid and graduation marks.
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const borosilicateGlass = param('borosilicateGlass', '#b8d6d1', { label: 'Borosilicate glass' });
 const solution = param('solution', '#4b8790', { label: 'Liquid solution' });
 const graduationInk = param('graduationInk', '#315357', { label: 'Graduation ink' });
@@ -50,11 +51,11 @@ const flaskBody = profiles[0].loft(profiles.slice(1), {
   planes: levels.map((z) => ({ plane: 'XY' as const, origin: [0, 0, z] as [number, number, number] })),
   ruled: true,
 });
-p.part('flask-body', flaskBody.color(borosilicateGlass));
-p.part('rim', c(0, 0, 111, 8, 17, 10).color(borosilicateGlass));
-p.part('liquid-window', b(0, -39, 20, 28, 2, 4).color(solution));
+p.part('flask-body', flaskBody.color(borosilicateGlass).scale(overallScale));
+p.part('rim', c(0, 0, 111, 8, 17, 10).color(borosilicateGlass).scale(overallScale));
+p.part('liquid-window', b(0, -39, 20, 28, 2, 4).color(solution).scale(overallScale));
 for (const [z, y] of [[36, -33.7], [48, -27.8], [60, -21.5]]) {
-  p.part('graduation-' + z, b(0, y, z, 12, 2, 2).color(graduationInk));
+  p.part('graduation-' + z, b(0, y, z, 12, 2, 2).color(graduationInk).scale(overallScale));
 }
 
 return p.model();

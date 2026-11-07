@@ -162,12 +162,15 @@ jobs:
 
   # Committed catalog/index.json is kernel-dependent (triangle counts). A PR that
   # bumps OCCT without regenerating it can merge green against a stale base, so
-  # re-check freshness on the merged develop tip. On PRs this test already runs
-  # inside the sharded suite, so the job is push-to-develop only.
+  # re-check freshness on the merged develop tip. This test ALSO runs on PRs, in
+  # its own job rather than inside a shard: it rebuilds and exports every asset
+  # (2,100 today, 2,390 on the catalog wave), which made the one shard that drew
+  # it ~7 min while its siblings finished in ~3. Give it a dedicated runner with
+  # its own budget instead of unbalancing the sharded suite.
   catalog-index:
     runs-on: ubuntu-latest
     needs: changes
-    if: needs.changes.outputs.push_gate == 'true'
+    if: needs.changes.outputs.docs_only != 'true'
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
@@ -221,7 +224,9 @@ jobs:
       - name: Build CLI bundle (required by integration tests)
         run: npm run build:cli
       - name: QC — vitest (shard ${{ matrix.shard }}/8)
-        run: npm test -- --shard=${{ matrix.shard }}/8
+        # `catalogIndex.test.ts` rebuilds + exports the whole catalog and runs in
+        # its own `catalog-index` job (above) so no shard inherits its ~7 min.
+        run: npm test -- --shard=${{ matrix.shard }}/8 --exclude 'tests/integration/catalog/catalogIndex.test.ts'
 
   # Gate job: carries the required-check name `test` so branch protection is
   # unchanged. if: always() ensures it reports failure (rather than being
@@ -235,8 +240,13 @@ jobs:
       - name: All test shards green
         run: |
           [ "${{ needs.changes.result }}" = "success" ] || { echo "changes job: ${{ needs.changes.result }}"; exit 1; }
-          if [ "${{ needs.changes.outputs.push_gate }}" = "true" ]; then
+          # catalog-index is its own job on PRs and pushes (never in a shard), so
+          # it is required whenever the heavy suite runs at all.
+          if [ "${{ needs.changes.outputs.docs_only }}" != "true" ]; then
             [ "${{ needs.catalog-index.result }}" = "success" ] || { echo "catalog-index result: ${{ needs.catalog-index.result }}"; exit 1; }
+          fi
+          if [ "${{ needs.changes.outputs.push_gate }}" = "true" ]; then
+            :
           elif [ "${{ needs.changes.outputs.docs_only }}" = "true" ]; then
             if [ "${{ needs.changes.outputs.reference_parts }}" != "true" ] && [ "${{ needs.changes.outputs.solidcraft }}" != "true" ]; then
               exit 0

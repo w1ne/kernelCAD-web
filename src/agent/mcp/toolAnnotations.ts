@@ -167,8 +167,16 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   // inputs returns the stored run, but the first call writes files.
   run_cfd: WRITES_FILE,
   cfd_summary: READ,
+  // Evaluates the script and returns a labelled heuristic. Writes nothing and calls no supplier.
+  estimate_cost: READ,
+  analyze_tolerance_stack: READ,
+  load_scan_reference: READ,
+  fit_model_to_scan: READ,
+  resolve_metric_thread: READ,
   // Evaluates the script in-process and reports; writes nothing.
   dfm_review: READ,
+  // Returns revised source for the caller to persist. Writes nothing.
+  dfm_fix_recheck: AUTHOR,
   ray_pick: READ,
   // Evaluates supplied script/file input to capture authored NURBS data; the
   // script may load referenced assets but does not replace the active session.

@@ -42,6 +42,10 @@ export const MCP_SANDBOX_ARGS: Readonly<Record<string, readonly SandboxArgSpec[]
   diff_scripts: [['base_file', 'read'], ['file', 'read']],
   inspect: [['file', 'read']],
   verify: [['file', 'read'], ['urdf_path', 'read']],
+  estimate_cost: [['file', 'read']],
+  analyze_tolerance_stack: [['file', 'read']],
+  load_scan_reference: [['file', 'read']],
+  fit_model_to_scan: [['file', 'read'], ['scan_file', 'read']],
   why_did_this_fail: [['file', 'read']],
   trace_from_image: [['image_url', 'path-or-url']],
   add_text: [['font', 'font'], ['font_family', 'font']],
@@ -76,6 +80,7 @@ export const MCP_SANDBOX_ARGS: Readonly<Record<string, readonly SandboxArgSpec[]
   ray_pick: [['file', 'read'], ['studio_url', 'url']],
   import_step: [['url', 'url'], ['upload.download_url', 'url'], ['output_dir', 'write']],
   dfm_review: [['file', 'read']],
+  dfm_fix_recheck: [['file', 'read']],
   inspect_nurbs: [['file', 'read']],
   mesh_boolean: [['a.file', 'read'], ['b.file', 'read']],
 };

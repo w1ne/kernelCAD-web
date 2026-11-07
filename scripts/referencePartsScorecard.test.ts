@@ -176,35 +176,19 @@ describe('reference-parts OCCT geometry', () => {
     expect(part?.provenance.details).toContain('A=3256+468π');
   });
 
-  it('matches the counterbore target or its documented 0.01 mm overcut', async () => {
+  it('matches the nominal counterbore target', async () => {
     const actual = await measure('plate-counterbore.kcad.ts');
     const expectedVolume = 12000 - 154 * Math.PI;
     const expectedArea = 3800 + 58 * Math.PI;
-    const overcutVolume = expectedVolume - 0.16 * Math.PI;
-    const overcutArea = expectedArea + 0.04 * Math.PI;
-    expect(Math.min(
-      Math.abs(actual.volumeMm3 - expectedVolume),
-      Math.abs(actual.volumeMm3 - overcutVolume),
-    )).toBeLessThan(0.01);
-    expect(Math.min(
-      Math.abs(actual.surfaceAreaMm2 - expectedArea),
-      Math.abs(actual.surfaceAreaMm2 - overcutArea),
-    )).toBeLessThan(0.01);
+    expect(actual.volumeMm3).toBeCloseTo(expectedVolume, 5);
+    expect(actual.surfaceAreaMm2).toBeCloseTo(expectedArea, 5);
   });
 
-  it('matches the blind bore target or its documented 0.01 mm overcut', async () => {
+  it('matches the nominal blind bore target', async () => {
     const actual = await measure('plate-blind-hole.kcad.ts');
     const expectedVolume = 14400 - 80 * Math.PI;
     const expectedArea = 4080 + 40 * Math.PI;
-    const overcutVolume = expectedVolume - 0.16 * Math.PI;
-    const overcutArea = expectedArea + 0.08 * Math.PI;
-    expect(Math.min(
-      Math.abs(actual.volumeMm3 - expectedVolume),
-      Math.abs(actual.volumeMm3 - overcutVolume),
-    )).toBeLessThan(0.01);
-    expect(Math.min(
-      Math.abs(actual.surfaceAreaMm2 - expectedArea),
-      Math.abs(actual.surfaceAreaMm2 - overcutArea),
-    )).toBeLessThan(0.01);
+    expect(actual.volumeMm3).toBeCloseTo(expectedVolume, 5);
+    expect(actual.surfaceAreaMm2).toBeCloseTo(expectedArea, 5);
   });
 });

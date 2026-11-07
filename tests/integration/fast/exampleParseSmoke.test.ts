@@ -149,6 +149,9 @@ describe('examples evaluate through the kernel', () => {
     // Eleven catalog fasteners at the default 'full' detail: 211 modelled
     // thread solids, about 32 s locally and 37 s in CI.
     ['examples/parts/catalog-lineup.kcad.ts', 90_000],
+    // Four cored posts trigger the full moulding draft/undercut/wall scan;
+    // it takes ~19 s locally and exceeded 15 s under CI load.
+    ['examples/manufacturing-showcase/moulded-housing.kcad.ts', 90_000],
   ]);
   const evaluationExamples = examples.filter(file => !HEAVY.has(relativeExample(file)) && !EVALUATION_EXEMPT.has(relativeExample(file)));
   for (const file of evaluationExamples) {

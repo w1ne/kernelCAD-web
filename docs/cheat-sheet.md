@@ -6,6 +6,18 @@ The script API, grouped by the job you are doing rather than by the object you
 call it on. Rows come from `src/agent/mcp/tools/listApi.ts`; for the full
 description of any entry, call `lookup_api(query)`.
 
+Offline fabrication cost is not a script call. Use the MCP tool `estimate_cost`
+for a labelled USD heuristic (3d-print, cnc, sheet-cut). It is not a supplier quote.
+A 1D fit check is `analyze_tolerance_stack`: worst case and RSS from explicit
+contributors or from `shape.dimension` tolerances. It is not a GD&T study.
+A scanned envelope is not a solid. `load_scan_reference` reads a PLY or XYZ
+cloud, and `fit_model_to_scan` compares a parametric bounding box. Booleans
+on the cloud are refused.
+from a bounding box plus stock. Its G-code is not the FDM slicer export.
+A bare nominal diameter becomes a coarse ISO thread with
+`hole({ diameter, thread: true })` or the MCP tool `resolve_metric_thread`.
+Clearance bores stay on `clearanceFitForHoleDiameter`.
+
 | Task | What it covers |
 |---|---|
 | [Start a shape](#start-a-shape) | The first call in any model: a solid primitive, or a 2D profile to extrude. |
@@ -17,7 +29,7 @@ description of any entry, call `lookup_api(query)`.
 | [Place & transform](#place--transform) | Move a body into position, mirror it, or repeat it. |
 | [Assemble](#assemble) | Build a mechanism from parts: connectors, mates, joints, posed Scenes. |
 | [Curves & surfaces](#curves--surfaces) | NURBS curves and surfaces, plus the evaluators for measuring them before they become solids. |
-| [Measure & verify](#measure--verify) | Ask the kernel what you actually built, and check it before shipping. |
+| [Measure & verify](#measure--verify) | Ask the kernel what you actually built, and check it before shipping. After dfm_review, dfm_fix_recheck applies one safe shell, fillet, or draft edit and runs that review again. |
 | [Parametrize](#parametrize) | Declare editable dimensions and do arithmetic on them (JS operators throw on a ParamRef). |
 | [Import & export](#import--export) | Bring in vendor geometry, and write models back out. |
 | [Annotate & present](#annotate--present) | Present a model and declare drawing intent without changing its geometry: text, color, lighting, camera, motion, drawing GD&T, and review requirements. |
@@ -35,6 +47,7 @@ The first call in any model: a solid primitive, or a 2D profile to extrude.
 | `spring({ length, coilRadius, wireRadius, turns, axis?, pointsPerTurn?, endStyle?, segments? }) => Shape` | Build a helical spring as a circular wire profile swept along a smooth B-spline helix spine, producing one continuous watertight solid. |
 | `threadedRod({ spec: string, length: number, chamfer?: boolean \| number, cosmetic?: boolean, clearance?: number }) => Shape` | A real ISO metric EXTERNAL thread (60° basic profile, right-hand) along +Z from z = 0 to `length`; the ridge centre crosses +X at every z = k·pitch, so a modelled `threadedHole` whose entry face is on a whole pitch mates in phase. |
 | `isoThread(spec: string) => { spec, diameter, pitch, coarse, standard, pitchDiameter, minorDiameter, rootDiameter, tapDrill, threadDepth }` | Resolve an ISO metric thread designation. |
+| `metricThreadFromDiameter(diameterMm: number, opts?: { kind?: 'nominal' \| 'tap_drill' \| 'auto', toleranceMm?: number }) => IsoThreadInfo` | Resolve the ISO 261 coarse metric thread for a diameter in millimetres. |
 | `spurGear({ module, teeth, faceWidth, pressureAngle?, bore?, backlash? }) => Shape` | Build an involute spur gear as ONE manifold solid. |
 | `internalSpurGear({ module, teeth, faceWidth, pressureAngle?, backlash?, rimThickness?, profileShift? }) => Shape` | Build an involute INTERNAL / ring gear as ONE manifold solid: outer rim minus a bore whose flanks are the external spur profile mirrored through the pitch circle. |
 | `ringGear({ module, teeth, faceWidth, pressureAngle?, backlash?, rimThickness?, profileShift? }) => Shape` | Alias of internalSpurGear — involute internal / ring gear. |
@@ -99,9 +112,9 @@ Cut into a solid: bolt holes, pockets, slots, plain subtraction.
 |---|---|
 | `Shape.subtract(...others) => Shape` | Boolean difference (this minus others). |
 | `ParamRef.subtract(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value equals this ParamRef minus `other`. |
-| `Shape.hole(face: FaceSelector \| string, opts: { u, v, diameter, depth?: number \| "through", at?: Vec3 \| { angleDeg, z }, axis?: Vec3, upToFace?: FaceRef, counterbore?: { diameter, depth }, countersink?: { diameter, angleDeg? }, thread?: { pitch, modeled?: boolean, clearance? } }) => Shape` | Drill a single hole. |
-| `Shape.holes(face: FaceSelector \| string, opts: { positions: Array<{u,v}>, diameter, depth?, upToFace?, counterbore?, countersink?, thread? }) => Shape` | Drill N holes in one feature record. |
-| `Shape.threadedHole(face: FaceSelector \| string, opts: { u, v, spec: string, depth: number \| 'through', modeled?: boolean, clearance?, name? }) => Shape` | ISO metric tapped hole by designation (`spec: 'M6'` coarse, or `'M6x0.75'`). |
+| `Shape.hole(face: FaceSelector \| string, opts: { u, v, diameter, depth?: number \| "through", at?: Vec3 \| { angleDeg, z }, axis?: Vec3, upToFace?: FaceRef, counterbore?: { diameter, depth }, countersink?: { diameter, angleDeg? }, thread?: true \| { pitch?, fromDiameter?: boolean, modeled?: boolean, clearance? } }) => Shape` | Drill a single hole. |
+| `Shape.holes(face: FaceSelector \| string, opts: { positions: Array<{u,v}>, diameter, depth?, upToFace?, counterbore?, countersink?, thread?: true \| { pitch?, fromDiameter?: boolean, modeled?, clearance? } }) => Shape` | Drill N holes in one feature record. |
+| `Shape.threadedHole(face: FaceSelector \| string, opts: { u, v, spec?: string, diameter?: number, depth: number \| 'through', modeled?: boolean, clearance?, name? }) => Shape` | ISO metric tapped hole by designation (`spec: 'M6'` coarse, or `'M6x0.75'`) or by nominal diameter (`diameter: 12` → M12×1.75). |
 | `Shape.cutout(profile: PathBuilder \| Sketch, opts: { face: FaceSelector \| string, depth?: number \| "through", upToFace?: FaceRef, depthMode?: "blind" \| "symmetric" }) => Shape` | Sketch-driven subtractive extrude for irregular shapes hole() can't express (slots, D-shapes, keyhole pockets). |
 
 ## Combine shapes
@@ -186,7 +199,7 @@ Build a mechanism from parts: connectors, mates, joints, posed Scenes.
 
 | Call | What it does |
 |---|---|
-| `assembly(name?) => Assembly` | `arm.tendon(name, { from, to, via?, actuator?: { kind: force, maxForceN }, maxLengthMm?, profile?: { kind: round \| flat, ... |
+| `assembly(name?) => Assembly` | `asm.part(name, shape, { material, process, stock })` records the blank, for example a CNC bar `{ kind: 'bar', lengthMm: 80, diameterMm: 20 }` or a sheet plate `{ kind: 'plate', lengthMm: 200, widthMm: 120, thicknessMm: 3 }`. |
 | `joint : { clevis(opts: ClevisJointOptions): ClevisJoint }` | Mechanism-delivery joint helpers. |
 | `Scene.part(name: string) => ScenePart` | Look up a part by its assembly-unique name. |
 | `Scene.parts : readonly ScenePart[]` | Frozen, ordered list of parts in the Scene; ordering matches the order parts were added to the Assembly. |
@@ -232,7 +245,7 @@ NURBS curves and surfaces, plus the evaluators for measuring them before they be
 
 ## Measure & verify
 
-Ask the kernel what you actually built, and check it before shipping.
+Ask the kernel what you actually built, and check it before shipping. After dfm_review, dfm_fix_recheck applies one safe shell, fillet, or draft edit and runs that review again.
 
 | Call | What it does |
 |---|---|
@@ -337,5 +350,5 @@ Present a model and declare drawing intent without changing its geometry: text, 
 | `animationView(spec: { param: string; from: number; to: number; durationMs: number; fps?: number } \| { name?: string; tracks: Array<{ param: string; keys: Array<{ atMs: number; value: number; ease?: "linear" \| "step" \| "easeIn" \| "easeOut" \| "easeInOut" }> }>; fps?: number }) => AnimationViewHandle` | Declare an animation timeline for offline kinematic-motion MP4 capture. |
 | `Shape.datum(label: string, face: FaceQuery) => Shape` | Declare datum `label` (one or two capitals, not I/O/Q) on the face `face` resolves to, for `svg-drawing` sheets. |
 | `Shape.tolerance(spec: { type: 'position' \| 'flatness' \| 'perpendicularity' \| 'parallelism' \| 'concentricity' \| 'cylindricity'; value: number; face?: FaceQuery; edge?: EdgeQuery; datums?: string[]; modifier?: '⌀' \| 'M' \| 'S' }) => Shape` | Declare a geometric tolerance (feature control frame) on exactly one of `face` / `edge`, for `svg-drawing` sheets. |
-| `Shape.dimension(spec: { id?: string } & ({ kind: 'linear'; from: Vec3 \| { edge: EdgeQuery } \| { face: FaceQuery }; to: Vec3 \| { edge: EdgeQuery } \| { face: FaceQuery }; label?: string } \| { kind: 'diameter' \| 'radius'; edge: EdgeQuery; label?: string } \| { kind: 'angular'; from: EdgeQuery; to: EdgeQuery; label?: string })) => Shape` | Declare a dimension to show on the 3D viewer model and on drawings. |
+| `Shape.dimension(spec: { id?: string; tol?: number \| { upper: number; lower: number } \| { plus: number; minus: number } } & ({ kind: 'linear'; from: Vec3 \| { edge: EdgeQuery } \| { face: FaceQuery }; to: Vec3 \| { edge: EdgeQuery } \| { face: FaceQuery }; label?: string } \| { kind: 'diameter' \| 'radius'; edge: EdgeQuery; label?: string } \| { kind: 'angular'; from: EdgeQuery; to: EdgeQuery; label?: string })) => Shape` | Declare a dimension to show on the 3D viewer model and on drawings. |
 | `Shape.drawingReview(plan: DrawingReviewPlan) => Shape` | Declare required geometric callouts and engineering decisions for this shape and downstream exports. |

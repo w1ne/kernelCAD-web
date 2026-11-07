@@ -320,6 +320,7 @@ describe('assembly capture record builders', () => {
       '../../shared/intent/kernelError',
       '../../shared/runtime/editableHelpers',
       '../../shared/runtime/paramRef',
+      '../../shared/stock',
     ]));
   });
 });

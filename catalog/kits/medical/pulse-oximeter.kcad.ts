@@ -24,6 +24,7 @@ meta({
 });
 
 // A fingertip oximeter has a hinged polymer clamp, inset display and soft finger pads.
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const medicalPolymer = param('medicalPolymer', '#eef2f2', { label: 'Medical-grade polymer' });
 const stainlessSteel = param('stainlessSteel', '#9aa6a8', { label: 'Stainless-steel hinge' });
 const displayGlass = param('displayGlass', '#284c50', { label: 'Display glass' });
@@ -36,13 +37,13 @@ const p = assembly('pulse-oximeter');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
 const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
 
-p.part('lower-jaw', b(0, 0, 14, 92, 42, 28).color(medicalPolymer));
-p.part('upper-jaw', box(82, 42, 24, true).rotate([0, 1, 0], -7).translate(-4, 0, 53).color(medicalPolymer));
-p.part('hinge', c(0, 0, 0, 48, 8, 8).rotate([0, 1, 0], 90).translate(-24, 0, 38).color(stainlessSteel));
-p.part('display', b(0, -22, 58, 48, 4, 20).color(displayGlass));
-p.part('button', c(28, -24, 57, 4, 5, 8).color(silicone));
+p.part('lower-jaw', b(0, 0, 14, 92, 42, 28).color(medicalPolymer).scale(overallScale));
+p.part('upper-jaw', box(82, 42, 24, true).rotate([0, 1, 0], -7).translate(-4, 0, 53).color(medicalPolymer).scale(overallScale));
+p.part('hinge', c(0, 0, 0, 48, 8, 8).rotate([0, 1, 0], 90).translate(-24, 0, 38).color(stainlessSteel).scale(overallScale));
+p.part('display', b(0, -22, 58, 48, 4, 20).color(displayGlass).scale(overallScale));
+p.part('button', c(28, -24, 57, 4, 5, 8).color(silicone).scale(overallScale));
 
-p.part('finger-pad-lower', b(0, 0, 29, 62, 30, 4).color(silicone));
-p.part('finger-pad-upper', b(0, 0, 41, 62, 30, 4).color(silicone));
+p.part('finger-pad-lower', b(0, 0, 29, 62, 30, 4).color(silicone).scale(overallScale));
+p.part('finger-pad-upper', b(0, 0, 41, 62, 30, 4).color(silicone).scale(overallScale));
 
 return p.model();

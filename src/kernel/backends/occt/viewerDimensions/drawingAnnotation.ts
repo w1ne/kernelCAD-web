@@ -9,7 +9,8 @@
 
 import type { Edge } from 'replicad';
 import type { DrawingDimensionSpec } from '../../../../shared/intent/drawingGdtRecord';
-import type { DrawingAnnotation } from '../drawingAnnotations';
+import { drawingTolSuffix, parseDimensionTol } from '../../../../shared/tol/stackup';
+import type { DimensionTolerance, DrawingAnnotation } from '../drawingAnnotations';
 import type { DrawingViewName } from '../drawingLayout';
 import { viewBasis } from '../drawingProjection';
 import { oneEdge } from '../drawingAnchors';
@@ -48,12 +49,23 @@ function pickView(score: (basis: { x: V3; y: V3 }) => number): DrawingViewName {
 
 const direction = (e: Edge): V3 => sub(pt(e.endPoint), pt(e.startPoint));
 
+/** Linear sheet suffix only. Diameter and radius callouts keep their existing text. */
+function linearSheetTol(d: DrawingDimensionSpec): { tol: DimensionTolerance } | Record<string, never> {
+  if (d.kind !== 'linear' || d.tol === undefined) return {};
+  try {
+    const suffix = drawingTolSuffix(parseDimensionTol(d.tol));
+    return suffix === undefined ? {} : { tol: suffix };
+  } catch {
+    return {};
+  }
+}
+
 function annotationFor(parts: readonly WorldFramePart[], d: DrawingDimensionSpec, role: string): DrawingAnnotation {
   const prefix = d.label !== undefined ? { prefix: d.label } : {};
   if (d.kind === 'linear') {
     const from = dimensionEnd(parts, d.from, `${role}.from`);
     const to = dimensionEnd(parts, d.to, `${role}.to`);
-    return { kind: 'linear', from, to, view: longestView(sub(to, from)), ...prefix };
+    return { kind: 'linear', from, to, view: longestView(sub(to, from)), ...prefix, ...linearSheetTol(d) };
   }
   if (d.kind === 'angular') {
     const normal = cross(direction(oneEdge(parts, d.from, `${role}.from`)), direction(oneEdge(parts, d.to, `${role}.to`)));
@@ -78,7 +90,7 @@ export function declaredDrawingAnnotation(
     return { ...annotationFor(parts, d, `dimensions[${index}]`), ...(d.id !== undefined ? { id: d.id } : {}) };
   } catch {
     const prefix = { ...(d.label !== undefined ? { prefix: d.label } : {}), ...(d.id !== undefined ? { id: d.id } : {}) };
-    if (d.kind === 'linear') return { kind: 'linear', from: d.from as never, to: d.to as never, ...prefix };
+    if (d.kind === 'linear') return { kind: 'linear', from: d.from as never, to: d.to as never, ...prefix, ...linearSheetTol(d) };
     if (d.kind === 'angular') return { kind: 'angular', from: d.from, to: d.to, ...prefix };
     return { kind: d.kind, edge: d.edge, ...prefix };
   }

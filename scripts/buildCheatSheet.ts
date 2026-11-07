@@ -25,6 +25,18 @@ const HEADER = [
   'call it on. Rows come from `src/agent/mcp/tools/listApi.ts`; for the full',
   'description of any entry, call `lookup_api(query)`.',
   '',
+  'Offline fabrication cost is not a script call. Use the MCP tool `estimate_cost`',
+  'for a labelled USD heuristic (3d-print, cnc, sheet-cut). It is not a supplier quote.',
+  'A 1D fit check is `analyze_tolerance_stack`: worst case and RSS from explicit',
+  'contributors or from `shape.dimension` tolerances. It is not a GD&T study.',
+  'A scanned envelope is not a solid. `load_scan_reference` reads a PLY or XYZ',
+  'cloud, and `fit_model_to_scan` compares a parametric bounding box. Booleans',
+  'on the cloud are refused.',
+  'from a bounding box plus stock. Its G-code is not the FDM slicer export.',
+  'A bare nominal diameter becomes a coarse ISO thread with',
+  '`hole({ diameter, thread: true })` or the MCP tool `resolve_metric_thread`.',
+  'Clearance bores stay on `clearanceFitForHoleDiameter`.',
+  '',
 ];
 
 /** First sentence of a description — the table needs one line, not a paragraph. */

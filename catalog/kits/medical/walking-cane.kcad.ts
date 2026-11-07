@@ -24,6 +24,7 @@ meta({
 });
 
 // A walking cane pairs a hardwood shaft with a shaped hand grip and broad rubber ferrule.
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const hardwood = param('hardwood', '#8a6748', { label: 'Hardwood shaft' });
 const medicalPolymer = param('medicalPolymer', '#2a555d', { label: 'Molded hand grip' });
 const rubber = param('rubber', '#303b3e', { label: 'Rubber ferrule' });
@@ -35,9 +36,9 @@ const p = assembly('walking-cane');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
 const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
 
-p.part('shaft', c(0, 0, 0, 790, 12, 8).color(hardwood));
-p.part('handle-stem', c(0, 0, 775, 44, 11, 8).color(medicalPolymer));
-p.part('crook', b(-18, 0, 815, 52, 18, 16).color(medicalPolymer));
-p.part('foot', c(0, 0, 0, 34, 17, 8).color(rubber));
+p.part('shaft', c(0, 0, 0, 790, 12, 8).color(hardwood).scale(overallScale));
+p.part('handle-stem', c(0, 0, 775, 44, 11, 8).color(medicalPolymer).scale(overallScale));
+p.part('crook', b(-18, 0, 815, 52, 18, 16).color(medicalPolymer).scale(overallScale));
+p.part('foot', c(0, 0, 0, 34, 17, 8).color(rubber).scale(overallScale));
 
 return p.model();

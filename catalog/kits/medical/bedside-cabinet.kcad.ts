@@ -24,6 +24,7 @@ meta({
 });
 
 // A two-drawer bedside cabinet has a wipe-clean painted body, a laminate top and metal pulls.
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const paintedSteel = param('paintedSteel', '#e8ecee', { label: 'Painted steel' });
 const laminate = param('laminate', '#d3c9b7', { label: 'Laminate top' });
 const stainlessSteel = param('stainlessSteel', '#aab4b7', { label: 'Stainless-steel pulls' });
@@ -34,12 +35,12 @@ presets({
 const p = assembly('bedside-cabinet');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
 
-p.part('cabinet-body', b(0, 0, 210, 360, 300, 420).color(paintedSteel));
-p.part('top', b(0, 0, 430, 380, 320, 20).color(laminate));
+p.part('cabinet-body', b(0, 0, 210, 360, 300, 420).color(paintedSteel).scale(overallScale));
+p.part('top', b(0, 0, 430, 380, 320, 20).color(laminate).scale(overallScale));
 for (const z of [300, 120]) {
-  p.part('drawer-' + z, b(0, -154, z, 335, 10, 145).color(paintedSteel));
-  p.part('pull-' + z, b(0, -165, z, 54, 12, 10).color(stainlessSteel));
+  p.part('drawer-' + z, b(0, -154, z, 335, 10, 145).color(paintedSteel).scale(overallScale));
+  p.part('pull-' + z, b(0, -165, z, 54, 12, 10).color(stainlessSteel).scale(overallScale));
 }
-p.part('plinth', b(0, 0, 24, 300, 240, 48).color(paintedSteel));
+p.part('plinth', b(0, 0, 24, 300, 240, 48).color(paintedSteel).scale(overallScale));
 
 return p.model();

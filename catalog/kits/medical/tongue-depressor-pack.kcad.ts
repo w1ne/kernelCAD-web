@@ -25,6 +25,7 @@ meta({
 });
 
 // A wrapped tongue-depressor pack shows stacked birch sticks, a paper sleeve and printed seal.
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const birchWood = param('birchWood', '#d9c29a', { label: 'Birch wood' });
 const paperSleeve = param('paperSleeve', '#f1eee4', { label: 'Paper sleeve' });
 const medicalInk = param('medicalInk', '#a86842', { label: 'Printed seal ink' });
@@ -35,8 +36,8 @@ presets({
 const p = assembly('tongue-depressor-pack');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
 
-p.part('sleeve', b(0, 0, 10, 140, 38, 20).color(paperSleeve));
-for (let i = 0; i < 5; i++) p.part('depressor-' + i, b(0, 0, 23 + i * 3, 118, 24, 3).color(birchWood));
-p.part('end-band', b(0, -21, 10, 48, 2, 20).color(medicalInk));
+p.part('sleeve', b(0, 0, 10, 140, 38, 20).color(paperSleeve).scale(overallScale));
+for (let i = 0; i < 5; i++) p.part('depressor-' + i, b(0, 0, 23 + i * 3, 118, 24, 3).color(birchWood).scale(overallScale));
+p.part('end-band', b(0, -21, 10, 48, 2, 20).color(medicalInk).scale(overallScale));
 
 return p.model();

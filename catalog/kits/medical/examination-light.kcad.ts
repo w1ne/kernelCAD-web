@@ -24,6 +24,7 @@ meta({
 });
 
 // A mobile examination lamp has a wheeled steel base, articulated arm and glass light face.
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const powderCoatedSteel = param('powderCoatedSteel', '#e5e9ea', { label: 'Powder-coated steel' });
 const rubber = param('rubber', '#3a4244', { label: 'Rubber casters' });
 const anodizedAluminum = param('anodizedAluminum', '#6b8f98', { label: 'Anodized-aluminum lamp head' });
@@ -36,16 +37,16 @@ const p = assembly('examination-light');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
 const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
 
-p.part('base', c(0, 0, 8, 16, 95, 10).color(powderCoatedSteel));
+p.part('base', c(0, 0, 8, 16, 95, 10).color(powderCoatedSteel).scale(overallScale));
 for (const side of [-1, 1]) {
-  p.part('base-leg-x-' + side, b(side * 58, 0, 6, 126, 20, 12).color(powderCoatedSteel));
-  p.part('base-leg-y-' + side, b(0, side * 58, 6, 20, 126, 12).color(powderCoatedSteel));
-  p.part('caster-' + side, c(side * 112, 0, 0, 22, 14, 8).color(rubber));
+  p.part('base-leg-x-' + side, b(side * 58, 0, 6, 126, 20, 12).color(powderCoatedSteel).scale(overallScale));
+  p.part('base-leg-y-' + side, b(0, side * 58, 6, 20, 126, 12).color(powderCoatedSteel).scale(overallScale));
+  p.part('caster-' + side, c(side * 112, 0, 0, 22, 14, 8).color(rubber).scale(overallScale));
 }
-p.part('column', c(0, 0, 14, 780, 12, 10).color(powderCoatedSteel));
-p.part('arm', b(115, 0, 810, 250, 18, 18).color(powderCoatedSteel));
-p.part('lamp-neck', c(0, 0, 0, 80, 10, 10).rotate([0, 1, 0], 65).translate(240, 0, 810).color(powderCoatedSteel));
-p.part('head', c(270, 0, 855, 24, 76, 12).color(anodizedAluminum));
-p.part('light-face', c(270, 0, 855, 4, 58, 12).color(opalGlass));
+p.part('column', c(0, 0, 14, 780, 12, 10).color(powderCoatedSteel).scale(overallScale));
+p.part('arm', b(115, 0, 810, 250, 18, 18).color(powderCoatedSteel).scale(overallScale));
+p.part('lamp-neck', c(0, 0, 0, 80, 10, 10).rotate([0, 1, 0], 65).translate(240, 0, 810).color(powderCoatedSteel).scale(overallScale));
+p.part('head', c(270, 0, 855, 24, 76, 12).color(anodizedAluminum).scale(overallScale));
+p.part('light-face', c(270, 0, 855, 4, 58, 12).color(opalGlass).scale(overallScale));
 
 return p.model();

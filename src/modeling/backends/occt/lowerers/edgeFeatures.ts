@@ -708,6 +708,14 @@ export function edgeFeatureFailureDiagnostic(f: EdgeFeatureFailure): CompilerDia
   const param = f.kind === 'fillet' ? 'radius' : 'distance';
   const { maxFeasible, attempts } = probeMaxFeasible(f.requested, f.tryValue, PROBE_ITERATIONS);
   const edgesText = `${f.edgeCount === 1 ? 'this edge' : `these ${f.edgeCount} edges`}`;
+  const featureLabel = `feature ${f.featureId}`;
+  // Name the limiting edge selection + feature so refuse.try can steer agents
+  // (OpenZCAD-style: say which radius/edge is the limit). Prior adjacent-round
+  // radii are not tracked on EdgeFeatureFailure yet — max-feasible probe is
+  // the authoritative limit we can name without a larger rewrite.
+  const limitEdgeClause = f.edgeCount === 1
+    ? `limiting edge on ${featureLabel}`
+    : `limiting edge set (${f.edgeCount} edges) on ${featureLabel}`;
   const base: CompilerDiagnostic = {
     target: 'export-occt',
     code: 'feature.kernel-failed',
@@ -721,17 +729,30 @@ export function edgeFeatureFailureDiagnostic(f: EdgeFeatureFailure): CompilerDia
     return {
       ...base,
       message: `${base.message}. No ${param} down to ${fmtMm(floor)} mm builds on ${edgesText}.`,
-      hint: `No ${f.kind} ${param} works on ${edgesText} (probed down to ${fmtMm(floor)} mm) — the edge selection itself cannot be ${f.kind === 'fillet' ? 'blended' : 'bevelled'}. Select different edges, or check they are not already tangent-continuous.`,
+      hint: `No ${f.kind} ${param} works on ${limitEdgeClause} (probed down to ${fmtMm(floor)} mm; requested ${fmtMm(f.requested)} mm) — the edge selection itself cannot be ${f.kind === 'fillet' ? 'blended' : 'bevelled'} (often already filleted/tangent-continuous or shorter than the round). Select different edges, or check a previous round on an adjacent edge is not blocking this ${f.kind}.`,
       nextAction: { kind: 'rewrite-feature', guidance: `change the ${f.kind} edge selection; no ${param} builds on it` },
-      details: { requestedValue: f.requested, probeAttempts: attempts, maxFeasibleValue: 0 },
+      details: {
+        param,
+        requestedValue: f.requested,
+        probeAttempts: attempts,
+        maxFeasibleValue: 0,
+        edgeCount: f.edgeCount,
+      },
     };
   }
   const key = f.kind === 'fillet' ? 'maxFeasibleRadius' : 'maxFeasibleDistance';
   return {
     ...base,
     message: `${base.message}. The largest ${param} that builds on ${edgesText} is ${fmtMm(maxFeasible)} mm.`,
-    hint: `The largest ${param} that works on ${edgesText} is ${fmtMm(maxFeasible)} mm, verified by a kernel probe. Use a ${param} of ${fmtMm(maxFeasible)} mm or less, or split the selection so the tight edges get a smaller ${param}.`,
+    hint: `Limiting ${param} on ${limitEdgeClause} is ${fmtMm(maxFeasible)} mm (requested ${fmtMm(f.requested)} mm; kernel probe). Use ${param} ≤ ${fmtMm(maxFeasible)} mm, or split the selection so tighter edges get a smaller ${param}. If a previous round on an adjacent edge is larger than this limit, reduce that prior radius first.`,
     nextAction: { kind: 'retry-with-smaller-param', param, factor: Number((maxFeasible / f.requested).toFixed(4)) },
-    details: { requestedValue: f.requested, maxFeasibleValue: maxFeasible, [key]: maxFeasible, probeAttempts: attempts },
+    details: {
+      param,
+      requestedValue: f.requested,
+      maxFeasibleValue: maxFeasible,
+      [key]: maxFeasible,
+      probeAttempts: attempts,
+      edgeCount: f.edgeCount,
+    },
   };
 }

@@ -24,6 +24,7 @@ meta({
 });
 
 // A medical oxygen cylinder has a painted steel tank, brass valve, gauge glass and protective foot ring.
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const paintedSteel = param('paintedSteel', '#7c9299', { label: 'Painted cylinder steel' });
 const brass = param('brass', '#c29442', { label: 'Brass valve' });
 const gaugeGlass = param('gaugeGlass', '#e2e9e6', { label: 'Gauge glass' });
@@ -36,11 +37,11 @@ const p = assembly('oxygen-cylinder');
 const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z);
 const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
 
-p.part('tank', c(0, 0, 0, 420, 72, 12).color(paintedSteel));
-p.part('base-ring', c(0, 0, 0, 20, 78, 12).color(rubber));
-p.part('neck', c(0, 0, 420, 50, 25, 10).color(paintedSteel));
-p.part('valve', b(0, 0, 492, 48, 44, 24).color(brass));
-p.part('gauge', c(0, 0, 0, 10, 22, 10).rotate([1, 0, 0], 90).translate(0, -28, 508).color(gaugeGlass));
-p.part('outlet', b(42, 0, 490, 42, 20, 18).color(brass));
+p.part('tank', c(0, 0, 0, 420, 72, 12).color(paintedSteel).scale(overallScale));
+p.part('base-ring', c(0, 0, 0, 20, 78, 12).color(rubber).scale(overallScale));
+p.part('neck', c(0, 0, 420, 50, 25, 10).color(paintedSteel).scale(overallScale));
+p.part('valve', b(0, 0, 492, 48, 44, 24).color(brass).scale(overallScale));
+p.part('gauge', c(0, 0, 0, 10, 22, 10).rotate([1, 0, 0], 90).translate(0, -28, 508).color(gaugeGlass).scale(overallScale));
+p.part('outlet', b(42, 0, 490, 42, 20, 18).color(brass).scale(overallScale));
 
 return p.model();

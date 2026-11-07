@@ -39,17 +39,18 @@ designing parts for different processes:
 
 | Process | Example | Reusable CAD reference |
 |---|---|---|
-| 3D printing | An enclosure with a lid and screw bosses | [Enclosure example](cookbook/snippets/enclosure-lid-with-screw-bosses.md) |
-| CNC milling | A mounting plate with holes for fasteners | [Threaded mounting holes](cookbook/snippets/threaded-hole-tap-drill.md) |
-| Sheet metal | A bent L-bracket with a flat pattern | [Sheet-metal bracket](cookbook/snippets/sheet-metal-l-bracket-bend.md) |
-| Laser or waterjet cutting | A flat plate with holes and slots | [Flat-part DXF export](cookbook/snippets/export-dxf-flat-parts.md) |
-| Turning | A cylindrical knob or spacer with a bore | [Parametric knob model](showcase/knurled-knob/) |
-| Assemblies | A gear mechanism with editable parts | [Planetary gear stage](showcase/planetary-gear-stage/) |
-| Injection molding | A cover with drafted faces | [Draft-angle example](cookbook/snippets/repair-draft-angle.md) |
+| 3D printing | An electronics enclosure with locating lid and PCB posts | [Enclosure](examples/manufacturing-showcase/electronics-enclosure.kcad.ts) |
+| CNC milling | A bearing block with mounting holes and a stepped seat | [Bearing block](examples/manufacturing-showcase/bearing-block.kcad.ts) |
+| Sheet metal | A four-hole bent bracket with a flat pattern | [Bent bracket](examples/manufacturing-showcase/bent-mounting-bracket.kcad.ts) |
+| Laser or waterjet cutting | A motor mounting plate with pilot and hole patterns | [Motor plate](examples/manufacturing-showcase/cut-motor-plate.kcad.ts) |
+| Turning | A shouldered spacer with an axial bore | [Shoulder spacer](examples/manufacturing-showcase/shoulder-spacer.kcad.ts) |
+| Assemblies | A bearing, housing, shaft and retainer | [Bearing assembly](examples/manufacturing-showcase/bearing-shaft-assembly.kcad.ts) |
+| Injection molding | A drafted housing with board-screw bosses and structural ribs | [Moulded housing](examples/manufacturing-showcase/moulded-housing.kcad.ts) |
 
 The output is CAD for review, not a manufacturing certification. Check
 dimensions, fit, material and process requirements, and prototype or obtain
-engineering review as appropriate for the part.
+engineering review as appropriate for the part. The [case notes](examples/manufacturing-showcase/README.md)
+describe what has been checked and what remains open for each model.
 
 ## Install
 
@@ -167,8 +168,8 @@ Some checks go past the picture:
 
 The headless OCCT gate checks 27 native `.kcad.ts` reference parts against
 analytic or recorded OCCT volume, surface-area, and bounding-box values. The
-current headline is 25/27 reference parts match; the expected-pass gate is
-25/25, with two documented known failures and their reasons listed in the
+current headline is 27/27 reference parts match; the expected-pass gate is
+27/27, with the analytic inputs and tolerances listed in the
 scorecard. See the
 [reference-parts scorecard](docs/reference-parts-scorecard.md) and its
 [local validation demo](docs/demos/reference-parts-scorecard/README.md).

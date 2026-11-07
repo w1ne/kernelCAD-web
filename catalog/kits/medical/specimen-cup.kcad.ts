@@ -24,6 +24,7 @@ meta({
 });
 
 // A specimen cup has a straight disposable body, threaded polymer lid and a paper identification label.
+const overallScale = param('scale', 1, { label: 'Overall scale', min: 0.65, max: 1.35, step: 0.05 });
 const polypropylene = param('polypropylene', '#e8eceb', { label: 'Polypropylene cup' });
 const medicalPolymer = param('medicalPolymer', '#e6ba54', { label: 'Lid polymer' });
 const labelPaper = param('labelPaper', '#f6f0df', { label: 'Identification label paper' });
@@ -34,11 +35,11 @@ presets({
 const p = assembly('specimen-cup');
 const c = (x: number, y: number, z: number, h: number, r: number, segments = 10) => cylinder(h, r, segments).translate(x, y, z);
 
-p.part('cup', c(0, 0, 0, 62, 27, 10).color(polypropylene));
-p.part('base-foot', c(0, 0, 0, 8, 23, 10).color(polypropylene));
-p.part('lid', c(0, 0, 61, 13, 30, 10).color(medicalPolymer));
-p.part('lid-rim', c(0, 0, 58, 5, 32, 10).color(medicalPolymer));
+p.part('cup', c(0, 0, 0, 62, 27, 10).color(polypropylene).scale(overallScale));
+p.part('base-foot', c(0, 0, 0, 8, 23, 10).color(polypropylene).scale(overallScale));
+p.part('lid', c(0, 0, 61, 13, 30, 10).color(medicalPolymer).scale(overallScale));
+p.part('lid-rim', c(0, 0, 58, 5, 32, 10).color(medicalPolymer).scale(overallScale));
 
-p.part('label', box(36, 3, 14, true).translate(0, -27, 32).color(labelPaper));
+p.part('label', box(36, 3, 14, true).translate(0, -27, 32).color(labelPaper).scale(overallScale));
 
 return p.model();
