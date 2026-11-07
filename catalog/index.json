@@ -2566,7 +2566,7 @@
     {
       "id": "travel-gear",
       "title": "Travel gear",
-      "description": "Original low-poly luggage and small travel accessories, modeled as editable kernelCAD assets with compact single-material exports.",
+      "description": "Original low-poly luggage and small travel accessories, modeled as editable kernelCAD assets with material-named colour knobs and presets.",
       "assets": [
         "duffel-bag",
         "foldable-umbrella",
@@ -280163,93 +280163,155 @@
       "id": "duffel-bag",
       "kit": "travel-gear",
       "title": "Travel duffel bag",
-      "description": "Cylindrical soft-sided travel duffel with end panels, zipper seam and a selectable carry arrangement. Knobs: length, carry style and fabric colours.",
+      "description": "Canvas weekender duffel: soft barrel body with flat base, round leather end panels, full-length top zip, two wrap-around webbing straps rising into carry handles with a leather grip wrap, end pocket, brass D-rings and an optional detachable shoulder strap. Weekender or large size. Material controls: canvas body, leather trim, webbing straps, brass hardware; waxedOlive, navySport and desertTan presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "duffel bag",
-        "travel bag",
         "weekender",
+        "holdall",
+        "gym bag",
         "luggage",
-        "travel"
+        "travel",
+        "canvas",
+        "low poly"
       ],
       "compat": [
         "travel",
-        "hotel",
-        "gym"
+        "gym",
+        "hotel"
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/travel-gear/duffel-bag.kcad.ts",
       "preview": "/assets/travel-gear-duffel-bag.png",
-      "sourceSha256": "1c2ecc3b5bd8f25da6ed8b1dfe089732c1cf2591f4a861892f59d5f388653a9b",
-      "triangleBudget": 650,
+      "sourceSha256": "e4be6237ad50bd40e9bee3e8182484feb1d799b318c328c3eb700d7c12ff1789",
+      "triangleBudget": 3000,
       "params": [
         {
-          "name": "length",
+          "name": "size",
           "type": "choice",
-          "default": "550",
-          "label": "Bag length (mm)",
+          "default": "weekender",
+          "label": "Bag size",
           "choices": [
-            "450",
-            "550",
-            "650"
+            "weekender",
+            "large"
           ]
         },
         {
-          "name": "carry",
+          "name": "shoulderStrap",
           "type": "choice",
-          "default": "handles",
-          "label": "Carry style",
+          "default": "no",
+          "label": "Shoulder strap",
           "choices": [
-            "handles",
-            "shoulder strap"
+            "yes",
+            "no"
           ]
         },
         {
-          "name": "fabric",
+          "name": "canvas",
           "type": "color",
-          "default": "#46645c",
-          "label": "Fabric"
+          "default": "#55684a",
+          "label": "Body (canvas)"
         },
         {
-          "name": "trim",
+          "name": "leather",
           "type": "color",
-          "default": "#c18147",
-          "label": "Trim"
+          "default": "#8a5530",
+          "label": "End panels, patches and grip (leather)"
+        },
+        {
+          "name": "webbing",
+          "type": "color",
+          "default": "#2e2b26",
+          "label": "Straps and zip (webbing)"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#c49a45",
+          "label": "D-rings and zip pull (brass)"
         }
       ],
-      "presets": {},
+      "presets": {
+        "waxedOlive": {
+          "canvas": "#4c5a3c",
+          "leather": "#6f4224",
+          "webbing": "#26241f",
+          "brass": "#b8913e"
+        },
+        "navySport": {
+          "canvas": "#24344f",
+          "leather": "#c9c2b4",
+          "webbing": "#d8d3c8",
+          "brass": "#a9b0b5"
+        },
+        "desertTan": {
+          "canvas": "#c2a57a",
+          "leather": "#5b3a22",
+          "webbing": "#4a3a2a",
+          "brass": "#c49a45"
+        }
+      },
       "stats": {
-        "triangles": 180,
+        "triangles": 2168,
         "sizeM": [
-          0.566,
-          0.292,
-          0.251
+          0.579608,
+          0.386,
+          0.313
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "fabric",
-          "color": "#46645c",
+          "name": "canvas",
+          "color": "#55684a",
           "parts": [
-            "soft-body"
+            "body",
+            "front-pocket"
           ],
-          "param": "fabric"
+          "param": "canvas"
         },
         {
-          "name": "trim",
-          "color": "#c18147",
+          "name": "leather",
+          "color": "#8a5530",
           "parts": [
-            "zipper-run",
-            "end-left",
-            "end-right",
-            "handle-leg-left",
-            "handle-leg-right",
-            "handle-grip"
+            "end-panel--1",
+            "end-panel-1",
+            "base-panel",
+            "handle-wrap",
+            "corner-patch--1",
+            "corner-patch-1",
+            "d-ring-tab--1",
+            "d-ring-tab-1"
           ],
-          "param": "trim"
+          "param": "leather"
+        },
+        {
+          "name": "webbing",
+          "color": "#2e2b26",
+          "parts": [
+            "end-piping--1",
+            "end-piping-1",
+            "zip-track",
+            "wrap-strap-0",
+            "wrap-strap-1",
+            "handle--1",
+            "handle-1"
+          ],
+          "param": "webbing"
+        },
+        {
+          "name": "brass",
+          "color": "#c49a45",
+          "parts": [
+            "zip-teeth",
+            "zip-pull",
+            "front-pocket-zip",
+            "d-ring--1",
+            "d-ring-1"
+          ],
+          "param": "brass"
         }
       ]
     },
@@ -280257,38 +280319,29 @@
       "id": "foldable-umbrella",
       "kit": "travel-gear",
       "title": "Foldable umbrella",
-      "description": "Compact umbrella with a selectable canopy diameter, open or folded state and straight or crook grip. Knobs: canopy, state, handle and colors.",
+      "description": "Compact folding umbrella standing on its grip: eight-gore canopy with scalloped rim and alternating panel colours, ribs with tip caps, top ferrule, runner and stretchers, telescoping shaft and rubber grip with wrist strap. Open or folded with the canopy gathered in a tie strap. Material controls: canopy fabric, accent panel fabric, frame steel, grip rubber; classicBlack, rainbowCheck and clearDome presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "umbrella",
         "foldable umbrella",
-        "travel umbrella",
+        "compact umbrella",
         "rain",
         "travel",
-        "compact"
+        "canopy",
+        "low poly"
       ],
       "compat": [
         "travel",
-        "rain",
-        "outdoor"
+        "outdoor",
+        "street"
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/travel-gear/foldable-umbrella.kcad.ts",
       "preview": "/assets/travel-gear-foldable-umbrella.png",
-      "sourceSha256": "2da39acaddd9d11a84176390e7e523dce499ae2c1b0fc3c9e5e2964fbe1b92b5",
-      "triangleBudget": 650,
+      "sourceSha256": "4430a03b64079b148f12c199206abf84d340b050fcd2eb19775f75cfadd24d90",
+      "triangleBudget": 3400,
       "params": [
-        {
-          "name": "diameter",
-          "type": "choice",
-          "default": "1000",
-          "label": "Open canopy diameter (mm)",
-          "choices": [
-            "900",
-            "1000",
-            "1150"
-          ]
-        },
         {
           "name": "state",
           "type": "choice",
@@ -280300,62 +280353,130 @@
           ]
         },
         {
-          "name": "handle",
-          "type": "choice",
-          "default": "crook",
-          "label": "Grip style",
-          "choices": [
-            "crook",
-            "straight"
-          ]
-        },
-        {
           "name": "canopy",
           "type": "color",
-          "default": "#426783",
-          "label": "Canopy and sleeve"
+          "default": "#24486e",
+          "label": "Canopy (polyester fabric)"
         },
         {
-          "name": "fittings",
+          "name": "accentPanel",
           "type": "color",
-          "default": "#33383d",
-          "label": "Shaft and fittings"
+          "default": "#d9c25a",
+          "label": "Accent panels (fabric)"
+        },
+        {
+          "name": "frameSteel",
+          "type": "color",
+          "default": "#9aa3aa",
+          "label": "Shaft, ribs and tips (steel)"
+        },
+        {
+          "name": "gripRubber",
+          "type": "color",
+          "default": "#1e2022",
+          "label": "Grip and strap (rubber)"
         }
       ],
-      "presets": {},
+      "presets": {
+        "classicBlack": {
+          "canopy": "#1d1f22",
+          "accentPanel": "#1d1f22",
+          "frameSteel": "#7c858c",
+          "gripRubber": "#141516"
+        },
+        "rainbowCheck": {
+          "canopy": "#d2443c",
+          "accentPanel": "#f2c94c",
+          "frameSteel": "#b8c0c6",
+          "gripRubber": "#2a2b2e"
+        },
+        "clearDome": {
+          "canopy": "#cfe3ea",
+          "accentPanel": "#a7cbd8",
+          "frameSteel": "#c8ced2",
+          "gripRubber": "#30343a"
+        }
+      },
       "stats": {
-        "triangles": 198,
+        "triangles": 3156,
         "sizeM": [
-          0.88986,
-          0.868,
-          0.866025
+          0.983257,
+          0.656,
+          0.982713
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "fittings",
-          "color": "#33383d",
+          "name": "gripRubber",
+          "color": "#1e2022",
           "parts": [
-            "shaft",
-            "runner",
-            "rib-0",
-            "rib-45",
-            "rib-90",
-            "rib-135",
-            "grip-stem",
-            "grip-return"
+            "grip",
+            "wrist-strap",
+            "rib-tip-0",
+            "rib-tip-1",
+            "rib-tip-2",
+            "rib-tip-3",
+            "rib-tip-4",
+            "rib-tip-5",
+            "rib-tip-6",
+            "rib-tip-7",
+            "runner"
           ],
-          "param": "fittings"
+          "param": "gripRubber"
+        },
+        {
+          "name": "frameSteel",
+          "color": "#9aa3aa",
+          "parts": [
+            "grip-cap",
+            "strap-anchor",
+            "shaft-1",
+            "shaft-2",
+            "shaft-3",
+            "rib-0",
+            "stretcher-0",
+            "rib-1",
+            "stretcher-1",
+            "rib-2",
+            "stretcher-2",
+            "rib-3",
+            "stretcher-3",
+            "rib-4",
+            "stretcher-4",
+            "rib-5",
+            "stretcher-5",
+            "rib-6",
+            "stretcher-6",
+            "rib-7",
+            "stretcher-7",
+            "top-notch",
+            "ferrule"
+          ],
+          "param": "frameSteel"
         },
         {
           "name": "canopy",
-          "color": "#426783",
+          "color": "#24486e",
           "parts": [
-            "canopy"
+            "gore-0",
+            "gore-2",
+            "gore-4",
+            "gore-6"
           ],
           "param": "canopy"
+        },
+        {
+          "name": "accentPanel",
+          "color": "#d9c25a",
+          "parts": [
+            "gore-1",
+            "gore-3",
+            "gore-5",
+            "gore-7"
+          ],
+          "param": "accentPanel"
         }
       ]
     },
@@ -280363,15 +280484,17 @@
       "id": "garment-bag",
       "kit": "travel-gear",
       "title": "Garment bag",
-      "description": "Folded garment carrier with a full-length closure, top grip and a choice of hanger hook or shoulder loop. Knobs: length, hanger and fabric colours.",
+      "description": "Hanging suit carrier: tall soft bag with sloping shoulders, chrome hanger hook through a reinforced collar, full-length front zip with pull, clear ID window, piped edges and webbing carry handles. Suit or dress length. Material controls: bag fabric, piping and handle trim, hanger chrome, ID window; charcoalSuit, weddingIvory and travelNavy presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "garment bag",
         "suit carrier",
+        "suit bag",
+        "luggage",
         "travel",
-        "clothing",
-        "luggage"
+        "wardrobe",
+        "low poly"
       ],
       "compat": [
         "travel",
@@ -280381,75 +280504,118 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/travel-gear/garment-bag.kcad.ts",
       "preview": "/assets/travel-gear-garment-bag.png",
-      "sourceSha256": "9a110c803abc1e15365c40957fa5361379feea4c576fc6669afe367df89d5c23",
-      "triangleBudget": 420,
+      "sourceSha256": "2e220c661921cda2d6efa10a42611437ce1580b64e5f77c9181bce4e26448c99",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "length",
           "type": "choice",
-          "default": "long",
-          "label": "Garment length",
+          "default": "suit",
+          "label": "Bag length",
           "choices": [
-            "short",
-            "long"
+            "suit",
+            "dress"
           ]
         },
         {
-          "name": "hanger",
-          "type": "choice",
-          "default": "hook",
-          "label": "Top fitting",
-          "choices": [
-            "hook",
-            "loop"
-          ]
-        },
-        {
-          "name": "cover",
+          "name": "fabric",
           "type": "color",
-          "default": "#424c57",
-          "label": "Cover fabric"
+          "default": "#33383f",
+          "label": "Bag (nylon fabric)"
         },
         {
           "name": "trim",
           "type": "color",
-          "default": "#b17a49",
-          "label": "Trim"
+          "default": "#8a6a44",
+          "label": "Piping and handles (trim)"
+        },
+        {
+          "name": "chrome",
+          "type": "color",
+          "default": "#c9ced2",
+          "label": "Hanger hook and zip pull (chrome)"
+        },
+        {
+          "name": "window",
+          "type": "color",
+          "default": "#d7e4ea",
+          "label": "ID window (clear vinyl)"
         }
       ],
-      "presets": {},
+      "presets": {
+        "charcoalSuit": {
+          "fabric": "#2b2e33",
+          "trim": "#1b1d20",
+          "chrome": "#c9ced2",
+          "window": "#cfdbe0"
+        },
+        "weddingIvory": {
+          "fabric": "#ece6da",
+          "trim": "#c2a874",
+          "chrome": "#e0d3b0",
+          "window": "#f3f1ea"
+        },
+        "travelNavy": {
+          "fabric": "#1f3150",
+          "trim": "#9b4a2b",
+          "chrome": "#b9c0c6",
+          "window": "#d7e4ea"
+        }
+      },
       "stats": {
-        "triangles": 128,
+        "triangles": 2196,
         "sizeM": [
-          0.61,
-          1.086,
-          0.111
+          0.606,
+          1.127,
+          0.122
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "cover",
-          "color": "#424c57",
+          "name": "fabric",
+          "color": "#33383f",
           "parts": [
-            "folded-cover"
+            "bag-body",
+            "front-panel",
+            "back-panel"
           ],
-          "param": "cover"
+          "param": "fabric"
         },
         {
           "name": "trim",
-          "color": "#b17a49",
+          "color": "#8a6a44",
           "parts": [
-            "zipper",
-            "fold-band",
-            "top-grip",
-            "hanger-crossbar",
-            "hanger-arm-left",
-            "hanger-arm-right",
-            "hanger-hook"
+            "piping-0",
+            "piping-1",
+            "zip-tape",
+            "id-frame",
+            "handle-patch--1",
+            "handle-patch-1",
+            "carry-handle",
+            "collar"
           ],
           "param": "trim"
+        },
+        {
+          "name": "chrome",
+          "color": "#c9ced2",
+          "parts": [
+            "zip-teeth",
+            "zip-pull",
+            "hook-stem",
+            "hook-curl"
+          ],
+          "param": "chrome"
+        },
+        {
+          "name": "window",
+          "color": "#d7e4ea",
+          "parts": [
+            "id-window"
+          ],
+          "param": "window"
         }
       ]
     },
@@ -280457,26 +280623,28 @@
       "id": "luggage-scale",
       "kit": "travel-gear",
       "title": "Luggage scale",
-      "description": "Handheld baggage scale with an upper grip, display and selectable lower hook size. Knobs: scale size, hook, body and strap colors.",
+      "description": "Handheld digital luggage scale lying flat: moulded T-grip body with rubber finger pads, backlit LCD in a bezel, power and units buttons, webbing strap looped through a metal buckle hook. Compact or large body; strap loop or wide steel hook. Material controls: housing plastic, grip rubber, strap webbing, hook metal, LCD backlight; graphite, travelOrange and silverGrey presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "luggage scale",
         "baggage scale",
+        "digital scale",
         "travel",
-        "weighing scale",
-        "luggage"
+        "weighing",
+        "airport",
+        "low poly"
       ],
       "compat": [
         "travel",
         "airport",
-        "luggage"
+        "hotel"
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/travel-gear/luggage-scale.kcad.ts",
       "preview": "/assets/travel-gear-luggage-scale.png",
-      "sourceSha256": "38c54239c8371b286790cedb77dc6a0d235458c8858d1b89d7bddf4571840ee7",
-      "triangleBudget": 320,
+      "sourceSha256": "a7da98af206429cff1649048707b6ece1f12172ae1e561e63383a6a6e06af4bc",
+      "triangleBudget": 1200,
       "params": [
         {
           "name": "size",
@@ -280499,51 +280667,124 @@
           ]
         },
         {
-          "name": "body",
+          "name": "housing",
           "type": "color",
-          "default": "#4e6472",
-          "label": "Scale housing"
+          "default": "#3c4650",
+          "label": "Housing (ABS plastic)"
         },
         {
-          "name": "strap",
+          "name": "gripRubber",
           "type": "color",
-          "default": "#25292c",
-          "label": "Grip and hook"
+          "default": "#1d2023",
+          "label": "Finger pads and buttons (rubber)"
+        },
+        {
+          "name": "strapWebbing",
+          "type": "color",
+          "default": "#2a2d30",
+          "label": "Strap (nylon webbing)"
+        },
+        {
+          "name": "hookMetal",
+          "type": "color",
+          "default": "#b9c0c6",
+          "label": "Buckle hook (zinc alloy)"
+        },
+        {
+          "name": "lcd",
+          "type": "color",
+          "default": "#9fd0c2",
+          "label": "Display backlight (LCD)"
         }
       ],
-      "presets": {},
+      "presets": {
+        "graphite": {
+          "housing": "#2b3036",
+          "gripRubber": "#141619",
+          "strapWebbing": "#1f2124",
+          "hookMetal": "#9aa2a8",
+          "lcd": "#9fd0c2"
+        },
+        "travelOrange": {
+          "housing": "#e46b2e",
+          "gripRubber": "#2a2a2c",
+          "strapWebbing": "#303236",
+          "hookMetal": "#c8ced2",
+          "lcd": "#c8e6f0"
+        },
+        "silverGrey": {
+          "housing": "#c3c8cc",
+          "gripRubber": "#3a3f44",
+          "strapWebbing": "#2f3a48",
+          "hookMetal": "#e0e4e7",
+          "lcd": "#f2c76a"
+        }
+      },
       "stats": {
-        "triangles": 160,
+        "triangles": 1040,
         "sizeM": [
-          0.09512,
-          0.25666,
-          0.06642
+          0.122,
+          0.0309,
+          0.1752
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "body",
-          "color": "#4e6472",
+          "name": "housing",
+          "color": "#3c4650",
           "parts": [
-            "housing"
+            "grip-bar",
+            "load-cell",
+            "digit-0",
+            "digit-1",
+            "digit-2",
+            "digit-3"
           ],
-          "param": "body"
+          "param": "housing"
         },
         {
-          "name": "strap",
-          "color": "#25292c",
+          "name": "gripRubber",
+          "color": "#1d2023",
           "parts": [
-            "display",
-            "button",
-            "grip-left",
-            "grip-right",
-            "grip-bridge",
-            "hook-stem",
+            "rim-band",
+            "finger-pad--36",
+            "finger-pad--12",
+            "finger-pad-12",
+            "finger-pad-36",
+            "bezel",
+            "button-0",
+            "button-1"
+          ],
+          "param": "gripRubber"
+        },
+        {
+          "name": "lcd",
+          "color": "#9fd0c2",
+          "parts": [
+            "screen"
+          ],
+          "param": "lcd"
+        },
+        {
+          "name": "strapWebbing",
+          "color": "#2a2d30",
+          "parts": [
+            "strap-run--1",
+            "strap-run-1",
+            "strap-loop"
+          ],
+          "param": "strapWebbing"
+        },
+        {
+          "name": "hookMetal",
+          "color": "#b9c0c6",
+          "parts": [
+            "buckle-plate",
             "hook-bar"
           ],
-          "param": "strap"
+          "param": "hookMetal"
         }
       ]
     },
@@ -280551,15 +280792,16 @@
       "id": "luggage-tag",
       "kit": "travel-gear",
       "title": "Luggage tag",
-      "description": "Small identification tag with a top strap and choice of address window or plain face. Knobs: tag size, face style and colors.",
+      "description": "Leather luggage tag lying flat: stitched body with rounded corners and tapered neck, clear address window over a paper card or a closed privacy flap, metal eyelet slot, leather strap with roller buckle. Small, standard or large. Material controls: tag leather, stitching thread, address card paper, buckle metal; saddleTan, navyCrossgrain and redTravel presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "luggage tag",
         "bag tag",
+        "address tag",
         "travel",
-        "identifier",
-        "luggage"
+        "leather",
+        "low poly"
       ],
       "compat": [
         "travel",
@@ -280569,8 +280811,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/travel-gear/luggage-tag.kcad.ts",
       "preview": "/assets/travel-gear-luggage-tag.png",
-      "sourceSha256": "3ed0cbf96fdd572e3ce0f54fdb4008c89158303ba38bd4119740b87b597f4f68",
-      "triangleBudget": 260,
+      "sourceSha256": "cfdf3fa37b945ca27ff1409eeddc271de4753bcc6c09fd556e31cfed027c1d79",
+      "triangleBudget": 1700,
       "params": [
         {
           "name": "size",
@@ -280590,54 +280832,128 @@
           "label": "Tag face",
           "choices": [
             "window",
-            "plain"
+            "privacy flap"
           ]
         },
         {
-          "name": "tag",
+          "name": "leather",
           "type": "color",
-          "default": "#4b7784",
-          "label": "Tag"
+          "default": "#9a5a2e",
+          "label": "Tag and strap (leather)"
         },
         {
-          "name": "strap",
+          "name": "thread",
           "type": "color",
-          "default": "#302b29",
-          "label": "Attachment strap"
+          "default": "#efe2c4",
+          "label": "Stitching (waxed thread)"
+        },
+        {
+          "name": "card",
+          "type": "color",
+          "default": "#f4f1e8",
+          "label": "Address card (paper)"
+        },
+        {
+          "name": "buckle",
+          "type": "color",
+          "default": "#c6a253",
+          "label": "Eyelet and buckle (brass)"
         }
       ],
-      "presets": {},
+      "presets": {
+        "saddleTan": {
+          "leather": "#a8683a",
+          "thread": "#f1e4c6",
+          "card": "#f4f1e8",
+          "buckle": "#c6a253"
+        },
+        "navyCrossgrain": {
+          "leather": "#1f2d48",
+          "thread": "#c9cfd8",
+          "card": "#eef1f4",
+          "buckle": "#b9c0c6"
+        },
+        "redTravel": {
+          "leather": "#b8322c",
+          "thread": "#f6efe2",
+          "card": "#fff8e8",
+          "buckle": "#d8d8d8"
+        }
+      },
       "stats": {
-        "triangles": 84,
+        "triangles": 1496,
         "sizeM": [
-          0.092,
-          0.255,
-          0.028
+          0.07,
+          0.0065,
+          0.259
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "tag",
-          "color": "#4b7784",
+          "name": "leather",
+          "color": "#9a5a2e",
           "parts": [
-            "tag-body",
-            "top-tab",
-            "window-slot"
+            "back-ply",
+            "front-ply",
+            "address-line-0",
+            "address-line-1",
+            "address-line-2",
+            "address-line-3",
+            "window-frame",
+            "strap-under",
+            "strap-over",
+            "strap-tip",
+            "buckle-keeper"
           ],
-          "param": "tag"
+          "param": "leather"
         },
         {
-          "name": "strap",
-          "color": "#302b29",
+          "name": "buckle",
+          "color": "#c6a253",
           "parts": [
-            "strap-left",
-            "strap-right",
-            "strap-bridge",
-            "address-window"
+            "eyelet",
+            "buckle-frame",
+            "buckle-roller"
           ],
-          "param": "strap"
+          "param": "buckle"
+        },
+        {
+          "name": "thread",
+          "color": "#efe2c4",
+          "parts": [
+            "stitch-0",
+            "stitch-2",
+            "stitch-4",
+            "stitch-6",
+            "stitch-8",
+            "stitch-10",
+            "stitch-12",
+            "stitch-14",
+            "stitch-16",
+            "stitch-26",
+            "stitch-44"
+          ],
+          "param": "thread"
+        },
+        {
+          "name": "card",
+          "color": "#f4f1e8",
+          "parts": [
+            "address-card"
+          ],
+          "param": "card"
+        },
+        {
+          "name": "strap-hole-0",
+          "color": "#2a1a10",
+          "parts": [
+            "strap-hole-0",
+            "strap-hole-1",
+            "strap-hole-2",
+            "strap-hole-3"
+          ]
         }
       ]
     },
@@ -280645,26 +280961,28 @@
       "id": "packing-cube",
       "kit": "travel-gear",
       "title": "Packing cube",
-      "description": "Soft packing organizer with a top zipper, grab handle and cube or shoe-compartment proportions. Knobs: size, layout and fabric colours.",
+      "description": "Zippered travel packing cube: soft ripstop sides with rounded corners, see-through mesh lid framed by binding tape, two-way zip round three sides with two pulls, webbing grab loop and a woven label. Small, medium or large. Material controls: ripstop fabric, lid mesh, binding tape and loop, zip pulls; tealSet, charcoalSet and citrusSet presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "packing cube",
         "packing organizer",
+        "luggage organizer",
         "travel",
-        "luggage",
-        "organizer"
+        "zip",
+        "mesh",
+        "low poly"
       ],
       "compat": [
         "travel",
         "hotel",
-        "luggage"
+        "bedroom"
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/travel-gear/packing-cube.kcad.ts",
       "preview": "/assets/travel-gear-packing-cube.png",
-      "sourceSha256": "b4055d1dea79e96444abf44cea062430e3f16f741f9dccf6ff862d2bdfb9a943",
-      "triangleBudget": 420,
+      "sourceSha256": "f28802d3013661d7c7ed5ecc5a7cb85e57d026eb755efac8ad25de7b342c1084",
+      "triangleBudget": 1400,
       "params": [
         {
           "name": "size",
@@ -280678,57 +280996,124 @@
           ]
         },
         {
-          "name": "layout",
-          "type": "choice",
-          "default": "cube",
-          "label": "Compartment shape",
-          "choices": [
-            "cube",
-            "shoe"
-          ]
+          "name": "ripstop",
+          "type": "color",
+          "default": "#2f7f86",
+          "label": "Sides (ripstop nylon)"
         },
         {
-          "name": "fabric",
+          "name": "mesh",
           "type": "color",
-          "default": "#5d6f7b",
-          "label": "Fabric"
+          "default": "#1f3b40",
+          "label": "Lid panel (mesh)"
         },
         {
-          "name": "trim",
+          "name": "binding",
           "type": "color",
-          "default": "#d39a54",
-          "label": "Zipper and handle"
+          "default": "#d9d4c7",
+          "label": "Binding tape and grab loop"
+        },
+        {
+          "name": "zipPull",
+          "type": "color",
+          "default": "#e0a43a",
+          "label": "Zip pulls (coated metal)"
         }
       ],
-      "presets": {},
+      "presets": {
+        "tealSet": {
+          "ripstop": "#2f7f86",
+          "mesh": "#1f3b40",
+          "binding": "#d9d4c7",
+          "zipPull": "#e0a43a"
+        },
+        "charcoalSet": {
+          "ripstop": "#3a3d42",
+          "mesh": "#1d1f22",
+          "binding": "#8b9096",
+          "zipPull": "#d24a3a"
+        },
+        "citrusSet": {
+          "ripstop": "#e9a03b",
+          "mesh": "#5b4a2e",
+          "binding": "#f6efe0",
+          "zipPull": "#2f5d7a"
+        }
+      },
       "stats": {
-        "triangles": 48,
+        "triangles": 1044,
         "sizeM": [
-          0.3,
-          0.24,
-          0.279
+          0.369,
+          0.1005,
+          0.266
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "fabric",
-          "color": "#5d6f7b",
+          "name": "ripstop",
+          "color": "#2f7f86",
           "parts": [
-            "fabric-case"
+            "body",
+            "belly",
+            "mesh-rib-x-0",
+            "mesh-rib-x-1",
+            "mesh-rib-x-2",
+            "mesh-rib-x-3",
+            "mesh-rib-x-4",
+            "mesh-rib-x-5",
+            "mesh-rib-x-6",
+            "mesh-rib-x-7",
+            "mesh-rib-x-8",
+            "mesh-rib-x-9",
+            "mesh-rib-x-10",
+            "mesh-rib-x-11",
+            "mesh-rib-x-12",
+            "mesh-rib-y-0",
+            "mesh-rib-y-1",
+            "mesh-rib-y-2",
+            "mesh-rib-y-3",
+            "mesh-rib-y-4",
+            "mesh-rib-y-5",
+            "mesh-rib-y-6",
+            "mesh-rib-y-7",
+            "mesh-rib-y-8"
           ],
-          "param": "fabric"
+          "param": "ripstop"
         },
         {
-          "name": "trim",
-          "color": "#d39a54",
+          "name": "binding",
+          "color": "#d9d4c7",
           "parts": [
-            "top-seam",
-            "grab-handle",
-            "front-panel"
+            "base-seam",
+            "lid-binding",
+            "grab-loop",
+            "label"
           ],
-          "param": "trim"
+          "param": "binding"
+        },
+        {
+          "name": "mesh",
+          "color": "#1f3b40",
+          "parts": [
+            "mesh-panel",
+            "zip-front",
+            "zip-end--1",
+            "zip-end-1"
+          ],
+          "param": "mesh"
+        },
+        {
+          "name": "zipPull",
+          "color": "#e0a43a",
+          "parts": [
+            "zip-slider-0",
+            "zip-pull-0",
+            "zip-slider-1",
+            "zip-pull-1"
+          ],
+          "param": "zipPull"
         }
       ]
     },
@@ -280736,26 +281121,26 @@
       "id": "passport-wallet",
       "kit": "travel-gear",
       "title": "Passport wallet",
-      "description": "Compact travel folio with card slots and a passport sleeve, shown closed or open. Knobs: size, layout, cover and lining colours.",
+      "description": "Leather passport wallet: folded cover with rounded spine and stitched edges; open, a passport in its sleeve, a boarding pass, stepped card slots and a pen loop; closed, an embossed cover with snap tab. Compact or standard. Material controls: cover leather, lining, passport cover, cards, stitching; cognac, blackOxford and forestTravel presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "passport wallet",
-        "passport cover",
-        "travel folio",
-        "travel",
-        "document holder"
+        "passport holder",
+        "travel wallet",
+        "travel organizer",
+        "leather",
+        "low poly"
       ],
       "compat": [
         "travel",
-        "airport",
-        "documents"
+        "airport"
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/travel-gear/passport-wallet.kcad.ts",
       "preview": "/assets/travel-gear-passport-wallet.png",
-      "sourceSha256": "0645f363b69cb5f8feb20737ab4bfa9f17314b73ade850f6157f28986d9fe1b2",
-      "triangleBudget": 420,
+      "sourceSha256": "36ae8edcde6552ab6dae5856a5d3f14bd1aac32a37e9f40681fb9dbba500a0e0",
+      "triangleBudget": 2500,
       "params": [
         {
           "name": "size",
@@ -280770,7 +281155,7 @@
         {
           "name": "layout",
           "type": "choice",
-          "default": "closed",
+          "default": "open",
           "label": "Folio layout",
           "choices": [
             "closed",
@@ -280780,23 +281165,63 @@
         {
           "name": "cover",
           "type": "color",
-          "default": "#6c4335",
-          "label": "Cover"
+          "default": "#7a4428",
+          "label": "Cover (leather)"
         },
         {
           "name": "lining",
           "type": "color",
-          "default": "#bd9c71",
-          "label": "Lining and pockets"
+          "default": "#c9a677",
+          "label": "Lining and pockets (leather)"
+        },
+        {
+          "name": "passport",
+          "type": "color",
+          "default": "#6e1f2a",
+          "label": "Passport cover"
+        },
+        {
+          "name": "cards",
+          "type": "color",
+          "default": "#3d7fb0",
+          "label": "Cards and boarding pass"
+        },
+        {
+          "name": "stitching",
+          "type": "color",
+          "default": "#e9d9b6",
+          "label": "Stitching and crest (thread, foil)"
         }
       ],
-      "presets": {},
+      "presets": {
+        "cognac": {
+          "cover": "#8a4a26",
+          "lining": "#d1ad7c",
+          "passport": "#6e1f2a",
+          "cards": "#3d7fb0",
+          "stitching": "#efdcb4"
+        },
+        "blackOxford": {
+          "cover": "#1e1d1f",
+          "lining": "#4b4446",
+          "passport": "#1b2c4f",
+          "cards": "#c7a23f",
+          "stitching": "#8f8a86"
+        },
+        "forestTravel": {
+          "cover": "#2f4a3a",
+          "lining": "#b99a6c",
+          "passport": "#6e1f2a",
+          "cards": "#e0e0d8",
+          "stitching": "#d8c48a"
+        }
+      },
       "stats": {
-        "triangles": 36,
+        "triangles": 2232,
         "sizeM": [
-          0.21,
-          0.27,
-          0.025
+          0.229,
+          0.016,
+          0.148586
         ],
         "minUpM": 0,
         "materials": 1
@@ -280804,20 +281229,142 @@
       "palette": [
         {
           "name": "cover",
-          "color": "#6c4335",
+          "color": "#7a4428",
           "parts": [
-            "outer-cover"
+            "cover-left",
+            "cover-right",
+            "spine",
+            "id-window",
+            "pen-loop"
           ],
           "param": "cover"
         },
         {
           "name": "lining",
-          "color": "#bd9c71",
+          "color": "#c9a677",
           "parts": [
-            "spine-band",
-            "closure-tab"
+            "lining-left",
+            "lining-right",
+            "sleeve",
+            "card-slot-0",
+            "card-slot-1",
+            "card-slot-2"
           ],
           "param": "lining"
+        },
+        {
+          "name": "cards",
+          "color": "#3d7fb0",
+          "parts": [
+            "boarding-pass",
+            "card-0",
+            "card-2"
+          ],
+          "param": "cards"
+        },
+        {
+          "name": "stitching",
+          "color": "#e9d9b6",
+          "parts": [
+            "boarding-pass-stub",
+            "passport-crest",
+            "passport-title",
+            "passport-band",
+            "card-1",
+            "left-stitch-x--1-0",
+            "left-stitch-x--1-1",
+            "left-stitch-x--1-2",
+            "left-stitch-x--1-3",
+            "left-stitch-x--1-4",
+            "left-stitch-x--1-5",
+            "left-stitch-x--1-6",
+            "left-stitch-x--1-7",
+            "left-stitch-x--1-8",
+            "left-stitch-x-1-0",
+            "left-stitch-x-1-1",
+            "left-stitch-x-1-2",
+            "left-stitch-x-1-3",
+            "left-stitch-x-1-4",
+            "left-stitch-x-1-5",
+            "left-stitch-x-1-6",
+            "left-stitch-x-1-7",
+            "left-stitch-x-1-8",
+            "left-stitch-y--1-0",
+            "left-stitch-y--1-1",
+            "left-stitch-y--1-2",
+            "left-stitch-y--1-3",
+            "left-stitch-y--1-4",
+            "left-stitch-y--1-5",
+            "left-stitch-y--1-6",
+            "left-stitch-y--1-7",
+            "left-stitch-y--1-8",
+            "left-stitch-y--1-9",
+            "left-stitch-y--1-10",
+            "left-stitch-y--1-11",
+            "left-stitch-y-1-0",
+            "left-stitch-y-1-1",
+            "left-stitch-y-1-2",
+            "left-stitch-y-1-3",
+            "left-stitch-y-1-4",
+            "left-stitch-y-1-5",
+            "left-stitch-y-1-6",
+            "left-stitch-y-1-7",
+            "left-stitch-y-1-8",
+            "left-stitch-y-1-9",
+            "left-stitch-y-1-10",
+            "left-stitch-y-1-11",
+            "right-stitch-x--1-0",
+            "right-stitch-x--1-1",
+            "right-stitch-x--1-2",
+            "right-stitch-x--1-3",
+            "right-stitch-x--1-4",
+            "right-stitch-x--1-5",
+            "right-stitch-x--1-6",
+            "right-stitch-x--1-7",
+            "right-stitch-x--1-8",
+            "right-stitch-x-1-0",
+            "right-stitch-x-1-1",
+            "right-stitch-x-1-2",
+            "right-stitch-x-1-3",
+            "right-stitch-x-1-4",
+            "right-stitch-x-1-5",
+            "right-stitch-x-1-6",
+            "right-stitch-x-1-7",
+            "right-stitch-x-1-8",
+            "right-stitch-y--1-0",
+            "right-stitch-y--1-1",
+            "right-stitch-y--1-2",
+            "right-stitch-y--1-3",
+            "right-stitch-y--1-4",
+            "right-stitch-y--1-5",
+            "right-stitch-y--1-6",
+            "right-stitch-y--1-7",
+            "right-stitch-y--1-8",
+            "right-stitch-y--1-9",
+            "right-stitch-y--1-10",
+            "right-stitch-y--1-11",
+            "right-stitch-y-1-0",
+            "right-stitch-y-1-1",
+            "right-stitch-y-1-2",
+            "right-stitch-y-1-3",
+            "right-stitch-y-1-4",
+            "right-stitch-y-1-5",
+            "right-stitch-y-1-6",
+            "right-stitch-y-1-7",
+            "right-stitch-y-1-8",
+            "right-stitch-y-1-9",
+            "right-stitch-y-1-10",
+            "right-stitch-y-1-11"
+          ],
+          "param": "stitching"
+        },
+        {
+          "name": "passport",
+          "color": "#6e1f2a",
+          "parts": [
+            "passport"
+          ],
+          "param": "passport"
         }
       ]
     },
@@ -280825,7 +281372,7 @@
       "id": "rolling-suitcase",
       "kit": "travel-gear",
       "title": "Rolling suitcase",
-      "description": "Modern hard-shell case with four spinner wheels, a telescoping handle and top grip. Knobs: size, handle, shell and trim colours.",
+      "description": "Hard-shell spinner suitcase: two ribbed clamshell halves with rounded corners, fabric zip band round the seam, TSA lock, four twin-wheel spinner casters, two-stage telescoping trolley handle and moulded top and side grips. Cabin or check-in size, handle retracted or extended. Material controls: shell polycarbonate, zip band fabric, handle aluminium, wheels and grips rubber; midnight, coral and aluminium presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -280833,7 +281380,10 @@
         "carry-on",
         "luggage",
         "spinner wheels",
-        "travel"
+        "hard shell",
+        "trolley",
+        "travel",
+        "low poly"
       ],
       "compat": [
         "travel",
@@ -280843,8 +281393,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/travel-gear/rolling-suitcase.kcad.ts",
       "preview": "/assets/travel-gear-rolling-suitcase.png",
-      "sourceSha256": "b49a31aa0ce61d8dadce2e95a8b4ee6ce1b503d1cb1a69b74c1b8fe9ae62d18e",
-      "triangleBudget": 900,
+      "sourceSha256": "0fb46db93b6ec264a1b12cc12fc24420acf5a8ee9399c7985b71d0ec4a2a8fd1",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "size",
@@ -280869,23 +281419,54 @@
         {
           "name": "shell",
           "type": "color",
-          "default": "#356a84",
-          "label": "Shell"
+          "default": "#2f6f8f",
+          "label": "Shell (polycarbonate)"
         },
         {
-          "name": "trim",
+          "name": "zipBand",
           "type": "color",
-          "default": "#242c34",
-          "label": "Wheels and fittings"
+          "default": "#22272c",
+          "label": "Zip band (nylon fabric)"
+        },
+        {
+          "name": "aluminium",
+          "type": "color",
+          "default": "#b7bec4",
+          "label": "Trolley handle and lock (aluminium)"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#1b1d20",
+          "label": "Wheels, casters and grips (rubber)"
         }
       ],
-      "presets": {},
+      "presets": {
+        "midnight": {
+          "shell": "#1f2530",
+          "zipBand": "#15181c",
+          "aluminium": "#8c949b",
+          "rubber": "#121315"
+        },
+        "coral": {
+          "shell": "#e0705f",
+          "zipBand": "#3a2e2c",
+          "aluminium": "#d2d6d9",
+          "rubber": "#2a2626"
+        },
+        "aluminium": {
+          "shell": "#c4cacf",
+          "zipBand": "#2b2f33",
+          "aluminium": "#e4e7ea",
+          "rubber": "#202224"
+        }
+      },
       "stats": {
-        "triangles": 312,
+        "triangles": 2304,
         "sizeM": [
-          0.33696,
-          0.82524,
-          0.22776
+          0.437,
+          0.965,
+          0.265
         ],
         "minUpM": 0,
         "materials": 1
@@ -280893,27 +281474,85 @@
       "palette": [
         {
           "name": "shell",
-          "color": "#356a84",
+          "color": "#2f6f8f",
           "parts": [
-            "hard-shell"
+            "front-shell",
+            "front-face",
+            "back-shell",
+            "back-face",
+            "front-rib--3",
+            "front-rib--1",
+            "front-rib-1",
+            "front-rib-3"
           ],
           "param": "shell"
         },
         {
-          "name": "trim",
-          "color": "#242c34",
+          "name": "zipBand",
+          "color": "#22272c",
           "parts": [
-            "front-rib",
-            "top-grip",
-            "trolley-rail-left",
-            "trolley-rail-right",
-            "trolley-grip",
-            "spinner--1--1",
-            "spinner--1-1",
-            "spinner-1--1",
-            "spinner-1-1"
+            "zip-band",
+            "trolley-channel"
           ],
-          "param": "trim"
+          "param": "zipBand"
+        },
+        {
+          "name": "aluminium",
+          "color": "#b7bec4",
+          "parts": [
+            "tsa-lock",
+            "trolley-outer--1",
+            "trolley-inner--1",
+            "trolley-outer-1",
+            "trolley-inner-1",
+            "trolley-button",
+            "caster-swivel--1--1",
+            "hub--1--1--1",
+            "hub--1--1-1",
+            "caster-swivel--1-1",
+            "hub--1-1--1",
+            "hub--1-1-1",
+            "caster-swivel-1--1",
+            "hub-1--1--1",
+            "hub-1--1-1",
+            "caster-swivel-1-1",
+            "hub-1-1--1",
+            "hub-1-1-1"
+          ],
+          "param": "aluminium"
+        },
+        {
+          "name": "rubber",
+          "color": "#1b1d20",
+          "parts": [
+            "lock-dial-0",
+            "lock-dial-1",
+            "lock-dial-2",
+            "top-grip-post--1",
+            "top-grip-post-1",
+            "top-grip-bar",
+            "side-grip-post--1",
+            "side-grip-post-1",
+            "side-grip-bar",
+            "trolley-grip",
+            "caster-housing--1--1",
+            "caster-fork--1--1",
+            "wheel--1--1--1",
+            "wheel--1--1-1",
+            "caster-housing--1-1",
+            "caster-fork--1-1",
+            "wheel--1-1--1",
+            "wheel--1-1-1",
+            "caster-housing-1--1",
+            "caster-fork-1--1",
+            "wheel-1--1--1",
+            "wheel-1--1-1",
+            "caster-housing-1-1",
+            "caster-fork-1-1",
+            "wheel-1-1--1",
+            "wheel-1-1-1"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -280921,92 +281560,134 @@
       "id": "sleep-mask",
       "kit": "travel-gear",
       "title": "Sleep mask",
-      "description": "Soft eye mask with a flat or contoured bridge and narrow or wide side strap. Knobs: mask shape, strap width and fabric colors.",
+      "description": "Contoured travel sleep mask lying face up: padded front shaped round the eyes with a nose notch, moulded eye cups, piped edge, elastic head strap with slide adjuster. Silk or contoured style. Material controls: front fabric, piping, eye cups and lining foam, strap elastic; midnightSilk, blushSatin and lavenderFoam presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "sleep mask",
         "eye mask",
         "travel",
-        "rest",
-        "airplane"
+        "sleep",
+        "airplane",
+        "comfort",
+        "low poly"
       ],
       "compat": [
         "travel",
         "airplane",
-        "train",
-        "sleep"
+        "hotel",
+        "bedroom"
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/travel-gear/sleep-mask.kcad.ts",
       "preview": "/assets/travel-gear-sleep-mask.png",
-      "sourceSha256": "c2a634c3c6acce017308f8d45dd0d18476e2b613d70b3994ddd2bee708dbffd7",
-      "triangleBudget": 340,
+      "sourceSha256": "0e3b06547346a744a20122053ae3b024c2b144b835a4756fe8a915451293dddd",
+      "triangleBudget": 1200,
       "params": [
         {
-          "name": "shape",
+          "name": "style",
           "type": "choice",
           "default": "contoured",
-          "label": "Nose bridge",
+          "label": "Mask style",
           "choices": [
             "contoured",
-            "flat"
+            "silk"
           ]
         },
         {
-          "name": "strap",
-          "type": "choice",
-          "default": "wide",
-          "label": "Head strap",
-          "choices": [
-            "narrow",
-            "wide"
-          ]
+          "name": "frontFabric",
+          "type": "color",
+          "default": "#2c3046",
+          "label": "Front (fabric)"
         },
         {
-          "name": "fabric",
+          "name": "piping",
           "type": "color",
-          "default": "#6d536e",
-          "label": "Mask fabric"
+          "default": "#c9a96a",
+          "label": "Edge piping (satin cord)"
         },
         {
-          "name": "band",
+          "name": "foam",
           "type": "color",
-          "default": "#353139",
-          "label": "Head band"
+          "default": "#5a5f78",
+          "label": "Eye cups and lining (foam)"
+        },
+        {
+          "name": "elastic",
+          "type": "color",
+          "default": "#1d1f2a",
+          "label": "Head strap (elastic)"
         }
       ],
-      "presets": {},
+      "presets": {
+        "midnightSilk": {
+          "frontFabric": "#1c2036",
+          "piping": "#d6b56e",
+          "foam": "#2c3150",
+          "elastic": "#141626"
+        },
+        "blushSatin": {
+          "frontFabric": "#e8b4b0",
+          "piping": "#f5e6d8",
+          "foam": "#d79a96",
+          "elastic": "#c07f7a"
+        },
+        "lavenderFoam": {
+          "frontFabric": "#9b8fc4",
+          "piping": "#f1eef8",
+          "foam": "#7c70a8",
+          "elastic": "#4e4570"
+        }
+      },
       "stats": {
-        "triangles": 112,
+        "triangles": 968,
         "sizeM": [
-          0.646,
-          0.11032,
-          0.081043
+          0.205898,
+          0.03412,
+          0.163123
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "fabric",
-          "color": "#6d536e",
+          "name": "piping",
+          "color": "#c9a96a",
           "parts": [
-            "eye-panel",
-            "left-eye-pad",
-            "right-eye-pad",
-            "nose-bridge"
+            "piping",
+            "strap-anchor--1",
+            "strap-anchor-1",
+            "slide-adjuster"
           ],
-          "param": "fabric"
+          "param": "piping"
         },
         {
-          "name": "band",
-          "color": "#353139",
+          "name": "foam",
+          "color": "#5a5f78",
           "parts": [
-            "left-head-band",
-            "right-head-band"
+            "lining",
+            "dome-seam-left",
+            "dome-seam-right"
           ],
-          "param": "band"
+          "param": "foam"
+        },
+        {
+          "name": "frontFabric",
+          "color": "#2c3046",
+          "parts": [
+            "front",
+            "eye-dome-left",
+            "eye-dome-right"
+          ],
+          "param": "frontFabric"
+        },
+        {
+          "name": "elastic",
+          "color": "#1d1f2a",
+          "parts": [
+            "strap"
+          ],
+          "param": "elastic"
         }
       ]
     },
@@ -281014,15 +281695,17 @@
       "id": "toiletry-bag",
       "kit": "travel-gear",
       "title": "Toiletry bag",
-      "description": "Travel wash kit with a top zipper, side grip and compact or hanging form. Knobs: layout, size and fabric colours.",
+      "description": "Canvas dopp kit: soft trapezoid body wider at the base, ridge zip with leather pull tabs, leather end gussets and carry loop, waterproof base panel. Case or hanging layout with folding hook. Compact or standard. Material controls: canvas body, leather trim, zip and hardware metal, base lining; waxedGreen, charcoalLeather and sandCanvas presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "toiletry bag",
-        "wash kit",
-        "travel organizer",
+        "dopp kit",
+        "wash bag",
         "travel",
-        "luggage"
+        "bathroom",
+        "canvas",
+        "low poly"
       ],
       "compat": [
         "travel",
@@ -281032,8 +281715,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/travel-gear/toiletry-bag.kcad.ts",
       "preview": "/assets/travel-gear-toiletry-bag.png",
-      "sourceSha256": "ebe9761d3eb816a13caacfd6f008afefdb7ed109b5651a7be3ace5b25ba22afe",
-      "triangleBudget": 420,
+      "sourceSha256": "8e473fc340707827cba906703b46519d27ffed88362cf2f5fd7d5d5ae96b4efd",
+      "triangleBudget": 1300,
       "params": [
         {
           "name": "layout",
@@ -281056,47 +281739,101 @@
           ]
         },
         {
-          "name": "fabric",
+          "name": "canvas",
           "type": "color",
-          "default": "#64765f",
-          "label": "Fabric"
+          "default": "#5d6e55",
+          "label": "Body (waxed canvas)"
         },
         {
-          "name": "trim",
+          "name": "leather",
           "type": "color",
-          "default": "#c48a4b",
-          "label": "Zipper and fittings"
+          "default": "#8b5a32",
+          "label": "Gussets, tabs and loop (leather)"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c09a4c",
+          "label": "Zip and hook (brass)"
+        },
+        {
+          "name": "baseLining",
+          "type": "color",
+          "default": "#2c2a27",
+          "label": "Base panel (coated)"
         }
       ],
-      "presets": {},
+      "presets": {
+        "waxedGreen": {
+          "canvas": "#4f5f46",
+          "leather": "#7a4a28",
+          "hardware": "#b8913e",
+          "baseLining": "#24221f"
+        },
+        "charcoalLeather": {
+          "canvas": "#36393d",
+          "leather": "#1e1c1b",
+          "hardware": "#a9b0b5",
+          "baseLining": "#1a1a1a"
+        },
+        "sandCanvas": {
+          "canvas": "#c9b38c",
+          "leather": "#5c3a22",
+          "hardware": "#c09a4c",
+          "baseLining": "#4a3d2e"
+        }
+      },
       "stats": {
-        "triangles": 48,
+        "triangles": 904,
         "sizeM": [
-          0.385,
-          0.185,
-          0.1955
+          0.2755,
+          0.1575,
+          0.134
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "fabric",
-          "color": "#64765f",
+          "name": "canvas",
+          "color": "#5d6e55",
           "parts": [
-            "main-case"
+            "body"
           ],
-          "param": "fabric"
+          "param": "canvas"
         },
         {
-          "name": "trim",
-          "color": "#c48a4b",
+          "name": "leather",
+          "color": "#8b5a32",
           "parts": [
-            "zipper-seam",
-            "side-grip",
-            "front-pocket"
+            "end-gusset--1",
+            "end-gusset-1",
+            "pull-tab-0",
+            "pull-tab-1",
+            "carry-loop",
+            "badge"
           ],
-          "param": "trim"
+          "param": "leather"
+        },
+        {
+          "name": "baseLining",
+          "color": "#2c2a27",
+          "parts": [
+            "base-panel",
+            "zip-tape"
+          ],
+          "param": "baseLining"
+        },
+        {
+          "name": "hardware",
+          "color": "#c09a4c",
+          "parts": [
+            "zip-teeth",
+            "zip-slider-0",
+            "zip-slider-1",
+            "loop-rivets"
+          ],
+          "param": "hardware"
         }
       ]
     },
@@ -281104,15 +281841,18 @@
       "id": "travel-adapter",
       "kit": "travel-gear",
       "title": "Travel plug adapter",
-      "description": "Compact universal plug adapter with selectable EU, UK or US prongs and one or two USB sockets. Knobs: plug standard, port count and colors.",
+      "description": "Universal travel plug adapter: rounded two-tone housing, recessed universal socket, USB-A and USB-C ports with power LED, colour-coded prong sliders on the sides, and EU, UK or US prongs out of the back. One or two USB-A ports. Material controls: housing plastic, faceplate, prong metal, slider accent; arcticWhite, stealthBlack and signalBlue presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "travel adapter",
         "plug adapter",
-        "USB",
+        "universal adapter",
+        "power adapter",
+        "usb charger",
         "travel",
-        "electrical"
+        "electronics",
+        "low poly"
       ],
       "compat": [
         "travel",
@@ -281122,8 +281862,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/travel-gear/travel-adapter.kcad.ts",
       "preview": "/assets/travel-gear-travel-adapter.png",
-      "sourceSha256": "ff0ce88d7d84ad09056aeb6a2977a3dccdc2b975da97b154847430603e940a0c",
-      "triangleBudget": 360,
+      "sourceSha256": "9a36675f11dd7ffb6c11211a4cbd3fa35bb38f1a78b7aa4509a46e18a41cf595",
+      "triangleBudget": 1100,
       "params": [
         {
           "name": "plug",
@@ -281140,56 +281880,126 @@
           "name": "ports",
           "type": "choice",
           "default": "2",
-          "label": "USB sockets",
+          "label": "USB-A sockets",
           "choices": [
             "1",
             "2"
           ]
         },
         {
-          "name": "body",
+          "name": "housing",
           "type": "color",
-          "default": "#e4e3dc",
-          "label": "Adapter housing"
+          "default": "#ecebe6",
+          "label": "Housing (PC plastic)"
         },
         {
-          "name": "pins",
+          "name": "faceplate",
           "type": "color",
-          "default": "#bbb8ae",
-          "label": "Metal contacts"
+          "default": "#3a4048",
+          "label": "Socket faceplate (plastic)"
+        },
+        {
+          "name": "prongMetal",
+          "type": "color",
+          "default": "#c9c4b4",
+          "label": "Prongs (nickel-plated brass)"
+        },
+        {
+          "name": "sliderAccent",
+          "type": "color",
+          "default": "#e5732c",
+          "label": "Prong sliders (accent)"
         }
       ],
-      "presets": {},
+      "presets": {
+        "arcticWhite": {
+          "housing": "#f2f2ee",
+          "faceplate": "#cfd3d6",
+          "prongMetal": "#c9c4b4",
+          "sliderAccent": "#2e8bd6"
+        },
+        "stealthBlack": {
+          "housing": "#25272b",
+          "faceplate": "#121315",
+          "prongMetal": "#b9b4a6",
+          "sliderAccent": "#d8433a"
+        },
+        "signalBlue": {
+          "housing": "#2f5f9e",
+          "faceplate": "#e9ecef",
+          "prongMetal": "#d2cdbd",
+          "sliderAccent": "#f2c230"
+        }
+      },
       "stats": {
-        "triangles": 136,
+        "triangles": 900,
         "sizeM": [
-          0.142,
-          0.11,
-          0.111
+          0.07,
+          0.059,
+          0.0729
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "body",
-          "color": "#e4e3dc",
+          "name": "housing",
+          "color": "#ecebe6",
           "parts": [
             "housing",
-            "usb-port-1",
-            "usb-port-2"
+            "socket-well",
+            "usb-a-0",
+            "usb-a-1",
+            "usb-c"
           ],
-          "param": "body"
+          "param": "housing"
         },
         {
-          "name": "pins",
-          "color": "#bbb8ae",
+          "name": "faceplate",
+          "color": "#3a4048",
           "parts": [
-            "face-plate",
-            "eu-pin--24",
-            "eu-pin-24"
+            "faceplate",
+            "rear-bezel",
+            "socket-round--1",
+            "socket-slot--1",
+            "socket-round-1",
+            "socket-slot-1",
+            "socket-earth",
+            "slider-track--1",
+            "slider-track-1",
+            "slider-top-track",
+            "eu-sleeve--1",
+            "eu-sleeve-1"
           ],
-          "param": "pins"
+          "param": "faceplate"
+        },
+        {
+          "name": "sliderAccent",
+          "color": "#e5732c",
+          "parts": [
+            "usb-a-tongue-0",
+            "usb-a-tongue-1",
+            "slider-tab--1",
+            "slider-tab-1",
+            "slider-top"
+          ],
+          "param": "sliderAccent"
+        },
+        {
+          "name": "power-led",
+          "color": "#4fd16b",
+          "parts": [
+            "power-led"
+          ]
+        },
+        {
+          "name": "prongMetal",
+          "color": "#c9c4b4",
+          "parts": [
+            "eu-pin--1",
+            "eu-pin-1"
+          ],
+          "param": "prongMetal"
         }
       ]
     },
@@ -281197,15 +282007,17 @@
       "id": "travel-neck-pillow",
       "kit": "travel-gear",
       "title": "Travel neck pillow",
-      "description": "U-shaped padded neck rest in child or adult size with a classic or wraparound front. Knobs: size, shape, clasp and fabric color.",
+      "description": "U-shaped travel neck pillow: fat stuffed back tapering to two rounded front ends, open at the chin, contrasting piped outer seam, snap strap across the opening and a stuff-sack loop. Child or adult size, strap open or closed. Material controls: plush fabric, piping, strap webbing, snap button; slateBlue, memoryFoamGrey and sunsetCoral presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "travel neck pillow",
         "neck rest",
+        "neck cushion",
         "travel",
         "comfort",
-        "airplane"
+        "airplane",
+        "low poly"
       ],
       "compat": [
         "travel",
@@ -281215,8 +282027,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/travel-gear/travel-neck-pillow.kcad.ts",
       "preview": "/assets/travel-gear-travel-neck-pillow.png",
-      "sourceSha256": "48bc7bc85e1877937fdfc842588db0212239a03bfb81c39d7e10c8de867afde5",
-      "triangleBudget": 560,
+      "sourceSha256": "ad91a1d154bfe28dd32e08aa494e6f5235764af236940b71c2aab685589dbc6c",
+      "triangleBudget": 2200,
       "params": [
         {
           "name": "size",
@@ -281229,55 +282041,147 @@
           ]
         },
         {
-          "name": "shape",
-          "type": "choice",
-          "default": "classic",
-          "label": "Front shape",
-          "choices": [
-            "classic",
-            "wrap"
-          ]
-        },
-        {
           "name": "clasp",
           "type": "choice",
-          "default": "with clasp",
-          "label": "Front clasp",
+          "default": "closed",
+          "label": "Front strap",
           "choices": [
-            "with clasp",
-            "no clasp"
+            "closed",
+            "open"
           ]
         },
         {
-          "name": "fabric",
+          "name": "plush",
           "type": "color",
-          "default": "#55788a",
-          "label": "Pillow fabric"
+          "default": "#4f7690",
+          "label": "Pillow cover (plush fabric)"
+        },
+        {
+          "name": "piping",
+          "type": "color",
+          "default": "#e7e1d4",
+          "label": "Seam piping (cord)"
+        },
+        {
+          "name": "strap",
+          "type": "color",
+          "default": "#2b3238",
+          "label": "Front strap (webbing)"
+        },
+        {
+          "name": "snap",
+          "type": "color",
+          "default": "#b8bec4",
+          "label": "Snap button (metal)"
         }
       ],
-      "presets": {},
+      "presets": {
+        "slateBlue": {
+          "plush": "#3f5f77",
+          "piping": "#d9d3c4",
+          "strap": "#1f262c",
+          "snap": "#aeb5bb"
+        },
+        "memoryFoamGrey": {
+          "plush": "#7d8084",
+          "piping": "#3a3c3f",
+          "strap": "#2a2b2d",
+          "snap": "#c9ced2"
+        },
+        "sunsetCoral": {
+          "plush": "#e07a5f",
+          "piping": "#f4ead4",
+          "strap": "#3d405b",
+          "snap": "#d8b25a"
+        }
+      },
       "stats": {
-        "triangles": 182,
+        "triangles": 2076,
         "sizeM": [
-          0.352519,
-          0.13888,
-          0.298905
+          0.317045,
+          0.082,
+          0.289699
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "fabric",
-          "color": "#55788a",
+          "name": "plush",
+          "color": "#4f7690",
           "parts": [
-            "rear-cushion",
-            "side-cushion-left",
-            "front-tip-left",
-            "side-cushion-right",
-            "front-tip-right"
+            "cushion-0",
+            "joint-0",
+            "cushion-1",
+            "joint-1",
+            "cushion-2",
+            "joint-2",
+            "cushion-3",
+            "joint-3",
+            "cushion-4",
+            "joint-4",
+            "cushion-5",
+            "joint-5",
+            "cushion-6",
+            "joint-6",
+            "cushion-7",
+            "joint-7",
+            "cushion-8",
+            "joint-8",
+            "cushion-9",
+            "joint-9",
+            "cushion-10",
+            "joint-10",
+            "cushion-11",
+            "joint-11",
+            "cushion-12",
+            "joint-12",
+            "cushion-13",
+            "joint-13",
+            "joint-end"
           ],
-          "param": "fabric"
+          "param": "plush"
+        },
+        {
+          "name": "piping",
+          "color": "#e7e1d4",
+          "parts": [
+            "piping-0",
+            "piping-1",
+            "piping-2",
+            "piping-3",
+            "piping-4",
+            "piping-5",
+            "piping-6",
+            "piping-7",
+            "piping-8",
+            "piping-9",
+            "piping-10",
+            "piping-11",
+            "piping-12",
+            "piping-13"
+          ],
+          "param": "piping"
+        },
+        {
+          "name": "strap",
+          "color": "#2b3238",
+          "parts": [
+            "back-loop",
+            "strap-tab--1",
+            "strap-tab-1",
+            "strap-bridge"
+          ],
+          "param": "strap"
+        },
+        {
+          "name": "snap",
+          "color": "#b8bec4",
+          "parts": [
+            "snap-stud",
+            "snap-cap"
+          ],
+          "param": "snap"
         }
       ]
     },
