@@ -57371,12 +57371,16 @@
       "id": "concrete-placement-bucket",
       "kit": "construction-equipment",
       "title": "Concrete placement bucket",
-      "description": "Crane-suspended concrete bucket with tapered hopper, discharge gate and lifting frame. Material controls: equipment enamel paint, exposed structural steel; weathered and highVisibility presets.",
+      "description": "Upright crane concrete bucket at real size: round hopper tapering to a narrow outlet with rolled rim and stiffening bands, trunnion pins and a lifting bail meeting at a crane eye, four-leg stand on a skid ring, sliding clam gate with a long hand lever, rubber elephant-trunk hose, and a load of concrete in the mouth. Capacity choice 0.5 or 1.0 m3. Material controls: bucket paint, bail and frame steel, hose rubber, wet concrete; craneYellow, highVisibility and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "concrete bucket",
+        "crane skip",
+        "concrete placement",
+        "tower crane",
+        "pour",
         "construction equipment",
-        "roadworks",
         "jobsite",
         "low poly",
         "CC0"
@@ -57390,8 +57394,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/construction-equipment/concrete-placement-bucket.kcad.ts",
       "preview": "/assets/construction-equipment-concrete-placement-bucket.png",
-      "sourceSha256": "441178a0bb366d427a843177ab0f068db18323df750785ba67f5a27815427d89",
-      "triangleBudget": 2200,
+      "sourceSha256": "412c69c00617e876065db320539d9581dfc0e6f5156adf9ee6f04294f7b465eb",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -57403,60 +57407,125 @@
           "step": 0.05
         },
         {
-          "name": "equipmentPaintColor",
-          "type": "color",
-          "default": "#e1a31b",
-          "label": "Equipment enamel paint"
+          "name": "capacity",
+          "type": "choice",
+          "default": "1.0m3",
+          "label": "Bucket capacity",
+          "choices": [
+            "0.5m3",
+            "1.0m3"
+          ]
         },
         {
-          "name": "structuralSteelColor",
+          "name": "bucketPaint",
           "type": "color",
-          "default": "#89969a",
-          "label": "Exposed structural steel"
+          "default": "#d9a21b",
+          "label": "Bucket paint"
+        },
+        {
+          "name": "frameSteel",
+          "type": "color",
+          "default": "#4c5459",
+          "label": "Bail and frame steel"
+        },
+        {
+          "name": "hoseRubber",
+          "type": "color",
+          "default": "#1f2224",
+          "label": "Hose rubber"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#8f918c",
+          "label": "Wet concrete"
         }
       ],
       "presets": {
-        "weathered": {
-          "equipmentPaintColor": "#a87b36",
-          "structuralSteelColor": "#716b61"
+        "craneYellow": {
+          "bucketPaint": "#f0c419",
+          "frameSteel": "#2f3437"
         },
         "highVisibility": {
-          "equipmentPaintColor": "#f06b26",
-          "structuralSteelColor": "#c1c7c2"
+          "bucketPaint": "#e8641c",
+          "frameSteel": "#d8dcdc"
+        },
+        "weathered": {
+          "bucketPaint": "#a6834a",
+          "frameSteel": "#5d5a52",
+          "concrete": "#a7a59c"
         }
       },
       "stats": {
-        "triangles": 96,
+        "triangles": 1700,
         "sizeM": [
-          0.5616,
-          0.9975,
-          0.5103
+          1.823936,
+          2.815,
+          1.52
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "equipmentPaintColor",
-          "color": "#e1a31b",
+          "name": "bucketPaint",
+          "color": "#d9a21b",
           "parts": [
-            "bucket-floor",
-            "hopper-side--1",
-            "lifting-ear--1",
-            "hopper-side-1",
-            "lifting-ear-1",
-            "hopper-front"
+            "hopper-shell",
+            "rolled-rim",
+            "outlet-neck",
+            "stiffening-band-0",
+            "stiffening-band-1",
+            "gate-plate"
           ],
-          "param": "equipmentPaintColor"
+          "param": "bucketPaint"
         },
         {
-          "name": "structuralSteelColor",
-          "color": "#89969a",
+          "name": "concrete",
+          "color": "#8f918c",
           "parts": [
-            "discharge-gate",
-            "lifting-crossbar"
+            "concrete-load",
+            "concrete-splash"
           ],
-          "param": "structuralSteelColor"
+          "param": "concrete"
+        },
+        {
+          "name": "frameSteel",
+          "color": "#4c5459",
+          "parts": [
+            "trunnion-left",
+            "trunnion-cap-left",
+            "bail-arm-left",
+            "bail-sling-left",
+            "trunnion-right",
+            "trunnion-cap-right",
+            "bail-arm-right",
+            "bail-sling-right",
+            "crane-eye-plate",
+            "crane-eye",
+            "stand-collar",
+            "skid-ring",
+            "stand-leg-0",
+            "stand-leg-1",
+            "stand-leg-2",
+            "stand-leg-3",
+            "gate-guides",
+            "gate-pivot",
+            "gate-lever",
+            "hose-clamp"
+          ],
+          "param": "frameSteel"
+        },
+        {
+          "name": "hoseRubber",
+          "color": "#1f2224",
+          "parts": [
+            "gate-lever-grip",
+            "hose-0",
+            "hose-1",
+            "hose-2"
+          ],
+          "param": "hoseRubber"
         }
       ]
     },
@@ -57714,12 +57783,16 @@
       "id": "construction-personnel-elevator",
       "kit": "construction-equipment",
       "title": "Construction personnel elevator",
-      "description": "Temporary mast elevator cage with guide rails, mesh walls and ground frame. Material controls: equipment enamel paint, exposed structural steel; weathered and highVisibility presets.",
-      "category": "structure",
+      "description": "Rack-and-pinion construction hoist at real size: square lattice mast with tube chords, rungs, diagonal lacing and a toothed rack, 1.5 m sections with flange frames and a wall tie, mesh-sided cage on spring buffers with framed roof, roof guardrail and landing gate, twin-motor drive unit riding the rack, and a fenced base enclosure. Mast choice 4 or 6 sections. Material controls: cage paint, galvanised mast steel, mesh infill, drive unit paint; siteYellow, highVisibility and weathered presets.",
+      "category": "prop",
       "origin": "base",
       "tags": [
+        "construction hoist",
+        "personnel elevator",
+        "rack and pinion",
+        "site hoist",
+        "mast",
         "construction equipment",
-        "roadworks",
         "jobsite",
         "low poly",
         "CC0"
@@ -57733,8 +57806,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/construction-equipment/construction-personnel-elevator.kcad.ts",
       "preview": "/assets/construction-equipment-construction-personnel-elevator.png",
-      "sourceSha256": "2e5508c1915baf950db43761e3a85b7d2aedbb3789f013934b24e38c6c9af2f5",
-      "triangleBudget": 2200,
+      "sourceSha256": "13fbdf1c63e156bf28e74d2f506597480de56fbf2c440395e4cf515d1a1651ef",
+      "triangleBudget": 5200,
       "params": [
         {
           "name": "scale",
@@ -57746,60 +57819,230 @@
           "step": 0.05
         },
         {
-          "name": "equipmentPaintColor",
-          "type": "color",
-          "default": "#e1a31b",
-          "label": "Equipment enamel paint"
+          "name": "sections",
+          "type": "choice",
+          "default": "4",
+          "label": "Mast sections (1.5 m each)",
+          "choices": [
+            "4",
+            "6"
+          ]
         },
         {
-          "name": "structuralSteelColor",
+          "name": "cagePaint",
           "type": "color",
-          "default": "#89969a",
-          "label": "Exposed structural steel"
+          "default": "#e2771e",
+          "label": "Cage paint"
+        },
+        {
+          "name": "mastSteel",
+          "type": "color",
+          "default": "#a5adb0",
+          "label": "Galvanised mast steel"
+        },
+        {
+          "name": "meshInfill",
+          "type": "color",
+          "default": "#5d666b",
+          "label": "Mesh infill"
+        },
+        {
+          "name": "drivePaint",
+          "type": "color",
+          "default": "#2d5d8f",
+          "label": "Drive unit paint"
         }
       ],
       "presets": {
-        "weathered": {
-          "equipmentPaintColor": "#a87b36",
-          "structuralSteelColor": "#716b61"
+        "siteYellow": {
+          "cagePaint": "#e8b81f",
+          "drivePaint": "#3c4a55"
         },
         "highVisibility": {
-          "equipmentPaintColor": "#f06b26",
-          "structuralSteelColor": "#c1c7c2"
+          "cagePaint": "#f25c1f",
+          "meshInfill": "#2a2f33",
+          "drivePaint": "#e8c21f"
+        },
+        "weathered": {
+          "cagePaint": "#a86c3b",
+          "mastSteel": "#8a8c86",
+          "meshInfill": "#4f504a",
+          "drivePaint": "#4f6577"
         }
       },
       "stats": {
-        "triangles": 96,
+        "triangles": 2332,
         "sizeM": [
-          0.6396,
-          1.938,
-          0.5904
+          4.1,
+          6.347,
+          4.17
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "structuralSteelColor",
-          "color": "#89969a",
+          "name": "mastSteel",
+          "color": "#a5adb0",
           "parts": [
-            "ground-frame",
-            "mast--1",
-            "cross-brace--1",
-            "mast-1",
-            "cross-brace-1"
+            "base-frame",
+            "mast-chord-0",
+            "mast-chord-1",
+            "mast-chord-2",
+            "mast-chord-3",
+            "mast-flange-0",
+            "mast-rung-0-0",
+            "mast-lace-0-0-lo",
+            "mast-lace-0-0-hi",
+            "mast-rung-0-1",
+            "mast-lace-0-1-lo",
+            "mast-lace-0-1-hi",
+            "mast-rung-0-2",
+            "mast-lace-0-2-lo",
+            "mast-lace-0-2-hi",
+            "mast-flange-1",
+            "mast-rung-1-0",
+            "mast-lace-1-0-lo",
+            "mast-lace-1-0-hi",
+            "mast-rung-1-1",
+            "mast-lace-1-1-lo",
+            "mast-lace-1-1-hi",
+            "mast-rung-1-2",
+            "mast-lace-1-2-lo",
+            "mast-lace-1-2-hi",
+            "mast-flange-2",
+            "mast-rung-2-0",
+            "mast-lace-2-0-lo",
+            "mast-lace-2-0-hi",
+            "mast-rung-2-1",
+            "mast-lace-2-1-lo",
+            "mast-lace-2-1-hi",
+            "mast-rung-2-2",
+            "mast-lace-2-2-lo",
+            "mast-lace-2-2-hi",
+            "mast-flange-3",
+            "mast-rung-3-0",
+            "mast-lace-3-0-lo",
+            "mast-lace-3-0-hi",
+            "mast-rung-3-1",
+            "mast-lace-3-1-lo",
+            "mast-lace-3-1-hi",
+            "mast-rung-3-2",
+            "mast-lace-3-2-lo",
+            "mast-lace-3-2-hi",
+            "mast-top-cap",
+            "rack-tooth-band-0",
+            "rack-tooth-band-1",
+            "rack-tooth-band-2",
+            "rack-tooth-band-3",
+            "rack-tooth-band-4",
+            "rack-tooth-band-5",
+            "rack-tooth-band-6",
+            "rack-tooth-band-7",
+            "rack-tooth-band-8",
+            "rack-tooth-band-9",
+            "rack-tooth-band-10",
+            "rack-tooth-band-11",
+            "rack-tooth-band-12",
+            "rack-tooth-band-13",
+            "rack-tooth-band-14",
+            "rack-tooth-band-15",
+            "rack-tooth-band-16",
+            "rack-tooth-band-17",
+            "rack-tooth-band-18",
+            "rack-tooth-band-19",
+            "rack-tooth-band-20",
+            "rack-tooth-band-21",
+            "rack-tooth-band-22",
+            "rack-tooth-band-23",
+            "wall-tie-arm",
+            "wall-tie-arm-2",
+            "wall-tie-plate",
+            "gate-handle",
+            "cage-sign",
+            "drive-guide-rollers",
+            "drive-pinion-0",
+            "drive-pinion-1"
           ],
-          "param": "structuralSteelColor"
+          "param": "mastSteel"
         },
         {
-          "name": "equipmentPaintColor",
-          "color": "#e1a31b",
+          "name": "meshInfill",
+          "color": "#5d666b",
           "parts": [
-            "elevator-platform",
-            "cage-side--1",
-            "cage-side-1"
+            "enclosure-panel-0",
+            "enclosure-panel-1",
+            "enclosure-panel-2",
+            "mast-flange-0-hole",
+            "mast-flange-1-hole",
+            "mast-flange-2-hole",
+            "mast-flange-3-hole",
+            "rack",
+            "cage-wall-mast-side",
+            "cage-wall-left",
+            "cage-wall-right",
+            "gate-leaf-0-mesh",
+            "gate-leaf-1-mesh",
+            "drive-brake-0",
+            "drive-brake-1"
           ],
-          "param": "equipmentPaintColor"
+          "param": "meshInfill"
+        },
+        {
+          "name": "cagePaint",
+          "color": "#e2771e",
+          "parts": [
+            "enclosure-rail-0",
+            "enclosure-post-0a",
+            "enclosure-rail-1",
+            "enclosure-post-1a",
+            "enclosure-rail-2",
+            "enclosure-post-2a",
+            "enclosure-post-end-left",
+            "enclosure-post-end-right",
+            "cage-floor",
+            "cage-roof",
+            "cage-post-0",
+            "cage-post-1",
+            "cage-post-2",
+            "cage-post-3",
+            "cage-rail-left",
+            "cage-rail-right",
+            "cage-rail-mast-side",
+            "gate-leaf-0-frame-top",
+            "gate-leaf-0-kick",
+            "gate-leaf-0-mid",
+            "gate-leaf-1-frame-top",
+            "gate-leaf-1-kick",
+            "gate-leaf-1-mid",
+            "gate-header",
+            "roof-post-0",
+            "roof-post-1",
+            "roof-rail-1",
+            "roof-knee-rail-1",
+            "roof-post-2",
+            "roof-rail-2",
+            "roof-knee-rail-2",
+            "roof-post-3",
+            "roof-rail-3",
+            "roof-knee-rail-3"
+          ],
+          "param": "cagePaint"
+        },
+        {
+          "name": "drivePaint",
+          "color": "#2d5d8f",
+          "parts": [
+            "buffer-spring-left",
+            "buffer-spring-right",
+            "drive-frame",
+            "drive-gearbox-0",
+            "drive-motor-0",
+            "drive-gearbox-1",
+            "drive-motor-1",
+            "control-box"
+          ],
+          "param": "drivePaint"
         }
       ]
     },
@@ -58282,12 +58525,16 @@
       "id": "jobsite-tile-saw",
       "kit": "construction-equipment",
       "title": "Jobsite tile saw",
-      "description": "Water-cooled tile saw on a folding stand with sliding table and blade guard. Material controls: equipment enamel paint, exposed structural steel; weathered and highVisibility presets.",
+      "description": "Wet-cutting rail tile saw at real size: folding X-leg stand, moulded water tray with submersible pump, twin round rails carrying a sliding cart with rubber mat, square fence and push handle, rear post and overhead arm holding the motor and fan cowl, 254 mm diamond blade under a guard with water nozzles, and a ceramic tile mid-cut. Blade choice 254 or 178 mm. Material controls: tool body paint, rail and blade metal, tray polymer, ceramic tile; contractorYellow, proBlue and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "tile saw",
+        "wet saw",
+        "rail saw",
+        "diamond blade",
+        "tiling",
         "construction equipment",
-        "roadworks",
         "jobsite",
         "low poly",
         "CC0"
@@ -58301,8 +58548,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/construction-equipment/jobsite-tile-saw.kcad.ts",
       "preview": "/assets/construction-equipment-jobsite-tile-saw.png",
-      "sourceSha256": "ffd1a8ed70b66295143be2b6920702378047127e2768a901e2c68499ad35b445",
-      "triangleBudget": 2200,
+      "sourceSha256": "77a47106ce2435665fe94551cd5932e03ef23b02d292c55df4321c6dba64ef96",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -58314,59 +58561,145 @@
           "step": 0.05
         },
         {
-          "name": "equipmentPaintColor",
-          "type": "color",
-          "default": "#e1a31b",
-          "label": "Equipment enamel paint"
+          "name": "blade",
+          "type": "choice",
+          "default": "254mm",
+          "label": "Blade diameter",
+          "choices": [
+            "178mm",
+            "254mm"
+          ]
         },
         {
-          "name": "structuralSteelColor",
+          "name": "bodyPaint",
           "type": "color",
-          "default": "#89969a",
-          "label": "Exposed structural steel"
+          "default": "#d8302a",
+          "label": "Tool body paint"
+        },
+        {
+          "name": "railMetal",
+          "type": "color",
+          "default": "#b4bbbf",
+          "label": "Rail and blade metal"
+        },
+        {
+          "name": "trayPolymer",
+          "type": "color",
+          "default": "#30363a",
+          "label": "Tray polymer and mat"
+        },
+        {
+          "name": "ceramicTile",
+          "type": "color",
+          "default": "#d9cbb3",
+          "label": "Ceramic tile"
         }
       ],
       "presets": {
-        "weathered": {
-          "equipmentPaintColor": "#a87b36",
-          "structuralSteelColor": "#716b61"
+        "contractorYellow": {
+          "bodyPaint": "#f2b705",
+          "trayPolymer": "#25282a"
         },
-        "highVisibility": {
-          "equipmentPaintColor": "#f06b26",
-          "structuralSteelColor": "#c1c7c2"
+        "proBlue": {
+          "bodyPaint": "#1f5fae",
+          "ceramicTile": "#8f9aa1"
+        },
+        "weathered": {
+          "bodyPaint": "#9a4a3a",
+          "railMetal": "#8d918f",
+          "trayPolymer": "#4a4d4c",
+          "ceramicTile": "#bfb39e"
         }
       },
       "stats": {
-        "triangles": 116,
+        "triangles": 1264,
         "sizeM": [
-          0.95,
-          0.8096,
-          0.455
+          1.163915,
+          1.396804,
+          0.65
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "equipmentPaintColor",
-          "color": "#e1a31b",
+          "name": "railMetal",
+          "color": "#b4bbbf",
           "parts": [
-            "tool-table",
-            "motor-head",
-            "water-pan"
+            "stand-leg-left-a",
+            "stand-leg-left-b",
+            "stand-leg-right-a",
+            "stand-leg-right-b",
+            "stand-top-tube-rear",
+            "stand-top-tube-front",
+            "water",
+            "rail-left",
+            "rail-right",
+            "cart-runner-left",
+            "cart-runner-right",
+            "cart-fence",
+            "cart-handle",
+            "cart-handle-r",
+            "diamond-blade",
+            "blade-flange",
+            "blade-arbor",
+            "water-nozzle-left",
+            "water-nozzle-right"
           ],
-          "param": "equipmentPaintColor"
+          "param": "railMetal"
         },
         {
-          "name": "structuralSteelColor",
-          "color": "#89969a",
+          "name": "bodyPaint",
+          "color": "#d8302a",
           "parts": [
-            "stand-leg--1",
-            "stand-leg-1",
-            "sliding-carriage",
-            "tile-blade"
+            "stand-pivot-left",
+            "stand-pivot-right",
+            "pump",
+            "drain-plug",
+            "rail-bracket-left-rear",
+            "rail-bracket-left-front",
+            "rail-bracket-right-rear",
+            "rail-bracket-right-front",
+            "cart-frame",
+            "rear-post",
+            "overhead-arm",
+            "motor",
+            "motor-mount",
+            "blade-guard"
           ],
-          "param": "structuralSteelColor"
+          "param": "bodyPaint"
+        },
+        {
+          "name": "trayPolymer",
+          "color": "#30363a",
+          "parts": [
+            "stand-foot-left-rear",
+            "stand-foot-left-front",
+            "stand-foot-right-rear",
+            "stand-foot-right-front",
+            "water-tray",
+            "tray-end-rear",
+            "tray-end-front",
+            "pump-hose",
+            "cart-mat-left",
+            "cart-mat-right",
+            "cart-handle-grip",
+            "motor-fan-cowl",
+            "motor-switch",
+            "motor-cable",
+            "blade-rim",
+            "nozzle-hose"
+          ],
+          "param": "trayPolymer"
+        },
+        {
+          "name": "ceramicTile",
+          "color": "#d9cbb3",
+          "parts": [
+            "tile",
+            "tile-offcut"
+          ],
+          "param": "ceramicTile"
         }
       ]
     },
@@ -58701,12 +59034,16 @@
       "id": "mast-climbing-work-platform",
       "kit": "construction-equipment",
       "title": "Mast-climbing work platform",
-      "description": "Twin-mast access platform with guardrails, deck and ground outriggers. Material controls: equipment enamel paint, exposed structural steel; weathered and highVisibility presets.",
-      "category": "structure",
+      "description": "Twin-mast climbing work platform at real size: two square lattice masts with racks on outrigger chassis with screw-jack pads, a long chequer-plate deck carried by climbing drive units with motors and gearboxes, facade-side deck extensions, guardrails with mid rails and toe boards, a materials pallet and wall ties. Deck level choice low or raised. Material controls: deck and drive paint, galvanised mast steel, guardrail paint, materials; siteYellow, highVisibility and weathered presets.",
+      "category": "prop",
       "origin": "base",
       "tags": [
+        "mast climbing work platform",
+        "MCWP",
+        "facade access",
+        "climbing platform",
+        "twin mast",
         "construction equipment",
-        "roadworks",
         "jobsite",
         "low poly",
         "CC0"
@@ -58720,8 +59057,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/construction-equipment/mast-climbing-work-platform.kcad.ts",
       "preview": "/assets/construction-equipment-mast-climbing-work-platform.png",
-      "sourceSha256": "8ebdb8bc8894de9064f31bf2836ca07dfbbe5d0ecfdbb8e9d3b7b8151f2d5bc2",
-      "triangleBudget": 2200,
+      "sourceSha256": "9493768933fea5c2aa5347b38482417041865c0d12c8e3b6eca9f415355938b4",
+      "triangleBudget": 6000,
       "params": [
         {
           "name": "scale",
@@ -58733,60 +59070,260 @@
           "step": 0.05
         },
         {
-          "name": "equipmentPaintColor",
-          "type": "color",
-          "default": "#e1a31b",
-          "label": "Equipment enamel paint"
+          "name": "level",
+          "type": "choice",
+          "default": "raised",
+          "label": "Deck level",
+          "choices": [
+            "low",
+            "raised"
+          ]
         },
         {
-          "name": "structuralSteelColor",
+          "name": "deckPaint",
           "type": "color",
-          "default": "#89969a",
-          "label": "Exposed structural steel"
+          "default": "#2f6aa8",
+          "label": "Deck and drive paint"
+        },
+        {
+          "name": "mastSteel",
+          "type": "color",
+          "default": "#a6aeb1",
+          "label": "Galvanised mast steel"
+        },
+        {
+          "name": "railPaint",
+          "type": "color",
+          "default": "#e9b81c",
+          "label": "Guardrail paint"
+        },
+        {
+          "name": "materials",
+          "type": "color",
+          "default": "#b35a3c",
+          "label": "Pallet load (brick)"
         }
       ],
       "presets": {
-        "weathered": {
-          "equipmentPaintColor": "#a87b36",
-          "structuralSteelColor": "#716b61"
+        "siteYellow": {
+          "deckPaint": "#e2a51b",
+          "railPaint": "#2f3437"
         },
         "highVisibility": {
-          "equipmentPaintColor": "#f06b26",
-          "structuralSteelColor": "#c1c7c2"
+          "deckPaint": "#e2601d",
+          "railPaint": "#f3d32a",
+          "mastSteel": "#c3c9cb"
+        },
+        "weathered": {
+          "deckPaint": "#4f6a82",
+          "mastSteel": "#86877f",
+          "railPaint": "#b39a4d",
+          "materials": "#93624c"
         }
       },
       "stats": {
-        "triangles": 96,
+        "triangles": 3124,
         "sizeM": [
-          2.178,
-          1.755,
-          0.5212
+          10.3,
+          6.494,
+          3.08466
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "structuralSteelColor",
-          "color": "#89969a",
+          "name": "deckPaint",
+          "color": "#2f6aa8",
           "parts": [
-            "ground-frame",
-            "mast--1",
-            "outrigger--1",
-            "mast-1",
-            "outrigger-1",
-            "guardrail--1",
-            "guardrail-1"
+            "chassis-left",
+            "outrigger-left-0",
+            "outrigger-left-1",
+            "outrigger-left-2",
+            "outrigger-left-3",
+            "mast-left-rack",
+            "drive-frame-left",
+            "drive-gearbox-left-0",
+            "drive-motor-left-0",
+            "drive-gearbox-left-1",
+            "drive-motor-left-1",
+            "chassis-right",
+            "outrigger-right-0",
+            "outrigger-right-1",
+            "outrigger-right-2",
+            "outrigger-right-3",
+            "mast-right-rack",
+            "drive-frame-right",
+            "drive-gearbox-right-0",
+            "drive-motor-right-0",
+            "drive-gearbox-right-1",
+            "drive-motor-right-1",
+            "deck-stringer-0",
+            "deck-stringer-1",
+            "deck-stringer-2",
+            "deck-joist-0",
+            "deck-joist-1",
+            "deck-joist-2",
+            "deck-joist-3",
+            "deck-joist-4",
+            "deck-joist-5",
+            "deck-joist-6",
+            "deck-joist-7",
+            "deck-joist-8",
+            "extension-arm-0",
+            "extension-arm-1",
+            "extension-arm-2",
+            "pallet"
           ],
-          "param": "structuralSteelColor"
+          "param": "deckPaint"
         },
         {
-          "name": "equipmentPaintColor",
-          "color": "#e1a31b",
+          "name": "mastSteel",
+          "color": "#a6aeb1",
           "parts": [
-            "working-platform"
+            "jack-screw-left-0",
+            "jack-handle-left-0",
+            "jack-screw-left-1",
+            "jack-handle-left-1",
+            "jack-screw-left-2",
+            "jack-handle-left-2",
+            "jack-screw-left-3",
+            "jack-handle-left-3",
+            "mast-left-chord-0",
+            "mast-left-chord-1",
+            "mast-left-chord-2",
+            "mast-left-chord-3",
+            "mast-left-flange-0",
+            "mast-left-lace-0-0-lo",
+            "mast-left-lace-0-0-hi",
+            "mast-left-lace-0-1-lo",
+            "mast-left-lace-0-1-hi",
+            "mast-left-lace-0-2-lo",
+            "mast-left-lace-0-2-hi",
+            "mast-left-flange-1",
+            "mast-left-lace-1-0-lo",
+            "mast-left-lace-1-0-hi",
+            "mast-left-lace-1-1-lo",
+            "mast-left-lace-1-1-hi",
+            "mast-left-lace-1-2-lo",
+            "mast-left-lace-1-2-hi",
+            "mast-left-flange-2",
+            "mast-left-lace-2-0-lo",
+            "mast-left-lace-2-0-hi",
+            "mast-left-lace-2-1-lo",
+            "mast-left-lace-2-1-hi",
+            "mast-left-lace-2-2-lo",
+            "mast-left-lace-2-2-hi",
+            "mast-left-flange-3",
+            "mast-left-lace-3-0-lo",
+            "mast-left-lace-3-0-hi",
+            "mast-left-lace-3-1-lo",
+            "mast-left-lace-3-1-hi",
+            "mast-left-lace-3-2-lo",
+            "mast-left-lace-3-2-hi",
+            "mast-left-cap",
+            "wall-tie-left",
+            "wall-tie-left-plate",
+            "drive-window-left",
+            "drive-brake-left-0",
+            "drive-brake-left-1",
+            "jack-screw-right-0",
+            "jack-handle-right-0",
+            "jack-screw-right-1",
+            "jack-handle-right-1",
+            "jack-screw-right-2",
+            "jack-handle-right-2",
+            "jack-screw-right-3",
+            "jack-handle-right-3",
+            "mast-right-chord-0",
+            "mast-right-chord-1",
+            "mast-right-chord-2",
+            "mast-right-chord-3",
+            "mast-right-flange-0",
+            "mast-right-lace-0-0-lo",
+            "mast-right-lace-0-0-hi",
+            "mast-right-lace-0-1-lo",
+            "mast-right-lace-0-1-hi",
+            "mast-right-lace-0-2-lo",
+            "mast-right-lace-0-2-hi",
+            "mast-right-flange-1",
+            "mast-right-lace-1-0-lo",
+            "mast-right-lace-1-0-hi",
+            "mast-right-lace-1-1-lo",
+            "mast-right-lace-1-1-hi",
+            "mast-right-lace-1-2-lo",
+            "mast-right-lace-1-2-hi",
+            "mast-right-flange-2",
+            "mast-right-lace-2-0-lo",
+            "mast-right-lace-2-0-hi",
+            "mast-right-lace-2-1-lo",
+            "mast-right-lace-2-1-hi",
+            "mast-right-lace-2-2-lo",
+            "mast-right-lace-2-2-hi",
+            "mast-right-flange-3",
+            "mast-right-lace-3-0-lo",
+            "mast-right-lace-3-0-hi",
+            "mast-right-lace-3-1-lo",
+            "mast-right-lace-3-1-hi",
+            "mast-right-lace-3-2-lo",
+            "mast-right-lace-3-2-hi",
+            "mast-right-cap",
+            "wall-tie-right",
+            "wall-tie-right-plate",
+            "drive-window-right",
+            "drive-brake-right-0",
+            "drive-brake-right-1",
+            "deck-plate",
+            "deck-extension-0",
+            "deck-extension-1",
+            "deck-extension-2",
+            "brick-stack-straps"
           ],
-          "param": "equipmentPaintColor"
+          "param": "mastSteel"
+        },
+        {
+          "name": "railPaint",
+          "color": "#e9b81c",
+          "parts": [
+            "jack-pad-left-0",
+            "jack-pad-left-1",
+            "jack-pad-left-2",
+            "jack-pad-left-3",
+            "jack-pad-right-0",
+            "jack-pad-right-1",
+            "jack-pad-right-2",
+            "jack-pad-right-3",
+            "guardrail-top-0",
+            "guardrail-mid-0",
+            "toe-board-0",
+            "guardrail-post-0-0",
+            "guardrail-post-0-1",
+            "guardrail-post-0-2",
+            "guardrail-post-0-3",
+            "guardrail-post-0-4",
+            "guardrail-post-0-5",
+            "guardrail-post-0-6",
+            "guardrail-top-1",
+            "guardrail-mid-1",
+            "toe-board-1",
+            "guardrail-post-1-0",
+            "guardrail-post-1-1",
+            "guardrail-top-2",
+            "guardrail-mid-2",
+            "toe-board-2",
+            "guardrail-post-2-0",
+            "guardrail-post-2-1",
+            "mortar-tub"
+          ],
+          "param": "railPaint"
+        },
+        {
+          "name": "materials",
+          "color": "#b35a3c",
+          "parts": [
+            "brick-stack"
+          ],
+          "param": "materials"
         }
       ]
     },
@@ -60202,12 +60739,15 @@
       "id": "rebar-cutting-machine",
       "kit": "construction-equipment",
       "title": "Rebar cutting machine",
-      "description": "Jobsite bar cutter with reinforced base, cutting head, guard and foot control. Material controls: equipment enamel paint, exposed structural steel; weathered and highVisibility presets.",
+      "description": "Electric rebar cutter at real size: stepped sheet-steel housing on skid runners, ribbed motor with fan cowl, spoked flywheel behind a belt guard, cast cutting head with fixed and moving blade jaws and bar stop, roller feed stand, clutch pedal and lever, lifting eyes, and a length of ribbed rebar in the jaws. Capacity choice 40 or 50 mm bar. Material controls: housing paint, guard safety paint, machined steel, rubber, rebar; yardGreen, highVisibility and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "rebar cutter",
+        "bar cutting machine",
+        "reinforcement",
+        "rebar yard",
         "construction equipment",
-        "roadworks",
         "jobsite",
         "low poly",
         "CC0"
@@ -60221,8 +60761,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/construction-equipment/rebar-cutting-machine.kcad.ts",
       "preview": "/assets/construction-equipment-rebar-cutting-machine.png",
-      "sourceSha256": "ed284afb56fcd2fdbc03bacaf7b1fdc6176daebe27a022575d74f37d858833db",
-      "triangleBudget": 2200,
+      "sourceSha256": "96380e747db7f20511869b7e1e872855530e92c50211d3725a18dae0a30a3db7",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -60234,57 +60774,170 @@
           "step": 0.05
         },
         {
-          "name": "equipmentPaintColor",
-          "type": "color",
-          "default": "#e1a31b",
-          "label": "Equipment enamel paint"
+          "name": "capacity",
+          "type": "choice",
+          "default": "40mm",
+          "label": "Bar capacity",
+          "choices": [
+            "40mm",
+            "50mm"
+          ]
         },
         {
-          "name": "structuralSteelColor",
+          "name": "housingPaint",
           "type": "color",
-          "default": "#89969a",
-          "label": "Exposed structural steel"
+          "default": "#2f6fae",
+          "label": "Housing paint"
+        },
+        {
+          "name": "guardPaint",
+          "type": "color",
+          "default": "#e7b416",
+          "label": "Guard safety paint"
+        },
+        {
+          "name": "machinedSteel",
+          "type": "color",
+          "default": "#9aa3a8",
+          "label": "Machined steel"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#24272a",
+          "label": "Rubber, belt and pedal"
+        },
+        {
+          "name": "rebarSteel",
+          "type": "color",
+          "default": "#7a5640",
+          "label": "Rebar mill scale"
         }
       ],
       "presets": {
-        "weathered": {
-          "equipmentPaintColor": "#a87b36",
-          "structuralSteelColor": "#716b61"
+        "yardGreen": {
+          "housingPaint": "#3c7a4a",
+          "guardPaint": "#e2c23a"
         },
         "highVisibility": {
-          "equipmentPaintColor": "#f06b26",
-          "structuralSteelColor": "#c1c7c2"
+          "housingPaint": "#e0661f",
+          "guardPaint": "#f2d22e",
+          "machinedSteel": "#b7bec2"
+        },
+        "weathered": {
+          "housingPaint": "#566b7c",
+          "guardPaint": "#b59a45",
+          "machinedSteel": "#7b7a72",
+          "rebarSteel": "#8a4f2d"
         }
       },
       "stats": {
-        "triangles": 60,
+        "triangles": 1866,
         "sizeM": [
-          0.72,
-          0.5276,
-          0.4056
+          2.18,
+          0.931,
+          0.598
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "equipmentPaintColor",
-          "color": "#e1a31b",
+          "name": "machinedSteel",
+          "color": "#9aa3a8",
           "parts": [
-            "machine-base",
-            "work-table",
-            "motor-case",
-            "cutting-head"
+            "skid-left",
+            "skid-right",
+            "panel-latch-0",
+            "panel-latch-1",
+            "rating-plate",
+            "motor-fan-cowl",
+            "motor-feet",
+            "motor-pulley",
+            "flywheel-rim",
+            "flywheel-hub",
+            "flywheel-spoke-0",
+            "flywheel-spoke-1",
+            "flywheel-spoke-2",
+            "flywheel-spoke-3",
+            "flywheel-spoke-4",
+            "flywheel-spoke-5",
+            "flywheel-shaft",
+            "fixed-blade",
+            "moving-blade-jaw",
+            "jaw-slide",
+            "bar-stop-arm",
+            "feed-roller",
+            "clutch-pedal-arm",
+            "clutch-lever",
+            "lifting-eye-0",
+            "lifting-eye-1"
           ],
-          "param": "equipmentPaintColor"
+          "param": "machinedSteel"
         },
         {
-          "name": "structuralSteelColor",
-          "color": "#89969a",
+          "name": "housingPaint",
+          "color": "#2f6fae",
           "parts": [
-            "blade-guard"
+            "housing",
+            "housing-rear-plinth",
+            "inspection-panel",
+            "motor-frame",
+            "motor-rib-0",
+            "motor-rib-1",
+            "motor-rib-2",
+            "motor-rib-3",
+            "motor-rib-4",
+            "terminal-box",
+            "head-casting"
           ],
-          "param": "structuralSteelColor"
+          "param": "housingPaint"
+        },
+        {
+          "name": "rubber",
+          "color": "#24272a",
+          "parts": [
+            "cable-gland",
+            "drive-belt",
+            "drive-belt-lower",
+            "blade-bolts",
+            "clutch-pedal",
+            "clutch-lever-knob"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "guardPaint",
+          "color": "#e7b416",
+          "parts": [
+            "belt-guard",
+            "belt-guard-band",
+            "cutting-guard",
+            "bar-stop-plate",
+            "feed-stand-leg-left",
+            "feed-stand-leg-left-rear",
+            "feed-stand-leg-right",
+            "feed-stand-leg-right-rear",
+            "feed-stand-yoke"
+          ],
+          "param": "guardPaint"
+        },
+        {
+          "name": "rebarSteel",
+          "color": "#7a5640",
+          "parts": [
+            "rebar",
+            "rebar-rib-0",
+            "rebar-rib-1",
+            "rebar-rib-2",
+            "rebar-rib-3",
+            "rebar-rib-4",
+            "rebar-rib-5",
+            "rebar-rib-6",
+            "rebar-rib-7",
+            "rebar-rib-8"
+          ],
+          "param": "rebarSteel"
         }
       ]
     },
