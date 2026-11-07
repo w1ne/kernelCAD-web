@@ -248187,12 +248187,14 @@
       "id": "barbell",
       "kit": "sports",
       "title": "Barbell",
-      "description": "Low-poly barbell with a long horizontal shaft and stacked spherical plate forms. Material controls: chrome steel, bumper plate rubber, knurled grip steel.",
+      "description": "Olympic 20 kg barbell at about real size on 450 mm bumper plates: 28 mm shaft with centre and grip knurling and ring marks, inner collars, 50 mm sleeves with end caps, recessed rubber bumpers with steel hubs and painted rim rings, and lock-jaw collar clamps. The load choice (empty to 140 kg) stacks the real plate set. Material controls: bar chrome, knurl, bumper rubber, plate and collar accent; competitionBlue, oldIron and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "barbell",
-        "weight bar",
+        "olympic bar",
+        "bumper plates",
+        "weightlifting",
         "gym",
         "training",
         "low poly",
@@ -248207,8 +248209,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/barbell.kcad.ts",
       "preview": "/assets/sports-barbell.png",
-      "sourceSha256": "84502df3cdd94b181b5536948b6feeb610ec16767dec7f85923b5a1527c7a627",
-      "triangleBudget": 600,
+      "sourceSha256": "84f5ab2afb6608313ed07c95f287e78759755103694085ae4df48f95ec25a62d",
+      "triangleBudget": 5000,
       "params": [
         {
           "name": "scale",
@@ -248220,36 +248222,70 @@
           "step": 0.05
         },
         {
-          "name": "chromedSteel",
-          "type": "color",
-          "default": "#9da9ad",
-          "label": "Chrome steel"
+          "name": "load",
+          "type": "choice",
+          "default": "100kg",
+          "label": "Plate load",
+          "choices": [
+            "empty",
+            "60kg",
+            "100kg",
+            "140kg"
+          ]
         },
         {
-          "name": "bumperRubber",
+          "name": "chromedSteel",
           "type": "color",
-          "default": "#30363a",
-          "label": "Bumper plate rubber"
+          "default": "#b9c2c6",
+          "label": "Bar chrome"
         },
         {
           "name": "knurlSteel",
           "type": "color",
-          "default": "#c0c7c6",
+          "default": "#7f888c",
           "label": "Knurled grip steel"
+        },
+        {
+          "name": "bumperRubber",
+          "type": "color",
+          "default": "#2b2f33",
+          "label": "Bumper plate rubber"
+        },
+        {
+          "name": "plateAccent",
+          "type": "color",
+          "default": "#e0e3e2",
+          "label": "Plate rings and collar clamps"
         }
       ],
       "presets": {
         "clubColors": {
-          "chromedSteel": "#9da9ad",
           "bumperRubber": "#3b6b8b"
+        },
+        "competitionBlue": {
+          "bumperRubber": "#2e5fa8",
+          "plateAccent": "#f4f2ea",
+          "chromedSteel": "#d3d9dc"
+        },
+        "oldIron": {
+          "bumperRubber": "#3a3a38",
+          "plateAccent": "#8e8a80",
+          "chromedSteel": "#8c9295",
+          "knurlSteel": "#5c6265"
+        },
+        "weathered": {
+          "bumperRubber": "#4a4743",
+          "plateAccent": "#a39e8e",
+          "chromedSteel": "#959889",
+          "knurlSteel": "#6a6a60"
         }
       },
       "stats": {
-        "triangles": 200,
+        "triangles": 3392,
         "sizeM": [
-          0.68,
-          0.148,
-          0.14789
+          2.218,
+          0.45,
+          0.45
         ],
         "minUpM": 0,
         "materials": 1
@@ -248257,30 +248293,59 @@
       "palette": [
         {
           "name": "chromedSteel",
-          "color": "#9da9ad",
+          "color": "#b9c2c6",
           "parts": [
-            "shaft"
+            "shaft",
+            "left-inner-collar",
+            "left-sleeve",
+            "left-end-cap",
+            "right-inner-collar",
+            "right-sleeve",
+            "right-end-cap",
+            "left-plate-1-hub",
+            "left-plate-2-hub",
+            "right-plate-1-hub",
+            "right-plate-2-hub"
           ],
           "param": "chromedSteel"
         },
         {
-          "name": "bumperRubber",
-          "color": "#30363a",
+          "name": "knurlSteel",
+          "color": "#7f888c",
           "parts": [
-            "left-inner-plate",
-            "left-outer-plate",
-            "right-inner-plate",
-            "right-outer-plate"
+            "centre-knurl",
+            "left-knurl-1",
+            "left-knurl-2",
+            "right-knurl-1",
+            "right-knurl-2",
+            "left-clamp-lever",
+            "right-clamp-lever"
+          ],
+          "param": "knurlSteel"
+        },
+        {
+          "name": "bumperRubber",
+          "color": "#2b2f33",
+          "parts": [
+            "left-plate-1",
+            "left-plate-2",
+            "right-plate-1",
+            "right-plate-2"
           ],
           "param": "bumperRubber"
         },
         {
-          "name": "knurlSteel",
-          "color": "#c0c7c6",
+          "name": "plateAccent",
+          "color": "#e0e3e2",
           "parts": [
-            "knurl-grip-sleeve"
+            "left-plate-1-ring",
+            "left-plate-2-ring",
+            "left-clamp",
+            "right-plate-1-ring",
+            "right-plate-2-ring",
+            "right-clamp"
           ],
-          "param": "knurlSteel"
+          "param": "plateAccent"
         }
       ]
     },
@@ -248288,13 +248353,14 @@
       "id": "baseball-bat",
       "kit": "sports",
       "title": "Baseball bat",
-      "description": "Upright low-poly baseball bat with a narrow grip and widened barrel. Material controls: maple bat wood, grip tape, end-grain wood.",
+      "description": "Wood baseball bat at about real size, lying on the ground: turned knob, thin handle with wrapped grip tape, long taper into a 66 mm barrel with a cupped end, two-tone natural handle and stained barrel, branded oval and end-grain knob face. The length choice (30-34 in) stretches the turning. Material controls: maple handle, barrel finish, grip tape, brand ink, end grain; natural, blackOut and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "baseball bat",
         "bat",
         "baseball",
+        "softball",
         "sports equipment",
         "low poly",
         "CC0"
@@ -248308,8 +248374,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/baseball-bat.kcad.ts",
       "preview": "/assets/sports-baseball-bat.png",
-      "sourceSha256": "be7214effaab0cfbb75c742c19d34874c1c00318aaebf953d0f1fd4e7c770ead",
-      "triangleBudget": 600,
+      "sourceSha256": "7600d7ee4f710b0fd021b6274076fbf314ace25c29ee2c19c50723bb2870b1ce",
+      "triangleBudget": 1600,
       "params": [
         {
           "name": "scale",
@@ -248321,16 +248387,40 @@
           "step": 0.05
         },
         {
+          "name": "length",
+          "type": "choice",
+          "default": "33in",
+          "label": "Length",
+          "choices": [
+            "30in",
+            "32in",
+            "33in",
+            "34in"
+          ]
+        },
+        {
           "name": "mapleWood",
           "type": "color",
-          "default": "#9b7046",
-          "label": "Maple bat wood"
+          "default": "#d6ad72",
+          "label": "Maple handle wood"
+        },
+        {
+          "name": "barrelFinish",
+          "type": "color",
+          "default": "#6e2f22",
+          "label": "Barrel finish"
         },
         {
           "name": "gripTape",
           "type": "color",
           "default": "#30363a",
           "label": "Grip tape"
+        },
+        {
+          "name": "brandInk",
+          "type": "color",
+          "default": "#e8c25a",
+          "label": "Brand ink"
         },
         {
           "name": "endGrain",
@@ -248341,45 +248431,81 @@
       ],
       "presets": {
         "clubColors": {
-          "mapleWood": "#bd8b51",
+          "barrelFinish": "#bd8b51",
           "gripTape": "#c5443d"
+        },
+        "natural": {
+          "barrelFinish": "#d6ad72",
+          "brandInk": "#1f2224"
+        },
+        "blackOut": {
+          "mapleWood": "#26282a",
+          "barrelFinish": "#1b1c1e",
+          "gripTape": "#8a2c25",
+          "brandInk": "#c9cfd2",
+          "endGrain": "#3a3634"
+        },
+        "weathered": {
+          "mapleWood": "#a88a64",
+          "barrelFinish": "#5b3a2e",
+          "gripTape": "#4a4a48",
+          "brandInk": "#a59162",
+          "endGrain": "#9b8466"
         }
       },
       "stats": {
-        "triangles": 176,
+        "triangles": 1240,
         "sizeM": [
-          0.05,
-          0.445,
-          0.05
+          0.8386,
+          0.066,
+          0.067333
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "gripTape",
-          "color": "#30363a",
-          "parts": [
-            "grip"
-          ],
-          "param": "gripTape"
-        },
-        {
           "name": "mapleWood",
-          "color": "#9b7046",
+          "color": "#d6ad72",
           "parts": [
-            "taper",
-            "barrel"
+            "handle",
+            "knob"
           ],
           "param": "mapleWood"
+        },
+        {
+          "name": "barrelFinish",
+          "color": "#6e2f22",
+          "parts": [
+            "barrel"
+          ],
+          "param": "barrelFinish"
         },
         {
           "name": "endGrain",
           "color": "#c39a64",
           "parts": [
-            "knob"
+            "knob-face",
+            "cup-floor"
           ],
           "param": "endGrain"
+        },
+        {
+          "name": "gripTape",
+          "color": "#30363a",
+          "parts": [
+            "grip-tape",
+            "tape-collar"
+          ],
+          "param": "gripTape"
+        },
+        {
+          "name": "brandInk",
+          "color": "#e8c25a",
+          "parts": [
+            "brand-oval"
+          ],
+          "param": "brandInk"
         }
       ]
     },
@@ -248959,13 +249085,14 @@
       "id": "cricket-bat",
       "kit": "sports",
       "title": "Cricket bat",
-      "description": "Low-poly cricket bat with a wide flat blade, shoulders and slim handle. Material controls: willow bat wood, rubber grip, edge tape.",
+      "description": "English-willow cricket bat at about real size, lying face down so the back shows: flat face, thick edges, a raised spine peaking at the sweet spot, sloping shoulders, cane handle with a ribbed rubber grip, maker's sticker bands across the back and a toe guard. The handle choice switches short and long handles. Material controls: willow blade, rubber grip, sticker colour, toe guard; kashmirWillow, blackStickers and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "cricket bat",
         "bat",
         "cricket",
+        "english willow",
         "field sport",
         "low poly",
         "CC0"
@@ -248979,8 +249106,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/cricket-bat.kcad.ts",
       "preview": "/assets/sports-cricket-bat.png",
-      "sourceSha256": "d7696a294ae0f46a4e3ad6e1fe2f2f08cbca01c8e0b3115d6913595f50c66820",
-      "triangleBudget": 600,
+      "sourceSha256": "f2c315779331a27b2c8b86450b59ab874bd00ac701ba8d0a1ce935054f6a0700",
+      "triangleBudget": 1200,
       "params": [
         {
           "name": "scale",
@@ -248992,10 +249119,20 @@
           "step": 0.05
         },
         {
+          "name": "handle",
+          "type": "choice",
+          "default": "short",
+          "label": "Handle",
+          "choices": [
+            "short",
+            "long"
+          ]
+        },
+        {
           "name": "willowWood",
           "type": "color",
-          "default": "#9a754d",
-          "label": "Willow bat wood"
+          "default": "#e3cc98",
+          "label": "Willow blade"
         },
         {
           "name": "rubberGrip",
@@ -249004,24 +249141,45 @@
           "label": "Rubber grip"
         },
         {
+          "name": "sticker",
+          "type": "color",
+          "default": "#1f5aa6",
+          "label": "Maker stickers"
+        },
+        {
           "name": "edgeTape",
           "type": "color",
-          "default": "#e6e1d4",
-          "label": "Edge tape"
+          "default": "#262828",
+          "label": "Toe guard"
         }
       ],
       "presets": {
         "clubColors": {
           "willowWood": "#bc985d",
           "rubberGrip": "#d04d40"
+        },
+        "kashmirWillow": {
+          "willowWood": "#c9a66b",
+          "sticker": "#b8322a"
+        },
+        "blackStickers": {
+          "sticker": "#151617",
+          "rubberGrip": "#d9b43d",
+          "edgeTape": "#d9b43d"
+        },
+        "weathered": {
+          "willowWood": "#b39a72",
+          "rubberGrip": "#4f4f4b",
+          "sticker": "#5b6f86",
+          "edgeTape": "#4a4844"
         }
       },
       "stats": {
-        "triangles": 136,
+        "triangles": 688,
         "sizeM": [
-          0.0822,
-          0.378,
-          0.034
+          0.8565,
+          0.0652,
+          0.11124
         ],
         "minUpM": 0,
         "materials": 1
@@ -249029,30 +249187,47 @@
       "palette": [
         {
           "name": "willowWood",
-          "color": "#9a754d",
+          "color": "#e3cc98",
           "parts": [
             "blade",
-            "shoulder",
-            "handle"
+            "handle",
+            "splice"
           ],
           "param": "willowWood"
+        },
+        {
+          "name": "sticker",
+          "color": "#1f5aa6",
+          "parts": [
+            "back-sticker-1",
+            "back-sticker-2"
+          ],
+          "param": "sticker"
+        },
+        {
+          "name": "edgeTape",
+          "color": "#262828",
+          "parts": [
+            "toe-guard"
+          ],
+          "param": "edgeTape"
         },
         {
           "name": "rubberGrip",
           "color": "#303638",
           "parts": [
-            "grip-cap"
+            "grip",
+            "grip-rib-1",
+            "grip-rib-2",
+            "grip-rib-3",
+            "grip-rib-4",
+            "grip-rib-5",
+            "grip-rib-6",
+            "grip-rib-7",
+            "grip-rib-8",
+            "grip-end"
           ],
           "param": "rubberGrip"
-        },
-        {
-          "name": "edgeTape",
-          "color": "#e6e1d4",
-          "parts": [
-            "left-edge-tape",
-            "right-edge-tape"
-          ],
-          "param": "edgeTape"
         }
       ]
     },
@@ -249060,12 +249235,13 @@
       "id": "cricket-wicket",
       "kit": "sports",
       "title": "Cricket wicket",
-      "description": "Three-stump wicket set on a low ground plate with two cross bails. Material controls: wicket timber, ground rubber, bail paint.",
+      "description": "Cricket wicket at real size pitched in the crease: three domed stumps 711 mm tall and 229 mm across, grooved tops carrying two turned bails with barrels and spigots, a painted band round the stumps, and a patch of rolled pitch with the white bowling crease. The bails choice switches wooden bails for lit LED bails. Material controls: stump timber, stump paint band, bails, pitch, crease paint; matchPainted, ledBails and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "cricket wicket",
         "stumps",
+        "bails",
         "cricket",
         "field sport",
         "low poly",
@@ -249080,8 +249256,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/cricket-wicket.kcad.ts",
       "preview": "/assets/sports-cricket-wicket.png",
-      "sourceSha256": "f16c4141001536b3e5de2b576d309da83ea182dfa1beb4f36b8633ba9b5dc9cd",
-      "triangleBudget": 600,
+      "sourceSha256": "a38b31ac45db403c514eb7c76ea2a42cb7976b8a604500144e46808d176f93ba",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -249093,52 +249269,84 @@
           "step": 0.05
         },
         {
-          "name": "wicketTimber",
-          "type": "color",
-          "default": "#b18b5f",
-          "label": "Wicket timber"
+          "name": "bails",
+          "type": "choice",
+          "default": "wood",
+          "label": "Bails",
+          "choices": [
+            "wood",
+            "led"
+          ]
         },
         {
-          "name": "groundRubber",
+          "name": "wicketTimber",
           "type": "color",
-          "default": "#5b625d",
-          "label": "Ground rubber"
+          "default": "#d9b98a",
+          "label": "Stump timber"
+        },
+        {
+          "name": "stumpPaint",
+          "type": "color",
+          "default": "#1f5aa6",
+          "label": "Stump paint band"
         },
         {
           "name": "bailPaint",
           "type": "color",
-          "default": "#e8e1d0",
-          "label": "Bail paint"
+          "default": "#c9a06c",
+          "label": "Bails"
+        },
+        {
+          "name": "groundRubber",
+          "type": "color",
+          "default": "#b8a27a",
+          "label": "Rolled pitch"
+        },
+        {
+          "name": "creasePaint",
+          "type": "color",
+          "default": "#f4f2ea",
+          "label": "Crease paint"
         }
       ],
       "presets": {
         "clubColors": {
           "wicketTimber": "#8f744f",
-          "groundRubber": "#5b625d"
+          "stumpPaint": "#2f6b3a"
+        },
+        "matchPainted": {
+          "wicketTimber": "#f2efe6",
+          "stumpPaint": "#c0392b",
+          "bailPaint": "#f2efe6"
+        },
+        "ledBails": {
+          "bails": "led",
+          "bailPaint": "#e53b2f",
+          "wicketTimber": "#1f2224",
+          "stumpPaint": "#e53b2f"
+        },
+        "weathered": {
+          "wicketTimber": "#a99272",
+          "stumpPaint": "#5b6f86",
+          "bailPaint": "#9c8566",
+          "groundRubber": "#8f8a6a",
+          "creasePaint": "#d6d2c2"
         }
       },
       "stats": {
-        "triangles": 168,
+        "triangles": 1570,
         "sizeM": [
-          0.116,
-          0.064,
-          0.058
+          0.9,
+          0.733,
+          0.56
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "groundRubber",
-          "color": "#5b625d",
-          "parts": [
-            "ground-plate"
-          ],
-          "param": "groundRubber"
-        },
-        {
           "name": "wicketTimber",
-          "color": "#b18b5f",
+          "color": "#d9b98a",
           "parts": [
             "stump-left",
             "stump-middle",
@@ -249147,13 +249355,42 @@
           "param": "wicketTimber"
         },
         {
+          "name": "stumpPaint",
+          "color": "#1f5aa6",
+          "parts": [
+            "stump-band-left",
+            "stump-band-trim-left",
+            "stump-band-middle",
+            "stump-band-trim-middle",
+            "stump-band-right",
+            "stump-band-trim-right"
+          ],
+          "param": "stumpPaint"
+        },
+        {
           "name": "bailPaint",
-          "color": "#e8e1d0",
+          "color": "#c9a06c",
           "parts": [
             "bail-left",
             "bail-right"
           ],
           "param": "bailPaint"
+        },
+        {
+          "name": "groundRubber",
+          "color": "#b8a27a",
+          "parts": [
+            "pitch"
+          ],
+          "param": "groundRubber"
+        },
+        {
+          "name": "creasePaint",
+          "color": "#f4f2ea",
+          "parts": [
+            "bowling-crease"
+          ],
+          "param": "creasePaint"
         }
       ]
     },
@@ -249161,11 +249398,12 @@
       "id": "dumbbell",
       "kit": "sports",
       "title": "Dumbbell",
-      "description": "Compact low-poly dumbbell with a horizontal handle and weighted ends. Material controls: knurled handle steel, rubber weights.",
+      "description": "Fixed-weight gym dumbbell at about real size, lying on the floor: hexagonal or round rubber-coated heads, chrome collars, a contoured chrome handle with knurled grip bands and weight discs on the end faces. The weight choice (5-25 kg) sizes the heads; the head choice switches hex anti-roll heads for round pro-style ones. Material controls: rubber heads, chrome handle, knurl bands, weight disc; urethaneRed, proRound and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "dumbbell",
+        "hex dumbbell",
         "free weights",
         "gym",
         "training",
@@ -249181,8 +249419,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/sports/dumbbell.kcad.ts",
       "preview": "/assets/sports-dumbbell.png",
-      "sourceSha256": "7c400da6250e5d596f1941339aa6b90e980753a69b88953086167396ee93875c",
-      "triangleBudget": 600,
+      "sourceSha256": "682c6ab2e4ba52083c3ab8b868d328c796b4cc72d0b705f5f35287dfe3ab22b4",
+      "triangleBudget": 1600,
       "params": [
         {
           "name": "scale",
@@ -249194,51 +249432,126 @@
           "step": 0.05
         },
         {
-          "name": "knurledSteel",
-          "type": "color",
-          "default": "#aab4b8",
-          "label": "Knurled handle steel"
+          "name": "weight",
+          "type": "choice",
+          "default": "10kg",
+          "label": "Weight",
+          "choices": [
+            "5kg",
+            "10kg",
+            "15kg",
+            "20kg",
+            "25kg"
+          ]
+        },
+        {
+          "name": "head",
+          "type": "choice",
+          "default": "hex",
+          "label": "Head shape",
+          "choices": [
+            "hex",
+            "round"
+          ]
         },
         {
           "name": "rubberWeight",
           "type": "color",
           "default": "#30363a",
-          "label": "Rubber weights"
+          "label": "Rubber heads"
+        },
+        {
+          "name": "knurledSteel",
+          "type": "color",
+          "default": "#c3cbcf",
+          "label": "Chrome handle"
+        },
+        {
+          "name": "knurlBand",
+          "type": "color",
+          "default": "#848d92",
+          "label": "Knurled grip bands"
+        },
+        {
+          "name": "weightDisc",
+          "type": "color",
+          "default": "#d8b13a",
+          "label": "Weight disc"
         }
       ],
       "presets": {
         "clubColors": {
-          "knurledSteel": "#aab4b8",
-          "rubberWeight": "#496f83"
+          "rubberWeight": "#496f83",
+          "weightDisc": "#f2efe6"
+        },
+        "urethaneRed": {
+          "rubberWeight": "#a8302a",
+          "weightDisc": "#f2efe6",
+          "knurlBand": "#5f676b"
+        },
+        "proRound": {
+          "head": "round",
+          "rubberWeight": "#1f2224",
+          "weightDisc": "#c3cbcf"
+        },
+        "weathered": {
+          "rubberWeight": "#4a4743",
+          "knurledSteel": "#8f9488",
+          "knurlBand": "#6a6a60",
+          "weightDisc": "#9b8442"
         }
       },
       "stats": {
-        "triangles": 88,
+        "triangles": 680,
         "sizeM": [
-          0.192721,
-          0.08,
-          0.069282
+          0.292,
+          0.112,
+          0.129326
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "knurledSteel",
-          "color": "#aab4b8",
+          "name": "rubberWeight",
+          "color": "#30363a",
           "parts": [
+            "left-head",
+            "left-head-chamfer",
+            "right-head",
+            "right-head-chamfer"
+          ],
+          "param": "rubberWeight"
+        },
+        {
+          "name": "weightDisc",
+          "color": "#d8b13a",
+          "parts": [
+            "left-weight-disc",
+            "right-weight-disc"
+          ],
+          "param": "weightDisc"
+        },
+        {
+          "name": "knurledSteel",
+          "color": "#c3cbcf",
+          "parts": [
+            "left-end-bolt",
+            "left-collar",
+            "right-end-bolt",
+            "right-collar",
             "handle"
           ],
           "param": "knurledSteel"
         },
         {
-          "name": "rubberWeight",
-          "color": "#30363a",
+          "name": "knurlBand",
+          "color": "#848d92",
           "parts": [
-            "left-weight",
-            "right-weight"
+            "knurl-band-1",
+            "knurl-band-2"
           ],
-          "param": "rubberWeight"
+          "param": "knurlBand"
         }
       ]
     },
