@@ -15,7 +15,7 @@
     "url": "https://github.com/w1ne/kernelCAD-web/issues"
   },
   "engines": {
-    "node": ">=22.12.0",
+    "node": ">=24.0.0",
     "npm": ">=10.0.0"
   },
   "bin": {
