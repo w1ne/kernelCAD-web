@@ -26,6 +26,26 @@ Eighty original low-poly utility-yard scene assets. Sources use millimetres and 
 
 `Protection relay test cart` (`substation-protection-relay-test-cart`), `Breaker timing analyzer cart` (`substation-breaker-timing-analyzer-cart`), `Breaker service trolley` (`substation-hydraulic-breaker-service-trolley`), `Portable HV test divider` (`substation-portable-hv-test-divider`), `Insulated operating stick cabinet` (`substation-insulated-stick-cabinet`), `Yard barrier section` (`substation-yard-barrier-section`), `Chain gate barrier` (`substation-chain-gate-barrier`), `High voltage warning sign` (`substation-high-voltage-warning-sign`), `Fire suppression cylinder bank` (`substation-fire-suppression-cylinder-bank`), `Fire monitor post` (`substation-fire-monitor-post`), `Oil water separator` (`substation-oil-water-separator`), `Yard light mast` (`substation-yard-light-mast`), `Maintenance access platform` (`substation-maintenance-access-platform`), `Portable work canopy` (`substation-portable-work-canopy`).
 
+## Signature equipment rebuild
+
+Five hero assets are rebuilt at about real size from faceted lathes, lofted
+shedded insulators and braced steel members:
+`substation-main-power-transformer` (ribbed tank on a rail-wheeled base, six
+panel radiators with underslung fans, tall HV and short LV bushings on turrets,
+bracketed conservator with Buchholz pipe and breather, tap-changer and
+marshalling cabinets, ladder), `substation-live-tank-breaker` (three slim
+columns of support insulator, mid flange, interrupter and head on a common
+braced beam with the mechanism cabinet), `substation-dead-tank-breaker` (three
+earthed horizontal tanks, each with two splayed bushings on CT housings, on a
+raised frame with an end cabinet), `substation-three-pole-disconnector` (a
+double-side-break isolator: three posts per phase, a rotating centre post with
+a copper blade between jaw contacts, coupling rod and motor-operating box) and
+`substation-overhead-line-gantry` (tapering four-legged lattice columns and a
+lattice crossbeam with earth-wire peaks, strain strings of cap-and-pin discs,
+sagging conductors and down-drop jumpers). Each has four material-named
+controls and three presets; triangle budgets are 6,000 to 10,000 (actual
+4,508 to 9,400).
+
 ## Preview and verification
 
 The [grid substation wave bundle](../../../artifacts/catalog-demos/grid-substation-wave-20261103/README.md) records the original source recipes. The [quality-promotion handoff](../../../artifacts/catalog-demos/grid-substation-quality-promotion-20261104/README.md) records the 80-asset material and geometry promotion, refreshed previews, validation, and inspected MP4 walkthrough. The [silhouette-refinement handoff](../../../artifacts/catalog-demos/grid-substation-silhouette-refinement-20261106/README.md) records three in-place placement and shape corrections, refreshed kit previews, checks, and an inspected MP4.

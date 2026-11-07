@@ -108956,15 +108956,18 @@
       "id": "substation-dead-tank-breaker",
       "kit": "grid-substation",
       "title": "Dead tank circuit breaker",
-      "description": "Three grounded horizontal interrupter tanks with seated porcelain bushings, a shared copper terminal link and a side operating cabinet. Material controls: galvanized steel, powder-coated steel, porcelain, copper; finish presets: weathered and maintenance.",
+      "description": "Three-phase dead tank SF6 circuit breaker at about real size: three earthed horizontal tanks with domed ends and girth bands on a braced steel frame with concrete footings, two shedded entrance bushings per tank splayed in a V on current-transformer housings, aluminium terminal pads, gas manifold with density monitors, tank heaters, and an end-mounted operating mechanism cabinet with door, window and handle. Material controls: galvanised frame, tank and cabinet paint, bushing porcelain, terminals; weathered, maintenance and grey-porcelain presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "grid substation",
         "electrical infrastructure",
         "utility yard",
-        "low poly",
-        "CC0",
+        "circuit breaker",
+        "dead tank breaker",
+        "SF6",
+        "bushings",
+        "current transformer",
         "primary switching equipment"
       ],
       "compat": [
@@ -108975,8 +108978,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-dead-tank-breaker.kcad.ts",
       "preview": "/assets/grid-substation-substation-dead-tank-breaker.png",
-      "sourceSha256": "d526bc26e6efb66ac350e78e441ddf8c4e0ff12108bbbd507a6feb088b7f965c",
-      "triangleBudget": 1800,
+      "sourceSha256": "7fc584990499423cf2dfe78bd33056c3d46c32f56f759fba2a2dca06b70db667",
+      "triangleBudget": 7000,
       "params": [
         {
           "name": "scale",
@@ -108990,89 +108993,211 @@
         {
           "name": "galvanizedSteel",
           "type": "color",
-          "default": "#7f8c92",
-          "label": "Galvanized steel"
+          "default": "#8a969b",
+          "label": "Galvanized steel frame"
         },
         {
           "name": "powderCoat",
           "type": "color",
-          "default": "#526f68",
-          "label": "Powder-coated steel"
+          "default": "#c3c8c4",
+          "label": "Tank and cabinet paint"
         },
         {
           "name": "porcelain",
           "type": "color",
-          "default": "#e6dfcb",
-          "label": "Porcelain"
+          "default": "#7b4632",
+          "label": "Bushing porcelain"
         },
         {
           "name": "copper",
           "type": "color",
-          "default": "#b87545",
-          "label": "Copper"
+          "default": "#c9ced1",
+          "label": "Aluminium terminals"
         }
       ],
       "presets": {
         "weathered": {
           "galvanizedSteel": "#778080",
-          "powderCoat": "#586b63",
-          "porcelain": "#cac4b1",
-          "copper": "#9f704a"
+          "powderCoat": "#9ea39b",
+          "porcelain": "#6a4434",
+          "copper": "#a3a49c"
         },
         "maintenance": {
           "powderCoat": "#cf7736"
+        },
+        "greyPorcelain": {
+          "porcelain": "#8c9396",
+          "powderCoat": "#6f8277"
         }
       },
       "stats": {
-        "triangles": 1012,
+        "triangles": 6544,
         "sizeM": [
-          3.8,
-          2.175,
-          1.6
+          5.17,
+          5.77905,
+          3.059784
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "galvanizedSteel",
-          "color": "#7f8c92",
+          "name": "footing--2000--900",
+          "color": "#9a9890",
           "parts": [
-            "breaker-base",
-            "tank-saddle-1",
-            "tank-saddle-2",
-            "tank-saddle-3"
+            "footing--2000--900",
+            "footing--2000-900",
+            "footing-2000--900",
+            "footing-2000-900"
+          ]
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#8a969b",
+          "parts": [
+            "leg--2000--900",
+            "leg--2000-900",
+            "leg-2000--900",
+            "leg-2000-900",
+            "rail--900",
+            "frame-brace--900-a",
+            "frame-brace--900-b",
+            "rail-900",
+            "frame-brace-900-a",
+            "frame-brace-900-b",
+            "frame-end--2000",
+            "frame-end-2000",
+            "phase-1-saddle--900",
+            "phase-1-saddle-900",
+            "phase-2-saddle--900",
+            "phase-2-saddle-900",
+            "phase-3-saddle--900",
+            "phase-3-saddle-900",
+            "mechanism-plinth"
           ],
           "param": "galvanizedSteel"
         },
         {
           "name": "powderCoat",
-          "color": "#526f68",
+          "color": "#c3c8c4",
           "parts": [
-            "interrupter-tank-1",
-            "interrupter-tank-2",
-            "interrupter-tank-3",
-            "mechanism-cabinet"
+            "phase-1-tank",
+            "phase-1-girth--1060",
+            "phase-1-girth-1060",
+            "phase-1-bushing-a-nozzle",
+            "phase-1-bushing-a-ct-housing",
+            "phase-1-bushing-b-nozzle",
+            "phase-1-bushing-b-ct-housing",
+            "phase-2-tank",
+            "phase-2-girth--1060",
+            "phase-2-girth-1060",
+            "phase-2-bushing-a-nozzle",
+            "phase-2-bushing-a-ct-housing",
+            "phase-2-bushing-b-nozzle",
+            "phase-2-bushing-b-ct-housing",
+            "phase-3-tank",
+            "phase-3-girth--1060",
+            "phase-3-girth-1060",
+            "phase-3-bushing-a-nozzle",
+            "phase-3-bushing-a-ct-housing",
+            "phase-3-bushing-b-nozzle",
+            "phase-3-bushing-b-ct-housing",
+            "linkage-housing",
+            "mechanism-cabinet",
+            "mechanism-roof",
+            "mechanism-door"
           ],
           "param": "powderCoat"
         },
         {
-          "name": "porcelain",
-          "color": "#e6dfcb",
+          "name": "phase-1-heater",
+          "color": "#2c3033",
           "parts": [
-            "bushing-1",
-            "bushing-2",
-            "bushing-3"
+            "phase-1-heater",
+            "phase-1-density-monitor",
+            "phase-2-heater",
+            "phase-2-density-monitor",
+            "phase-3-heater",
+            "phase-3-density-monitor",
+            "mechanism-door-split",
+            "mechanism-hinge-2230-800",
+            "mechanism-hinge-2230-2200",
+            "mechanism-hinge-2810-800",
+            "mechanism-hinge-2810-2200",
+            "mechanism-handle",
+            "mechanism-vent"
+          ]
+        },
+        {
+          "name": "copper",
+          "color": "#c9ced1",
+          "parts": [
+            "phase-1-bushing-a-flange",
+            "phase-1-bushing-a-head",
+            "phase-1-bushing-a-stud",
+            "phase-1-bushing-a-pad",
+            "phase-1-bushing-b-flange",
+            "phase-1-bushing-b-head",
+            "phase-1-bushing-b-stud",
+            "phase-1-bushing-b-pad",
+            "phase-2-bushing-a-flange",
+            "phase-2-bushing-a-head",
+            "phase-2-bushing-a-stud",
+            "phase-2-bushing-a-pad",
+            "phase-2-bushing-b-flange",
+            "phase-2-bushing-b-head",
+            "phase-2-bushing-b-stud",
+            "phase-2-bushing-b-pad",
+            "phase-3-bushing-a-flange",
+            "phase-3-bushing-a-head",
+            "phase-3-bushing-a-stud",
+            "phase-3-bushing-a-pad",
+            "phase-3-bushing-b-flange",
+            "phase-3-bushing-b-head",
+            "phase-3-bushing-b-stud",
+            "phase-3-bushing-b-pad",
+            "gas-manifold",
+            "gas-drop--1300",
+            "gas-drop-0",
+            "gas-drop-1300"
+          ],
+          "param": "copper"
+        },
+        {
+          "name": "porcelain",
+          "color": "#7b4632",
+          "parts": [
+            "phase-1-bushing-a-porcelain",
+            "phase-1-bushing-b-porcelain",
+            "phase-2-bushing-a-porcelain",
+            "phase-2-bushing-b-porcelain",
+            "phase-3-bushing-a-porcelain",
+            "phase-3-bushing-b-porcelain"
           ],
           "param": "porcelain"
         },
         {
-          "name": "copper",
+          "name": "phase-1-density-dial",
+          "color": "#e9e6dc",
+          "parts": [
+            "phase-1-density-dial",
+            "phase-2-density-dial",
+            "phase-3-density-dial"
+          ]
+        },
+        {
+          "name": "mechanism-window",
+          "color": "#8fb4c4",
+          "parts": [
+            "mechanism-window"
+          ]
+        },
+        {
+          "name": "earth-pad",
           "color": "#b87545",
           "parts": [
-            "terminal-link"
-          ],
-          "param": "copper"
+            "earth-pad"
+          ]
         }
       ]
     },
@@ -111060,15 +111185,17 @@
       "id": "substation-live-tank-breaker",
       "kit": "grid-substation",
       "title": "Live tank circuit breaker",
-      "description": "Three upright interrupter poles on a common frame with overhead terminal arms. Material controls: galvanized steel, powder-coated steel, copper; finish presets: weathered and maintenance.",
+      "description": "Three-pole live tank SF6 circuit breaker at about real size: three slim columns, each a shedded support insulator, cast-aluminium mid flange with lower terminal pad, shedded interrupter insulator and top head with upper terminal pad, on a common galvanised beam with braced legs and concrete footings; gas-density monitors at each pole foot, inter-pole pull rod and a spring operating mechanism cabinet with door and handle. Material controls: galvanised structure, mechanism cabinet, insulators, aluminium terminals; weathered, maintenance and brown-porcelain presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "grid substation",
         "electrical infrastructure",
         "utility yard",
-        "low poly",
-        "CC0",
+        "circuit breaker",
+        "live tank breaker",
+        "SF6",
+        "switchgear",
         "primary switching equipment"
       ],
       "compat": [
@@ -111079,8 +111206,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-live-tank-breaker.kcad.ts",
       "preview": "/assets/grid-substation-substation-live-tank-breaker.png",
-      "sourceSha256": "a94abea0a7d15b3dd95fc502a7b857aa9c593d108d2734ced6734db9362f2b60",
-      "triangleBudget": 1800,
+      "sourceSha256": "758a6859e8452fb1836b390744286792da9b7f6ee8ab0bee50fb5beabbbb5799",
+      "triangleBudget": 6000,
       "params": [
         {
           "name": "scale",
@@ -111094,72 +111221,188 @@
         {
           "name": "galvanizedSteel",
           "type": "color",
-          "default": "#7f8c92",
-          "label": "Galvanized steel"
+          "default": "#8a969b",
+          "label": "Galvanized steel structure"
         },
         {
           "name": "powderCoat",
           "type": "color",
-          "default": "#526f68",
-          "label": "Powder-coated steel"
+          "default": "#c7cbc8",
+          "label": "Mechanism cabinet"
+        },
+        {
+          "name": "insulator",
+          "type": "color",
+          "default": "#6c7478",
+          "label": "Insulators"
         },
         {
           "name": "copper",
           "type": "color",
-          "default": "#b87545",
-          "label": "Copper"
+          "default": "#c9ced1",
+          "label": "Aluminium flanges and terminals"
         }
       ],
       "presets": {
         "weathered": {
           "galvanizedSteel": "#778080",
-          "powderCoat": "#586b63",
-          "copper": "#9f704a"
+          "powderCoat": "#9fa49d",
+          "insulator": "#6f7474",
+          "copper": "#a3a49c"
         },
         "maintenance": {
           "powderCoat": "#cf7736"
+        },
+        "brownPorcelain": {
+          "insulator": "#7b4632",
+          "powderCoat": "#5f7466"
         }
       },
       "stats": {
-        "triangles": 196,
+        "triangles": 4508,
         "sizeM": [
-          2.6,
-          3.86,
-          1.1
+          6.72,
+          6.84,
+          1.82
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "galvanizedSteel",
-          "color": "#7f8c92",
+          "name": "footing--2900--650",
+          "color": "#9a9890",
           "parts": [
-            "breaker-base"
+            "footing--2900--650",
+            "footing--2900-650",
+            "footing-2900--650",
+            "footing-2900-650"
+          ]
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#8a969b",
+          "parts": [
+            "base-plate--2900--650",
+            "leg--2900--650",
+            "base-plate--2900-650",
+            "leg--2900-650",
+            "leg-tie--2900",
+            "leg-brace--2900-a",
+            "leg-brace--2900-b",
+            "base-plate-2900--650",
+            "leg-2900--650",
+            "base-plate-2900-650",
+            "leg-2900-650",
+            "leg-tie-2900",
+            "leg-brace-2900-a",
+            "leg-brace-2900-b",
+            "pole-beam-front",
+            "pole-beam-rear",
+            "pole-beam-web",
+            "pole-beam-brace-a",
+            "pole-beam-brace-b",
+            "pole-beam-brace-tie",
+            "pull-rod",
+            "pull-rod-lever--2200",
+            "pull-rod-lever-0",
+            "pull-rod-lever-2200",
+            "mechanism-drive-tube",
+            "mechanism-crank"
           ],
           "param": "galvanizedSteel"
         },
         {
-          "name": "powderCoat",
-          "color": "#526f68",
+          "name": "copper",
+          "color": "#c9ced1",
           "parts": [
-            "interrupter-pole-1",
-            "interrupter-pole-2",
-            "interrupter-pole-3",
-            "mechanism-cabinet"
+            "pole-1-housing",
+            "pole-1-base-flange",
+            "pole-1-mid-flange",
+            "pole-1-lower-pad",
+            "pole-1-lower-pad-palm",
+            "pole-1-head",
+            "pole-1-upper-pad",
+            "pole-1-upper-pad-palm",
+            "pole-1-head-cap",
+            "pole-2-housing",
+            "pole-2-base-flange",
+            "pole-2-mid-flange",
+            "pole-2-lower-pad",
+            "pole-2-lower-pad-palm",
+            "pole-2-head",
+            "pole-2-upper-pad",
+            "pole-2-upper-pad-palm",
+            "pole-2-head-cap",
+            "pole-3-housing",
+            "pole-3-base-flange",
+            "pole-3-mid-flange",
+            "pole-3-lower-pad",
+            "pole-3-lower-pad-palm",
+            "pole-3-head",
+            "pole-3-upper-pad",
+            "pole-3-upper-pad-palm",
+            "pole-3-head-cap"
+          ],
+          "param": "copper"
+        },
+        {
+          "name": "pole-1-density-monitor",
+          "color": "#2c3033",
+          "parts": [
+            "pole-1-density-monitor",
+            "pole-2-density-monitor",
+            "pole-3-density-monitor",
+            "mechanism-hinge-1080",
+            "mechanism-hinge-2070",
+            "mechanism-handle"
+          ]
+        },
+        {
+          "name": "pole-1-density-dial",
+          "color": "#e9e6dc",
+          "parts": [
+            "pole-1-density-dial",
+            "pole-2-density-dial",
+            "pole-3-density-dial"
+          ]
+        },
+        {
+          "name": "insulator",
+          "color": "#6c7478",
+          "parts": [
+            "pole-1-support-insulator",
+            "pole-1-interrupter-insulator",
+            "pole-2-support-insulator",
+            "pole-2-interrupter-insulator",
+            "pole-3-support-insulator",
+            "pole-3-interrupter-insulator"
+          ],
+          "param": "insulator"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#c7cbc8",
+          "parts": [
+            "mechanism-cabinet",
+            "mechanism-roof",
+            "mechanism-door"
           ],
           "param": "powderCoat"
         },
         {
-          "name": "copper",
+          "name": "mechanism-window",
+          "color": "#8fb4c4",
+          "parts": [
+            "mechanism-window"
+          ]
+        },
+        {
+          "name": "earth-strap",
           "color": "#b87545",
           "parts": [
-            "terminal-arm-1",
-            "terminal-arm-2",
-            "terminal-arm-3",
-            "terminal-link"
-          ],
-          "param": "copper"
+            "earth-strap"
+          ]
         }
       ]
     },
@@ -111167,15 +111410,18 @@
       "id": "substation-main-power-transformer",
       "kit": "grid-substation",
       "title": "Main power transformer",
-      "description": "Large transformer tank with cooler banks, bushings, conservator, and transport base. Material controls: stainless steel, transformer enamel, porcelain, rubber; finish presets: weathered and maintenance.",
+      "description": "Oil-filled main power transformer at about real size: ribbed tank on a rail-wheeled base frame and concrete plinth, six pressed-steel panel radiators with headers and underslung cooling fans, three tall shedded HV bushings plus neutral on turrets, three LV bushings, a bracketed oil conservator with Buchholz pipe, oil gauge and silica-gel breather, on-load tap-changer compartment with motor-drive cabinet, marshalling cabinet, pressure relief valve, lifting lugs and an access ladder. Material controls: tank enamel, radiators and fittings, bushing porcelain, terminals; weathered, maintenance and light-grey presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "grid substation",
         "electrical infrastructure",
         "utility yard",
-        "low poly",
-        "CC0",
+        "power transformer",
+        "oil-filled transformer",
+        "bushings",
+        "radiators",
+        "conservator",
         "transformer bay and auxiliaries"
       ],
       "compat": [
@@ -111186,8 +111432,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-main-power-transformer.kcad.ts",
       "preview": "/assets/grid-substation-substation-main-power-transformer.png",
-      "sourceSha256": "e6a34f4d0e08e84e1f28f86c6759e83244b84dbcd455a29f38c33bf4d46cb114",
-      "triangleBudget": 1800,
+      "sourceSha256": "54aa4058f017a70cac8ef8c771a7b547839313676d528fa4fc0109091e14ab28",
+      "triangleBudget": 10000,
       "params": [
         {
           "name": "scale",
@@ -111199,110 +111445,387 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
-          "type": "color",
-          "default": "#b5c0c0",
-          "label": "Stainless steel"
-        },
-        {
           "name": "transformerEnamel",
           "type": "color",
-          "default": "#557052",
-          "label": "Transformer enamel"
+          "default": "#5e7564",
+          "label": "Tank enamel"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#a7afb1",
+          "label": "Radiators and fittings"
         },
         {
           "name": "porcelain",
           "type": "color",
-          "default": "#e6dfcb",
-          "label": "Porcelain"
+          "default": "#7b4632",
+          "label": "Bushing porcelain"
         },
         {
-          "name": "rubber",
+          "name": "copper",
           "type": "color",
-          "default": "#293034",
-          "label": "Rubber"
+          "default": "#c27c48",
+          "label": "Terminals and connectors"
         }
       ],
       "presets": {
         "weathered": {
-          "stainlessSteel": "#9da4a0",
-          "transformerEnamel": "#5a6c53",
-          "porcelain": "#cac4b1",
-          "rubber": "#3b3f3e"
+          "stainlessSteel": "#8f9590",
+          "transformerEnamel": "#5d6a5a",
+          "porcelain": "#6a4434",
+          "copper": "#8f6f4c"
         },
         "maintenance": {
           "transformerEnamel": "#9a7040"
+        },
+        "lightGrey": {
+          "transformerEnamel": "#b8bcb8",
+          "stainlessSteel": "#c9cdcd",
+          "porcelain": "#9da3a6"
         }
       },
       "stats": {
-        "triangles": 1380,
+        "triangles": 9400,
         "sizeM": [
-          6.4,
-          4.78836,
-          3.276
+          7.8,
+          7.31,
+          5
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#b5c0c0",
+          "name": "plinth",
+          "color": "#9a9890",
           "parts": [
-            "transport-base",
-            "cooler-fin-left-1",
-            "cooler-fin-right-1",
-            "cooler-fin-left-2",
-            "cooler-fin-right-2",
-            "cooler-fin-left-3",
-            "cooler-fin-right-3",
-            "cooler-fin-left-4",
-            "cooler-fin-right-4",
-            "cooler-fin-left-5",
-            "cooler-fin-right-5",
-            "cooler-fin-left-6",
-            "cooler-fin-right-6",
-            "cooler-fin-left-7",
-            "cooler-fin-right-7",
-            "cooler-header-lower-left",
-            "cooler-header-upper-left",
-            "cooler-header-lower-right",
-            "cooler-header-upper-right",
-            "conservator-pipe"
-          ],
-          "param": "stainlessSteel"
+            "plinth"
+          ]
+        },
+        {
+          "name": "rail--900",
+          "color": "#3b3e40",
+          "parts": [
+            "rail--900",
+            "rail-900",
+            "wheel--1900--900",
+            "wheel--1900-900",
+            "wheel-1900--900",
+            "wheel-1900-900"
+          ]
         },
         {
           "name": "transformerEnamel",
-          "color": "#557052",
+          "color": "#5e7564",
           "parts": [
+            "bogie--1900--900",
+            "bogie--1900-900",
+            "bogie-1900--900",
+            "bogie-1900-900",
+            "base-skid--900",
+            "base-skid-900",
             "main-tank",
+            "bottom-flange",
+            "top-flange",
             "tank-cover",
-            "conservator"
+            "side-stiffener--2100--1",
+            "side-stiffener--2100-1",
+            "side-stiffener--850--1",
+            "side-stiffener--850-1",
+            "side-stiffener-850--1",
+            "side-stiffener-850-1",
+            "side-stiffener-2100--1",
+            "side-stiffener-2100-1",
+            "end-stiffener--1--500",
+            "end-stiffener--1-500",
+            "end-stiffener-1--500",
+            "end-stiffener-1-500",
+            "lifting-lug--2450--1050",
+            "lifting-lug--2450-1050",
+            "lifting-lug-2450--1050",
+            "lifting-lug-2450-1050",
+            "hv-bushing-1-turret",
+            "hv-bushing-1-ct-band",
+            "hv-bushing-2-turret",
+            "hv-bushing-2-ct-band",
+            "hv-bushing-3-turret",
+            "hv-bushing-3-ct-band",
+            "neutral-bushing-turret",
+            "neutral-bushing-ct-band",
+            "lv-bushing-1-turret",
+            "lv-bushing-1-ct-band",
+            "lv-bushing-2-turret",
+            "lv-bushing-2-ct-band",
+            "lv-bushing-3-turret",
+            "lv-bushing-3-ct-band",
+            "conservator",
+            "conservator-leg-0-1050",
+            "conservator-leg-0-1650",
+            "conservator-saddle-0",
+            "conservator-leg-2200-1050",
+            "conservator-leg-2200-1650",
+            "conservator-saddle-2200",
+            "oltc-compartment",
+            "oltc-head",
+            "oltc-drive-cabinet",
+            "marshalling-cabinet"
           ],
           "param": "transformerEnamel"
         },
         {
-          "name": "porcelain",
-          "color": "#e6dfcb",
+          "name": "stainlessSteel",
+          "color": "#a7afb1",
           "parts": [
-            "bushing-1",
-            "bushing-2",
-            "bushing-3",
-            "bushing-4"
+            "radiator--1--1700-panel-0",
+            "radiator--1--1700-panel-1",
+            "radiator--1--1700-panel-2",
+            "radiator--1--1700-panel-3",
+            "radiator--1--1700-panel-4",
+            "radiator--1--1700-panel-5",
+            "radiator--1--1700-panel-6",
+            "radiator--1--1700-panel-7",
+            "radiator--1--1700-panel-8",
+            "radiator--1--1700-panel-9",
+            "radiator--1--1700-panel-10",
+            "radiator--1--1700-panel-11",
+            "radiator--1--1700-header-1080",
+            "radiator--1--1700-pipe-1080",
+            "radiator--1--1700-header-3570",
+            "radiator--1--1700-pipe-3570",
+            "fan--1--1700-shroud",
+            "fan--1--1700-bracket",
+            "radiator--1-0-panel-0",
+            "radiator--1-0-panel-1",
+            "radiator--1-0-panel-2",
+            "radiator--1-0-panel-3",
+            "radiator--1-0-panel-4",
+            "radiator--1-0-panel-5",
+            "radiator--1-0-panel-6",
+            "radiator--1-0-panel-7",
+            "radiator--1-0-panel-8",
+            "radiator--1-0-panel-9",
+            "radiator--1-0-panel-10",
+            "radiator--1-0-panel-11",
+            "radiator--1-0-header-1080",
+            "radiator--1-0-pipe-1080",
+            "radiator--1-0-header-3570",
+            "radiator--1-0-pipe-3570",
+            "fan--1-0-shroud",
+            "fan--1-0-bracket",
+            "radiator--1-1700-panel-0",
+            "radiator--1-1700-panel-1",
+            "radiator--1-1700-panel-2",
+            "radiator--1-1700-panel-3",
+            "radiator--1-1700-panel-4",
+            "radiator--1-1700-panel-5",
+            "radiator--1-1700-panel-6",
+            "radiator--1-1700-panel-7",
+            "radiator--1-1700-panel-8",
+            "radiator--1-1700-panel-9",
+            "radiator--1-1700-panel-10",
+            "radiator--1-1700-panel-11",
+            "radiator--1-1700-header-1080",
+            "radiator--1-1700-pipe-1080",
+            "radiator--1-1700-header-3570",
+            "radiator--1-1700-pipe-3570",
+            "fan--1-1700-shroud",
+            "fan--1-1700-bracket",
+            "radiator-1--1700-panel-0",
+            "radiator-1--1700-panel-1",
+            "radiator-1--1700-panel-2",
+            "radiator-1--1700-panel-3",
+            "radiator-1--1700-panel-4",
+            "radiator-1--1700-panel-5",
+            "radiator-1--1700-panel-6",
+            "radiator-1--1700-panel-7",
+            "radiator-1--1700-panel-8",
+            "radiator-1--1700-panel-9",
+            "radiator-1--1700-panel-10",
+            "radiator-1--1700-panel-11",
+            "radiator-1--1700-header-1080",
+            "radiator-1--1700-pipe-1080",
+            "radiator-1--1700-header-3570",
+            "radiator-1--1700-pipe-3570",
+            "fan-1--1700-shroud",
+            "fan-1--1700-bracket",
+            "radiator-1-0-panel-0",
+            "radiator-1-0-panel-1",
+            "radiator-1-0-panel-2",
+            "radiator-1-0-panel-3",
+            "radiator-1-0-panel-4",
+            "radiator-1-0-panel-5",
+            "radiator-1-0-panel-6",
+            "radiator-1-0-panel-7",
+            "radiator-1-0-panel-8",
+            "radiator-1-0-panel-9",
+            "radiator-1-0-panel-10",
+            "radiator-1-0-panel-11",
+            "radiator-1-0-header-1080",
+            "radiator-1-0-pipe-1080",
+            "radiator-1-0-header-3570",
+            "radiator-1-0-pipe-3570",
+            "fan-1-0-shroud",
+            "fan-1-0-bracket",
+            "radiator-1-1700-panel-0",
+            "radiator-1-1700-panel-1",
+            "radiator-1-1700-panel-2",
+            "radiator-1-1700-panel-3",
+            "radiator-1-1700-panel-4",
+            "radiator-1-1700-panel-5",
+            "radiator-1-1700-panel-6",
+            "radiator-1-1700-panel-7",
+            "radiator-1-1700-panel-8",
+            "radiator-1-1700-panel-9",
+            "radiator-1-1700-panel-10",
+            "radiator-1-1700-panel-11",
+            "radiator-1-1700-header-1080",
+            "radiator-1-1700-pipe-1080",
+            "radiator-1-1700-header-3570",
+            "radiator-1-1700-pipe-3570",
+            "fan-1-1700-shroud",
+            "fan-1-1700-bracket",
+            "hv-bushing-1-flange",
+            "hv-bushing-1-head",
+            "hv-bushing-2-flange",
+            "hv-bushing-2-head",
+            "hv-bushing-3-flange",
+            "hv-bushing-3-head",
+            "neutral-bushing-flange",
+            "neutral-bushing-head",
+            "lv-bushing-1-flange",
+            "lv-bushing-1-head",
+            "lv-bushing-2-flange",
+            "lv-bushing-2-head",
+            "lv-bushing-3-flange",
+            "lv-bushing-3-head",
+            "buchholz-pipe-riser",
+            "buchholz-pipe-top",
+            "breather-pipe",
+            "oltc-drive-door",
+            "marshalling-door",
+            "ladder-stile-400",
+            "ladder-stile-850",
+            "ladder-rung-1120",
+            "ladder-rung-1420",
+            "ladder-rung-1720",
+            "ladder-rung-2020",
+            "ladder-rung-2320",
+            "ladder-rung-2620",
+            "ladder-rung-2920",
+            "ladder-rung-3220",
+            "ladder-rung-3520",
+            "ladder-rung-3820",
+            "ladder-rung-4120",
+            "ladder-rung-4420",
+            "ladder-standoff-400",
+            "ladder-standoff-850"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "radiator--1--1700-valve-1080",
+          "color": "#2a2e31",
+          "parts": [
+            "radiator--1--1700-valve-1080",
+            "radiator--1--1700-valve-3570",
+            "fan--1--1700-hub",
+            "fan--1--1700-blade-0",
+            "fan--1--1700-blade-120",
+            "fan--1--1700-blade-240",
+            "radiator--1-0-valve-1080",
+            "radiator--1-0-valve-3570",
+            "fan--1-0-hub",
+            "fan--1-0-blade-0",
+            "fan--1-0-blade-120",
+            "fan--1-0-blade-240",
+            "radiator--1-1700-valve-1080",
+            "radiator--1-1700-valve-3570",
+            "fan--1-1700-hub",
+            "fan--1-1700-blade-0",
+            "fan--1-1700-blade-120",
+            "fan--1-1700-blade-240",
+            "radiator-1--1700-valve-1080",
+            "radiator-1--1700-valve-3570",
+            "fan-1--1700-hub",
+            "fan-1--1700-blade-0",
+            "fan-1--1700-blade-120",
+            "fan-1--1700-blade-240",
+            "radiator-1-0-valve-1080",
+            "radiator-1-0-valve-3570",
+            "fan-1-0-hub",
+            "fan-1-0-blade-0",
+            "fan-1-0-blade-120",
+            "fan-1-0-blade-240",
+            "radiator-1-1700-valve-1080",
+            "radiator-1-1700-valve-3570",
+            "fan-1-1700-hub",
+            "fan-1-1700-blade-0",
+            "fan-1-1700-blade-120",
+            "fan-1-1700-blade-240",
+            "buchholz-relay",
+            "oil-gauge",
+            "breather-cup",
+            "pressure-relief",
+            "oltc-drive-shaft",
+            "marshalling-handle"
+          ]
+        },
+        {
+          "name": "porcelain",
+          "color": "#7b4632",
+          "parts": [
+            "hv-bushing-1-porcelain",
+            "hv-bushing-2-porcelain",
+            "hv-bushing-3-porcelain",
+            "neutral-bushing-porcelain",
+            "lv-bushing-1-porcelain",
+            "lv-bushing-2-porcelain",
+            "lv-bushing-3-porcelain"
           ],
           "param": "porcelain"
         },
         {
-          "name": "rubber",
-          "color": "#293034",
+          "name": "copper",
+          "color": "#c27c48",
           "parts": [
-            "transport-wheel",
-            "transport-wheel-2",
-            "transport-wheel-3",
-            "transport-wheel-4"
+            "hv-bushing-1-stud",
+            "hv-bushing-1-pad",
+            "hv-bushing-2-stud",
+            "hv-bushing-2-pad",
+            "hv-bushing-3-stud",
+            "hv-bushing-3-pad",
+            "neutral-bushing-stud",
+            "neutral-bushing-pad",
+            "lv-bushing-1-stud",
+            "lv-bushing-1-pad",
+            "lv-bushing-2-stud",
+            "lv-bushing-2-pad",
+            "lv-bushing-3-stud",
+            "lv-bushing-3-pad"
           ],
-          "param": "rubber"
+          "param": "copper"
+        },
+        {
+          "name": "oil-gauge-face",
+          "color": "#e9e6dc",
+          "parts": [
+            "oil-gauge-face"
+          ]
+        },
+        {
+          "name": "breather-canister",
+          "color": "#e48a3a",
+          "parts": [
+            "breather-canister"
+          ]
+        },
+        {
+          "name": "rating-plate",
+          "color": "#d9dcd6",
+          "parts": [
+            "rating-plate"
+          ]
         }
       ]
     },
@@ -112046,15 +112569,18 @@
       "id": "substation-overhead-line-gantry",
       "kit": "grid-substation",
       "title": "Overhead line gantry",
-      "description": "Portal frame carrying the incoming line conductors above a utility substation bay. Material controls: concrete, galvanized steel, porcelain; finish presets: weathered and maintenance.",
+      "description": "Lattice steel line-entry gantry at about real size: two tapering four-legged lattice columns with zig-zag bracing on concrete pile caps, a square lattice crossbeam, earth-wire peaks with shield wires, three strain insulator strings of cap-and-pin discs with yoke plates and arcing horns, sagging phase conductors leaving the yard and down-drop jumpers into the bay, step bolts and an anti-climb guard. Material controls: galvanised lattice steel, foundations, insulator discs, aluminium conductors; weathered, newGalvanised and glass-disc presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "grid substation",
         "electrical infrastructure",
         "utility yard",
-        "low poly",
-        "CC0",
+        "gantry",
+        "lattice steel",
+        "line entry",
+        "strain insulator",
+        "dead end",
         "incoming lines and structures"
       ],
       "compat": [
@@ -112065,8 +112591,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-overhead-line-gantry.kcad.ts",
       "preview": "/assets/grid-substation-substation-overhead-line-gantry.png",
-      "sourceSha256": "cb442fe63c0794106ffc62bbbc3a48cfff1a705897c3c677f8f66089f7328b58",
-      "triangleBudget": 1800,
+      "sourceSha256": "b7adb5e9eca57d3436d24bee567f89a3f7f9a8ef346dbecfec7a2277e06f83d3",
+      "triangleBudget": 9000,
       "params": [
         {
           "name": "scale",
@@ -112078,40 +112604,52 @@
           "step": 0.05
         },
         {
-          "name": "concrete",
-          "type": "color",
-          "default": "#92938b",
-          "label": "Concrete"
-        },
-        {
           "name": "galvanizedSteel",
           "type": "color",
-          "default": "#7f8c92",
-          "label": "Galvanized steel"
+          "default": "#8a969b",
+          "label": "Galvanized lattice steel"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#9a9890",
+          "label": "Concrete pile caps"
         },
         {
           "name": "porcelain",
           "type": "color",
-          "default": "#e6dfcb",
-          "label": "Porcelain"
+          "default": "#7b4632",
+          "label": "Insulator discs"
+        },
+        {
+          "name": "conductor",
+          "type": "color",
+          "default": "#b9bec0",
+          "label": "Aluminium conductors and fittings"
         }
       ],
       "presets": {
         "weathered": {
-          "concrete": "#88887f",
-          "galvanizedSteel": "#778080",
-          "porcelain": "#cac4b1"
+          "galvanizedSteel": "#6f7672",
+          "concrete": "#7f7d75",
+          "porcelain": "#6a4434",
+          "conductor": "#8c8f8c"
         },
         "maintenance": {
-          "galvanizedSteel": "#e1b63d"
+          "galvanizedSteel": "#9aa3a6",
+          "concrete": "#b1aea3"
+        },
+        "glassDiscs": {
+          "porcelain": "#5f9a8c",
+          "galvanizedSteel": "#a3adb1"
         }
       },
       "stats": {
-        "triangles": 1016,
+        "triangles": 7096,
         "sizeM": [
-          5.6,
-          7.14,
-          1.587
+          14.6,
+          14.68,
+          10.478636
         ],
         "minUpM": 0,
         "materials": 1
@@ -112119,38 +112657,401 @@
       "palette": [
         {
           "name": "concrete",
-          "color": "#92938b",
+          "color": "#9a9890",
           "parts": [
-            "foot-left",
-            "foot-right"
+            "pile-cap--6000",
+            "pile-cap-6000"
           ],
           "param": "concrete"
         },
         {
           "name": "galvanizedSteel",
-          "color": "#7f8c92",
+          "color": "#8a969b",
           "parts": [
-            "column-left",
-            "column-right",
-            "top-crossbeam",
-            "cantilever-left",
-            "cantilever-right",
-            "earthing-platform",
-            "knee-brace-left",
-            "knee-brace-right"
+            "column--6000-leg--1--1",
+            "column--6000-foot--1--1",
+            "column--6000-leg--1-1",
+            "column--6000-foot--1-1",
+            "column--6000-leg-1--1",
+            "column--6000-foot-1--1",
+            "column--6000-leg-1-1",
+            "column--6000-foot-1-1",
+            "column--6000-h-0-front",
+            "column--6000-h-0-right",
+            "column--6000-h-0-back",
+            "column--6000-h-0-left",
+            "column--6000-d-0-front",
+            "column--6000-d-0-back",
+            "column--6000-d-0-left",
+            "column--6000-d-0-right",
+            "column--6000-h-1-front",
+            "column--6000-h-1-right",
+            "column--6000-h-1-back",
+            "column--6000-h-1-left",
+            "column--6000-d-1-front",
+            "column--6000-d-1-back",
+            "column--6000-d-1-left",
+            "column--6000-d-1-right",
+            "column--6000-h-2-front",
+            "column--6000-h-2-right",
+            "column--6000-h-2-back",
+            "column--6000-h-2-left",
+            "column--6000-d-2-front",
+            "column--6000-d-2-back",
+            "column--6000-d-2-left",
+            "column--6000-d-2-right",
+            "column--6000-h-3-front",
+            "column--6000-h-3-right",
+            "column--6000-h-3-back",
+            "column--6000-h-3-left",
+            "column--6000-d-3-front",
+            "column--6000-d-3-back",
+            "column--6000-d-3-left",
+            "column--6000-d-3-right",
+            "column--6000-h-4-front",
+            "column--6000-h-4-right",
+            "column--6000-h-4-back",
+            "column--6000-h-4-left",
+            "column--6000-d-4-front",
+            "column--6000-d-4-back",
+            "column--6000-d-4-left",
+            "column--6000-d-4-right",
+            "column--6000-h-5-front",
+            "column--6000-h-5-right",
+            "column--6000-h-5-back",
+            "column--6000-h-5-left",
+            "column--6000-d-5-front",
+            "column--6000-d-5-back",
+            "column--6000-d-5-left",
+            "column--6000-d-5-right",
+            "column--6000-h-6-front",
+            "column--6000-h-6-right",
+            "column--6000-h-6-back",
+            "column--6000-h-6-left",
+            "column--6000-d-6-front",
+            "column--6000-d-6-back",
+            "column--6000-d-6-left",
+            "column--6000-d-6-right",
+            "column--6000-h-7-front",
+            "column--6000-h-7-right",
+            "column--6000-h-7-back",
+            "column--6000-h-7-left",
+            "column--6000-d-7-front",
+            "column--6000-d-7-back",
+            "column--6000-d-7-left",
+            "column--6000-d-7-right",
+            "column--6000-h-8-front",
+            "column--6000-h-8-right",
+            "column--6000-h-8-back",
+            "column--6000-h-8-left",
+            "peak--6000--1--1",
+            "peak--6000--1-1",
+            "peak--6000-1--1",
+            "peak--6000-1-1",
+            "peak--6000-tie-13100",
+            "peak--6000-tie-13800",
+            "peak--6000-cap",
+            "column-6000-leg--1--1",
+            "column-6000-foot--1--1",
+            "column-6000-leg--1-1",
+            "column-6000-foot--1-1",
+            "column-6000-leg-1--1",
+            "column-6000-foot-1--1",
+            "column-6000-leg-1-1",
+            "column-6000-foot-1-1",
+            "column-6000-h-0-front",
+            "column-6000-h-0-right",
+            "column-6000-h-0-back",
+            "column-6000-h-0-left",
+            "column-6000-d-0-front",
+            "column-6000-d-0-back",
+            "column-6000-d-0-left",
+            "column-6000-d-0-right",
+            "column-6000-h-1-front",
+            "column-6000-h-1-right",
+            "column-6000-h-1-back",
+            "column-6000-h-1-left",
+            "column-6000-d-1-front",
+            "column-6000-d-1-back",
+            "column-6000-d-1-left",
+            "column-6000-d-1-right",
+            "column-6000-h-2-front",
+            "column-6000-h-2-right",
+            "column-6000-h-2-back",
+            "column-6000-h-2-left",
+            "column-6000-d-2-front",
+            "column-6000-d-2-back",
+            "column-6000-d-2-left",
+            "column-6000-d-2-right",
+            "column-6000-h-3-front",
+            "column-6000-h-3-right",
+            "column-6000-h-3-back",
+            "column-6000-h-3-left",
+            "column-6000-d-3-front",
+            "column-6000-d-3-back",
+            "column-6000-d-3-left",
+            "column-6000-d-3-right",
+            "column-6000-h-4-front",
+            "column-6000-h-4-right",
+            "column-6000-h-4-back",
+            "column-6000-h-4-left",
+            "column-6000-d-4-front",
+            "column-6000-d-4-back",
+            "column-6000-d-4-left",
+            "column-6000-d-4-right",
+            "column-6000-h-5-front",
+            "column-6000-h-5-right",
+            "column-6000-h-5-back",
+            "column-6000-h-5-left",
+            "column-6000-d-5-front",
+            "column-6000-d-5-back",
+            "column-6000-d-5-left",
+            "column-6000-d-5-right",
+            "column-6000-h-6-front",
+            "column-6000-h-6-right",
+            "column-6000-h-6-back",
+            "column-6000-h-6-left",
+            "column-6000-d-6-front",
+            "column-6000-d-6-back",
+            "column-6000-d-6-left",
+            "column-6000-d-6-right",
+            "column-6000-h-7-front",
+            "column-6000-h-7-right",
+            "column-6000-h-7-back",
+            "column-6000-h-7-left",
+            "column-6000-d-7-front",
+            "column-6000-d-7-back",
+            "column-6000-d-7-left",
+            "column-6000-d-7-right",
+            "column-6000-h-8-front",
+            "column-6000-h-8-right",
+            "column-6000-h-8-back",
+            "column-6000-h-8-left",
+            "peak-6000--1--1",
+            "peak-6000--1-1",
+            "peak-6000-1--1",
+            "peak-6000-1-1",
+            "peak-6000-tie-13100",
+            "peak-6000-tie-13800",
+            "peak-6000-cap",
+            "beam-chord--500-11400",
+            "beam-chord--500-12400",
+            "beam-chord-500-11400",
+            "beam-chord-500-12400",
+            "beam-frame-0-front",
+            "beam-frame-0-back",
+            "beam-frame-0-bottom",
+            "beam-frame-0-top",
+            "beam-diag-0-front",
+            "beam-diag-0-back",
+            "beam-diag-0-bottom",
+            "beam-frame-1-front",
+            "beam-frame-1-back",
+            "beam-frame-1-bottom",
+            "beam-frame-1-top",
+            "beam-diag-1-front",
+            "beam-diag-1-back",
+            "beam-diag-1-bottom",
+            "beam-frame-2-front",
+            "beam-frame-2-back",
+            "beam-frame-2-bottom",
+            "beam-frame-2-top",
+            "beam-diag-2-front",
+            "beam-diag-2-back",
+            "beam-diag-2-bottom",
+            "beam-frame-3-front",
+            "beam-frame-3-back",
+            "beam-frame-3-bottom",
+            "beam-frame-3-top",
+            "beam-diag-3-front",
+            "beam-diag-3-back",
+            "beam-diag-3-bottom",
+            "beam-frame-4-front",
+            "beam-frame-4-back",
+            "beam-frame-4-bottom",
+            "beam-frame-4-top",
+            "beam-diag-4-front",
+            "beam-diag-4-back",
+            "beam-diag-4-bottom",
+            "beam-frame-5-front",
+            "beam-frame-5-back",
+            "beam-frame-5-bottom",
+            "beam-frame-5-top",
+            "beam-diag-5-front",
+            "beam-diag-5-back",
+            "beam-diag-5-bottom",
+            "beam-frame-6-front",
+            "beam-frame-6-back",
+            "beam-frame-6-bottom",
+            "beam-frame-6-top",
+            "beam-diag-6-front",
+            "beam-diag-6-back",
+            "beam-diag-6-bottom",
+            "beam-frame-7-front",
+            "beam-frame-7-back",
+            "beam-frame-7-bottom",
+            "beam-frame-7-top",
+            "beam-diag-7-front",
+            "beam-diag-7-back",
+            "beam-diag-7-bottom",
+            "beam-frame-8-front",
+            "beam-frame-8-back",
+            "beam-frame-8-bottom",
+            "beam-frame-8-top",
+            "beam-diag-8-front",
+            "beam-diag-8-back",
+            "beam-diag-8-bottom",
+            "beam-frame-9-front",
+            "beam-frame-9-back",
+            "beam-frame-9-bottom",
+            "beam-frame-9-top",
+            "beam-diag-9-front",
+            "beam-diag-9-back",
+            "beam-diag-9-bottom",
+            "beam-frame-10-front",
+            "beam-frame-10-back",
+            "beam-frame-10-bottom",
+            "beam-frame-10-top",
+            "beam-diag-10-front",
+            "beam-diag-10-back",
+            "beam-diag-10-bottom",
+            "beam-frame-11-front",
+            "beam-frame-11-back",
+            "beam-frame-11-bottom",
+            "beam-frame-11-top",
+            "beam-diag-11-front",
+            "beam-diag-11-back",
+            "beam-diag-11-bottom",
+            "beam-frame-12-front",
+            "beam-frame-12-back",
+            "beam-frame-12-bottom",
+            "beam-frame-12-top",
+            "phase-1-attachment-plate",
+            "phase-2-attachment-plate",
+            "phase-3-attachment-plate",
+            "step-bolt-2600",
+            "step-bolt-3000",
+            "step-bolt-3400",
+            "step-bolt-3800",
+            "step-bolt-4200",
+            "step-bolt-4600",
+            "step-bolt-5000",
+            "step-bolt-5400",
+            "step-bolt-5800",
+            "step-bolt-6200",
+            "step-bolt-6600",
+            "step-bolt-7000",
+            "step-bolt-7400",
+            "step-bolt-7800",
+            "step-bolt-8200",
+            "step-bolt-8600",
+            "step-bolt-9000",
+            "step-bolt-9400",
+            "step-bolt-9800",
+            "step-bolt-10200",
+            "step-bolt-10600",
+            "step-bolt-11000",
+            "anti-climb-guard-x--1",
+            "anti-climb-guard-y--1",
+            "anti-climb-guard-x-1",
+            "anti-climb-guard-y-1"
           ],
           "param": "galvanizedSteel"
         },
         {
-          "name": "porcelain",
-          "color": "#e6dfcb",
+          "name": "conductor",
+          "color": "#b9bec0",
           "parts": [
-            "insulator-1",
-            "insulator-2",
-            "insulator-3",
-            "insulator-4"
+            "shield-wire--6000",
+            "shield-wire-6000",
+            "phase-1-shackle",
+            "phase-1-yoke",
+            "phase-1-line-horn",
+            "phase-1-ground-horn",
+            "phase-1-dead-end-clamp",
+            "phase-1-conductor-1",
+            "phase-1-conductor-2",
+            "phase-1-conductor-3",
+            "phase-1-conductor-4",
+            "phase-1-conductor-5",
+            "phase-1-jumper-1",
+            "phase-1-jumper-2",
+            "phase-1-jumper-3",
+            "phase-1-jumper-spacer",
+            "phase-2-shackle",
+            "phase-2-yoke",
+            "phase-2-line-horn",
+            "phase-2-ground-horn",
+            "phase-2-dead-end-clamp",
+            "phase-2-conductor-1",
+            "phase-2-conductor-2",
+            "phase-2-conductor-3",
+            "phase-2-conductor-4",
+            "phase-2-conductor-5",
+            "phase-2-jumper-1",
+            "phase-2-jumper-2",
+            "phase-2-jumper-3",
+            "phase-2-jumper-spacer",
+            "phase-3-shackle",
+            "phase-3-yoke",
+            "phase-3-line-horn",
+            "phase-3-ground-horn",
+            "phase-3-dead-end-clamp",
+            "phase-3-conductor-1",
+            "phase-3-conductor-2",
+            "phase-3-conductor-3",
+            "phase-3-conductor-4",
+            "phase-3-conductor-5",
+            "phase-3-jumper-1",
+            "phase-3-jumper-2",
+            "phase-3-jumper-3",
+            "phase-3-jumper-spacer"
+          ],
+          "param": "conductor"
+        },
+        {
+          "name": "porcelain",
+          "color": "#7b4632",
+          "parts": [
+            "phase-1-disc-0",
+            "phase-1-disc-1",
+            "phase-1-disc-2",
+            "phase-1-disc-3",
+            "phase-1-disc-4",
+            "phase-1-disc-5",
+            "phase-1-disc-6",
+            "phase-1-disc-7",
+            "phase-1-disc-8",
+            "phase-1-disc-9",
+            "phase-2-disc-0",
+            "phase-2-disc-1",
+            "phase-2-disc-2",
+            "phase-2-disc-3",
+            "phase-2-disc-4",
+            "phase-2-disc-5",
+            "phase-2-disc-6",
+            "phase-2-disc-7",
+            "phase-2-disc-8",
+            "phase-2-disc-9",
+            "phase-3-disc-0",
+            "phase-3-disc-1",
+            "phase-3-disc-2",
+            "phase-3-disc-3",
+            "phase-3-disc-4",
+            "phase-3-disc-5",
+            "phase-3-disc-6",
+            "phase-3-disc-7",
+            "phase-3-disc-8",
+            "phase-3-disc-9"
           ],
           "param": "porcelain"
+        },
+        {
+          "name": "danger-plate",
+          "color": "#e0b02a",
+          "parts": [
+            "danger-plate"
+          ]
         }
       ]
     },
@@ -114207,15 +115108,17 @@
       "id": "substation-three-pole-disconnector",
       "kit": "grid-substation",
       "title": "Three pole disconnector",
-      "description": "Three phase outdoor disconnector with a shared base and visible blade arms. Material controls: galvanized steel, porcelain, copper, powder-coated steel; finish presets: weathered and maintenance.",
+      "description": "Three-pole double-side-break outdoor disconnector at about real size: per phase two fixed and one rotating shedded post insulator on a galvanised channel base, jaw contacts and terminal pads on the outer posts, a tubular copper blade with contact fingers on the rotating centre post, shown closed; raised steel support with braced legs and footings, crank arms and an inter-phase coupling rod, vertical operating pipe down to a motor-operating mechanism box with manual handle. Material controls: galvanised steel, porcelain, copper current path, mechanism box; weathered, maintenance and grey-porcelain presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "grid substation",
         "electrical infrastructure",
         "utility yard",
-        "low poly",
-        "CC0",
+        "disconnector",
+        "isolator",
+        "double side break",
+        "switchgear",
         "primary switching equipment"
       ],
       "compat": [
@@ -114226,8 +115129,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/grid-substation/substation-three-pole-disconnector.kcad.ts",
       "preview": "/assets/grid-substation-substation-three-pole-disconnector.png",
-      "sourceSha256": "4201ad7458ffe40da0e260fe478391605400b68bb23c5215e65454cf00377743",
-      "triangleBudget": 1800,
+      "sourceSha256": "21d6a2f98c7ee4470ab6901a3a24a937ef5f16f4b41cd61c1568a1b577846530",
+      "triangleBudget": 7000,
       "params": [
         {
           "name": "scale",
@@ -114241,95 +115144,231 @@
         {
           "name": "galvanizedSteel",
           "type": "color",
-          "default": "#7f8c92",
+          "default": "#8a969b",
           "label": "Galvanized steel"
         },
         {
           "name": "porcelain",
           "type": "color",
-          "default": "#e6dfcb",
-          "label": "Porcelain"
+          "default": "#7b4632",
+          "label": "Post insulators"
         },
         {
           "name": "copper",
           "type": "color",
-          "default": "#b87545",
-          "label": "Copper"
+          "default": "#c27c48",
+          "label": "Copper blade and contacts"
         },
         {
           "name": "powderCoat",
           "type": "color",
-          "default": "#526f68",
-          "label": "Powder-coated steel"
+          "default": "#c3c8c4",
+          "label": "Mechanism box"
         }
       ],
       "presets": {
         "weathered": {
           "galvanizedSteel": "#778080",
-          "porcelain": "#cac4b1",
-          "copper": "#9f704a",
-          "powderCoat": "#586b63"
+          "porcelain": "#6a4434",
+          "copper": "#8f6f4c",
+          "powderCoat": "#9ea39b"
         },
         "maintenance": {
           "powderCoat": "#cf7736"
+        },
+        "greyPorcelain": {
+          "porcelain": "#8c9396",
+          "copper": "#c9ced1",
+          "powderCoat": "#5f7466"
         }
       },
       "stats": {
-        "triangles": 1648,
+        "triangles": 6612,
         "sizeM": [
-          3.9,
-          1.89,
-          1.1
+          5.9,
+          4.665967,
+          3.7
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "galvanizedSteel",
-          "color": "#7f8c92",
+          "name": "footing--2700--500",
+          "color": "#9a9890",
           "parts": [
-            "base-frame",
-            "phase-1-support--1",
-            "phase-1-support-1",
-            "phase-2-support--1",
-            "phase-2-support-1",
-            "phase-3-support--1",
-            "phase-3-support-1"
+            "footing--2700--500",
+            "footing--2700-500",
+            "footing-2700--500",
+            "footing-2700-500",
+            "mechanism-footing"
+          ]
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#8a969b",
+          "parts": [
+            "leg--2700--500",
+            "leg--2700-500",
+            "leg-tie--2700-900",
+            "leg-tie--2700-1600",
+            "leg-brace--2700",
+            "leg-2700--500",
+            "leg-2700-500",
+            "leg-tie-2700-900",
+            "leg-tie-2700-1600",
+            "leg-brace-2700",
+            "support-beam--500",
+            "support-beam-500",
+            "phase-1-channel",
+            "phase-1-channel-lip",
+            "phase-1-post--1350-flange",
+            "phase-1-post--1350-cap",
+            "phase-1-post-0-flange",
+            "phase-1-post-0-cap",
+            "phase-1-post-1350-flange",
+            "phase-1-post-1350-cap",
+            "phase-1-bearing",
+            "phase-1-crank",
+            "phase-2-channel",
+            "phase-2-channel-lip",
+            "phase-2-post--1350-flange",
+            "phase-2-post--1350-cap",
+            "phase-2-post-0-flange",
+            "phase-2-post-0-cap",
+            "phase-2-post-1350-flange",
+            "phase-2-post-1350-cap",
+            "phase-2-bearing",
+            "phase-2-crank",
+            "phase-3-channel",
+            "phase-3-channel-lip",
+            "phase-3-post--1350-flange",
+            "phase-3-post--1350-cap",
+            "phase-3-post-0-flange",
+            "phase-3-post-0-cap",
+            "phase-3-post-1350-flange",
+            "phase-3-post-1350-cap",
+            "phase-3-bearing",
+            "phase-3-crank",
+            "coupling-rod",
+            "coupling-clevis--2000",
+            "coupling-clevis-0",
+            "coupling-clevis-2000",
+            "operating-pipe",
+            "operating-lever",
+            "mechanism-stand"
           ],
           "param": "galvanizedSteel"
         },
         {
           "name": "porcelain",
-          "color": "#e6dfcb",
+          "color": "#7b4632",
           "parts": [
-            "phase-1-insulator--1",
-            "phase-1-insulator-1",
-            "phase-2-insulator--1",
-            "phase-2-insulator-1",
-            "phase-3-insulator--1",
-            "phase-3-insulator-1"
+            "phase-1-post--1350",
+            "phase-1-post-0",
+            "phase-1-post-1350",
+            "phase-2-post--1350",
+            "phase-2-post-0",
+            "phase-2-post-1350",
+            "phase-3-post--1350",
+            "phase-3-post-0",
+            "phase-3-post-1350"
           ],
           "param": "porcelain"
         },
         {
           "name": "copper",
-          "color": "#b87545",
+          "color": "#c27c48",
           "parts": [
-            "phase-1-blade",
-            "phase-2-blade",
-            "phase-3-blade",
-            "operating-link"
+            "phase-1-jaw-base--1",
+            "phase-1-jaw-finger--1--55",
+            "phase-1-jaw-finger--1-55",
+            "phase-1-terminal--1",
+            "phase-1-terminal-palm--1",
+            "phase-1-arcing-horn--1",
+            "phase-1-jaw-base-1",
+            "phase-1-jaw-finger-1--55",
+            "phase-1-jaw-finger-1-55",
+            "phase-1-terminal-1",
+            "phase-1-terminal-palm-1",
+            "phase-1-arcing-horn-1",
+            "phase-1-blade-hub",
+            "phase-1-blade-tube",
+            "phase-1-blade-tip--1",
+            "phase-1-blade-tip-1",
+            "phase-2-jaw-base--1",
+            "phase-2-jaw-finger--1--55",
+            "phase-2-jaw-finger--1-55",
+            "phase-2-terminal--1",
+            "phase-2-terminal-palm--1",
+            "phase-2-arcing-horn--1",
+            "phase-2-jaw-base-1",
+            "phase-2-jaw-finger-1--55",
+            "phase-2-jaw-finger-1-55",
+            "phase-2-terminal-1",
+            "phase-2-terminal-palm-1",
+            "phase-2-arcing-horn-1",
+            "phase-2-blade-hub",
+            "phase-2-blade-tube",
+            "phase-2-blade-tip--1",
+            "phase-2-blade-tip-1",
+            "phase-3-jaw-base--1",
+            "phase-3-jaw-finger--1--55",
+            "phase-3-jaw-finger--1-55",
+            "phase-3-terminal--1",
+            "phase-3-terminal-palm--1",
+            "phase-3-arcing-horn--1",
+            "phase-3-jaw-base-1",
+            "phase-3-jaw-finger-1--55",
+            "phase-3-jaw-finger-1-55",
+            "phase-3-terminal-1",
+            "phase-3-terminal-palm-1",
+            "phase-3-arcing-horn-1",
+            "phase-3-blade-hub",
+            "phase-3-blade-tube",
+            "phase-3-blade-tip--1",
+            "phase-3-blade-tip-1"
           ],
           "param": "copper"
         },
         {
           "name": "powderCoat",
-          "color": "#526f68",
+          "color": "#c3c8c4",
           "parts": [
-            "drive-cabinet"
+            "mechanism-box",
+            "mechanism-roof",
+            "mechanism-door"
           ],
           "param": "powderCoat"
+        },
+        {
+          "name": "mechanism-handle",
+          "color": "#2c3033",
+          "parts": [
+            "mechanism-handle",
+            "manual-crank"
+          ]
+        },
+        {
+          "name": "mechanism-window",
+          "color": "#8fb4c4",
+          "parts": [
+            "mechanism-window"
+          ]
+        },
+        {
+          "name": "manual-crank-grip",
+          "color": "#d0302a",
+          "parts": [
+            "manual-crank-grip"
+          ]
+        },
+        {
+          "name": "earth-strap",
+          "color": "#b87545",
+          "parts": [
+            "earth-strap"
+          ]
         }
       ]
     },
