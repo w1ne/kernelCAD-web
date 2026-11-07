@@ -1,5 +1,4 @@
 // Inspect each exported component's lowest GLB vertex for the origin regression.
-import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { NodeIO } from '@gltf-transform/core';
