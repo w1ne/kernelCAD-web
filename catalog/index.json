@@ -238728,13 +238728,16 @@
       "id": "ground-mount-pv-rack",
       "kit": "solar-energy",
       "title": "Ground-mount PV rack",
-      "description": "Tilted scene rack carrying a two-by-two group of framed solar modules. Material controls: frame aluminum, solar glass, galvanized steel.",
+      "description": "Fixed-tilt ground-mount solar table at real size: two rows of portrait framed PV modules with visible cell grid, clamped to lipped C-section purlins on sloping rafters, carried by short front and tall rear galvanized I-section posts on concrete footings with diagonal braces. Tilt choice (20-35 degrees) and column choice (2-4 modules per row). Material controls: frame aluminium, solar glass, cell gaps, galvanized steel, concrete; fieldService, blackModules and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
-        "solar energy",
+        "ground mount",
+        "solar rack",
+        "fixed tilt",
+        "PV array",
         "photovoltaic",
-        "renewable energy",
+        "solar energy",
         "low poly",
         "scene prop",
         "CC0"
@@ -238749,8 +238752,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/ground-mount-pv-rack.kcad.ts",
       "preview": "/assets/solar-energy-ground-mount-pv-rack.png",
-      "sourceSha256": "b6890ec0281452b15ca1ce001b9f56a365fdc9880e747b9cceba4724e3c25fe9",
-      "triangleBudget": 1800,
+      "sourceSha256": "d711c028f026a4e54a21273cc2b5cf29af1967444b0f5c6cc4bbe0606e39fcd6",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "scale",
@@ -238762,42 +238765,85 @@
           "step": 0.05
         },
         {
+          "name": "tilt",
+          "type": "choice",
+          "default": "25deg",
+          "label": "Tilt angle",
+          "choices": [
+            "20deg",
+            "25deg",
+            "30deg",
+            "35deg"
+          ]
+        },
+        {
+          "name": "columns",
+          "type": "choice",
+          "default": "2",
+          "label": "Modules per row",
+          "choices": [
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        {
           "name": "aluminum",
           "type": "color",
           "default": "#b7c1c4",
-          "label": "Frame aluminum"
+          "label": "Module frame aluminium"
         },
         {
           "name": "solarGlass",
           "type": "color",
-          "default": "#244a68",
+          "default": "#1f3f5e",
           "label": "Solar glass"
+        },
+        {
+          "name": "cellGap",
+          "type": "color",
+          "default": "#d9dee2",
+          "label": "Cell gaps and busbars"
         },
         {
           "name": "galvanizedSteel",
           "type": "color",
-          "default": "#748184",
-          "label": "Galvanized steel"
+          "default": "#8a9497",
+          "label": "Galvanized posts, rafters and purlins"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#a9a59c",
+          "label": "Concrete footings"
         }
       ],
       "presets": {
         "fieldService": {
           "aluminum": "#a9b5b9",
           "solarGlass": "#1e4668",
-          "galvanizedSteel": "#68787b"
+          "galvanizedSteel": "#68787b",
+          "concrete": "#9c978d"
         },
-        "highVisibility": {
-          "aluminum": "#d4dcdf",
-          "solarGlass": "#183a5b",
-          "galvanizedSteel": "#536367"
+        "blackModules": {
+          "aluminum": "#24282b",
+          "solarGlass": "#14181d",
+          "cellGap": "#2c3238"
+        },
+        "weathered": {
+          "aluminum": "#a39f93",
+          "solarGlass": "#3b5161",
+          "cellGap": "#c4c2b6",
+          "galvanizedSteel": "#7c7a70",
+          "concrete": "#8f8a7e"
         }
       },
       "stats": {
-        "triangles": 128,
+        "triangles": 1120,
         "sizeM": [
-          1.264,
-          0.4436,
-          0.7096
+          2.448,
+          2.09567,
+          3.379878
         ],
         "minUpM": 0,
         "materials": 1
@@ -238807,30 +238853,96 @@
           "name": "aluminum",
           "color": "#b7c1c4",
           "parts": [
-            "rack-pv-frame",
-            "a-frame-foot-0",
-            "a-frame-upright-0",
-            "a-frame-foot-1",
-            "a-frame-upright-1"
+            "module-0-0-frame-side-l",
+            "module-0-0-frame-end-lo",
+            "module-0-0-frame-side-r",
+            "module-0-0-frame-end-hi",
+            "module-0-1-frame-side-l",
+            "module-0-1-frame-end-lo",
+            "module-0-1-frame-side-r",
+            "module-0-1-frame-end-hi",
+            "module-1-0-frame-side-l",
+            "module-1-0-frame-end-lo",
+            "module-1-0-frame-side-r",
+            "module-1-0-frame-end-hi",
+            "module-1-1-frame-side-l",
+            "module-1-1-frame-end-lo",
+            "module-1-1-frame-side-r",
+            "module-1-1-frame-end-hi"
           ],
           "param": "aluminum"
         },
         {
           "name": "solarGlass",
-          "color": "#244a68",
+          "color": "#1f3f5e",
           "parts": [
-            "rack-pv-surface"
+            "module-0-0-glass",
+            "module-0-1-glass",
+            "module-1-0-glass",
+            "module-1-1-glass"
           ],
           "param": "solarGlass"
         },
         {
-          "name": "galvanizedSteel",
-          "color": "#748184",
+          "name": "cellGap",
+          "color": "#d9dee2",
           "parts": [
-            "tracker-axis",
-            "drive-enclosure"
+            "module-0-0-cell-gap-1",
+            "module-0-0-cell-gap-2",
+            "module-0-0-cell-gap-3",
+            "module-0-0-cell-gap-4",
+            "module-0-0-cell-gap-5",
+            "module-0-0-split",
+            "module-0-1-cell-gap-1",
+            "module-0-1-cell-gap-2",
+            "module-0-1-cell-gap-3",
+            "module-0-1-cell-gap-4",
+            "module-0-1-cell-gap-5",
+            "module-0-1-split",
+            "module-1-0-cell-gap-1",
+            "module-1-0-cell-gap-2",
+            "module-1-0-cell-gap-3",
+            "module-1-0-cell-gap-4",
+            "module-1-0-cell-gap-5",
+            "module-1-0-split",
+            "module-1-1-cell-gap-1",
+            "module-1-1-cell-gap-2",
+            "module-1-1-cell-gap-3",
+            "module-1-1-cell-gap-4",
+            "module-1-1-cell-gap-5",
+            "module-1-1-split"
+          ],
+          "param": "cellGap"
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#8a9497",
+          "parts": [
+            "purlin-0",
+            "purlin-1",
+            "purlin-2",
+            "purlin-3",
+            "rafter-0",
+            "post-0-front",
+            "post-0-rear",
+            "brace-0",
+            "rafter-1",
+            "post-1-front",
+            "post-1-rear",
+            "brace-1"
           ],
           "param": "galvanizedSteel"
+        },
+        {
+          "name": "concrete",
+          "color": "#a9a59c",
+          "parts": [
+            "footing-0-front",
+            "footing-0-rear",
+            "footing-1-front",
+            "footing-1-rear"
+          ],
+          "param": "concrete"
         }
       ]
     },
@@ -239075,13 +239187,16 @@
       "id": "microinverter-unit",
       "kit": "solar-energy",
       "title": "Microinverter unit",
-      "description": "Compact sealed microinverter case with mounting ears, cooling fins and cable ends. Material controls: powder-coated steel, stainless steel, frame aluminum, rubber.",
+      "description": "Module-level PV microinverter at real size, bolted to a short section of racking rail: flat rounded aluminium case with a chamfered lid and label plate, steel mounting flange with bolt, two DC leads ending in MC4 connectors, AC lead to a trunk-cable connector. Lead choice single or dual (two-module) DC inputs. Material controls: case aluminium, mounting steel, cable rubber, connector polymer, label; enphaseGrey, silverCase and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
-        "solar energy",
+        "microinverter",
+        "module-level inverter",
+        "MC4",
+        "PV racking",
         "photovoltaic",
-        "renewable energy",
+        "solar energy",
         "low poly",
         "scene prop",
         "CC0"
@@ -239096,8 +239211,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/microinverter-unit.kcad.ts",
       "preview": "/assets/solar-energy-microinverter-unit.png",
-      "sourceSha256": "8c49922a4a443f541d1ddc389310209fda893ec687a09043067f6c09044f928b",
-      "triangleBudget": 1800,
+      "sourceSha256": "30fc8e50068845dc659c42b590a125f3f86992499e4c193a45baa224f99aab57",
+      "triangleBudget": 1600,
       "params": [
         {
           "name": "scale",
@@ -239109,92 +239224,131 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
-          "type": "color",
-          "default": "#687c7c",
-          "label": "Powder-coated steel"
+          "name": "inputs",
+          "type": "choice",
+          "default": "single",
+          "label": "DC inputs",
+          "choices": [
+            "single",
+            "dual"
+          ]
         },
         {
-          "name": "stainlessSteel",
+          "name": "caseAluminum",
           "type": "color",
-          "default": "#c3caca",
-          "label": "Stainless steel"
+          "default": "#3b4246",
+          "label": "Case aluminium"
         },
         {
-          "name": "aluminum",
+          "name": "mountingSteel",
           "type": "color",
-          "default": "#b7c1c4",
-          "label": "Frame aluminum"
+          "default": "#b9c1c4",
+          "label": "Mounting flange, bolt and rail"
         },
         {
-          "name": "rubber",
+          "name": "cableRubber",
           "type": "color",
-          "default": "#262c2e",
-          "label": "Rubber"
+          "default": "#1d2124",
+          "label": "Cable rubber"
+        },
+        {
+          "name": "connectorPolymer",
+          "type": "color",
+          "default": "#2b3033",
+          "label": "Connector polymer"
+        },
+        {
+          "name": "label",
+          "type": "color",
+          "default": "#e08a2c",
+          "label": "Label plate"
         }
       ],
       "presets": {
-        "fieldService": {
-          "powderCoat": "#7a807b",
-          "stainlessSteel": "#abb5b7",
-          "aluminum": "#a9b5b9",
-          "rubber": "#282d2e"
+        "enphaseGrey": {
+          "caseAluminum": "#55595c",
+          "label": "#f08a24",
+          "connectorPolymer": "#3a3f42"
         },
-        "highVisibility": {
-          "powderCoat": "#d1722b",
-          "stainlessSteel": "#e0e5e4",
-          "aluminum": "#d4dcdf",
-          "rubber": "#232728"
+        "silverCase": {
+          "caseAluminum": "#b3babd",
+          "label": "#1f5d8f",
+          "mountingSteel": "#8d979a"
+        },
+        "weathered": {
+          "caseAluminum": "#4c4f4c",
+          "mountingSteel": "#8f9289",
+          "cableRubber": "#2e302d",
+          "label": "#a8784a"
         }
       },
       "stats": {
-        "triangles": 184,
+        "triangles": 984,
         "sizeM": [
-          0.303,
-          0.088,
-          0.1558
+          0.481285,
+          0.078,
+          0.431006
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#687c7c",
+          "name": "mountingSteel",
+          "color": "#b9c1c4",
           "parts": [
-            "microinverter-body"
+            "rail",
+            "flange",
+            "flange-web",
+            "flange-bolt-head",
+            "flange-washer"
           ],
-          "param": "powderCoat"
+          "param": "mountingSteel"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#c3caca",
+          "name": "caseAluminum",
+          "color": "#3b4246",
           "parts": [
-            "heat-fin-0",
-            "heat-fin-1",
-            "heat-fin-2",
-            "heat-fin-3",
-            "heat-fin-4"
+            "case-body",
+            "case-lid",
+            "case-skirt",
+            "lid-rib-0",
+            "lid-rib-1"
           ],
-          "param": "stainlessSteel"
+          "param": "caseAluminum"
         },
         {
-          "name": "aluminum",
-          "color": "#b7c1c4",
+          "name": "label",
+          "color": "#e08a2c",
           "parts": [
-            "mount-ear-0",
-            "mount-ear-1"
+            "label-plate",
+            "ac-connector-latch"
           ],
-          "param": "aluminum"
+          "param": "label"
         },
         {
-          "name": "rubber",
-          "color": "#262c2e",
+          "name": "connectorPolymer",
+          "color": "#2b3033",
           "parts": [
-            "lead-0",
-            "lead-1"
+            "dc-gland-0",
+            "mc4-0",
+            "dc-gland-1",
+            "mc4-1",
+            "ac-gland",
+            "ac-connector"
           ],
-          "param": "rubber"
+          "param": "connectorPolymer"
+        },
+        {
+          "name": "cableRubber",
+          "color": "#1d2124",
+          "parts": [
+            "dc-lead-0",
+            "dc-lead-1",
+            "ac-lead",
+            "trunk-cable"
+          ],
+          "param": "cableRubber"
         }
       ]
     },
@@ -239350,13 +239504,17 @@
       "id": "plane-of-array-irradiance-sensor",
       "kit": "solar-energy",
       "title": "Plane-of-array irradiance sensor",
-      "description": "Low sun-sensor head on an adjustable stand with a wide circular sensing plate. Material controls: galvanized steel, display glass.",
+      "description": "Plane-of-array irradiance station at real size: tilted mounting plate matching the array angle, carrying a pyranometer with white sun shield, levelling feet and double glass domes, and a framed silicon reference cell, on a galvanized mast with pipe clamp, anchored ground plate and a logger box with signal cable. Tilt choice (15-35 degrees) and sensor choice (pyranometer, reference cell or both). Material controls: galvanized steel, sensor housing, dome glass, silicon cell, cable rubber; fieldService, blackCell and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
-        "solar energy",
+        "irradiance sensor",
+        "pyranometer",
+        "reference cell",
+        "POA",
+        "solar monitoring",
         "photovoltaic",
-        "renewable energy",
+        "solar energy",
         "low poly",
         "scene prop",
         "CC0"
@@ -239371,8 +239529,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/plane-of-array-irradiance-sensor.kcad.ts",
       "preview": "/assets/solar-energy-plane-of-array-irradiance-sensor.png",
-      "sourceSha256": "4ca874c36000772282367fe425095c2ce04c5c5a408aff7be64e290248e59005",
-      "triangleBudget": 1800,
+      "sourceSha256": "1467a3d191bb0bb24af83be9c02bbdc56741e33a7b3a14c4fa8f526ea0bf8c39",
+      "triangleBudget": 2100,
       "params": [
         {
           "name": "scale",
@@ -239384,34 +239542,82 @@
           "step": 0.05
         },
         {
-          "name": "galvanizedSteel",
-          "type": "color",
-          "default": "#748184",
-          "label": "Galvanized steel"
+          "name": "tilt",
+          "type": "choice",
+          "default": "25deg",
+          "label": "Plane-of-array tilt",
+          "choices": [
+            "15deg",
+            "25deg",
+            "35deg"
+          ]
         },
         {
-          "name": "displayGlass",
+          "name": "sensors",
+          "type": "choice",
+          "default": "both",
+          "label": "Sensors fitted",
+          "choices": [
+            "pyranometer",
+            "referenceCell",
+            "both"
+          ]
+        },
+        {
+          "name": "galvanizedSteel",
           "type": "color",
-          "default": "#24515d",
-          "label": "Display glass"
+          "default": "#8a9497",
+          "label": "Galvanized mast, plate and clamps"
+        },
+        {
+          "name": "sensorHousing",
+          "type": "color",
+          "default": "#eef0ec",
+          "label": "Sensor housing and sun shield"
+        },
+        {
+          "name": "domeGlass",
+          "type": "color",
+          "default": "#a9c9d6",
+          "label": "Pyranometer dome glass"
+        },
+        {
+          "name": "siliconCell",
+          "type": "color",
+          "default": "#1d3a63",
+          "label": "Reference cell silicon"
+        },
+        {
+          "name": "cableRubber",
+          "type": "color",
+          "default": "#22272a",
+          "label": "Signal cable and glands"
         }
       ],
       "presets": {
         "fieldService": {
           "galvanizedSteel": "#68787b",
-          "displayGlass": "#376a73"
+          "sensorHousing": "#e2e4dc",
+          "siliconCell": "#21466f"
         },
-        "highVisibility": {
-          "galvanizedSteel": "#536367",
-          "displayGlass": "#167d95"
+        "blackCell": {
+          "siliconCell": "#16191d",
+          "sensorHousing": "#f4f4ef",
+          "galvanizedSteel": "#9aa3a5"
+        },
+        "weathered": {
+          "galvanizedSteel": "#7c7a70",
+          "sensorHousing": "#d6d2c2",
+          "domeGlass": "#b7c2bd",
+          "cableRubber": "#34342f"
         }
       },
       "stats": {
-        "triangles": 156,
+        "triangles": 1828,
         "sizeM": [
-          0.3864,
-          0.4722,
-          0.2184
+          0.52,
+          1.22738,
+          0.302898
         ],
         "minUpM": 0,
         "materials": 1
@@ -239419,22 +239625,78 @@
       "palette": [
         {
           "name": "galvanizedSteel",
-          "color": "#748184",
+          "color": "#8a9497",
           "parts": [
-            "instrument-base",
-            "instrument-mast",
-            "sensor-arm"
+            "ground-plate",
+            "anchor-nut-0",
+            "anchor-nut-1",
+            "anchor-nut-2",
+            "anchor-nut-3",
+            "mast-base-gusset",
+            "mast",
+            "mast-cap",
+            "logger-box-strap",
+            "pipe-clamp",
+            "tilt-bracket",
+            "tilt-pivot",
+            "mounting-plate",
+            "plate-lip",
+            "pyr-foot-0",
+            "pyr-foot-1",
+            "pyr-foot-2"
           ],
           "param": "galvanizedSteel"
         },
         {
-          "name": "displayGlass",
-          "color": "#24515d",
+          "name": "sensorHousing",
+          "color": "#eef0ec",
           "parts": [
-            "sensor-disc",
-            "sensor-cap"
+            "logger-box",
+            "logger-box-lid",
+            "pyr-body",
+            "pyr-sun-shield",
+            "cell-frame",
+            "cell-finger-1",
+            "cell-finger-2",
+            "cell-finger-3",
+            "cell-junction-pod"
           ],
-          "param": "displayGlass"
+          "param": "sensorHousing"
+        },
+        {
+          "name": "cableRubber",
+          "color": "#22272a",
+          "parts": [
+            "logger-gland",
+            "pyr-gland",
+            "cable-loop",
+            "cable-drop",
+            "cable-to-logger",
+            "cable-tie-0",
+            "cable-tie-1",
+            "cable-tie-2",
+            "cable-tie-3"
+          ],
+          "param": "cableRubber"
+        },
+        {
+          "name": "domeGlass",
+          "color": "#a9c9d6",
+          "parts": [
+            "pyr-level-bubble",
+            "pyr-outer-dome",
+            "pyr-inner-dome"
+          ],
+          "param": "domeGlass"
+        },
+        {
+          "name": "siliconCell",
+          "color": "#1d3a63",
+          "parts": [
+            "pyr-sensor-disc",
+            "cell-silicon"
+          ],
+          "param": "siliconCell"
         }
       ]
     },
@@ -241990,13 +242252,17 @@
       "id": "solar-panel-wash-cart",
       "kit": "solar-energy",
       "title": "Solar panel wash cart",
-      "description": "Two-wheel service cart with a water tank, hose reel, handle and cleaning wand. Material controls: galvanized steel, polymer, rubber.",
+      "description": "Two-wheel solar panel wash cart at real size: rotomoulded water tank with fill cap and strap grooves in a tubular steel frame with looped push handle, pneumatic wheels on hubs and a kick-stand, battery pump box with pressure gauge, hose reel with coiled hose and crank, and a telescopic water-fed pole with brush head stowed along the side. Tank choice 120 or 200 litres. Material controls: frame steel, tank polymer, tyre and hose rubber, brush and pump accent; fieldService, highVisibility and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
-        "solar energy",
+        "wash cart",
+        "solar panel cleaning",
+        "water-fed pole",
+        "hose reel",
+        "O&M",
         "photovoltaic",
-        "renewable energy",
+        "solar energy",
         "low poly",
         "scene prop",
         "CC0"
@@ -242011,8 +242277,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/solar-panel-wash-cart.kcad.ts",
       "preview": "/assets/solar-energy-solar-panel-wash-cart.png",
-      "sourceSha256": "d985b068261647bbc59b83931004fff94ff43d4ced29ae7550d44680a334412f",
-      "triangleBudget": 1800,
+      "sourceSha256": "09263b0c383c4546a7fefcb70a6b704e126572de9cb64c3103885ec2fdb23e25",
+      "triangleBudget": 1900,
       "params": [
         {
           "name": "scale",
@@ -242024,74 +242290,142 @@
           "step": 0.05
         },
         {
-          "name": "galvanizedSteel",
-          "type": "color",
-          "default": "#748184",
-          "label": "Galvanized steel"
+          "name": "tank",
+          "type": "choice",
+          "default": "200L",
+          "label": "Tank size",
+          "choices": [
+            "120L",
+            "200L"
+          ]
         },
         {
-          "name": "polymer",
+          "name": "frameSteel",
           "type": "color",
-          "default": "#daddd7",
-          "label": "Polymer"
+          "default": "#5f6a6e",
+          "label": "Frame and handle steel"
+        },
+        {
+          "name": "tankPolymer",
+          "type": "color",
+          "default": "#e5e6df",
+          "label": "Water tank polymer"
         },
         {
           "name": "rubber",
           "type": "color",
-          "default": "#262c2e",
-          "label": "Rubber"
+          "default": "#22272a",
+          "label": "Tyres and hose rubber"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#2f74b5",
+          "label": "Pump box, reel and brush accent"
         }
       ],
       "presets": {
         "fieldService": {
-          "galvanizedSteel": "#68787b",
-          "polymer": "#cdd2cb",
-          "rubber": "#282d2e"
+          "frameSteel": "#68787b",
+          "tankPolymer": "#cdd2cb",
+          "accent": "#3b7d4f"
         },
         "highVisibility": {
-          "galvanizedSteel": "#536367",
-          "polymer": "#e6e0d1",
-          "rubber": "#232728"
+          "frameSteel": "#3b4245",
+          "tankPolymer": "#f0e3b8",
+          "accent": "#e07a1f"
+        },
+        "weathered": {
+          "frameSteel": "#76736a",
+          "tankPolymer": "#c9c3ad",
+          "rubber": "#34342f",
+          "accent": "#5b7486"
         }
       },
       "stats": {
-        "triangles": 180,
+        "triangles": 1556,
         "sizeM": [
-          0.6192,
-          0.7296,
-          0.4092
+          1.585117,
+          1.126,
+          1.015
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "galvanizedSteel",
-          "color": "#748184",
+          "name": "frameSteel",
+          "color": "#5f6a6e",
           "parts": [
-            "cart-platform",
-            "push-handle"
+            "frame-rail-left",
+            "handle-upright-left",
+            "stand-leg-left",
+            "axle-hanger-left",
+            "frame-rail-right",
+            "handle-upright-right",
+            "stand-leg-right",
+            "axle-hanger-right",
+            "cross-tube-0",
+            "cross-tube-1",
+            "cross-tube-2",
+            "stand-foot",
+            "axle",
+            "wheel-left-cap",
+            "wheel-right-cap",
+            "tank-strap-0",
+            "tank-strap-1",
+            "pump-box-lid",
+            "reel-stand-left",
+            "reel-stand-right",
+            "reel-crank-arm",
+            "pole-upper"
           ],
-          "param": "galvanizedSteel"
-        },
-        {
-          "name": "polymer",
-          "color": "#daddd7",
-          "parts": [
-            "water-tank",
-            "cleaning-wand"
-          ],
-          "param": "polymer"
+          "param": "frameSteel"
         },
         {
           "name": "rubber",
-          "color": "#262c2e",
+          "color": "#22272a",
           "parts": [
-            "cart-wheel-0",
-            "cart-wheel-1",
-            "hose-reel"
+            "handle-grip",
+            "wheel-left-tyre",
+            "wheel-right-tyre",
+            "level-window",
+            "pump-switch",
+            "reel-hose-coil",
+            "reel-crank-knob",
+            "pole-clip-rear",
+            "pole-clip-front",
+            "pole-hose"
           ],
           "param": "rubber"
+        },
+        {
+          "name": "accent",
+          "color": "#2f74b5",
+          "parts": [
+            "wheel-left-hub",
+            "wheel-right-hub",
+            "fill-cap",
+            "pump-box",
+            "reel-flanges",
+            "reel-flange-far",
+            "pole-lower",
+            "brush-block"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "tankPolymer",
+          "color": "#e5e6df",
+          "parts": [
+            "tank-body",
+            "tank-end-rear",
+            "tank-end-front",
+            "fill-neck",
+            "pressure-gauge",
+            "brush-bristles"
+          ],
+          "param": "tankPolymer"
         }
       ]
     },
@@ -242215,13 +242549,17 @@
       "id": "solar-roof-section",
       "kit": "solar-energy",
       "title": "Solar roof section",
-      "description": "Small pitched-roof display with framed panels, ridge cap and two mounting rails. Material controls: galvanized steel, frame aluminum, solar glass.",
+      "description": "Pitched roof section with a rooftop PV install at real size: rendered eave and gable walls under a roof of timber rafters, fascia, barge boards and ridge cap, standing-seam or interlocking-tile roofing, L-foot flashing mounts carrying two aluminium rails, and framed PV modules with cell grid held by end and mid clamps. Pitch choice (20-40 degrees) and roofing choice. Material controls: roofing, wall render, timber trim, rail and frame aluminium, solar glass, cell gaps; terracotta, blackModules and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
-        "solar energy",
+        "solar roof",
+        "rooftop PV",
+        "pitched roof",
+        "standing seam",
+        "roof tiles",
         "photovoltaic",
-        "renewable energy",
+        "solar energy",
         "low poly",
         "scene prop",
         "CC0"
@@ -242236,8 +242574,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/solar-energy/solar-roof-section.kcad.ts",
       "preview": "/assets/solar-energy-solar-roof-section.png",
-      "sourceSha256": "c2f380f43e39dd813495b2d5c4df2db7354047fbfdaa09c59ec68f01286a2380",
-      "triangleBudget": 1800,
+      "sourceSha256": "e1761c1443abb35c396dc176caff8fa5df80214d599c35adcf3d2ca27adf3b4c",
+      "triangleBudget": 2000,
       "params": [
         {
           "name": "scale",
@@ -242249,75 +242587,247 @@
           "step": 0.05
         },
         {
-          "name": "galvanizedSteel",
+          "name": "pitch",
+          "type": "choice",
+          "default": "30deg",
+          "label": "Roof pitch",
+          "choices": [
+            "20deg",
+            "30deg",
+            "40deg"
+          ]
+        },
+        {
+          "name": "roofing",
+          "type": "choice",
+          "default": "standingSeam",
+          "label": "Roof covering",
+          "choices": [
+            "standingSeam",
+            "tile"
+          ]
+        },
+        {
+          "name": "roofCover",
           "type": "color",
-          "default": "#748184",
-          "label": "Galvanized steel"
+          "default": "#4f5a60",
+          "label": "Roofing (metal or tile)"
+        },
+        {
+          "name": "wallRender",
+          "type": "color",
+          "default": "#d8cfbd",
+          "label": "Wall render"
+        },
+        {
+          "name": "timberTrim",
+          "type": "color",
+          "default": "#e9e6dc",
+          "label": "Fascia, barge boards and rafters"
         },
         {
           "name": "aluminum",
           "type": "color",
           "default": "#b7c1c4",
-          "label": "Frame aluminum"
+          "label": "Rails, clamps and module frames"
         },
         {
           "name": "solarGlass",
           "type": "color",
-          "default": "#244a68",
+          "default": "#1f3f5e",
           "label": "Solar glass"
+        },
+        {
+          "name": "cellGap",
+          "type": "color",
+          "default": "#d9dee2",
+          "label": "Cell gaps and busbars"
         }
       ],
       "presets": {
-        "fieldService": {
-          "galvanizedSteel": "#68787b",
-          "aluminum": "#a9b5b9",
-          "solarGlass": "#1e4668"
+        "terracotta": {
+          "roofing": "tile",
+          "roofCover": "#b2593a",
+          "timberTrim": "#f1ece0",
+          "wallRender": "#efe6d2"
         },
-        "highVisibility": {
-          "galvanizedSteel": "#536367",
-          "aluminum": "#d4dcdf",
-          "solarGlass": "#183a5b"
+        "blackModules": {
+          "aluminum": "#24282b",
+          "solarGlass": "#14181d",
+          "cellGap": "#2c3238",
+          "roofCover": "#2f3438"
+        },
+        "weathered": {
+          "wallRender": "#b9ae98",
+          "roofCover": "#6b6a5f",
+          "timberTrim": "#a8977a",
+          "aluminum": "#a39f93",
+          "solarGlass": "#3b5161",
+          "cellGap": "#c4c2b6"
         }
       },
       "stats": {
-        "triangles": 96,
+        "triangles": 1448,
         "sizeM": [
-          1.204,
-          0.224,
-          0.82
+          3.78,
+          1.626025,
+          3.319449
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "galvanizedSteel",
-          "color": "#748184",
+          "name": "wallRender",
+          "color": "#d8cfbd",
           "parts": [
-            "roof-deck",
-            "ridge-cap",
-            "roof-rail-0",
-            "roof-rail-1"
+            "eave-wall-south",
+            "eave-wall-north",
+            "gable-wall-west",
+            "gable-wall-east"
           ],
-          "param": "galvanizedSteel"
+          "param": "wallRender"
+        },
+        {
+          "name": "timberTrim",
+          "color": "#e9e6dc",
+          "parts": [
+            "rafter-south-0",
+            "rafter-south-1",
+            "rafter-south-2",
+            "rafter-south-3",
+            "rafter-south-4",
+            "rafter-south-5",
+            "rafter-south-6",
+            "fascia-south",
+            "roof-deck-south",
+            "barge-south-west",
+            "barge-south-east",
+            "rafter-north-0",
+            "rafter-north-1",
+            "rafter-north-2",
+            "rafter-north-3",
+            "rafter-north-4",
+            "rafter-north-5",
+            "rafter-north-6",
+            "fascia-north",
+            "roof-deck-north",
+            "barge-north-west",
+            "barge-north-east"
+          ],
+          "param": "timberTrim"
+        },
+        {
+          "name": "roofCover",
+          "color": "#4f5a60",
+          "parts": [
+            "metal-sheet-south",
+            "seam-south-0",
+            "seam-south-1",
+            "seam-south-2",
+            "seam-south-3",
+            "seam-south-4",
+            "seam-south-5",
+            "seam-south-6",
+            "seam-south-7",
+            "seam-south-8",
+            "metal-sheet-north",
+            "seam-north-0",
+            "seam-north-1",
+            "seam-north-2",
+            "seam-north-3",
+            "seam-north-4",
+            "seam-north-5",
+            "seam-north-6",
+            "seam-north-7",
+            "seam-north-8",
+            "ridge-cap",
+            "flashing-0-0",
+            "flashing-0-1",
+            "flashing-0-2",
+            "flashing-0-3",
+            "flashing-0-4",
+            "flashing-1-0",
+            "flashing-1-1",
+            "flashing-1-2",
+            "flashing-1-3",
+            "flashing-1-4"
+          ],
+          "param": "roofCover"
         },
         {
           "name": "aluminum",
           "color": "#b7c1c4",
           "parts": [
-            "roof-module-0-frame",
-            "roof-module-1-frame"
+            "l-foot-0-0",
+            "l-foot-0-1",
+            "l-foot-0-2",
+            "l-foot-0-3",
+            "l-foot-0-4",
+            "rail-0",
+            "l-foot-1-0",
+            "l-foot-1-1",
+            "l-foot-1-2",
+            "l-foot-1-3",
+            "l-foot-1-4",
+            "rail-1",
+            "module-0-frame-side-w",
+            "module-0-frame-end-top",
+            "module-0-frame-side-e",
+            "module-0-frame-end-bot",
+            "module-1-frame-side-w",
+            "module-1-frame-end-top",
+            "module-1-frame-side-e",
+            "module-1-frame-end-bot",
+            "module-2-frame-side-w",
+            "module-2-frame-end-top",
+            "module-2-frame-side-e",
+            "module-2-frame-end-bot",
+            "end-clamp-0-0",
+            "mid-clamp-0-1",
+            "mid-clamp-0-2",
+            "end-clamp-0-3",
+            "end-clamp-1-0",
+            "mid-clamp-1-1",
+            "mid-clamp-1-2",
+            "end-clamp-1-3"
           ],
           "param": "aluminum"
         },
         {
           "name": "solarGlass",
-          "color": "#244a68",
+          "color": "#1f3f5e",
           "parts": [
-            "roof-module-0-surface",
-            "roof-module-1-surface"
+            "module-0-glass",
+            "module-1-glass",
+            "module-2-glass"
           ],
           "param": "solarGlass"
+        },
+        {
+          "name": "cellGap",
+          "color": "#d9dee2",
+          "parts": [
+            "module-0-cell-gap-1",
+            "module-0-cell-gap-2",
+            "module-0-cell-gap-3",
+            "module-0-cell-gap-4",
+            "module-0-cell-gap-5",
+            "module-0-split",
+            "module-1-cell-gap-1",
+            "module-1-cell-gap-2",
+            "module-1-cell-gap-3",
+            "module-1-cell-gap-4",
+            "module-1-cell-gap-5",
+            "module-1-split",
+            "module-2-cell-gap-1",
+            "module-2-cell-gap-2",
+            "module-2-cell-gap-3",
+            "module-2-cell-gap-4",
+            "module-2-cell-gap-5",
+            "module-2-split"
+          ],
+          "param": "cellGap"
         }
       ]
     },
