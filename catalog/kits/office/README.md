@@ -18,19 +18,19 @@ Original low-poly office supplies, desk accessories and small workstation equipm
 | `business-card-holder` | Angled desktop card holder |
 | `pencil-cup` | Open stationery cup with tools |
 | `mechanical-pencil` | Mechanical writing pencil |
-| `fountain-pen` | Capped fountain pen |
+| `fountain-pen` | Uncapped fountain pen with two-tone nib, ribbed feed and clipped cap beside it |
 | `highlighter` | Chisel-tip highlighter |
 | `marker` | Capped felt-tip marker |
-| `stapler` | Desktop stapler |
+| `stapler` | Full-strip stapler: arched arm on a hinge pin, steel magazine, driver nose over an anvil |
 | `hole-punch` | Two-hole paper punch |
-| `tape-dispenser` | Weighted dispenser with tape roll |
+| `tape-dispenser` | Weighted shoe-shaped dispenser with tape roll on a hub and serrated cutter |
 | `scissors` | Office scissors with crossed blades |
 | `ruler` | Marked office ruler |
 | `paper-clip-dish` | Desk dish with paper clips |
 | `rubber-stamp` | Hand stamp with handle |
 | `ink-pad` | Lidded stamp ink pad |
 | `desk-calendar` | Standing calendar with selectable page count |
-| `calculator` | Keypad desktop calculator |
+| `calculator` | Wedge desk calculator: LCD with digits, solar strip, sculpted keys with accent operators |
 | `paperweight` | Faceted desktop paperweight |
 | `desk-organizer` | Multi-compartment organizer |
 | `mousepad` | Desk mat with stitched border |
@@ -38,7 +38,7 @@ Original low-poly office supplies, desk accessories and small workstation equipm
 | `laptop-stand` | Desktop computer riser |
 | `monitor-riser` | Shelf riser for a display |
 | `footrest` | Low office footrest |
-| `paper-shredder` | Compact office shredder |
+| `paper-shredder` | Bin shredder: motor head with feed throat and controls over a windowed bin on casters |
 | `paper-cutter` | Desktop guillotine cutter |
 | `label-maker` | Desktop label maker |
 | `laminator` | Pouch laminator |

@@ -176468,7 +176468,7 @@
       "id": "calculator",
       "kit": "office",
       "title": "Desktop calculator",
-      "description": "Desktop calculator with segmented display, solar strip and a four-by-three keypad. Controls: case polymer, lcd glass, keycap plastic.",
+      "description": "Wedge desk calculator: rounded case rising toward the back, wide LCD with digits in a dark surround, segmented solar strip, five memory keys and a four-by-five keypad of sculpted keycaps with an accent operator column and ON/C key. Material controls: case polymer, LCD glass, keycap plastic, function-key accent; professional, classroom and retro presets.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -176486,26 +176486,32 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/office/calculator.kcad.ts",
       "preview": "/assets/office-calculator.png",
-      "sourceSha256": "e12ed5308e7eab1c1b03cbea2dbfb571dac27d562ece8b479b3c402465e7939b",
-      "triangleBudget": 250,
+      "sourceSha256": "7593e896350446627fb2aa8eec178022bc254690aa382066698f6af2b8404048",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "polymer",
           "type": "color",
-          "default": "#3c454b",
+          "default": "#3a4248",
           "label": "Case polymer"
         },
         {
           "name": "lcdGlass",
           "type": "color",
-          "default": "#7d9e80",
+          "default": "#9fb39a",
           "label": "LCD glass"
         },
         {
           "name": "keycapPlastic",
           "type": "color",
-          "default": "#cdd0c6",
+          "default": "#e4e3dc",
           "label": "Keycap plastic"
+        },
+        {
+          "name": "functionKey",
+          "type": "color",
+          "default": "#e0703c",
+          "label": "Function-key accent"
         },
         {
           "name": "format",
@@ -176520,22 +176526,30 @@
       ],
       "presets": {
         "professional": {
-          "polymer": "#3c454b",
-          "lcdGlass": "#7d9e80",
-          "keycapPlastic": "#cdd0c6"
+          "polymer": "#3a4248",
+          "lcdGlass": "#9fb39a",
+          "keycapPlastic": "#e4e3dc",
+          "functionKey": "#e0703c"
         },
         "classroom": {
-          "polymer": "#e17448",
-          "lcdGlass": "#8ba8d0",
-          "keycapPlastic": "#f0cf56"
+          "polymer": "#2f74b5",
+          "lcdGlass": "#b9c8a6",
+          "keycapPlastic": "#f4f1e6",
+          "functionKey": "#f0c33c"
+        },
+        "retro": {
+          "polymer": "#cbbd9e",
+          "lcdGlass": "#8a9a7a",
+          "keycapPlastic": "#5a5149",
+          "functionKey": "#b5462f"
         }
       },
       "stats": {
-        "triangles": 156,
+        "triangles": 1860,
         "sizeM": [
-          0.115,
-          0.02,
-          0.18
+          0.15,
+          0.03168,
+          0.19
         ],
         "minUpM": 0,
         "materials": 1
@@ -176543,37 +176557,70 @@
       "palette": [
         {
           "name": "polymer",
-          "color": "#3c454b",
+          "color": "#3a4248",
           "parts": [
-            "case"
+            "case",
+            "display-surround",
+            "digit-1",
+            "digit-2",
+            "digit-3",
+            "digit-4",
+            "digit-5",
+            "digit-6",
+            "solar-divider-1",
+            "solar-divider-2",
+            "solar-divider-3"
           ],
           "param": "polymer"
         },
         {
           "name": "lcdGlass",
-          "color": "#7d9e80",
+          "color": "#9fb39a",
           "parts": [
-            "display",
-            "key-1-0",
-            "key-1-1",
-            "key-1-2",
-            "key-2-0",
-            "key-2-1",
-            "key-2-2"
+            "lcd",
+            "solar-strip"
           ],
           "param": "lcdGlass"
         },
         {
           "name": "keycapPlastic",
-          "color": "#cdd0c6",
+          "color": "#e4e3dc",
           "parts": [
-            "solar-panel",
-            "key-0-0",
-            "key-0-1",
-            "key-0-2",
-            "zero-key"
+            "maker-plate",
+            "memory-key-1",
+            "memory-key-2",
+            "memory-key-3",
+            "memory-key-4",
+            "key-r1-c2",
+            "key-r1-c3",
+            "key-r2-c1",
+            "key-r2-c2",
+            "key-r2-c3",
+            "key-r3-c1",
+            "key-r3-c2",
+            "key-r3-c3",
+            "key-r4-c1",
+            "key-r4-c2",
+            "key-r4-c3",
+            "key-r5-c1",
+            "key-r5-c2",
+            "key-r5-c3"
           ],
           "param": "keycapPlastic"
+        },
+        {
+          "name": "functionKey",
+          "color": "#e0703c",
+          "parts": [
+            "memory-key-5",
+            "key-r1-c1",
+            "key-r1-c4",
+            "key-r2-c4",
+            "key-r3-c4",
+            "key-r4-c4",
+            "key-r5-c4"
+          ],
+          "param": "functionKey"
         }
       ]
     },
@@ -177341,12 +177388,13 @@
       "id": "fountain-pen",
       "kit": "office",
       "title": "Fountain pen",
-      "description": "Upright capped fountain pen with a faceted barrel, clip and contrasting nib. Controls: barrel resin, stainless steel, ink.",
+      "description": "Uncapped fountain pen lying beside its cap: pointed two-tone nib with slit and breather hole over a ribbed feed, flared grip section, turned resin barrel with trim ring and rounded end, hollow cap with lip band, ball-ended spring clip and domed finial. Material controls: barrel resin, trim metal, nib gold, section resin; professional, classroom and tortoiseshell presets.",
       "category": "item",
       "origin": "base",
       "tags": [
         "fountain pen",
         "pen",
+        "nib",
         "writing tool",
         "office",
         "stationery"
@@ -177359,26 +177407,32 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/office/fountain-pen.kcad.ts",
       "preview": "/assets/office-fountain-pen.png",
-      "sourceSha256": "6d303ce198e3759e6f9e879300ac070d816cd8c4a60a5f17e7ccf79d868e5ca6",
-      "triangleBudget": 180,
+      "sourceSha256": "1392ddf372e0ae6af678b9e71aa30a5526c5019d132da5e30e6c5c562001c8ab",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "resin",
           "type": "color",
-          "default": "#254f74",
+          "default": "#1f4f7a",
           "label": "Barrel resin"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
-          "default": "#b7c1c4",
-          "label": "Stainless steel"
+          "default": "#c3cacc",
+          "label": "Clip and trim metal"
         },
         {
-          "name": "ink",
+          "name": "nibGold",
           "type": "color",
-          "default": "#254777",
-          "label": "Ink"
+          "default": "#d6ad55",
+          "label": "Nib gold"
+        },
+        {
+          "name": "sectionResin",
+          "type": "color",
+          "default": "#1b1d20",
+          "label": "Section and feed resin"
         },
         {
           "name": "format",
@@ -177393,22 +177447,30 @@
       ],
       "presets": {
         "professional": {
-          "resin": "#254f74",
-          "stainlessSteel": "#b7c1c4",
-          "ink": "#254777"
+          "resin": "#1f4f7a",
+          "stainlessSteel": "#c3cacc",
+          "nibGold": "#d6ad55",
+          "sectionResin": "#1b1d20"
         },
         "classroom": {
-          "resin": "#9b513f",
-          "stainlessSteel": "#d3a84d",
-          "ink": "#3d6389"
+          "resin": "#b8483a",
+          "stainlessSteel": "#c9cfd1",
+          "nibGold": "#c3c9cc",
+          "sectionResin": "#2a2c30"
+        },
+        "tortoiseshell": {
+          "resin": "#7a4a24",
+          "stainlessSteel": "#d8b25e",
+          "nibGold": "#e0bb63",
+          "sectionResin": "#2b1d14"
         }
       },
       "stats": {
-        "triangles": 156,
+        "triangles": 888,
         "sizeM": [
-          0.017,
-          0.148,
-          0.016
+          0.1398,
+          0.01945,
+          0.03905
         ],
         "minUpM": 0,
         "materials": 1
@@ -177416,29 +177478,50 @@
       "palette": [
         {
           "name": "resin",
-          "color": "#254f74",
+          "color": "#1f4f7a",
           "parts": [
-            "barrel"
+            "barrel",
+            "cap"
           ],
           "param": "resin"
         },
         {
-          "name": "ink",
-          "color": "#254777",
-          "parts": [
-            "cap"
-          ],
-          "param": "ink"
-        },
-        {
           "name": "stainlessSteel",
-          "color": "#b7c1c4",
+          "color": "#c3cacc",
           "parts": [
-            "cap-band",
-            "clip",
-            "nib"
+            "barrel-trim-ring",
+            "end-ring",
+            "nib-plating",
+            "cap-lip-band",
+            "cap-finial",
+            "clip-root",
+            "clip-bar",
+            "clip-ball"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "sectionResin",
+          "color": "#1b1d20",
+          "parts": [
+            "section",
+            "feed",
+            "feed-rib-1",
+            "feed-rib-2",
+            "feed-rib-3",
+            "feed-rib-4",
+            "breather-hole"
+          ],
+          "param": "sectionResin"
+        },
+        {
+          "name": "nibGold",
+          "color": "#d6ad55",
+          "parts": [
+            "nib-left",
+            "nib-right"
+          ],
+          "param": "nibGold"
         }
       ]
     },
@@ -179407,7 +179490,7 @@
       "id": "paper-shredder",
       "kit": "office",
       "title": "Paper shredder",
-      "description": "Compact office paper shredder with a feed slot, control panel and removable collection bin. Controls: housing polymer, cutter steel, bin window glass.",
+      "description": "Office bin shredder: dark motor head over a flared pull-out waste bin, long feed throat with steel cutter slot, credit-card slot, control panel with buttons and status lamp, smoked shred-level window, handle pocket, plinth and casters. Material controls: bin polymer, head polymer, cutter steel, window glass; professional, classroom and allBlack presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
@@ -179425,26 +179508,32 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/office/paper-shredder.kcad.ts",
       "preview": "/assets/office-paper-shredder.png",
-      "sourceSha256": "362c2712ad26a4fadb1ac43bbcb4e1a7ce997cc09e4f0f322fcba41821145994",
-      "triangleBudget": 240,
+      "sourceSha256": "ac6cc3aaff965b92c1653f346ff3993e27e1d7997d84f990a5d7d6403c7c4a39",
+      "triangleBudget": 2000,
       "params": [
         {
           "name": "polymer",
           "type": "color",
-          "default": "#b9c4c4",
-          "label": "Housing polymer"
+          "default": "#c7cccc",
+          "label": "Bin polymer"
+        },
+        {
+          "name": "headPolymer",
+          "type": "color",
+          "default": "#2d3134",
+          "label": "Head polymer"
         },
         {
           "name": "steel",
           "type": "color",
-          "default": "#464b4d",
+          "default": "#9aa1a4",
           "label": "Cutter steel"
         },
         {
           "name": "glass",
           "type": "color",
-          "default": "#73948b",
-          "label": "Bin window glass"
+          "default": "#4f6f78",
+          "label": "Window glass"
         },
         {
           "name": "format",
@@ -179459,57 +179548,95 @@
       ],
       "presets": {
         "professional": {
-          "polymer": "#b9c4c4",
-          "steel": "#464b4d",
-          "glass": "#73948b"
+          "polymer": "#c7cccc",
+          "headPolymer": "#2d3134",
+          "steel": "#9aa1a4",
+          "glass": "#4f6f78"
         },
         "classroom": {
           "polymer": "#4e758c",
-          "steel": "#d25e49",
+          "headPolymer": "#e3e1d8",
+          "steel": "#a7adb0",
           "glass": "#d4b24d"
+        },
+        "allBlack": {
+          "polymer": "#33373a",
+          "headPolymer": "#1c1f21",
+          "steel": "#b6bcbf",
+          "glass": "#6b8792"
         }
       },
       "stats": {
-        "triangles": 184,
+        "triangles": 1500,
         "sizeM": [
-          0.312,
-          0.441,
-          0.274
+          0.356,
+          0.5305,
+          0.257
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#b9c4c4",
+          "name": "headPolymer",
+          "color": "#2d3134",
           "parts": [
-            "cabinet"
+            "plinth",
+            "caster-fork-left-front",
+            "caster-wheel-left-front",
+            "caster-fork-right-front",
+            "caster-wheel-right-front",
+            "caster-fork-left-rear",
+            "caster-wheel-left-rear",
+            "caster-fork-right-rear",
+            "caster-wheel-right-rear",
+            "window-frame",
+            "handle-pocket",
+            "head",
+            "feed-throat",
+            "card-slot-surround"
+          ],
+          "param": "headPolymer"
+        },
+        {
+          "name": "polymer",
+          "color": "#c7cccc",
+          "parts": [
+            "bin",
+            "handle-lip",
+            "control-panel"
           ],
           "param": "polymer"
         },
         {
-          "name": "steel",
-          "color": "#464b4d",
-          "parts": [
-            "top-cap",
-            "control-panel",
-            "left-foot",
-            "right-foot",
-            "front-caster-left",
-            "front-caster-right"
-          ],
-          "param": "steel"
-        },
-        {
           "name": "glass",
-          "color": "#73948b",
+          "color": "#4f6f78",
           "parts": [
-            "feed-slot",
-            "power-button",
-            "bin-window"
+            "window",
+            "status-lamp"
           ],
           "param": "glass"
+        },
+        {
+          "name": "steel",
+          "color": "#9aa1a4",
+          "parts": [
+            "bin-rim",
+            "throat-lip-front",
+            "throat-lip-rear",
+            "cutter-slot",
+            "card-slot",
+            "button-1",
+            "button-2",
+            "button-3",
+            "vent-1",
+            "vent-2",
+            "vent-3",
+            "vent-4",
+            "vent-5",
+            "vent-6"
+          ],
+          "param": "steel"
         }
       ]
     },
@@ -180177,12 +180304,12 @@
       "id": "stapler",
       "kit": "office",
       "title": "Stapler",
-      "description": "Desktop stapler with a long base, hinged upper arm and rear hinge pin. Controls: powder-coated steel, stainless steel, grip rubber.",
+      "description": "Full-strip desktop stapler: arched powder-coated top arm on a rear hinge pin, steel staple magazine under the arm, driver nose over a crimping anvil, long base with rounded nose and rubber foot pad, rubber grip pad on the arm crown and a maker badge. Material controls: powder-coated steel, stainless steel, grip rubber, badge accent; professional, classroom and chrome presets.",
       "category": "item",
       "origin": "base",
       "tags": [
         "stapler",
-        "staple gun",
+        "desktop stapler",
         "office supplies",
         "office",
         "stationery"
@@ -180195,26 +180322,32 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/office/stapler.kcad.ts",
       "preview": "/assets/office-stapler.png",
-      "sourceSha256": "506805b629e5cd9c3fc1a49169a89d4b87abb4ce07019aee560c8b3ee852992e",
-      "triangleBudget": 130,
+      "sourceSha256": "a9eff01e42f54fac6f05ab329ad1e977ec73aaaa9e78deb82eda2626ae5e9258",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "powderCoatedSteel",
           "type": "color",
-          "default": "#506a7d",
+          "default": "#2f5d8a",
           "label": "Powder-coated steel"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
-          "default": "#bdc1c1",
+          "default": "#bfc5c7",
           "label": "Stainless steel"
         },
         {
           "name": "rubber",
           "type": "color",
-          "default": "#33383a",
+          "default": "#2b2f31",
           "label": "Grip rubber"
+        },
+        {
+          "name": "badge",
+          "type": "color",
+          "default": "#d8a33c",
+          "label": "Badge accent"
         },
         {
           "name": "format",
@@ -180229,22 +180362,30 @@
       ],
       "presets": {
         "professional": {
-          "powderCoatedSteel": "#506a7d",
-          "stainlessSteel": "#bdc1c1",
-          "rubber": "#33383a"
+          "powderCoatedSteel": "#2f5d8a",
+          "stainlessSteel": "#bfc5c7",
+          "rubber": "#2b2f31",
+          "badge": "#d8a33c"
         },
         "classroom": {
-          "powderCoatedSteel": "#d1644b",
-          "stainlessSteel": "#547e8f",
-          "rubber": "#d3aa4a"
+          "powderCoatedSteel": "#d1503f",
+          "stainlessSteel": "#c3c8ca",
+          "rubber": "#3a3f42",
+          "badge": "#f2d25a"
+        },
+        "chrome": {
+          "powderCoatedSteel": "#9ea6ab",
+          "stainlessSteel": "#dfe3e4",
+          "rubber": "#1d2022",
+          "badge": "#b23a32"
         }
       },
       "stats": {
-        "triangles": 92,
+        "triangles": 448,
         "sizeM": [
-          0.1475,
-          0.041,
-          0.05
+          0.202,
+          0.057069,
+          0.052
         ],
         "minUpM": 0,
         "materials": 1
@@ -180252,29 +180393,44 @@
       "palette": [
         {
           "name": "powderCoatedSteel",
-          "color": "#506a7d",
+          "color": "#2f5d8a",
           "parts": [
             "base",
-            "grip-pad"
+            "top-arm"
           ],
           "param": "powderCoatedSteel"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#bdc1c1",
+          "name": "rubber",
+          "color": "#2b2f31",
           "parts": [
-            "upper-arm"
+            "base-foot-pad",
+            "anvil-groove",
+            "magazine-follower",
+            "grip-pad"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bfc5c7",
+          "parts": [
+            "anvil",
+            "magazine",
+            "driver-nose",
+            "hinge-pin",
+            "hinge-cap-left",
+            "hinge-cap-right"
           ],
           "param": "stainlessSteel"
         },
         {
-          "name": "rubber",
-          "color": "#33383a",
+          "name": "badge",
+          "color": "#d8a33c",
           "parts": [
-            "nose",
-            "hinge"
+            "badge"
           ],
-          "param": "rubber"
+          "param": "badge"
         }
       ]
     },
@@ -180396,7 +180552,7 @@
       "id": "tape-dispenser",
       "kit": "office",
       "title": "Tape dispenser",
-      "description": "Weighted desktop tape dispenser with a visible roll, spindle and serrated cutting edge. Controls: dispenser polymer, cutter stainless steel, roller rubber.",
+      "description": "Weighted desktop tape dispenser: shoe-shaped body with side cheeks rising into a rounded hump around a roll of clear tape on a hub and steel axle, front nose with a serrated stainless cutter, tape running over the nose to a hanging tab, and a rubber foot pad. Material controls: dispenser polymer, cutter stainless steel, foot rubber, tape film; professional, classroom and chrome presets.",
       "category": "item",
       "origin": "base",
       "tags": [
@@ -180414,26 +180570,32 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/office/tape-dispenser.kcad.ts",
       "preview": "/assets/office-tape-dispenser.png",
-      "sourceSha256": "6dfd96fd139f75be3ed9f1d9e36a7976fe20ec85ffb5435b93dd70c216fd3fdc",
-      "triangleBudget": 220,
+      "sourceSha256": "4efe415bdce6efd538c903ed5a81ab2f5dd397061704d16f87967efa69a2f7f9",
+      "triangleBudget": 1200,
       "params": [
         {
           "name": "polymer",
           "type": "color",
-          "default": "#496b80",
+          "default": "#2a2d31",
           "label": "Dispenser polymer"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
-          "default": "#acb4b8",
+          "default": "#bfc6c9",
           "label": "Cutter stainless steel"
         },
         {
           "name": "rubber",
           "type": "color",
-          "default": "#343a3c",
-          "label": "Roller rubber"
+          "default": "#5a4f46",
+          "label": "Foot rubber"
+        },
+        {
+          "name": "tape",
+          "type": "color",
+          "default": "#d9d2b4",
+          "label": "Tape film"
         },
         {
           "name": "format",
@@ -180448,52 +180610,78 @@
       ],
       "presets": {
         "professional": {
-          "polymer": "#496b80",
-          "stainlessSteel": "#acb4b8",
-          "rubber": "#343a3c"
+          "polymer": "#2a2d31",
+          "stainlessSteel": "#bfc6c9",
+          "rubber": "#5a4f46",
+          "tape": "#d9d2b4"
         },
         "classroom": {
           "polymer": "#d36249",
-          "stainlessSteel": "#d2a94c",
-          "rubber": "#688751"
+          "stainlessSteel": "#c9ced0",
+          "rubber": "#3b3f42",
+          "tape": "#e8dfb0"
+        },
+        "chrome": {
+          "polymer": "#a9b0b4",
+          "stainlessSteel": "#e2e5e6",
+          "rubber": "#1f2224",
+          "tape": "#c9b97f"
         }
       },
       "stats": {
-        "triangles": 124,
+        "triangles": 796,
         "sizeM": [
-          0.131,
-          0.044,
-          0.06
+          0.172666,
+          0.110904,
+          0.064
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#496b80",
-          "parts": [
-            "weighted-base",
-            "cutting-arm"
-          ],
-          "param": "polymer"
-        },
-        {
           "name": "rubber",
-          "color": "#343a3c",
+          "color": "#5a4f46",
           "parts": [
-            "tape-roll"
+            "foot-pad",
+            "roll-core"
           ],
           "param": "rubber"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#acb4b8",
+          "name": "polymer",
+          "color": "#2a2d31",
           "parts": [
-            "hub",
-            "serrated-edge"
+            "base",
+            "cheek-left",
+            "cheek-right",
+            "nose",
+            "hub"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#bfc6c9",
+          "parts": [
+            "axle-boss-left",
+            "axle-boss-right",
+            "axle",
+            "cutter-blade",
+            "cutter-screw-left",
+            "cutter-screw-right"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "tape",
+          "color": "#d9d2b4",
+          "parts": [
+            "tape-roll",
+            "tape-web",
+            "tape-tab"
+          ],
+          "param": "tape"
         }
       ]
     },
