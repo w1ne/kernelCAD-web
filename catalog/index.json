@@ -64217,15 +64217,17 @@
       "id": "air-cooled-chiller",
       "kit": "data-center-infrastructure",
       "title": "Air-cooled chiller",
-      "description": "Outdoor chiller frame with multiple top fans, coil banks, and service panels. Knobs: overall scale; painted steel, aluminum fins and panels, engineering polymer. Presets: facilityStandard and highVisibility.",
+      "description": "V-coil air-cooled chiller: channel base frame, two finned condenser coil slabs leaning into a V with copper headers and module dividers, drain pan, fan deck with six axial fans in flared venturi shrouds, pitched blades and wire guards, compressor and control enclosure with panel seams, door handle, HMI screen and insulated chilled-water nozzles with flanges. Material controls: casing paint, condenser coil, fan guards, base frame and chilled-water piping; coatedCoil, graphite and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "data center",
-        "critical infrastructure",
-        "IT equipment",
-        "power",
         "cooling",
+        "chiller",
+        "air cooled",
+        "condenser",
+        "HVAC",
+        "critical infrastructure",
         "scene prop"
       ],
       "compat": [
@@ -64237,8 +64239,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/air-cooled-chiller.kcad.ts",
       "preview": "/assets/data-center-infrastructure-air-cooled-chiller.png",
-      "sourceSha256": "52c6ea0bdfa413be6597f25b5d48e90e073096cbc671c36c6e4672ba71d19847",
-      "triangleBudget": 2200,
+      "sourceSha256": "70a1a798cd95b6d6e9c13188b1f26e2249aa06cad7ac66b5f5dce7ce50232a01",
+      "triangleBudget": 12000,
       "params": [
         {
           "name": "scale",
@@ -64250,120 +64252,265 @@
           "step": 0.05
         },
         {
-          "name": "steel",
+          "name": "casing",
           "type": "color",
-          "default": "#4f7485",
-          "label": "Painted steel"
+          "default": "#dddcd3",
+          "label": "Casing paint"
         },
         {
-          "name": "aluminum",
+          "name": "coil",
           "type": "color",
-          "default": "#b9c6ca",
-          "label": "Aluminum fins and panels"
+          "default": "#9db1b5",
+          "label": "Condenser coil fins"
         },
         {
-          "name": "polymer",
+          "name": "guard",
           "type": "color",
-          "default": "#c99b35",
-          "label": "Engineering polymer"
+          "default": "#26292b",
+          "label": "Fan guards and blades"
+        },
+        {
+          "name": "frame",
+          "type": "color",
+          "default": "#4d5a61",
+          "label": "Base frame"
+        },
+        {
+          "name": "piping",
+          "type": "color",
+          "default": "#2f6db5",
+          "label": "Chilled-water piping"
         }
       ],
       "presets": {
-        "facilityStandard": {
-          "steel": "#4f7485",
-          "aluminum": "#b9c6ca",
-          "polymer": "#c99b35"
+        "coatedCoil": {
+          "coil": "#c39a52"
         },
-        "highVisibility": {
-          "steel": "#d99b22",
-          "aluminum": "#dde4e5",
-          "polymer": "#263e48"
+        "graphite": {
+          "casing": "#5b6166",
+          "frame": "#2c3135",
+          "guard": "#141618",
+          "piping": "#c9472f"
+        },
+        "weathered": {
+          "casing": "#c6c2b4",
+          "coil": "#8a958f",
+          "guard": "#3a3936",
+          "frame": "#5d5850",
+          "piping": "#4f6e8f"
         }
       },
       "stats": {
-        "triangles": 860,
+        "triangles": 5236,
         "sizeM": [
-          3.2,
-          0.908,
-          1.5
+          3.968,
+          2.434,
+          2.28
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "steel",
-          "color": "#4f7485",
+          "name": "frame",
+          "color": "#4d5a61",
           "parts": [
-            "chiller-skid",
-            "coil-bank-left",
-            "coil-bank-right",
-            "condenser-fan-0",
-            "condenser-fan-1",
-            "condenser-fan-2",
-            "condenser-fan-3",
-            "condenser-fan-4",
-            "condenser-fan-5",
-            "compressor-cover",
-            "refrigerant-port"
+            "base-rail--1040",
+            "base-rail-1040",
+            "base-cross--1750",
+            "base-cross--950",
+            "base-cross-0",
+            "base-cross-900",
+            "base-cross-1750",
+            "drain-pan",
+            "fan-motor--490--545",
+            "fan-motor--490-545",
+            "fan-motor-425--545",
+            "fan-motor-425-545",
+            "fan-motor-1340--545",
+            "fan-motor-1340-545",
+            "end-seam--550",
+            "end-seam-0",
+            "end-seam-550",
+            "side-seam--1375",
+            "side-louvre-0",
+            "side-louvre-1",
+            "side-louvre-2",
+            "side-louvre-3",
+            "side-louvre-4",
+            "side-louvre-5",
+            "chw-supply-flange",
+            "chw-supply-collar",
+            "chw-return-flange",
+            "chw-return-collar"
           ],
-          "param": "steel"
+          "param": "frame"
         },
         {
-          "name": "aluminum",
-          "color": "#b9c6ca",
+          "name": "coil",
+          "color": "#9db1b5",
           "parts": [
-            "coil-fin-left-0",
-            "coil-fin-left-1",
-            "coil-fin-left-2",
-            "coil-fin-left-3",
-            "coil-fin-left-4",
-            "coil-fin-left-5",
-            "coil-fin-left-6",
-            "coil-fin-left-7",
-            "coil-fin-left-8",
-            "coil-fin-left-9",
-            "coil-fin-left-10",
-            "coil-fin-left-11",
-            "coil-fin-right-0",
-            "coil-fin-right-1",
-            "coil-fin-right-2",
-            "coil-fin-right-3",
-            "coil-fin-right-4",
-            "coil-fin-right-5",
-            "coil-fin-right-6",
-            "coil-fin-right-7",
-            "coil-fin-right-8",
-            "coil-fin-right-9",
-            "coil-fin-right-10",
-            "coil-fin-right-11"
+            "coil-left",
+            "coil-right"
           ],
-          "param": "aluminum"
+          "param": "coil"
         },
         {
-          "name": "polymer",
-          "color": "#c99b35",
+          "name": "coil-header-left--950",
+          "color": "#b87442",
           "parts": [
-            "condenser-fan-blade-0-0",
-            "condenser-fan-blade-0-1",
-            "condenser-fan-blade-0-2",
-            "condenser-fan-blade-1-0",
-            "condenser-fan-blade-1-1",
-            "condenser-fan-blade-1-2",
-            "condenser-fan-blade-2-0",
-            "condenser-fan-blade-2-1",
-            "condenser-fan-blade-2-2",
-            "condenser-fan-blade-3-0",
-            "condenser-fan-blade-3-1",
-            "condenser-fan-blade-3-2",
-            "condenser-fan-blade-4-0",
-            "condenser-fan-blade-4-1",
-            "condenser-fan-blade-4-2",
-            "condenser-fan-blade-5-0",
-            "condenser-fan-blade-5-1",
-            "condenser-fan-blade-5-2"
+            "coil-header-left--950",
+            "coil-header-right--950",
+            "coil-header-left-1740",
+            "coil-header-right-1740"
+          ]
+        },
+        {
+          "name": "casing",
+          "color": "#dddcd3",
+          "parts": [
+            "coil-divider-left--30",
+            "coil-divider-right--30",
+            "coil-divider-left-890",
+            "coil-divider-right-890",
+            "v-end-panel",
+            "coil-corner-post--1",
+            "coil-corner-post-1",
+            "fan-deck",
+            "fan-shroud--490--545",
+            "fan-shroud--490-545",
+            "fan-shroud-425--545",
+            "fan-shroud-425-545",
+            "fan-shroud-1340--545",
+            "fan-shroud-1340-545",
+            "control-enclosure",
+            "control-roof",
+            "control-door"
           ],
-          "param": "polymer"
+          "param": "casing"
+        },
+        {
+          "name": "guard",
+          "color": "#26292b",
+          "parts": [
+            "fan-hub--490--545",
+            "fan-blade--490--545-0",
+            "fan-blade--490--545-1",
+            "fan-blade--490--545-2",
+            "fan-blade--490--545-3",
+            "fan-blade--490--545-4",
+            "fan-guard-ring--490--545-140",
+            "fan-guard-ring--490--545-260",
+            "fan-guard-ring--490--545-380",
+            "fan-guard-ring--490--545-470",
+            "fan-guard-bar--490--545-0",
+            "fan-guard-bar--490--545-45",
+            "fan-guard-bar--490--545-90",
+            "fan-guard-bar--490--545-135",
+            "fan-hub--490-545",
+            "fan-blade--490-545-0",
+            "fan-blade--490-545-1",
+            "fan-blade--490-545-2",
+            "fan-blade--490-545-3",
+            "fan-blade--490-545-4",
+            "fan-guard-ring--490-545-140",
+            "fan-guard-ring--490-545-260",
+            "fan-guard-ring--490-545-380",
+            "fan-guard-ring--490-545-470",
+            "fan-guard-bar--490-545-0",
+            "fan-guard-bar--490-545-45",
+            "fan-guard-bar--490-545-90",
+            "fan-guard-bar--490-545-135",
+            "fan-hub-425--545",
+            "fan-blade-425--545-0",
+            "fan-blade-425--545-1",
+            "fan-blade-425--545-2",
+            "fan-blade-425--545-3",
+            "fan-blade-425--545-4",
+            "fan-guard-ring-425--545-140",
+            "fan-guard-ring-425--545-260",
+            "fan-guard-ring-425--545-380",
+            "fan-guard-ring-425--545-470",
+            "fan-guard-bar-425--545-0",
+            "fan-guard-bar-425--545-45",
+            "fan-guard-bar-425--545-90",
+            "fan-guard-bar-425--545-135",
+            "fan-hub-425-545",
+            "fan-blade-425-545-0",
+            "fan-blade-425-545-1",
+            "fan-blade-425-545-2",
+            "fan-blade-425-545-3",
+            "fan-blade-425-545-4",
+            "fan-guard-ring-425-545-140",
+            "fan-guard-ring-425-545-260",
+            "fan-guard-ring-425-545-380",
+            "fan-guard-ring-425-545-470",
+            "fan-guard-bar-425-545-0",
+            "fan-guard-bar-425-545-45",
+            "fan-guard-bar-425-545-90",
+            "fan-guard-bar-425-545-135",
+            "fan-hub-1340--545",
+            "fan-blade-1340--545-0",
+            "fan-blade-1340--545-1",
+            "fan-blade-1340--545-2",
+            "fan-blade-1340--545-3",
+            "fan-blade-1340--545-4",
+            "fan-guard-ring-1340--545-140",
+            "fan-guard-ring-1340--545-260",
+            "fan-guard-ring-1340--545-380",
+            "fan-guard-ring-1340--545-470",
+            "fan-guard-bar-1340--545-0",
+            "fan-guard-bar-1340--545-45",
+            "fan-guard-bar-1340--545-90",
+            "fan-guard-bar-1340--545-135",
+            "fan-hub-1340-545",
+            "fan-blade-1340-545-0",
+            "fan-blade-1340-545-1",
+            "fan-blade-1340-545-2",
+            "fan-blade-1340-545-3",
+            "fan-blade-1340-545-4",
+            "fan-guard-ring-1340-545-140",
+            "fan-guard-ring-1340-545-260",
+            "fan-guard-ring-1340-545-380",
+            "fan-guard-ring-1340-545-470",
+            "fan-guard-bar-1340-545-0",
+            "fan-guard-bar-1340-545-45",
+            "fan-guard-bar-1340-545-90",
+            "fan-guard-bar-1340-545-135",
+            "hmi-bezel",
+            "door-handle"
+          ],
+          "param": "guard"
+        },
+        {
+          "name": "hmi-screen",
+          "color": "#3f7fa8",
+          "parts": [
+            "hmi-screen"
+          ]
+        },
+        {
+          "name": "isolator-switch",
+          "color": "#c8301f",
+          "parts": [
+            "isolator-switch"
+          ]
+        },
+        {
+          "name": "isolator-plate",
+          "color": "#e7c533",
+          "parts": [
+            "isolator-plate"
+          ]
+        },
+        {
+          "name": "piping",
+          "color": "#2f6db5",
+          "parts": [
+            "chw-supply",
+            "chw-return"
+          ],
+          "param": "piping"
         }
       ]
     },
@@ -64797,15 +64944,17 @@
       "id": "clean-agent-cylinder-bank",
       "kit": "data-center-infrastructure",
       "title": "Clean-agent cylinder bank",
-      "description": "Suppression cylinder rack with manifold header, valve caps, and anchoring frame. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
+      "description": "Five-cylinder clean-agent suppression bank: turned agent cylinders with domed shoulders, brass discharge valves with gauges, flexible discharge hoses and check valves on a black-steel manifold with end cap and discharge riser, solenoid actuator on the master cylinder, white hazard labels, two straps per cylinder on a galvanised strut rack and floor rail. Material controls: cylinder paint, valve brass, rack steel, manifold pipe and labels; inertGas, nitrogen and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "data center",
+        "fire suppression",
+        "clean agent",
+        "gas cylinder",
+        "manifold",
         "critical infrastructure",
-        "IT equipment",
-        "power",
-        "cooling",
+        "safety",
         "scene prop"
       ],
       "compat": [
@@ -64817,8 +64966,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/clean-agent-cylinder-bank.kcad.ts",
       "preview": "/assets/data-center-infrastructure-clean-agent-cylinder-bank.png",
-      "sourceSha256": "4d146901dabc634427f74fc400dbaf885f8ae1193c0d1be5d82f9a7b713d46dc",
-      "triangleBudget": 2200,
+      "sourceSha256": "b01db3a8da44c040da9a23086c9d77b8f857970753a0ce7147634719755ed291",
+      "triangleBudget": 9000,
       "params": [
         {
           "name": "scale",
@@ -64830,66 +64979,195 @@
           "step": 0.05
         },
         {
-          "name": "steel",
+          "name": "cylinderPaint",
           "type": "color",
-          "default": "#4f7485",
-          "label": "Painted steel"
+          "default": "#c42a22",
+          "label": "Cylinder paint"
         },
         {
-          "name": "polymer",
+          "name": "valveBrass",
           "type": "color",
-          "default": "#c99b35",
-          "label": "Engineering polymer"
+          "default": "#c9a24a",
+          "label": "Valves and gauges (brass)"
+        },
+        {
+          "name": "rackSteel",
+          "type": "color",
+          "default": "#a9b1b4",
+          "label": "Strut rack and straps (galvanised)"
+        },
+        {
+          "name": "pipe",
+          "type": "color",
+          "default": "#34383b",
+          "label": "Manifold and hoses"
+        },
+        {
+          "name": "label",
+          "type": "color",
+          "default": "#f1efe6",
+          "label": "Hazard labels"
         }
       ],
       "presets": {
-        "facilityStandard": {
-          "steel": "#4f7485",
-          "polymer": "#c99b35"
+        "inertGas": {
+          "cylinderPaint": "#8e979b",
+          "valveBrass": "#b9b3a2",
+          "label": "#2f8a4a"
         },
-        "highVisibility": {
-          "steel": "#d99b22",
-          "polymer": "#263e48"
+        "nitrogen": {
+          "cylinderPaint": "#2c2f33",
+          "valveBrass": "#c4a256",
+          "label": "#e9e6dc"
+        },
+        "weathered": {
+          "cylinderPaint": "#9a3a31",
+          "valveBrass": "#9b8250",
+          "rackSteel": "#8b8f8c",
+          "pipe": "#3d3a36",
+          "label": "#d8d2c0"
         }
       },
       "stats": {
-        "triangles": 520,
+        "triangles": 5316,
         "sizeM": [
-          1.8,
-          1.472,
-          1.6
+          1.952,
+          2.08,
+          0.392
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "steel",
-          "color": "#4f7485",
+          "name": "rackSteel",
+          "color": "#a9b1b4",
           "parts": [
-            "cylinder-rack-base",
-            "upper-restraint",
-            "lower-restraint",
-            "agent-cylinder-0",
-            "agent-cylinder-1",
-            "agent-cylinder-2",
-            "agent-cylinder-3",
-            "agent-cylinder-4",
-            "manifold-header",
-            "valve-cap-1",
-            "valve-cap-2",
-            "valve-cap-3",
-            "valve-cap-4"
+            "floor-rail",
+            "floor-rail-lip",
+            "rack-upright--930",
+            "rack-upright-930",
+            "rack-channel-420",
+            "rack-channel-1000",
+            "strap-0-420",
+            "strap-bolt-0-420",
+            "strap-0-1000",
+            "strap-bolt-0-1000",
+            "strap-1-420",
+            "strap-bolt-1-420",
+            "strap-1-1000",
+            "strap-bolt-1-1000",
+            "strap-2-420",
+            "strap-bolt-2-420",
+            "strap-2-1000",
+            "strap-bolt-2-1000",
+            "strap-3-420",
+            "strap-bolt-3-420",
+            "strap-3-1000",
+            "strap-bolt-3-1000",
+            "strap-4-420",
+            "strap-bolt-4-420",
+            "strap-4-1000",
+            "strap-bolt-4-1000",
+            "actuator-conduit",
+            "riser-flange",
+            "manifold-hanger-left",
+            "manifold-hanger-right",
+            "manifold-clamp-left",
+            "manifold-clamp-right",
+            "manifold-saddle-left",
+            "manifold-saddle-right"
           ],
-          "param": "steel"
+          "param": "rackSteel"
         },
         {
-          "name": "polymer",
-          "color": "#c99b35",
+          "name": "cylinderPaint",
+          "color": "#c42a22",
           "parts": [
-            "valve-cap-0"
+            "cylinder-0",
+            "label-band-0",
+            "cylinder-1",
+            "label-band-1",
+            "cylinder-2",
+            "label-band-2",
+            "cylinder-3",
+            "label-band-3",
+            "cylinder-4",
+            "label-band-4",
+            "actuator-body"
           ],
-          "param": "polymer"
+          "param": "cylinderPaint"
+        },
+        {
+          "name": "pipe",
+          "color": "#34383b",
+          "parts": [
+            "foot-ring-0",
+            "hose-0",
+            "foot-ring-1",
+            "hose-1",
+            "foot-ring-2",
+            "hose-2",
+            "foot-ring-3",
+            "hose-3",
+            "foot-ring-4",
+            "hose-4",
+            "manifold",
+            "manifold-cap",
+            "manifold-tee--720",
+            "manifold-tee--360",
+            "manifold-tee-0",
+            "manifold-tee-360",
+            "manifold-tee-720",
+            "riser-elbow",
+            "riser"
+          ],
+          "param": "pipe"
+        },
+        {
+          "name": "label",
+          "color": "#f1efe6",
+          "parts": [
+            "label-0",
+            "gauge-face-0",
+            "label-1",
+            "gauge-face-1",
+            "label-2",
+            "gauge-face-2",
+            "label-3",
+            "gauge-face-3",
+            "label-4",
+            "gauge-face-4",
+            "actuator-cap"
+          ],
+          "param": "label"
+        },
+        {
+          "name": "valveBrass",
+          "color": "#c9a24a",
+          "parts": [
+            "valve-body-0",
+            "gauge-0",
+            "check-valve-0",
+            "hose-ferrule-0",
+            "valve-body-1",
+            "gauge-1",
+            "check-valve-1",
+            "hose-ferrule-1",
+            "valve-body-2",
+            "gauge-2",
+            "check-valve-2",
+            "hose-ferrule-2",
+            "valve-body-3",
+            "gauge-3",
+            "check-valve-3",
+            "hose-ferrule-3",
+            "valve-body-4",
+            "gauge-4",
+            "check-valve-4",
+            "hose-ferrule-4"
+          ],
+          "param": "valveBrass"
         }
       ]
     },
@@ -65188,16 +65466,17 @@
     {
       "id": "cooling-tower-cell",
       "kit": "data-center-infrastructure",
-      "title": "Cooling tower cell",
-      "description": "Open cooling-tower cell with basin, fan deck, fill pack, and water riser. Knobs: overall scale; painted steel, engineering polymer. Presets: facilityStandard and highVisibility.",
+      "title": "Cooling-tower cell",
+      "description": "Induced-draft counterflow cooling-tower cell: cold-water basin, ribbed FRP casing with slanted air-inlet louvres on two faces, access door, fan deck with flared turned velocity-recovery stack, six pitched fan blades on a hub, galvanised deck handrail, caged access ladder, hot-water riser with elbow into the distribution header and flanged cold-water outlet. Material controls: casing FRP, inlet louvres, fan stack, galvanised steel and piping; sandFRP, greyFRP and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "data center",
-        "critical infrastructure",
-        "IT equipment",
-        "power",
         "cooling",
+        "cooling tower",
+        "condenser water",
+        "HVAC",
+        "critical infrastructure",
         "scene prop"
       ],
       "compat": [
@@ -65209,8 +65488,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/cooling-tower-cell.kcad.ts",
       "preview": "/assets/data-center-infrastructure-cooling-tower-cell.png",
-      "sourceSha256": "79b620d1afb2350c5c97eaf4bd1211d4b57e45966be1da376c787e55a7aabbb3",
-      "triangleBudget": 2200,
+      "sourceSha256": "0491af3c6ba651a202ad0c87bc15c795bbaafb068a36e9eb7e2c19b55741c0c7",
+      "triangleBudget": 9000,
       "params": [
         {
           "name": "scale",
@@ -65222,66 +65501,194 @@
           "step": 0.05
         },
         {
-          "name": "steel",
+          "name": "casing",
           "type": "color",
-          "default": "#4f7485",
-          "label": "Painted steel"
+          "default": "#6f9fb2",
+          "label": "Casing FRP panels"
         },
         {
-          "name": "polymer",
+          "name": "louvre",
           "type": "color",
-          "default": "#c99b35",
-          "label": "Engineering polymer"
+          "default": "#34505c",
+          "label": "Air-inlet louvres"
+        },
+        {
+          "name": "stack",
+          "type": "color",
+          "default": "#e6e8e3",
+          "label": "Fan stack"
+        },
+        {
+          "name": "galv",
+          "type": "color",
+          "default": "#a6adb0",
+          "label": "Galvanised ladder and handrail"
+        },
+        {
+          "name": "piping",
+          "type": "color",
+          "default": "#2d5c99",
+          "label": "Condenser-water piping"
         }
       ],
       "presets": {
-        "facilityStandard": {
-          "steel": "#4f7485",
-          "polymer": "#c99b35"
+        "sandFRP": {
+          "casing": "#d2c39f",
+          "louvre": "#5b5242",
+          "stack": "#ece5d2"
         },
-        "highVisibility": {
-          "steel": "#d99b22",
-          "polymer": "#263e48"
+        "greyFRP": {
+          "casing": "#9ea4a6",
+          "louvre": "#3a3e40",
+          "stack": "#d4d7d6",
+          "piping": "#6b7c3a"
+        },
+        "weathered": {
+          "casing": "#7f9aa1",
+          "louvre": "#3d4a4c",
+          "stack": "#c9cbc2",
+          "galv": "#8f8f88",
+          "piping": "#4b6178"
         }
       },
       "stats": {
-        "triangles": 264,
+        "triangles": 2110,
         "sizeM": [
-          1.8,
-          2.185,
-          1.5
+          3.3,
+          3.906,
+          2.53
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "steel",
-          "color": "#4f7485",
+          "name": "casing",
+          "color": "#6f9fb2",
           "parts": [
             "basin",
-            "fill-pack",
-            "frame-post-0",
-            "frame-post-1",
-            "frame-post-2",
-            "frame-post-3",
-            "fan-deck",
-            "fan-stack",
-            "water-riser",
-            "fan-cowl"
+            "corner-post--1--1",
+            "corner-post-1--1",
+            "corner-post--1-1",
+            "corner-post-1-1",
+            "louvre-mullion-y--400",
+            "louvre-mullion-x--400",
+            "louvre-mullion-y-400",
+            "louvre-mullion-x-400",
+            "casing-upper",
+            "rib-y--800",
+            "rib-x--800",
+            "rib-y--400",
+            "rib-x--400",
+            "rib-y-0",
+            "rib-x-0",
+            "rib-y-400",
+            "rib-x-400",
+            "rib-y-800",
+            "rib-x-800",
+            "belt-rail-y",
+            "belt-rail-x",
+            "fan-deck"
           ],
-          "param": "steel"
+          "param": "casing"
         },
         {
-          "name": "polymer",
-          "color": "#c99b35",
+          "name": "galv",
+          "color": "#a6adb0",
           "parts": [
+            "basin-lip",
+            "access-door-handle",
+            "fan-gearbox",
+            "rail-post--1230--1230",
+            "rail-post-1230--1230",
+            "rail-post--1230-1230",
+            "rail-post-1230-1230",
+            "rail-post-0--1230",
+            "rail-post--1230-0",
+            "rail-post-1230-0",
+            "rail-post-0-1230",
+            "rail-front-3350",
+            "rail-back-3350",
+            "rail-left-3350",
+            "rail-right-3350",
+            "rail-front-3870",
+            "rail-back-3870",
+            "rail-left-3870",
+            "rail-right-3870",
+            "ladder-rail--930",
+            "ladder-rail--470",
+            "ladder-rung-0",
+            "ladder-rung-1",
+            "ladder-rung-2",
+            "ladder-rung-3",
+            "ladder-rung-4",
+            "ladder-rung-5",
+            "ladder-rung-6",
+            "ladder-rung-7",
+            "ladder-rung-8",
+            "cage-hoop-0",
+            "cage-hoop-1",
+            "cage-hoop-2",
+            "cage-hoop-3",
+            "cage-hoop-4",
+            "cage-strap-150",
+            "cage-strap-180",
+            "cage-strap-210",
+            "riser-flange",
+            "riser-support",
+            "outlet-flange"
+          ],
+          "param": "galv"
+        },
+        {
+          "name": "louvre",
+          "color": "#34505c",
+          "parts": [
+            "inlet-void",
+            "louvre-y-0",
+            "louvre-x-0",
+            "louvre-y-1",
+            "louvre-x-1",
+            "louvre-y-2",
+            "louvre-x-2",
+            "louvre-y-3",
+            "louvre-x-3",
+            "louvre-y-4",
+            "louvre-x-4",
+            "louvre-y-5",
+            "louvre-x-5",
+            "louvre-y-6",
+            "louvre-x-6",
+            "fan-hub",
             "fan-blade-0",
             "fan-blade-1",
             "fan-blade-2",
-            "fan-blade-3"
+            "fan-blade-3",
+            "fan-blade-4",
+            "fan-blade-5"
           ],
-          "param": "polymer"
+          "param": "louvre"
+        },
+        {
+          "name": "stack",
+          "color": "#e6e8e3",
+          "parts": [
+            "access-door",
+            "fan-stack",
+            "fan-stack-band"
+          ],
+          "param": "stack"
+        },
+        {
+          "name": "piping",
+          "color": "#2d5c99",
+          "parts": [
+            "riser",
+            "riser-elbow",
+            "riser-header",
+            "outlet"
+          ],
+          "param": "piping"
         }
       ]
     },
@@ -65821,15 +66228,18 @@
       "id": "dry-type-transformer",
       "kit": "data-center-infrastructure",
       "title": "Dry-type transformer",
-      "description": "Ventilated transformer block with cooling fins, terminal bushings, and base rails. Knobs: overall scale; painted steel, aluminum fins and panels, electrical ceramic. Presets: facilityStandard and highVisibility.",
+      "description": "Open three-phase cast-resin dry-type transformer: three turned resin coils with inner LV windings and spacer blocks over a three-leg laminated core, bolted top and bottom clamping channels, copper delta links and tap-changer studs on the coil fronts, HV post insulators and terminals, flat copper LV busbars, lifting lugs, and a channel base on flanged wheels. Material controls: coil resin, core steel, clamp frame, copper and insulators; castResinRed, utilityBlue and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "data center",
-        "critical infrastructure",
-        "IT equipment",
         "power",
-        "cooling",
+        "transformer",
+        "cast resin",
+        "dry type",
+        "substation",
+        "electrical",
+        "critical infrastructure",
         "scene prop"
       ],
       "compat": [
@@ -65841,8 +66251,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/dry-type-transformer.kcad.ts",
       "preview": "/assets/data-center-infrastructure-dry-type-transformer.png",
-      "sourceSha256": "5615288a2d8143ed73185d014c0e93af22ae93f5f6dd0c6683cd412d4c98827d",
-      "triangleBudget": 2200,
+      "sourceSha256": "9ca7672501816a4878458734ede8b856c1af6f7ed24d6b76d85a54c14218cabb",
+      "triangleBudget": 9000,
       "params": [
         {
           "name": "scale",
@@ -65854,82 +66264,227 @@
           "step": 0.05
         },
         {
-          "name": "steel",
+          "name": "resin",
           "type": "color",
-          "default": "#4f7485",
-          "label": "Painted steel"
+          "default": "#7d93a3",
+          "label": "Cast-resin coils"
         },
         {
-          "name": "aluminum",
+          "name": "coreSteel",
           "type": "color",
-          "default": "#b9c6ca",
-          "label": "Aluminum fins and panels"
+          "default": "#33373a",
+          "label": "Laminated core steel"
         },
         {
-          "name": "ceramic",
+          "name": "frame",
           "type": "color",
-          "default": "#e2ddcf",
-          "label": "Electrical ceramic"
+          "default": "#8b99a3",
+          "label": "Clamp frame and base paint"
+        },
+        {
+          "name": "copper",
+          "type": "color",
+          "default": "#c37a3d",
+          "label": "Copper links and busbars"
+        },
+        {
+          "name": "insulator",
+          "type": "color",
+          "default": "#d9d1bd",
+          "label": "Insulators and spacers"
         }
       ],
       "presets": {
-        "facilityStandard": {
-          "steel": "#4f7485",
-          "aluminum": "#b9c6ca",
-          "ceramic": "#e2ddcf"
+        "castResinRed": {
+          "resin": "#8c3b2b",
+          "frame": "#7c8a91",
+          "insulator": "#e2d9c3"
         },
-        "highVisibility": {
-          "steel": "#d99b22",
-          "aluminum": "#dde4e5",
-          "ceramic": "#f0eadc"
+        "utilityBlue": {
+          "resin": "#3f5f80",
+          "frame": "#c8ccc8",
+          "insulator": "#b8452f"
+        },
+        "weathered": {
+          "resin": "#5e6061",
+          "coreSteel": "#4a4540",
+          "frame": "#7e7f78",
+          "copper": "#8f6a45",
+          "insulator": "#bdb39c"
         }
       },
       "stats": {
-        "triangles": 228,
+        "triangles": 5160,
         "sizeM": [
-          1.2,
-          1.11,
-          1
+          1.86,
+          2.06,
+          0.664
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "steel",
-          "color": "#4f7485",
+          "name": "frame",
+          "color": "#8b99a3",
           "parts": [
-            "base-frame",
-            "transformer-core",
-            "terminal-cover"
+            "base-channel--260",
+            "wheel-bracket--700--260",
+            "wheel-bracket-700--260",
+            "base-channel-260",
+            "wheel-bracket--700-260",
+            "wheel-bracket-700-260",
+            "clamp-260--1",
+            "clamp-lip-top-260--1",
+            "clamp-lip-bottom-260--1",
+            "clamp-260-1",
+            "clamp-lip-top-260-1",
+            "clamp-lip-bottom-260-1",
+            "clamp-1440--1",
+            "clamp-lip-top-1440--1",
+            "clamp-lip-bottom-1440--1",
+            "clamp-1440-1",
+            "clamp-lip-top-1440-1",
+            "clamp-lip-bottom-1440-1",
+            "tie-rod--860--180",
+            "tie-rod--860-180",
+            "lifting-lug--860",
+            "tie-rod-860--180",
+            "tie-rod-860-180",
+            "lifting-lug-860"
           ],
-          "param": "steel"
+          "param": "frame"
         },
         {
-          "name": "aluminum",
-          "color": "#b9c6ca",
+          "name": "coreSteel",
+          "color": "#33373a",
           "parts": [
-            "cooling-fin-0",
-            "cooling-fin-1",
-            "cooling-fin-2",
-            "cooling-fin-3",
-            "cooling-fin-4",
-            "cooling-fin-5",
-            "cooling-fin-6",
-            "cooling-fin-7",
-            "cooling-fin-8"
+            "wheel--700--260",
+            "wheel-700--260",
+            "wheel--700-260",
+            "wheel-700-260",
+            "yoke-bottom",
+            "yoke-top",
+            "leg--580",
+            "leg-0",
+            "leg-580",
+            "yoke-step-300",
+            "yoke-step-1480",
+            "lug-eye--860",
+            "lug-eye-860",
+            "lv-duct-0",
+            "lv-duct-1",
+            "lv-duct-2"
           ],
-          "param": "aluminum"
+          "param": "coreSteel"
         },
         {
-          "name": "ceramic",
-          "color": "#e2ddcf",
+          "name": "copper",
+          "color": "#c37a3d",
           "parts": [
-            "terminal-bushing-0",
-            "terminal-bushing-1",
-            "terminal-bushing-2"
+            "clamp-bolt-260--860",
+            "clamp-bolt-260-860",
+            "clamp-bolt-1440--860",
+            "clamp-bolt-1440-860",
+            "tap-stud-0-0",
+            "tap-stud-0-1",
+            "tap-stud-0-2",
+            "tap-stud-0-3",
+            "tap-stud-0-4",
+            "tap-stud-0-5",
+            "tap-link-0",
+            "hv-boss-0",
+            "tap-stud-1-0",
+            "tap-stud-1-1",
+            "tap-stud-1-2",
+            "tap-stud-1-3",
+            "tap-stud-1-4",
+            "tap-stud-1-5",
+            "tap-link-1",
+            "hv-boss-1",
+            "tap-stud-2-0",
+            "tap-stud-2-1",
+            "tap-stud-2-2",
+            "tap-stud-2-3",
+            "tap-stud-2-4",
+            "tap-stud-2-5",
+            "tap-link-2",
+            "hv-boss-2",
+            "delta-link-top",
+            "delta-drop--580",
+            "delta-drop-0",
+            "delta-drop-580",
+            "delta-link-bottom",
+            "delta-boss-low--580",
+            "delta-boss-low-0",
+            "delta-boss-low-580",
+            "hv-terminal-0",
+            "hv-terminal-1",
+            "hv-terminal-2",
+            "lv-bus-0",
+            "lv-bus-palm-0",
+            "lv-bus-1",
+            "lv-bus-palm-1",
+            "lv-bus-2",
+            "lv-bus-palm-2",
+            "lv-bus-3",
+            "lv-bus-palm-3"
           ],
-          "param": "ceramic"
+          "param": "copper"
+        },
+        {
+          "name": "resin",
+          "color": "#7d93a3",
+          "parts": [
+            "hv-coil-0",
+            "lv-coil-0",
+            "tap-boss-0",
+            "hv-coil-1",
+            "lv-coil-1",
+            "tap-boss-1",
+            "hv-coil-2",
+            "lv-coil-2",
+            "tap-boss-2"
+          ],
+          "param": "resin"
+        },
+        {
+          "name": "insulator",
+          "color": "#d9d1bd",
+          "parts": [
+            "spacer-low-0-45",
+            "spacer-high-0-45",
+            "spacer-low-0-135",
+            "spacer-high-0-135",
+            "spacer-low-0-225",
+            "spacer-high-0-225",
+            "spacer-low-0-315",
+            "spacer-high-0-315",
+            "spacer-low-1-45",
+            "spacer-high-1-45",
+            "spacer-low-1-135",
+            "spacer-high-1-135",
+            "spacer-low-1-225",
+            "spacer-high-1-225",
+            "spacer-low-1-315",
+            "spacer-high-1-315",
+            "spacer-low-2-45",
+            "spacer-high-2-45",
+            "spacer-low-2-135",
+            "spacer-high-2-135",
+            "spacer-low-2-225",
+            "spacer-high-2-225",
+            "spacer-low-2-315",
+            "spacer-high-2-315",
+            "hv-insulator-0",
+            "hv-insulator-1",
+            "hv-insulator-2",
+            "lv-standoff-0",
+            "lv-standoff-1",
+            "lv-standoff-2",
+            "lv-standoff-3"
+          ],
+          "param": "insulator"
         }
       ]
     },
@@ -68780,15 +69335,18 @@
       "id": "standby-generator-enclosure",
       "kit": "data-center-infrastructure",
       "title": "Standby generator enclosure",
-      "description": "Packaged generator skid with acoustic canopy, exhaust stack, and service doors. Knobs: overall scale; painted steel, aluminum fins and panels. Presets: facilityStandard and highVisibility.",
+      "description": "Sound-attenuated standby diesel genset: pitched-roof canopy on a sub-base fuel tank with fill cap, vent and level gauge, three service doors with hinges, latch handles and louvred intakes, radiator discharge hood, control-panel viewing window and red emergency stop, roof exhaust silencer on saddles with flex joint and rain-capped tailpipe, and four lifting eyes. Material controls: canopy paint, louvres and trim, fuel-tank base, exhaust and safety accent; constructionYellow, utilityGreen and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "data center",
-        "critical infrastructure",
-        "IT equipment",
         "power",
-        "cooling",
+        "generator",
+        "genset",
+        "diesel",
+        "standby power",
+        "backup",
+        "critical infrastructure",
         "scene prop"
       ],
       "compat": [
@@ -68800,8 +69358,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/data-center-infrastructure/standby-generator-enclosure.kcad.ts",
       "preview": "/assets/data-center-infrastructure-standby-generator-enclosure.png",
-      "sourceSha256": "41c1b9eb7e84e7df7977070351ba2d0e8b5c98dbdc11c6d4e3ebdc2bc631813e",
-      "triangleBudget": 2200,
+      "sourceSha256": "584f05bc3ea6f9773a0dde861eae8238f92239e68466ce095ef547172bd0ad36",
+      "triangleBudget": 8000,
       "params": [
         {
           "name": "scale",
@@ -68813,70 +69371,211 @@
           "step": 0.05
         },
         {
-          "name": "steel",
+          "name": "canopy",
           "type": "color",
-          "default": "#4f7485",
-          "label": "Painted steel"
+          "default": "#d8d5c7",
+          "label": "Canopy paint"
         },
         {
-          "name": "aluminum",
+          "name": "trim",
           "type": "color",
-          "default": "#b9c6ca",
-          "label": "Aluminum fins and panels"
+          "default": "#3a3e42",
+          "label": "Louvres, seams and hardware"
+        },
+        {
+          "name": "tank",
+          "type": "color",
+          "default": "#2a2c2e",
+          "label": "Sub-base fuel tank"
+        },
+        {
+          "name": "exhaust",
+          "type": "color",
+          "default": "#9a958d",
+          "label": "Exhaust silencer and pipe"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c8221c",
+          "label": "Emergency stop and fill cap"
         }
       ],
       "presets": {
-        "facilityStandard": {
-          "steel": "#4f7485",
-          "aluminum": "#b9c6ca"
+        "constructionYellow": {
+          "canopy": "#e7b416",
+          "trim": "#25272a"
         },
-        "highVisibility": {
-          "steel": "#d99b22",
-          "aluminum": "#dde4e5"
+        "utilityGreen": {
+          "canopy": "#3f6b4a",
+          "trim": "#1f2522",
+          "tank": "#26292a"
+        },
+        "weathered": {
+          "canopy": "#bdb7a3",
+          "trim": "#45443f",
+          "tank": "#38342f",
+          "exhaust": "#7a5c45",
+          "accent": "#a5352a"
         }
       },
       "stats": {
-        "triangles": 336,
+        "triangles": 2540,
         "sizeM": [
-          2.6,
-          1.83,
-          1.15
+          4.025,
+          3.131926,
+          1.51
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "steel",
-          "color": "#4f7485",
+          "name": "tank",
+          "color": "#2a2c2e",
           "parts": [
-            "skid",
-            "acoustic-canopy",
-            "service-door-left",
-            "service-door-right",
-            "engine-block",
-            "alternator",
-            "service-filter",
-            "exhaust-stack"
+            "fuel-tank",
+            "tank-lip",
+            "fill-neck"
           ],
-          "param": "steel"
+          "param": "tank"
         },
         {
-          "name": "aluminum",
-          "color": "#b9c6ca",
+          "name": "trim",
+          "color": "#3a3e42",
           "parts": [
-            "radiator-fin-0",
-            "radiator-fin-1",
-            "radiator-fin-2",
-            "radiator-fin-3",
-            "radiator-fin-4",
-            "radiator-fin-5",
-            "radiator-fin-6",
-            "radiator-fin-7",
-            "radiator-fin-8",
-            "radiator-fin-9"
+            "fork-pocket--900",
+            "fork-pocket-900",
+            "level-gauge",
+            "tank-vent",
+            "tank-vent-cap",
+            "drip-edge",
+            "door-seam--1560--1570",
+            "door-seam--1560--620",
+            "door-seam-top--1560",
+            "louvre-frame--1560",
+            "hinge--1560-780",
+            "hinge--1560-1750",
+            "latch--1560",
+            "door-seam--480--490",
+            "door-seam--480-460",
+            "door-seam-top--480",
+            "louvre-frame--480",
+            "hinge--480-780",
+            "hinge--480-1750",
+            "latch--480",
+            "door-seam-600-590",
+            "door-seam-600-1540",
+            "door-seam-top-600",
+            "louvre-frame-600",
+            "hinge-600-780",
+            "hinge-600-1750",
+            "latch-600",
+            "hood-grille",
+            "hood-vane-0",
+            "hood-vane-1",
+            "hood-vane-2",
+            "hood-vane-3",
+            "hood-vane-4",
+            "hood-vane-5",
+            "control-window-frame",
+            "gland-box",
+            "intake-louvre-end",
+            "silencer-saddle--900",
+            "silencer-saddle-300",
+            "silencer-band--1100",
+            "silencer-band-400",
+            "flex-joint",
+            "rain-cap",
+            "rain-cap-hinge"
           ],
-          "param": "aluminum"
+          "param": "trim"
+        },
+        {
+          "name": "accent",
+          "color": "#c8221c",
+          "parts": [
+            "fill-cap",
+            "estop-button"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "canopy",
+          "color": "#d8d5c7",
+          "parts": [
+            "level-gauge-face",
+            "canopy-body",
+            "roof",
+            "door--1560",
+            "louvre--1560-0",
+            "louvre--1560-1",
+            "louvre--1560-2",
+            "louvre--1560-3",
+            "louvre--1560-4",
+            "louvre--1560-5",
+            "louvre--1560-6",
+            "louvre--1560-7",
+            "louvre--1560-8",
+            "door--480",
+            "louvre--480-0",
+            "louvre--480-1",
+            "louvre--480-2",
+            "louvre--480-3",
+            "louvre--480-4",
+            "louvre--480-5",
+            "louvre--480-6",
+            "louvre--480-7",
+            "louvre--480-8",
+            "door-600",
+            "louvre-600-0",
+            "louvre-600-1",
+            "louvre-600-2",
+            "louvre-600-3",
+            "louvre-600-4",
+            "louvre-600-5",
+            "louvre-600-6",
+            "louvre-600-7",
+            "louvre-600-8",
+            "discharge-hood",
+            "hood-floor",
+            "hood-outer-wall",
+            "hood-side--570",
+            "hood-side-570"
+          ],
+          "param": "canopy"
+        },
+        {
+          "name": "exhaust",
+          "color": "#9a958d",
+          "parts": [
+            "latch-lock--1560",
+            "latch-lock--480",
+            "latch-lock-600",
+            "silencer",
+            "exhaust-inlet",
+            "tailpipe-elbow",
+            "tailpipe",
+            "lifting-eye--1580--530",
+            "lifting-eye--1580-530",
+            "lifting-eye-1580--530",
+            "lifting-eye-1580-530"
+          ],
+          "param": "exhaust"
+        },
+        {
+          "name": "control-window",
+          "color": "#3c6f8f",
+          "parts": [
+            "control-window"
+          ]
+        },
+        {
+          "name": "estop-housing",
+          "color": "#e9c21f",
+          "parts": [
+            "estop-housing"
+          ]
         }
       ]
     },
