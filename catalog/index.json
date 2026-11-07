@@ -84277,10 +84277,14 @@
       "id": "dry-chemical-fire-extinguisher",
       "kit": "fire-rescue",
       "title": "Dry chemical fire extinguisher",
-      "description": "Portable extinguisher with pressure cylinder, hose, gauge and squeeze handle. Material controls: safety band, rubber seals, steel fittings, vessel paint; weathered and highVisibility presets.",
+      "description": "Stored-pressure dry chemical extinguisher: domed red steel cylinder on a rubber foot ring, wrap label, valve head with squeeze lever over a fixed carry handle, tamper-sealed pull pin, side pressure gauge, and a discharge hose running down the cylinder to a nozzle in a clip. Material controls: safety band, rubber seals, steel fittings, vessel paint; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "fire extinguisher",
+        "ABC extinguisher",
+        "dry chemical",
+        "fire safety",
         "fire rescue",
         "fire service",
         "emergency scene",
@@ -84296,7 +84300,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/fire-rescue/dry-chemical-fire-extinguisher.kcad.ts",
       "preview": "/assets/fire-rescue-dry-chemical-fire-extinguisher.png",
-      "sourceSha256": "9faa00d1fce67974541ceda36770264a300f81f2a4ff20b215be8b20c3577811",
+      "sourceSha256": "ed94e36d7461572ee4f1ac5fb697e934618d9464987a61fc1e6ea820c6dd19e0",
       "triangleBudget": 2200,
       "params": [
         {
@@ -84312,19 +84316,19 @@
           "name": "safetyBandColor",
           "type": "color",
           "default": "#e5c84d",
-          "label": "Safety band"
+          "label": "Safety band, label and tamper seal"
         },
         {
           "name": "sealRubberColor",
           "type": "color",
           "default": "#303539",
-          "label": "Rubber seals"
+          "label": "Rubber foot, hose and nozzle"
         },
         {
           "name": "steelworkColor",
           "type": "color",
           "default": "#aab5b9",
-          "label": "Steel fittings"
+          "label": "Steel valve, lever and handle"
         },
         {
           "name": "vesselPaintColor",
@@ -84348,42 +84352,67 @@
         }
       },
       "stats": {
-        "triangles": 256,
+        "triangles": 1422,
         "sizeM": [
-          0.377,
-          0.63,
-          0.264
+          0.265,
+          0.566,
+          0.136
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "safetyBandColor",
-          "color": "#e5c84d",
+          "name": "vesselPaintColor",
+          "color": "#bd3b32",
           "parts": [
             "pressure-vessel",
-            "squeeze-lever",
-            "nozzle"
+            "label-panel"
           ],
-          "param": "safetyBandColor"
+          "param": "vesselPaintColor"
         },
         {
           "name": "sealRubberColor",
           "color": "#303539",
           "parts": [
-            "base-ring",
-            "hose"
+            "foot-ring",
+            "hose-0",
+            "hose-1",
+            "hose-2",
+            "hose-3",
+            "hose-4",
+            "hose-bend-1",
+            "hose-bend-2",
+            "hose-bend-3",
+            "hose-bend-4",
+            "nozzle"
           ],
           "param": "sealRubberColor"
+        },
+        {
+          "name": "safetyBandColor",
+          "color": "#e5c84d",
+          "parts": [
+            "wrap-label",
+            "gauge-face",
+            "pull-ring",
+            "tamper-seal"
+          ],
+          "param": "safetyBandColor"
         },
         {
           "name": "steelworkColor",
           "color": "#aab5b9",
           "parts": [
-            "valve-neck",
-            "handle-bracket",
-            "gauge"
+            "valve-collar",
+            "valve-body",
+            "gauge",
+            "carry-handle",
+            "squeeze-lever",
+            "pivot-pin",
+            "pull-pin",
+            "hose-ferrule",
+            "nozzle-clip"
           ],
           "param": "steelworkColor"
         }
@@ -86791,10 +86820,15 @@
       "id": "fog-nozzle",
       "kit": "fire-rescue",
       "title": "Fog fire nozzle",
-      "description": "Compact fog nozzle with ribbed selector collar, barrel and pistol grip. Material controls: nozzle metal, selector finish, rubber grip; weathered and highVisibility presets.",
+      "description": "Combination fog nozzle: swivel hose coupling with rocker lugs, ball-valve body with an over-the-top bail handle, pistol grip, ribbed pattern-selector sleeve and a toothed rubber bumper around the fog stem. Material controls: nozzle metal, selector finish, rubber grip; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "fog nozzle",
+        "combination nozzle",
+        "fire nozzle",
+        "attack line",
+        "bail handle",
         "fire rescue",
         "fire service",
         "emergency scene",
@@ -86810,7 +86844,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/fire-rescue/fog-nozzle.kcad.ts",
       "preview": "/assets/fire-rescue-fog-nozzle.png",
-      "sourceSha256": "9d51d4dfa02a6f97ed365168d60e14a650be931e600c1c7830ba73af80b7826e",
+      "sourceSha256": "91ccba1ed9e6140d8b70779c67ba06ce4b644646b30195ebf1ffa71f7a619b91",
       "triangleBudget": 2200,
       "params": [
         {
@@ -86826,19 +86860,19 @@
           "name": "nozzleMetalColor",
           "type": "color",
           "default": "#aeb8ba",
-          "label": "Nozzle metal"
+          "label": "Nozzle metal (anodised aluminium)"
         },
         {
           "name": "selectorFinishColor",
           "type": "color",
           "default": "#d2ad3e",
-          "label": "Selector finish"
+          "label": "Selector sleeve and bail finish"
         },
         {
           "name": "gripRubberColor",
           "type": "color",
           "default": "#303539",
-          "label": "Rubber grip"
+          "label": "Rubber grip and bumper"
         }
       ],
       "presets": {
@@ -86854,11 +86888,11 @@
         }
       },
       "stats": {
-        "triangles": 320,
+        "triangles": 1330,
         "sizeM": [
-          0.2408,
-          0.106,
-          0.104
+          0.316,
+          0.217,
+          0.096
         ],
         "minUpM": 0,
         "materials": 1
@@ -86868,8 +86902,15 @@
           "name": "nozzleMetalColor",
           "color": "#aeb8ba",
           "parts": [
-            "hose-tail",
-            "nozzle-body"
+            "swivel-coupling",
+            "rocker-lug-0",
+            "rocker-lug-120",
+            "rocker-lug-240",
+            "valve-body",
+            "valve-trunnion",
+            "barrel",
+            "fog-stem",
+            "grip-ferrule"
           ],
           "param": "nozzleMetalColor"
         },
@@ -86877,7 +86918,13 @@
           "name": "selectorFinishColor",
           "color": "#d2ad3e",
           "parts": [
-            "tip"
+            "selector-sleeve",
+            "selector-rib-0",
+            "selector-rib-1",
+            "selector-rib-2",
+            "selector-rib-3",
+            "bail-arm--1",
+            "bail-arm-1"
           ],
           "param": "selectorFinishColor"
         },
@@ -86885,10 +86932,20 @@
           "name": "gripRubberColor",
           "color": "#303539",
           "parts": [
-            "selector-rib-0",
-            "selector-rib-1",
-            "selector-rib-2",
-            "selector-rib-3",
+            "bumper",
+            "fog-tooth-0",
+            "fog-tooth-1",
+            "fog-tooth-2",
+            "fog-tooth-3",
+            "fog-tooth-4",
+            "fog-tooth-5",
+            "fog-tooth-6",
+            "fog-tooth-7",
+            "fog-tooth-8",
+            "fog-tooth-9",
+            "fog-tooth-10",
+            "fog-tooth-11",
+            "bail-grip",
             "pistol-grip"
           ],
           "param": "gripRubberColor"
@@ -87683,10 +87740,15 @@
       "id": "hydraulic-rescue-cutter",
       "kit": "fire-rescue",
       "title": "Hydraulic rescue cutter",
-      "description": "Powered extrication cutter with crossed jaws, pivot, handles and hose ports. Material controls: tool coating, steel and aluminum, safety marking; weathered and highVisibility presets.",
+      "description": "Hydraulic rescue cutter: long cylinder body, forged yoke with two crossed hooked blades on one pivot bolt forming a round C-shaped cutting mouth, carry hoop with rubber grip over the body, and rear control handle with star-knob valve and twin hose couplings. Material controls: tool coating, steel and aluminum, safety marking, rubber grip; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "rescue cutter",
+        "hydraulic shear",
+        "jaws of life",
+        "extrication",
+        "hydraulic rescue tool",
         "fire rescue",
         "fire service",
         "emergency scene",
@@ -87702,7 +87764,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/fire-rescue/hydraulic-rescue-cutter.kcad.ts",
       "preview": "/assets/fire-rescue-hydraulic-rescue-cutter.png",
-      "sourceSha256": "5924e61b26e4f2a13b8e90024698042641be5231d976aa73cdf6f6fdb3143651",
+      "sourceSha256": "05d85f25c1b6840ec2109d86f8bf479c819ed8d0f07656dc4ac3a4a26dbad0de",
       "triangleBudget": 2200,
       "params": [
         {
@@ -87718,39 +87780,47 @@
           "name": "toolCoatingColor",
           "type": "color",
           "default": "#d98727",
-          "label": "Tool coating"
+          "label": "Tool coating (powder-coated body)"
         },
         {
           "name": "steelColor",
           "type": "color",
           "default": "#aab5b9",
-          "label": "Steel and aluminum"
+          "label": "Forged steel blades and aluminium fittings"
         },
         {
           "name": "safetyMarkingColor",
           "type": "color",
           "default": "#c83730",
-          "label": "Safety marking"
+          "label": "Safety marking (pivot nut, valve knob)"
+        },
+        {
+          "name": "gripRubberColor",
+          "type": "color",
+          "default": "#2a2f33",
+          "label": "Rubber grips"
         }
       ],
       "presets": {
         "weathered": {
           "toolCoatingColor": "#956438",
           "steelColor": "#858f92",
-          "safetyMarkingColor": "#874e49"
+          "safetyMarkingColor": "#874e49",
+          "gripRubberColor": "#3d3e3b"
         },
         "highVisibility": {
           "toolCoatingColor": "#e8b331",
           "steelColor": "#c3c6b6",
-          "safetyMarkingColor": "#f0db56"
+          "safetyMarkingColor": "#f0db56",
+          "gripRubberColor": "#22272a"
         }
       },
       "stats": {
-        "triangles": 128,
+        "triangles": 884,
         "sizeM": [
-          0.8129,
-          0.27,
-          0.423442
+          1.012,
+          0.225,
+          0.24
         ],
         "minUpM": 0,
         "materials": 1
@@ -87760,9 +87830,9 @@
           "name": "toolCoatingColor",
           "color": "#d98727",
           "parts": [
-            "tool-body",
-            "jaw--1",
-            "jaw-1"
+            "cylinder-body",
+            "spine-upper",
+            "spine-lower"
           ],
           "param": "toolCoatingColor"
         },
@@ -87770,8 +87840,17 @@
           "name": "steelColor",
           "color": "#aab5b9",
           "parts": [
-            "rear-handle",
-            "front-handle"
+            "end-cap",
+            "gland",
+            "yoke",
+            "pivot-pin",
+            "blade-upper",
+            "blade-lower",
+            "carry-hoop",
+            "rear-handle-post",
+            "valve-block",
+            "hose-coupling--1",
+            "hose-coupling-1"
           ],
           "param": "steelColor"
         },
@@ -87779,11 +87858,20 @@
           "name": "safetyMarkingColor",
           "color": "#c83730",
           "parts": [
-            "pivot",
-            "jaw-tip--1",
-            "jaw-tip-1"
+            "pivot-nut",
+            "pivot-head",
+            "star-knob"
           ],
           "param": "safetyMarkingColor"
+        },
+        {
+          "name": "gripRubberColor",
+          "color": "#2a2f33",
+          "parts": [
+            "hoop-grip",
+            "rear-handle"
+          ],
+          "param": "gripRubberColor"
         }
       ]
     },
@@ -87898,10 +87986,14 @@
       "id": "hydraulic-rescue-spreader",
       "kit": "fire-rescue",
       "title": "Hydraulic rescue spreader",
-      "description": "Powered rescue spreader with opening jaws, center pivot and hand grips. Material controls: tool coating, steel and aluminum, safety marking; weathered and highVisibility presets.",
+      "description": "Hydraulic rescue spreader: long cylinder body, forged yoke with two curved arms on a common pivot opening into a wide V, ribbed in-turned steel tips, carry hoop with rubber grip over the body, and rear control handle with star-knob valve and twin hose couplings. Material controls: tool coating, steel and aluminum, safety marking, rubber grip; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "rescue spreader",
+        "jaws of life",
+        "extrication",
+        "hydraulic rescue tool",
         "fire rescue",
         "fire service",
         "emergency scene",
@@ -87917,7 +88009,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/fire-rescue/hydraulic-rescue-spreader.kcad.ts",
       "preview": "/assets/fire-rescue-hydraulic-rescue-spreader.png",
-      "sourceSha256": "983fd1712bd6e4fa617698d7c22b548964ca7e573819818908c8910354a326db",
+      "sourceSha256": "86ba25890f484a7274812c56aae2837b979ec60641b132d5008f10042584e9d0",
       "triangleBudget": 2200,
       "params": [
         {
@@ -87933,39 +88025,47 @@
           "name": "toolCoatingColor",
           "type": "color",
           "default": "#d98727",
-          "label": "Tool coating"
+          "label": "Tool coating (powder-coated body)"
         },
         {
           "name": "steelColor",
           "type": "color",
           "default": "#aab5b9",
-          "label": "Steel and aluminum"
+          "label": "Forged steel arms and aluminium fittings"
         },
         {
           "name": "safetyMarkingColor",
           "type": "color",
           "default": "#c83730",
-          "label": "Safety marking"
+          "label": "Safety marking (pivot caps, valve knob)"
+        },
+        {
+          "name": "gripRubberColor",
+          "type": "color",
+          "default": "#2a2f33",
+          "label": "Rubber grips"
         }
       ],
       "presets": {
         "weathered": {
           "toolCoatingColor": "#956438",
           "steelColor": "#858f92",
-          "safetyMarkingColor": "#874e49"
+          "safetyMarkingColor": "#874e49",
+          "gripRubberColor": "#3d3e3b"
         },
         "highVisibility": {
           "toolCoatingColor": "#e8b331",
           "steelColor": "#c3c6b6",
-          "safetyMarkingColor": "#f0db56"
+          "safetyMarkingColor": "#f0db56",
+          "gripRubberColor": "#22272a"
         }
       },
       "stats": {
-        "triangles": 128,
+        "triangles": 1044,
         "sizeM": [
-          0.7943,
-          0.27,
-          0.475388
+          1.186,
+          0.225,
+          0.5
         ],
         "minUpM": 0,
         "materials": 1
@@ -87975,9 +88075,11 @@
           "name": "toolCoatingColor",
           "color": "#d98727",
           "parts": [
-            "tool-body",
-            "jaw--1",
-            "jaw-1"
+            "cylinder-body",
+            "arm-flank-left--1",
+            "arm-flank-right--1",
+            "arm-flank-left-1",
+            "arm-flank-right-1"
           ],
           "param": "toolCoatingColor"
         },
@@ -87985,8 +88087,25 @@
           "name": "steelColor",
           "color": "#aab5b9",
           "parts": [
-            "rear-handle",
-            "front-handle"
+            "end-cap",
+            "gland",
+            "yoke",
+            "pivot-pin",
+            "arm-left",
+            "arm-right",
+            "tip-rib-right-0",
+            "tip-rib-right-1",
+            "tip-rib-right-2",
+            "tip-rib-right-3",
+            "tip-rib-left-0",
+            "tip-rib-left-1",
+            "tip-rib-left-2",
+            "tip-rib-left-3",
+            "carry-hoop",
+            "rear-handle-post",
+            "valve-block",
+            "hose-coupling--1",
+            "hose-coupling-1"
           ],
           "param": "steelColor"
         },
@@ -87994,11 +88113,20 @@
           "name": "safetyMarkingColor",
           "color": "#c83730",
           "parts": [
-            "pivot",
-            "jaw-tip--1",
-            "jaw-tip-1"
+            "pivot-cap--1",
+            "pivot-cap-1",
+            "star-knob"
           ],
           "param": "safetyMarkingColor"
+        },
+        {
+          "name": "gripRubberColor",
+          "color": "#2a2f33",
+          "parts": [
+            "hoop-grip",
+            "rear-handle"
+          ],
+          "param": "gripRubberColor"
         }
       ]
     },
@@ -89835,10 +89963,15 @@
       "id": "self-contained-breathing-apparatus",
       "kit": "fire-rescue",
       "title": "Self-contained breathing apparatus",
-      "description": "Backpack assembly with air cylinder, harness straps, valve and regulator hose. Material controls: harness webbing, air-cylinder finish, regulator hardware, breathing hose; weathered and highVisibility presets.",
+      "description": "Firefighter SCBA air pack: contoured backframe, valve-down composite air cylinder with retaining bands, padded shoulder straps arching over the frame, waist belt with centre buckle, first-stage regulator with handwheel, high-pressure hose to a chest gauge console, and low-pressure hose to a clipped second-stage regulator. Material controls: harness webbing, air-cylinder finish, regulator hardware, breathing hose; weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "SCBA",
+        "air pack",
+        "breathing apparatus",
+        "air cylinder",
+        "firefighter",
         "fire rescue",
         "fire service",
         "emergency scene",
@@ -89854,7 +89987,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/fire-rescue/self-contained-breathing-apparatus.kcad.ts",
       "preview": "/assets/fire-rescue-self-contained-breathing-apparatus.png",
-      "sourceSha256": "3d16e7ccba9a28f787c7bfceab70012bec2af13df9ffde1b883caa0444b4e31c",
+      "sourceSha256": "153d0e4652ee6160e76b015c5df212d8b838c9e8814ec5dd209ac88ae8fb89fd",
       "triangleBudget": 2200,
       "params": [
         {
@@ -89870,25 +90003,25 @@
           "name": "harnessColor",
           "type": "color",
           "default": "#333a3e",
-          "label": "Harness webbing"
+          "label": "Harness webbing and padding"
         },
         {
           "name": "cylinderColor",
           "type": "color",
           "default": "#d0b53d",
-          "label": "Air-cylinder finish"
+          "label": "Air-cylinder finish (composite wrap)"
         },
         {
           "name": "regulatorMetalColor",
           "type": "color",
           "default": "#aeb8ba",
-          "label": "Regulator hardware"
+          "label": "Regulator hardware and buckles"
         },
         {
           "name": "hoseRubberColor",
           "type": "color",
           "default": "#262b2f",
-          "label": "Breathing hose"
+          "label": "Breathing hose and handwheel"
         }
       ],
       "presets": {
@@ -89906,11 +90039,11 @@
         }
       },
       "stats": {
-        "triangles": 204,
+        "triangles": 1600,
         "sizeM": [
-          0.61,
-          0.64,
-          0.265
+          0.481,
+          0.666,
+          0.38
         ],
         "minUpM": 0,
         "materials": 1
@@ -89920,36 +90053,62 @@
           "name": "harnessColor",
           "color": "#333a3e",
           "parts": [
-            "backplate"
+            "backframe",
+            "cylinder-band-250",
+            "cylinder-band-470",
+            "shoulder-strap--1",
+            "shoulder-strap-1",
+            "waist-belt-left",
+            "waist-belt-right"
           ],
           "param": "harnessColor"
+        },
+        {
+          "name": "regulatorMetalColor",
+          "color": "#aeb8ba",
+          "parts": [
+            "cylinder-cradle",
+            "band-buckle-250",
+            "band-buckle-470",
+            "cylinder-valve",
+            "strap-adjuster--1",
+            "strap-adjuster-1",
+            "belt-buckle",
+            "first-stage",
+            "gauge-console",
+            "second-stage"
+          ],
+          "param": "regulatorMetalColor"
         },
         {
           "name": "cylinderColor",
           "color": "#d0b53d",
           "parts": [
             "air-cylinder",
-            "shoulder-strap--1",
-            "waist-strap--1",
-            "shoulder-strap-1",
-            "waist-strap-1"
+            "gauge-face"
           ],
           "param": "cylinderColor"
-        },
-        {
-          "name": "regulatorMetalColor",
-          "color": "#aeb8ba",
-          "parts": [
-            "valve",
-            "regulator"
-          ],
-          "param": "regulatorMetalColor"
         },
         {
           "name": "hoseRubberColor",
           "color": "#262b2f",
           "parts": [
-            "air-hose"
+            "valve-handwheel",
+            "hp-hose-0",
+            "hp-hose-1",
+            "hp-hose-2",
+            "hp-hose-3",
+            "hp-hose-bend-1",
+            "hp-hose-bend-2",
+            "hp-hose-bend-3",
+            "lp-hose-0",
+            "lp-hose-1",
+            "lp-hose-2",
+            "lp-hose-3",
+            "lp-hose-bend-1",
+            "lp-hose-bend-2",
+            "lp-hose-bend-3",
+            "purge-button"
           ],
           "param": "hoseRubberColor"
         }
