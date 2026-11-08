@@ -218485,14 +218485,17 @@
       "id": "biogas-holder",
       "kit": "recycling-facility",
       "title": "Biogas holder",
-      "description": "Biogas holder: a cylindrical process vessel with roof fittings, access hardware and a low outlet. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Double-membrane biogas holder at about real size: three-quarter-sphere fabric dome with welded seams clamped to a low concrete ring wall, support-air blower in a weather housing with its duct into the base, yellow gas main and riser with a valve and condensate trap, water-seal pressure relief tank, fill-level sensor cable to a sight dome on top, lightning mast and access steps. Material controls: outer membrane, concrete base, gas pipework, blower housing. agri, weathered, sludgeWorks and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
-        "materials recovery",
-        "waste management",
-        "organics",
+        "biogas",
+        "gas holder",
+        "double membrane",
+        "anaerobic digestion",
+        "gas storage",
+        "renewable energy",
         "low poly",
         "scene prop"
       ],
@@ -218505,8 +218508,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/biogas-holder.kcad.ts",
       "preview": "/assets/recycling-facility-biogas-holder.png",
-      "sourceSha256": "0c42fd54fa10006086e9be2dfd90d4155a2fee81b74567319f00e292cac8f82e",
-      "triangleBudget": 1800,
+      "sourceSha256": "5adeb1bd4462ae65ab45760924723249a9cb47c7aef37ae0e6d628835fe416fb",
+      "triangleBudget": 6400,
       "params": [
         {
           "name": "scale",
@@ -218518,66 +218521,166 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "membrane",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#5f8c55",
+          "label": "Outer membrane (fabric)"
         },
         {
-          "name": "paintedSteel",
+          "name": "concrete",
           "type": "color",
-          "default": "#636e5b",
-          "label": "Painted steel"
+          "default": "#b9b6ad",
+          "label": "Concrete ring base"
+        },
+        {
+          "name": "pipework",
+          "type": "color",
+          "default": "#f2c230",
+          "label": "Gas pipework"
+        },
+        {
+          "name": "housing",
+          "type": "color",
+          "default": "#d7dadc",
+          "label": "Blower housing"
         }
       ],
       "presets": {
+        "agri": {
+          "membrane": "#5f8c55",
+          "concrete": "#b9b6ad",
+          "pipework": "#f2c230",
+          "housing": "#d7dadc"
+        },
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#676d5a"
+          "membrane": "#6f7a63",
+          "concrete": "#9a978e",
+          "pipework": "#c9a440",
+          "housing": "#a9aca8"
+        },
+        "sludgeWorks": {
+          "membrane": "#c9c6bd",
+          "concrete": "#a8a59d",
+          "pipework": "#f2c230",
+          "housing": "#2f6f9e"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "membrane": "#e7e3d6",
+          "concrete": "#b9b6ad",
+          "pipework": "#e3742b",
+          "housing": "#2f3438"
         }
       },
       "stats": {
-        "triangles": 756,
+        "triangles": 5962,
         "sizeM": [
-          1.0215,
-          1.93,
-          0.989
+          11.094762,
+          10.5,
+          15.194762
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "membrane",
+          "color": "#5f8c55",
           "parts": [
-            "tank-foot-left-front",
-            "tank-foot-right-front",
-            "tank-foot-left-back",
-            "tank-foot-right-back",
-            "access-ladder",
-            "outlet-pipe",
-            "drain-valve",
-            "side-nozzle",
-            "outlet-neck"
+            "outer-membrane"
           ],
-          "param": "stainlessSteel"
+          "param": "membrane"
         },
         {
-          "name": "paintedSteel",
-          "color": "#636e5b",
+          "name": "seam-0",
+          "color": "#3f5f3a",
           "parts": [
-            "vessel-shell",
-            "top-flange",
-            "roof-cap",
-            "manway",
-            "vent-stack",
-            "conical-discharge"
+            "seam-0",
+            "seam-1",
+            "seam-2",
+            "seam-3"
+          ]
+        },
+        {
+          "name": "concrete",
+          "color": "#b9b6ad",
+          "parts": [
+            "ring-wall",
+            "blower-pad",
+            "pipe-support-0",
+            "pipe-support-1",
+            "pipe-support-2",
+            "mast-base",
+            "step-0",
+            "step-1",
+            "step-2"
           ],
-          "param": "paintedSteel"
+          "param": "concrete"
+        },
+        {
+          "name": "clamp-ring",
+          "color": "#a9b1b5",
+          "parts": [
+            "clamp-ring",
+            "sight-dome",
+            "air-duct",
+            "valve-stem",
+            "relief-tank",
+            "relief-vent",
+            "lightning-mast",
+            "warning-sign"
+          ]
+        },
+        {
+          "name": "sight-glass",
+          "color": "#9fc7d8",
+          "parts": [
+            "sight-glass"
+          ]
+        },
+        {
+          "name": "housing",
+          "color": "#d7dadc",
+          "parts": [
+            "level-sensor-box",
+            "blower-housing"
+          ],
+          "param": "housing"
+        },
+        {
+          "name": "blower-roof",
+          "color": "#2b2f33",
+          "parts": [
+            "blower-roof",
+            "blower-louvre-0",
+            "blower-louvre-1",
+            "blower-louvre-2",
+            "blower-louvre-3",
+            "blower-louvre-4",
+            "blower-fan-cowl",
+            "valve-body",
+            "trap-lid",
+            "relief-cap"
+          ]
+        },
+        {
+          "name": "pipework",
+          "color": "#f2c230",
+          "parts": [
+            "gas-riser",
+            "gas-elbow",
+            "gas-main",
+            "condensate-trap",
+            "relief-pipe",
+            "warning-plate"
+          ],
+          "param": "pipework"
+        },
+        {
+          "name": "valve-wheel",
+          "color": "#c23b2f",
+          "parts": [
+            "valve-wheel"
+          ]
         }
       ]
     },
@@ -222584,14 +222687,18 @@
       "id": "disc-screen",
       "kit": "recycling-facility",
       "title": "Disc screen",
-      "description": "Disc screen: a guarded screening bed with a feed hopper, discharge lip and support rollers. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "OCC disc (star) screen at about real size: inclined deck of ten shafts carrying staggered star discs, side frames on legs, chain-drive guard and gear motors down the far side, infeed chute at the low end, discharge chute dropping cardboard onto a bunker pile, unders belt below the deck carrying containers and fines away. Material controls: machine frame, star discs, cardboard, unders. plant, weathered, fibreLine and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "disc screen",
+        "star screen",
+        "OCC screen",
+        "cardboard separation",
+        "screening",
         "materials recovery",
-        "waste management",
-        "sorting",
+        "MRF",
         "low poly",
         "scene prop"
       ],
@@ -222604,8 +222711,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/disc-screen.kcad.ts",
       "preview": "/assets/recycling-facility-disc-screen.png",
-      "sourceSha256": "b04245b2749c07a83f7b693274d9430e934b686e03ad2258b21b8d716742aa53",
-      "triangleBudget": 1800,
+      "sourceSha256": "3c8ffd2a5816c33280e5b1615d91fd236ebd4679f5f48618818fa6b71c3192c5",
+      "triangleBudget": 5600,
       "params": [
         {
           "name": "scale",
@@ -222617,64 +222724,255 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#3c7a4e",
+          "label": "Machine frame (paint)"
         },
         {
-          "name": "paintedSteel",
+          "name": "discs",
           "type": "color",
-          "default": "#506c68",
-          "label": "Painted steel"
+          "default": "#2d3236",
+          "label": "Star discs (rubber/steel)"
+        },
+        {
+          "name": "cardboard",
+          "type": "color",
+          "default": "#b58a55",
+          "label": "Cardboard (OCC)"
+        },
+        {
+          "name": "unders",
+          "type": "color",
+          "default": "#4c8fd0",
+          "label": "Unders (containers, fines)"
         }
       ],
       "presets": {
+        "plant": {
+          "frame": "#3c7a4e",
+          "discs": "#2d3236",
+          "cardboard": "#b58a55",
+          "unders": "#4c8fd0"
+        },
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#5a6c63"
+          "frame": "#5b6458",
+          "discs": "#3a3b38",
+          "cardboard": "#9c8460",
+          "unders": "#7d8a8f"
+        },
+        "fibreLine": {
+          "frame": "#2f6f9e",
+          "discs": "#c9d0d4",
+          "cardboard": "#c49a62",
+          "unders": "#e1ddd0"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "frame": "#e3742b",
+          "discs": "#23282c",
+          "cardboard": "#b58a55",
+          "unders": "#3fae6a"
         }
       },
       "stats": {
-        "triangles": 540,
+        "triangles": 3952,
         "sizeM": [
-          0.9348,
-          0.8,
-          2.2336
+          6.897402,
+          3.307028,
+          4.46
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "shaft-0",
+          "color": "#a9b1b5",
           "parts": [
-            "support-rail-left",
-            "support-rail-right",
-            "screen-bed",
-            "support-roller-1",
-            "support-roller-2",
-            "support-roller-3",
-            "support-roller-4"
-          ],
-          "param": "stainlessSteel"
+            "shaft-0",
+            "shaft-1",
+            "shaft-2",
+            "shaft-3",
+            "shaft-4",
+            "shaft-5",
+            "shaft-6",
+            "shaft-7",
+            "shaft-8",
+            "shaft-9",
+            "unders-drum"
+          ]
         },
         {
-          "name": "paintedSteel",
-          "color": "#506c68",
+          "name": "discs",
+          "color": "#2d3236",
           "parts": [
-            "feed-hopper",
-            "oversize-chute",
-            "side-guard-left",
-            "side-guard-right",
-            "vibrator-left",
-            "vibrator-right"
+            "star-0-0",
+            "star-0-1",
+            "star-0-2",
+            "star-0-3",
+            "star-0-4",
+            "star-0-5",
+            "star-1-0",
+            "star-1-1",
+            "star-1-2",
+            "star-1-3",
+            "star-1-4",
+            "star-1-5",
+            "star-2-0",
+            "star-2-1",
+            "star-2-2",
+            "star-2-3",
+            "star-2-4",
+            "star-2-5",
+            "star-3-0",
+            "star-3-1",
+            "star-3-2",
+            "star-3-3",
+            "star-3-4",
+            "star-3-5",
+            "star-4-0",
+            "star-4-1",
+            "star-4-2",
+            "star-4-3",
+            "star-4-4",
+            "star-4-5",
+            "star-5-0",
+            "star-5-1",
+            "star-5-2",
+            "star-5-3",
+            "star-5-4",
+            "star-5-5",
+            "star-6-0",
+            "star-6-1",
+            "star-6-2",
+            "star-6-3",
+            "star-6-4",
+            "star-6-5",
+            "star-7-0",
+            "star-7-1",
+            "star-7-2",
+            "star-7-3",
+            "star-7-4",
+            "star-7-5",
+            "star-8-0",
+            "star-8-1",
+            "star-8-2",
+            "star-8-3",
+            "star-8-4",
+            "star-8-5",
+            "star-9-0",
+            "star-9-1",
+            "star-9-2",
+            "star-9-3",
+            "star-9-4",
+            "star-9-5"
           ],
-          "param": "paintedSteel"
+          "param": "discs"
+        },
+        {
+          "name": "frame",
+          "color": "#3c7a4e",
+          "parts": [
+            "side-frame-f",
+            "leg-f-0",
+            "foot-f-0",
+            "leg-f-1",
+            "foot-f-1",
+            "leg-f-2",
+            "foot-f-2",
+            "side-frame-b",
+            "leg-b-0",
+            "foot-b-0",
+            "leg-b-1",
+            "foot-b-1",
+            "leg-b-2",
+            "foot-b-2",
+            "brace-low",
+            "brace-high",
+            "motor-756",
+            "motor-2835",
+            "infeed-chute",
+            "infeed-cheek-f",
+            "infeed-cheek-b",
+            "discharge-chute",
+            "discharge-cheek-f",
+            "discharge-cheek-b",
+            "unders-rail-l",
+            "unders-rail-r",
+            "unders-leg-700-l",
+            "unders-leg-700-r",
+            "unders-leg--2600-l",
+            "unders-leg--2600-r"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "chain-guard",
+          "color": "#f2c230",
+          "parts": [
+            "chain-guard"
+          ]
+        },
+        {
+          "name": "gearbox-756",
+          "color": "#23282c",
+          "parts": [
+            "gearbox-756",
+            "gearbox-2835"
+          ]
+        },
+        {
+          "name": "cardboard",
+          "color": "#b58a55",
+          "parts": [
+            "occ-0",
+            "occ-1",
+            "occ-2",
+            "occ-3",
+            "occ-flap",
+            "occ-pile-0",
+            "occ-pile-2",
+            "occ-pile-4"
+          ],
+          "param": "cardboard"
+        },
+        {
+          "name": "occ-pile-1",
+          "color": "#a07848",
+          "parts": [
+            "occ-pile-1",
+            "occ-pile-3",
+            "occ-pile-5"
+          ]
+        },
+        {
+          "name": "unders-belt",
+          "color": "#2b2f33",
+          "parts": [
+            "unders-belt"
+          ]
+        },
+        {
+          "name": "unders",
+          "color": "#4c8fd0",
+          "parts": [
+            "under-0",
+            "under-1",
+            "under-3",
+            "under-4",
+            "under-6",
+            "under-7"
+          ],
+          "param": "unders"
+        },
+        {
+          "name": "under-2",
+          "color": "#d8cfb6",
+          "parts": [
+            "under-2",
+            "under-5",
+            "under-8"
+          ]
         }
       ]
     },
@@ -223537,14 +223835,18 @@
       "id": "dust-suppression-mist-cannon",
       "kit": "recycling-facility",
       "title": "Dust-suppression mist cannon",
-      "description": "Dust-suppression mist cannon: its mobile chassis, turntable and elevation. Low-poly visualization prop. Material controls: painted steel, stainless steel, rubber.",
+      "description": "Towable dust-suppression mist cannon at about real size: hollow fan barrel with axial fan blades and a nozzle ring at the muzzle, raised on a yoke and trunnions over a slewing turntable and tilted up, fine spray jets fanning out of the nozzle ring, single-axle trailer with mudguards, drawbar, jockey wheel and stabiliser legs, generator canopy with louvres, water pump and hose inlet. Material controls: body paint, fan barrel, tyres, water mist. site, weathered, rental and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "dust suppression",
+        "mist cannon",
+        "fog cannon",
+        "dust control",
+        "water spray",
+        "trailer",
         "materials recovery",
-        "waste management",
-        "residuals",
         "low poly",
         "scene prop"
       ],
@@ -223557,8 +223859,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/dust-suppression-mist-cannon.kcad.ts",
       "preview": "/assets/recycling-facility-dust-suppression-mist-cannon.png",
-      "sourceSha256": "147d105b5390a282138589c6d997d218e9972003f0f4a2846f866ca48b17c498",
-      "triangleBudget": 1800,
+      "sourceSha256": "33a33997a514cad5188ba3fb4a7ad99f0a27bcaeb71319e57ac25f41c2616418",
+      "triangleBudget": 4800,
       "params": [
         {
           "name": "scale",
@@ -223570,74 +223872,208 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "body",
           "type": "color",
-          "default": "#5c6c7b",
-          "label": "Painted steel"
+          "default": "#f2c230",
+          "label": "Body and trailer (paint)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "barrel",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#d7dadc",
+          "label": "Fan barrel"
         },
         {
-          "name": "rubber",
+          "name": "tyres",
           "type": "color",
-          "default": "#303638",
-          "label": "Rubber"
+          "default": "#25292c",
+          "label": "Tyres (rubber)"
+        },
+        {
+          "name": "mist",
+          "type": "color",
+          "default": "#d6ecf5",
+          "label": "Water mist"
         }
       ],
       "presets": {
+        "site": {
+          "body": "#f2c230",
+          "barrel": "#d7dadc",
+          "tyres": "#25292c",
+          "mist": "#d6ecf5"
+        },
         "weathered": {
-          "paintedSteel": "#626c70",
-          "stainlessSteel": "#9ea7a5",
-          "rubber": "#3c403e"
+          "body": "#b89a45",
+          "barrel": "#9ea2a0",
+          "tyres": "#34363a",
+          "mist": "#c7d6dc"
+        },
+        "rental": {
+          "body": "#2f6f9e",
+          "barrel": "#e7e3d6",
+          "tyres": "#25292c",
+          "mist": "#d6ecf5"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "body": "#e3742b",
+          "barrel": "#2f3438",
+          "tyres": "#1f2326",
+          "mist": "#e4f4fb"
         }
       },
       "stats": {
-        "triangles": 428,
+        "triangles": 4170,
         "sizeM": [
-          0.76,
-          0.8462,
-          0.9142
+          3.030018,
+          3.750486,
+          5.140858
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#5c6c7b",
+          "name": "body",
+          "color": "#f2c230",
           "parts": [
-            "mobile-chassis",
+            "chassis",
+            "mudguard-l",
+            "mudguard-r",
+            "drawbar",
+            "generator-canopy",
             "turntable",
-            "elevation-frame-left",
-            "elevation-frame-right",
-            "spray-barrel",
-            "fan-hub"
+            "yoke-arm-l",
+            "yoke-arm-r",
+            "yoke-base",
+            "barrel-flange"
           ],
-          "param": "paintedSteel"
+          "param": "body"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "deck-plate",
+          "color": "#8c9196",
           "parts": [
-            "fan-ring"
-          ],
-          "param": "stainlessSteel"
+            "deck-plate"
+          ]
         },
         {
-          "name": "rubber",
-          "color": "#303638",
+          "name": "axle",
+          "color": "#23282c",
           "parts": [
-            "wheel-left",
-            "wheel-right"
+            "axle",
+            "hitch-eye",
+            "stabiliser-pad-l",
+            "stabiliser-pad-r",
+            "canopy-roof",
+            "louvre-0",
+            "louvre-1",
+            "louvre-2",
+            "louvre-3",
+            "louvre-4",
+            "louvre-5",
+            "hose-inlet",
+            "slew-ring",
+            "fan-hub",
+            "fan-nose",
+            "guard-cross-a",
+            "guard-cross-b"
+          ]
+        },
+        {
+          "name": "tyres",
+          "color": "#25292c",
+          "parts": [
+            "tyre-l",
+            "tyre-r",
+            "jockey-wheel"
           ],
-          "param": "rubber"
+          "param": "tyres"
+        },
+        {
+          "name": "rim-l",
+          "color": "#a9b1b5",
+          "parts": [
+            "rim-l",
+            "rim-r",
+            "jockey-post",
+            "stabiliser-l",
+            "stabiliser-r",
+            "exhaust",
+            "trunnion-l",
+            "trunnion-r",
+            "tilt-ram",
+            "fan-blade-0",
+            "fan-blade-1",
+            "fan-blade-2",
+            "fan-blade-3",
+            "fan-blade-4",
+            "fan-blade-5",
+            "fan-blade-6",
+            "nozzle-ring"
+          ]
+        },
+        {
+          "name": "barrel",
+          "color": "#d7dadc",
+          "parts": [
+            "control-panel",
+            "barrel"
+          ],
+          "param": "barrel"
+        },
+        {
+          "name": "water-pump",
+          "color": "#c23b2f",
+          "parts": [
+            "water-pump"
+          ]
+        },
+        {
+          "name": "hose-coupling",
+          "color": "#c6a23a",
+          "parts": [
+            "hose-coupling",
+            "nozzle-0",
+            "nozzle-1",
+            "nozzle-2",
+            "nozzle-3",
+            "nozzle-4",
+            "nozzle-5",
+            "nozzle-6",
+            "nozzle-7",
+            "nozzle-8",
+            "nozzle-9",
+            "nozzle-10",
+            "nozzle-11"
+          ]
+        },
+        {
+          "name": "mist",
+          "color": "#d6ecf5",
+          "parts": [
+            "mist-jet-0",
+            "mist-jet-1",
+            "mist-jet-2",
+            "mist-jet-3",
+            "mist-jet-4",
+            "mist-jet-5",
+            "mist-jet-6",
+            "mist-jet-7",
+            "mist-jet-8",
+            "mist-jet-9",
+            "mist-jet-10",
+            "mist-jet-11",
+            "mist-inner-0",
+            "mist-inner-1",
+            "mist-inner-2",
+            "mist-inner-3",
+            "mist-inner-4",
+            "mist-inner-5",
+            "mist-inner-6",
+            "mist-inner-7"
+          ],
+          "param": "mist"
         }
       ]
     },
@@ -223838,14 +224274,18 @@
       "id": "eddy-current-separator",
       "kit": "recycling-facility",
       "title": "Eddy-current separator",
-      "description": "Eddy-current separator: a guarded screening bed with a feed hopper, discharge lip and support rollers. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Eddy-current separator at about real size: spring-mounted vibratory feeder pan with twin vibrator motors, short fast belt over a tail pulley, magnetic rotor head drum with its own drive motor, knife-edge splitter, residue and metals chutes over collection bins, aluminium cans in flight over the splitter and mixed residue on the belt, rear guard wall and control cabinet. Material controls: machine frame, belt, magnetic rotor, recovered metal. plant, weathered, copper and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "eddy-current separator",
+        "ECS",
+        "non-ferrous",
+        "aluminium recovery",
+        "magnetic rotor",
+        "metal separation",
         "materials recovery",
-        "waste management",
-        "sorting",
         "low poly",
         "scene prop"
       ],
@@ -223858,8 +224298,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/eddy-current-separator.kcad.ts",
       "preview": "/assets/recycling-facility-eddy-current-separator.png",
-      "sourceSha256": "cb239f525f6713f600c74050e2e3bf57c5984eaec4b17f313542052d094f6fb9",
-      "triangleBudget": 1800,
+      "sourceSha256": "df45d32bd86ffa22e52249458c3a3b3fe76ee508fc2243fc1e9973bb232fc088",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -223871,64 +224311,239 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#2f6f9e",
+          "label": "Machine frame (paint)"
         },
         {
-          "name": "paintedSteel",
+          "name": "belt",
           "type": "color",
-          "default": "#506c68",
-          "label": "Painted steel"
+          "default": "#2a2e31",
+          "label": "Belt (rubber)"
+        },
+        {
+          "name": "rotor",
+          "type": "color",
+          "default": "#c23b2f",
+          "label": "Magnetic rotor shell"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#c9d0d4",
+          "label": "Recovered metal (cans)"
         }
       ],
       "presets": {
+        "plant": {
+          "frame": "#2f6f9e",
+          "belt": "#2a2e31",
+          "rotor": "#c23b2f",
+          "metal": "#c9d0d4"
+        },
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#5a6c63"
+          "frame": "#58645e",
+          "belt": "#3a3b38",
+          "rotor": "#8a4b3c",
+          "metal": "#a7aaa5"
+        },
+        "copper": {
+          "frame": "#e7e3d6",
+          "belt": "#2a2e31",
+          "rotor": "#2c5d8a",
+          "metal": "#c77b45"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "frame": "#e3742b",
+          "belt": "#1f2326",
+          "rotor": "#2f3438",
+          "metal": "#e0e5e8"
         }
       },
       "stats": {
-        "triangles": 540,
+        "triangles": 1972,
         "sizeM": [
-          0.7428,
-          0.745,
-          2.2336
+          6.19,
+          1.96,
+          2.52
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "tail-pulley",
+          "color": "#a9b1b5",
           "parts": [
-            "support-rail-left",
-            "support-rail-right",
-            "screen-bed",
-            "support-roller-1",
-            "support-roller-2",
-            "support-roller-3",
-            "support-roller-4"
-          ],
-          "param": "stainlessSteel"
+            "tail-pulley",
+            "feeder-pan",
+            "splitter"
+          ]
         },
         {
-          "name": "paintedSteel",
-          "color": "#506c68",
+          "name": "rotor",
+          "color": "#c23b2f",
           "parts": [
-            "feed-hopper",
-            "oversize-chute",
-            "side-guard-left",
-            "side-guard-right",
-            "vibrator-left",
-            "vibrator-right"
+            "head-shell"
           ],
-          "param": "paintedSteel"
+          "param": "rotor"
+        },
+        {
+          "name": "rotor-cap-f",
+          "color": "#23282c",
+          "parts": [
+            "rotor-cap-f",
+            "rotor-cap-b",
+            "skirt-f",
+            "skirt-b",
+            "vibrator-f",
+            "vibrator-b",
+            "splitter-pivot",
+            "control-face"
+          ]
+        },
+        {
+          "name": "belt",
+          "color": "#2a2e31",
+          "parts": [
+            "belt-top",
+            "belt-return"
+          ],
+          "param": "belt"
+        },
+        {
+          "name": "frame",
+          "color": "#2f6f9e",
+          "parts": [
+            "side-frame-f",
+            "leg-f--1350",
+            "foot-f--1350",
+            "leg-f-1100",
+            "foot-f-1100",
+            "side-frame-b",
+            "leg-b--1350",
+            "foot-b--1350",
+            "leg-b-1100",
+            "foot-b-1100",
+            "cross-brace",
+            "rotor-motor",
+            "motor-base",
+            "feeder-base",
+            "residue-chute",
+            "metals-chute",
+            "rear-guard",
+            "rear-guard-post"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "drive-guard",
+          "color": "#f2c230",
+          "parts": [
+            "drive-guard"
+          ]
+        },
+        {
+          "name": "spring--2650-f",
+          "color": "#e0b12c",
+          "parts": [
+            "spring--2650-f",
+            "spring--2650-b",
+            "spring--1750-f",
+            "spring--1750-b"
+          ]
+        },
+        {
+          "name": "residue-bin",
+          "color": "#4b8c3a",
+          "parts": [
+            "residue-bin"
+          ]
+        },
+        {
+          "name": "metals-bin",
+          "color": "#8a9196",
+          "parts": [
+            "metals-bin"
+          ]
+        },
+        {
+          "name": "residue-0",
+          "color": "#3d7fbf",
+          "parts": [
+            "residue-0",
+            "residue-3"
+          ]
+        },
+        {
+          "name": "residue-1",
+          "color": "#d8cfb6",
+          "parts": [
+            "residue-1",
+            "residue-4"
+          ]
+        },
+        {
+          "name": "residue-2",
+          "color": "#4a9a52",
+          "parts": [
+            "residue-2",
+            "residue-5"
+          ]
+        },
+        {
+          "name": "metal",
+          "color": "#c9d0d4",
+          "parts": [
+            "can-belt-0",
+            "can-belt-1",
+            "can-belt-2",
+            "can-belt-3",
+            "can-belt-4",
+            "can-flight-0",
+            "can-flight-1",
+            "can-flight-2",
+            "can-flight-3",
+            "can-flight-4",
+            "can-flight-5",
+            "can-flight-6",
+            "can-bin-0",
+            "can-bin-1",
+            "can-bin-2",
+            "can-bin-3",
+            "can-bin-4",
+            "can-bin-5"
+          ],
+          "param": "metal"
+        },
+        {
+          "name": "residue-heap",
+          "color": "#8f8a7a",
+          "parts": [
+            "residue-heap"
+          ]
+        },
+        {
+          "name": "control-cabinet",
+          "color": "#d7dadc",
+          "parts": [
+            "control-cabinet"
+          ]
+        },
+        {
+          "name": "e-stop",
+          "color": "#d43a2f",
+          "parts": [
+            "e-stop"
+          ]
+        },
+        {
+          "name": "beacon",
+          "color": "#f2a430",
+          "parts": [
+            "beacon"
+          ]
         }
       ]
     },
@@ -224676,14 +225291,20 @@
       "id": "float-sink-separator",
       "kit": "recycling-facility",
       "title": "Float-sink separator",
-      "description": "Float-sink separator: its machine, access door and feed chute. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Float-sink separation tank for a plastics washing line at about real size: open stainless tank on legs filled with water, floating PP/PE flakes, four paddle drums with geared motors across the tank, inclined feed screw dropping flakes in at the low end, inclined sink-screw lifting PET out of the tank bottom, dewatering screw taking the floats out at the far end, far-side walkway with handrail. Material controls: stainless tank, water, floating flakes, machine paint. washLine, weathered, coloured and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "float-sink",
+        "sink-float tank",
+        "density separation",
+        "plastics washing",
+        "PET",
+        "PP",
+        "PE",
+        "flakes",
         "materials recovery",
-        "waste management",
-        "glass plastics",
         "low poly",
         "scene prop"
       ],
@@ -224696,8 +225317,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/float-sink-separator.kcad.ts",
       "preview": "/assets/recycling-facility-float-sink-separator.png",
-      "sourceSha256": "db8ae6914cfd3e4a33bbedbb33c1917f83c2e6d27855ed35b1e54c2e69af5f4e",
-      "triangleBudget": 1800,
+      "sourceSha256": "ccf66a4d7e92cb49c7b83fd2ba8b402541cb8e255cd1ec93a28cb331f9af5e22",
+      "triangleBudget": 4600,
       "params": [
         {
           "name": "scale",
@@ -224709,60 +225330,274 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "tank",
           "type": "color",
-          "default": "#647b66",
-          "label": "Painted steel"
+          "default": "#b9c0c3",
+          "label": "Tank (stainless steel)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "water",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#4f93b8",
+          "label": "Wash water"
+        },
+        {
+          "name": "flakes",
+          "type": "color",
+          "default": "#e8e3d2",
+          "label": "Floating flakes (PP/PE)"
+        },
+        {
+          "name": "paint",
+          "type": "color",
+          "default": "#2f6f9e",
+          "label": "Drives and screws (paint)"
         }
       ],
       "presets": {
+        "washLine": {
+          "tank": "#b9c0c3",
+          "water": "#4f93b8",
+          "flakes": "#e8e3d2",
+          "paint": "#2f6f9e"
+        },
         "weathered": {
-          "paintedSteel": "#687662",
-          "stainlessSteel": "#9ea7a5"
+          "tank": "#959b98",
+          "water": "#56766a",
+          "flakes": "#c9c1a8",
+          "paint": "#56605a"
+        },
+        "coloured": {
+          "tank": "#b9c0c3",
+          "water": "#3f88b0",
+          "flakes": "#d84b3a",
+          "paint": "#3c7a4e"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "tank": "#cdd3d6",
+          "water": "#4f93b8",
+          "flakes": "#f2c230",
+          "paint": "#e3742b"
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 2096,
         "sizeM": [
-          1.420627,
-          1.1125,
-          1.119
+          11.087034,
+          3.426176,
+          3.9
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#647b66",
+          "name": "tank",
+          "color": "#b9c0c3",
           "parts": [
-            "base-frame",
-            "machine-body",
-            "front-access-door",
-            "feed-chute",
-            "outlet-chute",
-            "service-panel",
-            "control-pedestal"
+            "tank-shell",
+            "tank-hopper",
+            "tank-rim",
+            "leg--2600-f",
+            "foot--2600-f",
+            "leg--2600-b",
+            "foot--2600-b",
+            "leg--933-f",
+            "foot--933-f",
+            "leg--933-b",
+            "foot--933-b",
+            "leg-933-f",
+            "foot-933-f",
+            "leg-933-b",
+            "foot-933-b",
+            "leg-2600-f",
+            "foot-2600-f",
+            "leg-2600-b",
+            "foot-2600-b",
+            "stiffener-f",
+            "stiffener-b",
+            "feed-hopper",
+            "sink-boot",
+            "weir-lip",
+            "float-trough",
+            "float-sump"
           ],
-          "param": "paintedSteel"
+          "param": "tank"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "water",
+          "color": "#4f93b8",
           "parts": [
-            "drive-drum",
-            "transfer-roller"
+            "water"
           ],
-          "param": "stainlessSteel"
+          "param": "water"
+        },
+        {
+          "name": "flake-0",
+          "color": "#c64a3c",
+          "parts": [
+            "flake-0",
+            "flake-5",
+            "flake-10",
+            "flake-15",
+            "flake-20",
+            "flake-25",
+            "flake-30",
+            "flake-35",
+            "flake-40",
+            "flake-45"
+          ]
+        },
+        {
+          "name": "flakes",
+          "color": "#e8e3d2",
+          "parts": [
+            "flake-1",
+            "flake-2",
+            "flake-3",
+            "flake-4",
+            "flake-6",
+            "flake-7",
+            "flake-8",
+            "flake-9",
+            "flake-11",
+            "flake-12",
+            "flake-13",
+            "flake-14",
+            "flake-16",
+            "flake-17",
+            "flake-18",
+            "flake-19",
+            "flake-21",
+            "flake-22",
+            "flake-23",
+            "flake-24",
+            "flake-26",
+            "flake-27",
+            "flake-28",
+            "flake-29",
+            "flake-31",
+            "flake-32",
+            "flake-33",
+            "flake-34",
+            "flake-36",
+            "flake-37",
+            "flake-38",
+            "flake-39",
+            "flake-41",
+            "flake-42",
+            "flake-43",
+            "flake-44",
+            "flake-46",
+            "flake-47"
+          ],
+          "param": "flakes"
+        },
+        {
+          "name": "drum-shaft-0",
+          "color": "#a9b1b5",
+          "parts": [
+            "drum-shaft-0",
+            "drum-shaft-1",
+            "drum-shaft-2",
+            "drum-shaft-3"
+          ]
+        },
+        {
+          "name": "paddle-0-0",
+          "color": "#23282c",
+          "parts": [
+            "paddle-0-0",
+            "paddle-0-1",
+            "paddle-0-2",
+            "paddle-0-3",
+            "paddle-1-0",
+            "paddle-1-1",
+            "paddle-1-2",
+            "paddle-1-3",
+            "paddle-2-0",
+            "paddle-2-1",
+            "paddle-2-2",
+            "paddle-2-3",
+            "paddle-3-0",
+            "paddle-3-1",
+            "paddle-3-2",
+            "paddle-3-3",
+            "feed-motor",
+            "sink-motor",
+            "dewatering-motor"
+          ]
+        },
+        {
+          "name": "paint",
+          "color": "#2f6f9e",
+          "parts": [
+            "drum-motor-0",
+            "drum-gearbox-0",
+            "drum-motor-1",
+            "drum-gearbox-1",
+            "drum-motor-2",
+            "drum-gearbox-2",
+            "drum-motor-3",
+            "drum-gearbox-3",
+            "feed-screw",
+            "feed-spout",
+            "feed-stand",
+            "sink-screw",
+            "sink-spout",
+            "dewatering-screw",
+            "dewatering-stand",
+            "walk-post--2700",
+            "walk-post-0",
+            "walk-post-2700"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "sink-bin",
+          "color": "#4b8c3a",
+          "parts": [
+            "sink-bin"
+          ]
+        },
+        {
+          "name": "pet-0",
+          "color": "#7fb7d9",
+          "parts": [
+            "pet-0",
+            "pet-1",
+            "pet-2",
+            "pet-3",
+            "pet-4",
+            "pet-5",
+            "pet-6",
+            "pet-7"
+          ]
+        },
+        {
+          "name": "dewatering-screen",
+          "color": "#7e8a8f",
+          "parts": [
+            "dewatering-screen"
+          ]
+        },
+        {
+          "name": "walkway",
+          "color": "#8c9196",
+          "parts": [
+            "walkway"
+          ]
+        },
+        {
+          "name": "rail-post--2700",
+          "color": "#f2c230",
+          "parts": [
+            "rail-post--2700",
+            "rail-post-0",
+            "rail-post-2700",
+            "handrail",
+            "knee-rail"
+          ]
         }
       ]
     },
