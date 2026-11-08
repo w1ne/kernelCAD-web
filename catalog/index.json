@@ -218510,11 +218510,16 @@
       "id": "conveyor-transfer-tower",
       "kit": "recycling-facility",
       "title": "Conveyor transfer tower",
-      "description": "Conveyor transfer tower: its support, upper crossbeam and material channel. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Enclosed conveyor transfer tower at about real size: clad square tower on corner columns with mono-pitch roof, roof vent and louvre band, inclined clad conveyor gallery with window strip arriving from a tail house over a braced trestle, outgoing open conveyor with load and head pulley at the base, personnel door with steps, caged ladder to a railed landing. Material controls: cladding, structure, gallery and belts. plant, weathered, highVisibility and oxide presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "conveyor",
+        "transfer tower",
+        "conveyor gallery",
+        "trestle",
+        "cladding",
         "materials recovery",
         "waste management",
         "sorting",
@@ -218530,8 +218535,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/conveyor-transfer-tower.kcad.ts",
       "preview": "/assets/recycling-facility-conveyor-transfer-tower.png",
-      "sourceSha256": "ea13f7d49ea40e06b72ca8d8949aa507b0b173b230cb90c88a0ebf8047b1172d",
-      "triangleBudget": 1800,
+      "sourceSha256": "b7d2ec611d2a4ab8cb04e3d629c3c8f850d3326624dee3927c5fb78d95bf7bbd",
+      "triangleBudget": 4400,
       "params": [
         {
           "name": "scale",
@@ -218543,59 +218548,286 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "cladding",
           "type": "color",
-          "default": "#75656d",
-          "label": "Painted steel"
+          "default": "#b9c2c4",
+          "label": "Tower cladding (profiled sheet)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "structure",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#e0a526",
+          "label": "Structure, ladder and rails (paint)"
+        },
+        {
+          "name": "gallery",
+          "type": "color",
+          "default": "#5d7f8c",
+          "label": "Gallery cladding"
+        },
+        {
+          "name": "belts",
+          "type": "color",
+          "default": "#24272a",
+          "label": "Belts (rubber)"
         }
       ],
       "presets": {
+        "plant": {
+          "cladding": "#b9c2c4",
+          "structure": "#e0a526",
+          "gallery": "#5d7f8c",
+          "belts": "#24272a"
+        },
         "weathered": {
-          "paintedSteel": "#736767",
-          "stainlessSteel": "#9ea7a5"
+          "cladding": "#9a9690",
+          "structure": "#8a7a52",
+          "gallery": "#6e6a62",
+          "belts": "#2c2a28"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "cladding": "#e2e4e2",
+          "structure": "#f0c419",
+          "gallery": "#2f6b8f",
+          "belts": "#1c1d1e"
+        },
+        "oxide": {
+          "cladding": "#8a3a2c",
+          "structure": "#3a3d40",
+          "gallery": "#b9c2c4",
+          "belts": "#24272a"
         }
       },
       "stats": {
-        "triangles": 160,
+        "triangles": 2054,
         "sizeM": [
-          0.8466,
-          0.92,
-          2.1308
+          17.83,
+          6.8,
+          3.902507
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#75656d",
+          "name": "cladding",
+          "color": "#b9c2c4",
           "parts": [
-            "support-frame-left",
-            "support-frame-right",
-            "material-channel",
-            "inspection-hood",
-            "discharge-transition",
-            "idler"
+            "tower-body",
+            "rib-front-0",
+            "rib-side-0",
+            "rib-front-1",
+            "rib-side-1",
+            "rib-front-2",
+            "rib-side-2",
+            "rib-front-3",
+            "rib-side-3",
+            "rib-front-4",
+            "rib-side-4",
+            "rib-front-5",
+            "rib-side-5",
+            "rib-front-6",
+            "rib-side-6",
+            "rib-front-7",
+            "rib-side-7",
+            "rib-front-8",
+            "rib-side-8",
+            "roof-vent",
+            "tail-house"
           ],
-          "param": "paintedSteel"
+          "param": "cladding"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "structure",
+          "color": "#e0a526",
           "parts": [
-            "upper-crossbeam",
-            "access-ladder"
+            "column-lf",
+            "column-rf",
+            "column-lb",
+            "column-rb",
+            "girt-2000",
+            "girt-4000",
+            "roof",
+            "roof-vent-cap",
+            "roof-vent-stay-a",
+            "roof-vent-stay-b",
+            "louvre-frame",
+            "gallery-roof-trim",
+            "gallery-frame-0",
+            "gallery-frame-1",
+            "gallery-frame-2",
+            "gallery-frame-3",
+            "gallery-frame-4",
+            "gallery-frame-5",
+            "gallery-frame-6",
+            "gallery-collar",
+            "tail-house-roof",
+            "trestle-leg-f-a",
+            "trestle-leg-f-b",
+            "trestle-leg-b-a",
+            "trestle-leg-b-b",
+            "trestle-brace-a-1",
+            "trestle-brace-a-2",
+            "trestle-brace-b-1",
+            "trestle-brace-b-2",
+            "trestle-head",
+            "out-stringer-f",
+            "out-stringer-b",
+            "out-head-pulley",
+            "out-leg-2600-f",
+            "out-leg-2600-b",
+            "out-leg-tie-2600",
+            "out-leg-4400-f",
+            "out-leg-4400-b",
+            "out-leg-tie-4400",
+            "out-leg-6400-f",
+            "out-leg-6400-b",
+            "out-leg-tie-6400",
+            "out-rail-post-2600",
+            "out-rail-post-4400",
+            "out-rail-post-6400",
+            "out-rail",
+            "door-frame",
+            "ladder-stile-l",
+            "ladder-stile-r",
+            "ladder-rung-0",
+            "ladder-rung-1",
+            "ladder-rung-2",
+            "ladder-rung-3",
+            "ladder-rung-4",
+            "ladder-rung-5",
+            "ladder-rung-6",
+            "ladder-rung-7",
+            "ladder-rung-8",
+            "ladder-rung-9",
+            "ladder-rung-10",
+            "ladder-rung-11",
+            "ladder-rung-12",
+            "ladder-rung-13",
+            "ladder-rung-14",
+            "cage-hoop-0",
+            "cage-hoop-1",
+            "cage-hoop-2",
+            "cage-hoop-3",
+            "cage-hoop-4",
+            "cage-hoop-5",
+            "cage-strap-l",
+            "cage-strap-c",
+            "cage-strap-r",
+            "ladder-bracket-1500",
+            "ladder-bracket-3000",
+            "landing-post--150",
+            "landing-post-450",
+            "landing-post-1350",
+            "landing-rail",
+            "landing-midrail"
           ],
-          "param": "stainlessSteel"
+          "param": "structure"
+        },
+        {
+          "name": "plinth",
+          "color": "#a39f96",
+          "parts": [
+            "plinth",
+            "trestle-foot-f",
+            "trestle-foot-b",
+            "step-0",
+            "step-1"
+          ]
+        },
+        {
+          "name": "louvre-0",
+          "color": "#3a3d40",
+          "parts": [
+            "louvre-0",
+            "louvre-1",
+            "louvre-2",
+            "louvre-3",
+            "louvre-4",
+            "louvre-5"
+          ]
+        },
+        {
+          "name": "gallery",
+          "color": "#5d7f8c",
+          "parts": [
+            "gallery-shell",
+            "tail-house-door",
+            "door",
+            "landing-door"
+          ],
+          "param": "gallery"
+        },
+        {
+          "name": "gallery-windows",
+          "color": "#2a3a44",
+          "parts": [
+            "gallery-windows"
+          ]
+        },
+        {
+          "name": "belts",
+          "color": "#24272a",
+          "parts": [
+            "out-belt"
+          ],
+          "param": "belts"
+        },
+        {
+          "name": "out-load-0",
+          "color": "#9a8f7a",
+          "parts": [
+            "out-load-0",
+            "out-load-3",
+            "out-load-6"
+          ]
+        },
+        {
+          "name": "out-load-1",
+          "color": "#8a7f68",
+          "parts": [
+            "out-load-1",
+            "out-load-4",
+            "out-load-7"
+          ]
+        },
+        {
+          "name": "out-load-2",
+          "color": "#a89a7c",
+          "parts": [
+            "out-load-2",
+            "out-load-5",
+            "out-load-8"
+          ]
+        },
+        {
+          "name": "out-drive",
+          "color": "#3a5c8a",
+          "parts": [
+            "out-drive"
+          ]
+        },
+        {
+          "name": "out-walkway",
+          "color": "#7d8285",
+          "parts": [
+            "out-walkway",
+            "landing"
+          ]
+        },
+        {
+          "name": "door-handle",
+          "color": "#1c1d1e",
+          "parts": [
+            "door-handle"
+          ]
+        },
+        {
+          "name": "door-sign",
+          "color": "#2f7a46",
+          "parts": [
+            "door-sign"
+          ]
         }
       ]
     },
@@ -219429,11 +219661,17 @@
       "id": "dust-extraction-hood",
       "kit": "recycling-facility",
       "title": "Dust extraction hood",
-      "description": "Dust extraction hood: its support, upper crossbeam and material channel. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Conveyor dust extraction hood at about real size: troughed belt conveyor with load on three-roll idlers and legs, sheet-steel casing over the belt with rubber strip curtains at both ends, pyramid hood to a round take-off duct with butterfly damper and lever, duct elbowing away on a stanchion, hinged inspection door and dust warning sign. Door open or closed. Material controls: hood, ductwork, conveyor frame and belt and curtains. plant, weathered, stainless and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "dust extraction",
+        "hood",
+        "conveyor",
+        "ductwork",
+        "damper",
+        "strip curtain",
         "materials recovery",
         "waste management",
         "sorting",
@@ -219449,8 +219687,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/dust-extraction-hood.kcad.ts",
       "preview": "/assets/recycling-facility-dust-extraction-hood.png",
-      "sourceSha256": "b468dc48453d595e949d427fe8734b000779a57e3b4a684931b1c1ce5095e108",
-      "triangleBudget": 1800,
+      "sourceSha256": "719cb3f7ed1216286070ab6e7eccf69a7a3e71670afdaa61ba3ea33ff16a4715",
+      "triangleBudget": 4200,
       "params": [
         {
           "name": "scale",
@@ -219462,59 +219700,242 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "hood",
           "type": "color",
-          "default": "#8b754b",
-          "label": "Painted steel"
+          "default": "#5d7f8c",
+          "label": "Hood and casing (paint)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "duct",
           "type": "color",
           "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "label": "Ductwork (galvanised)"
+        },
+        {
+          "name": "conveyor",
+          "type": "color",
+          "default": "#e0a526",
+          "label": "Conveyor frame (paint)"
+        },
+        {
+          "name": "belt",
+          "type": "color",
+          "default": "#24272a",
+          "label": "Belt and curtains (rubber)"
+        },
+        {
+          "name": "doorState",
+          "type": "choice",
+          "default": "open",
+          "label": "Inspection door",
+          "choices": [
+            "open",
+            "closed"
+          ]
         }
       ],
       "presets": {
+        "plant": {
+          "hood": "#5d7f8c",
+          "duct": "#a8b4b6",
+          "conveyor": "#e0a526",
+          "belt": "#24272a"
+        },
         "weathered": {
-          "paintedSteel": "#82724f",
-          "stainlessSteel": "#9ea7a5"
+          "hood": "#6e6a62",
+          "duct": "#8e9294",
+          "conveyor": "#8a7a52",
+          "belt": "#2c2a28"
+        },
+        "stainless": {
+          "hood": "#c4c9cb",
+          "duct": "#d0d4d6",
+          "conveyor": "#8a9196",
+          "belt": "#2a2c2e"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "hood": "#2f6b8f",
+          "duct": "#c9ccce",
+          "conveyor": "#f0c419",
+          "belt": "#1c1d1e"
         }
       },
       "stats": {
-        "triangles": 160,
+        "triangles": 2074,
         "sizeM": [
-          0.8466,
-          0.92,
-          1.6836
+          5.605,
+          3.37,
+          2.018581
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#8b754b",
+          "name": "belt",
+          "color": "#24272a",
           "parts": [
-            "support-frame-left",
-            "support-frame-right",
-            "material-channel",
-            "inspection-hood",
-            "discharge-transition",
-            "idler"
+            "belt-centre",
+            "belt-wing-f",
+            "belt-wing-b",
+            "return-belt",
+            "curtain-m1100-0",
+            "curtain-m1100-1",
+            "curtain-m1100-2",
+            "curtain-m1100-3",
+            "curtain-m1100-4",
+            "curtain-m1100-5",
+            "curtain-m1100-6",
+            "curtain-m1100-7",
+            "curtain-m1100-8",
+            "curtain-m1100-9",
+            "curtain-m1100-10",
+            "curtain-p1100-0",
+            "curtain-p1100-1",
+            "curtain-p1100-2",
+            "curtain-p1100-3",
+            "curtain-p1100-4",
+            "curtain-p1100-5",
+            "curtain-p1100-6",
+            "curtain-p1100-7",
+            "curtain-p1100-8",
+            "curtain-p1100-9",
+            "curtain-p1100-10"
           ],
-          "param": "paintedSteel"
+          "param": "belt"
         },
         {
-          "name": "stainlessSteel",
+          "name": "belt-load",
+          "color": "#9a8f7a",
+          "parts": [
+            "belt-load"
+          ]
+        },
+        {
+          "name": "conveyor",
+          "color": "#e0a526",
+          "parts": [
+            "stringer-f",
+            "pulley-tail",
+            "stringer-b",
+            "pulley-head",
+            "idler-frame-m2100",
+            "idler-frame-m1500",
+            "idler-frame-p1500",
+            "idler-frame-p2100",
+            "leg-m2300-f",
+            "leg-m2300-b",
+            "leg-tie-m2300",
+            "leg-foot-m2300-f",
+            "leg-foot-m2300-b",
+            "leg-m900-f",
+            "leg-m900-b",
+            "leg-tie-m900",
+            "leg-foot-m900-f",
+            "leg-foot-m900-b",
+            "leg-p900-f",
+            "leg-p900-b",
+            "leg-tie-p900",
+            "leg-foot-p900-f",
+            "leg-foot-p900-b",
+            "leg-p2300-f",
+            "leg-p2300-b",
+            "leg-tie-p2300",
+            "leg-foot-p2300-f",
+            "leg-foot-p2300-b",
+            "duct-stanchion",
+            "duct-cradle"
+          ],
+          "param": "conveyor"
+        },
+        {
+          "name": "pulley-bearing-tail",
+          "color": "#3a3d40",
+          "parts": [
+            "pulley-bearing-tail",
+            "pulley-bearing-head"
+          ]
+        },
+        {
+          "name": "idler-centre-m2100",
+          "color": "#5d6366",
+          "parts": [
+            "idler-centre-m2100",
+            "idler-wing-m2100-f",
+            "idler-wing-m2100-b",
+            "idler-centre-m1500",
+            "idler-wing-m1500-f",
+            "idler-wing-m1500-b",
+            "idler-centre-p1500",
+            "idler-wing-p1500-f",
+            "idler-wing-p1500-b",
+            "idler-centre-p2100",
+            "idler-wing-p2100-f",
+            "idler-wing-p2100-b"
+          ]
+        },
+        {
+          "name": "hood",
+          "color": "#5d7f8c",
+          "parts": [
+            "casing",
+            "casing-flange-m1100",
+            "casing-flange-p1100",
+            "hood-pyramid",
+            "hood-collar",
+            "hood-stiffener-l",
+            "hood-stiffener-r",
+            "inspection-door"
+          ],
+          "param": "hood"
+        },
+        {
+          "name": "duct",
           "color": "#a8b4b6",
           "parts": [
-            "upper-crossbeam",
-            "access-ladder"
+            "duct-riser",
+            "damper-flange-2330",
+            "damper-flange-2480",
+            "duct-elbow",
+            "duct-run",
+            "duct-flange-p900",
+            "duct-flange-p1900",
+            "duct-flange-p2900"
           ],
-          "param": "stainlessSteel"
+          "param": "duct"
+        },
+        {
+          "name": "damper-body",
+          "color": "#3a5c8a",
+          "parts": [
+            "damper-body",
+            "damper-quadrant"
+          ]
+        },
+        {
+          "name": "damper-lever",
+          "color": "#c8322a",
+          "parts": [
+            "damper-lever"
+          ]
+        },
+        {
+          "name": "duct-arrow",
+          "color": "#f0c419",
+          "parts": [
+            "duct-arrow",
+            "dust-sign"
+          ]
+        },
+        {
+          "name": "door-handle",
+          "color": "#1c1d1e",
+          "parts": [
+            "door-handle",
+            "door-hinge-1020",
+            "door-hinge-1280",
+            "dust-sign-mark"
+          ]
         }
       ]
     },
@@ -221114,12 +221535,17 @@
       "id": "gas-collection-riser",
       "kit": "recycling-facility",
       "title": "Gas collection riser",
-      "description": "Gas collection riser: its mounting pad, riser pipe and flare stack. Low-poly visualization prop. Material controls: painted steel, stainless steel, rubber.",
+      "description": "Landfill gas collection riser station at about real size: two black HDPE risers from sealed soil mounds with butterfly valves and sampling ports, tee-ing into a yellow-banded header on saddle supports, condensate knockout pot on legs with sight-glass gauge, drain valve and nameplate, and an outlet that crosses over and drops back underground toward the flare. Material controls: pipework, gas marking bands, knockout pot and supports. landfill, weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
-        "materials recovery",
+        "landfill gas",
+        "riser",
+        "header",
+        "condensate knockout",
+        "butterfly valve",
+        "HDPE pipe",
         "waste management",
         "residuals",
         "low poly",
@@ -221134,8 +221560,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/gas-collection-riser.kcad.ts",
       "preview": "/assets/recycling-facility-gas-collection-riser.png",
-      "sourceSha256": "e4a3e5e7ec801fb606af65219c2fb6327f9bbace1d6d6ff7b3e3009203fb24ca",
-      "triangleBudget": 1800,
+      "sourceSha256": "ba6c02d0055c558871c7f7090c543ed22d2ffae418ce1de15e7d253cbfa2b98b",
+      "triangleBudget": 4200,
       "params": [
         {
           "name": "scale",
@@ -221147,71 +221573,225 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "pipework",
           "type": "color",
-          "default": "#65765e",
-          "label": "Painted steel"
+          "default": "#1f2123",
+          "label": "Pipework (HDPE)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "marking",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#f0c419",
+          "label": "Gas marking bands"
         },
         {
-          "name": "rubber",
+          "name": "vessel",
           "type": "color",
-          "default": "#303638",
-          "label": "Rubber"
+          "default": "#4f6f5a",
+          "label": "Knockout pot (paint)"
+        },
+        {
+          "name": "supports",
+          "type": "color",
+          "default": "#a8b0b2",
+          "label": "Supports and pad (galvanised)"
         }
       ],
       "presets": {
+        "landfill": {
+          "pipework": "#1f2123",
+          "marking": "#f0c419",
+          "vessel": "#4f6f5a",
+          "supports": "#a8b0b2"
+        },
         "weathered": {
-          "paintedSteel": "#69725c",
-          "stainlessSteel": "#9ea7a5",
-          "rubber": "#3c403e"
+          "pipework": "#34322f",
+          "marking": "#b89a3a",
+          "vessel": "#5e6656",
+          "supports": "#8a8e88"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "pipework": "#1c1d1e",
+          "marking": "#f0c419",
+          "vessel": "#d77632",
+          "supports": "#c9ccce"
         }
       },
       "stats": {
-        "triangles": 328,
+        "triangles": 2656,
         "sizeM": [
-          1.12,
-          1.8684,
-          0.7632
+          4.639177,
+          2.4,
+          1.363
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#65765e",
+          "name": "pipework",
+          "color": "#1f2123",
           "parts": [
-            "mounting-pad",
-            "flare-stack",
-            "service-box",
-            "horizontal-connection"
+            "header",
+            "header-end-cap",
+            "header-flange-a",
+            "header-flange-b",
+            "riser-0",
+            "tee-0",
+            "valve-flange-lo-0",
+            "valve-flange-hi-0",
+            "riser-1",
+            "tee-1",
+            "valve-flange-lo-1",
+            "valve-flange-hi-1",
+            "outlet-riser",
+            "outlet-elbow-a",
+            "outlet-run",
+            "outlet-elbow-b",
+            "outlet-drop"
           ],
-          "param": "paintedSteel"
+          "param": "pipework"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "marking",
+          "color": "#f0c419",
           "parts": [
-            "riser-pipe"
+            "header-band-0",
+            "header-band-1",
+            "header-band-2",
+            "header-band-3",
+            "riser-band-0",
+            "bollard-0",
+            "riser-band-1",
+            "bollard-1",
+            "pot-band",
+            "outlet-band",
+            "outlet-arrow"
           ],
-          "param": "stainlessSteel"
+          "param": "marking"
         },
         {
-          "name": "rubber",
-          "color": "#303638",
+          "name": "supports",
+          "color": "#a8b0b2",
           "parts": [
-            "valve-wheel"
+            "saddle-post-0",
+            "saddle-0",
+            "saddle-strap-0",
+            "saddle-post-1",
+            "saddle-1",
+            "saddle-strap-1",
+            "pot-leg-0",
+            "pot-leg-foot-0",
+            "pot-leg-1",
+            "pot-leg-foot-1",
+            "pot-leg-2",
+            "pot-leg-foot-2",
+            "pot-leg-3",
+            "pot-leg-foot-3",
+            "gauge-stub-650",
+            "gauge-stub-1400",
+            "drain-pipe",
+            "outlet-stay",
+            "outlet-stay-arm"
           ],
-          "param": "rubber"
+          "param": "supports"
+        },
+        {
+          "name": "saddle-base-0",
+          "color": "#9a958a",
+          "parts": [
+            "saddle-base-0",
+            "saddle-base-1",
+            "pad"
+          ]
+        },
+        {
+          "name": "soil-mound-0",
+          "color": "#7d6a4c",
+          "parts": [
+            "soil-mound-0",
+            "soil-mound-1"
+          ]
+        },
+        {
+          "name": "bentonite-collar-0",
+          "color": "#8f8a82",
+          "parts": [
+            "bentonite-collar-0",
+            "bentonite-collar-1",
+            "outlet-ground-sleeve"
+          ]
+        },
+        {
+          "name": "valve-body-0",
+          "color": "#3a5c8a",
+          "parts": [
+            "valve-body-0",
+            "valve-stem-0",
+            "valve-body-1",
+            "valve-stem-1"
+          ]
+        },
+        {
+          "name": "valve-lever-0",
+          "color": "#c8322a",
+          "parts": [
+            "valve-lever-0",
+            "valve-lever-1",
+            "gauge-float",
+            "drain-handle"
+          ]
+        },
+        {
+          "name": "sample-port-0",
+          "color": "#c9a24a",
+          "parts": [
+            "sample-port-0",
+            "sample-port-1",
+            "drain-valve"
+          ]
+        },
+        {
+          "name": "sample-cap-0",
+          "color": "#2f68b0",
+          "parts": [
+            "sample-cap-0",
+            "sample-cap-1",
+            "drain-bucket"
+          ]
+        },
+        {
+          "name": "bollard-band-0",
+          "color": "#1c1d1e",
+          "parts": [
+            "bollard-band-0",
+            "bollard-band-1",
+            "nameplate-text"
+          ]
+        },
+        {
+          "name": "vessel",
+          "color": "#4f6f5a",
+          "parts": [
+            "pot-shell",
+            "pot-dome",
+            "pot-bottom"
+          ],
+          "param": "vessel"
+        },
+        {
+          "name": "nameplate",
+          "color": "#e8e6dc",
+          "parts": [
+            "nameplate"
+          ]
+        },
+        {
+          "name": "gauge-glass",
+          "color": "#7fb6c8",
+          "parts": [
+            "gauge-glass"
+          ]
         }
       ]
     },
@@ -224357,12 +224937,17 @@
       "id": "landfill-liner-roll",
       "kit": "recycling-facility",
       "title": "Landfill liner roll",
-      "description": "Landfill liner roll: its roll cradle, liner roll and end core. Low-poly visualization prop. Material controls: painted steel, rubber.",
+      "description": "HDPE geomembrane liner roll at about real size: black roll on a spreader bar through its core, resting in two A-frame unrolling stands, lifting straps and roll label, and a sheet pulled off onto the subgrade with a welded seam and sandbags on its leading edge. Sheet pulled or still rolled. Material controls: liner, stands, straps and core. smoothBlack, texturedGreen, whiteSurface and geotextile presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
-        "materials recovery",
+        "landfill",
+        "liner",
+        "geomembrane",
+        "HDPE",
+        "roll",
+        "spreader bar",
         "waste management",
         "residuals",
         "low poly",
@@ -224377,8 +224962,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/landfill-liner-roll.kcad.ts",
       "preview": "/assets/recycling-facility-landfill-liner-roll.png",
-      "sourceSha256": "c5bff8d0d3733e47db25ee64555ff4c68001740a7236f69da8b41e04b7066b7a",
-      "triangleBudget": 1800,
+      "sourceSha256": "32ebcab15a2850ac653bbed80af187c82d1708ce4b0f7af273139d2f06bad765",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "scale",
@@ -224390,58 +224975,148 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "liner",
           "type": "color",
-          "default": "#7c6955",
-          "label": "Painted steel"
+          "default": "#1f2123",
+          "label": "Liner (HDPE sheet)"
         },
         {
-          "name": "rubber",
+          "name": "stands",
           "type": "color",
-          "default": "#303638",
-          "label": "Rubber"
+          "default": "#e0a526",
+          "label": "Stands and spreader bar (paint)"
+        },
+        {
+          "name": "straps",
+          "type": "color",
+          "default": "#d77632",
+          "label": "Lifting straps (polyester)"
+        },
+        {
+          "name": "core",
+          "type": "color",
+          "default": "#9a8a6c",
+          "label": "Roll core (card tube)"
+        },
+        {
+          "name": "sheet",
+          "type": "choice",
+          "default": "pulled",
+          "label": "Sheet",
+          "choices": [
+            "pulled",
+            "rolled"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "paintedSteel": "#786a56",
-          "rubber": "#3c403e"
+        "smoothBlack": {
+          "liner": "#1f2123",
+          "stands": "#e0a526",
+          "straps": "#d77632"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "texturedGreen": {
+          "liner": "#3e5a3c",
+          "stands": "#e0a526",
+          "straps": "#d77632"
+        },
+        "whiteSurface": {
+          "liner": "#d9d8d0",
+          "stands": "#5d6366",
+          "straps": "#2f68b0"
+        },
+        "geotextile": {
+          "liner": "#8d8a80",
+          "stands": "#5d6366",
+          "straps": "#d77632",
+          "core": "#7a6e58"
         }
       },
       "stats": {
-        "triangles": 292,
+        "triangles": 932,
         "sizeM": [
-          1.192,
-          1.3112,
-          0.952
+          3.9,
+          0.925,
+          3.711061
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#7c6955",
+          "name": "liner",
+          "color": "#1f2123",
           "parts": [
-            "roll-cradle-left",
-            "roll-cradle-right",
-            "end-core-left",
-            "end-core-right",
-            "loose-liner",
-            "pull-bar"
+            "liner-roll",
+            "liner-sheet"
           ],
-          "param": "paintedSteel"
+          "param": "liner"
         },
         {
-          "name": "rubber",
-          "color": "#303638",
+          "name": "core",
+          "color": "#9a8a6c",
           "parts": [
-            "liner-roll"
+            "roll-core"
           ],
-          "param": "rubber"
+          "param": "core"
+        },
+        {
+          "name": "stands",
+          "color": "#e0a526",
+          "parts": [
+            "spreader-bar",
+            "bar-collar-l",
+            "bar-collar-r",
+            "stand-leg-l-f",
+            "stand-foot-l-f",
+            "stand-leg-l-b",
+            "stand-foot-l-b",
+            "stand-tie-l",
+            "stand-saddle-l",
+            "stand-leg-r-f",
+            "stand-foot-r-f",
+            "stand-leg-r-b",
+            "stand-foot-r-b",
+            "stand-tie-r",
+            "stand-saddle-r"
+          ],
+          "param": "stands"
+        },
+        {
+          "name": "straps",
+          "color": "#d77632",
+          "parts": [
+            "strap-l",
+            "strap-r",
+            "label-band"
+          ],
+          "param": "straps"
+        },
+        {
+          "name": "roll-label",
+          "color": "#f2f0e6",
+          "parts": [
+            "roll-label",
+            "seam-marker"
+          ]
+        },
+        {
+          "name": "weld-seam-a",
+          "color": "#6c7074",
+          "parts": [
+            "weld-seam-a",
+            "weld-seam-b"
+          ]
+        },
+        {
+          "name": "sandbag-0",
+          "color": "#b39a6a",
+          "parts": [
+            "sandbag-0",
+            "sandbag-1",
+            "sandbag-2",
+            "sandbag-3"
+          ]
         }
       ]
     },
@@ -228611,12 +229286,17 @@
       "id": "public-dropoff-canopy",
       "kit": "recycling-facility",
       "title": "Public drop-off canopy",
-      "description": "Public drop-off canopy: a broad canopy roof carried by four open corner posts. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Household recycling centre drop-off canopy at about real size: three-bay steel portal frame, profiled-sheet roof falling to a back gutter and downpipe, sign fascia with stream colours, kerbed plinth with four 1100-litre bins with colour-coded lids and labels, clad back wall, front bollards and a site information board. Back wall clad or open. Material controls: frame, roof and cladding, fascia and bin bodies. council, modern, weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
-        "materials recovery",
+        "drop-off",
+        "canopy",
+        "household recycling centre",
+        "civic amenity",
+        "wheelie bin",
+        "shelter",
         "waste management",
         "reception",
         "low poly",
@@ -228631,8 +229311,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/public-dropoff-canopy.kcad.ts",
       "preview": "/assets/recycling-facility-public-dropoff-canopy.png",
-      "sourceSha256": "04abbe7b34fee60006bb2a7fd9942210079ba37623fa75cdfff299fefdf2f194",
-      "triangleBudget": 1800,
+      "sourceSha256": "0fd2450993bd92a5b82682685976cc29953c1a51d254700e062a76dff549da59",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -228644,59 +229324,329 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#7b6f56",
-          "label": "Painted steel"
+          "default": "#2f4f3a",
+          "label": "Frame (painted steel)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "roof",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#c9ccce",
+          "label": "Roof and cladding (profiled sheet)"
+        },
+        {
+          "name": "fascia",
+          "type": "color",
+          "default": "#2f7a46",
+          "label": "Sign fascia"
+        },
+        {
+          "name": "bins",
+          "type": "color",
+          "default": "#b8bec0",
+          "label": "Bin bodies (galvanised)"
+        },
+        {
+          "name": "backWall",
+          "type": "choice",
+          "default": "clad",
+          "label": "Back wall",
+          "choices": [
+            "clad",
+            "open"
+          ]
         }
       ],
       "presets": {
+        "council": {
+          "frame": "#2f4f3a",
+          "roof": "#c9ccce",
+          "fascia": "#2f7a46",
+          "bins": "#b8bec0"
+        },
+        "modern": {
+          "frame": "#2c3034",
+          "roof": "#5d6366",
+          "fascia": "#d77632",
+          "bins": "#8a9196"
+        },
         "weathered": {
-          "paintedSteel": "#776e57",
-          "stainlessSteel": "#9ea7a5"
+          "frame": "#4a5246",
+          "roof": "#9a9690",
+          "fascia": "#4f6a52",
+          "bins": "#8e918a"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "frame": "#2f6b8f",
+          "roof": "#e2e4e2",
+          "fascia": "#f0c419",
+          "bins": "#c9ccce"
         }
       },
       "stats": {
-        "triangles": 160,
+        "triangles": 2844,
         "sizeM": [
-          1.5225,
-          1.38,
-          1.2124
+          7.73,
+          4.108824,
+          4.66
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#7b6f56",
+          "name": "frame",
+          "color": "#2f4f3a",
           "parts": [
-            "roof-slab",
-            "roof-fascia-front",
-            "roof-fascia-back",
-            "roof-drain"
+            "column-l3000-f",
+            "base-plate-l3000-f",
+            "haunch-l3000-f",
+            "column-l3000-b",
+            "base-plate-l3000-b",
+            "haunch-l3000-b",
+            "rafter-l3000",
+            "column-l1000-f",
+            "base-plate-l1000-f",
+            "haunch-l1000-f",
+            "column-l1000-b",
+            "base-plate-l1000-b",
+            "haunch-l1000-b",
+            "rafter-l1000",
+            "column-r1000-f",
+            "base-plate-r1000-f",
+            "haunch-r1000-f",
+            "column-r1000-b",
+            "base-plate-r1000-b",
+            "haunch-r1000-b",
+            "rafter-r1000",
+            "column-r3000-f",
+            "base-plate-r3000-f",
+            "haunch-r3000-f",
+            "column-r3000-b",
+            "base-plate-r3000-b",
+            "haunch-r3000-b",
+            "rafter-r3000",
+            "purlin-f1950",
+            "purlin-f900",
+            "purlin-b200",
+            "purlin-b1300",
+            "gutter",
+            "downpipe",
+            "downpipe-shoe",
+            "fascia-cap",
+            "info-post-l",
+            "info-post-r"
           ],
-          "param": "paintedSteel"
+          "param": "frame"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "roof",
+          "color": "#c9ccce",
           "parts": [
-            "post-left-front",
-            "post-right-front",
-            "post-left-back",
-            "post-right-back"
+            "roof-sheet",
+            "roof-rib-0",
+            "roof-rib-1",
+            "roof-rib-2",
+            "roof-rib-3",
+            "roof-rib-4",
+            "roof-rib-5",
+            "roof-rib-6",
+            "roof-rib-7",
+            "roof-rib-8",
+            "roof-rib-9",
+            "roof-rib-10",
+            "roof-rib-11",
+            "roof-rib-12",
+            "roof-rib-13",
+            "roof-rib-14",
+            "roof-rib-15",
+            "roof-rib-16",
+            "roof-rib-17",
+            "roof-rib-18",
+            "roof-rib-19",
+            "roof-rib-20",
+            "roof-rib-21",
+            "back-wall",
+            "back-wall-rib-0",
+            "back-wall-rib-1",
+            "back-wall-rib-2",
+            "back-wall-rib-3",
+            "back-wall-rib-4",
+            "back-wall-rib-5",
+            "back-wall-rib-6",
+            "back-wall-rib-7",
+            "back-wall-rib-8",
+            "back-wall-rib-9",
+            "back-wall-rib-10",
+            "back-wall-rib-11",
+            "back-wall-rib-12",
+            "back-wall-rib-13",
+            "back-wall-rib-14",
+            "back-wall-rib-15",
+            "back-wall-rib-16",
+            "back-wall-rib-17",
+            "back-wall-rib-18",
+            "back-wall-rib-19"
           ],
-          "param": "stainlessSteel"
+          "param": "roof"
+        },
+        {
+          "name": "fascia",
+          "color": "#2f7a46",
+          "parts": [
+            "fascia-board",
+            "info-board"
+          ],
+          "param": "fascia"
+        },
+        {
+          "name": "fascia-tile-0",
+          "color": "#2f68b0",
+          "parts": [
+            "fascia-tile-0",
+            "bin-lid-paper",
+            "bin-lid-flap-paper",
+            "bin-label-paper",
+            "info-key-0"
+          ]
+        },
+        {
+          "name": "fascia-tile-1",
+          "color": "#3d7f45",
+          "parts": [
+            "fascia-tile-1",
+            "bin-lid-glass",
+            "bin-lid-flap-glass",
+            "bin-label-glass",
+            "info-key-1"
+          ]
+        },
+        {
+          "name": "fascia-tile-2",
+          "color": "#e0b52a",
+          "parts": [
+            "fascia-tile-2",
+            "bin-lid-cans",
+            "bin-lid-flap-cans",
+            "bin-label-cans",
+            "info-key-2"
+          ]
+        },
+        {
+          "name": "fascia-tile-3",
+          "color": "#8a5a34",
+          "parts": [
+            "fascia-tile-3",
+            "bin-lid-garden",
+            "bin-lid-flap-garden",
+            "bin-label-garden",
+            "info-key-3"
+          ]
+        },
+        {
+          "name": "fascia-tile-4",
+          "color": "#c8322a",
+          "parts": [
+            "fascia-tile-4"
+          ]
+        },
+        {
+          "name": "fascia-tile-5",
+          "color": "#8a9196",
+          "parts": [
+            "fascia-tile-5"
+          ]
+        },
+        {
+          "name": "fascia-lettering",
+          "color": "#f2f0e6",
+          "parts": [
+            "fascia-lettering",
+            "fascia-sub-lettering",
+            "bin-label-text-paper",
+            "bin-label-text-glass",
+            "bin-label-text-cans",
+            "bin-label-text-garden",
+            "info-map"
+          ]
+        },
+        {
+          "name": "plinth",
+          "color": "#a39f96",
+          "parts": [
+            "plinth"
+          ]
+        },
+        {
+          "name": "plinth-edge",
+          "color": "#f0c419",
+          "parts": [
+            "plinth-edge",
+            "bollard-l2000",
+            "bollard-r0",
+            "bollard-r2000"
+          ]
+        },
+        {
+          "name": "bins",
+          "color": "#b8bec0",
+          "parts": [
+            "bin-body-paper",
+            "bin-rim-paper",
+            "bin-trunnion-paper",
+            "bin-castor-paper-lf",
+            "bin-castor-paper-rf",
+            "bin-castor-paper-lb",
+            "bin-castor-paper-rb",
+            "bin-body-glass",
+            "bin-rim-glass",
+            "bin-trunnion-glass",
+            "bin-castor-glass-lf",
+            "bin-castor-glass-rf",
+            "bin-castor-glass-lb",
+            "bin-castor-glass-rb",
+            "bin-body-cans",
+            "bin-rim-cans",
+            "bin-trunnion-cans",
+            "bin-castor-cans-lf",
+            "bin-castor-cans-rf",
+            "bin-castor-cans-lb",
+            "bin-castor-cans-rb",
+            "bin-body-garden",
+            "bin-rim-garden",
+            "bin-trunnion-garden",
+            "bin-castor-garden-lf",
+            "bin-castor-garden-rf",
+            "bin-castor-garden-lb",
+            "bin-castor-garden-rb"
+          ],
+          "param": "bins"
+        },
+        {
+          "name": "bin-wheel-paper-lf",
+          "color": "#1c1d1e",
+          "parts": [
+            "bin-wheel-paper-lf",
+            "bin-wheel-paper-rf",
+            "bin-wheel-paper-lb",
+            "bin-wheel-paper-rb",
+            "bin-wheel-glass-lf",
+            "bin-wheel-glass-rf",
+            "bin-wheel-glass-lb",
+            "bin-wheel-glass-rb",
+            "bin-wheel-cans-lf",
+            "bin-wheel-cans-rf",
+            "bin-wheel-cans-lb",
+            "bin-wheel-cans-rb",
+            "bin-wheel-garden-lf",
+            "bin-wheel-garden-rf",
+            "bin-wheel-garden-lb",
+            "bin-wheel-garden-rb",
+            "bollard-band-l2000",
+            "bollard-band-r0",
+            "bollard-band-r2000"
+          ]
         }
       ]
     },
