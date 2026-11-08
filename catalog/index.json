@@ -214244,15 +214244,21 @@
     {
       "id": "bale-stack",
       "kit": "recycling-facility",
-      "title": "Recovered-material bale stack",
-      "description": "Recovered-material bale stack: a compact stack of rectangular recovered-material bales held by narrow binding bands. Low-poly visualization prop. Material controls: recovered material, stainless steel.",
+      "title": "Bale stack",
+      "description": "Stack of five recycling bales at about real size, three on the ground and two on top: each bale shows offset compressed layers in two tones, five baling wires round it, a grade tag and scraps poking out of the layers. Material controls: bale body, bale print and flecks, baling wire, grade tag. cardboard, petBottles, aluminiumCans and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "bale",
+        "bales",
+        "baled cardboard",
+        "OCC bale",
+        "PET bale",
+        "can bale",
+        "baler output",
         "recycling",
         "materials recovery",
         "waste management",
-        "baling",
         "low poly",
         "scene prop"
       ],
@@ -214265,8 +214271,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/bale-stack.kcad.ts",
       "preview": "/assets/recycling-facility-bale-stack.png",
-      "sourceSha256": "491b1d02dd0a53177c1f972388c30be31aa387f72039bf59adb97a794d537307",
-      "triangleBudget": 1800,
+      "sourceSha256": "7a288b99917e77ec15abf586ec76f9b879c4b206964d18f31d9972b045ef9bbe",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "scale",
@@ -214278,63 +214284,229 @@
           "step": 0.05
         },
         {
-          "name": "recoveredMaterial",
+          "name": "bale",
           "type": "color",
-          "default": "#ae8a55",
-          "label": "Recovered material"
+          "default": "#b38a55",
+          "label": "Bale body (baled material)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "fleck",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#d9c7a4",
+          "label": "Bale print and flecks"
+        },
+        {
+          "name": "wire",
+          "type": "color",
+          "default": "#5d6366",
+          "label": "Baling wire (steel)"
+        },
+        {
+          "name": "tag",
+          "type": "color",
+          "default": "#e3c234",
+          "label": "Grade tag"
         }
       ],
       "presets": {
-        "weathered": {
-          "recoveredMaterial": "#a38456",
-          "stainlessSteel": "#9ea7a5"
+        "cardboard": {
+          "bale": "#b38a55",
+          "fleck": "#d9c7a4",
+          "wire": "#5d6366",
+          "tag": "#e3c234"
         },
-        "highVisibility": {
-          "recoveredMaterial": "#b98a4d"
+        "petBottles": {
+          "bale": "#6f9fcf",
+          "fleck": "#d7e6ee",
+          "wire": "#4d5357",
+          "tag": "#e85d3a"
+        },
+        "aluminiumCans": {
+          "bale": "#b3b8bc",
+          "fleck": "#c0392b",
+          "wire": "#3f4447",
+          "tag": "#2f7fc1"
+        },
+        "weathered": {
+          "bale": "#8f7350",
+          "fleck": "#a99a7f",
+          "wire": "#6b4a32",
+          "tag": "#b9a44a"
         }
       },
       "stats": {
-        "triangles": 144,
+        "triangles": 1620,
         "sizeM": [
-          1.45,
-          0.84,
-          1.037
+          2.38612,
+          1.612,
+          1.271199
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "recoveredMaterial",
-          "color": "#ae8a55",
+          "name": "bale",
+          "color": "#b38a55",
           "parts": [
-            "bale-1",
-            "bale-2",
-            "bale-3",
-            "bale-4",
-            "bale-5",
-            "bale-6"
+            "bale-1-layer-0",
+            "bale-1-layer-2",
+            "bale-1-layer-3",
+            "bale-1-layer-5",
+            "bale-1-layer-6",
+            "bale-2-layer-1",
+            "bale-2-layer-2",
+            "bale-2-layer-4",
+            "bale-2-layer-5",
+            "bale-2-layer-7",
+            "bale-3-layer-0",
+            "bale-3-layer-1",
+            "bale-3-layer-3",
+            "bale-3-layer-4",
+            "bale-3-layer-6",
+            "bale-3-layer-7",
+            "bale-4-layer-0",
+            "bale-4-layer-2",
+            "bale-4-layer-3",
+            "bale-4-layer-5",
+            "bale-4-layer-6",
+            "bale-5-layer-1",
+            "bale-5-layer-2",
+            "bale-5-layer-4",
+            "bale-5-layer-5",
+            "bale-5-layer-7"
           ],
-          "param": "recoveredMaterial"
+          "param": "bale"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "fleck",
+          "color": "#d9c7a4",
           "parts": [
-            "binding-band-1",
-            "binding-band-2",
-            "binding-band-3",
-            "binding-band-4",
-            "binding-band-5",
-            "binding-band-6"
+            "bale-1-layer-1",
+            "bale-1-layer-4",
+            "bale-1-layer-7",
+            "bale-1-scrap-a",
+            "bale-1-scrap-b",
+            "bale-2-layer-0",
+            "bale-2-layer-3",
+            "bale-2-layer-6",
+            "bale-2-scrap-a",
+            "bale-2-scrap-b",
+            "bale-3-layer-2",
+            "bale-3-layer-5",
+            "bale-3-scrap-a",
+            "bale-3-scrap-b",
+            "bale-4-layer-1",
+            "bale-4-layer-4",
+            "bale-4-layer-7",
+            "bale-4-scrap-a",
+            "bale-4-scrap-b",
+            "bale-5-layer-0",
+            "bale-5-layer-3",
+            "bale-5-layer-6",
+            "bale-5-scrap-a",
+            "bale-5-scrap-b"
           ],
-          "param": "stainlessSteel"
+          "param": "fleck"
+        },
+        {
+          "name": "wire",
+          "color": "#5d6366",
+          "parts": [
+            "bale-1-wire-top-0",
+            "bale-1-wire-l-0",
+            "bale-1-wire-r-0",
+            "bale-1-wire-top-1",
+            "bale-1-wire-l-1",
+            "bale-1-wire-r-1",
+            "bale-1-wire-top-2",
+            "bale-1-wire-l-2",
+            "bale-1-wire-r-2",
+            "bale-1-wire-top-3",
+            "bale-1-wire-l-3",
+            "bale-1-wire-r-3",
+            "bale-1-wire-top-4",
+            "bale-1-wire-l-4",
+            "bale-1-wire-r-4",
+            "bale-1-tag-string",
+            "bale-2-wire-top-0",
+            "bale-2-wire-l-0",
+            "bale-2-wire-r-0",
+            "bale-2-wire-top-1",
+            "bale-2-wire-l-1",
+            "bale-2-wire-r-1",
+            "bale-2-wire-top-2",
+            "bale-2-wire-l-2",
+            "bale-2-wire-r-2",
+            "bale-2-wire-top-3",
+            "bale-2-wire-l-3",
+            "bale-2-wire-r-3",
+            "bale-2-wire-top-4",
+            "bale-2-wire-l-4",
+            "bale-2-wire-r-4",
+            "bale-2-tag-string",
+            "bale-3-wire-top-0",
+            "bale-3-wire-l-0",
+            "bale-3-wire-r-0",
+            "bale-3-wire-top-1",
+            "bale-3-wire-l-1",
+            "bale-3-wire-r-1",
+            "bale-3-wire-top-2",
+            "bale-3-wire-l-2",
+            "bale-3-wire-r-2",
+            "bale-3-wire-top-3",
+            "bale-3-wire-l-3",
+            "bale-3-wire-r-3",
+            "bale-3-wire-top-4",
+            "bale-3-wire-l-4",
+            "bale-3-wire-r-4",
+            "bale-3-tag-string",
+            "bale-4-wire-top-0",
+            "bale-4-wire-l-0",
+            "bale-4-wire-r-0",
+            "bale-4-wire-top-1",
+            "bale-4-wire-l-1",
+            "bale-4-wire-r-1",
+            "bale-4-wire-top-2",
+            "bale-4-wire-l-2",
+            "bale-4-wire-r-2",
+            "bale-4-wire-top-3",
+            "bale-4-wire-l-3",
+            "bale-4-wire-r-3",
+            "bale-4-wire-top-4",
+            "bale-4-wire-l-4",
+            "bale-4-wire-r-4",
+            "bale-4-tag-string",
+            "bale-5-wire-top-0",
+            "bale-5-wire-l-0",
+            "bale-5-wire-r-0",
+            "bale-5-wire-top-1",
+            "bale-5-wire-l-1",
+            "bale-5-wire-r-1",
+            "bale-5-wire-top-2",
+            "bale-5-wire-l-2",
+            "bale-5-wire-r-2",
+            "bale-5-wire-top-3",
+            "bale-5-wire-l-3",
+            "bale-5-wire-r-3",
+            "bale-5-wire-top-4",
+            "bale-5-wire-l-4",
+            "bale-5-wire-r-4",
+            "bale-5-tag-string"
+          ],
+          "param": "wire"
+        },
+        {
+          "name": "tag",
+          "color": "#e3c234",
+          "parts": [
+            "bale-1-tag",
+            "bale-2-tag",
+            "bale-3-tag",
+            "bale-4-tag",
+            "bale-5-tag"
+          ],
+          "param": "tag"
         }
       ]
     },
@@ -216006,10 +216178,14 @@
       "id": "cardboard-bale-cage",
       "kit": "recycling-facility",
       "title": "Cardboard bale cage",
-      "description": "Cardboard bale cage: an open-top steel body with a rolled rim and side reinforcing ribs. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Welded mesh cardboard collection cage at about real size: galvanised wire mesh walls on square corner posts, a fork-pocket base, a front gate dropped down on its hinges for loading and a stack of flattened cardboard sheets inside, with a cardboard-only sign on the gate. Fill level choice (full, half, empty). Material controls: frame, wire mesh, cardboard, signage. yard, galvanised and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "cardboard cage",
+        "cardboard collection",
+        "mesh cage",
+        "baler feed",
         "recycling",
         "materials recovery",
         "waste management",
@@ -216026,8 +216202,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/cardboard-bale-cage.kcad.ts",
       "preview": "/assets/recycling-facility-cardboard-bale-cage.png",
-      "sourceSha256": "ac031c103eaa3c0a59a36a68cfd4fdc9524d68f576de9a70f3fc0d155ffec521",
-      "triangleBudget": 1800,
+      "sourceSha256": "f53fc9d6b9240d26b1fda5b722f1f40f7f8705405318dd8bcf975a44467a3829",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -216039,60 +216215,204 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#60766f",
-          "label": "Painted steel"
+          "default": "#2f6d4f",
+          "label": "Base, posts and gate frame (painted steel)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "mesh",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#b7bec1",
+          "label": "Wire mesh (galvanised steel)"
+        },
+        {
+          "name": "cardboard",
+          "type": "color",
+          "default": "#b98d57",
+          "label": "Flattened cardboard"
+        },
+        {
+          "name": "signage",
+          "type": "color",
+          "default": "#f2c230",
+          "label": "Sign plate"
+        },
+        {
+          "name": "fill",
+          "type": "choice",
+          "default": "full",
+          "label": "Fill level",
+          "choices": [
+            "full",
+            "half",
+            "empty"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "paintedSteel": "#657268",
-          "stainlessSteel": "#9ea7a5"
+        "yard": {
+          "frame": "#2f6d4f",
+          "mesh": "#b7bec1",
+          "cardboard": "#b98d57",
+          "signage": "#f2c230"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "galvanised": {
+          "frame": "#9aa3a6",
+          "mesh": "#c4cacc",
+          "cardboard": "#c29a63",
+          "signage": "#2f7fc1"
+        },
+        "weathered": {
+          "frame": "#5b5f55",
+          "mesh": "#8f938c",
+          "cardboard": "#9c7b52",
+          "signage": "#c9a640"
         }
       },
       "stats": {
-        "triangles": 108,
+        "triangles": 1384,
         "sizeM": [
-          1.39,
-          1.038,
-          0.825
+          1.38,
+          1.52515,
+          0.865
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#60766f",
+          "name": "frame",
+          "color": "#2f6d4f",
           "parts": [
-            "floor-pan",
-            "front-wall",
-            "rear-wall",
-            "left-wall",
-            "right-wall"
+            "base",
+            "post-lf",
+            "post-rf",
+            "post-lb",
+            "post-rb",
+            "top-rail-back",
+            "top-rail-front",
+            "top-rail-left",
+            "top-rail-right",
+            "hinge-rail",
+            "gate-frame-top",
+            "gate-frame-bottom",
+            "gate-frame-left",
+            "gate-frame-right",
+            "gate-hinge-l",
+            "gate-hinge-r",
+            "sign-box",
+            "sign-box-flap-l",
+            "sign-box-flap-r",
+            "sign-arrow-shaft",
+            "sign-arrow-head"
           ],
-          "param": "paintedSteel"
+          "param": "frame"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "mesh",
+          "color": "#b7bec1",
           "parts": [
-            "front-rim",
-            "rear-rim",
-            "side-rib-left",
-            "side-rib-right"
+            "mesh-back-v1",
+            "mesh-back-v2",
+            "mesh-back-v3",
+            "mesh-back-v4",
+            "mesh-back-v5",
+            "mesh-back-v6",
+            "mesh-back-v7",
+            "mesh-back-v8",
+            "mesh-back-v9",
+            "mesh-back-v10",
+            "mesh-back-v11",
+            "mesh-back-h260",
+            "mesh-back-h370",
+            "mesh-back-h480",
+            "mesh-back-h590",
+            "mesh-back-h700",
+            "mesh-back-h810",
+            "mesh-back-h920",
+            "mesh-back-h1030",
+            "mesh-back-h1140",
+            "mesh-left-v1",
+            "mesh-left-v2",
+            "mesh-left-v3",
+            "mesh-left-v4",
+            "mesh-left-v5",
+            "mesh-left-v6",
+            "mesh-left-h260",
+            "mesh-left-h370",
+            "mesh-left-h480",
+            "mesh-left-h590",
+            "mesh-left-h700",
+            "mesh-left-h810",
+            "mesh-left-h920",
+            "mesh-left-h1030",
+            "mesh-left-h1140",
+            "mesh-right-v1",
+            "mesh-right-v2",
+            "mesh-right-v3",
+            "mesh-right-v4",
+            "mesh-right-v5",
+            "mesh-right-v6",
+            "mesh-right-h260",
+            "mesh-right-h370",
+            "mesh-right-h480",
+            "mesh-right-h590",
+            "mesh-right-h700",
+            "mesh-right-h810",
+            "mesh-right-h920",
+            "mesh-right-h1030",
+            "mesh-right-h1140",
+            "gate-wire-v1",
+            "gate-wire-v2",
+            "gate-wire-v3",
+            "gate-wire-v4",
+            "gate-wire-v5",
+            "gate-wire-v6",
+            "gate-wire-v7",
+            "gate-wire-v8",
+            "gate-wire-v9",
+            "gate-wire-v10",
+            "gate-wire-h320",
+            "gate-wire-h430",
+            "gate-wire-h540",
+            "gate-latch",
+            "box-tape"
           ],
-          "param": "stainlessSteel"
+          "param": "mesh"
+        },
+        {
+          "name": "signage",
+          "color": "#f2c230",
+          "parts": [
+            "sign-plate"
+          ],
+          "param": "signage"
+        },
+        {
+          "name": "cardboard",
+          "color": "#b98d57",
+          "parts": [
+            "sheet-0",
+            "sheet-1",
+            "sheet-2",
+            "sheet-3",
+            "sheet-4",
+            "sheet-5",
+            "sheet-6",
+            "sheet-7",
+            "sheet-8",
+            "sheet-9",
+            "sheet-10",
+            "sheet-11",
+            "sheet-12",
+            "sheet-13",
+            "sheet-proud-1",
+            "sheet-proud-2",
+            "sheet-proud-3",
+            "box-folded"
+          ],
+          "param": "cardboard"
         }
       ]
     },
@@ -216614,14 +216934,19 @@
       "id": "compost-curing-bay",
       "kit": "recycling-facility",
       "title": "Compost curing bay",
-      "description": "Compost curing bay: an open-top steel body with a rolled rim and side reinforcing ribs. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Three-sided compost curing bay at about real size: staggered interlocking precast concrete push-wall blocks with studs, a sloping compost heap spilling out of the open front, two long-stem temperature probes with dial heads, a perforated aeration pipe and a numbered bay board. Stage choice (curing heap, empty bay). Material controls: concrete blocks, compost, steel probes and pipe, signage. greenWaste, matureCompost and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "compost bay",
+        "curing bay",
+        "push wall",
+        "lego blocks",
+        "green waste",
+        "composting",
         "recycling",
         "materials recovery",
         "waste management",
-        "organics",
         "low poly",
         "scene prop"
       ],
@@ -216634,8 +216959,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/compost-curing-bay.kcad.ts",
       "preview": "/assets/recycling-facility-compost-curing-bay.png",
-      "sourceSha256": "4c066b7c866c8f97d6eee2da99df77cb0636549666b32f3492261cad4835f51a",
-      "triangleBudget": 1800,
+      "sourceSha256": "eda565135c5d742de4e7b36284efa626b3d96ea04545700d6b61cfb9f0bafaaa",
+      "triangleBudget": 4200,
       "params": [
         {
           "name": "scale",
@@ -216647,60 +216972,179 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "concrete",
           "type": "color",
-          "default": "#71804f",
-          "label": "Painted steel"
+          "default": "#a7a49b",
+          "label": "Push-wall blocks (precast concrete)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "compost",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#4a3424",
+          "label": "Compost heap"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#8e979b",
+          "label": "Probes and aeration pipe (steel)"
+        },
+        {
+          "name": "signage",
+          "type": "color",
+          "default": "#e7d54a",
+          "label": "Bay board"
+        },
+        {
+          "name": "stage",
+          "type": "choice",
+          "default": "curing",
+          "label": "Bay stage",
+          "choices": [
+            "curing",
+            "empty"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "paintedSteel": "#717952",
-          "stainlessSteel": "#9ea7a5"
+        "matureCompost": {
+          "concrete": "#a7a49b",
+          "compost": "#3b2a1f",
+          "steel": "#8e979b",
+          "signage": "#e7d54a"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "greenWaste": {
+          "concrete": "#b3b0a6",
+          "compost": "#6b5a33",
+          "steel": "#9aa2a5",
+          "signage": "#4c9a52"
+        },
+        "weathered": {
+          "concrete": "#8b887f",
+          "compost": "#3f2f22",
+          "steel": "#75603f",
+          "signage": "#c3b247"
         }
       },
       "stats": {
-        "triangles": 108,
+        "triangles": 2416,
         "sizeM": [
-          1.21,
-          1.108,
-          0.825
+          6.8,
+          2.78,
+          5.2
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#71804f",
+          "name": "concrete",
+          "color": "#a7a49b",
           "parts": [
-            "floor-pan",
-            "front-wall",
-            "rear-wall",
-            "left-wall",
-            "right-wall"
+            "floor-pad",
+            "back-c1-0",
+            "back-c1-1",
+            "back-c1-2",
+            "back-c2-0",
+            "back-c2-0-stud-0",
+            "back-c2-1",
+            "back-c2-1-stud-0",
+            "back-c2-1-stud-1",
+            "back-c2-2",
+            "back-c2-2-stud-0",
+            "back-c2-2-stud-1",
+            "back-c2-3",
+            "back-c2-3-stud-0",
+            "wing-l-c1-0",
+            "wing-l-c1-1",
+            "wing-l-c1-2",
+            "wing-l-c2-0",
+            "wing-l-c2-0-stud-0",
+            "wing-l-c2-1",
+            "wing-l-c2-1-stud-0",
+            "wing-l-c2-1-stud-1",
+            "wing-l-c2-2",
+            "wing-l-c2-2-stud-0",
+            "wing-l-c2-2-stud-1",
+            "wing-r-c1-0",
+            "wing-r-c1-1",
+            "wing-r-c1-2",
+            "wing-r-c2-0",
+            "wing-r-c2-0-stud-0",
+            "wing-r-c2-1",
+            "wing-r-c2-1-stud-0",
+            "wing-r-c2-1-stud-1",
+            "wing-r-c2-2",
+            "wing-r-c2-2-stud-0",
+            "wing-r-c2-2-stud-1"
           ],
-          "param": "paintedSteel"
+          "param": "concrete"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "compost",
+          "color": "#4a3424",
           "parts": [
-            "front-rim",
-            "rear-rim",
-            "side-rib-left",
-            "side-rib-right"
+            "heap",
+            "heap-crest",
+            "heap-shoulder",
+            "clod-0",
+            "clod-1",
+            "clod-2",
+            "clod-3",
+            "clod-4",
+            "clod-5",
+            "clod-6",
+            "scoop-mound",
+            "probe-needle-0",
+            "probe-needle-1",
+            "aeration-hole-0",
+            "aeration-hole-1",
+            "aeration-hole-2",
+            "aeration-hole-3",
+            "aeration-hole-4",
+            "aeration-hole-5",
+            "aeration-hole-6",
+            "aeration-hole-7",
+            "aeration-hole-8",
+            "aeration-hole-9",
+            "aeration-hole-10",
+            "aeration-hole-11",
+            "aeration-blower-grille",
+            "board-seg-a",
+            "board-seg-b",
+            "board-seg-c",
+            "board-seg-d",
+            "board-seg-g"
           ],
-          "param": "stainlessSteel"
+          "param": "compost"
+        },
+        {
+          "name": "steel",
+          "color": "#8e979b",
+          "parts": [
+            "probe-stem-0",
+            "probe-handle-0",
+            "probe-dial-0",
+            "probe-stem-1",
+            "probe-handle-1",
+            "probe-dial-1",
+            "aeration-pipe",
+            "aeration-elbow",
+            "aeration-blower",
+            "board-post-l",
+            "board-post-r"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "signage",
+          "color": "#e7d54a",
+          "parts": [
+            "probe-face-0",
+            "probe-face-1",
+            "board"
+          ],
+          "param": "signage"
         }
       ]
     },
@@ -218014,10 +218458,16 @@
       "id": "e-waste-pallet-box",
       "kit": "recycling-facility",
       "title": "E-waste pallet box",
-      "description": "E-waste pallet box: its skid, main vessel and top collar. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "WEEE e-waste pallet box at about real size: ribbed HDPE box on three runners with a rolled lip, drop-down front door hanging open, crossed-out wheelie bin marks, and a heap of old electronics (CRT monitor, PC tower, keyboard, open laptop, circuit boards, coiled cables). Load choice (heaped, empty). Material controls: box shell, appliance casings and label plates, circuit boards, cables, keys and screens. weeeBlue, councilGreen and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "e-waste",
+        "WEEE",
+        "electronics recycling",
+        "pallet box",
+        "plastic pallet box",
+        "collection box",
         "recycling",
         "materials recovery",
         "waste management",
@@ -218034,8 +218484,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/e-waste-pallet-box.kcad.ts",
       "preview": "/assets/recycling-facility-e-waste-pallet-box.png",
-      "sourceSha256": "dbdb0bd2e9937472f2d856aa082881f11e06fd7e3dedf3c825e956aaa67970c3",
-      "triangleBudget": 1800,
+      "sourceSha256": "d9b1aa6b9084111080873902dc193a57c32dcbfd9a908e90953df8fc34e19fd1",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -218047,58 +218497,153 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "shell",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#2f6f9e",
+          "label": "Box shell (HDPE plastic)"
         },
         {
-          "name": "paintedSteel",
+          "name": "appliances",
           "type": "color",
-          "default": "#806d5d",
-          "label": "Painted steel"
+          "default": "#d4cdbb",
+          "label": "Appliance casings and label plates"
+        },
+        {
+          "name": "boards",
+          "type": "color",
+          "default": "#2e7d3a",
+          "label": "Circuit boards"
+        },
+        {
+          "name": "dark",
+          "type": "color",
+          "default": "#24272a",
+          "label": "Cables, keys and screens (black plastic)"
+        },
+        {
+          "name": "load",
+          "type": "choice",
+          "default": "heaped",
+          "label": "Load",
+          "choices": [
+            "heaped",
+            "empty"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#7b6c5c"
+        "weeeBlue": {
+          "shell": "#2f6f9e",
+          "appliances": "#d4cdbb",
+          "boards": "#2e7d3a",
+          "dark": "#24272a"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "councilGreen": {
+          "shell": "#2f7a46",
+          "appliances": "#c9c9c4",
+          "boards": "#2b6fa0",
+          "dark": "#1f2224"
+        },
+        "weathered": {
+          "shell": "#4f6470",
+          "appliances": "#b3ab98",
+          "boards": "#4a6b3f",
+          "dark": "#33363a"
         }
       },
       "stats": {
-        "triangles": 356,
+        "triangles": 1452,
         "sizeM": [
-          0.895633,
-          1.38,
-          0.98
+          1.253,
+          1.210523,
+          1.086
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "shell",
+          "color": "#2f6f9e",
           "parts": [
-            "skid-left",
-            "skid-right",
-            "top-collar",
-            "access-neck",
-            "level-gauge"
+            "runner-0",
+            "runner-1",
+            "runner-2",
+            "shell",
+            "lip",
+            "rib-front--540",
+            "rib-front--420",
+            "rib-front-420",
+            "rib-front-540",
+            "rib-side--300",
+            "rib-side--100",
+            "rib-side-100",
+            "rib-side-300",
+            "base-band",
+            "door",
+            "door-rib-310",
+            "door-rib-410"
           ],
-          "param": "stainlessSteel"
+          "param": "shell"
         },
         {
-          "name": "paintedSteel",
-          "color": "#806d5d",
+          "name": "dark",
+          "color": "#24272a",
           "parts": [
-            "main-vessel",
-            "drain-stub"
+            "door-hinge-l",
+            "door-hinge-r",
+            "door-bin",
+            "door-bin-lid",
+            "door-bin-wheel",
+            "door-cross-a",
+            "door-cross-b",
+            "side-bin",
+            "side-bin-lid",
+            "side-bin-wheel",
+            "side-cross-a",
+            "side-cross-b",
+            "crt-bezel",
+            "pc-tower",
+            "pc-bay-0",
+            "pc-bay-1",
+            "keyboard-keys-0",
+            "keyboard-keys-1",
+            "keyboard-keys-2",
+            "laptop-base",
+            "laptop-lid",
+            "pcb-a-chip",
+            "pcb-b-chip",
+            "cable-coil-a",
+            "cable-coil-b",
+            "cable-tail"
           ],
-          "param": "paintedSteel"
+          "param": "dark"
+        },
+        {
+          "name": "appliances",
+          "color": "#d4cdbb",
+          "parts": [
+            "door-plate",
+            "side-plate",
+            "fill",
+            "crt-case",
+            "crt-back",
+            "pc-panel",
+            "keyboard"
+          ],
+          "param": "appliances"
+        },
+        {
+          "name": "boards",
+          "color": "#2e7d3a",
+          "parts": [
+            "fill-boards",
+            "crt-screen",
+            "laptop-screen",
+            "pcb-a",
+            "pcb-b"
+          ],
+          "param": "boards"
         }
       ]
     },
@@ -226434,14 +226979,19 @@
       "id": "reusable-pallet-stillage",
       "kit": "recycling-facility",
       "title": "Reusable pallet stillage",
-      "description": "Reusable pallet stillage: an open-top steel body with a rolled rim and side reinforcing ribs. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Steel post pallet stillage at about real size: welded square tube base on nine four-way fork feet, timber deck boards, four corner posts with stacking cups, side rails on three sides, a lift-out front bar and an ID plate, loaded with two tiers of returnable plastic crates. Load choice (crates, empty). Material controls: steel frame, timber deck, plastic crates, ID plate. depotBlue, galvanised and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "stillage",
+        "post pallet",
+        "steel pallet",
+        "stacking pallet",
+        "returnable crates",
+        "reusable packaging",
         "recycling",
         "materials recovery",
-        "waste management",
-        "containers",
+        "logistics",
         "low poly",
         "scene prop"
       ],
@@ -226454,8 +227004,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/reusable-pallet-stillage.kcad.ts",
       "preview": "/assets/recycling-facility-reusable-pallet-stillage.png",
-      "sourceSha256": "21ed1f57128680061beeae135db0d9a9067702d9f3cf701209dc47cd4d5dd01e",
-      "triangleBudget": 1800,
+      "sourceSha256": "a56b9f6969d69c1d48d44813a0394122ff238bbafae0ee6325261db870598295",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -226467,60 +227017,154 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "steel",
           "type": "color",
-          "default": "#707b86",
-          "label": "Painted steel"
+          "default": "#2f5fa8",
+          "label": "Frame, posts and rails (painted steel)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "timber",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#b48a5a",
+          "label": "Deck boards (timber)"
+        },
+        {
+          "name": "crates",
+          "type": "color",
+          "default": "#2e9a63",
+          "label": "Returnable crates (plastic)"
+        },
+        {
+          "name": "plate",
+          "type": "color",
+          "default": "#f2c230",
+          "label": "ID plate and crate labels"
+        },
+        {
+          "name": "load",
+          "type": "choice",
+          "default": "crates",
+          "label": "Load",
+          "choices": [
+            "crates",
+            "empty"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "paintedSteel": "#707678",
-          "stainlessSteel": "#9ea7a5"
+        "depotBlue": {
+          "steel": "#2f5fa8",
+          "timber": "#b48a5a",
+          "crates": "#2e9a63",
+          "plate": "#f2c230"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "galvanised": {
+          "steel": "#a5adb0",
+          "timber": "#c09a68",
+          "crates": "#d0533a",
+          "plate": "#ffffff"
+        },
+        "weathered": {
+          "steel": "#5a5e58",
+          "timber": "#8a7053",
+          "crates": "#3c6f8c",
+          "plate": "#c9a640"
         }
       },
       "stats": {
-        "triangles": 108,
+        "triangles": 1872,
         "sizeM": [
-          1.21,
-          1.108,
-          0.825
+          1.248,
+          1.22,
+          1.048
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#707b86",
+          "name": "steel",
+          "color": "#2f5fa8",
           "parts": [
-            "floor-pan",
-            "front-wall",
-            "rear-wall",
-            "left-wall",
-            "right-wall"
+            "foot-00",
+            "foot-01",
+            "foot-02",
+            "foot-10",
+            "foot-11",
+            "foot-12",
+            "foot-20",
+            "foot-21",
+            "foot-22",
+            "tube-front",
+            "tube-back",
+            "tube-left",
+            "tube-right",
+            "tube-mid",
+            "post-lf",
+            "post-gusset-lf",
+            "stack-cup-lf",
+            "post-rf",
+            "post-gusset-rf",
+            "stack-cup-rf",
+            "post-lb",
+            "post-gusset-lb",
+            "stack-cup-lb",
+            "post-rb",
+            "post-gusset-rb",
+            "stack-cup-rb",
+            "rail-back-620",
+            "rail-left-620",
+            "rail-right-620",
+            "rail-back-1100",
+            "rail-left-1100",
+            "rail-right-1100",
+            "stay-l",
+            "stay-r",
+            "front-bar",
+            "front-bar-hook-l",
+            "front-bar-hook-r",
+            "id-plate-code"
           ],
-          "param": "paintedSteel"
+          "param": "steel"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "timber",
+          "color": "#b48a5a",
           "parts": [
-            "front-rim",
-            "rear-rim",
-            "side-rib-left",
-            "side-rib-right"
+            "deck-board-0",
+            "deck-board-1",
+            "deck-board-2",
+            "deck-board-3",
+            "deck-board-4",
+            "deck-board-5",
+            "deck-board-6"
           ],
-          "param": "stainlessSteel"
+          "param": "timber"
+        },
+        {
+          "name": "plate",
+          "color": "#f2c230",
+          "parts": [
+            "id-plate",
+            "crate-label-4",
+            "crate-label-6"
+          ],
+          "param": "plate"
+        },
+        {
+          "name": "crates",
+          "color": "#2e9a63",
+          "parts": [
+            "crate-0",
+            "crate-1",
+            "crate-2",
+            "crate-3",
+            "crate-4",
+            "crate-5",
+            "crate-6",
+            "crate-7"
+          ],
+          "param": "crates"
         }
       ]
     },
