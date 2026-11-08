@@ -215768,14 +215768,18 @@
       "id": "belt-cover-hood",
       "kit": "recycling-facility",
       "title": "Belt cover hood",
-      "description": "Belt cover hood: its support, upper crossbeam and material channel. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Conveyor belt cover section at about real size: hinged half-round sheet hoods with clamp bands and latches, one hood swung open to show the loaded troughed belt, three-roll troughing idlers on channel stringers, return belt and rollers below, braced trestle legs. One hood open or all closed. Material controls: hood, frame, belt and idler rolls. galvanised, painted and stainless presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "conveyor",
+        "belt cover",
+        "conveyor hood",
+        "troughed belt",
+        "idler",
         "materials recovery",
         "waste management",
-        "sorting",
         "low poly",
         "scene prop"
       ],
@@ -215788,8 +215792,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/belt-cover-hood.kcad.ts",
       "preview": "/assets/recycling-facility-belt-cover-hood.png",
-      "sourceSha256": "34d42f189bed0bc8e24f8d81f533d2c6ef802bcda48c55e8bf80bb4478312953",
-      "triangleBudget": 1800,
+      "sourceSha256": "cb06389519b9a3217878ea53a7acf3468931fcf40f0e1329a7535a105c105490",
+      "triangleBudget": 5200,
       "params": [
         {
           "name": "scale",
@@ -215801,59 +215805,230 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "hood",
           "type": "color",
-          "default": "#61727c",
-          "label": "Painted steel"
+          "default": "#b8bdbf",
+          "label": "Hood covers (galvanised sheet)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#2f6b8f",
+          "label": "Stringers and legs (paint)"
+        },
+        {
+          "name": "belt",
+          "type": "color",
+          "default": "#24272a",
+          "label": "Belt (rubber)"
+        },
+        {
+          "name": "rolls",
+          "type": "color",
+          "default": "#c9a63a",
+          "label": "Idler rolls (paint)"
+        },
+        {
+          "name": "hoodState",
+          "type": "choice",
+          "default": "one-open",
+          "label": "Hood covers",
+          "choices": [
+            "one-open",
+            "closed"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "paintedSteel": "#667071",
-          "stainlessSteel": "#9ea7a5"
+        "galvanised": {
+          "hood": "#b8bdbf",
+          "frame": "#2f6b8f",
+          "belt": "#24272a",
+          "rolls": "#c9a63a"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "painted": {
+          "hood": "#3f6e3a",
+          "frame": "#e0a526",
+          "belt": "#24272a",
+          "rolls": "#5d6366"
+        },
+        "stainless": {
+          "hood": "#d4d8da",
+          "frame": "#5d6366",
+          "belt": "#2a3a4a",
+          "rolls": "#9aa0a4"
         }
       },
       "stats": {
-        "triangles": 160,
+        "triangles": 3744,
         "sizeM": [
-          1.189,
-          1.325,
-          1.46
+          4.09,
+          2.167872,
+          1.847637
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#61727c",
+          "name": "frame",
+          "color": "#2f6b8f",
           "parts": [
-            "support-frame-left",
-            "support-frame-right",
-            "material-channel",
-            "inspection-hood",
-            "discharge-transition",
-            "idler"
+            "stringer-f",
+            "leg-f-l",
+            "leg-foot-f-l",
+            "leg-f-r",
+            "leg-foot-f-r",
+            "leg-brace-f",
+            "leg-brace-f-r",
+            "stringer-b",
+            "leg-b-l",
+            "leg-foot-b-l",
+            "leg-b-r",
+            "leg-foot-b-r",
+            "leg-brace-b",
+            "leg-brace-b-r",
+            "leg-tie-l",
+            "leg-tie-r",
+            "idler-base-0",
+            "idler-bracket-0-f",
+            "idler-bracket-0-b",
+            "idler-base-1",
+            "idler-bracket-1-f",
+            "idler-bracket-1-b",
+            "idler-base-2",
+            "idler-bracket-2-f",
+            "idler-bracket-2-b",
+            "idler-base-3",
+            "idler-bracket-3-f",
+            "idler-bracket-3-b",
+            "idler-base-4",
+            "idler-bracket-4-f",
+            "idler-bracket-4-b",
+            "idler-base-5",
+            "idler-bracket-5-f",
+            "idler-bracket-5-b",
+            "idler-base-6",
+            "idler-bracket-6-f",
+            "idler-bracket-6-b",
+            "clamp-band-0",
+            "clamp-band-1",
+            "clamp-band-2",
+            "clamp-band-3",
+            "clamp-band-4",
+            "hood-seat-f",
+            "hood-seat-b"
           ],
-          "param": "paintedSteel"
+          "param": "frame"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "rolls",
+          "color": "#c9a63a",
           "parts": [
-            "upper-crossbeam",
-            "access-ladder"
+            "idler-centre-0",
+            "idler-wing-0-f",
+            "idler-wing-0-b",
+            "idler-centre-1",
+            "idler-wing-1-f",
+            "idler-wing-1-b",
+            "idler-centre-2",
+            "idler-wing-2-f",
+            "idler-wing-2-b",
+            "idler-centre-3",
+            "idler-wing-3-f",
+            "idler-wing-3-b",
+            "idler-centre-4",
+            "idler-wing-4-f",
+            "idler-wing-4-b",
+            "idler-centre-5",
+            "idler-wing-5-f",
+            "idler-wing-5-b",
+            "idler-centre-6",
+            "idler-wing-6-f",
+            "idler-wing-6-b",
+            "return-roller-l",
+            "return-roller-c",
+            "return-roller-r"
           ],
-          "param": "stainlessSteel"
+          "param": "rolls"
+        },
+        {
+          "name": "belt",
+          "color": "#24272a",
+          "parts": [
+            "belt-carry",
+            "belt-return"
+          ],
+          "param": "belt"
+        },
+        {
+          "name": "load-ridge",
+          "color": "#9a8b6a",
+          "parts": [
+            "load-ridge"
+          ]
+        },
+        {
+          "name": "load-bit-0",
+          "color": "#e8e4d6",
+          "parts": [
+            "load-bit-0"
+          ]
+        },
+        {
+          "name": "load-bit-1",
+          "color": "#3c7fc0",
+          "parts": [
+            "load-bit-1",
+            "load-bit-4"
+          ]
+        },
+        {
+          "name": "load-bit-2",
+          "color": "#b0402c",
+          "parts": [
+            "load-bit-2"
+          ]
+        },
+        {
+          "name": "load-bit-3",
+          "color": "#5aa04a",
+          "parts": [
+            "load-bit-3"
+          ]
+        },
+        {
+          "name": "hood",
+          "color": "#b8bdbf",
+          "parts": [
+            "hood-0",
+            "hood-0-rib-330",
+            "hood-0-rib-670",
+            "hood-1",
+            "hood-1-rib-330",
+            "hood-1-rib-670",
+            "hood-2",
+            "hood-2-rib-330",
+            "hood-2-rib-670",
+            "hood-3",
+            "hood-3-rib-330",
+            "hood-3-rib-670"
+          ],
+          "param": "hood"
+        },
+        {
+          "name": "hood-0-latch",
+          "color": "#3a3d40",
+          "parts": [
+            "hood-0-latch",
+            "hood-0-hinge",
+            "hood-1-latch",
+            "hood-1-hinge",
+            "hood-2-latch",
+            "hood-2-hinge",
+            "hood-3-latch",
+            "hood-3-hinge"
+          ]
         }
       ]
     },
@@ -218030,14 +218205,18 @@
       "id": "conveyor-transfer-chute",
       "kit": "recycling-facility",
       "title": "Conveyor transfer chute",
-      "description": "Conveyor transfer chute: its support, upper crossbeam and material channel. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Conveyor transfer point at about real size: inclined feed conveyor to a head pulley with drive motor and bearings, head hood and lined drop chute with curved spoon, bolted wear liners, hinged inspection doors, skirtboards onto a receiving conveyor at right angles, load on both belts, braced four-column tower. Doors open or closed. Material controls: chute, structure, belts and inspection doors. plant, weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "conveyor",
+        "transfer chute",
+        "transfer point",
+        "head pulley",
+        "skirtboard",
         "materials recovery",
         "waste management",
-        "sorting",
         "low poly",
         "scene prop"
       ],
@@ -218050,8 +218229,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/conveyor-transfer-chute.kcad.ts",
       "preview": "/assets/recycling-facility-conveyor-transfer-chute.png",
-      "sourceSha256": "f49f1f1951cfe0da906b21d5c858c23843cd6e98a2b6513ae537e2dd5a7d69c0",
-      "triangleBudget": 1800,
+      "sourceSha256": "b692a4c15c0eb3864c940abb521ba81a083cc828bfd6c6341389c89c199a96e8",
+      "triangleBudget": 4800,
       "params": [
         {
           "name": "scale",
@@ -218063,59 +218242,267 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "chute",
           "type": "color",
-          "default": "#506c68",
-          "label": "Painted steel"
+          "default": "#5d7f8c",
+          "label": "Chute and hood (paint)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "structure",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#e0a526",
+          "label": "Tower and stringers (paint)"
+        },
+        {
+          "name": "belts",
+          "type": "color",
+          "default": "#24272a",
+          "label": "Belts (rubber)"
+        },
+        {
+          "name": "doors",
+          "type": "color",
+          "default": "#d77632",
+          "label": "Inspection doors (paint)"
+        },
+        {
+          "name": "doorState",
+          "type": "choice",
+          "default": "open",
+          "label": "Inspection door",
+          "choices": [
+            "open",
+            "closed"
+          ]
         }
       ],
       "presets": {
+        "plant": {
+          "chute": "#5d7f8c",
+          "structure": "#e0a526",
+          "belts": "#24272a",
+          "doors": "#d77632"
+        },
         "weathered": {
-          "paintedSteel": "#5a6c63",
-          "stainlessSteel": "#9ea7a5"
+          "chute": "#6e6a62",
+          "structure": "#8a7a52",
+          "belts": "#2c2a28",
+          "doors": "#9a5a36"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "chute": "#2f6b8f",
+          "structure": "#f0c419",
+          "belts": "#1c1d1e",
+          "doors": "#c8322a"
         }
       },
       "stats": {
-        "triangles": 160,
+        "triangles": 1604,
         "sizeM": [
-          1.189,
-          1.325,
-          1.9072
+          4.825505,
+          2.87,
+          4.4
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#506c68",
+          "name": "belts",
+          "color": "#24272a",
           "parts": [
-            "support-frame-left",
-            "support-frame-right",
-            "material-channel",
-            "inspection-hood",
-            "discharge-transition",
-            "idler"
+            "feed-belt",
+            "receive-belt"
           ],
-          "param": "paintedSteel"
+          "param": "belts"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "feed-load",
+          "color": "#9a8b6a",
           "parts": [
-            "upper-crossbeam",
-            "access-ladder"
+            "feed-load",
+            "receive-load"
+          ]
+        },
+        {
+          "name": "feed-bit-0",
+          "color": "#3c7fc0",
+          "parts": [
+            "feed-bit-0",
+            "receive-bit-1"
+          ]
+        },
+        {
+          "name": "feed-bit-1",
+          "color": "#e8e4d6",
+          "parts": [
+            "feed-bit-1",
+            "receive-bit-0"
+          ]
+        },
+        {
+          "name": "feed-bit-2",
+          "color": "#b0402c",
+          "parts": [
+            "feed-bit-2"
+          ]
+        },
+        {
+          "name": "feed-bit-3",
+          "color": "#5aa04a",
+          "parts": [
+            "feed-bit-3",
+            "receive-bit-2"
+          ]
+        },
+        {
+          "name": "structure",
+          "color": "#e0a526",
+          "parts": [
+            "feed-stringer-f",
+            "feed-leg-f-3000",
+            "feed-leg-f-1700",
+            "feed-stringer-b",
+            "feed-leg-b-3000",
+            "feed-leg-b-1700",
+            "feed-leg-tie-3000",
+            "feed-leg-tie-1700",
+            "drive-gearbox",
+            "drive-platform",
+            "flange-2230",
+            "flange-1750",
+            "receive-stringer-l",
+            "receive-leg-l-f",
+            "receive-leg-l-b",
+            "receive-stringer-r",
+            "receive-leg-r-f",
+            "receive-leg-r-b",
+            "tower-column-fl",
+            "tower-column-fr",
+            "tower-column-bl",
+            "tower-column-br",
+            "tower-beam-f",
+            "tower-brace-f",
+            "tower-beam-b",
+            "tower-brace-b",
+            "tower-tie-l",
+            "tower-tie-r",
+            "chute-hanger-l"
           ],
-          "param": "stainlessSteel"
+          "param": "structure"
+        },
+        {
+          "name": "feed-idler-0",
+          "color": "#5d6366",
+          "parts": [
+            "feed-idler-0",
+            "feed-idler-1",
+            "feed-idler-2",
+            "feed-idler-3",
+            "feed-idler-4",
+            "head-shaft",
+            "receive-idler-p1400",
+            "receive-idler-p700",
+            "receive-idler-m2300",
+            "tower-base-fl",
+            "tower-base-fr",
+            "tower-base-bl",
+            "tower-base-br"
+          ]
+        },
+        {
+          "name": "bearing-f",
+          "color": "#3a3d40",
+          "parts": [
+            "bearing-f",
+            "bearing-b",
+            "liner-bolt-0-2-l25",
+            "liner-bolt-0-2-r25",
+            "liner-bolt-0-2-l185",
+            "liner-bolt-0-2-r185",
+            "liner-bolt-1-2-l25",
+            "liner-bolt-1-2-r25",
+            "liner-bolt-1-2-l185",
+            "liner-bolt-1-2-r185",
+            "liner-bolt-2-0-l25",
+            "liner-bolt-2-0-r25",
+            "liner-bolt-2-0-l185",
+            "liner-bolt-2-0-r185",
+            "liner-bolt-2-1-l25",
+            "liner-bolt-2-1-r25",
+            "liner-bolt-2-1-l185",
+            "liner-bolt-2-1-r185",
+            "liner-bolt-2-2-l25",
+            "liner-bolt-2-2-r25",
+            "liner-bolt-2-2-l185",
+            "liner-bolt-2-2-r185",
+            "door-hinge-1890",
+            "door-hinge-2230"
+          ]
+        },
+        {
+          "name": "drive-motor",
+          "color": "#2c5ea8",
+          "parts": [
+            "drive-motor"
+          ]
+        },
+        {
+          "name": "motor-fan-cowl",
+          "color": "#2b2e30",
+          "parts": [
+            "motor-fan-cowl"
+          ]
+        },
+        {
+          "name": "chute",
+          "color": "#5d7f8c",
+          "parts": [
+            "chute-body",
+            "skirtboard-l",
+            "skirtboard-r",
+            "skirt-cover"
+          ],
+          "param": "chute"
+        },
+        {
+          "name": "liner-0-2",
+          "color": "#7b8488",
+          "parts": [
+            "liner-0-2",
+            "liner-1-2",
+            "liner-2-0",
+            "liner-2-1",
+            "liner-2-2"
+          ]
+        },
+        {
+          "name": "door-opening",
+          "color": "#1c1d1e",
+          "parts": [
+            "door-opening",
+            "door-handle",
+            "door-wedge",
+            "hood-door-handle",
+            "skirt-rubber-l",
+            "skirt-rubber-r"
+          ]
+        },
+        {
+          "name": "door-liner-glimpse",
+          "color": "#6b6050",
+          "parts": [
+            "door-liner-glimpse"
+          ]
+        },
+        {
+          "name": "doors",
+          "color": "#d77632",
+          "parts": [
+            "door-panel",
+            "hood-door"
+          ],
+          "param": "doors"
         }
       ]
     },
@@ -220318,14 +220705,18 @@
       "id": "front-load-material-hopper",
       "kit": "recycling-facility",
       "title": "Front-load material hopper",
-      "description": "Front-load material hopper: its skid, main vessel and top collar. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Loader-fed receiving hopper at about real size: flared pyramid mouth on four braced columns, back and side splash wings, rubber tipping-lip curtain, concrete tyre-stop kerb with hazard chevrons, a heap of mixed recyclables in the throat, and an apron-pan feeder carrying it to a gearmotor head and discharge chute. High or low splash wings. Material controls: hopper, structure, feeder pans and load. mrf, weathered and greenWaste presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "hopper",
+        "receiving hopper",
+        "loader",
+        "apron feeder",
+        "infeed",
         "materials recovery",
         "waste management",
-        "containers",
         "low poly",
         "scene prop"
       ],
@@ -220338,8 +220729,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/front-load-material-hopper.kcad.ts",
       "preview": "/assets/recycling-facility-front-load-material-hopper.png",
-      "sourceSha256": "c74a13cc8292a9c306c0d449f2ca7e088ba8145cd9fc8012a0fae1cd4ff47bf7",
-      "triangleBudget": 1800,
+      "sourceSha256": "e7101b74d75b93c0dd2e6313f8ead60e84bc7d49ff3db623cbadec0686b505be",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -220351,58 +220742,277 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "hopper",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#2f6b8f",
+          "label": "Hopper and wings (paint)"
         },
         {
-          "name": "paintedSteel",
+          "name": "structure",
           "type": "color",
-          "default": "#707b86",
-          "label": "Painted steel"
+          "default": "#e0a526",
+          "label": "Columns and feeder frame (paint)"
+        },
+        {
+          "name": "feeder",
+          "type": "color",
+          "default": "#3a3d40",
+          "label": "Apron feeder pans (steel)"
+        },
+        {
+          "name": "load",
+          "type": "color",
+          "default": "#9a8b6a",
+          "label": "Mixed recyclables load"
+        },
+        {
+          "name": "wings",
+          "type": "choice",
+          "default": "high",
+          "label": "Splash wing height",
+          "choices": [
+            "high",
+            "low"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#707678"
+        "mrf": {
+          "hopper": "#2f6b8f",
+          "structure": "#e0a526",
+          "feeder": "#3a3d40",
+          "load": "#9a8b6a"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "weathered": {
+          "hopper": "#5d6a6e",
+          "structure": "#a88a4a",
+          "feeder": "#4a3c30",
+          "load": "#857a62"
+        },
+        "greenWaste": {
+          "hopper": "#3f6e3a",
+          "structure": "#c9ccc6",
+          "feeder": "#3a3d40",
+          "load": "#6b5a2e"
         }
       },
       "stats": {
-        "triangles": 356,
+        "triangles": 1250,
         "sizeM": [
-          1.020433,
-          1.31,
-          0.98
+          5.02,
+          3.1,
+          3.218
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "hopper",
+          "color": "#2f6b8f",
           "parts": [
-            "skid-left",
-            "skid-right",
-            "top-collar",
-            "access-neck",
-            "level-gauge"
+            "hopper-shell",
+            "back-wing",
+            "side-wing-l",
+            "side-wing-r",
+            "chute"
           ],
-          "param": "stainlessSteel"
+          "param": "hopper"
         },
         {
-          "name": "paintedSteel",
-          "color": "#707b86",
+          "name": "structure",
+          "color": "#e0a526",
           "parts": [
-            "main-vessel",
-            "drain-stub"
+            "rim-front",
+            "rim-back",
+            "rim-l",
+            "rim-r",
+            "wing-stiffener-l",
+            "wing-stiffener-r",
+            "back-wing-stiffener-l",
+            "back-wing-stiffener-r",
+            "column-fl",
+            "column-fr",
+            "column-bl",
+            "column-br",
+            "brace-f-a",
+            "brace-f-b",
+            "brace-b-a",
+            "brace-b-b",
+            "tie-beam-f",
+            "tie-beam-b",
+            "feeder-frame-f",
+            "feeder-frame-b",
+            "feeder-leg-f--200",
+            "feeder-leg-f-1900",
+            "feeder-leg-b--200",
+            "feeder-leg-b-1900",
+            "feeder-leg-head-f",
+            "feeder-leg-head-b",
+            "gearbox"
           ],
-          "param": "paintedSteel"
+          "param": "structure"
+        },
+        {
+          "name": "load",
+          "color": "#9a8b6a",
+          "parts": [
+            "load-heap"
+          ],
+          "param": "load"
+        },
+        {
+          "name": "load-bit-0",
+          "color": "#3c7fc0",
+          "parts": [
+            "load-bit-0"
+          ]
+        },
+        {
+          "name": "load-bit-1",
+          "color": "#e8e4d6",
+          "parts": [
+            "load-bit-1"
+          ]
+        },
+        {
+          "name": "load-bit-2",
+          "color": "#b0402c",
+          "parts": [
+            "load-bit-2"
+          ]
+        },
+        {
+          "name": "load-bit-3",
+          "color": "#5aa04a",
+          "parts": [
+            "load-bit-3"
+          ]
+        },
+        {
+          "name": "load-bit-4",
+          "color": "#d9c27a",
+          "parts": [
+            "load-bit-4"
+          ]
+        },
+        {
+          "name": "load-bit-5",
+          "color": "#c9ccce",
+          "parts": [
+            "load-bit-5"
+          ]
+        },
+        {
+          "name": "tip-sign",
+          "color": "#f2f0e6",
+          "parts": [
+            "tip-sign"
+          ]
+        },
+        {
+          "name": "tip-sign-band",
+          "color": "#c8322a",
+          "parts": [
+            "tip-sign-band"
+          ]
+        },
+        {
+          "name": "lip-flap-0",
+          "color": "#1c1d1e",
+          "parts": [
+            "lip-flap-0",
+            "lip-flap-1",
+            "lip-flap-2",
+            "lip-flap-3",
+            "lip-flap-4",
+            "lip-flap-5",
+            "lip-flap-6",
+            "lip-flap-7",
+            "lip-flap-8",
+            "lip-flap-9",
+            "chute-skirt",
+            "kerb-chevron-1",
+            "kerb-chevron-3",
+            "kerb-chevron-5",
+            "kerb-chevron-7"
+          ]
+        },
+        {
+          "name": "base-plate-fl",
+          "color": "#5d6366",
+          "parts": [
+            "base-plate-fl",
+            "base-plate-fr",
+            "base-plate-bl",
+            "base-plate-br",
+            "tail-shaft",
+            "head-shaft"
+          ]
+        },
+        {
+          "name": "apron-pan-0",
+          "color": "#55595c",
+          "parts": [
+            "apron-pan-0",
+            "apron-pan-2",
+            "apron-pan-4",
+            "apron-pan-6",
+            "apron-pan-8",
+            "apron-pan-10",
+            "apron-pan-12",
+            "apron-pan-14",
+            "apron-pan-16"
+          ]
+        },
+        {
+          "name": "feeder",
+          "color": "#3a3d40",
+          "parts": [
+            "apron-pan-1",
+            "apron-pan-3",
+            "apron-pan-5",
+            "apron-pan-7",
+            "apron-pan-9",
+            "apron-pan-11",
+            "apron-pan-13",
+            "apron-pan-15",
+            "apron-pan-17"
+          ],
+          "param": "feeder"
+        },
+        {
+          "name": "gear-motor",
+          "color": "#2c5ea8",
+          "parts": [
+            "gear-motor"
+          ]
+        },
+        {
+          "name": "motor-cowl",
+          "color": "#2b2e30",
+          "parts": [
+            "motor-cowl"
+          ]
+        },
+        {
+          "name": "tyre-kerb",
+          "color": "#a7a49c",
+          "parts": [
+            "tyre-kerb"
+          ]
+        },
+        {
+          "name": "kerb-chevron-0",
+          "color": "#f0c419",
+          "parts": [
+            "kerb-chevron-0",
+            "kerb-chevron-2",
+            "kerb-chevron-4",
+            "kerb-chevron-6",
+            "kerb-chevron-8",
+            "kerb-cap"
+          ]
         }
       ]
     },
@@ -225745,14 +226355,18 @@
       "id": "mobile-sort-bin",
       "kit": "recycling-facility",
       "title": "Mobile sort bin",
-      "description": "Mobile sort bin: its skid, main vessel and top collar. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Wheeled picking-station sort bin at about real size: tapered moulded tub with rolled rim, colour-coded stream plate with recycling chevrons, lid hinged open at the back, steel chassis with forklift tipping pockets, four swivel castors with brakes, push handle and the sorted stream heaped inside. Lid open or removed. Material controls: tub, chassis, lid and contents. paper, plastics, glass and metals presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "sort bin",
+        "wheeled bin",
+        "picking station",
+        "castor",
+        "tub",
         "materials recovery",
         "waste management",
-        "containers",
         "low poly",
         "scene prop"
       ],
@@ -225765,8 +226379,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/mobile-sort-bin.kcad.ts",
       "preview": "/assets/recycling-facility-mobile-sort-bin.png",
-      "sourceSha256": "a4357c66fd8ee77453fb941ca87d7dcdc983a586afbb6dfc1614ae422e8c19aa",
-      "triangleBudget": 1800,
+      "sourceSha256": "a56eaaa8018fc59aa6ac1658e51866c7bbfa3d281ad3bea154a99f0d82b5b692",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -225778,58 +226392,188 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "tub",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#2f68b0",
+          "label": "Tub (moulded HDPE)"
         },
         {
-          "name": "paintedSteel",
+          "name": "chassis",
           "type": "color",
-          "default": "#4f7080",
-          "label": "Painted steel"
+          "default": "#5d6366",
+          "label": "Chassis and handle (steel)"
+        },
+        {
+          "name": "lid",
+          "type": "color",
+          "default": "#24272a",
+          "label": "Lid (moulded HDPE)"
+        },
+        {
+          "name": "contents",
+          "type": "color",
+          "default": "#d8c9a2",
+          "label": "Sorted stream"
+        },
+        {
+          "name": "lidPosition",
+          "type": "choice",
+          "default": "open",
+          "label": "Lid",
+          "choices": [
+            "open",
+            "removed"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#5a6e74"
+        "paper": {
+          "tub": "#2f68b0",
+          "lid": "#24272a",
+          "contents": "#d8c9a2"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "plastics": {
+          "tub": "#e0b52a",
+          "lid": "#24272a",
+          "contents": "#8fc0d8"
+        },
+        "glass": {
+          "tub": "#3d7f45",
+          "lid": "#2a3a2c",
+          "contents": "#9ac29a"
+        },
+        "metals": {
+          "tub": "#8a9196",
+          "lid": "#3a3d40",
+          "contents": "#b8babc"
         }
       },
       "stats": {
-        "triangles": 356,
+        "triangles": 1360,
         "sizeM": [
-          0.895633,
-          1.17,
-          0.98
+          1.22,
+          2.103417,
+          1.365149
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "tub",
+          "color": "#2f68b0",
           "parts": [
-            "skid-left",
-            "skid-right",
-            "top-collar",
-            "access-neck",
-            "level-gauge"
+            "tub",
+            "rolled-rim",
+            "front-rib-l",
+            "front-rib-r",
+            "side-rib-f",
+            "side-rib-b",
+            "chevron-0",
+            "chevron-1",
+            "chevron-2",
+            "stream-band"
           ],
-          "param": "stainlessSteel"
+          "param": "tub"
         },
         {
-          "name": "paintedSteel",
-          "color": "#4f7080",
+          "name": "stream-plate",
+          "color": "#f2f0e6",
           "parts": [
-            "main-vessel",
-            "drain-stub"
+            "stream-plate"
+          ]
+        },
+        {
+          "name": "contents",
+          "color": "#d8c9a2",
+          "parts": [
+            "contents-heap",
+            "contents-item-0",
+            "contents-item-2"
           ],
-          "param": "paintedSteel"
+          "param": "contents"
+        },
+        {
+          "name": "contents-item-1",
+          "color": "#ece6d4",
+          "parts": [
+            "contents-item-1",
+            "contents-item-3"
+          ]
+        },
+        {
+          "name": "lid",
+          "color": "#24272a",
+          "parts": [
+            "lid-panel",
+            "lid-rib-l",
+            "lid-rib-c",
+            "lid-rib-r",
+            "lid-grip"
+          ],
+          "param": "lid"
+        },
+        {
+          "name": "chassis",
+          "color": "#5d6366",
+          "parts": [
+            "hinge-l",
+            "hinge-r",
+            "chassis-frame",
+            "fork-pocket-f",
+            "fork-pocket-b",
+            "castor-plate-fl",
+            "castor-swivel-fl",
+            "castor-fork-fl-a",
+            "castor-fork-fl-b",
+            "castor-plate-fr",
+            "castor-swivel-fr",
+            "castor-fork-fr-a",
+            "castor-fork-fr-b",
+            "castor-plate-bl",
+            "castor-swivel-bl",
+            "castor-fork-bl-a",
+            "castor-fork-bl-b",
+            "castor-plate-br",
+            "castor-swivel-br",
+            "castor-fork-br-a",
+            "castor-fork-br-b",
+            "handle-post-l",
+            "handle-post-r",
+            "handle-bracket-l",
+            "handle-bracket-r",
+            "handle-bar"
+          ],
+          "param": "chassis"
+        },
+        {
+          "name": "castor-wheel-fl",
+          "color": "#1c1d1e",
+          "parts": [
+            "castor-wheel-fl",
+            "castor-wheel-fr",
+            "castor-wheel-bl",
+            "castor-wheel-br",
+            "handle-grip"
+          ]
+        },
+        {
+          "name": "castor-hub-fl",
+          "color": "#c9ccce",
+          "parts": [
+            "castor-hub-fl",
+            "castor-hub-fr",
+            "castor-hub-bl",
+            "castor-hub-br"
+          ]
+        },
+        {
+          "name": "castor-brake-fl",
+          "color": "#c8322a",
+          "parts": [
+            "castor-brake-fl",
+            "castor-brake-fr"
+          ]
         }
       ]
     },
@@ -234036,14 +234780,18 @@
       "id": "wire-mesh-recycling-cage",
       "kit": "recycling-facility",
       "title": "Wire-mesh recycling cage",
-      "description": "Wire-mesh recycling cage: its skid, main vessel and top collar. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Public drop-off mesh cage at about real size: welded square mesh on all four walls, box-section corner posts on feet, sloped roof with two posting holes, half-width hinged front door with padlocked hasp, icon sign board, and collected bottles heaped inside. Half or full fill. Material controls: frame, mesh, roof and contents. bottles, cans and textiles presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "mesh cage",
+        "bottle bank",
+        "can bank",
+        "drop-off",
+        "wire mesh",
         "materials recovery",
         "waste management",
-        "containers",
         "low poly",
         "scene prop"
       ],
@@ -234056,8 +234804,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/wire-mesh-recycling-cage.kcad.ts",
       "preview": "/assets/recycling-facility-wire-mesh-recycling-cage.png",
-      "sourceSha256": "62b5b192b9754e61de587250a3465976cd054249b5a829e2dfdb71d172f8af6e",
-      "triangleBudget": 1800,
+      "sourceSha256": "796300192c8b5aa5c37904c2a329510080983b910234f7362449bca7fac97db2",
+      "triangleBudget": 4200,
       "params": [
         {
           "name": "scale",
@@ -234069,58 +234817,325 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#3f6e3a",
+          "label": "Frame and posts (powder coat)"
         },
         {
-          "name": "paintedSteel",
+          "name": "mesh",
           "type": "color",
-          "default": "#687b55",
-          "label": "Painted steel"
+          "default": "#b9bec0",
+          "label": "Welded mesh (galvanised)"
+        },
+        {
+          "name": "roof",
+          "type": "color",
+          "default": "#2f5a30",
+          "label": "Roof and sign board (sheet)"
+        },
+        {
+          "name": "contents",
+          "type": "color",
+          "default": "#8fc0d8",
+          "label": "Collected material"
+        },
+        {
+          "name": "fill",
+          "type": "choice",
+          "default": "full",
+          "label": "Fill level",
+          "choices": [
+            "half",
+            "full"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#6b7656"
+        "bottles": {
+          "frame": "#3f6e3a",
+          "mesh": "#b9bec0",
+          "roof": "#2f5a30",
+          "contents": "#8fc0d8"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "cans": {
+          "frame": "#2f5f8a",
+          "mesh": "#b9bec0",
+          "roof": "#244a6c",
+          "contents": "#c4c7ca"
+        },
+        "textiles": {
+          "frame": "#7a3f6e",
+          "mesh": "#a9aeb0",
+          "roof": "#5e2f55",
+          "contents": "#c48a6a"
         }
       },
       "stats": {
-        "triangles": 356,
+        "triangles": 3664,
         "sizeM": [
-          1.020433,
-          1.45,
-          0.98
+          1.76,
+          1.76,
+          1.087
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "frame",
+          "color": "#3f6e3a",
           "parts": [
-            "skid-left",
-            "skid-right",
-            "top-collar",
-            "access-neck",
-            "level-gauge"
+            "post-fl",
+            "foot-fl",
+            "post-fr",
+            "foot-fr",
+            "post-bl",
+            "foot-bl",
+            "post-br",
+            "foot-br",
+            "floor-tray",
+            "rail-bottom-f",
+            "rail-bottom-b",
+            "rail-bottom-l",
+            "rail-bottom-r",
+            "rail-top-f",
+            "rail-top-b",
+            "rail-top-l",
+            "rail-top-r",
+            "door-stile-hinge",
+            "door-stile-lock",
+            "door-rail-bottom",
+            "door-rail-top",
+            "door-rail-mid",
+            "sign-icon-0",
+            "sign-icon-2"
           ],
-          "param": "stainlessSteel"
+          "param": "frame"
         },
         {
-          "name": "paintedSteel",
-          "color": "#687b55",
+          "name": "mesh",
+          "color": "#b9bec0",
           "parts": [
-            "main-vessel",
-            "drain-stub"
+            "mesh-f-v0",
+            "mesh-f-v1",
+            "mesh-f-v2",
+            "mesh-f-v3",
+            "mesh-f-v4",
+            "mesh-f-v5",
+            "mesh-f-v6",
+            "mesh-f-v7",
+            "mesh-f-v8",
+            "mesh-f-v9",
+            "mesh-f-v10",
+            "mesh-f-v11",
+            "mesh-f-v12",
+            "mesh-f-v13",
+            "mesh-f-v14",
+            "mesh-f-v15",
+            "mesh-f-v16",
+            "mesh-f-v17",
+            "mesh-f-v18",
+            "mesh-f-h0",
+            "mesh-f-h1",
+            "mesh-f-h2",
+            "mesh-f-h3",
+            "mesh-f-h4",
+            "mesh-f-h5",
+            "mesh-f-h6",
+            "mesh-f-h7",
+            "mesh-f-h8",
+            "mesh-f-h9",
+            "mesh-f-h10",
+            "mesh-f-h11",
+            "mesh-f-h12",
+            "mesh-f-h13",
+            "mesh-f-h14",
+            "mesh-f-h15",
+            "mesh-b-v0",
+            "mesh-b-v1",
+            "mesh-b-v2",
+            "mesh-b-v3",
+            "mesh-b-v4",
+            "mesh-b-v5",
+            "mesh-b-v6",
+            "mesh-b-v7",
+            "mesh-b-v8",
+            "mesh-b-v9",
+            "mesh-b-v10",
+            "mesh-b-v11",
+            "mesh-b-v12",
+            "mesh-b-v13",
+            "mesh-b-v14",
+            "mesh-b-v15",
+            "mesh-b-v16",
+            "mesh-b-v17",
+            "mesh-b-v18",
+            "mesh-b-h0",
+            "mesh-b-h1",
+            "mesh-b-h2",
+            "mesh-b-h3",
+            "mesh-b-h4",
+            "mesh-b-h5",
+            "mesh-b-h6",
+            "mesh-b-h7",
+            "mesh-b-h8",
+            "mesh-b-h9",
+            "mesh-b-h10",
+            "mesh-b-h11",
+            "mesh-b-h12",
+            "mesh-b-h13",
+            "mesh-b-h14",
+            "mesh-b-h15",
+            "mesh-l-v0",
+            "mesh-l-v1",
+            "mesh-l-v2",
+            "mesh-l-v3",
+            "mesh-l-v4",
+            "mesh-l-v5",
+            "mesh-l-v6",
+            "mesh-l-v7",
+            "mesh-l-v8",
+            "mesh-l-v9",
+            "mesh-l-h0",
+            "mesh-l-h1",
+            "mesh-l-h2",
+            "mesh-l-h3",
+            "mesh-l-h4",
+            "mesh-l-h5",
+            "mesh-l-h6",
+            "mesh-l-h7",
+            "mesh-l-h8",
+            "mesh-l-h9",
+            "mesh-l-h10",
+            "mesh-l-h11",
+            "mesh-l-h12",
+            "mesh-l-h13",
+            "mesh-l-h14",
+            "mesh-l-h15",
+            "mesh-r-v0",
+            "mesh-r-v1",
+            "mesh-r-v2",
+            "mesh-r-v3",
+            "mesh-r-v4",
+            "mesh-r-v5",
+            "mesh-r-v6",
+            "mesh-r-v7",
+            "mesh-r-v8",
+            "mesh-r-v9",
+            "mesh-r-h0",
+            "mesh-r-h1",
+            "mesh-r-h2",
+            "mesh-r-h3",
+            "mesh-r-h4",
+            "mesh-r-h5",
+            "mesh-r-h6",
+            "mesh-r-h7",
+            "mesh-r-h8",
+            "mesh-r-h9",
+            "mesh-r-h10",
+            "mesh-r-h11",
+            "mesh-r-h12",
+            "mesh-r-h13",
+            "mesh-r-h14",
+            "mesh-r-h15",
+            "door-hinge-290",
+            "door-hinge-1200",
+            "hasp-plate"
           ],
-          "param": "paintedSteel"
+          "param": "mesh"
+        },
+        {
+          "name": "padlock-body",
+          "color": "#c9a63a",
+          "parts": [
+            "padlock-body"
+          ]
+        },
+        {
+          "name": "padlock-shackle",
+          "color": "#c9ccce",
+          "parts": [
+            "padlock-shackle"
+          ]
+        },
+        {
+          "name": "roof",
+          "color": "#2f5a30",
+          "parts": [
+            "roof",
+            "roof-front-lip",
+            "sign-board"
+          ],
+          "param": "roof"
+        },
+        {
+          "name": "hole-collar-l",
+          "color": "#1c1d1e",
+          "parts": [
+            "hole-collar-l",
+            "hole-collar-r"
+          ]
+        },
+        {
+          "name": "sign-panel",
+          "color": "#f2f0e6",
+          "parts": [
+            "sign-panel"
+          ]
+        },
+        {
+          "name": "sign-icon-1",
+          "color": "#2f68b0",
+          "parts": [
+            "sign-icon-1",
+            "sign-icon-3",
+            "bottle-cap-0",
+            "bottle-cap-2",
+            "bottle-cap-4",
+            "bottle-cap-6"
+          ]
+        },
+        {
+          "name": "sign-arrow",
+          "color": "#c8322a",
+          "parts": [
+            "sign-arrow",
+            "bottle-cap-1",
+            "bottle-cap-3",
+            "bottle-cap-5",
+            "bottle-cap-7"
+          ]
+        },
+        {
+          "name": "contents",
+          "color": "#8fc0d8",
+          "parts": [
+            "contents-heap",
+            "bottle-0",
+            "bottle-neck-0",
+            "bottle-2",
+            "bottle-neck-2",
+            "bottle-3",
+            "bottle-neck-3",
+            "bottle-5",
+            "bottle-neck-5",
+            "bottle-6",
+            "bottle-neck-6"
+          ],
+          "param": "contents"
+        },
+        {
+          "name": "bottle-1",
+          "color": "#5aa04a",
+          "parts": [
+            "bottle-1",
+            "bottle-neck-1",
+            "bottle-4",
+            "bottle-neck-4",
+            "bottle-7",
+            "bottle-neck-7"
+          ]
         }
       ]
     },
