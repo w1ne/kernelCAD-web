@@ -217874,14 +217874,19 @@
       "id": "belt-scale-frame",
       "kit": "recycling-facility",
       "title": "Belt scale frame",
-      "description": "Belt scale frame: a long belt deck with side guides, terminal rollers and a feed chute. Low-poly visualization prop. Material controls: painted steel, rubber, stainless steel.",
+      "description": "In-line conveyor belt weigher at about real size: troughed belt section with stainless weigh idlers on a floating frame and load cells, approach and retreat idlers, speed-sensor wheel on the return belt, integrator cabinet with tonnage display on a pedestal, conduit and calibration test-chain rack. Material controls: conveyor frame paint, belt rubber, weigh frame steel, instrument enclosure; mixed, glass or paper load or empty. plant, weathered, stainless and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "belt scale",
+        "belt weigher",
+        "load cell",
+        "weigh idler",
+        "integrator",
+        "conveyor",
         "materials recovery",
         "waste management",
-        "sorting",
         "low poly",
         "scene prop"
       ],
@@ -217894,8 +217899,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/belt-scale-frame.kcad.ts",
       "preview": "/assets/recycling-facility-belt-scale-frame.png",
-      "sourceSha256": "150a32a3e27fb924f8eedc63b16cb9aa3cb3a995ec7a19cd591f6d6f56913a2f",
-      "triangleBudget": 1800,
+      "sourceSha256": "486c72bbec7460c592874681ad28fcbc323f9c9a9de04f59212395aaef2bffbe",
+      "triangleBudget": 2800,
       "params": [
         {
           "name": "scale",
@@ -217907,79 +217912,261 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#75656d",
-          "label": "Painted steel"
+          "default": "#3d7a4a",
+          "label": "Conveyor frame (paint)"
         },
         {
-          "name": "rubber",
+          "name": "belt",
           "type": "color",
-          "default": "#303638",
-          "label": "Rubber"
+          "default": "#2b2f31",
+          "label": "Belt rubber"
         },
         {
-          "name": "stainlessSteel",
+          "name": "weigh",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#c6ccce",
+          "label": "Weigh frame and idlers (stainless)"
+        },
+        {
+          "name": "enclosure",
+          "type": "color",
+          "default": "#e8e4da",
+          "label": "Integrator enclosure"
+        },
+        {
+          "name": "load",
+          "type": "choice",
+          "default": "mixed",
+          "label": "Material on belt",
+          "choices": [
+            "mixed",
+            "glass",
+            "paper",
+            "empty"
+          ]
         }
       ],
       "presets": {
+        "plant": {
+          "frame": "#3d7a4a",
+          "belt": "#2b2f31",
+          "weigh": "#c6ccce",
+          "enclosure": "#e8e4da"
+        },
         "weathered": {
-          "paintedSteel": "#736767",
-          "rubber": "#3c403e",
-          "stainlessSteel": "#9ea7a5"
+          "frame": "#5b6553",
+          "belt": "#3a3836",
+          "weigh": "#9ea7a5",
+          "enclosure": "#c9c1ad"
+        },
+        "stainless": {
+          "frame": "#c6cbcd",
+          "belt": "#30363a",
+          "weigh": "#e0e4e5",
+          "enclosure": "#2f5d9a"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "frame": "#2a6fb5",
+          "belt": "#1f2224",
+          "weigh": "#d6dbdd",
+          "enclosure": "#f2d21b"
         }
       },
       "stats": {
-        "triangles": 360,
+        "triangles": 1996,
         "sizeM": [
-          0.959895,
-          0.715,
-          2.38
+          2.515,
+          1.72,
+          5.2
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#75656d",
+          "name": "belt",
+          "color": "#2b2f31",
           "parts": [
-            "base-left",
-            "base-right",
-            "belt-deck",
-            "tail-support-left",
-            "tail-support-right",
-            "head-support-left",
-            "head-support-right",
-            "feed-chute",
-            "drive-motor"
+            "belt-trough",
+            "belt-return"
           ],
-          "param": "paintedSteel"
+          "param": "belt"
         },
         {
-          "name": "rubber",
-          "color": "#303638",
+          "name": "approach-400-centre",
+          "color": "#a9b0b3",
           "parts": [
-            "belt-surface"
-          ],
-          "param": "rubber"
+            "approach-400-centre",
+            "approach-400-wing--1",
+            "approach-400-wing-1",
+            "approach-1400-centre",
+            "approach-1400-wing--1",
+            "approach-1400-wing-1",
+            "retreat-3600-centre",
+            "retreat-3600-wing--1",
+            "retreat-3600-wing-1",
+            "retreat-4600-centre",
+            "retreat-4600-wing--1",
+            "retreat-4600-wing-1",
+            "return-idler-1000",
+            "return-idler-4000"
+          ]
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "frame",
+          "color": "#3d7a4a",
           "parts": [
-            "side-rail-left",
-            "side-rail-right",
-            "head-roller",
-            "tail-roller"
+            "approach-400-base",
+            "approach-400-bracket--1",
+            "approach-400-bracket-1",
+            "approach-400-post--1",
+            "approach-400-post-1",
+            "approach-1400-base",
+            "approach-1400-bracket--1",
+            "approach-1400-bracket-1",
+            "approach-1400-post--1",
+            "approach-1400-post-1",
+            "retreat-3600-base",
+            "retreat-3600-bracket--1",
+            "retreat-3600-bracket-1",
+            "retreat-3600-post--1",
+            "retreat-3600-post-1",
+            "retreat-4600-base",
+            "retreat-4600-bracket--1",
+            "retreat-4600-bracket-1",
+            "retreat-4600-post--1",
+            "retreat-4600-post-1",
+            "stringer--1",
+            "leg--1-200",
+            "leg--1-2500",
+            "leg--1-4800",
+            "stringer-1",
+            "leg-1-200",
+            "leg-1-2500",
+            "leg-1-4800",
+            "tie-200",
+            "tie-2500",
+            "tie-4800",
+            "speed-arm",
+            "pedestal",
+            "pedestal-foot",
+            "chain-rack",
+            "chain-rack-post--1",
+            "chain-rack-post-1"
           ],
-          "param": "stainlessSteel"
+          "param": "frame"
+        },
+        {
+          "name": "weigh",
+          "color": "#c6ccce",
+          "parts": [
+            "weigh-2100-centre",
+            "weigh-2100-wing--1",
+            "weigh-2100-wing-1",
+            "weigh-2100-base",
+            "weigh-2100-bracket--1",
+            "weigh-2100-bracket-1",
+            "weigh-2900-centre",
+            "weigh-2900-wing--1",
+            "weigh-2900-wing-1",
+            "weigh-2900-base",
+            "weigh-2900-bracket--1",
+            "weigh-2900-bracket-1",
+            "weigh-rail--1",
+            "cell-mount--1-2050",
+            "cell-mount--1-2950",
+            "weigh-rail-1",
+            "cell-mount-1-2050",
+            "cell-mount-1-2950",
+            "speed-wheel",
+            "chain-reel-hub"
+          ],
+          "param": "weigh"
+        },
+        {
+          "name": "load-cell--1-2050",
+          "color": "#2f6db5",
+          "parts": [
+            "load-cell--1-2050",
+            "load-cell--1-2950",
+            "load-cell-1-2050",
+            "load-cell-1-2950",
+            "speed-encoder"
+          ]
+        },
+        {
+          "name": "enclosure",
+          "color": "#e8e4da",
+          "parts": [
+            "junction-box",
+            "cabinet",
+            "cabinet-hood"
+          ],
+          "param": "enclosure"
+        },
+        {
+          "name": "display",
+          "color": "#16261a",
+          "parts": [
+            "display"
+          ]
+        },
+        {
+          "name": "display-digit-0",
+          "color": "#5bf07a",
+          "parts": [
+            "display-digit-0",
+            "display-digit-1",
+            "display-digit-2",
+            "display-digit-3"
+          ]
+        },
+        {
+          "name": "key-0",
+          "color": "#c8202a",
+          "parts": [
+            "key-0"
+          ]
+        },
+        {
+          "name": "key-1",
+          "color": "#5a6266",
+          "parts": [
+            "key-1",
+            "key-2",
+            "key-3",
+            "conduit-drop",
+            "conduit-run",
+            "conduit-rise",
+            "chain-reel"
+          ]
+        },
+        {
+          "name": "load",
+          "color": "#8a6f55",
+          "parts": [
+            "load"
+          ]
+        },
+        {
+          "name": "lump-0",
+          "color": "#c8a23a",
+          "parts": [
+            "lump-0",
+            "lump-2",
+            "lump-4"
+          ]
+        },
+        {
+          "name": "lump-1",
+          "color": "#5c8fc4",
+          "parts": [
+            "lump-1",
+            "lump-3",
+            "lump-5"
+          ]
         }
       ]
     },
@@ -233950,14 +234137,20 @@
       "id": "merge-conveyor-junction",
       "kit": "recycling-facility",
       "title": "Merge conveyor junction",
-      "description": "Merge conveyor junction: a long belt deck with side guides, terminal rollers and a feed chute. Low-poly visualization prop. Material controls: painted steel, rubber, stainless steel.",
+      "description": "Belt conveyor merge junction at about real size: a raised 45-degree side feeder discharges through a hooded transfer chute onto the main belt, with a deflector plate, downstream skirtboards, both head and tail pulleys, legs and a feeder drive; two differently coloured streams combine. Material controls: frame paint, belt rubber, chute steel, guards; with or without material. plant, weathered, stainless and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "conveyor",
+        "merge",
+        "junction",
+        "transfer chute",
+        "deflector",
+        "skirtboard",
+        "belt conveyor",
         "materials recovery",
         "waste management",
-        "sorting",
         "low poly",
         "scene prop"
       ],
@@ -233970,8 +234163,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/merge-conveyor-junction.kcad.ts",
       "preview": "/assets/recycling-facility-merge-conveyor-junction.png",
-      "sourceSha256": "fd91bb6e8e7bb972686e872ff0c7935b2085889a195efeb9931bfe6af17b550d",
-      "triangleBudget": 1800,
+      "sourceSha256": "71f483a6195b6a97c60e476a323ba4b2fd3dd7320671904a1eeec0dc24323d03",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -233983,79 +234176,187 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#506c68",
-          "label": "Painted steel"
+          "default": "#3d7a4a",
+          "label": "Frames and legs (paint)"
         },
         {
-          "name": "rubber",
+          "name": "belt",
           "type": "color",
-          "default": "#303638",
-          "label": "Rubber"
+          "default": "#2b2f31",
+          "label": "Belt rubber"
         },
         {
-          "name": "stainlessSteel",
+          "name": "chute",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#b9c1c4",
+          "label": "Transfer chute and deflector (steel)"
+        },
+        {
+          "name": "guard",
+          "type": "color",
+          "default": "#f0b429",
+          "label": "Guards and safety trim"
+        },
+        {
+          "name": "load",
+          "type": "choice",
+          "default": "streams",
+          "label": "Material on belts",
+          "choices": [
+            "streams",
+            "empty"
+          ]
         }
       ],
       "presets": {
+        "plant": {
+          "frame": "#3d7a4a",
+          "belt": "#2b2f31",
+          "chute": "#b9c1c4",
+          "guard": "#f0b429"
+        },
         "weathered": {
-          "paintedSteel": "#5a6c63",
-          "rubber": "#3c403e",
-          "stainlessSteel": "#9ea7a5"
+          "frame": "#5b6553",
+          "belt": "#3a3836",
+          "chute": "#8e9290",
+          "guard": "#a8893f"
+        },
+        "stainless": {
+          "frame": "#c6cbcd",
+          "belt": "#30363a",
+          "chute": "#e0e4e5",
+          "guard": "#2f5d9a"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "frame": "#2a6fb5",
+          "belt": "#1f2224",
+          "chute": "#c9ced1",
+          "guard": "#f2d21b"
         }
       },
       "stats": {
-        "triangles": 360,
+        "triangles": 1392,
         "sizeM": [
-          0.853895,
-          0.5962,
-          2.12
+          4.268549,
+          1.86,
+          7.088549
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#506c68",
+          "name": "belt",
+          "color": "#2b2f31",
           "parts": [
-            "base-left",
-            "base-right",
-            "belt-deck",
-            "tail-support-left",
-            "tail-support-right",
-            "head-support-left",
-            "head-support-right",
-            "feed-chute",
-            "drive-motor"
+            "main-belt-top",
+            "main-belt-return",
+            "main-pulley-0",
+            "main-pulley-6000",
+            "feeder-belt-top",
+            "feeder-belt-return",
+            "feeder-pulley-0",
+            "feeder-pulley-4000",
+            "deflector-rubber",
+            "skirt-rubber--1",
+            "skirt-rubber-1"
           ],
-          "param": "paintedSteel"
+          "param": "belt"
         },
         {
-          "name": "rubber",
-          "color": "#303638",
+          "name": "chute",
+          "color": "#b9c1c4",
           "parts": [
-            "belt-surface"
+            "main-shaft-0",
+            "main-shaft-6000",
+            "feeder-shaft-0",
+            "feeder-shaft-4000",
+            "hood",
+            "drop-spout",
+            "deflector",
+            "skirt--1",
+            "skirt-1"
           ],
-          "param": "rubber"
+          "param": "chute"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "frame",
+          "color": "#3d7a4a",
           "parts": [
-            "side-rail-left",
-            "side-rail-right",
-            "head-roller",
-            "tail-roller"
+            "main-stringer--1",
+            "main-leg--1-300",
+            "main-leg--1-3000",
+            "main-leg--1-5700",
+            "main-stringer-1",
+            "main-leg-1-300",
+            "main-leg-1-3000",
+            "main-leg-1-5700",
+            "main-tie-300",
+            "main-tie-3000",
+            "main-tie-5700",
+            "feeder-stringer--1",
+            "feeder-leg--1-500",
+            "feeder-leg--1-2400",
+            "feeder-stringer-1",
+            "feeder-leg-1-500",
+            "feeder-leg-1-2400",
+            "feeder-tie-500",
+            "feeder-tie-2400",
+            "feeder-gearbox",
+            "deflector-arm"
           ],
-          "param": "stainlessSteel"
+          "param": "frame"
+        },
+        {
+          "name": "guard",
+          "color": "#f0b429",
+          "parts": [
+            "feeder-guard--1",
+            "feeder-guard-1",
+            "hood-roof-stripe",
+            "main-tail-guard"
+          ],
+          "param": "guard"
+        },
+        {
+          "name": "feeder-motor",
+          "color": "#5a6266",
+          "parts": [
+            "feeder-motor"
+          ]
+        },
+        {
+          "name": "main-item-0",
+          "color": "#5c8fc4",
+          "parts": [
+            "main-item-0",
+            "main-item-1",
+            "main-item-2",
+            "main-item-3",
+            "main-item-4",
+            "main-item-5",
+            "mixed-item-0",
+            "mixed-item-2",
+            "mixed-item-4",
+            "mixed-item-6"
+          ]
+        },
+        {
+          "name": "feed-item-0",
+          "color": "#e2a12f",
+          "parts": [
+            "feed-item-0",
+            "feed-item-1",
+            "feed-item-2",
+            "feed-item-3",
+            "feed-item-4",
+            "mixed-item-1",
+            "mixed-item-3",
+            "mixed-item-5",
+            "mixed-item-7"
+          ]
         }
       ]
     },
@@ -234618,14 +234919,19 @@
       "id": "mrf-apron-feeder",
       "kit": "recycling-facility",
       "title": "MRF apron feeder",
-      "description": "MRF apron feeder: a long belt deck with side guides, terminal rollers and a feed chute. Low-poly visualization prop. Material controls: painted steel, rubber, stainless steel.",
+      "description": "Inclined steel-pan apron feeder at about real size: overlapping pans with raised wings on twin roller chains, deep receiving hopper with flared wear plates over the tail, track rollers, sprocket head with shaft-mounted gearbox, motor and torque arm, discharge chute and stepped support legs, carrying a heap of mixed waste. Material controls: frame paint, pan steel, chain and drive, hopper wear plates; with or without load. plant, weathered, stainless and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "apron feeder",
+        "pan conveyor",
+        "steel pans",
+        "infeed",
+        "receiving hopper",
+        "sprocket",
         "materials recovery",
         "waste management",
-        "sorting",
         "low poly",
         "scene prop"
       ],
@@ -234638,8 +234944,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/mrf-apron-feeder.kcad.ts",
       "preview": "/assets/recycling-facility-mrf-apron-feeder.png",
-      "sourceSha256": "03d79a5edc3fd3682cba9da4392f9f9c30cac3fd0d45123dcd4a3bdcd182937d",
-      "triangleBudget": 1800,
+      "sourceSha256": "32951f52939387f387e06457ffba9c6ca98241ba8b77cd3285a0a838a98f77d7",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -234651,79 +234957,292 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#8b754b",
-          "label": "Painted steel"
+          "default": "#3a78a8",
+          "label": "Frame and legs (paint)"
         },
         {
-          "name": "rubber",
+          "name": "pans",
           "type": "color",
-          "default": "#303638",
-          "label": "Rubber"
+          "default": "#8d9599",
+          "label": "Apron pans (steel)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "chain",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#2f3436",
+          "label": "Chains, sprockets and drive"
+        },
+        {
+          "name": "hopper",
+          "type": "color",
+          "default": "#d8a13a",
+          "label": "Hopper and wear plates"
+        },
+        {
+          "name": "load",
+          "type": "choice",
+          "default": "waste",
+          "label": "Load in hopper",
+          "choices": [
+            "waste",
+            "empty"
+          ]
         }
       ],
       "presets": {
+        "plant": {
+          "frame": "#3a78a8",
+          "pans": "#8d9599",
+          "chain": "#2f3436",
+          "hopper": "#d8a13a"
+        },
         "weathered": {
-          "paintedSteel": "#82724f",
-          "rubber": "#3c403e",
-          "stainlessSteel": "#9ea7a5"
+          "frame": "#566673",
+          "pans": "#7a6a5a",
+          "chain": "#3a3836",
+          "hopper": "#9a7a45"
+        },
+        "stainless": {
+          "frame": "#c6cbcd",
+          "pans": "#e0e4e5",
+          "chain": "#30363a",
+          "hopper": "#2f5d9a"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "frame": "#3d7a4a",
+          "pans": "#a9b0b3",
+          "chain": "#1f2224",
+          "hopper": "#f2d21b"
         }
       },
       "stats": {
-        "triangles": 360,
+        "triangles": 2248,
         "sizeM": [
-          1.065895,
-          0.85,
-          1.86
+          2.7,
+          3.368764,
+          8.156449
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#8b754b",
+          "name": "pans",
+          "color": "#8d9599",
           "parts": [
-            "base-left",
-            "base-right",
-            "belt-deck",
-            "tail-support-left",
-            "tail-support-right",
-            "head-support-left",
-            "head-support-right",
-            "feed-chute",
-            "drive-motor"
+            "pan-0",
+            "pan-lip-0",
+            "pan-1",
+            "pan-lip-1",
+            "pan-2",
+            "pan-lip-2",
+            "pan-3",
+            "pan-lip-3",
+            "pan-4",
+            "pan-lip-4",
+            "pan-5",
+            "pan-lip-5",
+            "pan-6",
+            "pan-lip-6",
+            "pan-7",
+            "pan-lip-7",
+            "pan-8",
+            "pan-lip-8",
+            "pan-9",
+            "pan-lip-9",
+            "pan-10",
+            "pan-lip-10",
+            "pan-11",
+            "pan-lip-11",
+            "pan-12",
+            "pan-lip-12",
+            "pan-13",
+            "pan-lip-13",
+            "pan-14",
+            "pan-lip-14",
+            "pan-15",
+            "pan-lip-15",
+            "pan-16",
+            "pan-lip-16",
+            "pan-17",
+            "pan-lip-17",
+            "pan-18",
+            "pan-lip-18",
+            "pan-19",
+            "pan-lip-19",
+            "pan-wing--1",
+            "pan-wing-1"
           ],
-          "param": "paintedSteel"
+          "param": "pans"
         },
         {
-          "name": "rubber",
-          "color": "#303638",
+          "name": "chain",
+          "color": "#2f3436",
           "parts": [
-            "belt-surface"
+            "chain-top--1",
+            "chain-return--1",
+            "track-roller--1-0",
+            "track-roller--1-1",
+            "track-roller--1-2",
+            "track-roller--1-3",
+            "track-roller--1-4",
+            "track-roller--1-5",
+            "track-roller--1-6",
+            "chain-top-1",
+            "chain-return-1",
+            "track-roller-1-0",
+            "track-roller-1-1",
+            "track-roller-1-2",
+            "track-roller-1-3",
+            "track-roller-1-4",
+            "track-roller-1-5",
+            "track-roller-1-6",
+            "tail-shaft",
+            "tail-sprocket--1",
+            "tail-sprocket-1",
+            "head-shaft",
+            "head-sprocket--1",
+            "head-sprocket-1",
+            "gearbox",
+            "baseplate--1",
+            "baseplate-1"
           ],
-          "param": "rubber"
+          "param": "chain"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "frame",
+          "color": "#3a78a8",
           "parts": [
-            "side-rail-left",
-            "side-rail-right",
-            "head-roller",
-            "tail-roller"
+            "girder--1",
+            "girder-1",
+            "girder-stiffener-0",
+            "girder-stiffener-1",
+            "girder-stiffener-2",
+            "girder-stiffener-3",
+            "girder-stiffener-4",
+            "tail-bearing--1",
+            "tail-bearing-1",
+            "head-bearing--1",
+            "head-bearing-1",
+            "torque-arm",
+            "head-hood",
+            "hopper-rib-0",
+            "hopper-rib-1300",
+            "hopper-rib-2600",
+            "leg--1-400",
+            "leg-1-400",
+            "leg-tie-400",
+            "leg--1-2400",
+            "leg-1-2400",
+            "leg-tie-2400",
+            "leg--1-4400",
+            "leg-1-4400",
+            "leg-tie-4400",
+            "leg--1-6200",
+            "leg-1-6200",
+            "leg-tie-6200"
           ],
-          "param": "stainlessSteel"
+          "param": "frame"
+        },
+        {
+          "name": "drive-motor",
+          "color": "#5a6266",
+          "parts": [
+            "drive-motor",
+            "wear-plate-0",
+            "wear-plate-1",
+            "wear-plate-2",
+            "wear-plate-3"
+          ]
+        },
+        {
+          "name": "hopper",
+          "color": "#d8a13a",
+          "parts": [
+            "drive-guard",
+            "discharge-chute",
+            "hopper-side--1",
+            "hopper-side-1",
+            "hopper-flare-1",
+            "hopper-back",
+            "hopper-back-flare"
+          ],
+          "param": "hopper"
+        },
+        {
+          "name": "heap",
+          "color": "#6b5a48",
+          "parts": [
+            "heap"
+          ]
+        },
+        {
+          "name": "chunk-0",
+          "color": "#8a6f55",
+          "parts": [
+            "chunk-0",
+            "chunk-8",
+            "chunk-16"
+          ]
+        },
+        {
+          "name": "chunk-1",
+          "color": "#c49a6c",
+          "parts": [
+            "chunk-1",
+            "chunk-9",
+            "chunk-17"
+          ]
+        },
+        {
+          "name": "chunk-2",
+          "color": "#5c8fc4",
+          "parts": [
+            "chunk-2",
+            "chunk-10"
+          ]
+        },
+        {
+          "name": "chunk-3",
+          "color": "#d9d2bf",
+          "parts": [
+            "chunk-3",
+            "chunk-11"
+          ]
+        },
+        {
+          "name": "chunk-4",
+          "color": "#3d8a4f",
+          "parts": [
+            "chunk-4",
+            "chunk-12"
+          ]
+        },
+        {
+          "name": "chunk-5",
+          "color": "#7a7f84",
+          "parts": [
+            "chunk-5",
+            "chunk-13"
+          ]
+        },
+        {
+          "name": "chunk-6",
+          "color": "#c8202a",
+          "parts": [
+            "chunk-6",
+            "chunk-14"
+          ]
+        },
+        {
+          "name": "chunk-7",
+          "color": "#e2e6e8",
+          "parts": [
+            "chunk-7",
+            "chunk-15"
+          ]
         }
       ]
     },
@@ -236728,14 +237247,20 @@
       "id": "picking-line-conveyor",
       "kit": "recycling-facility",
       "title": "Picking-line conveyor",
-      "description": "Picking-line conveyor: a long belt deck with side guides, terminal rollers and a feed chute. Low-poly visualization prop. Material controls: painted steel, rubber, stainless steel.",
+      "description": "Hand-sort picking-line conveyor at about real size: flat waist-height belt between stringers, stainless drop chutes beside the belt edge feeding colour-coded sort bins, raised picker stands, emergency pull-cord, tail feed chute and head drive. Material controls: frame paint, belt rubber, chute steel, safety trim; mixed recyclables, paper or empty belt. plant, weathered, stainless and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "picking line",
+        "sort line",
+        "hand sorting",
+        "belt conveyor",
+        "drop chute",
+        "sort bin",
+        "pull cord",
         "materials recovery",
         "waste management",
-        "sorting",
         "low poly",
         "scene prop"
       ],
@@ -236748,8 +237273,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/picking-line-conveyor.kcad.ts",
       "preview": "/assets/recycling-facility-picking-line-conveyor.png",
-      "sourceSha256": "0f1954cf801a0d49dd8400db3cd4c6622b4e9a829a6be627cd1c8a46b441baf7",
-      "triangleBudget": 1800,
+      "sourceSha256": "0a2088f81ea3e0ba99d685cec70d8f84907c51b50314cb31c6abad6368ddaa91",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -236761,79 +237286,316 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#75656d",
-          "label": "Painted steel"
+          "default": "#3a78a8",
+          "label": "Frame and stands (paint)"
         },
         {
-          "name": "rubber",
+          "name": "belt",
           "type": "color",
-          "default": "#303638",
-          "label": "Rubber"
+          "default": "#2b2f31",
+          "label": "Belt rubber"
         },
         {
-          "name": "stainlessSteel",
+          "name": "chute",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#b9c1c4",
+          "label": "Drop chutes and skirts (steel)"
+        },
+        {
+          "name": "safety",
+          "type": "color",
+          "default": "#f0b429",
+          "label": "Safety trim and stand edges"
+        },
+        {
+          "name": "load",
+          "type": "choice",
+          "default": "mixed",
+          "label": "Material on belt",
+          "choices": [
+            "mixed",
+            "paper",
+            "empty"
+          ]
         }
       ],
       "presets": {
+        "plant": {
+          "frame": "#3a78a8",
+          "belt": "#2b2f31",
+          "chute": "#b9c1c4",
+          "safety": "#f0b429"
+        },
         "weathered": {
-          "paintedSteel": "#736767",
-          "rubber": "#3c403e",
-          "stainlessSteel": "#9ea7a5"
+          "frame": "#566673",
+          "belt": "#3a3836",
+          "chute": "#8e9290",
+          "safety": "#a8893f"
+        },
+        "stainless": {
+          "frame": "#c6cbcd",
+          "belt": "#30363a",
+          "chute": "#e0e4e5",
+          "safety": "#2f5d9a"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "frame": "#3d7a4a",
+          "belt": "#1f2224",
+          "chute": "#c9ced1",
+          "safety": "#f2d21b"
         }
       },
       "stats": {
-        "triangles": 360,
+        "triangles": 2616,
         "sizeM": [
-          0.853895,
-          0.5962,
-          2.38
+          2.88,
+          1.8,
+          8.11
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#75656d",
+          "name": "belt",
+          "color": "#2b2f31",
           "parts": [
-            "base-left",
-            "base-right",
-            "belt-deck",
-            "tail-support-left",
-            "tail-support-right",
-            "head-support-left",
-            "head-support-right",
-            "feed-chute",
+            "belt-top",
+            "belt-return",
+            "pulley-0",
+            "pulley-7000"
+          ],
+          "param": "belt"
+        },
+        {
+          "name": "chute",
+          "color": "#b9c1c4",
+          "parts": [
+            "pulley-shaft-0",
+            "pulley-shaft-7000",
+            "skirt--1",
+            "skirt-1",
+            "chute-0",
+            "chute-1",
+            "chute-2",
+            "chute-3",
+            "chute-4",
+            "chute-5",
+            "feed-chute"
+          ],
+          "param": "chute"
+        },
+        {
+          "name": "frame",
+          "color": "#3a78a8",
+          "parts": [
+            "stringer--1",
+            "leg--1-300",
+            "leg--1-2500",
+            "leg--1-4500",
+            "leg--1-6700",
+            "stringer-1",
+            "leg-1-300",
+            "leg-1-2500",
+            "leg-1-4500",
+            "leg-1-6700",
+            "brace-300",
+            "brace-2500",
+            "brace-4500",
+            "brace-6700",
+            "stand--1-2500",
+            "stand--1-4500",
+            "stand-1-2500",
+            "stand-1-4500",
+            "feed-leg--750--1",
+            "feed-leg--750-1",
+            "feed-leg--350--1",
+            "feed-leg--350-1",
+            "drive-bracket",
+            "gearbox"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "chute-mouth-0",
+          "color": "#1d2224",
+          "parts": [
+            "chute-mouth-0",
+            "bin-wheel-0--1",
+            "bin-wheel-0-1",
+            "chute-mouth-1",
+            "bin-wheel-1--1",
+            "bin-wheel-1-1",
+            "chute-mouth-2",
+            "bin-wheel-2--1",
+            "bin-wheel-2-1",
+            "chute-mouth-3",
+            "bin-wheel-3--1",
+            "bin-wheel-3-1",
+            "chute-mouth-4",
+            "bin-wheel-4--1",
+            "bin-wheel-4-1",
+            "chute-mouth-5",
+            "bin-wheel-5--1",
+            "bin-wheel-5-1",
+            "stand-mat--1-2500",
+            "stand-mat--1-4500",
+            "stand-mat-1-2500",
+            "stand-mat-1-4500"
+          ]
+        },
+        {
+          "name": "safety",
+          "color": "#f0b429",
+          "parts": [
+            "chute-lip-0",
+            "chute-lip-1",
+            "chute-lip-2",
+            "chute-lip-3",
+            "chute-lip-4",
+            "chute-lip-5",
+            "stand-edge--1-2500",
+            "stand-edge--1-4500",
+            "stand-edge-1-2500",
+            "stand-edge-1-4500",
+            "cord-post--1-300",
+            "cord-post--1-2500",
+            "cord-post--1-4500",
+            "cord-post--1-6700",
+            "cord-switch--1",
+            "cord-post-1-300",
+            "cord-post-1-2500",
+            "cord-post-1-4500",
+            "cord-post-1-6700",
+            "cord-switch-1",
+            "drive-guard"
+          ],
+          "param": "safety"
+        },
+        {
+          "name": "bin-0",
+          "color": "#2f6db5",
+          "parts": [
+            "bin-0",
+            "bin-rim-0"
+          ]
+        },
+        {
+          "name": "bin-label-0",
+          "color": "#f4f1e8",
+          "parts": [
+            "bin-label-0",
+            "bin-label-1",
+            "bin-label-2",
+            "bin-label-3",
+            "bin-label-4",
+            "bin-label-5"
+          ]
+        },
+        {
+          "name": "bin-1",
+          "color": "#e2b31f",
+          "parts": [
+            "bin-1",
+            "bin-rim-1"
+          ]
+        },
+        {
+          "name": "bin-2",
+          "color": "#3d8a4f",
+          "parts": [
+            "bin-2",
+            "bin-rim-2",
+            "item-3",
+            "item-9",
+            "item-15",
+            "item-21"
+          ]
+        },
+        {
+          "name": "bin-3",
+          "color": "#c8202a",
+          "parts": [
+            "bin-3",
+            "bin-rim-3",
+            "item-5",
+            "item-11",
+            "item-17",
+            "item-23"
+          ]
+        },
+        {
+          "name": "bin-4",
+          "color": "#7a7f84",
+          "parts": [
+            "bin-4",
+            "bin-rim-4"
+          ]
+        },
+        {
+          "name": "bin-5",
+          "color": "#8a5a2b",
+          "parts": [
+            "bin-5",
+            "bin-rim-5"
+          ]
+        },
+        {
+          "name": "pull-cord--1",
+          "color": "#d42a2a",
+          "parts": [
+            "pull-cord--1",
+            "pull-cord-1"
+          ]
+        },
+        {
+          "name": "drive-motor",
+          "color": "#5a6266",
+          "parts": [
             "drive-motor"
-          ],
-          "param": "paintedSteel"
+          ]
         },
         {
-          "name": "rubber",
-          "color": "#303638",
+          "name": "item-0",
+          "color": "#c49a6c",
           "parts": [
-            "belt-surface"
-          ],
-          "param": "rubber"
+            "item-0",
+            "item-6",
+            "item-12",
+            "item-18"
+          ]
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "item-1",
+          "color": "#5c8fc4",
           "parts": [
-            "side-rail-left",
-            "side-rail-right",
-            "head-roller",
-            "tail-roller"
-          ],
-          "param": "stainlessSteel"
+            "item-1",
+            "item-7",
+            "item-13",
+            "item-19"
+          ]
+        },
+        {
+          "name": "item-2",
+          "color": "#e2e6e8",
+          "parts": [
+            "item-2",
+            "item-8",
+            "item-14",
+            "item-20"
+          ]
+        },
+        {
+          "name": "item-4",
+          "color": "#d9d2bf",
+          "parts": [
+            "item-4",
+            "item-10",
+            "item-16",
+            "item-22"
+          ]
         }
       ]
     },
@@ -240032,14 +240794,18 @@
       "id": "roller-conveyor-section",
       "kit": "recycling-facility",
       "title": "Roller conveyor section",
-      "description": "Roller conveyor section: a long belt deck with side guides, terminal rollers and a feed chute. Low-poly visualization prop. Material controls: painted steel, rubber, stainless steel.",
+      "description": "Chain-driven live-roller bale conveyor at about real size: heavy steel rollers between channel side frames, chain drive under a side guard with gearmotor, flared entry guides, photo-eye stop sensors, bumper end stop and braced legs, carrying a strapped bale. Material controls: frame paint, rollers, chain guard, bumper; cardboard, paper, plastic or metal bale or none. plant, weathered, stainless and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "roller conveyor",
+        "live roller",
+        "bale conveyor",
+        "chain drive",
+        "bale",
         "materials recovery",
         "waste management",
-        "sorting",
         "low poly",
         "scene prop"
       ],
@@ -240052,8 +240818,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/roller-conveyor-section.kcad.ts",
       "preview": "/assets/recycling-facility-roller-conveyor-section.png",
-      "sourceSha256": "8cd360981a006132037a62020fcce28f91894a1b290316005af155506eff457d",
-      "triangleBudget": 1800,
+      "sourceSha256": "ed71828c6f49e1adfcd3fd1fb8b1c0312d576568edaccee4b80d684f12859375",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -240065,79 +240831,234 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#566d83",
-          "label": "Painted steel"
+          "default": "#3a78a8",
+          "label": "Side frames and legs (paint)"
         },
         {
-          "name": "rubber",
+          "name": "rollers",
           "type": "color",
-          "default": "#303638",
-          "label": "Rubber"
+          "default": "#aab2b5",
+          "label": "Rollers (steel)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "guard",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#f0b429",
+          "label": "Chain guard and entry guides"
+        },
+        {
+          "name": "bumper",
+          "type": "color",
+          "default": "#2b2f31",
+          "label": "Bumper and feet (rubber)"
+        },
+        {
+          "name": "bale",
+          "type": "choice",
+          "default": "cardboard",
+          "label": "Bale on rollers",
+          "choices": [
+            "cardboard",
+            "paper",
+            "plastic",
+            "metal",
+            "none"
+          ]
         }
       ],
       "presets": {
+        "plant": {
+          "frame": "#3a78a8",
+          "rollers": "#aab2b5",
+          "guard": "#f0b429",
+          "bumper": "#2b2f31"
+        },
         "weathered": {
-          "paintedSteel": "#5e6c76",
-          "rubber": "#3c403e",
-          "stainlessSteel": "#9ea7a5"
+          "frame": "#566673",
+          "rollers": "#86857e",
+          "guard": "#a8893f",
+          "bumper": "#3a3836"
+        },
+        "stainless": {
+          "frame": "#c6cbcd",
+          "rollers": "#e0e4e5",
+          "guard": "#2f5d9a",
+          "bumper": "#30363a"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "frame": "#3d7a4a",
+          "rollers": "#c9ced1",
+          "guard": "#f2d21b",
+          "bumper": "#1f2224"
         }
       },
       "stats": {
-        "triangles": 360,
+        "triangles": 1948,
         "sizeM": [
-          0.959895,
-          0.715,
-          2.64
+          2.272602,
+          1.353,
+          4.505
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#566d83",
+          "name": "frame",
+          "color": "#3a78a8",
           "parts": [
-            "base-left",
-            "base-right",
-            "belt-deck",
-            "tail-support-left",
-            "tail-support-right",
-            "head-support-left",
-            "head-support-right",
-            "feed-chute",
+            "frame-web--1",
+            "frame-flange-top--1",
+            "frame-flange-bot--1",
+            "frame-web-1",
+            "frame-flange-top-1",
+            "frame-flange-bot-1",
+            "leg--1-250",
+            "leg-1-250",
+            "tie-250",
+            "leg--1-2200",
+            "leg-1-2200",
+            "tie-2200",
+            "leg--1-4150",
+            "leg-1-4150",
+            "tie-4150",
+            "diag--1",
+            "diag-b--1",
+            "diag-1",
+            "diag-b-1",
+            "gearbox",
+            "stop-beam",
+            "eye-post--1",
+            "eye-post-1"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "rollers",
+          "color": "#aab2b5",
+          "parts": [
+            "roller-0",
+            "roller-1",
+            "roller-2",
+            "roller-3",
+            "roller-4",
+            "roller-5",
+            "roller-6",
+            "roller-7",
+            "roller-8",
+            "roller-9",
+            "roller-10",
+            "roller-11",
+            "roller-12",
+            "roller-13",
+            "roller-14",
+            "roller-15",
+            "roller-16",
+            "roller-17",
+            "roller-18",
+            "roller-19",
+            "roller-20",
+            "roller-21",
+            "roller-22",
+            "roller-23",
+            "roller-24",
+            "roller-25",
+            "roller-26"
+          ],
+          "param": "rollers"
+        },
+        {
+          "name": "bumper",
+          "color": "#2b2f31",
+          "parts": [
+            "foot--1-250",
+            "foot-1-250",
+            "foot--1-2200",
+            "foot-1-2200",
+            "foot--1-4150",
+            "foot-1-4150",
+            "stop-pad--1",
+            "stop-pad-1",
+            "strap--350",
+            "strap-0",
+            "strap-350"
+          ],
+          "param": "bumper"
+        },
+        {
+          "name": "guard",
+          "color": "#f0b429",
+          "parts": [
+            "chain-guard",
+            "chain-guard-cap",
+            "drive-sprocket-cover",
+            "guide--1",
+            "guide-flare--1",
+            "guide-1",
+            "guide-flare-1",
+            "stop-stripe"
+          ],
+          "param": "guard"
+        },
+        {
+          "name": "guard-slot-0",
+          "color": "#1d2224",
+          "parts": [
+            "guard-slot-0",
+            "guard-slot-1",
+            "guard-slot-2",
+            "guard-slot-3",
+            "guard-slot-4",
+            "guard-slot-5"
+          ]
+        },
+        {
+          "name": "drive-motor",
+          "color": "#5a6266",
+          "parts": [
             "drive-motor"
-          ],
-          "param": "paintedSteel"
+          ]
         },
         {
-          "name": "rubber",
-          "color": "#303638",
+          "name": "eye-head--1",
+          "color": "#2f6db5",
           "parts": [
-            "belt-surface"
-          ],
-          "param": "rubber"
+            "eye-head--1"
+          ]
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "eye-lens--1",
+          "color": "#c8202a",
           "parts": [
-            "side-rail-left",
-            "side-rail-right",
-            "head-roller",
-            "tail-roller"
-          ],
-          "param": "stainlessSteel"
+            "eye-lens--1",
+            "eye-lens-1"
+          ]
+        },
+        {
+          "name": "eye-head-1",
+          "color": "#e2e6e8",
+          "parts": [
+            "eye-head-1"
+          ]
+        },
+        {
+          "name": "bale",
+          "color": "#b58a5a",
+          "parts": [
+            "bale"
+          ]
+        },
+        {
+          "name": "bale-layer-0",
+          "color": "#c99f6a",
+          "parts": [
+            "bale-layer-0",
+            "bale-layer-1",
+            "bale-layer-2",
+            "bale-layer-3"
+          ]
         }
       ]
     },
