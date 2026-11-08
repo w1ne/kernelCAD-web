@@ -14549,10 +14549,17 @@
       "id": "character-meet-backdrop",
       "kit": "amusement-park",
       "title": "Character meet-and-greet backdrop",
-      "description": "Photo-op backdrop with a decorative portal, shallow stage, curtain wings, and two waiting marks. Controls: overall scale, fabric, timber, powderCoat; festival and twilight material presets.",
+      "description": "Storybook character photo stage at about real size: timber deck with front step, painted sky backdrop with cloud-scalloped top, flat castle silhouette with turrets, gilded round-topped portal, gathered velvet curtain wings with pelmet and tie-backs, rear braces and two star stand-here marks. Material controls: velvet fabric, stage timber, scenery paint, gilt trim and castle flat paint. Storybook, festival and twilight presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "photo op",
+        "meet and greet",
+        "character",
+        "stage",
+        "backdrop",
+        "castle",
+        "curtain",
         "amusement park",
         "theme park",
         "guest experience",
@@ -14569,8 +14576,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/character-meet-backdrop.kcad.ts",
       "preview": "/assets/amusement-park-character-meet-backdrop.png",
-      "sourceSha256": "2058078b514f4c0388b55611718e96655a5d73f73460144011fabf39f6fabd87",
-      "triangleBudget": 1800,
+      "sourceSha256": "053d4f4c145358953688074e4f387e937897eeffc153a280be73da56d1830394",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -14584,40 +14591,63 @@
         {
           "name": "fabric",
           "type": "color",
-          "default": "#c77786",
-          "label": "Upholstery fabric"
+          "default": "#9e2a3a",
+          "label": "Curtain velvet"
         },
         {
           "name": "timber",
           "type": "color",
           "default": "#8a6748",
-          "label": "Sealed timber"
+          "label": "Stage timber"
         },
         {
-          "name": "powderCoat",
+          "name": "scenery",
           "type": "color",
-          "default": "#477985",
-          "label": "Powder-coated steel"
+          "default": "#86bfe0",
+          "label": "Scenery paint"
+        },
+        {
+          "name": "gilt",
+          "type": "color",
+          "default": "#d9b44a",
+          "label": "Gilt trim and stars"
+        },
+        {
+          "name": "stone",
+          "type": "color",
+          "default": "#efe4cf",
+          "label": "Castle flat paint"
         }
       ],
       "presets": {
+        "storybook": {
+          "fabric": "#9e2a3a",
+          "timber": "#8a6748",
+          "scenery": "#86bfe0",
+          "gilt": "#d9b44a",
+          "stone": "#efe4cf"
+        },
         "festival": {
-          "fabric": "#e4b765",
+          "fabric": "#d4593a",
           "timber": "#ab8051",
-          "powderCoat": "#d47452"
+          "scenery": "#f2d27a",
+          "gilt": "#f4f0e2",
+          "stone": "#f7c6cf"
         },
         "twilight": {
-          "fabric": "#557b8a",
+          "fabric": "#3a3f78",
           "timber": "#604b3b",
-          "powderCoat": "#35576f"
+          "scenery": "#4a5f8f",
+          "gilt": "#c8b06a",
+          "stone": "#b9b3c9"
         }
       },
       "stats": {
-        "triangles": 172,
+        "triangles": 1756,
         "sizeM": [
-          2.4,
-          2.015,
-          1.49
+          2.52,
+          2.59,
+          1.855
         ],
         "minUpM": 0,
         "materials": 1
@@ -14627,31 +14657,67 @@
           "name": "timber",
           "color": "#8a6748",
           "parts": [
-            "stage"
+            "stage",
+            "stage-top",
+            "front-step",
+            "turret-window--780",
+            "turret-window-0",
+            "turret-window-780",
+            "portal-plinth-l",
+            "portal-plinth-r",
+            "portal-keystone",
+            "brace--800",
+            "brace-0",
+            "brace-800"
           ],
           "param": "timber"
         },
         {
-          "name": "fabric",
-          "color": "#c77786",
+          "name": "gilt",
+          "color": "#d9b44a",
           "parts": [
-            "backdrop",
-            "portal-left",
-            "portal-right",
-            "portal-top",
-            "curtain-wing-0",
-            "curtain-wing-1",
-            "waiting-mark-0"
+            "stage-trim",
+            "step-nosing",
+            "portal",
+            "tie-back-l",
+            "tie-back-r",
+            "pelmet-trim",
+            "star-mark-0",
+            "star-mark-1"
           ],
-          "param": "fabric"
+          "param": "gilt"
         },
         {
-          "name": "powderCoat",
-          "color": "#477985",
+          "name": "scenery",
+          "color": "#86bfe0",
           "parts": [
-            "waiting-mark-1"
+            "backdrop"
           ],
-          "param": "powderCoat"
+          "param": "scenery"
+        },
+        {
+          "name": "stone",
+          "color": "#efe4cf",
+          "parts": [
+            "castle"
+          ],
+          "param": "stone"
+        },
+        {
+          "name": "fabric",
+          "color": "#9e2a3a",
+          "parts": [
+            "curtain-fold-l-0",
+            "curtain-fold-l-1",
+            "curtain-fold-l-2",
+            "curtain-fold-l-3",
+            "curtain-fold-r-0",
+            "curtain-fold-r-1",
+            "curtain-fold-r-2",
+            "curtain-fold-r-3",
+            "pelmet"
+          ],
+          "param": "fabric"
         }
       ]
     },
@@ -15842,10 +15908,16 @@
       "id": "entrance-photo-frame",
       "kit": "amusement-park",
       "title": "Entrance photo frame",
-      "description": "Freestanding family photo portal with a broad top beam, side plinths, and a camera-marked crest. Controls: overall scale, powderCoat, aluminum, acrylic; festival and twilight material presets.",
+      "description": "Giant freestanding arrival photo frame at about real size: deep bevelled gilt moulding around an open picture window, corner rosettes, scrolled crest carrying an oversized camera with lens, flash and shutter button, swallowtail welcome ribbon, two panelled plinths with planter boxes and a photographer footprint mark. Material controls: gilt moulding, powder-coated plinths, camera body, and acrylic lens and ribbon. Classic, festival and twilight presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "photo op",
+        "picture frame",
+        "selfie spot",
+        "camera",
+        "entrance",
+        "welcome",
         "amusement park",
         "theme park",
         "guest experience",
@@ -15862,8 +15934,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/entrance-photo-frame.kcad.ts",
       "preview": "/assets/amusement-park-entrance-photo-frame.png",
-      "sourceSha256": "4bf7efac0aa60879bf748e4b484cd3106abf0de9645791cb2bc6ac9d0ef62f12",
-      "triangleBudget": 1800,
+      "sourceSha256": "eb254311a41d964ac3408b15f1891a9944d79b9b1c4f8683a59721cec378c60e",
+      "triangleBudget": 3500,
       "params": [
         {
           "name": "scale",
@@ -15875,72 +15947,137 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "gilt",
           "type": "color",
-          "default": "#477985",
-          "label": "Powder-coated steel"
+          "default": "#d6aa3e",
+          "label": "Gilt frame moulding"
         },
         {
-          "name": "aluminum",
+          "name": "powderCoat",
           "type": "color",
-          "default": "#9caeb0",
-          "label": "Anodized aluminum"
+          "default": "#2f6f7e",
+          "label": "Powder-coated plinths"
+        },
+        {
+          "name": "cameraBody",
+          "type": "color",
+          "default": "#2b2d33",
+          "label": "Camera body and planter soil"
         },
         {
           "name": "acrylic",
           "type": "color",
-          "default": "#63aab8",
-          "label": "Tinted acrylic"
+          "default": "#d9473f",
+          "label": "Acrylic lens ring and ribbon"
         }
       ],
       "presets": {
+        "classic": {
+          "gilt": "#d6aa3e",
+          "powderCoat": "#2f6f7e",
+          "cameraBody": "#2b2d33",
+          "acrylic": "#d9473f"
+        },
         "festival": {
+          "gilt": "#f2c84b",
           "powderCoat": "#d47452",
-          "aluminum": "#c2c9c5",
-          "acrylic": "#79c8d2"
+          "cameraBody": "#3a2f4a",
+          "acrylic": "#3fa6c9"
         },
         "twilight": {
+          "gilt": "#b9a26a",
           "powderCoat": "#35576f",
-          "aluminum": "#718a94",
-          "acrylic": "#41768b"
+          "cameraBody": "#1d2128",
+          "acrylic": "#8e5bb0"
         }
       },
       "stats": {
-        "triangles": 116,
+        "triangles": 3004,
         "sizeM": [
-          2.35,
-          1.8775,
-          0.56
+          2.95,
+          3.2,
+          1.965
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "aluminum",
-          "color": "#9caeb0",
-          "parts": [
-            "left-plinth",
-            "right-plinth",
-            "photo-beam",
-            "frame-accent-0",
-            "frame-accent-1"
-          ],
-          "param": "aluminum"
-        },
-        {
           "name": "powderCoat",
-          "color": "#477985",
+          "color": "#2f6f7e",
           "parts": [
-            "top-cap"
+            "plinth-l",
+            "planter-l",
+            "plinth-r",
+            "planter-r",
+            "lens-glass",
+            "photo-pad"
           ],
           "param": "powderCoat"
         },
         {
-          "name": "acrylic",
-          "color": "#63aab8",
+          "name": "gilt",
+          "color": "#d6aa3e",
           "parts": [
-            "camera-emblem"
+            "plinth-cap-l",
+            "plinth-panel-l",
+            "plinth-plinth-l",
+            "shrub-l-0",
+            "shrub-l-2",
+            "plinth-cap-r",
+            "plinth-panel-r",
+            "plinth-plinth-r",
+            "shrub-r-0",
+            "shrub-r-2",
+            "frame-top",
+            "frame-bottom",
+            "frame-left",
+            "frame-right",
+            "lip-top",
+            "lip-bottom",
+            "lip-left",
+            "lip-right",
+            "rosette-tl",
+            "rosette-tr",
+            "rosette-bl",
+            "rosette-br",
+            "crest-scroll-l",
+            "crest-scroll-r",
+            "crest-base",
+            "flash",
+            "ribbon-band",
+            "footprint-l",
+            "footprint-r"
+          ],
+          "param": "gilt"
+        },
+        {
+          "name": "cameraBody",
+          "color": "#2b2d33",
+          "parts": [
+            "planter-soil-l",
+            "planter-soil-r",
+            "camera-body",
+            "camera-hump",
+            "lens-barrel"
+          ],
+          "param": "cameraBody"
+        },
+        {
+          "name": "acrylic",
+          "color": "#d9473f",
+          "parts": [
+            "shrub-l-1",
+            "shrub-r-1",
+            "bead-top",
+            "bead-bottom",
+            "rosette-boss-tl",
+            "rosette-boss-tr",
+            "rosette-boss-bl",
+            "rosette-boss-br",
+            "lens-ring",
+            "shutter-button",
+            "welcome-ribbon"
           ],
           "param": "acrylic"
         }
@@ -20623,10 +20760,16 @@
       "id": "park-operations-radio-rack",
       "kit": "amusement-park",
       "title": "Park operations radio rack",
-      "description": "Back-of-house charging stand with six radio cradles, overhead status strip, and cable-routing shelf. Controls: overall scale, powderCoat, stainlessSteel, acrylic; festival and twilight material presets.",
+      "description": "Back-of-house two-way radio charging rack at about real size: powder-coated frame on splayed feet, perforated backplate, sloped desk of six charging pockets each holding a handheld radio with antenna, channel knob, display and charge lamp, overhead status bar, cable tray with drooping charger leads, sign-out clipboard and spare-battery shelf. Material controls: powder-coated frame, stainless trim, radio polymer and acrylic lamps. Operations, festival and night-shift presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "radio",
+        "walkie talkie",
+        "charging station",
+        "two-way radio",
+        "back of house",
+        "operations",
         "amusement park",
         "theme park",
         "guest experience",
@@ -20643,8 +20786,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/park-operations-radio-rack.kcad.ts",
       "preview": "/assets/amusement-park-park-operations-radio-rack.png",
-      "sourceSha256": "033e09b3cbaa9616136c571e47959f8250eb4f41682407a3a24e688c8092724d",
-      "triangleBudget": 1800,
+      "sourceSha256": "c79726a71e41a8acf85fe0cb56ba5f1add726ff6a1a77c9a39f1f5e6cca9ae52",
+      "triangleBudget": 5500,
       "params": [
         {
           "name": "scale",
@@ -20659,39 +20802,53 @@
           "name": "powderCoat",
           "type": "color",
           "default": "#477985",
-          "label": "Powder-coated steel"
+          "label": "Powder-coated frame"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#b0b9b6",
-          "label": "Stainless steel"
+          "label": "Stainless trim and tray"
+        },
+        {
+          "name": "polymer",
+          "type": "color",
+          "default": "#24272c",
+          "label": "Radio and lead polymer"
         },
         {
           "name": "acrylic",
           "type": "color",
-          "default": "#63aab8",
-          "label": "Tinted acrylic"
+          "default": "#5fd06a",
+          "label": "Acrylic charge lamps"
         }
       ],
       "presets": {
+        "operations": {
+          "powderCoat": "#477985",
+          "stainlessSteel": "#b0b9b6",
+          "polymer": "#24272c",
+          "acrylic": "#5fd06a"
+        },
         "festival": {
           "powderCoat": "#d47452",
-          "stainlessSteel": "#d1d1c6",
-          "acrylic": "#79c8d2"
+          "stainlessSteel": "#c2c9c5",
+          "polymer": "#2e2a35",
+          "acrylic": "#f2c84b"
         },
-        "twilight": {
-          "powderCoat": "#35576f",
-          "stainlessSteel": "#788b91",
-          "acrylic": "#41768b"
+        "nightShift": {
+          "powderCoat": "#2c3e4f",
+          "stainlessSteel": "#7f8b90",
+          "polymer": "#15181c",
+          "acrylic": "#59c2e8"
         }
       },
       "stats": {
-        "triangles": 384,
+        "triangles": 4676,
         "sizeM": [
-          1.66,
-          1.8,
-          0.745
+          1.879667,
+          1.88,
+          0.66
         ],
         "minUpM": 0,
         "materials": 1
@@ -20701,36 +20858,132 @@
           "name": "powderCoat",
           "color": "#477985",
           "parts": [
+            "upright-l",
+            "foot-l",
+            "upright-r",
+            "foot-r",
             "backplate",
-            "base",
-            "status-strip"
+            "desk-shelf",
+            "status-lamp-3",
+            "battery-shelf"
           ],
           "param": "powderCoat"
+        },
+        {
+          "name": "polymer",
+          "color": "#24272c",
+          "parts": [
+            "leveller-l",
+            "leveller-r",
+            "perforation-0-0",
+            "perforation-0-1",
+            "perforation-0-2",
+            "perforation-0-3",
+            "perforation-0-4",
+            "perforation-0-5",
+            "perforation-0-6",
+            "perforation-0-7",
+            "perforation-1-0",
+            "perforation-1-1",
+            "perforation-1-2",
+            "perforation-1-3",
+            "perforation-1-4",
+            "perforation-1-5",
+            "perforation-1-6",
+            "perforation-1-7",
+            "perforation-2-0",
+            "perforation-2-1",
+            "perforation-2-2",
+            "perforation-2-3",
+            "perforation-2-4",
+            "perforation-2-5",
+            "perforation-2-6",
+            "perforation-2-7",
+            "perforation-3-0",
+            "perforation-3-1",
+            "perforation-3-2",
+            "perforation-3-3",
+            "perforation-3-4",
+            "perforation-3-5",
+            "perforation-3-6",
+            "perforation-3-7",
+            "charger-0",
+            "radio-0",
+            "radio-antenna-0",
+            "charger-1",
+            "radio-1",
+            "radio-antenna-1",
+            "charger-2",
+            "radio-2",
+            "radio-antenna-2",
+            "charger-3",
+            "charger-4",
+            "radio-4",
+            "radio-antenna-4",
+            "charger-5",
+            "radio-5",
+            "radio-antenna-5",
+            "lead-loop-0",
+            "lead-loop-1",
+            "lead-loop-2",
+            "lead-loop-3",
+            "lead-loop-4",
+            "lead-loop-5",
+            "spare-battery-1",
+            "spare-battery-2",
+            "spare-battery-4",
+            "spare-battery-5",
+            "spare-battery-7",
+            "clipboard-clip"
+          ],
+          "param": "polymer"
         },
         {
           "name": "stainlessSteel",
           "color": "#b0b9b6",
           "parts": [
-            "charging-cradle-0",
-            "charging-cradle-1",
-            "charging-cradle-2",
-            "charging-cradle-3",
-            "charging-cradle-4",
-            "charging-cradle-5",
-            "cable-shelf"
+            "desk",
+            "radio-grille-0",
+            "radio-grille-1",
+            "radio-knob-1",
+            "charger-lamp-2",
+            "radio-grille-2",
+            "charger-lamp-4",
+            "radio-grille-4",
+            "radio-grille-5",
+            "radio-knob-5",
+            "status-bar",
+            "cable-tray",
+            "clipboard",
+            "clipboard-hook"
           ],
           "param": "stainlessSteel"
         },
         {
           "name": "acrylic",
-          "color": "#63aab8",
+          "color": "#5fd06a",
           "parts": [
-            "status-indicator-0",
-            "status-indicator-1",
-            "status-indicator-2",
-            "status-indicator-3",
-            "status-indicator-4",
-            "status-indicator-5"
+            "charger-lamp-0",
+            "radio-display-0",
+            "radio-knob-0",
+            "charger-lamp-1",
+            "radio-display-1",
+            "radio-display-2",
+            "radio-knob-2",
+            "charger-lamp-3",
+            "radio-display-4",
+            "radio-knob-4",
+            "charger-lamp-5",
+            "radio-display-5",
+            "status-lamp-0",
+            "status-lamp-1",
+            "status-lamp-2",
+            "status-lamp-4",
+            "status-lamp-5",
+            "spare-battery-0",
+            "spare-battery-3",
+            "spare-battery-6",
+            "clipboard-sheet"
           ],
           "param": "acrylic"
         }
@@ -22274,10 +22527,16 @@
       "id": "prize-wall-display",
       "kit": "amusement-park",
       "title": "Midway prize wall",
-      "description": "Prize counter backdrop with three open display shelves, hanging plush silhouettes, and a lower redemption ledge. Controls: overall scale, paintedTimber, steel, fabric; festival and twilight material presets.",
+      "description": "Midway prize wall at about real size: painted backboard with scalloped marquee header and bulbs, two stepped prize shelves on steel brackets lined with plush bears and prize balls, jumbo bears hanging from top hooks, tier price placards and a striped redemption counter with ticket ledge and ticket-counting machine. Material controls: painted timber, steel brackets and hooks, plush fabric, second plush colour and marquee bulbs. Classic, festival and twilight presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "prize wall",
+        "plush",
+        "teddy bear",
+        "midway",
+        "carnival game",
+        "redemption counter",
         "amusement park",
         "theme park",
         "guest experience",
@@ -22294,8 +22553,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/prize-wall-display.kcad.ts",
       "preview": "/assets/amusement-park-prize-wall-display.png",
-      "sourceSha256": "91774c026500885cbf5f8b2543d87bb18da6613674b59703d3f331052be28a31",
-      "triangleBudget": 1800,
+      "sourceSha256": "f51de67a19407b6c0afb7edf96ad556e87faf5a74df3c7d4fe1d8ea44610595b",
+      "triangleBudget": 8000,
       "params": [
         {
           "name": "scale",
@@ -22309,40 +22568,63 @@
         {
           "name": "paintedTimber",
           "type": "color",
-          "default": "#92704e",
+          "default": "#c8423a",
           "label": "Painted timber"
         },
         {
           "name": "steel",
           "type": "color",
           "default": "#738087",
-          "label": "Painted steel"
+          "label": "Steel brackets and hooks"
         },
         {
           "name": "fabric",
           "type": "color",
-          "default": "#c77786",
-          "label": "Upholstery fabric"
+          "default": "#c98a4b",
+          "label": "Plush fabric"
+        },
+        {
+          "name": "plushAlt",
+          "type": "color",
+          "default": "#e889b0",
+          "label": "Second plush colour"
+        },
+        {
+          "name": "bulb",
+          "type": "color",
+          "default": "#fff1b8",
+          "label": "Marquee bulbs and placards"
         }
       ],
       "presets": {
+        "classic": {
+          "paintedTimber": "#c8423a",
+          "steel": "#738087",
+          "fabric": "#c98a4b",
+          "plushAlt": "#e889b0",
+          "bulb": "#fff1b8"
+        },
         "festival": {
-          "paintedTimber": "#be8a4e",
-          "steel": "#9da3a0",
-          "fabric": "#e4b765"
+          "paintedTimber": "#2f7fb8",
+          "steel": "#c2c9c5",
+          "fabric": "#f0c24a",
+          "plushAlt": "#8bd17c",
+          "bulb": "#fff8e0"
         },
         "twilight": {
-          "paintedTimber": "#5e7181",
-          "steel": "#4f626c",
-          "fabric": "#557b8a"
+          "paintedTimber": "#4a2f6b",
+          "steel": "#5d6870",
+          "fabric": "#a4c8e8",
+          "plushAlt": "#e46a8f",
+          "bulb": "#ffd36b"
         }
       },
       "stats": {
-        "triangles": 774,
+        "triangles": 7292,
         "sizeM": [
-          2.4,
-          1.85,
-          1
+          2.56,
+          2.82,
+          1.26
         ],
         "minUpM": 0,
         "materials": 1
@@ -22350,39 +22632,160 @@
       "palette": [
         {
           "name": "paintedTimber",
-          "color": "#92704e",
+          "color": "#c8423a",
           "parts": [
             "back-panel",
-            "redemption-counter",
-            "counter-lip"
+            "header-band",
+            "shelf-0",
+            "shelf-1",
+            "counter-stripe-0",
+            "counter-stripe-2",
+            "counter-stripe-4",
+            "counter-stripe-6",
+            "counter-top",
+            "ticket-counter-slot"
           ],
           "param": "paintedTimber"
+        },
+        {
+          "name": "bulb",
+          "color": "#fff1b8",
+          "parts": [
+            "header",
+            "marquee-bulb-0",
+            "marquee-bulb-1",
+            "marquee-bulb-2",
+            "marquee-bulb-3",
+            "marquee-bulb-4",
+            "marquee-bulb-5",
+            "marquee-bulb-6",
+            "marquee-bulb-7",
+            "marquee-bulb-8",
+            "marquee-bulb-9",
+            "marquee-bulb-10",
+            "marquee-bulb-11",
+            "marquee-bulb-12",
+            "shelf-lip-0",
+            "placard-0",
+            "bear-0-0-muzzle",
+            "bear-0-1-muzzle",
+            "prize-ball-0-2",
+            "bear-0-3-muzzle",
+            "bear-0-4-muzzle",
+            "bear-0-6-muzzle",
+            "shelf-lip-1",
+            "placard-1",
+            "bear-1-0-muzzle",
+            "bear-1-1-muzzle",
+            "prize-ball-1-2",
+            "bear-1-3-muzzle",
+            "bear-1-4-muzzle",
+            "jumbo-0-muzzle",
+            "jumbo-1-muzzle",
+            "jumbo-2-muzzle",
+            "jumbo-3-muzzle",
+            "counter-stripe-1",
+            "counter-stripe-3",
+            "counter-stripe-5",
+            "counter-stripe-7",
+            "ticket-counter-display"
+          ],
+          "param": "bulb"
         },
         {
           "name": "steel",
           "color": "#738087",
           "parts": [
-            "display-shelf-0",
-            "display-shelf-1",
-            "display-shelf-2"
+            "bracket-0--900",
+            "bracket-0-0",
+            "bracket-0-900",
+            "bracket-1--900",
+            "bracket-1-0",
+            "bracket-1-900",
+            "hook-0",
+            "hook-tag-0",
+            "hook-1",
+            "hook-tag-1",
+            "hook-2",
+            "hook-tag-2",
+            "hook-3",
+            "hook-tag-3",
+            "counter-plinth",
+            "ticket-ledge",
+            "ledge-bracket--850",
+            "ledge-bracket--150",
+            "ticket-counter-body"
           ],
           "param": "steel"
         },
         {
           "name": "fabric",
-          "color": "#c77786",
+          "color": "#c98a4b",
           "parts": [
-            "prize-plush-0",
-            "prize-plush-1",
-            "prize-plush-2",
-            "prize-plush-3",
-            "prize-plush-4",
-            "prize-plush-5",
-            "prize-plush-6",
-            "prize-plush-7",
-            "prize-plush-8"
+            "bear-0-0-body",
+            "bear-0-0-head",
+            "bear-0-0-ear-l",
+            "bear-0-0-ear-r",
+            "bear-0-4-body",
+            "bear-0-4-head",
+            "bear-0-4-ear-l",
+            "bear-0-4-ear-r",
+            "bear-0-6-body",
+            "bear-0-6-head",
+            "bear-0-6-ear-l",
+            "bear-0-6-ear-r",
+            "bear-1-1-body",
+            "bear-1-1-head",
+            "bear-1-1-ear-l",
+            "bear-1-1-ear-r",
+            "bear-1-3-body",
+            "bear-1-3-head",
+            "bear-1-3-ear-l",
+            "bear-1-3-ear-r",
+            "jumbo-1-body",
+            "jumbo-1-head",
+            "jumbo-1-ear-l",
+            "jumbo-1-ear-r",
+            "jumbo-3-body",
+            "jumbo-3-head",
+            "jumbo-3-ear-l",
+            "jumbo-3-ear-r",
+            "ticket-strip"
           ],
           "param": "fabric"
+        },
+        {
+          "name": "plushAlt",
+          "color": "#e889b0",
+          "parts": [
+            "bear-0-1-body",
+            "bear-0-1-head",
+            "bear-0-1-ear-l",
+            "bear-0-1-ear-r",
+            "bear-0-3-body",
+            "bear-0-3-head",
+            "bear-0-3-ear-l",
+            "bear-0-3-ear-r",
+            "prize-ball-0-5",
+            "bear-1-0-body",
+            "bear-1-0-head",
+            "bear-1-0-ear-l",
+            "bear-1-0-ear-r",
+            "bear-1-4-body",
+            "bear-1-4-head",
+            "bear-1-4-ear-l",
+            "bear-1-4-ear-r",
+            "prize-ball-1-5",
+            "jumbo-0-body",
+            "jumbo-0-head",
+            "jumbo-0-ear-l",
+            "jumbo-0-ear-r",
+            "jumbo-2-body",
+            "jumbo-2-head",
+            "jumbo-2-ear-l",
+            "jumbo-2-ear-r"
+          ],
+          "param": "plushAlt"
         }
       ]
     },
@@ -25084,10 +25487,16 @@
       "id": "stroller-service-station",
       "kit": "amusement-park",
       "title": "Stroller service station",
-      "description": "Guest support stand with parking rail, compact air pump, repair shelf, and a wheel service cradle. Controls: overall scale, steel, stainlessSteel, rubber; festival and twilight material presets.",
+      "description": "Self-service stroller repair stand at about real size: two-post signboard with a stroller pictogram, pedestal air pump with dial gauge and coiled hose, tool bar with tethered wrenches, raised wheel cradle holding a spare stroller wheel, and three hoop parking rails. Material controls: painted steel, stainless rails and tools, rubber hose and tyres, and signage enamel. Park, festival and twilight presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "stroller",
+        "pram",
+        "bike repair stand",
+        "air pump",
+        "parking rail",
+        "guest services",
         "amusement park",
         "theme park",
         "guest experience",
@@ -25104,8 +25513,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/stroller-service-station.kcad.ts",
       "preview": "/assets/amusement-park-stroller-service-station.png",
-      "sourceSha256": "c90cfe448986209003d7fe8be6e00fb8c7062aaf1b25c8261ac7d2c0de8aa997",
-      "triangleBudget": 1800,
+      "sourceSha256": "dc0219fd31c2a77d995c68c78ca8246410df6ed0a57541063344b29c86ed7d4c",
+      "triangleBudget": 7000,
       "params": [
         {
           "name": "scale",
@@ -25119,40 +25528,54 @@
         {
           "name": "steel",
           "type": "color",
-          "default": "#738087",
+          "default": "#2f6d8c",
           "label": "Painted steel"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#b0b9b6",
-          "label": "Stainless steel"
+          "label": "Stainless rails and tools"
         },
         {
           "name": "rubber",
           "type": "color",
           "default": "#292f33",
-          "label": "Rubber"
+          "label": "Rubber hose and tyres"
+        },
+        {
+          "name": "signage",
+          "type": "color",
+          "default": "#f2b134",
+          "label": "Signage enamel"
         }
       ],
       "presets": {
+        "park": {
+          "steel": "#2f6d8c",
+          "stainlessSteel": "#b0b9b6",
+          "rubber": "#292f33",
+          "signage": "#f2b134"
+        },
         "festival": {
-          "steel": "#9da3a0",
-          "stainlessSteel": "#d1d1c6",
-          "rubber": "#3c4245"
+          "steel": "#c8423a",
+          "stainlessSteel": "#c2c9c5",
+          "rubber": "#2e2a35",
+          "signage": "#7fd0e0"
         },
         "twilight": {
-          "steel": "#4f626c",
-          "stainlessSteel": "#788b91",
-          "rubber": "#20262a"
+          "steel": "#3a3f5c",
+          "stainlessSteel": "#7f8b90",
+          "rubber": "#15181c",
+          "signage": "#e7a0c4"
         }
       },
       "stats": {
-        "triangles": 280,
+        "triangles": 6052,
         "sizeM": [
-          2.58,
-          1.79,
-          0.97
+          2.12,
+          2.05,
+          1.07
         ],
         "minUpM": 0,
         "materials": 1
@@ -25160,10 +25583,25 @@
       "palette": [
         {
           "name": "steel",
-          "color": "#738087",
+          "color": "#2f6d8c",
           "parts": [
-            "backboard",
-            "pump-cylinder"
+            "sign-post-l",
+            "sign-post-r",
+            "signboard",
+            "picto-basket",
+            "picto-hood",
+            "picto-handle",
+            "picto-wheel--470",
+            "picto-wheel--290",
+            "pump-head",
+            "cradle-stand",
+            "cradle-foot",
+            "rail-flange-0-l",
+            "rail-flange-0-r",
+            "rail-flange-1-l",
+            "rail-flange-1-r",
+            "rail-flange-2-l",
+            "rail-flange-2-r"
           ],
           "param": "steel"
         },
@@ -25171,21 +25609,66 @@
           "name": "stainlessSteel",
           "color": "#b0b9b6",
           "parts": [
-            "service-shelf",
-            "pump-handle",
-            "parking-rail-0",
-            "parking-rail-1",
-            "parking-rail-2",
-            "repair-tray"
+            "post-base-l",
+            "post-base-r",
+            "tool-bar",
+            "wrench-0",
+            "wrench-ring-0",
+            "wrench-1",
+            "wrench-ring-1",
+            "wrench-2",
+            "wrench-ring-2",
+            "wrench-3",
+            "wrench-ring-3",
+            "pump-plinth",
+            "gauge-bezel",
+            "pump-hook",
+            "hose-chuck",
+            "cradle-fork",
+            "spare-hub",
+            "rail-hoop-0",
+            "rail-leg-0-l",
+            "rail-leg-0-r",
+            "rail-hoop-1",
+            "rail-leg-1-l",
+            "rail-leg-1-r",
+            "rail-hoop-2",
+            "rail-leg-2-l",
+            "rail-leg-2-r"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "signage",
+          "color": "#f2b134",
+          "parts": [
+            "sign-roundel",
+            "picto-spanner",
+            "picto-spanner-jaw",
+            "pump-body",
+            "gauge-face",
+            "spare-rim",
+            "rail-band-0",
+            "rail-band-1",
+            "rail-band-2"
+          ],
+          "param": "signage"
         },
         {
           "name": "rubber",
           "color": "#292f33",
           "parts": [
-            "wheel-cradle-left",
-            "wheel-cradle-right"
+            "tether-0",
+            "tether-1",
+            "tether-2",
+            "tether-3",
+            "gauge-needle",
+            "hose-coil-0",
+            "hose-coil-1",
+            "hose-coil-2",
+            "hose-coil-3",
+            "hose-drop",
+            "spare-tyre"
           ],
           "param": "rubber"
         }
