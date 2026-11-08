@@ -278376,10 +278376,14 @@
       "id": "dimmer-rack",
       "kit": "theatre-production",
       "title": "Dimmer rack",
-      "description": "Portable lighting-control rack with vented front panel, breaker rows and top cable tray. Knobs: overall scale; powder-coated steel, lens and display glass; houseShow and touring appearance presets.",
+      "description": "Rolling theatre dimmer rack at about real size: steel cabinet on four swivel casters with a front bay of slide-in dimmer modules (pull handle, twin breaker toggles and status LED on each), a control module with lit LCD and keypad, louvred fan vents, side lift handles and a top cable tray with looping feeder cables. Material controls: powder-coated cabinet, module faces, breaker toggles, LCD and LEDs. houseShow, touring and greyRack presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "dimmer rack",
+        "dimmer",
+        "lighting power",
+        "dmx",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -278396,8 +278400,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/dimmer-rack.kcad.ts",
       "preview": "/assets/theatre-production-dimmer-rack.png",
-      "sourceSha256": "634ef525bd7a1541a6d2e087b660735fdf48e7e9b26edf62dc4ab74a3bb852d9",
-      "triangleBudget": 1800,
+      "sourceSha256": "28fcfc2dfa298563dc72479102fb07cecfd0ebdfee80f60473e306243d1e8a6f",
+      "triangleBudget": 7000,
       "params": [
         {
           "name": "scale",
@@ -278409,64 +278413,278 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "cabinet",
           "type": "color",
-          "default": "#353b41",
-          "label": "Powder-coated steel"
+          "default": "#2b3136",
+          "label": "Powder-coated steel cabinet"
         },
         {
-          "name": "glass",
+          "name": "modules",
           "type": "color",
-          "default": "#f3e9bf",
-          "label": "Lens and display glass"
+          "default": "#8d9599",
+          "label": "Dimmer module faces"
+        },
+        {
+          "name": "breakers",
+          "type": "color",
+          "default": "#d9d4c7",
+          "label": "Breaker toggles and handles"
+        },
+        {
+          "name": "display",
+          "type": "color",
+          "default": "#5fd6ff",
+          "label": "LCD and status LEDs"
         }
       ],
       "presets": {
         "houseShow": {
-          "powderCoat": "#272d33",
-          "glass": "#ffd15d"
+          "cabinet": "#2b3136",
+          "modules": "#8d9599",
+          "breakers": "#d9d4c7",
+          "display": "#5fd6ff"
         },
         "touring": {
-          "powderCoat": "#315465",
-          "glass": "#31b9d2"
+          "cabinet": "#1c1f22",
+          "modules": "#3e4448",
+          "breakers": "#e0a62f",
+          "display": "#7dff8a"
+        },
+        "greyRack": {
+          "cabinet": "#b9bdb8",
+          "modules": "#6b7276",
+          "breakers": "#202325",
+          "display": "#ffb347"
         }
       },
       "stats": {
-        "triangles": 240,
+        "triangles": 4448,
         "sizeM": [
-          0.8,
-          1.73,
-          0.78
+          0.932,
+          2.022,
+          0.721
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#353b41",
+          "name": "cabinet",
+          "color": "#2b3136",
           "parts": [
-            "base",
-            "left-upright",
-            "right-upright",
-            "top-panel",
-            "front-panel",
-            "vent-low",
-            "vent-mid",
-            "vent-high",
-            "cable-tray",
-            "wheel-left",
-            "wheel-right"
+            "cabinet",
+            "louvre-low-0",
+            "louvre-low-1",
+            "louvre-low-2",
+            "louvre-low-3",
+            "louvre-low-4",
+            "louvre-high-0",
+            "louvre-high-1",
+            "louvre-high-2",
+            "louvre-high-3",
+            "louvre-high-4",
+            "tray-floor",
+            "tray-lip-20",
+            "tray-lip-280",
+            "tray-bracket--1",
+            "tray-bracket-1"
           ],
-          "param": "powderCoat"
+          "param": "cabinet"
         },
         {
-          "name": "glass",
-          "color": "#f3e9bf",
+          "name": "plinth",
+          "color": "#151719",
           "parts": [
-            "indicator"
+            "plinth",
+            "lcd-bezel",
+            "dmx-socket",
+            "feeder-gland-0",
+            "feeder-gland-1",
+            "feeder-gland-2",
+            "caster-wheel--1--1",
+            "caster-wheel--1-1",
+            "caster-wheel-1--1",
+            "caster-wheel-1-1"
+          ]
+        },
+        {
+          "name": "modules",
+          "color": "#8d9599",
+          "parts": [
+            "module-0-0",
+            "module-0-1",
+            "module-0-2",
+            "module-0-3",
+            "module-0-4",
+            "module-0-5",
+            "module-0-6",
+            "module-0-7",
+            "module-1-0",
+            "module-1-1",
+            "module-1-2",
+            "module-1-3",
+            "module-1-4",
+            "module-1-5",
+            "module-1-6",
+            "module-1-7",
+            "module-2-0",
+            "module-2-1",
+            "module-2-2",
+            "module-2-3",
+            "module-2-4",
+            "module-2-5",
+            "module-2-6",
+            "module-2-7",
+            "control-face"
           ],
-          "param": "glass"
+          "param": "modules"
+        },
+        {
+          "name": "breakers",
+          "color": "#d9d4c7",
+          "parts": [
+            "module-handle-0-0",
+            "breaker-0-0-150",
+            "breaker-0-0-205",
+            "module-handle-0-1",
+            "breaker-0-1-150",
+            "breaker-0-1-205",
+            "module-handle-0-2",
+            "breaker-0-2-150",
+            "breaker-0-2-205",
+            "module-handle-0-3",
+            "breaker-0-3-150",
+            "breaker-0-3-205",
+            "module-handle-0-4",
+            "breaker-0-4-150",
+            "breaker-0-4-205",
+            "module-handle-0-5",
+            "breaker-0-5-150",
+            "breaker-0-5-205",
+            "module-handle-0-6",
+            "breaker-0-6-150",
+            "breaker-0-6-205",
+            "module-handle-0-7",
+            "breaker-0-7-150",
+            "breaker-0-7-205",
+            "module-handle-1-0",
+            "breaker-1-0-150",
+            "breaker-1-0-205",
+            "module-handle-1-1",
+            "breaker-1-1-150",
+            "breaker-1-1-205",
+            "module-handle-1-2",
+            "breaker-1-2-150",
+            "breaker-1-2-205",
+            "module-handle-1-3",
+            "breaker-1-3-150",
+            "breaker-1-3-205",
+            "module-handle-1-4",
+            "breaker-1-4-150",
+            "breaker-1-4-205",
+            "module-handle-1-5",
+            "breaker-1-5-150",
+            "breaker-1-5-205",
+            "module-handle-1-6",
+            "breaker-1-6-150",
+            "breaker-1-6-205",
+            "module-handle-1-7",
+            "breaker-1-7-150",
+            "breaker-1-7-205",
+            "module-handle-2-0",
+            "breaker-2-0-150",
+            "breaker-2-0-205",
+            "module-handle-2-1",
+            "breaker-2-1-150",
+            "breaker-2-1-205",
+            "module-handle-2-2",
+            "breaker-2-2-150",
+            "breaker-2-2-205",
+            "module-handle-2-3",
+            "breaker-2-3-150",
+            "breaker-2-3-205",
+            "module-handle-2-4",
+            "breaker-2-4-150",
+            "breaker-2-4-205",
+            "module-handle-2-5",
+            "breaker-2-5-150",
+            "breaker-2-5-205",
+            "module-handle-2-6",
+            "breaker-2-6-150",
+            "breaker-2-6-205",
+            "module-handle-2-7",
+            "breaker-2-7-150",
+            "breaker-2-7-205",
+            "key-0-0",
+            "key-0-1",
+            "key-0-2",
+            "key-0-3",
+            "key-1-0",
+            "key-1-1",
+            "key-1-2",
+            "key-1-3",
+            "key-2-0",
+            "key-2-1",
+            "key-2-2",
+            "key-2-3",
+            "dmx-socket-ring",
+            "handle--1",
+            "handle-post--1--150",
+            "handle-post--1-150",
+            "handle-1",
+            "handle-post-1--150",
+            "handle-post-1-150",
+            "caster-plate--1--1",
+            "caster-fork--1--1",
+            "caster-plate--1-1",
+            "caster-fork--1-1",
+            "caster-plate-1--1",
+            "caster-fork-1--1",
+            "caster-plate-1-1",
+            "caster-fork-1-1"
+          ],
+          "param": "breakers"
+        },
+        {
+          "name": "display",
+          "color": "#5fd6ff",
+          "parts": [
+            "led-0-0",
+            "led-0-1",
+            "led-0-2",
+            "led-0-3",
+            "led-0-4",
+            "led-0-5",
+            "led-0-6",
+            "led-0-7",
+            "led-1-0",
+            "led-1-1",
+            "led-1-2",
+            "led-1-3",
+            "led-1-4",
+            "led-1-5",
+            "led-1-6",
+            "led-1-7",
+            "led-2-0",
+            "led-2-1",
+            "led-2-2",
+            "led-2-3",
+            "led-2-4",
+            "led-2-5",
+            "led-2-6",
+            "led-2-7",
+            "lcd"
+          ],
+          "param": "display"
+        },
+        {
+          "name": "feeder-loop-0",
+          "color": "#1f2224",
+          "parts": [
+            "feeder-loop-0",
+            "feeder-loop-1",
+            "feeder-loop-2"
+          ]
         }
       ]
     },
@@ -279261,10 +279479,15 @@
       "id": "hoist-controller",
       "kit": "theatre-production",
       "title": "Hoist controller",
-      "description": "Handheld pendant with a cord entry, two oversized control buttons and lower cable exit. Knobs: overall scale; powder-coated steel, polymer controls and cable jacket; houseShow and touring appearance presets.",
+      "description": "Chain hoist hand pendant at about real size: rounded high-visibility housing, red mushroom emergency stop on a guarded collar, two pairs of shrouded up/down push buttons with arrow marks, key selector switch, label strip, tapered cable strain-relief gland, multicore cable and suspension eye. Material controls: housing shell, push buttons, emergency stop, cable jacket. houseShow, touring and blackPendant presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "hoist controller",
+        "hoist pendant",
+        "chain hoist",
+        "rigging",
+        "motor control",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -279281,8 +279504,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/hoist-controller.kcad.ts",
       "preview": "/assets/theatre-production-hoist-controller.png",
-      "sourceSha256": "d22d19a7cf6d07f1435b564f78d909640f071279b1fdcc2a9e722431884cf497",
-      "triangleBudget": 1800,
+      "sourceSha256": "8b27040c7ee1f0399d491ba3f1c31bbcfcaa0d16467dcae49073b164d7086cd2",
+      "triangleBudget": 4000,
       "params": [
         {
           "name": "scale",
@@ -279294,62 +279517,129 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "housing",
           "type": "color",
-          "default": "#353b41",
-          "label": "Powder-coated steel"
+          "default": "#f2c418",
+          "label": "Housing shell"
         },
         {
-          "name": "polymer",
+          "name": "buttons",
           "type": "color",
-          "default": "#426878",
-          "label": "Polymer controls and cable jacket"
+          "default": "#25292c",
+          "label": "Push buttons and shrouds"
+        },
+        {
+          "name": "estop",
+          "type": "color",
+          "default": "#d42a20",
+          "label": "Emergency stop"
+        },
+        {
+          "name": "cable",
+          "type": "color",
+          "default": "#3a3f43",
+          "label": "Cable jacket and gland"
         }
       ],
       "presets": {
         "houseShow": {
-          "powderCoat": "#272d33",
-          "polymer": "#344e5b"
+          "housing": "#f2c418",
+          "buttons": "#25292c",
+          "estop": "#d42a20",
+          "cable": "#3a3f43"
         },
         "touring": {
-          "powderCoat": "#315465",
-          "polymer": "#e3a928"
+          "housing": "#ef7d1a",
+          "buttons": "#1d2023",
+          "estop": "#d42a20",
+          "cable": "#1d2023"
+        },
+        "blackPendant": {
+          "housing": "#2a2e31",
+          "buttons": "#9aa3a8",
+          "estop": "#e0362a",
+          "cable": "#5b6166"
         }
       },
       "stats": {
-        "triangles": 248,
+        "triangles": 2730,
         "sizeM": [
-          0.3,
-          0.94,
-          0.211
+          0.12,
+          0.607,
+          0.124
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#353b41",
+          "name": "housing",
+          "color": "#f2c418",
           "parts": [
-            "pendant-body",
-            "shoulder",
-            "label-panel"
+            "housing",
+            "front-panel",
+            "estop-collar",
+            "estop-guard--1",
+            "estop-guard-1"
           ],
-          "param": "powderCoat"
+          "param": "housing"
         },
         {
-          "name": "polymer",
-          "color": "#426878",
+          "name": "buttons",
+          "color": "#25292c",
           "parts": [
-            "button-guard-left",
-            "button-guard-right",
-            "grip",
-            "button-left",
-            "button-right",
-            "cable-entry",
-            "cable-tail"
+            "foot",
+            "shroud-1-up",
+            "button-1-up",
+            "shroud-1-down",
+            "button-1-down",
+            "shroud-2-up",
+            "button-2-up",
+            "shroud-2-down",
+            "button-2-down",
+            "key-bezel",
+            "label-bar-1",
+            "label-bar-2",
+            "eye-boss",
+            "eye"
           ],
-          "param": "polymer"
+          "param": "buttons"
+        },
+        {
+          "name": "arrow-1-up",
+          "color": "#f4f4f0",
+          "parts": [
+            "arrow-1-up",
+            "arrow-1-down",
+            "arrow-2-up",
+            "arrow-2-down"
+          ]
+        },
+        {
+          "name": "key",
+          "color": "#e9ebe6",
+          "parts": [
+            "key",
+            "label-strip"
+          ]
+        },
+        {
+          "name": "estop",
+          "color": "#d42a20",
+          "parts": [
+            "estop-stem",
+            "estop-mushroom"
+          ],
+          "param": "estop"
+        },
+        {
+          "name": "cable",
+          "color": "#3a3f43",
+          "parts": [
+            "gland",
+            "cable"
+          ],
+          "param": "cable"
         }
       ]
     },
@@ -279357,10 +279647,15 @@
       "id": "led-cyc-wash-light",
       "kit": "theatre-production",
       "title": "LED cyc wash light",
-      "description": "Low-profile cyclorama wash unit with a long lens window, end cheeks and floor-bounce feet. Knobs: overall scale; powder-coated steel, lens and display glass, steel hardware; houseShow and touring appearance presets.",
+      "description": "Floor-standing LED cyclorama wash light at about real size: metre-long extruded housing with chamfered nose, frosted front lens over three rows of multi-colour LED cells, deep rear heat-sink fins, cast end caps with power and data connectors, and a floor yoke with hand-knob trunnions tilting it up at the cloth. Material controls: housing, front lens, LED cells, yoke and knobs; tilt angle. houseShow, touring and whiteHousing presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "cyc light",
+        "cyclorama",
+        "led wash",
+        "groundrow",
+        "stage lighting",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -279377,8 +279672,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/led-cyc-wash-light.kcad.ts",
       "preview": "/assets/theatre-production-led-cyc-wash-light.png",
-      "sourceSha256": "69cf1c4348060738725bdd626f8b02350c82dd84eefc033d2363208b4aa13b91",
-      "triangleBudget": 1800,
+      "sourceSha256": "a84d540be5cfabbebe0660e150381cdac70a84099fa09b6f847b310916570a0c",
+      "triangleBudget": 6000,
       "params": [
         {
           "name": "scale",
@@ -279390,78 +279685,188 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
-          "type": "color",
-          "default": "#353b41",
-          "label": "Powder-coated steel"
+          "name": "tilt",
+          "type": "choice",
+          "default": "up",
+          "label": "Tilt toward the cyc",
+          "choices": [
+            "flat",
+            "up",
+            "steep"
+          ]
         },
         {
-          "name": "glass",
+          "name": "housing",
           "type": "color",
-          "default": "#f3e9bf",
-          "label": "Lens and display glass"
+          "default": "#23272a",
+          "label": "Extruded housing"
         },
         {
-          "name": "hardware",
+          "name": "lens",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#d9e3e8",
+          "label": "Frosted front lens"
+        },
+        {
+          "name": "cells",
+          "type": "color",
+          "default": "#7a5cff",
+          "label": "LED cells"
+        },
+        {
+          "name": "yoke",
+          "type": "color",
+          "default": "#5d6468",
+          "label": "Floor yoke and knobs"
         }
       ],
       "presets": {
         "houseShow": {
-          "powderCoat": "#272d33",
-          "glass": "#ffd15d",
-          "hardware": "#c5a052"
+          "housing": "#23272a",
+          "lens": "#d9e3e8",
+          "cells": "#7a5cff",
+          "yoke": "#5d6468"
         },
         "touring": {
-          "powderCoat": "#315465",
-          "glass": "#31b9d2",
-          "hardware": "#e2b347"
+          "housing": "#141618",
+          "lens": "#c6d2d8",
+          "cells": "#ff4fa3",
+          "yoke": "#2a2e31"
+        },
+        "whiteHousing": {
+          "housing": "#e6e8e6",
+          "lens": "#f2f5f6",
+          "cells": "#3fb6ff",
+          "yoke": "#b8bec0"
         }
       },
       "stats": {
-        "triangles": 260,
+        "triangles": 2556,
         "sizeM": [
-          1.315,
-          0.285,
-          0.367
+          1.212,
+          0.41189,
+          0.320504
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#353b41",
+          "name": "housing",
+          "color": "#23272a",
           "parts": [
             "housing",
-            "top-grille",
-            "end-left",
-            "end-right",
-            "cable-entry"
+            "fin-0",
+            "fin-1",
+            "fin-2",
+            "fin-3",
+            "fin-4",
+            "fin-5",
+            "fin-6",
+            "fin-7",
+            "fin-8"
           ],
-          "param": "powderCoat"
+          "param": "housing"
         },
         {
-          "name": "glass",
-          "color": "#f3e9bf",
+          "name": "lens",
+          "color": "#d9e3e8",
           "parts": [
-            "front-window",
-            "lens-a",
-            "lens-b",
-            "lens-c"
+            "lens"
           ],
-          "param": "glass"
+          "param": "lens"
         },
         {
-          "name": "hardware",
-          "color": "#c28f3e",
+          "name": "cells",
+          "color": "#7a5cff",
           "parts": [
-            "foot-left",
-            "foot-right"
+            "cell-0-0",
+            "cell-0-1",
+            "cell-0-2",
+            "cell-0-3",
+            "cell-0-4",
+            "cell-0-5",
+            "cell-0-6",
+            "cell-0-7",
+            "cell-0-8",
+            "cell-0-9",
+            "cell-0-10",
+            "cell-0-11",
+            "cell-0-12",
+            "cell-0-13",
+            "cell-1-0",
+            "cell-1-1",
+            "cell-1-2",
+            "cell-1-3",
+            "cell-1-4",
+            "cell-1-5",
+            "cell-1-6",
+            "cell-1-7",
+            "cell-1-8",
+            "cell-1-9",
+            "cell-1-10",
+            "cell-1-11",
+            "cell-1-12",
+            "cell-1-13",
+            "cell-2-0",
+            "cell-2-1",
+            "cell-2-2",
+            "cell-2-3",
+            "cell-2-4",
+            "cell-2-5",
+            "cell-2-6",
+            "cell-2-7",
+            "cell-2-8",
+            "cell-2-9",
+            "cell-2-10",
+            "cell-2-11",
+            "cell-2-12",
+            "cell-2-13"
           ],
-          "param": "hardware"
+          "param": "cells"
+        },
+        {
+          "name": "yoke",
+          "color": "#5d6468",
+          "parts": [
+            "end-cap--1",
+            "end-cap-1",
+            "yoke-arm--1",
+            "knob-stem--1",
+            "foot--1",
+            "yoke-arm-1",
+            "knob-stem-1",
+            "foot-1",
+            "floor-bar"
+          ],
+          "param": "yoke"
+        },
+        {
+          "name": "power-in",
+          "color": "#2f6fd0",
+          "parts": [
+            "power-in"
+          ]
+        },
+        {
+          "name": "power-out",
+          "color": "#c9ccc8",
+          "parts": [
+            "power-out"
+          ]
+        },
+        {
+          "name": "data-in",
+          "color": "#141618",
+          "parts": [
+            "data-in",
+            "knob--1",
+            "pad--1--1",
+            "pad--1-1",
+            "knob-1",
+            "pad-1--1",
+            "pad-1-1"
+          ]
         }
       ]
     },
@@ -282582,10 +282987,15 @@
       "id": "stage-manager-console",
       "kit": "theatre-production",
       "title": "Stage manager console",
-      "description": "Compact backstage work surface with a call-board screen, talkback controls and cable trunk. Knobs: overall scale; steel hardware, powder-coated steel, lens and display glass, polymer controls and cable jacket; houseShow and touring appearance presets.",
+      "description": "Theatre stage manager's prompt desk at about real size: castored carcass with a sloped desk holding the open prompt script, a cue-light panel of standby and go switches with red and green lamps, a hood with two show-relay monitors and a red-digit show clock, a blue gooseneck work light, a comms headset on a side hook and a side cable trunk. Material controls: painted carcass, desk top, monitor screens, cue lamps and work light. houseShow, touring and woodDesk presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "stage manager",
+        "prompt desk",
+        "prompt corner",
+        "cue lights",
+        "calling desk",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -282602,8 +283012,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/stage-manager-console.kcad.ts",
       "preview": "/assets/theatre-production-stage-manager-console.png",
-      "sourceSha256": "33edaecc4698f75f06d968fc412d6e1e5cd2920ee6e3d501fdf4db9b0e5e673a",
-      "triangleBudget": 1800,
+      "sourceSha256": "d45a157548a6eac35b94ca7969e7adbda73299f9719923709c074725517f7a8f",
+      "triangleBudget": 6000,
       "params": [
         {
           "name": "scale",
@@ -282615,93 +283025,205 @@
           "step": 0.05
         },
         {
-          "name": "hardware",
+          "name": "carcass",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#1f2225",
+          "label": "Painted carcass"
         },
         {
-          "name": "powderCoat",
+          "name": "desk",
           "type": "color",
-          "default": "#353b41",
-          "label": "Powder-coated steel"
+          "default": "#5b5f63",
+          "label": "Desk top and panels"
         },
         {
-          "name": "glass",
+          "name": "screens",
           "type": "color",
-          "default": "#f3e9bf",
-          "label": "Lens and display glass"
+          "default": "#4a7fa8",
+          "label": "Monitor screens"
         },
         {
-          "name": "polymer",
+          "name": "lamps",
           "type": "color",
-          "default": "#426878",
-          "label": "Polymer controls and cable jacket"
+          "default": "#3d7bff",
+          "label": "Work light and cue lamps"
         }
       ],
       "presets": {
         "houseShow": {
-          "hardware": "#c5a052",
-          "powderCoat": "#272d33",
-          "glass": "#ffd15d",
-          "polymer": "#344e5b"
+          "carcass": "#1f2225",
+          "desk": "#5b5f63",
+          "screens": "#4a7fa8",
+          "lamps": "#3d7bff"
         },
         "touring": {
-          "hardware": "#e2b347",
-          "powderCoat": "#315465",
-          "glass": "#31b9d2",
-          "polymer": "#e3a928"
+          "carcass": "#141618",
+          "desk": "#2f3337",
+          "screens": "#3d6d58",
+          "lamps": "#2fd0ff"
+        },
+        "woodDesk": {
+          "carcass": "#5a3b26",
+          "desk": "#8a6a4c",
+          "screens": "#5b7f9a",
+          "lamps": "#4f6fff"
         }
       },
       "stats": {
-        "triangles": 196,
+        "triangles": 2102,
         "sizeM": [
-          1.05,
-          1.69,
-          0.63
+          1.625,
+          1.64,
+          0.74
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "hardware",
-          "color": "#c28f3e",
+          "name": "carcass",
+          "color": "#1f2225",
           "parts": [
-            "console-base",
-            "left-leg",
-            "right-leg",
-            "rear-post-left",
-            "rear-post-right"
+            "carcass",
+            "cue-panel",
+            "hood-back",
+            "hood-cheek--1",
+            "hood-cheek-1",
+            "hood-roof"
           ],
-          "param": "hardware"
+          "param": "carcass"
         },
         {
-          "name": "powderCoat",
-          "color": "#353b41",
+          "name": "desk",
+          "color": "#5b5f63",
           "parts": [
             "desk-top",
-            "call-board",
-            "lower-shelf"
+            "desk-lip",
+            "front-panel--1",
+            "front-panel-1",
+            "cable-trunk"
           ],
-          "param": "powderCoat"
+          "param": "desk"
         },
         {
-          "name": "glass",
-          "color": "#f3e9bf",
+          "name": "kick",
+          "color": "#141618",
           "parts": [
-            "monitor"
-          ],
-          "param": "glass"
+            "kick",
+            "script-line-0",
+            "script-line-1",
+            "script-line-2",
+            "script-line-3",
+            "script-line-4",
+            "script-line-5",
+            "monitor--1",
+            "monitor-1",
+            "clock",
+            "lamp-base",
+            "lamp-shade",
+            "headband",
+            "earcup--1",
+            "earcup-1",
+            "boom-mic",
+            "cable-drop",
+            "cable-run",
+            "caster-wheel--1--1",
+            "caster-wheel--1-1",
+            "caster-wheel-1--1",
+            "caster-wheel-1-1"
+          ]
         },
         {
-          "name": "polymer",
-          "color": "#426878",
+          "name": "binder",
+          "color": "#2c4f8c",
           "parts": [
-            "talkback-knob-left",
-            "talkback-knob-right"
+            "binder"
+          ]
+        },
+        {
+          "name": "page--1",
+          "color": "#efece2",
+          "parts": [
+            "page--1",
+            "page-1",
+            "cue-label-0",
+            "cue-label-1",
+            "cue-label-2",
+            "cue-label-3",
+            "cue-label-4",
+            "cue-label-5"
+          ]
+        },
+        {
+          "name": "pencil",
+          "color": "#e8b52c",
+          "parts": [
+            "pencil"
+          ]
+        },
+        {
+          "name": "standby-0",
+          "color": "#e2332a",
+          "parts": [
+            "standby-0",
+            "standby-1",
+            "standby-2",
+            "standby-3",
+            "standby-4",
+            "standby-5",
+            "clock-digit-0",
+            "clock-digit-1",
+            "clock-digit-2",
+            "clock-digit-3"
+          ]
+        },
+        {
+          "name": "go-0",
+          "color": "#36c25a",
+          "parts": [
+            "go-0",
+            "go-1",
+            "go-2",
+            "go-3",
+            "go-4",
+            "go-5"
+          ]
+        },
+        {
+          "name": "cue-switch-0",
+          "color": "#9aa2a6",
+          "parts": [
+            "cue-switch-0",
+            "cue-switch-1",
+            "cue-switch-2",
+            "cue-switch-3",
+            "cue-switch-4",
+            "cue-switch-5",
+            "gooseneck-1",
+            "gooseneck-2",
+            "hook",
+            "caster-fork--1--1",
+            "caster-fork--1-1",
+            "caster-fork-1--1",
+            "caster-fork-1-1"
+          ]
+        },
+        {
+          "name": "screens",
+          "color": "#4a7fa8",
+          "parts": [
+            "screen--1",
+            "screen-1"
           ],
-          "param": "polymer"
+          "param": "screens"
+        },
+        {
+          "name": "lamps",
+          "color": "#3d7bff",
+          "parts": [
+            "lamp-lens"
+          ],
+          "param": "lamps"
         }
       ]
     },
@@ -283693,10 +284215,15 @@
       "id": "wireless-intercom-beltpack",
       "kit": "theatre-production",
       "title": "Wireless intercom beltpack",
-      "description": "Portable communications pack with antenna, belt clip, talk button and headset socket. Knobs: overall scale; powder-coated steel, steel hardware, polymer controls and cable jacket; houseShow and touring appearance presets.",
+      "description": "Wireless theatre intercom beltpack at about real size: rounded body with rubber side grips, backlit front display, two large channel talk keys with lit tallies and top volume encoders, stubby antenna, four-pin headset socket with plug and a sprung steel belt clip on the back. Material controls: housing shell, talk keys, rubber grips and knobs, display and tally lights. houseShow, touring and redChannel presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "intercom",
+        "beltpack",
+        "comms",
+        "wireless",
+        "headset",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -283713,8 +284240,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/wireless-intercom-beltpack.kcad.ts",
       "preview": "/assets/theatre-production-wireless-intercom-beltpack.png",
-      "sourceSha256": "a203f9a7c7e3a2178e1c82cf47fa6b5ad5421b4d6d6047051485f76fb5295d7f",
-      "triangleBudget": 1800,
+      "sourceSha256": "224dcbe4bcdd7fa4fa742fff477ff1aba080b1814d705c6627b27bd868ab84c1",
+      "triangleBudget": 3500,
       "params": [
         {
           "name": "scale",
@@ -283726,76 +284253,115 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "housing",
           "type": "color",
-          "default": "#353b41",
-          "label": "Powder-coated steel"
+          "default": "#3a4045",
+          "label": "Housing shell"
         },
         {
-          "name": "hardware",
+          "name": "keys",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#d9dcd8",
+          "label": "Talk keys"
         },
         {
-          "name": "polymer",
+          "name": "rubber",
           "type": "color",
-          "default": "#426878",
-          "label": "Polymer controls and cable jacket"
+          "default": "#1b1d1f",
+          "label": "Rubber grips and knobs"
+        },
+        {
+          "name": "display",
+          "type": "color",
+          "default": "#7bd8ff",
+          "label": "Display and tally lights"
         }
       ],
       "presets": {
         "houseShow": {
-          "powderCoat": "#272d33",
-          "hardware": "#c5a052",
-          "polymer": "#344e5b"
+          "housing": "#3a4045",
+          "keys": "#d9dcd8",
+          "rubber": "#1b1d1f",
+          "display": "#7bd8ff"
         },
         "touring": {
-          "powderCoat": "#315465",
-          "hardware": "#e2b347",
-          "polymer": "#e3a928"
+          "housing": "#22262a",
+          "keys": "#f0a830",
+          "rubber": "#121314",
+          "display": "#9dff7a"
+        },
+        "redChannel": {
+          "housing": "#5a1f22",
+          "keys": "#e8e3d8",
+          "rubber": "#1b1d1f",
+          "display": "#ff5a4a"
         }
       },
       "stats": {
-        "triangles": 204,
+        "triangles": 890,
         "sizeM": [
-          0.2795,
-          0.68,
-          0.185
+          0.144,
+          0.165,
+          0.06
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#353b41",
+          "name": "housing",
+          "color": "#3a4045",
           "parts": [
-            "pack-body",
-            "top-cap",
-            "front-label"
+            "body",
+            "clip-boss"
           ],
-          "param": "powderCoat"
+          "param": "housing"
         },
         {
-          "name": "hardware",
-          "color": "#c28f3e",
+          "name": "rubber",
+          "color": "#1b1d1f",
           "parts": [
-            "belt-clip"
-          ],
-          "param": "hardware"
-        },
-        {
-          "name": "polymer",
-          "color": "#426878",
-          "parts": [
-            "side-button",
+            "grip--1",
+            "grip-1",
+            "display-bezel",
+            "encoder-a",
+            "encoder-b",
+            "menu-key",
             "antenna-base",
             "antenna",
-            "talk-button",
-            "headset-socket"
+            "plug",
+            "plug-boot"
           ],
-          "param": "polymer"
+          "param": "rubber"
+        },
+        {
+          "name": "display",
+          "color": "#7bd8ff",
+          "parts": [
+            "display",
+            "tally-a",
+            "tally-b"
+          ],
+          "param": "display"
+        },
+        {
+          "name": "keys",
+          "color": "#d9dcd8",
+          "parts": [
+            "talk-key-a",
+            "encoder-cap-a",
+            "talk-key-b",
+            "encoder-cap-b"
+          ],
+          "param": "keys"
+        },
+        {
+          "name": "socket",
+          "color": "#aeb5b9",
+          "parts": [
+            "socket",
+            "belt-clip"
+          ]
         }
       ]
     },
