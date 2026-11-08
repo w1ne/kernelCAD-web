@@ -18821,17 +18821,23 @@
     {
       "id": "midway-barker-microphone-stand",
       "kit": "amusement-park",
-      "title": "Midway game microphone stand",
-      "description": "Portable host microphone podium with an angled script shelf, hand mic, and folded-stand feet. Controls: overall scale, paintedTimber, steel, enamel; festival and twilight material presets.",
+      "title": "Midway barker's microphone podium",
+      "description": "Midway game host podium at about real size: flared body in circus stripes between gilt bands and corner beads, gilt star medallion, row of marquee bulbs under the lip, sloped script desk, and a vintage chrome microphone on a gooseneck facing the host. Material controls: painted body, stripe and bulb cream, gilt trim, chrome. Festival, twilight and vintage presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "podium",
+        "barker",
+        "microphone",
+        "vintage microphone",
+        "lectern",
+        "carnival",
+        "midway games",
         "amusement park",
         "theme park",
         "guest experience",
         "low poly",
-        "CC0",
-        "midway games"
+        "CC0"
       ],
       "compat": [
         "amusement-park",
@@ -18842,8 +18848,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/midway-barker-microphone-stand.kcad.ts",
       "preview": "/assets/amusement-park-midway-barker-microphone-stand.png",
-      "sourceSha256": "eadc5307b8609f310e7788ca74dc216f1984e2b9ce65bc7a7526187321d506af",
-      "triangleBudget": 1800,
+      "sourceSha256": "f8878ccc6de8cf83565a40651996bb3d9420fd69db86ffb1936f0e1ce531943f",
+      "triangleBudget": 3500,
       "params": [
         {
           "name": "scale",
@@ -18855,75 +18861,136 @@
           "step": 0.05
         },
         {
-          "name": "paintedTimber",
+          "name": "paint",
           "type": "color",
-          "default": "#92704e",
-          "label": "Painted timber"
+          "default": "#b8312f",
+          "label": "Painted podium body"
         },
         {
-          "name": "steel",
+          "name": "stripe",
           "type": "color",
-          "default": "#738087",
-          "label": "Painted steel"
+          "default": "#f3e6c4",
+          "label": "Cream stripes, desk and bulbs"
         },
         {
-          "name": "enamel",
+          "name": "gilt",
           "type": "color",
-          "default": "#cc684e",
-          "label": "Baked enamel"
+          "default": "#d4a53c",
+          "label": "Gilt bands, beads and medallion"
+        },
+        {
+          "name": "chrome",
+          "type": "color",
+          "default": "#c9ced1",
+          "label": "Chrome microphone and gooseneck"
         }
       ],
       "presets": {
         "festival": {
-          "paintedTimber": "#be8a4e",
-          "steel": "#9da3a0",
-          "enamel": "#edb34d"
+          "paint": "#2e6fb3",
+          "stripe": "#fff4d6",
+          "gilt": "#f2c230",
+          "chrome": "#dfe3e5"
         },
         "twilight": {
-          "paintedTimber": "#5e7181",
-          "steel": "#4f626c",
-          "enamel": "#385b81"
+          "paint": "#3b2a55",
+          "stripe": "#c9b98f",
+          "gilt": "#a8873a",
+          "chrome": "#8a9aa0"
+        },
+        "vintage": {
+          "paint": "#7a2b23",
+          "stripe": "#e8d6a8",
+          "gilt": "#b8913f",
+          "chrome": "#b5b0a4"
         }
       },
       "stats": {
-        "triangles": 128,
+        "triangles": 1872,
         "sizeM": [
-          0.90509,
-          1.85,
-          0.754932
+          0.76,
+          1.587,
+          0.55
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedTimber",
-          "color": "#92704e",
+          "name": "paint",
+          "color": "#b8312f",
           "parts": [
-            "podium-base",
-            "stem",
-            "front-panel",
-            "microphone"
+            "plinth",
+            "body",
+            "medallion-field",
+            "script-card",
+            "mic-grille-0",
+            "mic-grille-1",
+            "mic-grille-2",
+            "mic-grille-3",
+            "mic-grille-4"
           ],
-          "param": "paintedTimber"
+          "param": "paint"
         },
         {
-          "name": "steel",
-          "color": "#738087",
+          "name": "gilt",
+          "color": "#d4a53c",
           "parts": [
-            "script-shelf",
-            "foot-0",
-            "foot-1"
+            "plinth-band",
+            "band-low",
+            "band-high",
+            "corner-bead-l",
+            "corner-bead-r",
+            "medallion",
+            "medallion-star",
+            "desk-lip",
+            "bulb-socket-0",
+            "bulb-socket-1",
+            "bulb-socket-2",
+            "bulb-socket-3",
+            "bulb-socket-4",
+            "bulb-socket-5",
+            "bulb-socket-6",
+            "mic-badge"
           ],
-          "param": "steel"
+          "param": "gilt"
         },
         {
-          "name": "enamel",
-          "color": "#cc684e",
+          "name": "stripe",
+          "color": "#f3e6c4",
           "parts": [
-            "foot-2"
+            "stripe-1",
+            "stripe-3",
+            "stripe-5",
+            "desk",
+            "bulb-0",
+            "bulb-1",
+            "bulb-2",
+            "bulb-3",
+            "bulb-4",
+            "bulb-5",
+            "bulb-6"
           ],
-          "param": "enamel"
+          "param": "stripe"
+        },
+        {
+          "name": "chrome",
+          "color": "#c9ced1",
+          "parts": [
+            "mic-flange",
+            "gooseneck-0",
+            "gooseneck-1",
+            "gooseneck-joint-1",
+            "gooseneck-2",
+            "gooseneck-joint-2",
+            "gooseneck-3",
+            "gooseneck-joint-3",
+            "mic-yoke",
+            "mic-yoke-arm-l",
+            "mic-yoke-arm-r",
+            "mic-capsule"
+          ],
+          "param": "chrome"
         }
       ]
     },
@@ -19500,10 +19567,15 @@
       "id": "parade-rope-stanchion",
       "kit": "amusement-park",
       "title": "Parade rope stanchion pair",
-      "description": "Portable crowd-control rope set with two weighted posts, a cross-span rail, and a central clip. Controls: overall scale, stainlessSteel, rope, concrete; festival and twilight material presets.",
+      "description": "Portable parade crowd-control rope set at about real size: two weighted domed cast bases, polished posts with turned collars and ball tops, a velvet rope sagging in a catenary between brass snap hooks on eyelet rings, and a hanging parade-route plaque. Material controls: polished post metal, cast base, velvet rope, plaque enamel. Festival, twilight and red-carpet presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "rope stanchion",
+        "crowd control",
+        "velvet rope",
+        "queue post",
+        "parade",
         "amusement park",
         "theme park",
         "guest experience",
@@ -19520,8 +19592,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/parade-rope-stanchion.kcad.ts",
       "preview": "/assets/amusement-park-parade-rope-stanchion.png",
-      "sourceSha256": "bdfa4b73fdfde7506fad75873b29b4e0efab32f20242783e48735355e058319d",
-      "triangleBudget": 1800,
+      "sourceSha256": "28b50622bee8fed6430ba4e3a8a03f6d63f1283b215d82b3c06374bdc98f51a8",
+      "triangleBudget": 4000,
       "params": [
         {
           "name": "scale",
@@ -19533,75 +19605,134 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "brass",
           "type": "color",
-          "default": "#b0b9b6",
-          "label": "Stainless steel"
+          "default": "#c9a54a",
+          "label": "Polished posts, collars and hooks"
         },
         {
-          "name": "rope",
+          "name": "castBase",
           "type": "color",
-          "default": "#aa8c61",
-          "label": "Braided rope"
+          "default": "#2c2f33",
+          "label": "Weighted cast bases"
         },
         {
-          "name": "concrete",
+          "name": "velvet",
           "type": "color",
-          "default": "#92938b",
-          "label": "Concrete"
+          "default": "#9e2234",
+          "label": "Velvet rope"
+        },
+        {
+          "name": "enamel",
+          "type": "color",
+          "default": "#1f5f8b",
+          "label": "Parade plaque enamel"
         }
       ],
       "presets": {
         "festival": {
-          "stainlessSteel": "#d1d1c6",
-          "rope": "#d1ad72",
-          "concrete": "#aaa99e"
+          "brass": "#e0bd5a",
+          "castBase": "#3a4a5c",
+          "velvet": "#d6402f",
+          "enamel": "#f2c230"
         },
         "twilight": {
-          "stainlessSteel": "#788b91",
-          "rope": "#7b6347",
-          "concrete": "#6f7477"
+          "brass": "#8f9ca3",
+          "castBase": "#1d2329",
+          "velvet": "#3d4f8f",
+          "enamel": "#2b3f55"
+        },
+        "redCarpet": {
+          "brass": "#d4af37",
+          "castBase": "#141414",
+          "velvet": "#7a0f1e",
+          "enamel": "#141414"
         }
       },
       "stats": {
-        "triangles": 256,
+        "triangles": 3054,
         "sizeM": [
-          2.72,
-          1.58,
-          0.42
+          2.58,
+          1.075,
+          0.38
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "concrete",
-          "color": "#92938b",
+          "name": "castBase",
+          "color": "#2c2f33",
           "parts": [
-            "weighted-base-0",
-            "weighted-base-1"
+            "base-l",
+            "base-r"
           ],
-          "param": "concrete"
+          "param": "castBase"
         },
         {
-          "name": "rope",
-          "color": "#aa8c61",
+          "name": "brass",
+          "color": "#c9a54a",
           "parts": [
-            "post-0",
-            "post-1"
+            "base-collar-l",
+            "post-l",
+            "neck-collar-l",
+            "ball-top-l",
+            "eyelet-l",
+            "hook-l",
+            "base-collar-r",
+            "post-r",
+            "neck-collar-r",
+            "ball-top-r",
+            "eyelet-r",
+            "hook-r",
+            "plaque-strap-l",
+            "plaque-strap-r",
+            "plaque-border",
+            "plaque-star",
+            "plaque-arrow-0",
+            "plaque-arrow-1",
+            "plaque-arrow-2"
           ],
-          "param": "rope"
+          "param": "brass"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b0b9b6",
+          "name": "velvet",
+          "color": "#9e2234",
           "parts": [
-            "rope-span",
-            "center-clip",
-            "base-inset-0",
-            "base-inset-1"
+            "rope-0",
+            "rope-1",
+            "rope-joint-1",
+            "rope-2",
+            "rope-joint-2",
+            "rope-3",
+            "rope-joint-3",
+            "rope-4",
+            "rope-joint-4",
+            "rope-5",
+            "rope-joint-5",
+            "rope-6",
+            "rope-joint-6",
+            "rope-7",
+            "rope-joint-7",
+            "rope-8",
+            "rope-joint-8",
+            "rope-9",
+            "rope-joint-9",
+            "rope-10",
+            "rope-joint-10",
+            "rope-11",
+            "rope-joint-11"
           ],
-          "param": "stainlessSteel"
+          "param": "velvet"
+        },
+        {
+          "name": "enamel",
+          "color": "#1f5f8b",
+          "parts": [
+            "plaque",
+            "plaque-panel"
+          ],
+          "param": "enamel"
         }
       ]
     },
@@ -20243,10 +20374,15 @@
       "id": "park-pathway-bollard-light",
       "kit": "amusement-park",
       "title": "Park pathway bollard light",
-      "description": "Low path marker with a broad anchor foot, fluted post, and a down-shielded cap. Controls: overall scale, stainlessSteel, acrylic, concrete; festival and twilight material presets.",
+      "description": "Knee-high park pathway bollard light at about real size: round concrete footing with anchor bolts, flared cast-aluminium foot, fluted shaft with a decorative band, glowing diffuser lens behind stacked horizontal glare louvres, and an overhanging domed cap with a finial. Material controls: cast housing, lens glow, trim band, concrete. Festival, twilight and heritage-bronze presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "bollard light",
+        "path light",
+        "lamp post",
+        "landscape lighting",
+        "louvre",
         "amusement park",
         "theme park",
         "guest experience",
@@ -20263,8 +20399,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/park-pathway-bollard-light.kcad.ts",
       "preview": "/assets/amusement-park-park-pathway-bollard-light.png",
-      "sourceSha256": "372be8a0d25296bf4763db4ca050cc9c3306e0546b75e019d0b59db2f8775705",
-      "triangleBudget": 1800,
+      "sourceSha256": "f7a1b8bd576930037b7a1c314794824ad4028cea6414e20bc334f5117b87858e",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -20276,42 +20412,56 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "housing",
           "type": "color",
-          "default": "#b0b9b6",
-          "label": "Stainless steel"
+          "default": "#33424a",
+          "label": "Cast-aluminium housing and louvres"
         },
         {
-          "name": "acrylic",
+          "name": "lens",
           "type": "color",
-          "default": "#63aab8",
-          "label": "Tinted acrylic"
+          "default": "#f6d98a",
+          "label": "Diffuser lens glow"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#b8913f",
+          "label": "Decorative band and finial"
         },
         {
           "name": "concrete",
           "type": "color",
-          "default": "#92938b",
-          "label": "Concrete"
+          "default": "#9a978f",
+          "label": "Concrete footing"
         }
       ],
       "presets": {
         "festival": {
-          "stainlessSteel": "#d1d1c6",
-          "acrylic": "#79c8d2",
-          "concrete": "#aaa99e"
+          "housing": "#2e6fb3",
+          "lens": "#fff1b8",
+          "trim": "#e3b23c",
+          "concrete": "#b0aca2"
         },
         "twilight": {
-          "stainlessSteel": "#788b91",
-          "acrylic": "#41768b",
-          "concrete": "#6f7477"
+          "housing": "#1f2a33",
+          "lens": "#ffd36b",
+          "trim": "#7d8f99",
+          "concrete": "#6c7174"
+        },
+        "heritageBronze": {
+          "housing": "#5a4330",
+          "lens": "#f2c97a",
+          "trim": "#c9a25a",
+          "concrete": "#a29a8c"
         }
       },
       "stats": {
-        "triangles": 192,
+        "triangles": 1304,
         "sizeM": [
-          0.44,
-          0.885,
-          0.44
+          0.42,
+          1.071,
+          0.42
         ],
         "minUpM": 0,
         "materials": 1
@@ -20319,32 +20469,60 @@
       "palette": [
         {
           "name": "concrete",
-          "color": "#92938b",
+          "color": "#9a978f",
           "parts": [
-            "anchor-foot"
+            "footing"
           ],
           "param": "concrete"
         },
         {
-          "name": "acrylic",
-          "color": "#63aab8",
+          "name": "housing",
+          "color": "#33424a",
           "parts": [
-            "bollard-post"
+            "anchor-bolt-0",
+            "anchor-bolt-1",
+            "anchor-bolt-2",
+            "anchor-bolt-3",
+            "foot",
+            "shaft",
+            "flute-0",
+            "flute-1",
+            "flute-2",
+            "flute-3",
+            "flute-4",
+            "flute-5",
+            "flute-6",
+            "flute-7",
+            "head-collar",
+            "louvre-0",
+            "louvre-1",
+            "louvre-2",
+            "louvre-strut-0",
+            "louvre-strut-1",
+            "louvre-strut-2",
+            "louvre-strut-3",
+            "cap"
           ],
-          "param": "acrylic"
+          "param": "housing"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b0b9b6",
+          "name": "trim",
+          "color": "#b8913f",
           "parts": [
-            "light-cap",
-            "glare-shield",
-            "vertical-flute-0",
-            "vertical-flute-1",
-            "vertical-flute-2",
-            "vertical-flute-3"
+            "band-lower",
+            "band-upper",
+            "finial-stem",
+            "finial"
           ],
-          "param": "stainlessSteel"
+          "param": "trim"
+        },
+        {
+          "name": "lens",
+          "color": "#f6d98a",
+          "parts": [
+            "lens"
+          ],
+          "param": "lens"
         }
       ]
     },
@@ -20633,10 +20811,15 @@
       "id": "park-water-fountain",
       "kit": "amusement-park",
       "title": "Park drinking fountain",
-      "description": "Freestanding guest fountain with a raised bowl, two push-button stations, and a bottle-fill spout. Controls: overall scale, stainlessSteel, concrete, acrylic; festival and twilight material presets.",
+      "description": "Freestanding park drinking fountain at about real size: turned pedestal column with a flared foot, shallow stainless bowl with drain and chrome bubbler head, push-button housing, bottle-filler tower with recessed alcove, spout, drip grate and sensor, a pet bowl with its own spigot, on a concrete pad. Material controls: powder-coated pedestal and tower, stainless steel, button and badge accent, concrete. Festival, twilight and heritage presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "drinking fountain",
+        "water fountain",
+        "bottle filler",
+        "bubbler",
+        "pet bowl",
         "amusement park",
         "theme park",
         "guest experience",
@@ -20653,8 +20836,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/park-water-fountain.kcad.ts",
       "preview": "/assets/amusement-park-park-water-fountain.png",
-      "sourceSha256": "d0f694424da3dfe4094b9dc0c9e63cc711277402b5d48b9fb11db8d6dbc9b0fb",
-      "triangleBudget": 1800,
+      "sourceSha256": "a330ad561af6e323ca57b313fdfa175cb389babc1eafccbad6e2840828cca6cf",
+      "triangleBudget": 3500,
       "params": [
         {
           "name": "scale",
@@ -20666,75 +20849,115 @@
           "step": 0.05
         },
         {
+          "name": "powderCoat",
+          "type": "color",
+          "default": "#2f6f8f",
+          "label": "Powder-coated pedestal and filler tower"
+        },
+        {
           "name": "stainlessSteel",
           "type": "color",
-          "default": "#b0b9b6",
-          "label": "Stainless steel"
+          "default": "#c3cbca",
+          "label": "Stainless bowl, bubbler and spouts"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e3a72f",
+          "label": "Push buttons, badge and sensor"
         },
         {
           "name": "concrete",
           "type": "color",
-          "default": "#92938b",
-          "label": "Concrete"
-        },
-        {
-          "name": "acrylic",
-          "type": "color",
-          "default": "#63aab8",
-          "label": "Tinted acrylic"
+          "default": "#a09d94",
+          "label": "Concrete pad"
         }
       ],
       "presets": {
         "festival": {
-          "stainlessSteel": "#d1d1c6",
-          "concrete": "#aaa99e",
-          "acrylic": "#79c8d2"
+          "powderCoat": "#d0573c",
+          "stainlessSteel": "#d6dad6",
+          "accent": "#f2c230",
+          "concrete": "#b3afa5"
         },
         "twilight": {
-          "stainlessSteel": "#788b91",
-          "concrete": "#6f7477",
-          "acrylic": "#41768b"
+          "powderCoat": "#2b3f55",
+          "stainlessSteel": "#8a9aa0",
+          "accent": "#4fb3c9",
+          "concrete": "#6f7477"
+        },
+        "heritage": {
+          "powderCoat": "#2f4a35",
+          "stainlessSteel": "#b89a5c",
+          "accent": "#c9b27a",
+          "concrete": "#9c958a"
         }
       },
       "stats": {
-        "triangles": 224,
+        "triangles": 1316,
         "sizeM": [
-          0.82,
-          1.412,
-          0.82
+          0.9,
+          1.69,
+          0.964
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#b0b9b6",
-          "parts": [
-            "pedestal",
-            "bowl",
-            "backsplash",
-            "bottle-fill-spout"
-          ],
-          "param": "stainlessSteel"
-        },
-        {
           "name": "concrete",
-          "color": "#92938b",
+          "color": "#a09d94",
           "parts": [
-            "bubbler-post-0",
-            "bubbler-post-1"
+            "pad"
           ],
           "param": "concrete"
         },
         {
-          "name": "acrylic",
-          "color": "#63aab8",
+          "name": "powderCoat",
+          "color": "#2f6f8f",
           "parts": [
-            "push-button-0",
-            "push-button-1"
+            "pedestal",
+            "drain",
+            "button-housing",
+            "button-housing-arm",
+            "filler-tower",
+            "grate-slot-0",
+            "grate-slot-1",
+            "grate-slot-2",
+            "grate-slot-3",
+            "grate-slot-4"
           ],
-          "param": "acrylic"
+          "param": "powderCoat"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#c3cbca",
+          "parts": [
+            "pedestal-band",
+            "bowl",
+            "bubbler-post",
+            "bubbler-head",
+            "tower-cap",
+            "alcove-lining",
+            "filler-spout",
+            "filler-nozzle",
+            "drip-grate",
+            "badge-drop",
+            "pet-bowl",
+            "pet-spigot-riser",
+            "pet-spigot"
+          ],
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "accent",
+          "color": "#e3a72f",
+          "parts": [
+            "push-button",
+            "sensor-lens",
+            "badge"
+          ],
+          "param": "accent"
         }
       ]
     },
@@ -24725,10 +24948,15 @@
       "id": "wayfinding-pylon",
       "kit": "amusement-park",
       "title": "Park wayfinding pylon",
-      "description": "Tall freestanding direction marker with three offset destination blades and a broad ground plinth. Controls: overall scale, powderCoat, anodizedAluminum, enamel; festival and twilight material presets.",
+      "description": "Theme-park fingerpost at about real size: four arrow-shaped finger blades with pointed tips, fishtail tails and cream lettering panels fanned toward different destinations, a round post with turned collars on a stepped plinth, and a gilt star finial on a ball. Material controls: powder-coated post and plinth, blade enamel, lettering panel, gilt trim. Festival, twilight and adventure-land presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "wayfinding",
+        "signpost",
+        "fingerpost",
+        "direction sign",
+        "arrow sign",
         "amusement park",
         "theme park",
         "guest experience",
@@ -24745,8 +24973,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/wayfinding-pylon.kcad.ts",
       "preview": "/assets/amusement-park-wayfinding-pylon.png",
-      "sourceSha256": "d0f103320ab1c8f8d6752cd688eeeb0a7cc9d8f452f998847c666fb1aa7e5ae5",
-      "triangleBudget": 1800,
+      "sourceSha256": "82241b64c42c2435aba54230824a89d2607aa2954581a75dc5832cc7e444db00",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -24760,71 +24988,122 @@
         {
           "name": "powderCoat",
           "type": "color",
-          "default": "#477985",
-          "label": "Powder-coated steel"
-        },
-        {
-          "name": "anodizedAluminum",
-          "type": "color",
-          "default": "#859b9e",
-          "label": "Anodized aluminum"
+          "default": "#2f4f5f",
+          "label": "Powder-coated post and plinth"
         },
         {
           "name": "enamel",
           "type": "color",
-          "default": "#cc684e",
-          "label": "Baked enamel"
+          "default": "#c8553d",
+          "label": "Finger blade enamel"
+        },
+        {
+          "name": "signFace",
+          "type": "color",
+          "default": "#f3e9cf",
+          "label": "Lettering panels"
+        },
+        {
+          "name": "gilt",
+          "type": "color",
+          "default": "#d4a53c",
+          "label": "Collars, tips and star finial"
         }
       ],
       "presets": {
         "festival": {
-          "powderCoat": "#d47452",
-          "anodizedAluminum": "#b7c4c3",
-          "enamel": "#edb34d"
+          "powderCoat": "#2e6fb3",
+          "enamel": "#e04f6a",
+          "signFace": "#fff6dc",
+          "gilt": "#f2c230"
         },
         "twilight": {
-          "powderCoat": "#35576f",
-          "anodizedAluminum": "#576f78",
-          "enamel": "#385b81"
+          "powderCoat": "#1f2a38",
+          "enamel": "#3d5a8f",
+          "signFace": "#c9c2ad",
+          "gilt": "#9fb0b8"
+        },
+        "adventureLand": {
+          "powderCoat": "#5a4330",
+          "enamel": "#3f7a3a",
+          "signFace": "#e8d6a8",
+          "gilt": "#b8913f"
         }
       },
       "stats": {
-        "triangles": 104,
+        "triangles": 842,
         "sizeM": [
-          1.632911,
-          3.36,
-          0.68
+          2.171925,
+          3.65,
+          2.28297
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "anodizedAluminum",
-          "color": "#859b9e",
-          "parts": [
-            "plinth",
-            "mast"
-          ],
-          "param": "anodizedAluminum"
-        },
-        {
           "name": "powderCoat",
-          "color": "#477985",
+          "color": "#2f4f5f",
           "parts": [
-            "north-blade",
-            "east-blade",
-            "west-blade"
+            "plinth-lower",
+            "plinth-upper",
+            "post",
+            "blade-text-0-0",
+            "blade-text-0-1",
+            "blade-text-0-2",
+            "blade-bracket-0",
+            "blade-text-1-0",
+            "blade-text-1-1",
+            "blade-text-1-2",
+            "blade-bracket-1",
+            "blade-text-2-0",
+            "blade-text-2-1",
+            "blade-text-2-2",
+            "blade-bracket-2",
+            "blade-text-3-0",
+            "blade-text-3-1",
+            "blade-text-3-2",
+            "blade-bracket-3"
           ],
           "param": "powderCoat"
         },
         {
-          "name": "enamel",
-          "color": "#cc684e",
+          "name": "gilt",
+          "color": "#d4a53c",
           "parts": [
-            "emblem"
+            "collar-0",
+            "collar-1",
+            "collar-2",
+            "blade-tip-0",
+            "blade-tip-1",
+            "blade-tip-2",
+            "blade-tip-3",
+            "finial-ball",
+            "finial-star"
+          ],
+          "param": "gilt"
+        },
+        {
+          "name": "enamel",
+          "color": "#c8553d",
+          "parts": [
+            "blade-0",
+            "blade-1",
+            "blade-2",
+            "blade-3"
           ],
           "param": "enamel"
+        },
+        {
+          "name": "signFace",
+          "color": "#f3e9cf",
+          "parts": [
+            "blade-panel-0",
+            "blade-panel-1",
+            "blade-panel-2",
+            "blade-panel-3"
+          ],
+          "param": "signFace"
         }
       ]
     },
