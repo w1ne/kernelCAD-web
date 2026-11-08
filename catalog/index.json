@@ -13402,10 +13402,16 @@
       "id": "accessible-entry-queue-gate",
       "kit": "amusement-park",
       "title": "Accessible entry queue gate",
-      "description": "Wide clear-opening gate with swing leaf, paired handrails, and a low threshold plate. Controls: overall scale, stainlessSteel, powderCoat, rubber; festival and twilight material presets.",
+      "description": "Step-free accessible queue entrance at about real size: two tall powder-coated tube posts with ball caps and a header beam carrying a blue wheelchair access sign, a framed swing leaf with round infill bars standing open into the queue, paired stainless handrails at adult and child height on the approach, a tapered rubber threshold ramp with grip grooves, and a push-button operator bollard. Material controls: stainless rails, powder-coated frame, rubber ramp, access signage. Festival, twilight and heritage presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "accessible entrance",
+        "wheelchair access",
+        "queue gate",
+        "swing gate",
+        "handrail",
+        "step-free",
         "amusement park",
         "theme park",
         "guest experience",
@@ -13422,8 +13428,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/accessible-entry-queue-gate.kcad.ts",
       "preview": "/assets/amusement-park-accessible-entry-queue-gate.png",
-      "sourceSha256": "b1f37937b06060e689c747eb4ca7ee321d64119ad3e17583802d19cfd9c7202f",
-      "triangleBudget": 1800,
+      "sourceSha256": "fb3db77813cfc1a421b5df966318d4bc9b12502c5e553914973a10627ee958af",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "scale",
@@ -13437,72 +13443,133 @@
         {
           "name": "stainlessSteel",
           "type": "color",
-          "default": "#b0b9b6",
-          "label": "Stainless steel"
+          "default": "#c3cbc8",
+          "label": "Stainless handrails and symbol"
         },
         {
           "name": "powderCoat",
           "type": "color",
           "default": "#477985",
-          "label": "Powder-coated steel"
+          "label": "Powder-coated posts, beam and gate leaf"
         },
         {
           "name": "rubber",
           "type": "color",
           "default": "#292f33",
-          "label": "Rubber"
+          "label": "Rubber threshold ramp"
+        },
+        {
+          "name": "signage",
+          "type": "color",
+          "default": "#1f5fae",
+          "label": "Access sign and operator button"
         }
       ],
       "presets": {
         "festival": {
-          "stainlessSteel": "#d1d1c6",
+          "stainlessSteel": "#e4e1d6",
           "powderCoat": "#d47452",
-          "rubber": "#3c4245"
+          "rubber": "#3c4245",
+          "signage": "#2a72c8"
         },
         "twilight": {
-          "stainlessSteel": "#788b91",
+          "stainlessSteel": "#8f9fa5",
           "powderCoat": "#35576f",
-          "rubber": "#20262a"
+          "rubber": "#20262a",
+          "signage": "#2c4f8f"
+        },
+        "heritage": {
+          "stainlessSteel": "#c9a95c",
+          "powderCoat": "#2e3b33",
+          "rubber": "#3a3328",
+          "signage": "#1d4f7a"
         }
       },
       "stats": {
-        "triangles": 84,
+        "triangles": 2340,
         "sizeM": [
-          2.6,
-          1.2,
-          1.268878
+          1.615,
+          2.82,
+          2.269137
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#b0b9b6",
+          "name": "rubber",
+          "color": "#292f33",
           "parts": [
-            "threshold",
-            "swing-leaf"
+            "threshold-ramp"
           ],
-          "param": "stainlessSteel"
+          "param": "rubber"
         },
         {
           "name": "powderCoat",
           "color": "#477985",
           "parts": [
-            "left-post",
-            "right-post",
-            "left-handrail",
-            "right-handrail"
+            "grip-groove-0",
+            "grip-groove-1",
+            "grip-groove-2",
+            "grip-groove-3",
+            "grip-groove-4",
+            "gate-post-l",
+            "gate-post-r",
+            "header-beam",
+            "gate-leaf-0",
+            "gate-leaf-1",
+            "gate-leaf-2",
+            "gate-leaf-3",
+            "operator-bollard",
+            "operator-head"
           ],
           "param": "powderCoat"
         },
         {
-          "name": "rubber",
-          "color": "#292f33",
+          "name": "stainlessSteel",
+          "color": "#c3cbc8",
           "parts": [
-            "operator-latch"
+            "gate-post-foot-l",
+            "gate-post-cap-l",
+            "gate-post-foot-r",
+            "gate-post-cap-r",
+            "access-sign-border",
+            "symbol-head",
+            "symbol-body",
+            "symbol-wheel",
+            "gate-leaf-4",
+            "gate-leaf-5",
+            "gate-leaf-6",
+            "gate-leaf-7",
+            "gate-leaf-8",
+            "gate-leaf-9",
+            "gate-leaf-10",
+            "gate-hinge-250",
+            "gate-hinge-950",
+            "rail-post-l-1300",
+            "rail-post-l-650",
+            "handrail-l-700",
+            "handrail-end-l-700",
+            "handrail-l-900",
+            "handrail-end-l-900",
+            "rail-post-r-1300",
+            "rail-post-r-650",
+            "handrail-r-700",
+            "handrail-end-r-700",
+            "handrail-r-900",
+            "handrail-end-r-900"
           ],
-          "param": "rubber"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "signage",
+          "color": "#1f5fae",
+          "parts": [
+            "access-sign",
+            "gate-latch",
+            "operator-button"
+          ],
+          "param": "signage"
         }
       ]
     },
@@ -13510,10 +13577,16 @@
       "id": "accessible-ride-transfer-bench",
       "kit": "amusement-park",
       "title": "Accessible ride transfer bench",
-      "description": "Transfer area bench with clear side approach, back rail, and adjacent bag shelf. Controls: overall scale, stainlessSteel, fiberglass, rubber; festival and twilight material presets.",
+      "description": "Ride load-platform transfer bench at about real size: long padded seat at wheelchair-seat height with a rounded fiberglass nose and an open approach end, U-shaped end grab rail and a back grab bar on standoffs, round stainless legs on rubber feet, a slatted bag shelf for loose articles, and a rubber wheelchair transfer mat with a contrasting edge. Material controls: stainless rails, fiberglass shell, vinyl padding, rubber. Festival, twilight and safety presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "transfer bench",
+        "accessible",
+        "wheelchair transfer",
+        "ride platform",
+        "grab rail",
+        "bench",
         "amusement park",
         "theme park",
         "guest experience",
@@ -13530,8 +13603,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/accessible-ride-transfer-bench.kcad.ts",
       "preview": "/assets/amusement-park-accessible-ride-transfer-bench.png",
-      "sourceSha256": "2db1c5aa9aea091a4073cd0c0cc78163c541ecd6282b54566008232d1497531d",
-      "triangleBudget": 1800,
+      "sourceSha256": "058ae5022cfb489362bb9c6dea0b82306992e870a14ff225fcf7289a36d2b6d1",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -13546,71 +13619,122 @@
           "name": "stainlessSteel",
           "type": "color",
           "default": "#b0b9b6",
-          "label": "Stainless steel"
+          "label": "Stainless legs and grab rails"
         },
         {
           "name": "fiberglass",
           "type": "color",
           "default": "#4d8290",
-          "label": "Painted fiberglass"
+          "label": "Painted fiberglass seat shell"
+        },
+        {
+          "name": "padding",
+          "type": "color",
+          "default": "#2f3e57",
+          "label": "Vinyl seat padding"
         },
         {
           "name": "rubber",
           "type": "color",
           "default": "#292f33",
-          "label": "Rubber"
+          "label": "Rubber feet and transfer mat"
         }
       ],
       "presets": {
         "festival": {
           "stainlessSteel": "#d1d1c6",
-          "fiberglass": "#d7a83f",
+          "fiberglass": "#d47452",
+          "padding": "#f0c35a",
           "rubber": "#3c4245"
         },
         "twilight": {
           "stainlessSteel": "#788b91",
-          "fiberglass": "#96566d",
+          "fiberglass": "#35576f",
+          "padding": "#1f2a3a",
           "rubber": "#20262a"
+        },
+        "safety": {
+          "stainlessSteel": "#c3cbc8",
+          "fiberglass": "#f2c230",
+          "padding": "#2b2f33",
+          "rubber": "#3a3f42"
         }
       },
       "stats": {
-        "triangles": 108,
+        "triangles": 1516,
         "sizeM": [
-          1.575,
-          1.37,
-          0.5675
+          2.53,
+          1.002,
+          0.869352
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#b0b9b6",
-          "parts": [
-            "seat",
-            "back"
-          ],
-          "param": "stainlessSteel"
-        },
-        {
           "name": "fiberglass",
           "color": "#4d8290",
           "parts": [
-            "leg-0",
-            "leg-1",
-            "leg-2",
-            "leg-3",
-            "bag-shelf",
-            "side-grab-rail"
+            "seat-shell",
+            "back-shell",
+            "seat-seam-1",
+            "seat-seam-2",
+            "mat-edge-f",
+            "mat-edge-b",
+            "mat-edge-end"
           ],
           "param": "fiberglass"
+        },
+        {
+          "name": "padding",
+          "color": "#2f3e57",
+          "parts": [
+            "seat-pad",
+            "back-pad"
+          ],
+          "param": "padding"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#b0b9b6",
+          "parts": [
+            "leg-lf",
+            "leg-lb",
+            "frame-side-l",
+            "leg-rf",
+            "leg-rb",
+            "frame-side-r",
+            "shelf-rail-f",
+            "shelf-rail-b",
+            "shelf-slat-0",
+            "shelf-slat-1",
+            "shelf-slat-2",
+            "shelf-slat-3",
+            "shelf-slat-4",
+            "shelf-slat-5",
+            "end-rail-loop",
+            "end-rail-leg-f",
+            "end-rail-flange-f",
+            "end-rail-leg-b",
+            "end-rail-flange-b",
+            "back-grab-bar",
+            "grab-standoff-0",
+            "grab-standoff-1",
+            "grab-standoff-2",
+            "grab-bar-end-l",
+            "grab-bar-end-r"
+          ],
+          "param": "stainlessSteel"
         },
         {
           "name": "rubber",
           "color": "#292f33",
           "parts": [
-            "front-grab-rail"
+            "foot-lf",
+            "foot-lb",
+            "foot-rf",
+            "foot-rb",
+            "transfer-mat"
           ],
           "param": "rubber"
         }
@@ -14340,10 +14464,17 @@
       "id": "character-meet-photo-easel",
       "kit": "amusement-park",
       "title": "Character meet photo easel",
-      "description": "Portable guest photo display with a tripod back, framed sample print, and a low caption shelf. Controls: overall scale, timber, aluminum, acrylic; festival and twilight material presets.",
+      "description": "Meet-and-greet souvenir photo display at about real size: three-legged timber artist's easel with splayed front legs, a hinged back leg and a front ledge, a large sample photo in a moulded gilt frame leaning on the ledge showing a waving cartoon bear on a sky backdrop with sparkles, and an engraved caption plaque. Material controls: sealed timber, gilt frame and plaque, photo backdrop, character print. Festival, twilight and storybook presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "photo easel",
+        "easel",
+        "photo display",
+        "character meet",
+        "meet and greet",
+        "souvenir photo",
+        "picture frame",
         "amusement park",
         "theme park",
         "guest experience",
@@ -14360,8 +14491,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/character-meet-photo-easel.kcad.ts",
       "preview": "/assets/amusement-park-character-meet-photo-easel.png",
-      "sourceSha256": "960e3e2e3b0818bf0284096eb5237f932853635b4afe3ab77dd191a48cf75a27",
-      "triangleBudget": 1800,
+      "sourceSha256": "bfbc03f376233f6446d6ee7e328f18dcc729eaf489be38edcf4b4e09e4bbd4a4",
+      "triangleBudget": 2200,
       "params": [
         {
           "name": "scale",
@@ -14376,67 +14507,115 @@
           "name": "timber",
           "type": "color",
           "default": "#8a6748",
-          "label": "Sealed timber"
+          "label": "Sealed timber easel and ledge"
         },
         {
-          "name": "aluminum",
+          "name": "gilt",
           "type": "color",
-          "default": "#9caeb0",
-          "label": "Anodized aluminum"
+          "default": "#c9a246",
+          "label": "Gilt frame and caption plaque"
         },
         {
-          "name": "acrylic",
+          "name": "photoBackdrop",
           "type": "color",
-          "default": "#63aab8",
-          "label": "Tinted acrylic"
+          "default": "#7fc3e6",
+          "label": "Photo print backdrop (sky)"
+        },
+        {
+          "name": "characterPrint",
+          "type": "color",
+          "default": "#a8683a",
+          "label": "Photo print character (bear)"
         }
       ],
       "presets": {
         "festival": {
-          "timber": "#ab8051",
-          "aluminum": "#c2c9c5",
-          "acrylic": "#79c8d2"
+          "timber": "#be8a4e",
+          "gilt": "#e0b84f",
+          "photoBackdrop": "#f2a1b8",
+          "characterPrint": "#7a4a2a"
         },
         "twilight": {
-          "timber": "#604b3b",
-          "aluminum": "#718a94",
-          "acrylic": "#41768b"
+          "timber": "#4d3f37",
+          "gilt": "#9fa8b0",
+          "photoBackdrop": "#35466f",
+          "characterPrint": "#c99a6a"
+        },
+        "storybook": {
+          "timber": "#d8c39a",
+          "gilt": "#8a2f3a",
+          "photoBackdrop": "#bfe0b0",
+          "characterPrint": "#e0a03a"
         }
       },
       "stats": {
-        "triangles": 120,
+        "triangles": 836,
         "sizeM": [
-          1.36,
-          2.056268,
-          0.97703
+          1.08,
+          2.19,
+          1.002358
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "acrylic",
-          "color": "#63aab8",
+          "name": "timber",
+          "color": "#8a6748",
           "parts": [
-            "display-frame",
-            "sample-panel"
+            "front-leg-l",
+            "front-foot-l",
+            "front-leg-r",
+            "front-foot-r",
+            "back-leg",
+            "back-foot",
+            "top-block",
+            "ledge",
+            "ledge-lip",
+            "photo-backing",
+            "bear-eye-l",
+            "bear-eye-r",
+            "bear-nose"
           ],
-          "param": "acrylic"
+          "param": "timber"
         },
         {
-          "name": "aluminum",
-          "color": "#9caeb0",
+          "name": "gilt",
+          "color": "#c9a246",
           "parts": [
-            "caption-shelf",
-            "easel-leg-0",
-            "easel-leg-1",
-            "easel-leg-2",
-            "frame-corner-0",
-            "frame-corner-1",
-            "frame-corner-2",
-            "frame-corner-3"
+            "hinge-pin",
+            "spreader-chain",
+            "caption-plaque",
+            "gilt-frame",
+            "frame-bead",
+            "bear-muzzle",
+            "bear-belly",
+            "sparkle-0",
+            "sparkle-1",
+            "sparkle-2"
           ],
-          "param": "aluminum"
+          "param": "gilt"
+        },
+        {
+          "name": "photoBackdrop",
+          "color": "#7fc3e6",
+          "parts": [
+            "photo-print"
+          ],
+          "param": "photoBackdrop"
+        },
+        {
+          "name": "characterPrint",
+          "color": "#a8683a",
+          "parts": [
+            "bear-body",
+            "bear-head",
+            "bear-ear-l",
+            "bear-ear-r",
+            "bear-arm",
+            "bear-paw"
+          ],
+          "param": "characterPrint"
         }
       ]
     },
@@ -17792,10 +17971,16 @@
       "id": "lost-child-kiosk",
       "kit": "amusement-park",
       "title": "Lost child reunification kiosk",
-      "description": "Quiet guest-support station with a canopy, two-sided service counter, privacy screen, and waiting seat. Controls: overall scale, powderCoat, paintedTimber, fabric; festival and twilight material presets.",
+      "description": "Lost-child meeting point at about real size: tall beacon mast with a round meeting-point disc and star, striped curved awning on a powder-coated frame, service counter with a lowered child-height section, privacy screen with a cushioned waiting bench and toy box behind the counter, and a step-free timber deck with a ramped edge. Material controls: powder-coated frame, painted timber cladding, awning and cushion fabric, beacon signage. Festival, twilight and calm presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "lost child",
+        "lost and found",
+        "meeting point",
+        "reunification",
+        "guest services",
+        "kiosk",
         "amusement park",
         "theme park",
         "guest experience",
@@ -17812,8 +17997,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/lost-child-kiosk.kcad.ts",
       "preview": "/assets/amusement-park-lost-child-kiosk.png",
-      "sourceSha256": "67493a967aacaf2bf3541fc99e51f077465d6dbdb514a05766aa3d02fbd7b2d7",
-      "triangleBudget": 1800,
+      "sourceSha256": "a9561b8d32e4c9b4ad80a0580bf32cb9d95a386bb160d19e32ed2ab688c90537",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "scale",
@@ -17828,39 +18013,53 @@
           "name": "powderCoat",
           "type": "color",
           "default": "#477985",
-          "label": "Powder-coated steel"
+          "label": "Powder-coated frame and mast"
         },
         {
           "name": "paintedTimber",
           "type": "color",
-          "default": "#92704e",
-          "label": "Painted timber"
+          "default": "#e9dcc0",
+          "label": "Painted timber cladding and deck"
         },
         {
           "name": "fabric",
           "type": "color",
           "default": "#c77786",
-          "label": "Upholstery fabric"
+          "label": "Awning stripes and bench cushion"
+        },
+        {
+          "name": "signage",
+          "type": "color",
+          "default": "#f2c230",
+          "label": "Beacon disc and star"
         }
       ],
       "presets": {
         "festival": {
           "powderCoat": "#d47452",
-          "paintedTimber": "#be8a4e",
-          "fabric": "#e4b765"
+          "paintedTimber": "#f4e7c9",
+          "fabric": "#3f8fc9",
+          "signage": "#ffd23f"
         },
         "twilight": {
           "powderCoat": "#35576f",
           "paintedTimber": "#5e7181",
-          "fabric": "#557b8a"
+          "fabric": "#557b8a",
+          "signage": "#e6c35a"
+        },
+        "calm": {
+          "powderCoat": "#5f8a6a",
+          "paintedTimber": "#efe8d8",
+          "fabric": "#9cc3a8",
+          "signage": "#f5f0e0"
         }
       },
       "stats": {
-        "triangles": 84,
+        "triangles": 2004,
         "sizeM": [
-          1.78,
-          1.48,
-          1.44
+          2.383,
+          3.51,
+          1.4
         ],
         "minUpM": 0,
         "materials": 1
@@ -17868,21 +18067,56 @@
       "palette": [
         {
           "name": "paintedTimber",
-          "color": "#92704e",
+          "color": "#e9dcc0",
           "parts": [
-            "base"
+            "deck",
+            "counter-high",
+            "counter-low",
+            "side-panel-l",
+            "side-panel-r",
+            "privacy-screen",
+            "awning-stripe-1",
+            "awning-stripe-3",
+            "awning-stripe-5",
+            "valance-1",
+            "valance-3",
+            "valance-5",
+            "valance-7",
+            "bench-frame"
           ],
           "param": "paintedTimber"
+        },
+        {
+          "name": "signage",
+          "color": "#f2c230",
+          "parts": [
+            "deck-edge-strip",
+            "counter-dot-1",
+            "toy-box",
+            "beacon-disc",
+            "beacon-lamp"
+          ],
+          "param": "signage"
         },
         {
           "name": "powderCoat",
           "color": "#477985",
           "parts": [
-            "service-counter",
-            "privacy-screen",
-            "canopy",
-            "side-panel-left",
-            "side-panel-right"
+            "counter-high-top",
+            "counter-low-top",
+            "cladding-batten-0",
+            "cladding-batten-1",
+            "cladding-batten-2",
+            "cladding-batten-3",
+            "screen-rail",
+            "post-l-f",
+            "post-l-b",
+            "post-r-f",
+            "post-r-b",
+            "toy-block",
+            "mast",
+            "mast-base",
+            "beacon-ring"
           ],
           "param": "powderCoat"
         },
@@ -17890,7 +18124,19 @@
           "name": "fabric",
           "color": "#c77786",
           "parts": [
-            "waiting-seat"
+            "counter-dot-0",
+            "counter-dot-2",
+            "awning-stripe-0",
+            "awning-stripe-2",
+            "awning-stripe-4",
+            "valance-0",
+            "valance-2",
+            "valance-4",
+            "valance-6",
+            "bench-cushion",
+            "back-cushion",
+            "toy-ball",
+            "beacon-star"
           ],
           "param": "fabric"
         }
@@ -20044,10 +20290,17 @@
       "id": "pretzel-warmer-counter",
       "kit": "amusement-park",
       "title": "Pretzel warmer counter",
-      "description": "Warm pretzel display with two-tier glass case, condiment niche, service shelf, and cash drawer. Controls: overall scale, stainlessSteel, enamel, glass; festival and twilight material presets.",
+      "description": "Midway soft-pretzel counter at about real size: open-top heated merchandiser with a low curved sneeze glass, stainless end cheeks and a heat-lamp hood holding two shelves of knotted pretzels, a big pretzel sign on a mast, an enamel counter body with a pretzel emblem and stainless kick plate and worktop, cheese and mustard pump jugs, and a small cash register. Material controls: stainless steel, baked enamel, tinted glass, baked pretzel dough. Festival, twilight and bakery presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "pretzel",
+        "soft pretzel",
+        "food counter",
+        "warmer",
+        "display case",
+        "concession",
+        "snack stand",
         "amusement park",
         "theme park",
         "guest experience",
@@ -20064,8 +20317,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/pretzel-warmer-counter.kcad.ts",
       "preview": "/assets/amusement-park-pretzel-warmer-counter.png",
-      "sourceSha256": "ad267ed0c48c85be56b4b45c8e439013c790d49e7d3047b4340cf92b0abac482",
-      "triangleBudget": 1800,
+      "sourceSha256": "f0ba490790b961ef004d96be4616e648edf93a802e899773919b24ec02e8ee64",
+      "triangleBudget": 8500,
       "params": [
         {
           "name": "scale",
@@ -20080,39 +20333,53 @@
           "name": "stainlessSteel",
           "type": "color",
           "default": "#b0b9b6",
-          "label": "Stainless steel"
+          "label": "Stainless worktop, case and fittings"
         },
         {
           "name": "enamel",
           "type": "color",
           "default": "#cc684e",
-          "label": "Baked enamel"
+          "label": "Baked enamel counter body and sign disc"
         },
         {
           "name": "glass",
           "type": "color",
-          "default": "#75b9bf",
-          "label": "Tinted glass"
+          "default": "#9fd3d8",
+          "label": "Tinted display glass"
+        },
+        {
+          "name": "bakedDough",
+          "type": "color",
+          "default": "#a8642a",
+          "label": "Baked pretzel dough"
         }
       ],
       "presets": {
         "festival": {
           "stainlessSteel": "#d1d1c6",
-          "enamel": "#edb34d",
-          "glass": "#efce70"
+          "enamel": "#2f6fb0",
+          "glass": "#a9dfe6",
+          "bakedDough": "#b8722e"
         },
         "twilight": {
           "stainlessSteel": "#788b91",
-          "enamel": "#385b81",
-          "glass": "#6387aa"
+          "enamel": "#35576f",
+          "glass": "#4f8597",
+          "bakedDough": "#8a5225"
+        },
+        "bakery": {
+          "stainlessSteel": "#c9b98f",
+          "enamel": "#2f5a3c",
+          "glass": "#c8e2d0",
+          "bakedDough": "#c07a35"
         }
       },
       "stats": {
-        "triangles": 96,
+        "triangles": 7820,
         "sizeM": [
-          1.64,
-          1.6775,
-          1.015
+          1.7,
+          2.47,
+          0.9112
         ],
         "minUpM": 0,
         "materials": 1
@@ -20122,30 +20389,91 @@
           "name": "stainlessSteel",
           "color": "#b0b9b6",
           "parts": [
-            "counter-body",
-            "condiment-cubby"
+            "kick-plate",
+            "worktop",
+            "worktop-edge",
+            "emblem-disc",
+            "body-trim-l",
+            "body-trim-r",
+            "case-base",
+            "end-cheek-l",
+            "end-cheek-r",
+            "lamp-hood",
+            "shelf-0",
+            "shelf-1",
+            "pump-jug-0",
+            "pump-stem-0",
+            "pump-nozzle-0",
+            "pump-jug-1",
+            "pump-stem-1",
+            "pump-nozzle-1",
+            "register-body",
+            "register-post",
+            "sign-mast",
+            "sign-ring"
           ],
           "param": "stainlessSteel"
-        },
-        {
-          "name": "glass",
-          "color": "#75b9bf",
-          "parts": [
-            "display-base",
-            "glass-case-back",
-            "glass-case-top",
-            "glass-case-front",
-            "display-shelf"
-          ],
-          "param": "glass"
         },
         {
           "name": "enamel",
           "color": "#cc684e",
           "parts": [
-            "cash-drawer"
+            "counter-body",
+            "pump-lid-0",
+            "pump-head-0",
+            "pump-lid-1",
+            "sign-disc"
           ],
           "param": "enamel"
+        },
+        {
+          "name": "bakedDough",
+          "color": "#a8642a",
+          "parts": [
+            "emblem-pretzel-0",
+            "emblem-pretzel-1",
+            "emblem-pretzel-2",
+            "lamp-strip",
+            "pretzel-0-0-0",
+            "pretzel-0-0-1",
+            "pretzel-0-0-2",
+            "pretzel-0-1-0",
+            "pretzel-0-1-1",
+            "pretzel-0-1-2",
+            "pretzel-0-2-0",
+            "pretzel-0-2-1",
+            "pretzel-0-2-2",
+            "pretzel-0-3-0",
+            "pretzel-0-3-1",
+            "pretzel-0-3-2",
+            "pretzel-1-0-0",
+            "pretzel-1-0-1",
+            "pretzel-1-0-2",
+            "pretzel-1-1-0",
+            "pretzel-1-1-1",
+            "pretzel-1-1-2",
+            "pretzel-1-2-0",
+            "pretzel-1-2-1",
+            "pretzel-1-2-2",
+            "pretzel-1-3-0",
+            "pretzel-1-3-1",
+            "pretzel-1-3-2",
+            "pump-head-1",
+            "sign-pretzel-0",
+            "sign-pretzel-1",
+            "sign-pretzel-2"
+          ],
+          "param": "bakedDough"
+        },
+        {
+          "name": "glass",
+          "color": "#9fd3d8",
+          "parts": [
+            "front-glass",
+            "back-glass",
+            "register-screen"
+          ],
+          "param": "glass"
         }
       ]
     },
