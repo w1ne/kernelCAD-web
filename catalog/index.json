@@ -217322,11 +217322,18 @@
       "id": "color-sorter-camera",
       "kit": "recycling-facility",
       "title": "Color-sorter camera",
-      "description": "Color-sorter camera: an overhead sensor arch and paired camera pods above the conveyor belt. Low-poly visualization prop. Material controls: painted steel, rubber, glass, safety amber.",
+      "description": "Line-scan colour-sorter camera module on its service stand at about real size: long rounded aluminium housing tilted toward the scan line, three or four lens barrels with glass windows, two angled LED light bars, air-purge rail with nozzles, cable glands with cables to a junction box, clamp brackets on two uprights, and the inclined stainless chute below with flakes sliding past a white background tile to the ejector bar. Material controls: camera housing, lens glass, LED diffusers and stand brackets. plant, weathered, blackAnodised and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "camera",
+        "line scan",
+        "colour sorter",
+        "color sorter",
+        "optical sorter",
+        "led light bar",
+        "chute",
         "materials recovery",
         "waste management",
         "sorting",
@@ -217342,8 +217349,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/color-sorter-camera.kcad.ts",
       "preview": "/assets/recycling-facility-color-sorter-camera.png",
-      "sourceSha256": "885358d6f2348c013362fbdf6408ac55f59e6c53e424bcfc50087092f6664698",
-      "triangleBudget": 1800,
+      "sourceSha256": "b3edb0bd64eb2631ee0da50e509a5997f642e1a39fbc2fbdaf955bf80a22d9d8",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -217355,92 +217362,251 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "housing",
           "type": "color",
-          "default": "#75656d",
-          "label": "Painted steel"
+          "default": "#c9ccce",
+          "label": "Camera housing (anodised aluminium)"
         },
         {
-          "name": "rubber",
+          "name": "lens",
           "type": "color",
-          "default": "#303638",
-          "label": "Rubber"
+          "default": "#1c2a33",
+          "label": "Lens windows (glass)"
         },
         {
-          "name": "glass",
+          "name": "ledBar",
           "type": "color",
-          "default": "#4f9ca8",
-          "label": "Glass"
+          "default": "#f4f7ff",
+          "label": "LED diffusers"
         },
         {
-          "name": "safetyAmber",
+          "name": "bracket",
           "type": "color",
-          "default": "#f0ae32",
-          "label": "Safety amber"
+          "default": "#2f6bb5",
+          "label": "Stand and brackets (paint)"
+        },
+        {
+          "name": "lenses",
+          "type": "choice",
+          "default": "three",
+          "label": "Lens count",
+          "choices": [
+            "three",
+            "four"
+          ]
         }
       ],
       "presets": {
+        "plant": {
+          "housing": "#c9ccce",
+          "lens": "#1c2a33",
+          "ledBar": "#f4f7ff",
+          "bracket": "#2f6bb5"
+        },
         "weathered": {
-          "paintedSteel": "#736767",
-          "rubber": "#3c403e",
-          "glass": "#55939a",
-          "safetyAmber": "#d9a239"
+          "housing": "#9a9d9e",
+          "lens": "#2a3a40",
+          "ledBar": "#e6e2d0",
+          "bracket": "#4f6478"
+        },
+        "blackAnodised": {
+          "housing": "#2b2f33",
+          "lens": "#14202a",
+          "ledBar": "#ffe9b0",
+          "bracket": "#8a9196"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632",
-          "safetyAmber": "#ffd044"
+          "housing": "#e4e7e7",
+          "lens": "#1c2a33",
+          "ledBar": "#ffffff",
+          "bracket": "#e0a526"
         }
       },
       "stats": {
-        "triangles": 208,
+        "triangles": 1284,
         "sizeM": [
-          1.1264,
-          1.5,
-          2.28
+          1.97,
+          1.49,
+          0.99
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#75656d",
+          "name": "housing",
+          "color": "#c9ccce",
           "parts": [
-            "belt-frame",
-            "support-left-front",
-            "support-right-front",
-            "support-left-back",
-            "support-right-back",
-            "sensor-arch-left",
-            "sensor-arch-right",
-            "sensor-bridge"
+            "camera-housing",
+            "led-bar-f",
+            "led-bar-b"
           ],
-          "param": "paintedSteel"
+          "param": "housing"
         },
         {
-          "name": "rubber",
-          "color": "#303638",
+          "name": "end-cap-l",
+          "color": "#3a3d40",
           "parts": [
-            "belt-surface"
-          ],
-          "param": "rubber"
+            "end-cap-l",
+            "end-cap-r",
+            "lens-barrel-0",
+            "lens-barrel-1",
+            "lens-barrel-2",
+            "cable-gland-0",
+            "cable-gland-1"
+          ]
         },
         {
-          "name": "glass",
-          "color": "#4f9ca8",
+          "name": "bracket",
+          "color": "#2f6bb5",
           "parts": [
-            "camera-pod-a",
-            "camera-pod-b"
+            "clamp-l",
+            "clamp-r",
+            "label-band",
+            "led-arm-f-l",
+            "led-arm-f-r",
+            "led-arm-b-l",
+            "led-arm-b-r",
+            "upright-l",
+            "foot-l",
+            "arm-l",
+            "upright-r",
+            "foot-r",
+            "arm-r",
+            "top-beam",
+            "bottom-tie",
+            "chute-leg-l-b",
+            "chute-leg-r-b",
+            "ejector-leg-l",
+            "ejector-leg-r"
           ],
-          "param": "glass"
+          "param": "bracket"
         },
         {
-          "name": "safetyAmber",
-          "color": "#f0ae32",
+          "name": "status-led",
+          "color": "#2f9a4f",
           "parts": [
-            "indicator"
+            "status-led"
+          ]
+        },
+        {
+          "name": "lens",
+          "color": "#1c2a33",
+          "parts": [
+            "lens-window-0",
+            "lens-window-1",
+            "lens-window-2"
           ],
-          "param": "safetyAmber"
+          "param": "lens"
+        },
+        {
+          "name": "purge-nozzle-0",
+          "color": "#9aa1a4",
+          "parts": [
+            "purge-nozzle-0",
+            "purge-nozzle-1",
+            "purge-nozzle-2",
+            "purge-rail"
+          ]
+        },
+        {
+          "name": "ledBar",
+          "color": "#f4f7ff",
+          "parts": [
+            "led-diffuser-f",
+            "led-diffuser-b"
+          ],
+          "param": "ledBar"
+        },
+        {
+          "name": "junction-box",
+          "color": "#d8dcdd",
+          "parts": [
+            "junction-box"
+          ]
+        },
+        {
+          "name": "cable-0",
+          "color": "#24272a",
+          "parts": [
+            "cable-0",
+            "cable-1"
+          ]
+        },
+        {
+          "name": "chute-plate",
+          "color": "#b6bec1",
+          "parts": [
+            "chute-plate",
+            "chute-cheek-l",
+            "chute-cheek-r"
+          ]
+        },
+        {
+          "name": "background-tile",
+          "color": "#f2f2ee",
+          "parts": [
+            "background-tile"
+          ]
+        },
+        {
+          "name": "ejector-bar",
+          "color": "#2b2f33",
+          "parts": [
+            "ejector-bar"
+          ]
+        },
+        {
+          "name": "flake-0",
+          "color": "#a9d3e0",
+          "parts": [
+            "flake-0",
+            "flake-6",
+            "flake-12"
+          ]
+        },
+        {
+          "name": "flake-1",
+          "color": "#3f8f5a",
+          "parts": [
+            "flake-1",
+            "flake-7",
+            "flake-13"
+          ]
+        },
+        {
+          "name": "flake-2",
+          "color": "#e9e6dc",
+          "parts": [
+            "flake-2",
+            "flake-8",
+            "flake-14"
+          ]
+        },
+        {
+          "name": "flake-3",
+          "color": "#8a5a2b",
+          "parts": [
+            "flake-3",
+            "flake-9",
+            "flake-15"
+          ]
+        },
+        {
+          "name": "flake-4",
+          "color": "#2f6fb5",
+          "parts": [
+            "flake-4",
+            "flake-10"
+          ]
+        },
+        {
+          "name": "flake-5",
+          "color": "#c84a3a",
+          "parts": [
+            "flake-5",
+            "flake-11"
+          ]
         }
       ]
     },
@@ -218929,11 +219095,17 @@
       "id": "cross-belt-sorter",
       "kit": "recycling-facility",
       "title": "Cross-belt sorter",
-      "description": "Cross-belt sorter: an overhead sensor arch and paired camera pods above the conveyor belt. Low-poly visualization prop. Material controls: painted steel, rubber, glass, safety amber.",
+      "description": "Loop cross-belt sorter at about real size: oval track on legs with 22 carriers following the curved ends, each with its own cross-running belt and end rollers, an angled induction belt merging items onto the loop, four sloped discharge chutes off the straight into bulk bags with destination signs, and one item sliding down a chute. Load set to loaded or empty. Material controls: track frame, carriers, belts and chutes. plant, weathered, stainless and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "cross-belt",
+        "loop sorter",
+        "carrier",
+        "induction",
+        "discharge chute",
+        "bulk bag",
         "materials recovery",
         "waste management",
         "sorting",
@@ -218949,8 +219121,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/cross-belt-sorter.kcad.ts",
       "preview": "/assets/recycling-facility-cross-belt-sorter.png",
-      "sourceSha256": "2f4b248f05d79b4b48e26a1473423cdb7bd881b93797fbdfb381f7199d0b6c1c",
-      "triangleBudget": 1800,
+      "sourceSha256": "0711c6b00dcc92eda334121e5de4d197461688ac596e46d4230cbc2d90c63406",
+      "triangleBudget": 5000,
       "params": [
         {
           "name": "scale",
@@ -218962,92 +219134,334 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#8b754b",
-          "label": "Painted steel"
+          "default": "#3d4f63",
+          "label": "Track frame (paint)"
         },
         {
-          "name": "rubber",
+          "name": "carrier",
           "type": "color",
-          "default": "#303638",
-          "label": "Rubber"
+          "default": "#e0a526",
+          "label": "Carriers (paint)"
         },
         {
-          "name": "glass",
+          "name": "belt",
           "type": "color",
-          "default": "#4f9ca8",
-          "label": "Glass"
+          "default": "#24272a",
+          "label": "Cross-belts (rubber)"
         },
         {
-          "name": "safetyAmber",
+          "name": "chute",
           "type": "color",
-          "default": "#f0ae32",
-          "label": "Safety amber"
+          "default": "#b6bec1",
+          "label": "Discharge chutes (galvanised)"
+        },
+        {
+          "name": "load",
+          "type": "choice",
+          "default": "loaded",
+          "label": "Load",
+          "choices": [
+            "loaded",
+            "empty"
+          ]
         }
       ],
       "presets": {
+        "plant": {
+          "frame": "#3d4f63",
+          "carrier": "#e0a526",
+          "belt": "#24272a",
+          "chute": "#b6bec1"
+        },
         "weathered": {
-          "paintedSteel": "#82724f",
-          "rubber": "#3c403e",
-          "glass": "#55939a",
-          "safetyAmber": "#d9a239"
+          "frame": "#4d5652",
+          "carrier": "#a88a4a",
+          "belt": "#2c2a28",
+          "chute": "#8e9294"
+        },
+        "stainless": {
+          "frame": "#8a9196",
+          "carrier": "#d0d4d6",
+          "belt": "#2f6bb5",
+          "chute": "#c9ccce"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632",
-          "safetyAmber": "#ffd044"
+          "frame": "#2f6b8f",
+          "carrier": "#f0c419",
+          "belt": "#1c1d1e",
+          "chute": "#e2462e"
         }
       },
       "stats": {
-        "triangles": 208,
+        "triangles": 4516,
         "sizeM": [
-          1.1264,
-          1.5,
-          1.76
+          6.832062,
+          1.774,
+          6.686389
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#8b754b",
+          "name": "frame",
+          "color": "#3d4f63",
           "parts": [
-            "belt-frame",
-            "support-left-front",
-            "support-right-front",
-            "support-left-back",
-            "support-right-back",
-            "sensor-arch-left",
-            "sensor-arch-right",
-            "sensor-bridge"
+            "track-girder",
+            "leg-2000-f",
+            "foot-2000-f",
+            "leg-2000-b",
+            "foot-2000-b",
+            "leg-4000-f",
+            "foot-4000-f",
+            "leg-4000-b",
+            "foot-4000-b",
+            "leg-6000-f",
+            "foot-6000-f",
+            "leg-6000-b",
+            "foot-6000-b",
+            "end-leg-l",
+            "end-foot-l",
+            "end-leg-r",
+            "end-foot-r",
+            "induction-stringer-f",
+            "induction-stringer-b",
+            "induction-leg-1500-f",
+            "induction-leg-1500-b",
+            "induction-leg-3500-f",
+            "induction-leg-3500-b",
+            "chute-hanger-0",
+            "chute-hanger-1",
+            "chute-hanger-2",
+            "chute-hanger-3"
           ],
-          "param": "paintedSteel"
+          "param": "frame"
         },
         {
-          "name": "rubber",
-          "color": "#303638",
+          "name": "inner-rail",
+          "color": "#9aa1a4",
           "parts": [
-            "belt-surface"
-          ],
-          "param": "rubber"
+            "inner-rail",
+            "outer-rail",
+            "carrier-roller-0-i",
+            "carrier-roller-0-o",
+            "carrier-roller-1-i",
+            "carrier-roller-1-o",
+            "carrier-roller-2-i",
+            "carrier-roller-2-o",
+            "carrier-roller-3-i",
+            "carrier-roller-3-o",
+            "carrier-roller-4-i",
+            "carrier-roller-4-o",
+            "carrier-roller-5-i",
+            "carrier-roller-5-o",
+            "carrier-roller-6-i",
+            "carrier-roller-6-o",
+            "carrier-roller-7-i",
+            "carrier-roller-7-o",
+            "carrier-roller-8-i",
+            "carrier-roller-8-o",
+            "carrier-roller-9-i",
+            "carrier-roller-9-o",
+            "carrier-roller-10-i",
+            "carrier-roller-10-o",
+            "carrier-roller-11-i",
+            "carrier-roller-11-o",
+            "carrier-roller-12-i",
+            "carrier-roller-12-o",
+            "carrier-roller-13-i",
+            "carrier-roller-13-o",
+            "carrier-roller-14-i",
+            "carrier-roller-14-o",
+            "carrier-roller-15-i",
+            "carrier-roller-15-o",
+            "carrier-roller-16-i",
+            "carrier-roller-16-o",
+            "carrier-roller-17-i",
+            "carrier-roller-17-o",
+            "carrier-roller-18-i",
+            "carrier-roller-18-o",
+            "carrier-roller-19-i",
+            "carrier-roller-19-o",
+            "carrier-roller-20-i",
+            "carrier-roller-20-o",
+            "carrier-roller-21-i",
+            "carrier-roller-21-o"
+          ]
         },
         {
-          "name": "glass",
-          "color": "#4f9ca8",
+          "name": "drive-unit",
+          "color": "#5d6366",
           "parts": [
-            "camera-pod-a",
-            "camera-pod-b"
-          ],
-          "param": "glass"
+            "drive-unit"
+          ]
         },
         {
-          "name": "safetyAmber",
+          "name": "carrier",
+          "color": "#e0a526",
+          "parts": [
+            "drive-motor",
+            "carrier-0",
+            "carrier-1",
+            "carrier-2",
+            "carrier-3",
+            "carrier-4",
+            "carrier-5",
+            "carrier-6",
+            "carrier-7",
+            "carrier-8",
+            "carrier-9",
+            "carrier-10",
+            "carrier-11",
+            "carrier-12",
+            "carrier-13",
+            "carrier-14",
+            "carrier-15",
+            "carrier-16",
+            "carrier-17",
+            "carrier-18",
+            "carrier-19",
+            "carrier-20",
+            "carrier-21"
+          ],
+          "param": "carrier"
+        },
+        {
+          "name": "belt",
+          "color": "#24272a",
+          "parts": [
+            "cross-belt-0",
+            "cross-belt-1",
+            "cross-belt-2",
+            "cross-belt-3",
+            "cross-belt-4",
+            "cross-belt-5",
+            "cross-belt-6",
+            "cross-belt-7",
+            "cross-belt-8",
+            "cross-belt-9",
+            "cross-belt-10",
+            "cross-belt-11",
+            "cross-belt-12",
+            "cross-belt-13",
+            "cross-belt-14",
+            "cross-belt-15",
+            "cross-belt-16",
+            "cross-belt-17",
+            "cross-belt-18",
+            "cross-belt-19",
+            "cross-belt-20",
+            "cross-belt-21",
+            "induction-belt"
+          ],
+          "param": "belt"
+        },
+        {
+          "name": "item-0",
+          "color": "#b48a5a",
+          "parts": [
+            "item-0",
+            "item-6",
+            "item-12",
+            "item-18",
+            "induction-item-300",
+            "induction-item-1100",
+            "bag-fill-0",
+            "bag-fill-3",
+            "sliding-item"
+          ]
+        },
+        {
+          "name": "item-2",
+          "color": "#c9b089",
+          "parts": [
+            "item-2",
+            "item-8",
+            "item-14",
+            "item-20",
+            "bag-fill-1"
+          ]
+        },
+        {
+          "name": "item-3",
+          "color": "#4f8a5c",
+          "parts": [
+            "item-3",
+            "item-9",
+            "item-15",
+            "item-21",
+            "dest-sign-1"
+          ]
+        },
+        {
+          "name": "item-5",
+          "color": "#c84a3a",
+          "parts": [
+            "item-5",
+            "item-11",
+            "item-17"
+          ]
+        },
+        {
+          "name": "chute",
+          "color": "#b6bec1",
+          "parts": [
+            "chute-0",
+            "chute-wall-0-l",
+            "chute-wall-0-r",
+            "chute-1",
+            "chute-wall-1-l",
+            "chute-wall-1-r",
+            "chute-2",
+            "chute-wall-2-l",
+            "chute-wall-2-r",
+            "chute-3",
+            "chute-wall-3-l",
+            "chute-wall-3-r"
+          ],
+          "param": "chute"
+        },
+        {
+          "name": "bulk-bag-0",
+          "color": "#e9e6dc",
+          "parts": [
+            "bulk-bag-0",
+            "bag-loop-0-l",
+            "bag-loop-0-r",
+            "bulk-bag-1",
+            "bag-loop-1-l",
+            "bag-loop-1-r",
+            "bulk-bag-2",
+            "bag-fill-2",
+            "bag-loop-2-l",
+            "bag-loop-2-r",
+            "bulk-bag-3",
+            "bag-loop-3-l",
+            "bag-loop-3-r"
+          ]
+        },
+        {
+          "name": "dest-sign-0",
+          "color": "#2f6fb5",
+          "parts": [
+            "dest-sign-0"
+          ]
+        },
+        {
+          "name": "dest-sign-2",
+          "color": "#c8322a",
+          "parts": [
+            "dest-sign-2"
+          ]
+        },
+        {
+          "name": "dest-sign-3",
           "color": "#f0ae32",
           "parts": [
-            "indicator"
-          ],
-          "param": "safetyAmber"
+            "dest-sign-3"
+          ]
         }
       ]
     },
@@ -227731,11 +228145,18 @@
       "id": "near-infrared-sorter",
       "kit": "recycling-facility",
       "title": "Near-infrared sorter",
-      "description": "Near-infrared sorter: an overhead sensor arch and paired camera pods above the conveyor belt. Low-poly visualization prop. Material controls: painted steel, rubber, glass, safety amber.",
+      "description": "Belt-type near-infrared (NIR) optical sorter at about real size: vibratory feeder onto a 2 m acceleration belt carrying mixed flakes and bottles, sensor hood over the head pulley with scan window and lamp bars, air-valve ejector bar, separation hood with splitter blade and two output fractions, control cabinet with HMI and signal tower. Stream set to PET bottles, HDPE or paper. Material controls: sensor housing, frame, belt and brand accent. plant, weathered, graphite and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "nir",
+        "near infrared",
+        "optical sorter",
+        "air jet",
+        "ejector",
+        "acceleration belt",
+        "plastics",
         "materials recovery",
         "waste management",
         "sorting",
@@ -227751,8 +228172,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/near-infrared-sorter.kcad.ts",
       "preview": "/assets/recycling-facility-near-infrared-sorter.png",
-      "sourceSha256": "23c1555528e0c5eedf0c0f3e3951b9b60c0f404b6f2e629eb95888f879a78332",
-      "triangleBudget": 1800,
+      "sourceSha256": "2283d801cad41a016e38ca436c8e70f006201467a03b81e93039618b6daeaf1b",
+      "triangleBudget": 4200,
       "params": [
         {
           "name": "scale",
@@ -227764,92 +228185,301 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "housing",
           "type": "color",
-          "default": "#506c68",
-          "label": "Painted steel"
+          "default": "#e4e7e7",
+          "label": "Sensor and separation hood (powder coat)"
         },
         {
-          "name": "rubber",
+          "name": "frame",
           "type": "color",
-          "default": "#303638",
-          "label": "Rubber"
+          "default": "#3d4f63",
+          "label": "Belt frame (paint)"
         },
         {
-          "name": "glass",
+          "name": "belt",
           "type": "color",
-          "default": "#4f9ca8",
-          "label": "Glass"
+          "default": "#24272a",
+          "label": "Acceleration belt (rubber)"
         },
         {
-          "name": "safetyAmber",
+          "name": "accent",
           "type": "color",
-          "default": "#f0ae32",
-          "label": "Safety amber"
+          "default": "#2f8f4e",
+          "label": "Brand accent stripe"
+        },
+        {
+          "name": "stream",
+          "type": "choice",
+          "default": "pet",
+          "label": "Material stream",
+          "choices": [
+            "pet",
+            "hdpe",
+            "paper"
+          ]
         }
       ],
       "presets": {
+        "plant": {
+          "housing": "#e4e7e7",
+          "frame": "#3d4f63",
+          "belt": "#24272a",
+          "accent": "#2f8f4e"
+        },
         "weathered": {
-          "paintedSteel": "#5a6c63",
-          "rubber": "#3c403e",
-          "glass": "#55939a",
-          "safetyAmber": "#d9a239"
+          "housing": "#b9b6ac",
+          "frame": "#4d5652",
+          "belt": "#2c2a28",
+          "accent": "#5f7d58"
+        },
+        "graphite": {
+          "housing": "#4a4f54",
+          "frame": "#2b2f33",
+          "belt": "#1c1d1e",
+          "accent": "#e07a2a"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632",
-          "safetyAmber": "#ffd044"
+          "housing": "#f2f2ee",
+          "frame": "#e0a526",
+          "belt": "#1c1d1e",
+          "accent": "#2f6bb5"
         }
       },
       "stats": {
-        "triangles": 208,
+        "triangles": 2222,
         "sizeM": [
-          0.9984,
-          1.5,
-          2.02
+          7.910653,
+          2.96,
+          3.7
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#506c68",
+          "name": "belt",
+          "color": "#24272a",
           "parts": [
-            "belt-frame",
-            "support-left-front",
-            "support-right-front",
-            "support-left-back",
-            "support-right-back",
-            "sensor-arch-left",
-            "sensor-arch-right",
-            "sensor-bridge"
+            "belt"
           ],
-          "param": "paintedSteel"
+          "param": "belt"
         },
         {
-          "name": "rubber",
-          "color": "#303638",
+          "name": "head-pulley",
+          "color": "#5d6366",
           "parts": [
-            "belt-surface"
-          ],
-          "param": "rubber"
+            "head-pulley",
+            "tail-pulley",
+            "drive-gearbox",
+            "splitter-adjuster",
+            "tower-pole"
+          ]
         },
         {
-          "name": "glass",
-          "color": "#4f9ca8",
+          "name": "frame",
+          "color": "#3d4f63",
           "parts": [
-            "camera-pod-a",
-            "camera-pod-b"
+            "stringer-f",
+            "drive-guard-f",
+            "leg-f-700",
+            "foot-f-700",
+            "leg-f-2500",
+            "foot-f-2500",
+            "leg-f-4200",
+            "foot-f-4200",
+            "stringer-b",
+            "drive-guard-b",
+            "leg-b-700",
+            "foot-b-700",
+            "leg-b-2500",
+            "foot-b-2500",
+            "leg-b-4200",
+            "foot-b-4200",
+            "feeder-drive",
+            "feeder-post-f",
+            "feeder-post-b",
+            "tower-plinth-f",
+            "tower-plinth-b"
           ],
-          "param": "glass"
+          "param": "frame"
         },
         {
-          "name": "safetyAmber",
+          "name": "accent",
+          "color": "#2f8f4e",
+          "parts": [
+            "drive-motor",
+            "accent-stripe-front",
+            "tower-stripe-f",
+            "tower-stripe-b",
+            "hood-stripe",
+            "cabinet-stripe"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "item-0",
+          "color": "#a9d3e0",
+          "parts": [
+            "item-0",
+            "item-5",
+            "item-10",
+            "item-15",
+            "item-20",
+            "item-25",
+            "item-30",
+            "eject-fraction"
+          ]
+        },
+        {
+          "name": "item-1",
+          "color": "#3f8f5a",
+          "parts": [
+            "item-1",
+            "item-6",
+            "item-11",
+            "item-16",
+            "item-21",
+            "item-26",
+            "item-31"
+          ]
+        },
+        {
+          "name": "item-2",
+          "color": "#8a5a2b",
+          "parts": [
+            "item-2",
+            "item-7",
+            "item-12",
+            "item-17",
+            "item-22",
+            "item-27",
+            "item-32",
+            "drop-fraction"
+          ]
+        },
+        {
+          "name": "item-3",
+          "color": "#e9e6dc",
+          "parts": [
+            "item-3",
+            "item-8",
+            "item-13",
+            "item-18",
+            "item-23",
+            "item-28",
+            "item-33"
+          ]
+        },
+        {
+          "name": "item-4",
+          "color": "#5aa0c8",
+          "parts": [
+            "item-4",
+            "item-9",
+            "item-14",
+            "item-19",
+            "item-24",
+            "item-29"
+          ]
+        },
+        {
+          "name": "feeder-tray",
+          "color": "#b6bec1",
+          "parts": [
+            "feeder-tray",
+            "feeder-wall-f",
+            "feeder-wall-b"
+          ]
+        },
+        {
+          "name": "feeder-spring-f",
+          "color": "#c8322a",
+          "parts": [
+            "feeder-spring-f",
+            "feeder-spring-b",
+            "drop-sign",
+            "estop",
+            "signal-2"
+          ]
+        },
+        {
+          "name": "housing",
+          "color": "#e4e7e7",
+          "parts": [
+            "sensor-hood",
+            "hood-tower-f",
+            "hood-tower-b",
+            "separation-hood",
+            "control-cabinet"
+          ],
+          "param": "housing"
+        },
+        {
+          "name": "scan-window",
+          "color": "#1c2a33",
+          "parts": [
+            "scan-window",
+            "hmi-screen"
+          ]
+        },
+        {
+          "name": "lamp-bar-380",
+          "color": "#ffd98a",
+          "parts": [
+            "lamp-bar-380",
+            "lamp-bar-1770"
+          ]
+        },
+        {
+          "name": "name-plate",
+          "color": "#2b2f33",
+          "parts": [
+            "name-plate",
+            "valve-block",
+            "cabinet-plinth",
+            "hmi-bezel"
+          ]
+        },
+        {
+          "name": "hood-vent",
+          "color": "#9aa1a4",
+          "parts": [
+            "hood-vent",
+            "nozzle-bar",
+            "door-seam"
+          ]
+        },
+        {
+          "name": "air-receiver",
+          "color": "#2f5d9a",
+          "parts": [
+            "air-receiver",
+            "air-line",
+            "air-drop"
+          ]
+        },
+        {
+          "name": "splitter-blade",
+          "color": "#c9ccce",
+          "parts": [
+            "splitter-blade"
+          ]
+        },
+        {
+          "name": "eject-sign",
+          "color": "#2f9a4f",
+          "parts": [
+            "eject-sign",
+            "signal-0"
+          ]
+        },
+        {
+          "name": "signal-1",
           "color": "#f0ae32",
           "parts": [
-            "indicator"
-          ],
-          "param": "safetyAmber"
+            "signal-1"
+          ]
         }
       ]
     },
@@ -228045,14 +228675,21 @@
       "id": "optical-color-sorter",
       "kit": "recycling-facility",
       "title": "Optical color sorter",
-      "description": "Optical color sorter: an overhead sensor arch and paired camera pods above the conveyor belt. Low-poly visualization prop. Material controls: painted steel, rubber, glass, safety amber.",
+      "description": "Chute-type optical colour sorter at about real size: stepped cabinet with sloped camera front and viewing window, top feed hopper filled by an inclined infeed conveyor, side inspection opening showing the inclined chute and falling flakes, accept and reject outlet funnels into two totes, HMI on a swing arm, air filter-regulator and signal tower. Product set to glass cullet or plastic flakes. Material controls: cabinet, stainless chutes, window glass and brand accent. plant, weathered, graphite and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "colour sorter",
+        "color sorter",
+        "optical sorter",
+        "chute sorter",
+        "cullet",
+        "flakes",
+        "air jet",
         "materials recovery",
         "waste management",
-        "glass plastics",
+        "sorting",
         "low poly",
         "scene prop"
       ],
@@ -228065,8 +228702,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/optical-color-sorter.kcad.ts",
       "preview": "/assets/recycling-facility-optical-color-sorter.png",
-      "sourceSha256": "3bc058c481474fc4c8a1125781daf2d16e28363cc6a15da9241dcfade0ac9d82",
-      "triangleBudget": 1800,
+      "sourceSha256": "0d24096dd9e769551d01fabdd49540cedb33eb6f72552da3e8eb1ad48eb23a52",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -228078,92 +228715,276 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "cabinet",
           "type": "color",
-          "default": "#647b66",
-          "label": "Painted steel"
+          "default": "#dfe3e4",
+          "label": "Cabinet (powder coat)"
         },
         {
-          "name": "rubber",
+          "name": "chute",
           "type": "color",
-          "default": "#303638",
-          "label": "Rubber"
+          "default": "#b6bec1",
+          "label": "Hopper and chutes (stainless)"
         },
         {
           "name": "glass",
           "type": "color",
-          "default": "#4f9ca8",
-          "label": "Glass"
+          "default": "#1f3540",
+          "label": "Viewing window (glass)"
         },
         {
-          "name": "safetyAmber",
+          "name": "accent",
           "type": "color",
-          "default": "#f0ae32",
-          "label": "Safety amber"
+          "default": "#1f6fb2",
+          "label": "Brand accent and stand"
+        },
+        {
+          "name": "product",
+          "type": "choice",
+          "default": "cullet",
+          "label": "Product",
+          "choices": [
+            "cullet",
+            "flakes"
+          ]
         }
       ],
       "presets": {
+        "plant": {
+          "cabinet": "#dfe3e4",
+          "chute": "#b6bec1",
+          "glass": "#1f3540",
+          "accent": "#1f6fb2"
+        },
         "weathered": {
-          "paintedSteel": "#687662",
-          "rubber": "#3c403e",
-          "glass": "#55939a",
-          "safetyAmber": "#d9a239"
+          "cabinet": "#bdb8ad",
+          "chute": "#8e9294",
+          "glass": "#2a3a40",
+          "accent": "#4f6478"
+        },
+        "graphite": {
+          "cabinet": "#3f4448",
+          "chute": "#c4c9cb",
+          "glass": "#14202a",
+          "accent": "#e07a2a"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632",
-          "safetyAmber": "#ffd044"
+          "cabinet": "#f2f2ee",
+          "chute": "#c9ccce",
+          "glass": "#1c2a33",
+          "accent": "#e0a526"
         }
       },
       "stats": {
-        "triangles": 208,
+        "triangles": 1360,
         "sizeM": [
-          0.9984,
-          1.5,
-          2.54
+          5.097085,
+          3.020816,
+          1.912157
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#647b66",
+          "name": "accent",
+          "color": "#1f6fb2",
           "parts": [
-            "belt-frame",
-            "support-left-front",
-            "support-right-front",
-            "support-left-back",
-            "support-right-back",
-            "sensor-arch-left",
-            "sensor-arch-right",
-            "sensor-bridge"
+            "leg-l-f",
+            "leg-foot-l-f",
+            "leg-l-b",
+            "leg-foot-l-b",
+            "leg-r-f",
+            "leg-foot-r-f",
+            "leg-r-b",
+            "leg-foot-r-b",
+            "stand-rail-f",
+            "stand-rail-b",
+            "plinth-band",
+            "window-frame-top",
+            "window-frame-bottom",
+            "accent-stripe",
+            "infeed-stringer-f",
+            "infeed-stringer-b",
+            "infeed-leg-2100-f",
+            "infeed-leg-2100-b",
+            "infeed-leg-3400-f",
+            "infeed-leg-3400-b"
           ],
-          "param": "paintedSteel"
+          "param": "accent"
         },
         {
-          "name": "rubber",
-          "color": "#303638",
+          "name": "chute",
+          "color": "#b6bec1",
           "parts": [
-            "belt-surface"
+            "accept-funnel",
+            "reject-funnel",
+            "chute-plate",
+            "feed-hopper",
+            "channel-fin-1",
+            "channel-fin-2",
+            "channel-fin-3",
+            "channel-fin-4",
+            "channel-fin-5"
           ],
-          "param": "rubber"
+          "param": "chute"
+        },
+        {
+          "name": "accept-tote",
+          "color": "#2f7d4f",
+          "parts": [
+            "accept-tote",
+            "accept-tote-floor"
+          ]
+        },
+        {
+          "name": "accept-tote-runner-l",
+          "color": "#3a3d40",
+          "parts": [
+            "accept-tote-runner-l",
+            "accept-tote-runner-r",
+            "reject-tote-runner-l",
+            "reject-tote-runner-r"
+          ]
+        },
+        {
+          "name": "accept-tote-load",
+          "color": "#e6efe9",
+          "parts": [
+            "accept-tote-load",
+            "flake-1",
+            "flake-5",
+            "flake-9",
+            "flake-13"
+          ]
+        },
+        {
+          "name": "reject-tote",
+          "color": "#c8322a",
+          "parts": [
+            "reject-tote",
+            "reject-tote-floor",
+            "signal-2"
+          ]
+        },
+        {
+          "name": "reject-tote-load",
+          "color": "#8a5a2b",
+          "parts": [
+            "reject-tote-load",
+            "flake-2",
+            "flake-6",
+            "flake-10"
+          ]
+        },
+        {
+          "name": "cabinet",
+          "color": "#dfe3e4",
+          "parts": [
+            "cabinet"
+          ],
+          "param": "cabinet"
         },
         {
           "name": "glass",
-          "color": "#4f9ca8",
+          "color": "#1f3540",
           "parts": [
-            "camera-pod-a",
-            "camera-pod-b"
+            "viewing-window",
+            "lamp-housing"
           ],
           "param": "glass"
         },
         {
-          "name": "safetyAmber",
+          "name": "door-seam-l",
+          "color": "#9aa1a4",
+          "parts": [
+            "door-seam-l",
+            "door-seam-r"
+          ]
+        },
+        {
+          "name": "door-handle-1600",
+          "color": "#5d6366",
+          "parts": [
+            "door-handle-1600",
+            "door-handle-2400",
+            "door-handle-3200",
+            "infeed-motor",
+            "hmi-arm",
+            "hmi-post",
+            "tower-pole"
+          ]
+        },
+        {
+          "name": "flake-0",
+          "color": "#3f8f5a",
+          "parts": [
+            "flake-0",
+            "flake-4",
+            "flake-8",
+            "flake-12",
+            "hopper-heap",
+            "infeed-load"
+          ]
+        },
+        {
+          "name": "flake-3",
+          "color": "#a9cfc0",
+          "parts": [
+            "flake-3",
+            "flake-7",
+            "flake-11"
+          ]
+        },
+        {
+          "name": "ejector-bar",
+          "color": "#2b2f33",
+          "parts": [
+            "ejector-bar",
+            "hmi-screen"
+          ]
+        },
+        {
+          "name": "infeed-belt",
+          "color": "#24272a",
+          "parts": [
+            "infeed-belt"
+          ]
+        },
+        {
+          "name": "hmi-display",
+          "color": "#2b6e9a",
+          "parts": [
+            "hmi-display"
+          ]
+        },
+        {
+          "name": "filter-regulator",
+          "color": "#c9ccce",
+          "parts": [
+            "filter-regulator"
+          ]
+        },
+        {
+          "name": "air-hose",
+          "color": "#2f5d9a",
+          "parts": [
+            "air-hose"
+          ]
+        },
+        {
+          "name": "signal-0",
+          "color": "#2f9a4f",
+          "parts": [
+            "signal-0"
+          ]
+        },
+        {
+          "name": "signal-1",
           "color": "#f0ae32",
           "parts": [
-            "indicator"
-          ],
-          "param": "safetyAmber"
+            "signal-1"
+          ]
         }
       ]
     },
@@ -228171,11 +228992,17 @@
       "id": "optical-sorter-arch",
       "kit": "recycling-facility",
       "title": "Optical sorter arch",
-      "description": "Optical sorter arch: an overhead sensor arch and paired camera pods above the conveyor belt. Low-poly visualization prop. Material controls: painted steel, rubber, glass, safety amber.",
+      "description": "Open portal-frame optical sorter arch at about real size over a 1.4 m picking belt carrying mixed material: hooded sensor head with detector slot and two angled lamp housings, legs with cable tray, isolator and junction box, beacon on top, air-knife bar under the head pulley, splitter wall between a drop bunker and an eject bunker with their heaps. One or two scanning heads. Material controls: arch paint, lamp diffusers, belt and support frame. plant, weathered, galvanised and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "optical sorter",
+        "sensor arch",
+        "scanner",
+        "air knife",
+        "splitter",
+        "bunker",
         "materials recovery",
         "waste management",
         "sorting",
@@ -228191,8 +229018,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/optical-sorter-arch.kcad.ts",
       "preview": "/assets/recycling-facility-optical-sorter-arch.png",
-      "sourceSha256": "686db344b31f43f78dc11819b6707b1890483f2e74a199f867e3cf1c3a0eb96a",
-      "triangleBudget": 1800,
+      "sourceSha256": "5bdfe8327e187d66b1fda9fd3f32093a3a71061d3c412338d9ffb5c7b74594ae",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -228204,92 +229031,294 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "arch",
           "type": "color",
-          "default": "#8b754b",
-          "label": "Painted steel"
+          "default": "#2f6bb5",
+          "label": "Arch and sensor head (paint)"
         },
         {
-          "name": "rubber",
+          "name": "lamp",
           "type": "color",
-          "default": "#303638",
-          "label": "Rubber"
+          "default": "#ffd98a",
+          "label": "Lamp diffusers"
         },
         {
-          "name": "glass",
+          "name": "belt",
           "type": "color",
-          "default": "#4f9ca8",
-          "label": "Glass"
+          "default": "#24272a",
+          "label": "Picking belt (rubber)"
         },
         {
-          "name": "safetyAmber",
+          "name": "frame",
           "type": "color",
-          "default": "#f0ae32",
-          "label": "Safety amber"
+          "default": "#6c7376",
+          "label": "Belt frame and air bar"
+        },
+        {
+          "name": "heads",
+          "type": "choice",
+          "default": "single",
+          "label": "Scanning heads",
+          "choices": [
+            "single",
+            "dual"
+          ]
         }
       ],
       "presets": {
+        "plant": {
+          "arch": "#2f6bb5",
+          "lamp": "#ffd98a",
+          "belt": "#24272a",
+          "frame": "#6c7376"
+        },
         "weathered": {
-          "paintedSteel": "#82724f",
-          "rubber": "#3c403e",
-          "glass": "#55939a",
-          "safetyAmber": "#d9a239"
+          "arch": "#4f6478",
+          "lamp": "#d9c08a",
+          "belt": "#2c2a28",
+          "frame": "#5c5650"
+        },
+        "galvanised": {
+          "arch": "#b6bec1",
+          "lamp": "#f2f2ee",
+          "belt": "#2a2c2e",
+          "frame": "#8e9294"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632",
-          "safetyAmber": "#ffd044"
+          "arch": "#e0a526",
+          "lamp": "#fff2b0",
+          "belt": "#1c1d1e",
+          "frame": "#2f6b8f"
         }
       },
       "stats": {
-        "triangles": 208,
+        "triangles": 1420,
         "sizeM": [
-          0.8738,
-          1.5,
-          1.76
+          2.82,
+          2.89,
+          7.03
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#8b754b",
+          "name": "belt",
+          "color": "#24272a",
           "parts": [
-            "belt-frame",
-            "support-left-front",
-            "support-right-front",
-            "support-left-back",
-            "support-right-back",
-            "sensor-arch-left",
-            "sensor-arch-right",
-            "sensor-bridge"
+            "belt"
           ],
-          "param": "paintedSteel"
+          "param": "belt"
         },
         {
-          "name": "rubber",
-          "color": "#303638",
+          "name": "frame",
+          "color": "#6c7376",
           "parts": [
-            "belt-surface"
+            "head-pulley",
+            "tail-pulley",
+            "stringer-l",
+            "skirt-l",
+            "belt-leg-l-1000",
+            "belt-leg-l-2800",
+            "belt-leg-l-4700",
+            "stringer-r",
+            "skirt-r",
+            "belt-leg-r-1000",
+            "belt-leg-r-2800",
+            "belt-leg-r-4700",
+            "head-base-plate-l",
+            "head-base-plate-r",
+            "knife-stand-l",
+            "knife-stand-r"
           ],
-          "param": "rubber"
+          "param": "frame"
         },
         {
-          "name": "glass",
-          "color": "#4f9ca8",
+          "name": "arch",
+          "color": "#2f6bb5",
           "parts": [
-            "camera-pod-a",
-            "camera-pod-b"
+            "drive-motor",
+            "head-hood",
+            "head-lamp-housing-f",
+            "head-leg-l",
+            "head-lamp-housing-b",
+            "head-leg-r"
           ],
-          "param": "glass"
+          "param": "arch"
         },
         {
-          "name": "safetyAmber",
+          "name": "item-0",
+          "color": "#a9d3e0",
+          "parts": [
+            "item-0",
+            "item-6",
+            "item-12",
+            "item-18",
+            "item-24"
+          ]
+        },
+        {
+          "name": "item-1",
+          "color": "#3f8f5a",
+          "parts": [
+            "item-1",
+            "item-7",
+            "item-13",
+            "item-19",
+            "item-25"
+          ]
+        },
+        {
+          "name": "item-2",
+          "color": "#e9e6dc",
+          "parts": [
+            "item-2",
+            "item-8",
+            "item-14",
+            "item-20"
+          ]
+        },
+        {
+          "name": "item-3",
+          "color": "#c9b089",
+          "parts": [
+            "item-3",
+            "item-9",
+            "item-15",
+            "item-21"
+          ]
+        },
+        {
+          "name": "item-4",
+          "color": "#c84a3a",
+          "parts": [
+            "item-4",
+            "item-10",
+            "item-16",
+            "item-22"
+          ]
+        },
+        {
+          "name": "item-5",
+          "color": "#2f6fb5",
+          "parts": [
+            "item-5",
+            "item-11",
+            "item-17",
+            "item-23"
+          ]
+        },
+        {
+          "name": "head-detector-slot",
+          "color": "#14202a",
+          "parts": [
+            "head-detector-slot"
+          ]
+        },
+        {
+          "name": "lamp",
+          "color": "#ffd98a",
+          "parts": [
+            "head-lamp-lens-f",
+            "head-lamp-lens-b"
+          ],
+          "param": "lamp"
+        },
+        {
+          "name": "head-name-band",
+          "color": "#f2f2ee",
+          "parts": [
+            "head-name-band"
+          ]
+        },
+        {
+          "name": "cable-tray-leg",
+          "color": "#9aa1a4",
+          "parts": [
+            "cable-tray-leg",
+            "cable-tray-top"
+          ]
+        },
+        {
+          "name": "isolator",
+          "color": "#f0c419",
+          "parts": [
+            "isolator"
+          ]
+        },
+        {
+          "name": "isolator-handle",
+          "color": "#c8322a",
+          "parts": [
+            "isolator-handle"
+          ]
+        },
+        {
+          "name": "junction-box",
+          "color": "#d8dcdd",
+          "parts": [
+            "junction-box"
+          ]
+        },
+        {
+          "name": "beacon-base",
+          "color": "#2b2f33",
+          "parts": [
+            "beacon-base",
+            "air-knife"
+          ]
+        },
+        {
+          "name": "beacon",
           "color": "#f0ae32",
           "parts": [
-            "indicator"
-          ],
-          "param": "safetyAmber"
+            "beacon"
+          ]
+        },
+        {
+          "name": "air-manifold",
+          "color": "#2f5d9a",
+          "parts": [
+            "air-manifold"
+          ]
+        },
+        {
+          "name": "bunker-side-l",
+          "color": "#a8a59c",
+          "parts": [
+            "bunker-side-l",
+            "bunker-side-r",
+            "bunker-back",
+            "splitter-wall"
+          ]
+        },
+        {
+          "name": "splitter-blade",
+          "color": "#c9ccce",
+          "parts": [
+            "splitter-blade"
+          ]
+        },
+        {
+          "name": "drop-heap",
+          "color": "#8a7f6a",
+          "parts": [
+            "drop-heap"
+          ]
+        },
+        {
+          "name": "eject-heap",
+          "color": "#5aa0c8",
+          "parts": [
+            "eject-heap"
+          ]
+        },
+        {
+          "name": "eject-sign",
+          "color": "#2f9a4f",
+          "parts": [
+            "eject-sign"
+          ]
         }
       ]
     },
