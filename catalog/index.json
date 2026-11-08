@@ -13957,10 +13957,16 @@
       "id": "ball-toss-target-wall",
       "kit": "amusement-park",
       "title": "Ball toss target wall",
-      "description": "Three-bay beanbag toss stand with stepped target openings, side braces, and a front counter shelf. Controls: overall scale, paintedTimber, steel, enamel; festival and twilight material presets.",
+      "description": "Midway beanbag toss game at about real size: a target board with three holes cut through it, each ringed by bullseye bands with a dark catch bag behind, an arched marquee header with lamp bulbs, angled side wings, and a throw counter set with beanbags and a bag bucket. Material controls: painted timber, target enamel, canvas, painted steel. Festival, twilight and vintage presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "ball toss",
+        "beanbag toss",
+        "bullseye",
+        "target board",
+        "midway game",
+        "carnival game",
         "amusement park",
         "theme park",
         "guest experience",
@@ -13977,8 +13983,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/ball-toss-target-wall.kcad.ts",
       "preview": "/assets/amusement-park-ball-toss-target-wall.png",
-      "sourceSha256": "e954d5ee1c0623507a42640034867f71694c200fd762e5bf2a82e04ee25a4615",
-      "triangleBudget": 1800,
+      "sourceSha256": "36bf8d26ad95db032bb82aa906bcdf15892323ee524c19c15c95a6d0348784f6",
+      "triangleBudget": 4000,
       "params": [
         {
           "name": "scale",
@@ -13990,75 +13996,134 @@
           "step": 0.05
         },
         {
-          "name": "paintedTimber",
+          "name": "timber",
           "type": "color",
-          "default": "#92704e",
-          "label": "Painted timber"
-        },
-        {
-          "name": "steel",
-          "type": "color",
-          "default": "#738087",
-          "label": "Painted steel"
+          "default": "#2f6fb5",
+          "label": "Painted timber board, wings and counter"
         },
         {
           "name": "enamel",
           "type": "color",
-          "default": "#cc684e",
-          "label": "Baked enamel"
+          "default": "#d8352f",
+          "label": "Target enamel bands, marquee and beanbags"
+        },
+        {
+          "name": "canvas",
+          "type": "color",
+          "default": "#f5efe0",
+          "label": "Canvas bands, lettering strip and bulbs"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#3a4146",
+          "label": "Painted steel frame and catch bags"
         }
       ],
       "presets": {
         "festival": {
-          "paintedTimber": "#be8a4e",
-          "steel": "#9da3a0",
-          "enamel": "#edb34d"
+          "timber": "#2b9a5a",
+          "enamel": "#f2b632",
+          "canvas": "#fffaf0",
+          "steel": "#2d3236"
         },
         "twilight": {
-          "paintedTimber": "#5e7181",
-          "steel": "#4f626c",
-          "enamel": "#385b81"
+          "timber": "#3b3f73",
+          "enamel": "#c2457f",
+          "canvas": "#e4dcf2",
+          "steel": "#22262b"
+        },
+        "vintage": {
+          "timber": "#8a5a34",
+          "enamel": "#b8452f",
+          "canvas": "#efe1c0",
+          "steel": "#4b4038"
         }
       },
       "stats": {
-        "triangles": 192,
+        "triangles": 2952,
         "sizeM": [
-          2.15,
-          1.625,
-          1.033763
+          2.539198,
+          2.38,
+          1.681487
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedTimber",
-          "color": "#92704e",
-          "parts": [
-            "backboard",
-            "side-left",
-            "side-right"
-          ],
-          "param": "paintedTimber"
-        },
-        {
           "name": "steel",
-          "color": "#738087",
+          "color": "#3a4146",
           "parts": [
-            "counter-shelf",
-            "base-foot"
+            "ground-frame",
+            "rear-leg-l",
+            "rear-leg-r",
+            "catch-bag-0",
+            "catch-bag-1",
+            "catch-bag-2",
+            "counter-post--680",
+            "counter-post-0",
+            "counter-post-680",
+            "counter-rail",
+            "bag-bucket"
           ],
           "param": "steel"
         },
         {
-          "name": "enamel",
-          "color": "#cc684e",
+          "name": "timber",
+          "color": "#2f6fb5",
           "parts": [
-            "target-ring-0",
-            "target-ring-1",
-            "target-ring-2"
+            "target-board",
+            "side-wing-l",
+            "side-wing-r",
+            "counter-top"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "enamel",
+          "color": "#d8352f",
+          "parts": [
+            "band-inner-0",
+            "band-outer-0",
+            "band-inner-1",
+            "band-outer-1",
+            "band-inner-2",
+            "band-outer-2",
+            "marquee",
+            "counter-skirt",
+            "beanbag-0",
+            "beanbag-2",
+            "bucket-bag-0",
+            "bucket-bag-1"
           ],
           "param": "enamel"
+        },
+        {
+          "name": "canvas",
+          "color": "#f5efe0",
+          "parts": [
+            "band-mid-0",
+            "band-mid-1",
+            "band-mid-2",
+            "lettering-strip",
+            "bulb-1",
+            "bulb-2",
+            "bulb-3",
+            "bulb-4",
+            "bulb-5",
+            "bulb-6",
+            "bulb-7",
+            "bulb-8",
+            "bulb-9",
+            "bulb-10",
+            "bulb-11",
+            "wing-trim-l",
+            "wing-trim-r",
+            "beanbag-1",
+            "beanbag-3"
+          ],
+          "param": "canvas"
         }
       ]
     },
@@ -14066,10 +14131,16 @@
       "id": "balloon-dart-gallery",
       "kit": "amusement-park",
       "title": "Balloon dart gallery",
-      "description": "Counter-height dart game with a pegged balloon wall, side dividers, and an overhead net frame. Controls: overall scale, paintedTimber, steel, rubber; festival and twilight material presets.",
+      "description": "Midway balloon dart booth at about real size: a cork back wall covered in a five-by-four grid of balloons with darts stuck in the cork, a striped throw counter with a cup of darts, plush prizes hanging on the side walls, and a sloped striped canopy with a pennant valance. Material controls: painted timber, cork, balloon latex, canvas. Festival, twilight and pastel presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "balloon dart",
+        "dart game",
+        "balloon pop",
+        "carnival booth",
+        "midway game",
+        "prize booth",
         "amusement park",
         "theme park",
         "guest experience",
@@ -14086,8 +14157,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/balloon-dart-gallery.kcad.ts",
       "preview": "/assets/amusement-park-balloon-dart-gallery.png",
-      "sourceSha256": "d5e343943c2feca1a7cb7a4f2e9ec9d9a20389664b90b0e252fb84cc8bd846fb",
-      "triangleBudget": 1800,
+      "sourceSha256": "4ca76021e479fdd2915041ddbf0bfe579d3e81784362865979025c8f2440cd3c",
+      "triangleBudget": 9000,
       "params": [
         {
           "name": "scale",
@@ -14099,84 +14170,208 @@
           "step": 0.05
         },
         {
-          "name": "paintedTimber",
+          "name": "timber",
           "type": "color",
-          "default": "#92704e",
-          "label": "Painted timber"
+          "default": "#7a3f8f",
+          "label": "Painted timber booth and counter"
         },
         {
-          "name": "steel",
+          "name": "cork",
           "type": "color",
-          "default": "#738087",
-          "label": "Painted steel"
+          "default": "#b98a5a",
+          "label": "Cork back wall"
         },
         {
-          "name": "rubber",
+          "name": "latex",
           "type": "color",
-          "default": "#292f33",
-          "label": "Rubber"
+          "default": "#e23b3b",
+          "label": "Balloon latex, canopy stripe and prizes"
+        },
+        {
+          "name": "canvas",
+          "type": "color",
+          "default": "#fbf4e2",
+          "label": "Canvas stripe, light balloons and dart flights"
         }
       ],
       "presets": {
         "festival": {
-          "paintedTimber": "#be8a4e",
-          "steel": "#9da3a0",
-          "rubber": "#3c4245"
+          "timber": "#1f7fc4",
+          "cork": "#c49a64",
+          "latex": "#f2b51c",
+          "canvas": "#fffdf4"
         },
         "twilight": {
-          "paintedTimber": "#5e7181",
-          "steel": "#4f626c",
-          "rubber": "#20262a"
+          "timber": "#2b2f55",
+          "cork": "#8a6a4c",
+          "latex": "#d1468c",
+          "canvas": "#d9e4f5"
+        },
+        "pastel": {
+          "timber": "#8fc9c2",
+          "cork": "#d6b88f",
+          "latex": "#f29bb5",
+          "canvas": "#fff7e0"
         }
       },
       "stats": {
-        "triangles": 732,
+        "triangles": 4848,
         "sizeM": [
-          2.24,
-          2.26,
-          1.465
+          2.46,
+          2.55476,
+          1.397674
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedTimber",
-          "color": "#92704e",
+          "name": "timber",
+          "color": "#7a3f8f",
           "parts": [
-            "backboard",
-            "counter",
-            "balloon-0",
-            "balloon-1",
-            "balloon-2",
-            "balloon-3",
-            "balloon-4",
-            "balloon-5",
-            "balloon-6",
-            "balloon-7",
-            "side-divider-0",
-            "side-divider-1"
+            "floor",
+            "back-frame",
+            "stuck-dart-0",
+            "stuck-dart-1",
+            "stuck-dart-2",
+            "stuck-dart-3",
+            "side-wall-l",
+            "side-wall-r",
+            "counter-top",
+            "cup-dart-0",
+            "cup-dart-1",
+            "cup-dart-2"
           ],
-          "param": "paintedTimber"
+          "param": "timber"
         },
         {
-          "name": "steel",
-          "color": "#738087",
+          "name": "cork",
+          "color": "#b98a5a",
           "parts": [
-            "net-post-0",
-            "net-post-1",
-            "net-post-2",
-            "net-post-3"
+            "cork-wall"
           ],
-          "param": "steel"
+          "param": "cork"
         },
         {
-          "name": "rubber",
-          "color": "#292f33",
+          "name": "latex",
+          "color": "#e23b3b",
           "parts": [
-            "net-header"
+            "balloon-0-0",
+            "balloon-knot-0-0",
+            "balloon-knot-0-1",
+            "balloon-0-2",
+            "balloon-knot-0-2",
+            "balloon-0-3",
+            "balloon-knot-0-3",
+            "balloon-knot-1-0",
+            "balloon-1-1",
+            "balloon-knot-1-1",
+            "balloon-1-2",
+            "balloon-knot-1-2",
+            "balloon-knot-1-3",
+            "balloon-2-0",
+            "balloon-knot-2-0",
+            "balloon-2-1",
+            "balloon-knot-2-1",
+            "balloon-knot-2-2",
+            "balloon-2-3",
+            "balloon-knot-2-3",
+            "balloon-3-0",
+            "balloon-knot-3-0",
+            "balloon-knot-3-1",
+            "balloon-3-2",
+            "balloon-knot-3-2",
+            "balloon-3-3",
+            "balloon-knot-3-3",
+            "balloon-knot-4-0",
+            "balloon-4-1",
+            "balloon-knot-4-1",
+            "balloon-4-2",
+            "balloon-knot-4-2",
+            "balloon-knot-4-3",
+            "prize-body-l-0",
+            "prize-head-l-1",
+            "prize-ear-l-1--1",
+            "prize-ear-l-1-1",
+            "prize-body-l-2",
+            "prize-body-r-0",
+            "prize-head-r-1",
+            "prize-ear-r-1--1",
+            "prize-ear-r-1-1",
+            "prize-body-r-2",
+            "counter-stripe-0",
+            "counter-stripe-2",
+            "counter-stripe-4",
+            "counter-stripe-6",
+            "cup-flight-0",
+            "cup-flight-1",
+            "cup-flight-2",
+            "canopy-stripe-0",
+            "canopy-stripe-2",
+            "canopy-stripe-4",
+            "canopy-stripe-6",
+            "pennant-1",
+            "pennant-3",
+            "pennant-5",
+            "pennant-7"
           ],
-          "param": "rubber"
+          "param": "latex"
+        },
+        {
+          "name": "canvas",
+          "color": "#fbf4e2",
+          "parts": [
+            "balloon-0-1",
+            "balloon-1-0",
+            "balloon-1-3",
+            "balloon-2-2",
+            "balloon-3-1",
+            "balloon-4-0",
+            "balloon-4-3",
+            "stuck-dart-flight-0",
+            "stuck-dart-flight-v-0",
+            "stuck-dart-flight-1",
+            "stuck-dart-flight-v-1",
+            "stuck-dart-flight-2",
+            "stuck-dart-flight-v-2",
+            "stuck-dart-flight-3",
+            "stuck-dart-flight-v-3",
+            "prize-rail-l",
+            "prize-string-l-0",
+            "prize-head-l-0",
+            "prize-ear-l-0--1",
+            "prize-ear-l-0-1",
+            "prize-string-l-1",
+            "prize-body-l-1",
+            "prize-string-l-2",
+            "prize-head-l-2",
+            "prize-ear-l-2--1",
+            "prize-ear-l-2-1",
+            "prize-rail-r",
+            "prize-string-r-0",
+            "prize-head-r-0",
+            "prize-ear-r-0--1",
+            "prize-ear-r-0-1",
+            "prize-string-r-1",
+            "prize-body-r-1",
+            "prize-string-r-2",
+            "prize-head-r-2",
+            "prize-ear-r-2--1",
+            "prize-ear-r-2-1",
+            "counter-stripe-1",
+            "counter-stripe-3",
+            "counter-stripe-5",
+            "dart-cup",
+            "canopy-stripe-1",
+            "canopy-stripe-3",
+            "canopy-stripe-5",
+            "canopy-stripe-7",
+            "pennant-0",
+            "pennant-2",
+            "pennant-4",
+            "pennant-6"
+          ],
+          "param": "canvas"
         }
       ]
     },
@@ -15469,10 +15664,17 @@
       "id": "duck-pond-game-trough",
       "kit": "amusement-park",
       "title": "Duck pond game trough",
-      "description": "Shallow midway fishing-game basin with a raised rim, four duck targets, and a prize-catch lip. Controls: overall scale, fiberglass, enamel, rubber; festival and twilight material presets.",
+      "description": "Hook-a-duck midway game at about real size: a waist-high fibreglass basin with a looping water channel round a central island, a rolled enamel rim, eight rubber ducks circulating nose-to-tail, a prize sign on the island, and hook poles laid across the front rim with lines in the water. Material controls: fibreglass, water, duck, trim. Festival, twilight and vintage presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "duck pond",
+        "hook a duck",
+        "pick a duck",
+        "rubber duck",
+        "kiddie game",
+        "midway game",
+        "carnival game",
         "amusement park",
         "theme park",
         "guest experience",
@@ -15489,8 +15691,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/duck-pond-game-trough.kcad.ts",
       "preview": "/assets/amusement-park-duck-pond-game-trough.png",
-      "sourceSha256": "1ed5a3b9fb6c2a0bef25570367a107b538c742baf9a7c124f3ac654e7cc52cdf",
-      "triangleBudget": 1800,
+      "sourceSha256": "1652f891eddc07a227320774b16c7af86d5d440863b7ab97157d5c5021270a34",
+      "triangleBudget": 9000,
       "params": [
         {
           "name": "scale",
@@ -15504,75 +15706,135 @@
         {
           "name": "fiberglass",
           "type": "color",
-          "default": "#4d8290",
-          "label": "Painted fiberglass"
+          "default": "#2f7fb8",
+          "label": "Fibreglass basin shell and island"
         },
         {
-          "name": "enamel",
+          "name": "water",
           "type": "color",
-          "default": "#cc684e",
-          "label": "Baked enamel"
+          "default": "#5cc8e6",
+          "label": "Water in the channel"
         },
         {
-          "name": "rubber",
+          "name": "duck",
           "type": "color",
-          "default": "#292f33",
-          "label": "Rubber"
+          "default": "#f7d330",
+          "label": "Rubber ducks"
+        },
+        {
+          "name": "trim",
+          "type": "color",
+          "default": "#e8552b",
+          "label": "Enamel rim, beaks, sign and hook poles"
         }
       ],
       "presets": {
         "festival": {
-          "fiberglass": "#d7a83f",
-          "enamel": "#edb34d",
-          "rubber": "#3c4245"
+          "fiberglass": "#2c9a5c",
+          "water": "#62d0e0",
+          "duck": "#ffe14a",
+          "trim": "#d63a8a"
         },
         "twilight": {
-          "fiberglass": "#96566d",
-          "enamel": "#385b81",
-          "rubber": "#20262a"
+          "fiberglass": "#3c3f78",
+          "water": "#3f8fbf",
+          "duck": "#f3c64b",
+          "trim": "#c2457f"
+        },
+        "vintage": {
+          "fiberglass": "#b8543c",
+          "water": "#7ab8b0",
+          "duck": "#eccb5a",
+          "trim": "#efe1c0"
         }
       },
       "stats": {
-        "triangles": 384,
+        "triangles": 3360,
         "sizeM": [
-          2.02,
-          0.555,
-          1.66
+          2,
+          1.61,
+          1.676495
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
+          "name": "trim",
+          "color": "#e8552b",
+          "parts": [
+            "toe-kick",
+            "rim",
+            "island-cap",
+            "sign-post",
+            "sign-disc",
+            "duck-beak-0",
+            "duck-beak-1",
+            "duck-beak-2",
+            "duck-beak-3",
+            "duck-beak-4",
+            "duck-beak-5",
+            "duck-beak-6",
+            "duck-beak-7",
+            "hook-pole-0",
+            "hook-line-0",
+            "hook-pole-1",
+            "hook-line-1"
+          ],
+          "param": "trim"
+        },
+        {
           "name": "fiberglass",
-          "color": "#4d8290",
+          "color": "#2f7fb8",
           "parts": [
             "basin",
-            "duck-target-0",
-            "duck-target-1",
-            "duck-target-2",
-            "duck-target-3"
+            "island",
+            "sign-duck",
+            "sign-duck-head",
+            "hook-ring-0",
+            "hook-ring-1"
           ],
           "param": "fiberglass"
         },
         {
-          "name": "enamel",
-          "color": "#cc684e",
+          "name": "water",
+          "color": "#5cc8e6",
           "parts": [
-            "rim-front",
-            "rim-back",
-            "rim-left",
-            "rim-right"
+            "water"
           ],
-          "param": "enamel"
+          "param": "water"
         },
         {
-          "name": "rubber",
-          "color": "#292f33",
+          "name": "duck",
+          "color": "#f7d330",
           "parts": [
-            "prize-lip"
+            "sign-face",
+            "duck-0",
+            "duck-tail-0",
+            "duck-head-0",
+            "duck-1",
+            "duck-tail-1",
+            "duck-head-1",
+            "duck-2",
+            "duck-tail-2",
+            "duck-head-2",
+            "duck-3",
+            "duck-tail-3",
+            "duck-head-3",
+            "duck-4",
+            "duck-tail-4",
+            "duck-head-4",
+            "duck-5",
+            "duck-tail-5",
+            "duck-head-5",
+            "duck-6",
+            "duck-tail-6",
+            "duck-head-6",
+            "duck-7",
+            "duck-tail-7",
+            "duck-head-7"
           ],
-          "param": "rubber"
+          "param": "duck"
         }
       ]
     },
@@ -22160,10 +22422,17 @@
       "id": "ring-toss-game-counter",
       "kit": "amusement-park",
       "title": "Ring toss game counter",
-      "description": "Midway toss booth with a raised bottle rack, counter ledge, and a high striped canopy frame. Controls: overall scale, paintedTimber, steel, enamel; festival and twilight material presets.",
+      "description": "Midway ring toss booth at about real size: a stepped three-tier bed packed with glass bottles, rings already caught on two necks, a striped throw counter with a stack of hoops, corner posts carrying a striped canopy with a pennant valance, and a back shelf of plush prizes. Material controls: painted timber, bottle glass, enamel, canvas. Festival, twilight and vintage presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "ring toss",
+        "bottle toss",
+        "hoopla",
+        "glass bottles",
+        "carnival booth",
+        "midway game",
+        "carnival game",
         "amusement park",
         "theme park",
         "guest experience",
@@ -22180,8 +22449,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/ring-toss-game-counter.kcad.ts",
       "preview": "/assets/amusement-park-ring-toss-game-counter.png",
-      "sourceSha256": "28b197ed0a1262d97120fb79e30eaaa737e3bbd9b87d12c4e77802861fb315d9",
-      "triangleBudget": 1800,
+      "sourceSha256": "04ba37f422bfad043bf5409846ede5a05e34a890d8f23fd949e93745da8c181a",
+      "triangleBudget": 11000,
       "params": [
         {
           "name": "scale",
@@ -22193,79 +22462,199 @@
           "step": 0.05
         },
         {
-          "name": "paintedTimber",
+          "name": "timber",
           "type": "color",
-          "default": "#92704e",
-          "label": "Painted timber"
+          "default": "#2b6cb0",
+          "label": "Painted timber booth, counter and bottle bed"
         },
         {
-          "name": "steel",
+          "name": "glass",
           "type": "color",
-          "default": "#738087",
-          "label": "Painted steel"
+          "default": "#3f9a5a",
+          "label": "Bottle glass"
         },
         {
           "name": "enamel",
           "type": "color",
-          "default": "#cc684e",
-          "label": "Baked enamel"
+          "default": "#e03a33",
+          "label": "Enamel stripes, rings and prizes"
+        },
+        {
+          "name": "canvas",
+          "type": "color",
+          "default": "#fbf4e2",
+          "label": "Canvas stripes and light rings"
         }
       ],
       "presets": {
         "festival": {
-          "paintedTimber": "#be8a4e",
-          "steel": "#9da3a0",
-          "enamel": "#edb34d"
+          "timber": "#e38b1f",
+          "glass": "#2f8f8a",
+          "enamel": "#d7357f",
+          "canvas": "#fffdf4"
         },
         "twilight": {
-          "paintedTimber": "#5e7181",
-          "steel": "#4f626c",
-          "enamel": "#385b81"
+          "timber": "#2b2f55",
+          "glass": "#4e8f6a",
+          "enamel": "#e2a33a",
+          "canvas": "#d9e4f5"
+        },
+        "vintage": {
+          "timber": "#7a4f2f",
+          "glass": "#6d8a4a",
+          "enamel": "#b8452f",
+          "canvas": "#efe1c0"
         }
       },
       "stats": {
-        "triangles": 304,
+        "triangles": 9314,
         "sizeM": [
-          2.2,
-          2.12,
-          0.865
+          2.36,
+          2.605468,
+          1.5
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedTimber",
-          "color": "#92704e",
-          "parts": [
-            "counter",
-            "front-ledge",
-            "canopy"
-          ],
-          "param": "paintedTimber"
-        },
-        {
           "name": "enamel",
-          "color": "#cc684e",
+          "color": "#e03a33",
           "parts": [
-            "target-bottle-0",
-            "target-bottle-1",
-            "target-bottle-2",
-            "target-bottle-3",
-            "target-bottle-4"
+            "skirt-0",
+            "skirt-2",
+            "skirt-4",
+            "skirt-6",
+            "tier-lip-1",
+            "caught-ring-0",
+            "ring-stack-0",
+            "ring-stack-2",
+            "ring-stack-4",
+            "loose-ring",
+            "prize-body-1",
+            "prize-head-1",
+            "prize-ear-1--1",
+            "prize-ear-1-1",
+            "prize-body-3",
+            "prize-head-3",
+            "prize-ear-3--1",
+            "prize-ear-3-1",
+            "prize-body-5",
+            "prize-head-5",
+            "prize-ear-5--1",
+            "prize-ear-5-1",
+            "canopy-0",
+            "canopy-2",
+            "canopy-4",
+            "canopy-6",
+            "canopy-8",
+            "pennant-1",
+            "pennant-3",
+            "pennant-5",
+            "pennant-7"
           ],
           "param": "enamel"
         },
         {
-          "name": "steel",
-          "color": "#738087",
+          "name": "canvas",
+          "color": "#fbf4e2",
           "parts": [
-            "canopy-post-0",
-            "canopy-post-1",
-            "canopy-post-2",
-            "canopy-post-3"
+            "skirt-1",
+            "skirt-3",
+            "skirt-5",
+            "skirt-7",
+            "tier-lip-0",
+            "tier-lip-2",
+            "caught-ring-1",
+            "ring-stack-1",
+            "ring-stack-3",
+            "prize-shelf",
+            "prize-body-0",
+            "prize-head-0",
+            "prize-ear-0--1",
+            "prize-ear-0-1",
+            "prize-body-2",
+            "prize-head-2",
+            "prize-ear-2--1",
+            "prize-ear-2-1",
+            "prize-body-4",
+            "prize-head-4",
+            "prize-ear-4--1",
+            "prize-ear-4-1",
+            "corner-post-l",
+            "corner-post-r",
+            "canopy-1",
+            "canopy-3",
+            "canopy-5",
+            "canopy-7",
+            "pennant-0",
+            "pennant-2",
+            "pennant-4",
+            "pennant-6",
+            "pennant-8"
           ],
-          "param": "steel"
+          "param": "canvas"
+        },
+        {
+          "name": "timber",
+          "color": "#2b6cb0",
+          "parts": [
+            "counter-top",
+            "floor",
+            "tier-0",
+            "tier-1",
+            "tier-2",
+            "back-wall",
+            "side-wall-l",
+            "side-wall-r"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "glass",
+          "color": "#3f9a5a",
+          "parts": [
+            "bottle-0-0-0",
+            "bottle-0-0-1",
+            "bottle-0-1-0",
+            "bottle-0-1-1",
+            "bottle-0-2-0",
+            "bottle-0-2-1",
+            "bottle-0-3-0",
+            "bottle-0-3-1",
+            "bottle-0-4-0",
+            "bottle-0-4-1",
+            "bottle-0-5-0",
+            "bottle-0-5-1",
+            "bottle-0-6-0",
+            "bottle-1-0-0",
+            "bottle-1-0-1",
+            "bottle-1-1-0",
+            "bottle-1-1-1",
+            "bottle-1-2-0",
+            "bottle-1-2-1",
+            "bottle-1-3-0",
+            "bottle-1-3-1",
+            "bottle-1-4-0",
+            "bottle-1-4-1",
+            "bottle-1-5-0",
+            "bottle-1-5-1",
+            "bottle-1-6-0",
+            "bottle-2-0-0",
+            "bottle-2-0-1",
+            "bottle-2-1-0",
+            "bottle-2-1-1",
+            "bottle-2-2-0",
+            "bottle-2-2-1",
+            "bottle-2-3-0",
+            "bottle-2-3-1",
+            "bottle-2-4-0",
+            "bottle-2-4-1",
+            "bottle-2-5-0",
+            "bottle-2-5-1",
+            "bottle-2-6-0"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -22449,10 +22838,17 @@
       "id": "skee-ball-lane",
       "kit": "amusement-park",
       "title": "Skee-ball lane",
-      "description": "Single midway rolling lane with a sloped launch bed, side gutters, target arch, and scoring pockets. Controls: overall scale, paintedTimber, stainlessSteel, enamel; festival and twilight material presets.",
+      "description": "Arcade skee-ball alley at about real size: a long maple lane rising away from the player inside a shaped cabinet, the jump hump, a tilted target bowl of concentric scoring rings with pocket holes, wire guard rails, a ball-return trough holding balls at the player end, and a tilted scoreboard on the backboard. Material controls: cabinet laminate, maple lane, enamel rings, dark steel. Arcade, retro and neon presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "skee-ball",
+        "skee ball",
+        "alley roller",
+        "ball roll game",
+        "arcade game",
+        "redemption game",
+        "midway game",
         "amusement park",
         "theme park",
         "guest experience",
@@ -22464,13 +22860,14 @@
         "amusement-park",
         "theme-park",
         "midway",
+        "arcade",
         "visitor-attraction"
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/skee-ball-lane.kcad.ts",
       "preview": "/assets/amusement-park-skee-ball-lane.png",
-      "sourceSha256": "d5ac17ba54d4714c2c3f2e80f9e837b52d6e2b46fcd811ea60999fb44d2f7eaf",
-      "triangleBudget": 1800,
+      "sourceSha256": "3520af5bcc221b7fb6dbf0394a053fc924b70ea02a276f151ea0aaa385dd01af",
+      "triangleBudget": 6000,
       "params": [
         {
           "name": "scale",
@@ -22482,76 +22879,127 @@
           "step": 0.05
         },
         {
-          "name": "paintedTimber",
+          "name": "cabinet",
           "type": "color",
-          "default": "#92704e",
-          "label": "Painted timber"
+          "default": "#c8322f",
+          "label": "Cabinet laminate sides and backboard"
         },
         {
-          "name": "stainlessSteel",
+          "name": "maple",
           "type": "color",
-          "default": "#b0b9b6",
-          "label": "Stainless steel"
+          "default": "#d9a868",
+          "label": "Maple lane, hump and balls"
         },
         {
           "name": "enamel",
           "type": "color",
-          "default": "#cc684e",
-          "label": "Baked enamel"
+          "default": "#f2c230",
+          "label": "Enamel scoring rings and scoreboard trim"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#2c3136",
+          "label": "Dark steel rails, pockets and scoreboard face"
         }
       ],
       "presets": {
-        "festival": {
-          "paintedTimber": "#be8a4e",
-          "stainlessSteel": "#d1d1c6",
-          "enamel": "#edb34d"
+        "arcade": {
+          "cabinet": "#1f5fae",
+          "maple": "#dcae70",
+          "enamel": "#ffd23a",
+          "steel": "#25292e"
         },
-        "twilight": {
-          "paintedTimber": "#5e7181",
-          "stainlessSteel": "#788b91",
-          "enamel": "#385b81"
+        "retro": {
+          "cabinet": "#6b3a22",
+          "maple": "#c99456",
+          "enamel": "#e8e0c8",
+          "steel": "#3a3631"
+        },
+        "neon": {
+          "cabinet": "#22163f",
+          "maple": "#c9a072",
+          "enamel": "#3cf0d0",
+          "steel": "#151320"
         }
       },
       "stats": {
-        "triangles": 228,
+        "triangles": 1676,
         "sizeM": [
-          3.25,
-          1.645,
-          1
+          0.88,
+          2.45,
+          3.41
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#b0b9b6",
+          "name": "cabinet",
+          "color": "#c8322f",
           "parts": [
-            "lane-base"
+            "cabinet-side-l",
+            "cabinet-side-r",
+            "cabinet-front",
+            "backboard",
+            "lane-skirt",
+            "bowl-floor"
           ],
-          "param": "stainlessSteel"
+          "param": "cabinet"
         },
         {
-          "name": "paintedTimber",
-          "color": "#92704e",
+          "name": "maple",
+          "color": "#d9a868",
           "parts": [
-            "ramp-bed",
-            "left-gutter",
-            "right-gutter"
+            "lane",
+            "jump-hump",
+            "ball-0",
+            "ball-1",
+            "ball-2",
+            "ball-3",
+            "ball-4",
+            "ball-5"
           ],
-          "param": "paintedTimber"
+          "param": "maple"
+        },
+        {
+          "name": "steel",
+          "color": "#2c3136",
+          "parts": [
+            "return-trough",
+            "trough-lip",
+            "trough-bracket-l",
+            "trough-bracket-r",
+            "guard-post-l--1540",
+            "guard-post-l--550",
+            "guard-post-l-440",
+            "guard-rail-l-180",
+            "guard-rail-l-340",
+            "guard-post-r--1540",
+            "guard-post-r--550",
+            "guard-post-r-440",
+            "guard-rail-r-180",
+            "guard-rail-r-340",
+            "target-backing",
+            "pocket-centre",
+            "pocket-top",
+            "score-window"
+          ],
+          "param": "steel"
         },
         {
           "name": "enamel",
-          "color": "#cc684e",
+          "color": "#f2c230",
           "parts": [
-            "target-backboard",
-            "score-ring-0",
-            "score-ring-1",
-            "score-ring-2",
-            "score-pocket-0",
-            "score-pocket-1",
-            "score-pocket-2"
+            "ring-outer",
+            "ring-mid",
+            "ring-inner",
+            "ring-cup",
+            "scoreboard",
+            "score-digit-0",
+            "score-digit-1",
+            "score-digit-2",
+            "score-digit-3"
           ],
           "param": "enamel"
         }
