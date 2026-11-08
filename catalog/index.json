@@ -16593,10 +16593,16 @@
       "id": "family-plaza-shade-pavilion",
       "kit": "amusement-park",
       "title": "Family plaza shade pavilion",
-      "description": "Four-post plaza shelter with two gently pitched canopy panels and a raised ridge mast. Controls: overall scale, steel, canvas, concrete; festival and twilight material presets.",
+      "description": "Open-sided plaza shade pavilion at about real size: four square steel posts on concrete pier footings with knee braces, eave and tie beams, a striped canvas gable roof with scalloped valance flaps on both eaves, a ridge mast with ball finial and pennant, and two slatted benches underneath. Material controls: painted steel, canvas, canvas stripe, concrete and timber. Seaside, festival and twilight presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "pavilion",
+        "shade structure",
+        "gazebo",
+        "canopy",
+        "shelter",
+        "bench",
         "amusement park",
         "theme park",
         "guest experience",
@@ -16613,8 +16619,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/family-plaza-shade-pavilion.kcad.ts",
       "preview": "/assets/amusement-park-family-plaza-shade-pavilion.png",
-      "sourceSha256": "e39c3623e6a733648c3253c4d72bfd60b7b0ff3de8fc4963f7c029930edd917a",
-      "triangleBudget": 1800,
+      "sourceSha256": "af060833b421e4e354f3e0205b7fc4498e8726129aa7120b06bdfbc774c9c5e9",
+      "triangleBudget": 5000,
       "params": [
         {
           "name": "scale",
@@ -16628,76 +16634,159 @@
         {
           "name": "steel",
           "type": "color",
-          "default": "#738087",
-          "label": "Painted steel"
+          "default": "#e8e6df",
+          "label": "Painted steel frame"
         },
         {
           "name": "canvas",
           "type": "color",
-          "default": "#e0c98e",
+          "default": "#f4efe0",
           "label": "Canvas"
+        },
+        {
+          "name": "stripe",
+          "type": "color",
+          "default": "#2f8fb0",
+          "label": "Canvas stripe and valance"
         },
         {
           "name": "concrete",
           "type": "color",
-          "default": "#92938b",
-          "label": "Concrete"
+          "default": "#9a978d",
+          "label": "Concrete footings and bench timber"
         }
       ],
       "presets": {
+        "seaside": {
+          "steel": "#e8e6df",
+          "canvas": "#f4efe0",
+          "stripe": "#2f8fb0",
+          "concrete": "#9a978d"
+        },
         "festival": {
-          "steel": "#9da3a0",
-          "canvas": "#eddaa9",
-          "concrete": "#aaa99e"
+          "steel": "#f0d9a2",
+          "canvas": "#fff6e2",
+          "stripe": "#d24b3e",
+          "concrete": "#a8a294"
         },
         "twilight": {
-          "steel": "#4f626c",
-          "canvas": "#a85e4f",
+          "steel": "#3f525d",
+          "canvas": "#d9cfb8",
+          "stripe": "#3d4f8a",
           "concrete": "#6f7477"
         }
       },
       "stats": {
-        "triangles": 260,
+        "triangles": 1442,
         "sizeM": [
-          3.34,
-          3.1,
-          2.54
+          3.46,
+          3.96,
+          2.64
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "canvas",
-          "color": "#e0c98e",
+          "name": "concrete",
+          "color": "#9a978d",
           "parts": [
-            "corner-post-0",
-            "corner-post-1",
-            "corner-post-2",
-            "corner-post-3",
-            "center-mast"
+            "footing-lf",
+            "footing-lb",
+            "footing-rf",
+            "footing-rb",
+            "bench-slat-f-0",
+            "bench-slat-f-1",
+            "bench-slat-f-2",
+            "bench-back-f",
+            "bench-slat-b-0",
+            "bench-slat-b-1",
+            "bench-slat-b-2",
+            "bench-back-b"
           ],
-          "param": "canvas"
+          "param": "concrete"
         },
         {
           "name": "steel",
-          "color": "#738087",
+          "color": "#e8e6df",
           "parts": [
-            "canopy-panel-left",
-            "canopy-panel-right"
+            "base-plate-lf",
+            "post-lf",
+            "brace-x-lf",
+            "brace-y-lf",
+            "base-plate-lb",
+            "post-lb",
+            "brace-x-lb",
+            "brace-y-lb",
+            "base-plate-rf",
+            "post-rf",
+            "brace-x-rf",
+            "brace-y-rf",
+            "base-plate-rb",
+            "post-rb",
+            "brace-x-rb",
+            "brace-y-rb",
+            "eave-beam-f",
+            "eave-beam-b",
+            "tie-beam-l",
+            "tie-beam-r",
+            "ridge-cap",
+            "gable-trim-l",
+            "gable-trim-r",
+            "mast",
+            "bench-leg-f-l",
+            "bench-leg-f-r",
+            "bench-back-post-f-l",
+            "bench-back-post-f-r",
+            "bench-leg-b-l",
+            "bench-leg-b-r",
+            "bench-back-post-b-l",
+            "bench-back-post-b-r"
           ],
           "param": "steel"
         },
         {
-          "name": "concrete",
-          "color": "#92938b",
+          "name": "stripe",
+          "color": "#2f8fb0",
           "parts": [
-            "anchor-foot-0",
-            "anchor-foot-1",
-            "anchor-foot-2",
-            "anchor-foot-3"
+            "roof-band-0",
+            "roof-band-2",
+            "roof-band-4",
+            "roof-band-6",
+            "valance-f-1",
+            "valance-f-3",
+            "valance-f-5",
+            "valance-f-7",
+            "valance-f-9",
+            "valance-b-1",
+            "valance-b-3",
+            "valance-b-5",
+            "valance-b-7",
+            "valance-b-9",
+            "finial",
+            "pennant"
           ],
-          "param": "concrete"
+          "param": "stripe"
+        },
+        {
+          "name": "canvas",
+          "color": "#f4efe0",
+          "parts": [
+            "roof-band-1",
+            "roof-band-3",
+            "roof-band-5",
+            "valance-f-0",
+            "valance-f-2",
+            "valance-f-4",
+            "valance-f-6",
+            "valance-f-8",
+            "valance-b-0",
+            "valance-b-2",
+            "valance-b-4",
+            "valance-b-6",
+            "valance-b-8"
+          ],
+          "param": "canvas"
         }
       ]
     },
@@ -17278,10 +17367,16 @@
       "id": "game-token-counter",
       "kit": "amusement-park",
       "title": "Game token counter",
-      "description": "Midway exchange counter with a token hopper, change tray, service window, and queue-side awning. Controls: overall scale, paintedTimber, steel, glass; festival and twilight material presets.",
+      "description": "Midway token exchange booth at about real size: plank-faced counter with a projecting serving ledge, glazed service window with speak-hole and cash slot, funnel token hopper heaped with coins, sunken change tray, coin roundel sign, and a striped sloping awning on two steel posts with scalloped flaps. Material controls: painted timber, steel, window glass, brass tokens and awning stripe. Classic, festival and twilight presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "token booth",
+        "ticket booth",
+        "cashier",
+        "coins",
+        "kiosk",
+        "midway",
         "amusement park",
         "theme park",
         "guest experience",
@@ -17298,8 +17393,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/game-token-counter.kcad.ts",
       "preview": "/assets/amusement-park-game-token-counter.png",
-      "sourceSha256": "0e87219f7141bbc240c2c6b6845d27603b9a85684d714de8f519d59e3876e905",
-      "triangleBudget": 1800,
+      "sourceSha256": "3bff9254e4085b5de8859b2ba8f06fb8dfa4f3b40a707071d2fcdaaa4f1363d7",
+      "triangleBudget": 5000,
       "params": [
         {
           "name": "scale",
@@ -17313,73 +17408,146 @@
         {
           "name": "paintedTimber",
           "type": "color",
-          "default": "#92704e",
+          "default": "#2f6d5a",
           "label": "Painted timber"
         },
         {
           "name": "steel",
           "type": "color",
-          "default": "#738087",
-          "label": "Painted steel"
+          "default": "#7d8689",
+          "label": "Steel posts, hopper and tray"
         },
         {
           "name": "glass",
           "type": "color",
-          "default": "#75b9bf",
-          "label": "Tinted glass"
+          "default": "#9cc9d1",
+          "label": "Window glass"
+        },
+        {
+          "name": "brass",
+          "type": "color",
+          "default": "#e2b33c",
+          "label": "Brass tokens and awning stripe"
         }
       ],
       "presets": {
+        "classic": {
+          "paintedTimber": "#2f6d5a",
+          "steel": "#7d8689",
+          "glass": "#9cc9d1",
+          "brass": "#e2b33c"
+        },
         "festival": {
-          "paintedTimber": "#be8a4e",
-          "steel": "#9da3a0",
-          "glass": "#efce70"
+          "paintedTimber": "#b8432f",
+          "steel": "#a3aaa8",
+          "glass": "#c3e2e2",
+          "brass": "#f2c94c"
         },
         "twilight": {
-          "paintedTimber": "#5e7181",
-          "steel": "#4f626c",
-          "glass": "#6387aa"
+          "paintedTimber": "#2c3e63",
+          "steel": "#56636a",
+          "glass": "#5f86a8",
+          "brass": "#d79a2b"
         }
       },
       "stats": {
-        "triangles": 128,
+        "triangles": 2542,
         "sizeM": [
-          1.95,
-          1.76,
-          0.89
+          1.9,
+          3.24,
+          0.875
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
+          "name": "steel",
+          "color": "#7d8689",
+          "parts": [
+            "plinth",
+            "plank-1",
+            "plank-3",
+            "plank-5",
+            "plank-7",
+            "speak-ring",
+            "cash-tray",
+            "sign-stem-l",
+            "sign-stem-r",
+            "hopper-stand",
+            "hopper",
+            "change-tray",
+            "awning-post-l",
+            "awning-post-r"
+          ],
+          "param": "steel"
+        },
+        {
           "name": "paintedTimber",
-          "color": "#92704e",
+          "color": "#2f6d5a",
           "parts": [
             "counter-body",
-            "counter-ledge",
-            "token-hopper",
-            "awning"
+            "plank-0",
+            "plank-2",
+            "plank-4",
+            "plank-6",
+            "plank-8",
+            "ledge",
+            "back-wall-l",
+            "back-wall-r",
+            "window-head",
+            "window-sill",
+            "sign-rim",
+            "sign-mark",
+            "sign-bar-b",
+            "sign-bar-t",
+            "awning-band-1",
+            "awning-band-3",
+            "awning-band-5",
+            "awning-band-7",
+            "awning-flap-0",
+            "awning-flap-2",
+            "awning-flap-4",
+            "awning-flap-6"
           ],
           "param": "paintedTimber"
         },
         {
-          "name": "glass",
-          "color": "#75b9bf",
+          "name": "brass",
+          "color": "#e2b33c",
           "parts": [
-            "service-window"
+            "ledge-edge",
+            "sign-disc",
+            "coin-heap",
+            "coin-stack-0",
+            "coin-stack-1",
+            "coin-stack-2",
+            "coin-stack-3",
+            "coin-stack-4",
+            "tray-coin-0",
+            "tray-coin-1",
+            "tray-coin-2",
+            "tray-coin-3",
+            "tray-coin-4",
+            "tray-coin-5",
+            "awning-band-0",
+            "awning-band-2",
+            "awning-band-4",
+            "awning-band-6",
+            "awning-flap-1",
+            "awning-flap-3",
+            "awning-flap-5",
+            "awning-flap-7"
           ],
-          "param": "glass"
+          "param": "brass"
         },
         {
-          "name": "steel",
-          "color": "#738087",
+          "name": "glass",
+          "color": "#9cc9d1",
           "parts": [
-            "change-tray",
-            "awning-post-0",
-            "awning-post-1"
+            "window-glass"
           ],
-          "param": "steel"
+          "param": "glass"
         }
       ]
     },
@@ -19099,10 +19267,16 @@
       "id": "midway-scoreboard",
       "kit": "amusement-park",
       "title": "Midway scoreboard",
-      "description": "Freestanding race scoreboard with two lane panels, a roof cap, and a weighted ground frame. Controls: overall scale, steel, enamel, acrylic; festival and twilight material presets.",
+      "description": "Midway derby race scoreboard at about real size: arched marquee header ringed with chase bulbs, a cabinet face with six numbered racing lanes and a horse token in each, a chequered finish line with winner lamps, a side bell, on twin steel legs with braced ballast feet. Material controls: painted steel, cabinet enamel, lane acrylic, marquee bulbs. Classic, festival and twilight presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "scoreboard",
+        "race board",
+        "derby game",
+        "marquee",
+        "midway",
+        "carnival game",
         "amusement park",
         "theme park",
         "guest experience",
@@ -19119,8 +19293,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/midway-scoreboard.kcad.ts",
       "preview": "/assets/amusement-park-midway-scoreboard.png",
-      "sourceSha256": "048e411f500cd1835f6df1a88a3e28216d2499d57c7f9a884195251f00094b49",
-      "triangleBudget": 1800,
+      "sourceSha256": "5e543c494409eecb7ad14f8a22d6ca4646e92239721513fde7b5f094fdacc8fa",
+      "triangleBudget": 6000,
       "params": [
         {
           "name": "scale",
@@ -19134,75 +19308,166 @@
         {
           "name": "steel",
           "type": "color",
-          "default": "#738087",
-          "label": "Painted steel"
+          "default": "#3b4248",
+          "label": "Painted steel frame"
         },
         {
           "name": "enamel",
           "type": "color",
-          "default": "#cc684e",
-          "label": "Baked enamel"
+          "default": "#c7362f",
+          "label": "Cabinet and marquee enamel"
         },
         {
           "name": "acrylic",
           "type": "color",
-          "default": "#63aab8",
-          "label": "Tinted acrylic"
+          "default": "#1f5f8b",
+          "label": "Lane acrylic"
+        },
+        {
+          "name": "bulbs",
+          "type": "color",
+          "default": "#ffe9a0",
+          "label": "Bulbs, tokens and lettering"
         }
       ],
       "presets": {
+        "classic": {
+          "steel": "#3b4248",
+          "enamel": "#c7362f",
+          "acrylic": "#1f5f8b",
+          "bulbs": "#ffe9a0"
+        },
         "festival": {
-          "steel": "#9da3a0",
-          "enamel": "#edb34d",
-          "acrylic": "#79c8d2"
+          "steel": "#5a6066",
+          "enamel": "#e39b2d",
+          "acrylic": "#6b3c8f",
+          "bulbs": "#fff6cf"
         },
         "twilight": {
-          "steel": "#4f626c",
-          "enamel": "#385b81",
-          "acrylic": "#41768b"
+          "steel": "#22282d",
+          "enamel": "#2f4f8a",
+          "acrylic": "#173041",
+          "bulbs": "#ffd36b"
         }
       },
       "stats": {
-        "triangles": 248,
+        "triangles": 3140,
         "sizeM": [
-          1.68,
-          1.765,
-          0.85
+          1.9,
+          2.586,
+          0.76
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "enamel",
-          "color": "#cc684e",
+          "name": "steel",
+          "color": "#3b4248",
           "parts": [
-            "base"
+            "leg-l",
+            "foot-l",
+            "brace-l-f",
+            "brace-l-b",
+            "leg-r",
+            "foot-r",
+            "brace-r-f",
+            "brace-r-b",
+            "leg-tie",
+            "face-panel",
+            "winner-lamp-1",
+            "winner-lamp-2",
+            "winner-lamp-3",
+            "winner-lamp-4",
+            "winner-lamp-5",
+            "finish-check-1",
+            "finish-check-3",
+            "finish-check-5",
+            "finish-check-7",
+            "finish-check-9",
+            "finish-check-11",
+            "bell-bracket"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "enamel",
+          "color": "#c7362f",
+          "parts": [
+            "ballast-l",
+            "ballast-r",
+            "cabinet",
+            "marquee"
           ],
           "param": "enamel"
         },
         {
           "name": "acrylic",
-          "color": "#63aab8",
+          "color": "#1f5f8b",
           "parts": [
-            "left-panel",
-            "right-panel",
-            "score-lamp-0",
-            "score-lamp-1",
-            "score-lamp-2",
-            "score-lamp-3"
+            "lane-0",
+            "lane-1",
+            "lane-2",
+            "lane-3",
+            "lane-4",
+            "lane-5",
+            "marquee-board"
           ],
           "param": "acrylic"
         },
         {
-          "name": "steel",
-          "color": "#738087",
+          "name": "bulbs",
+          "color": "#ffe9a0",
           "parts": [
-            "center-divider",
-            "header",
-            "roof"
+            "lane-number-0",
+            "token-0",
+            "winner-lamp-0",
+            "lane-number-1",
+            "token-1",
+            "lane-number-2",
+            "token-2",
+            "lane-number-3",
+            "token-3",
+            "lane-number-4",
+            "token-4",
+            "lane-number-5",
+            "token-5",
+            "finish-check-0",
+            "finish-check-2",
+            "finish-check-4",
+            "finish-check-6",
+            "finish-check-8",
+            "finish-check-10",
+            "title-letter-0",
+            "title-letter-1",
+            "title-letter-2",
+            "title-letter-3",
+            "title-letter-4",
+            "title-letter-5",
+            "title-letter-6",
+            "chase-bulb-1",
+            "chase-bulb-2",
+            "chase-bulb-3",
+            "chase-bulb-4",
+            "chase-bulb-5",
+            "chase-bulb-6",
+            "chase-bulb-7",
+            "chase-bulb-8",
+            "chase-bulb-9",
+            "chase-bulb-10",
+            "chase-bulb-11",
+            "sill-bulb-0",
+            "sill-bulb-1",
+            "sill-bulb-2",
+            "sill-bulb-3",
+            "sill-bulb-4",
+            "sill-bulb-5",
+            "sill-bulb-6",
+            "sill-bulb-7",
+            "sill-bulb-8",
+            "bell"
           ],
-          "param": "steel"
+          "param": "bulbs"
         }
       ]
     },
@@ -22292,10 +22557,15 @@
       "id": "queue-switchback-rail",
       "kit": "amusement-park",
       "title": "Queue switchback rail",
-      "description": "Modular two-lane queue divider with paired rails, seven posts, and a rounded turning end. Controls: overall scale, galvanizedSteel, concrete, enamel; festival and twilight material presets.",
+      "description": "Ride queue switchback at about real size: two parallel lanes of round tube handrails on flanged posts with mid rails and infill bars, a semicircular U-turn hoop at the far end, post end caps, a queue-entry sign and a wait-time board on the entry post. Material controls: galvanised steel, rail enamel, floor flanges, signage. Park green, festival and twilight presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "queue",
+        "switchback",
+        "handrail",
+        "queue line",
+        "crowd control",
         "amusement park",
         "theme park",
         "guest experience",
@@ -22312,8 +22582,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/queue-switchback-rail.kcad.ts",
       "preview": "/assets/amusement-park-queue-switchback-rail.png",
-      "sourceSha256": "ef8433cfe951b686255cfba0d72f85e85af41e0b2f33d51c87a659fa34295771",
-      "triangleBudget": 1800,
+      "sourceSha256": "ba937348badb733c8317fecbb80f79a2aa149b265dba9417aff19401860947d5",
+      "triangleBudget": 6000,
       "params": [
         {
           "name": "scale",
@@ -22327,40 +22597,54 @@
         {
           "name": "galvanizedSteel",
           "type": "color",
-          "default": "#7e8d92",
-          "label": "Galvanized steel"
-        },
-        {
-          "name": "concrete",
-          "type": "color",
-          "default": "#92938b",
-          "label": "Concrete"
+          "default": "#8f9a9e",
+          "label": "Galvanised posts and infill"
         },
         {
           "name": "enamel",
           "type": "color",
-          "default": "#cc684e",
-          "label": "Baked enamel"
+          "default": "#2f6b4f",
+          "label": "Rail enamel"
+        },
+        {
+          "name": "concrete",
+          "type": "color",
+          "default": "#6d706c",
+          "label": "Floor flanges and caps"
+        },
+        {
+          "name": "signage",
+          "type": "color",
+          "default": "#f2c14e",
+          "label": "Sign face"
         }
       ],
       "presets": {
+        "parkGreen": {
+          "galvanizedSteel": "#8f9a9e",
+          "enamel": "#2f6b4f",
+          "concrete": "#6d706c",
+          "signage": "#f2c14e"
+        },
         "festival": {
-          "galvanizedSteel": "#9aa7a8",
-          "concrete": "#aaa99e",
-          "enamel": "#edb34d"
+          "galvanizedSteel": "#a9b2b2",
+          "enamel": "#c8473a",
+          "concrete": "#7a7a72",
+          "signage": "#ffe08a"
         },
         "twilight": {
-          "galvanizedSteel": "#586c73",
-          "concrete": "#6f7477",
-          "enamel": "#385b81"
+          "galvanizedSteel": "#5f6d73",
+          "enamel": "#2d4f7c",
+          "concrete": "#4b5054",
+          "signage": "#e7a64a"
         }
       },
       "stats": {
-        "triangles": 904,
+        "triangles": 4296,
         "sizeM": [
-          3.108,
-          0.98,
-          0.948
+          4.05,
+          1.7,
+          1.34
         ],
         "minUpM": 0,
         "materials": 1
@@ -22368,55 +22652,108 @@
       "palette": [
         {
           "name": "concrete",
-          "color": "#92938b",
+          "color": "#6d706c",
           "parts": [
-            "post-0",
-            "post-1",
-            "post-2",
-            "post-3",
-            "post-4",
-            "post-5",
-            "post-6",
-            "post-7",
-            "post-8",
-            "post-9",
-            "post-10",
-            "post-11",
-            "post-12",
-            "post-13",
-            "upper-rail-0",
-            "upper-rail-1",
-            "upper-rail-2",
-            "upper-rail-3",
-            "upper-rail-4",
-            "upper-rail-5",
-            "upper-rail-6",
-            "upper-rail-7",
-            "upper-rail-8",
-            "upper-rail-9",
-            "upper-rail-10",
-            "upper-rail-11",
-            "lower-rail-0",
-            "lower-rail-1",
-            "lower-rail-2",
-            "lower-rail-3",
-            "lower-rail-4",
-            "lower-rail-5",
-            "lower-rail-6",
-            "lower-rail-7",
-            "lower-rail-8",
-            "lower-rail-9",
-            "lower-rail-10"
+            "flange--1600--600",
+            "cap--1600--600",
+            "flange--800--600",
+            "cap--800--600",
+            "flange-0--600",
+            "cap-0--600",
+            "flange-800--600",
+            "cap-800--600",
+            "flange-1600--600",
+            "cap-1600--600",
+            "flange--1600-0",
+            "cap--1600-0",
+            "flange--800-0",
+            "cap--800-0",
+            "flange-0-0",
+            "cap-0-0",
+            "flange-800-0",
+            "cap-800-0",
+            "flange-1600-0",
+            "cap-1600-0",
+            "flange--1600-600",
+            "cap--1600-600",
+            "flange--800-600",
+            "cap--800-600",
+            "flange-0-600",
+            "cap-0-600",
+            "flange-800-600",
+            "cap-800-600",
+            "flange-1600-600",
+            "cap-1600-600",
+            "turn-flange",
+            "turn-cap",
+            "wait-digit-0",
+            "wait-digit-1"
           ],
           "param": "concrete"
         },
         {
-          "name": "enamel",
-          "color": "#cc684e",
+          "name": "galvanizedSteel",
+          "color": "#8f9a9e",
           "parts": [
-            "lower-rail-11"
+            "post--1600--600",
+            "post--800--600",
+            "post-0--600",
+            "post-800--600",
+            "post-1600--600",
+            "infill-0--600",
+            "infill-1--600",
+            "infill-2--600",
+            "infill-3--600",
+            "post--1600-0",
+            "post--800-0",
+            "post-0-0",
+            "post-800-0",
+            "post-1600-0",
+            "infill-0-0",
+            "infill-1-0",
+            "infill-2-0",
+            "infill-3-0",
+            "post--1600-600",
+            "post--800-600",
+            "post-0-600",
+            "post-800-600",
+            "post-1600-600",
+            "infill-0-600",
+            "infill-1-600",
+            "infill-2-600",
+            "infill-3-600",
+            "turn-post",
+            "entry-sign-post",
+            "wait-board-stem"
+          ],
+          "param": "galvanizedSteel"
+        },
+        {
+          "name": "enamel",
+          "color": "#2f6b4f",
+          "parts": [
+            "top-rail--600",
+            "mid-rail--600",
+            "top-rail-0",
+            "mid-rail-0",
+            "top-rail-600",
+            "mid-rail-600",
+            "turn-hoop-top",
+            "turn-hoop-mid",
+            "entry-sign-board",
+            "entry-arrow",
+            "wait-board"
           ],
           "param": "enamel"
+        },
+        {
+          "name": "signage",
+          "color": "#f2c14e",
+          "parts": [
+            "entry-sign-face",
+            "wait-face"
+          ],
+          "param": "signage"
         }
       ]
     },
@@ -22424,10 +22761,16 @@
       "id": "refillable-cup-rack",
       "kit": "amusement-park",
       "title": "Refillable cup rack",
-      "description": "Countertop carousel for reusable park cups with a rotating-style central mast and four storage shelves. Controls: overall scale, stainlessSteel, polymer, enamel; festival and twilight material presets.",
+      "description": "Souvenir refill-cup carousel at about real size: weighted round base on a turntable bearing, stainless mast, four shrinking round tiers each ringed with tapered souvenir cups hung upside-down on pegs, drip lips, and a round refill topper sign. Material controls: stainless steel, cup polymer, tier enamel, lids and sign face. Classic, festival and twilight presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "cup rack",
+        "souvenir cup",
+        "refill",
+        "carousel display",
+        "merchandise",
+        "drinks",
         "amusement park",
         "theme park",
         "guest experience",
@@ -22444,8 +22787,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/refillable-cup-rack.kcad.ts",
       "preview": "/assets/amusement-park-refillable-cup-rack.png",
-      "sourceSha256": "4172c9db10f97d482c3621d4f7d9e445431814b6a29afc8d86f45fd01d984f93",
-      "triangleBudget": 1800,
+      "sourceSha256": "523ddd6c7c0913f5408fd06f1fade87a7d893339690daa9b481528f4ac0cc0f2",
+      "triangleBudget": 9000,
       "params": [
         {
           "name": "scale",
@@ -22459,76 +22802,203 @@
         {
           "name": "stainlessSteel",
           "type": "color",
-          "default": "#b0b9b6",
-          "label": "Stainless steel"
+          "default": "#c3c9c7",
+          "label": "Stainless mast and pegs"
         },
         {
           "name": "polymer",
           "type": "color",
-          "default": "#586f7a",
-          "label": "Molded polymer"
+          "default": "#2a8fc4",
+          "label": "Souvenir cup polymer"
         },
         {
           "name": "enamel",
           "type": "color",
-          "default": "#cc684e",
-          "label": "Baked enamel"
+          "default": "#d4473a",
+          "label": "Tier and base enamel"
+        },
+        {
+          "name": "lid",
+          "type": "color",
+          "default": "#f6f1e3",
+          "label": "Lids and sign face"
         }
       ],
       "presets": {
+        "classic": {
+          "stainlessSteel": "#c3c9c7",
+          "polymer": "#2a8fc4",
+          "enamel": "#d4473a",
+          "lid": "#f6f1e3"
+        },
         "festival": {
-          "stainlessSteel": "#d1d1c6",
-          "polymer": "#7d9b93",
-          "enamel": "#edb34d"
+          "stainlessSteel": "#d6d6cc",
+          "polymer": "#7a3fa0",
+          "enamel": "#efb03f",
+          "lid": "#fff8e6"
         },
         "twilight": {
-          "stainlessSteel": "#788b91",
-          "polymer": "#455e83",
-          "enamel": "#385b81"
+          "stainlessSteel": "#87979c",
+          "polymer": "#2e9c8a",
+          "enamel": "#2d4b7a",
+          "lid": "#e6dcc4"
         }
       },
       "stats": {
-        "triangles": 324,
+        "triangles": 6928,
         "sizeM": [
-          1.1,
-          1.267,
-          1.08
+          0.9,
+          1.89,
+          0.9
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#b0b9b6",
+          "name": "enamel",
+          "color": "#d4473a",
           "parts": [
             "base",
-            "cup-holder-0",
-            "cup-holder-1",
-            "cup-holder-2",
-            "cup-holder-3"
+            "tier-0",
+            "cup-0-2",
+            "cup-0-5",
+            "cup-0-8",
+            "tier-1",
+            "cup-1-2",
+            "cup-1-5",
+            "cup-1-8",
+            "tier-2",
+            "cup-2-2",
+            "cup-2-5",
+            "tier-3",
+            "cup-3-2",
+            "cup-3-5",
+            "sign-disc",
+            "sign-straw"
+          ],
+          "param": "enamel"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#c3c9c7",
+          "parts": [
+            "turntable",
+            "mast",
+            "tier-hub-0",
+            "peg-0-0",
+            "peg-0-1",
+            "peg-0-2",
+            "peg-0-3",
+            "peg-0-4",
+            "peg-0-5",
+            "peg-0-6",
+            "peg-0-7",
+            "peg-0-8",
+            "peg-0-9",
+            "tier-hub-1",
+            "peg-1-0",
+            "peg-1-1",
+            "peg-1-2",
+            "peg-1-3",
+            "peg-1-4",
+            "peg-1-5",
+            "peg-1-6",
+            "peg-1-7",
+            "peg-1-8",
+            "tier-hub-2",
+            "peg-2-0",
+            "peg-2-1",
+            "peg-2-2",
+            "peg-2-3",
+            "peg-2-4",
+            "peg-2-5",
+            "peg-2-6",
+            "tier-hub-3",
+            "peg-3-0",
+            "peg-3-1",
+            "peg-3-2",
+            "peg-3-3",
+            "peg-3-4",
+            "peg-3-5",
+            "sign-collar"
           ],
           "param": "stainlessSteel"
         },
         {
           "name": "polymer",
-          "color": "#586f7a",
+          "color": "#2a8fc4",
           "parts": [
-            "mast",
-            "cup-shelf-0",
-            "cup-shelf-1",
-            "cup-shelf-2",
-            "cup-shelf-3"
+            "cup-0-0",
+            "cup-0-1",
+            "cup-0-3",
+            "cup-0-4",
+            "cup-0-6",
+            "cup-0-7",
+            "cup-0-9",
+            "cup-1-0",
+            "cup-1-1",
+            "cup-1-3",
+            "cup-1-4",
+            "cup-1-6",
+            "cup-1-7",
+            "cup-2-0",
+            "cup-2-1",
+            "cup-2-3",
+            "cup-2-4",
+            "cup-2-6",
+            "cup-3-0",
+            "cup-3-1",
+            "cup-3-3",
+            "cup-3-4",
+            "sign-cup"
           ],
           "param": "polymer"
         },
         {
-          "name": "enamel",
-          "color": "#cc684e",
+          "name": "lid",
+          "color": "#f6f1e3",
           "parts": [
-            "top-cap"
+            "cup-band-0-0",
+            "cup-band-0-1",
+            "cup-band-0-2",
+            "cup-band-0-3",
+            "cup-band-0-4",
+            "cup-band-0-5",
+            "cup-band-0-6",
+            "cup-band-0-7",
+            "cup-band-0-8",
+            "cup-band-0-9",
+            "lid-stack-0",
+            "cup-band-1-0",
+            "cup-band-1-1",
+            "cup-band-1-2",
+            "cup-band-1-3",
+            "cup-band-1-4",
+            "cup-band-1-5",
+            "cup-band-1-6",
+            "cup-band-1-7",
+            "cup-band-1-8",
+            "lid-stack-1",
+            "cup-band-2-0",
+            "cup-band-2-1",
+            "cup-band-2-2",
+            "cup-band-2-3",
+            "cup-band-2-4",
+            "cup-band-2-5",
+            "cup-band-2-6",
+            "lid-stack-2",
+            "cup-band-3-0",
+            "cup-band-3-1",
+            "cup-band-3-2",
+            "cup-band-3-3",
+            "cup-band-3-4",
+            "cup-band-3-5",
+            "lid-stack-3",
+            "sign-face-front",
+            "sign-face-back"
           ],
-          "param": "enamel"
+          "param": "lid"
         }
       ]
     },
