@@ -14623,10 +14623,16 @@
       "id": "churro-warmer-cart",
       "kit": "amusement-park",
       "title": "Churro warmer cart",
-      "description": "Narrow snack cart with a heated tray, draining rack, flour-dusting station, and bicycle-style wheels. Controls: overall scale, stainlessSteel, enamel, rubber; festival and twilight material presets.",
+      "description": "Midway churro warmer cart at about real size: star-ridged churros standing in a holder rack and lying in a heated tray, a cinnamon-sugar dusting station with shaker, an enamel cabinet with a crossed-churro emblem on a pastry band, two spoked bicycle wheels, stand legs and a push handle, and a square peaked canopy with scalloped valances in carnival stripes. Material controls: baked enamel, stainless steel, golden pastry, rubber tyres. Festival, twilight and fiesta presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "churro cart",
+        "churros",
+        "snack cart",
+        "food warmer",
+        "concession",
+        "canopy",
         "amusement park",
         "theme park",
         "guest experience",
@@ -14643,8 +14649,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/churro-warmer-cart.kcad.ts",
       "preview": "/assets/amusement-park-churro-warmer-cart.png",
-      "sourceSha256": "7388efb426004a461ce027a83bd59a402fa01a48b39fdc03867cefaffe2cb02f",
-      "triangleBudget": 1800,
+      "sourceSha256": "e83eab068fc48b5dce4baf5a0c9c004a8be0edc3785a9a6404cff22b1467386a",
+      "triangleBudget": 6000,
       "params": [
         {
           "name": "scale",
@@ -14656,42 +14662,56 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
-          "type": "color",
-          "default": "#b0b9b6",
-          "label": "Stainless steel"
-        },
-        {
           "name": "enamel",
           "type": "color",
           "default": "#cc684e",
-          "label": "Baked enamel"
+          "label": "Baked enamel cabinet and canopy stripe"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b0b9b6",
+          "label": "Stainless tray, rack and frame"
+        },
+        {
+          "name": "pastry",
+          "type": "color",
+          "default": "#d99a3c",
+          "label": "Churros, band and canopy stripe"
         },
         {
           "name": "rubber",
           "type": "color",
           "default": "#292f33",
-          "label": "Rubber"
+          "label": "Rubber tyres and grips"
         }
       ],
       "presets": {
         "festival": {
+          "enamel": "#3f9bd8",
           "stainlessSteel": "#d1d1c6",
-          "enamel": "#edb34d",
+          "pastry": "#e3a745",
           "rubber": "#3c4245"
         },
         "twilight": {
+          "enamel": "#4a3f78",
           "stainlessSteel": "#788b91",
-          "enamel": "#385b81",
+          "pastry": "#c98d3a",
           "rubber": "#20262a"
+        },
+        "fiesta": {
+          "enamel": "#2f9b6a",
+          "stainlessSteel": "#c3cbc8",
+          "pastry": "#e0a246",
+          "rubber": "#2b2f33"
         }
       },
       "stats": {
-        "triangles": 444,
+        "triangles": 5516,
         "sizeM": [
-          2.69,
-          2.1,
-          1.285
+          1.778,
+          2.44,
+          1.38
         ],
         "minUpM": 0,
         "materials": 1
@@ -14701,35 +14721,101 @@
           "name": "enamel",
           "color": "#cc684e",
           "parts": [
-            "cart-cabinet",
-            "hot-tray",
-            "dusting-shelf",
-            "umbrella-pole"
+            "cabinet",
+            "emblem-disc",
+            "shaker-cap",
+            "hub-f",
+            "hub-b",
+            "canopy-panel-0",
+            "canopy-valance-1",
+            "canopy-panel-2",
+            "canopy-valance-3"
           ],
           "param": "enamel"
-        },
-        {
-          "name": "rubber",
-          "color": "#292f33",
-          "parts": [
-            "churro-roller-0",
-            "churro-roller-1",
-            "churro-roller-2",
-            "churro-roller-3",
-            "churro-roller-4",
-            "churro-roller-5",
-            "wheel-0",
-            "wheel-1"
-          ],
-          "param": "rubber"
         },
         {
           "name": "stainlessSteel",
           "color": "#b0b9b6",
           "parts": [
-            "umbrella"
+            "cabinet-skirt",
+            "top-tray",
+            "heated-tray",
+            "guard-post-l",
+            "guard-post-r",
+            "guard-rail",
+            "holder-rack",
+            "dusting-pan",
+            "shaker",
+            "rim-f",
+            "spoke-f-0",
+            "spoke-f-1",
+            "spoke-f-2",
+            "spoke-f-3",
+            "spoke-f-4",
+            "spoke-f-5",
+            "spoke-f-6",
+            "spoke-f-7",
+            "rim-b",
+            "spoke-b-0",
+            "spoke-b-1",
+            "spoke-b-2",
+            "spoke-b-3",
+            "spoke-b-4",
+            "spoke-b-5",
+            "spoke-b-6",
+            "spoke-b-7",
+            "axle",
+            "stand-leg-f",
+            "handle-arm-f",
+            "stand-leg-b",
+            "handle-arm-b",
+            "handle-bar",
+            "canopy-pole"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "pastry",
+          "color": "#d99a3c",
+          "parts": [
+            "band",
+            "emblem-churro-0",
+            "emblem-churro-1",
+            "tray-churro-0",
+            "tray-churro-1",
+            "tray-churro-2",
+            "tray-churro-3",
+            "tray-churro-4",
+            "tray-churro-5",
+            "tray-churro-6",
+            "upright-churro-0-0",
+            "upright-churro-0-1",
+            "upright-churro-0-2",
+            "upright-churro-0-3",
+            "upright-churro-1-0",
+            "upright-churro-1-1",
+            "upright-churro-1-2",
+            "upright-churro-1-3",
+            "dusting-sugar",
+            "canopy-valance-0",
+            "canopy-panel-1",
+            "canopy-valance-2",
+            "canopy-panel-3",
+            "canopy-finial"
+          ],
+          "param": "pastry"
+        },
+        {
+          "name": "rubber",
+          "color": "#292f33",
+          "parts": [
+            "tyre-f",
+            "tyre-b",
+            "stand-foot-f",
+            "stand-foot-b",
+            "handle-grip"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -14737,10 +14823,16 @@
       "id": "condiment-counter",
       "kit": "amusement-park",
       "title": "Condiment counter",
-      "description": "Park dining condiment station with four bottle wells, napkin cubbies, tray return, and a wipe-clean top. Controls: overall scale, stainlessSteel, acrylic, polymer; festival and twilight material presets.",
+      "description": "Park dining condiment station at about real size: stainless pump dispensers with colour-coded pump heads, a caddy of ketchup and mustard squeeze bottles, napkin dispensers, a cutlery caddy, a back upstand with a header board showing condiment drops, and a laminate cabinet with a framed waste flap and a tray-return slot. Material controls: laminate cabinet, stainless steel, ketchup red, mustard yellow. Festival, twilight and timber presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "condiment station",
+        "sauce pumps",
+        "ketchup",
+        "mustard",
+        "napkins",
+        "food court",
         "amusement park",
         "theme park",
         "guest experience",
@@ -14757,8 +14849,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/condiment-counter.kcad.ts",
       "preview": "/assets/amusement-park-condiment-counter.png",
-      "sourceSha256": "7206c0510783358a0371205b61a0d8963db57b0dd0f104fcd00490b63fb5a356",
-      "triangleBudget": 1800,
+      "sourceSha256": "e5415eb27570b454000f4bb71cf5b7a9990df3c1bc8dc187ea48069d48fcf0c9",
+      "triangleBudget": 3500,
       "params": [
         {
           "name": "scale",
@@ -14770,77 +14862,141 @@
           "step": 0.05
         },
         {
+          "name": "laminate",
+          "type": "color",
+          "default": "#586f7a",
+          "label": "Laminate cabinet and header"
+        },
+        {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#b0b9b6",
-          "label": "Stainless steel"
+          "label": "Stainless top, pumps and dispensers"
         },
         {
-          "name": "acrylic",
+          "name": "ketchup",
           "type": "color",
-          "default": "#63aab8",
-          "label": "Tinted acrylic"
+          "default": "#c0392b",
+          "label": "Ketchup red pumps and bottles"
         },
         {
-          "name": "polymer",
+          "name": "mustard",
           "type": "color",
-          "default": "#586f7a",
-          "label": "Molded polymer"
+          "default": "#e6b422",
+          "label": "Mustard yellow pumps and bottles"
         }
       ],
       "presets": {
         "festival": {
+          "laminate": "#3f9bd8",
           "stainlessSteel": "#d1d1c6",
-          "acrylic": "#79c8d2",
-          "polymer": "#7d9b93"
+          "ketchup": "#d6402f",
+          "mustard": "#f2c230"
         },
         "twilight": {
+          "laminate": "#35576f",
           "stainlessSteel": "#788b91",
-          "acrylic": "#41768b",
-          "polymer": "#455e83"
+          "ketchup": "#a8322a",
+          "mustard": "#c99a26"
+        },
+        "timber": {
+          "laminate": "#9a6b43",
+          "stainlessSteel": "#c3cbc8",
+          "ketchup": "#b8352a",
+          "mustard": "#deae2a"
         }
       },
       "stats": {
-        "triangles": 248,
+        "triangles": 2764,
         "sizeM": [
           1.98,
-          1.5,
-          1.35
+          1.58,
+          0.826
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#586f7a",
-          "parts": [
-            "cabinet",
-            "sauce-bottle-0",
-            "sauce-bottle-1",
-            "sauce-bottle-2",
-            "sauce-bottle-3"
-          ],
-          "param": "polymer"
-        },
-        {
           "name": "stainlessSteel",
           "color": "#b0b9b6",
           "parts": [
+            "kick",
+            "waste-frame",
+            "waste-flap",
+            "tray-slot-frame",
+            "tray-shelf-lip",
             "top",
-            "napkin-holder-left",
-            "napkin-holder-right",
-            "splash-guard"
+            "upstand",
+            "header-post-l",
+            "header-post-r",
+            "pump-rail",
+            "pump-jar-0",
+            "pump-stem-0",
+            "pump-drip-cup-0",
+            "pump-jar-1",
+            "pump-stem-1",
+            "pump-drip-cup-1",
+            "pump-jar-2",
+            "pump-stem-2",
+            "pump-drip-cup-2",
+            "pump-jar-3",
+            "pump-stem-3",
+            "pump-drip-cup-3",
+            "bottle-caddy",
+            "napkin-box-l",
+            "napkin-box-r",
+            "cutlery-caddy"
           ],
           "param": "stainlessSteel"
         },
         {
-          "name": "acrylic",
-          "color": "#63aab8",
+          "name": "laminate",
+          "color": "#586f7a",
           "parts": [
-            "tray-return"
+            "cabinet",
+            "header",
+            "napkin-slot-l",
+            "napkin-slot-r",
+            "cutlery-0",
+            "cutlery-2",
+            "cutlery-4"
           ],
-          "param": "acrylic"
+          "param": "laminate"
+        },
+        {
+          "name": "ketchup",
+          "color": "#c0392b",
+          "parts": [
+            "push-plate",
+            "tray-0",
+            "tray-2",
+            "header-drop-ketchup",
+            "pump-head-0",
+            "pump-spout-0",
+            "pump-head-2",
+            "pump-spout-2",
+            "squeeze-bottle-0",
+            "squeeze-bottle-2"
+          ],
+          "param": "ketchup"
+        },
+        {
+          "name": "mustard",
+          "color": "#e6b422",
+          "parts": [
+            "tray-1",
+            "header-drop-mustard",
+            "pump-head-1",
+            "pump-spout-1",
+            "pump-head-3",
+            "pump-spout-3",
+            "squeeze-bottle-1",
+            "squeeze-bottle-3",
+            "cutlery-1",
+            "cutlery-3"
+          ],
+          "param": "mustard"
         }
       ]
     },
@@ -16569,10 +16725,15 @@
       "id": "funnel-cake-kiosk",
       "kit": "amusement-park",
       "title": "Funnel cake kiosk",
-      "description": "Fair-food fry stand with a vent hood, serving pass, fryer tub silhouette, and side-order shelf. Controls: overall scale, stainlessSteel, enamel, powderCoat; festival and twilight material presets.",
+      "description": "Fair-food funnel cake fry stand at about real size: deep fryer with oil vat and basket handles under a sloped vent hood and duct, a funnel batter pitcher, plated funnel cakes on a front pick-up ledge with brackets, a side shelf with sugar shakers, an enamel counter with a funnel-cake emblem and an arched header sign. Material controls: baked enamel counter, stainless steel, powder-coated frame and sign, golden pastry and oil. Festival, twilight and classic presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "funnel cake",
+        "fryer",
+        "fry stand",
+        "food kiosk",
+        "concession",
         "amusement park",
         "theme park",
         "guest experience",
@@ -16589,8 +16750,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/funnel-cake-kiosk.kcad.ts",
       "preview": "/assets/amusement-park-funnel-cake-kiosk.png",
-      "sourceSha256": "1cea1028b225d90f6c88d5ba81b74c9b77fe0d7db48ec3eaf0ce0c4398d4e132",
-      "triangleBudget": 1800,
+      "sourceSha256": "9dbd8c09ec789fc2193c5c4eb40efcc15683e84c1577ce5bc7f282f7adbbb15d",
+      "triangleBudget": 7500,
       "params": [
         {
           "name": "scale",
@@ -16602,75 +16763,151 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
-          "type": "color",
-          "default": "#b0b9b6",
-          "label": "Stainless steel"
-        },
-        {
           "name": "enamel",
           "type": "color",
           "default": "#cc684e",
-          "label": "Baked enamel"
+          "label": "Baked enamel counter"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#b0b9b6",
+          "label": "Stainless steel fryer, hood and plates"
         },
         {
           "name": "powderCoat",
           "type": "color",
           "default": "#477985",
-          "label": "Powder-coated steel"
+          "label": "Powder-coated frame, back panel and sign"
+        },
+        {
+          "name": "pastry",
+          "type": "color",
+          "default": "#dba44f",
+          "label": "Golden pastry and fryer oil"
         }
       ],
       "presets": {
         "festival": {
-          "stainlessSteel": "#d1d1c6",
           "enamel": "#edb34d",
-          "powderCoat": "#d47452"
+          "stainlessSteel": "#d1d1c6",
+          "powderCoat": "#d47452",
+          "pastry": "#c98634"
         },
         "twilight": {
-          "stainlessSteel": "#788b91",
           "enamel": "#385b81",
-          "powderCoat": "#35576f"
+          "stainlessSteel": "#788b91",
+          "powderCoat": "#35576f",
+          "pastry": "#d9a650"
+        },
+        "classic": {
+          "enamel": "#b8322e",
+          "stainlessSteel": "#c3cbc8",
+          "powderCoat": "#f1e7d0",
+          "pastry": "#e0ab55"
         }
       },
       "stats": {
-        "triangles": 128,
+        "triangles": 6686,
         "sizeM": [
-          2.28,
-          1.975,
-          1.585
+          2.06,
+          2.54,
+          1.39
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#b0b9b6",
+          "name": "powderCoat",
+          "color": "#477985",
           "parts": [
-            "kiosk-base",
-            "service-pass",
-            "fryer-casing",
-            "fryer-vat",
-            "vent-riser",
-            "hood"
+            "plinth",
+            "emblem-disc",
+            "ledge-bracket--650",
+            "ledge-bracket-0",
+            "ledge-bracket-650",
+            "fryer-knob-0",
+            "fryer-knob-1",
+            "fryer-knob-2",
+            "basket-grip-0",
+            "basket-grip-1",
+            "batter-funnel-handle",
+            "napkin-box",
+            "side-bracket-f",
+            "side-bracket-b",
+            "shaker-cap-0",
+            "shaker-cap-1",
+            "shaker-cap-2",
+            "back-panel",
+            "hood-lip",
+            "duct-cap",
+            "sign-panel"
           ],
-          "param": "stainlessSteel"
+          "param": "powderCoat"
         },
         {
           "name": "enamel",
           "color": "#cc684e",
           "parts": [
-            "side-shelf"
+            "counter-body",
+            "header-sign"
           ],
           "param": "enamel"
         },
         {
-          "name": "powderCoat",
-          "color": "#477985",
+          "name": "stainlessSteel",
+          "color": "#b0b9b6",
           "parts": [
-            "queue-counter"
+            "trim-strip-l",
+            "trim-strip-r",
+            "countertop",
+            "pickup-ledge",
+            "plate-0",
+            "plate-1",
+            "fryer-casing",
+            "basket-0",
+            "basket-handle-0",
+            "basket-1",
+            "basket-handle-1",
+            "batter-funnel",
+            "plate-stack",
+            "side-shelf",
+            "shaker-0",
+            "shaker-1",
+            "shaker-2",
+            "vent-hood",
+            "vent-duct"
           ],
-          "param": "powderCoat"
+          "param": "stainlessSteel"
+        },
+        {
+          "name": "pastry",
+          "color": "#dba44f",
+          "parts": [
+            "emblem-cake-ring-0",
+            "emblem-cake-ring-1",
+            "emblem-cake-ring-2",
+            "emblem-cake-strand",
+            "plated-cake-0-ring-0",
+            "plated-cake-0-ring-1",
+            "plated-cake-0-ring-2",
+            "plated-cake-0-strand",
+            "plated-cake-1-ring-0",
+            "plated-cake-1-ring-1",
+            "plated-cake-1-ring-2",
+            "plated-cake-1-strand",
+            "fryer-oil",
+            "frying-cake-ring-0",
+            "frying-cake-ring-1",
+            "frying-cake-ring-2",
+            "frying-cake-strand",
+            "sign-cake-ring-0",
+            "sign-cake-ring-1",
+            "sign-cake-ring-2",
+            "sign-cake-strand"
+          ],
+          "param": "pastry"
         }
       ]
     },
@@ -17758,10 +17995,16 @@
       "id": "lemonade-dispenser-cart",
       "kit": "amusement-park",
       "title": "Lemonade dispenser cart",
-      "description": "Beverage cart with paired transparent-tank silhouettes, tap handles, ice bin, and a push bar. Controls: overall scale, stainlessSteel, acrylic, rubber; festival and twilight material presets.",
+      "description": "Wooden lemonade wagon stand at about real size: two shouldered dispenser jars of lemonade with front taps, a bowl of lemons, a lidded ice chest and a stack of cups on a plank counter, a timber wagon body with a lemon-slice emblem on four spoked wagon wheels with iron tyres, a pull handle, and a striped awning on four posts with a pennant valance. Material controls: timber, lemonade, stainless steel, canvas. Festival, twilight and pink-lemonade presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "lemonade cart",
+        "lemonade stand",
+        "drink dispenser",
+        "beverage cart",
+        "wagon",
+        "awning",
         "amusement park",
         "theme park",
         "guest experience",
@@ -17778,8 +18021,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/lemonade-dispenser-cart.kcad.ts",
       "preview": "/assets/amusement-park-lemonade-dispenser-cart.png",
-      "sourceSha256": "a3ae610adfd33e988840ea82281e9fd7b08f56dff42e18789180485c81e82d37",
-      "triangleBudget": 1800,
+      "sourceSha256": "8f5dc2f7e4e8ebcd26def01b801f8d8b2334146e32aad2a04615611149f651fa",
+      "triangleBudget": 8000,
       "params": [
         {
           "name": "scale",
@@ -17791,79 +18034,180 @@
           "step": 0.05
         },
         {
+          "name": "timber",
+          "type": "color",
+          "default": "#b9844f",
+          "label": "Painted timber wagon and wheels"
+        },
+        {
+          "name": "lemonade",
+          "type": "color",
+          "default": "#f2cf3a",
+          "label": "Lemonade, lemons and awning stripe"
+        },
+        {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#b0b9b6",
-          "label": "Stainless steel"
+          "label": "Stainless taps, lids and iron tyres"
         },
         {
-          "name": "acrylic",
+          "name": "canvas",
           "type": "color",
-          "default": "#63aab8",
-          "label": "Tinted acrylic"
-        },
-        {
-          "name": "rubber",
-          "type": "color",
-          "default": "#292f33",
-          "label": "Rubber"
+          "default": "#f6f1e3",
+          "label": "Canvas awning stripe, cups and slice pith"
         }
       ],
       "presets": {
         "festival": {
+          "timber": "#3f9bd8",
+          "lemonade": "#f4d548",
           "stainlessSteel": "#d1d1c6",
-          "acrylic": "#79c8d2",
-          "rubber": "#3c4245"
+          "canvas": "#fff8e8"
         },
         "twilight": {
+          "timber": "#5b4a6e",
+          "lemonade": "#e5c04a",
           "stainlessSteel": "#788b91",
-          "acrylic": "#41768b",
-          "rubber": "#20262a"
+          "canvas": "#d9d3e6"
+        },
+        "pinkLemonade": {
+          "timber": "#f2f0ea",
+          "lemonade": "#f08aa6",
+          "stainlessSteel": "#c3cbc8",
+          "canvas": "#fff6f8"
         }
       },
       "stats": {
-        "triangles": 400,
+        "triangles": 7666,
         "sizeM": [
-          1.53,
-          1.71,
-          0.9825
+          2.096,
+          2.322845,
+          1.01
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "acrylic",
-          "color": "#63aab8",
+          "name": "timber",
+          "color": "#b9844f",
           "parts": [
-            "cart-frame",
-            "push-bar"
+            "wagon-body",
+            "stile-l",
+            "stile-r",
+            "counter",
+            "tap-lever-0",
+            "tap-lever-1",
+            "felloe-lf",
+            "hub-lf",
+            "spoke-lf-0",
+            "spoke-lf-1",
+            "spoke-lf-2",
+            "spoke-lf-3",
+            "felloe-lb",
+            "hub-lb",
+            "spoke-lb-0",
+            "spoke-lb-1",
+            "spoke-lb-2",
+            "spoke-lb-3",
+            "felloe-rf",
+            "hub-rf",
+            "spoke-rf-0",
+            "spoke-rf-1",
+            "spoke-rf-2",
+            "spoke-rf-3",
+            "felloe-rb",
+            "hub-rb",
+            "spoke-rb-0",
+            "spoke-rb-1",
+            "spoke-rb-2",
+            "spoke-rb-3",
+            "pull-handle"
           ],
-          "param": "acrylic"
+          "param": "timber"
         },
         {
           "name": "stainlessSteel",
           "color": "#b0b9b6",
           "parts": [
-            "front-counter",
-            "drink-tank-0",
-            "drink-tank-1",
-            "tap-0",
-            "tap-1",
-            "ice-bin"
+            "body-band-440",
+            "body-band-920",
+            "jar-stand-0",
+            "jar-lid-0",
+            "tap-spout-0",
+            "tap-nozzle-0",
+            "jar-stand-1",
+            "jar-lid-1",
+            "tap-spout-1",
+            "tap-nozzle-1",
+            "lemon-bowl",
+            "ice-chest-lid",
+            "tyre-lf",
+            "tyre-lb",
+            "tyre-rf",
+            "tyre-rb",
+            "axle-l",
+            "axle-r",
+            "pull-grip",
+            "awning-post-lf",
+            "awning-post-lb",
+            "awning-post-rf",
+            "awning-post-rb"
           ],
           "param": "stainlessSteel"
         },
         {
-          "name": "rubber",
-          "color": "#292f33",
+          "name": "lemonade",
+          "color": "#f2cf3a",
           "parts": [
-            "wheel-0",
-            "wheel-1",
-            "wheel-2",
-            "wheel-3"
+            "slice-rind",
+            "slice-flesh",
+            "jar-0",
+            "jar-1",
+            "lemon-0",
+            "lemon-1",
+            "lemon-2",
+            "lemon-3",
+            "lemon-4",
+            "lemon-5",
+            "awning-stripe-0",
+            "awning-stripe-2",
+            "awning-stripe-4",
+            "awning-stripe-6",
+            "pennant-1",
+            "pennant-3",
+            "pennant-5",
+            "pennant-7"
           ],
-          "param": "rubber"
+          "param": "lemonade"
+        },
+        {
+          "name": "canvas",
+          "color": "#f6f1e3",
+          "parts": [
+            "slice-pith",
+            "slice-segment-0",
+            "slice-segment-1",
+            "slice-segment-2",
+            "slice-segment-3",
+            "jar-lemon-0-0",
+            "jar-lemon-0-1",
+            "jar-lemon-1-0",
+            "jar-lemon-1-1",
+            "ice-chest",
+            "cup-stack",
+            "cup-stack-2",
+            "awning-stripe-1",
+            "awning-stripe-3",
+            "awning-stripe-5",
+            "awning-stripe-7",
+            "pennant-0",
+            "pennant-2",
+            "pennant-4",
+            "pennant-6"
+          ],
+          "param": "canvas"
         }
       ]
     },
@@ -22217,10 +22561,15 @@
       "id": "soft-drink-fountain",
       "kit": "amusement-park",
       "title": "Soft drink fountain",
-      "description": "Self-service beverage dispenser with cup ledge, four nozzle stations, drip tray, and splashback. Controls: overall scale, stainlessSteel, acrylic, rubber; festival and twilight material presets.",
+      "description": "Self-serve soft drink fountain at about real size: a dispenser tower with a sloped merchandiser front and lightbox header, five valve nozzles with push levers and flavour badges, an ice chute with lever, a slotted drip tray, cup stacks, a lid and straw station, and a counter on a door-panelled base cabinet. Material controls: enamel cabinet and tower, stainless steel, merchandiser graphic, black polymer. Festival, twilight and citrus presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "soda fountain",
+        "drink dispenser",
+        "self-serve",
+        "beverage",
+        "food court",
         "amusement park",
         "theme park",
         "guest experience",
@@ -22237,8 +22586,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/soft-drink-fountain.kcad.ts",
       "preview": "/assets/amusement-park-soft-drink-fountain.png",
-      "sourceSha256": "dcc2123408258b89ab6dae0c411a106c1d306ba4fb319e4017c1907676c9cd22",
-      "triangleBudget": 1800,
+      "sourceSha256": "0298b4aab510ef1cb055026391241c97d9a85423a40c85fa5637a47c0ee0f13f",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -22250,79 +22599,144 @@
           "step": 0.05
         },
         {
+          "name": "enamel",
+          "type": "color",
+          "default": "#c8323c",
+          "label": "Enamel cabinet and tower"
+        },
+        {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#b0b9b6",
-          "label": "Stainless steel"
+          "label": "Stainless counter, tray and nozzles"
         },
         {
-          "name": "acrylic",
+          "name": "graphic",
           "type": "color",
-          "default": "#63aab8",
-          "label": "Tinted acrylic"
+          "default": "#2f6fb4",
+          "label": "Merchandiser graphic and cups"
         },
         {
-          "name": "rubber",
+          "name": "polymer",
           "type": "color",
-          "default": "#292f33",
-          "label": "Rubber"
+          "default": "#25292c",
+          "label": "Black polymer levers and grate"
         }
       ],
       "presets": {
         "festival": {
+          "enamel": "#edb34d",
           "stainlessSteel": "#d1d1c6",
-          "acrylic": "#79c8d2",
-          "rubber": "#3c4245"
+          "graphic": "#d4527a",
+          "polymer": "#3a3f44"
         },
         "twilight": {
+          "enamel": "#385b81",
           "stainlessSteel": "#788b91",
-          "acrylic": "#41768b",
-          "rubber": "#20262a"
+          "graphic": "#7fd0e6",
+          "polymer": "#1d2226"
+        },
+        "citrus": {
+          "enamel": "#3f8f46",
+          "stainlessSteel": "#c3cbc8",
+          "graphic": "#f2c53a",
+          "polymer": "#2b2f33"
         }
       },
       "stats": {
-        "triangles": 272,
+        "triangles": 2186,
         "sizeM": [
-          1.34,
-          1.78,
-          0.776
+          1.74,
+          2.32,
+          0.82
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "acrylic",
-          "color": "#63aab8",
+          "name": "polymer",
+          "color": "#25292c",
+          "parts": [
+            "kick-plate",
+            "ice-lever",
+            "lever-0",
+            "lever-1",
+            "lever-2",
+            "lever-3",
+            "lever-4",
+            "grate-0",
+            "grate-1",
+            "grate-2",
+            "grate-3",
+            "grate-4",
+            "grate-5",
+            "grate-6",
+            "grate-7",
+            "grate-8",
+            "grate-9",
+            "grate-10",
+            "grate-11",
+            "grate-12",
+            "grate-13",
+            "lid-stack-0",
+            "lid-stack-1"
+          ],
+          "param": "polymer"
+        },
+        {
+          "name": "enamel",
+          "color": "#c8323c",
           "parts": [
             "cabinet",
-            "drip-tray",
-            "nozzle-station-0",
-            "nozzle-station-1",
-            "nozzle-station-2",
-            "nozzle-station-3",
-            "nozzle-0",
-            "nozzle-1",
-            "nozzle-2"
+            "door-0",
+            "door-1",
+            "tower",
+            "lightbox-wave",
+            "flavour-badge-1",
+            "flavour-badge-3"
           ],
-          "param": "acrylic"
+          "param": "enamel"
         },
         {
           "name": "stainlessSteel",
           "color": "#b0b9b6",
           "parts": [
-            "splashback",
-            "cup-ledge"
+            "door-handle-0",
+            "door-handle-1",
+            "counter",
+            "head-trim",
+            "lightbox-badge",
+            "ice-chute",
+            "nozzle-0",
+            "flavour-badge-0",
+            "nozzle-1",
+            "nozzle-2",
+            "flavour-badge-2",
+            "nozzle-3",
+            "nozzle-4",
+            "flavour-badge-4",
+            "drip-tray",
+            "straw-holder"
           ],
           "param": "stainlessSteel"
         },
         {
-          "name": "rubber",
-          "color": "#292f33",
+          "name": "graphic",
+          "color": "#2f6fb4",
           "parts": [
-            "nozzle-3"
+            "merchandiser",
+            "lightbox",
+            "cup-stack-0",
+            "cup-stack-1",
+            "cup-stack-2",
+            "straw-0",
+            "straw-1",
+            "straw-2",
+            "straw-3",
+            "straw-4"
           ],
-          "param": "rubber"
+          "param": "graphic"
         }
       ]
     },
