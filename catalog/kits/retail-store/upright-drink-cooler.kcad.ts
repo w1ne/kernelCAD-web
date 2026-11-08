@@ -1,68 +1,94 @@
 // SPDX-License-Identifier: CC0-1.0
-// Single-door beverage cooler with a framed door, open cabinet interior, stocked shelves, and a lower compressor grille.
+// Upright drink cooler: the single-door glass-front fridge of cold drinks
+// by the till. What makes it a drink cooler rather than a cupboard: a tall
+// cabinet with a lit brand canopy on top, a glass door in a thick framed
+// surround with a full-height pull handle, wire shelves with price strips
+// stocked with rows of bottles and cans, and a louvred compressor grille
+// in the plinth. The door can stand open so the stock shows. Generic
+// visualization geometry at about real size (2 m tall, 600 mm wide),
+// millimetres, Z up, door on -Y, hinged on the +X side.
 
 meta({
   name: "upright-drink-cooler",
   license: 'CC0-1.0',
   title: "Upright drink cooler",
-  description: "Single-door beverage cooler with a framed glass door, six bottles on visible shelves, a pull handle, and lower compressor grille. Knobs: overall scale and powder-coated steel, glass, stainless steel color controls. Presets: cleanStore and nightRestock.",
-  tags: ['retail', 'grocery', 'shop', 'low poly', 'scene prop'],
+  description: "Single-door glass-front drink fridge at about real size: tall cabinet with lit brand canopy, framed glass door with full-height pull handle (open or closed), four wire shelves with price strips stocked with bottles and cans, and a louvred compressor plinth. Material controls: cabinet, door frame, glass, brand canopy. colaRed, energyBlack and dairyWhite presets; door choice.",
+  tags: ['drink cooler', 'fridge', 'beverage cooler', 'refrigeration', 'retail', 'grocery', 'shop', 'low poly', 'scene prop'],
   kit: 'retail-store',
   category: 'prop',
   origin: 'base',
   compat: ['retail', 'shop', 'grocery', 'interior', 'scene'],
-  triangleBudget: 1800,
+  triangleBudget: 4500,
 });
 
 const scale = param('scale', 1, { min: 0.7, max: 1.3, step: 0.05, label: 'Overall scale' });
-const powderCoat = param('powderCoat', '#536d78', { label: 'Powder-coated steel color' });
-const glass = param('glass', '#92cbd3', { label: 'Glass color' });
-const stainless = param('stainless', '#aeb8ba', { label: 'Stainless steel color' });
+const cabinet = param('cabinet', '#c8232c', { label: 'Cabinet paint' });
+const doorFrame = param('doorFrame', '#2a2d30', { label: 'Door frame' });
+const glass = param('glass', '#a9d3df', { label: 'Door glass' });
+const canopy = param('canopy', '#f4f1ea', { label: 'Brand canopy' });
+const door = param('door', 'open', { choices: ['open', 'closed'], label: 'Door' });
 
 presets({
-  cleanStore: {
-    powderCoat: '#e5ebed',
-    glass: '#9ccfd6',
-    stainless: '#bfc8cb',
-  },
-  nightRestock: {
-    powderCoat: '#354750',
-    glass: '#3e6677',
-    stainless: '#66747a',
-  },
+  colaRed: { cabinet: '#c8232c', doorFrame: '#2a2d30', glass: '#a9d3df', canopy: '#f4f1ea' },
+  energyBlack: { cabinet: '#1e2124', doorFrame: '#3a3f43', glass: '#8fb3bf', canopy: '#9bd23c' },
+  dairyWhite: { cabinet: '#eef1f1', doorFrame: '#9aa3a8', glass: '#c4e0e8', canopy: '#2f6fc1' },
 });
-const b = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z).scale(scale);
-const c = (x: number, y: number, z: number, h: number, r: number, n = 8) => cylinder(h, r, n).translate(x, y, z).scale(scale);
 
 const p = assembly("upright-drink-cooler");
-p.part("cabinet-left-side", b(-365, 0, 1000, 50, 700, 1800).color(powderCoat));
-p.part("cabinet-right-side", b(365, 0, 1000, 50, 700, 1800).color(powderCoat));
-p.part("cabinet-back", b(0, 330, 1000, 680, 40, 1800).color(powderCoat));
-p.part("cabinet-top", b(0, 0, 1875, 680, 660, 50).color(powderCoat));
-p.part("cabinet-base", b(0, 0, 175, 680, 660, 350).color(powderCoat));
-p.part("door-frame-left", b(-340, -365, 1120, 30, 22, 1460).color(powderCoat));
-p.part("door-frame-right", b(340, -365, 1120, 30, 22, 1460).color(powderCoat));
-p.part("door-frame-top", b(0, -365, 1835, 680, 22, 30).color(powderCoat));
-p.part("door-frame-bottom", b(0, -365, 405, 680, 22, 30).color(powderCoat));
-p.part("door-glass-left", b(-300, -382, 1120, 10, 12, 1280).color(glass));
-p.part("door-glass-right", b(300, -382, 1120, 10, 12, 1280).color(glass));
-p.part("door-glass-top", b(0, -382, 1730, 590, 12, 10).color(glass));
-p.part("door-glass-bottom", b(0, -382, 510, 590, 12, 10).color(glass));
-p.part("handle", b(300, -410, 1120, 34, 36, 530).color(stainless));
-p.part("inner-shelf-0", b(0, 0, 540, 570, 510, 28).color(stainless));
-p.part("inner-shelf-1", b(0, 0, 860, 570, 510, 28).color(stainless));
-p.part("inner-shelf-2", b(0, 0, 1180, 570, 510, 28).color(stainless));
-p.part("inner-shelf-3", b(0, 0, 1500, 570, 510, 28).color(stainless));
-for (const z of [554, 874]) {
-  for (const x of [-175, 0, 175]) {
-    p.part(`beverage-bottle-${z}-${x}`, c(x, -80, z, 180, 38, 10).color(glass));
-    p.part(`bottle-cap-${z}-${x}`, c(x, -80, z + 180, 18, 24, 10).color(stainless));
+const add = (name: string, shape: Shape) => p.part(name, shape.scale(scale));
+const blk = (x: number, y: number, z: number, w: number, d: number, h: number) => box(w, d, h, true).translate(x, y, z + h / 2);
+const profileYZ = (pts, t: number) => extrudePolygon(pts, t).rotateX(90).translate(0, t / 2, 0).rotateZ(90);
+const turned = (pts) => {
+  let pb = path().moveTo(pts[0][0], pts[0][1]);
+  for (const [r, z] of pts.slice(1)) pb = pb.lineTo(r, z);
+  return pb.close().revolve();
+};
+
+const W = 600;
+const D = 620;
+const H = 1800;
+const PL = 160;
+
+// Cabinet shell with the display bay cut out of the front.
+add("cabinet", blk(0, 0, 0, W, D, H).subtract(blk(0, -60, PL + 40, W - 80, D, H - PL - 120)).color(cabinet));
+add("bay-liner", blk(0, D / 2 - 50, PL + 40, W - 80, 6, H - PL - 120).color('#e9eeef'));
+add("plinth-grille", blk(0, -D / 2 - 2, 20, W - 60, 4, PL - 40).color('#2a2d30'));
+for (let i = 0; i < 5; i++) add(`louvre-${i}`, blk(0, -D / 2 - 6, 34 + i * 22, W - 90, 6, 8).color(doorFrame));
+add("foot-strip", blk(0, 0, 0, W - 20, D - 20, 20).color(doorFrame));
+
+// Lit brand canopy, raked forward.
+add("canopy", profileYZ([[D / 2, 0], [-D / 2 - 20, 0], [-D / 2 - 40, 260], [D / 2, 240]], W).translate(0, 0, H).color(canopy));
+add("canopy-band", profileYZ([[-D / 2 - 22, 40], [-D / 2 - 30, 40], [-D / 2 - 47, 200], [-D / 2 - 39, 200]], W - 40).translate(0, 0, H).color(cabinet));
+add("canopy-wave", profileYZ([[-D / 2 - 26, 70], [-D / 2 - 35, 70], [-D / 2 - 46, 170], [-D / 2 - 37, 170]], W - 220).translate(0, 0, H).color('#ffffff'));
+
+// Wire shelves with price strips, stocked with bottles and cans.
+const shelfZ = [PL + 70, PL + 470, PL + 870, PL + 1270];
+const bottle = turned([[0, 0], [30, 0], [30, 170], [11, 240], [0, 240]]);
+const flavours = ['#c8232c', '#2f8a4a', '#f2a51a', '#c8232c', '#3d6fc1', '#8b2a8a'];
+shelfZ.forEach((z, si) => {
+  add(`shelf-${si}`, blk(0, 0, z - 14, W - 90, D - 120, 14).color('#c4cbcf'));
+  add(`price-strip-${si}`, blk(0, -D / 2 + 58, z - 34, W - 90, 6, 40).color('#f4f1ea'));
+  for (let c = 0; c < 2; c++) {
+    const y = -150 + c * 140;
+    if (si % 2 === 0 && c === 0) {
+      for (let k = 0; k < 7; k++) add(`bottle-${si}-${c}-${k}`, bottle.translate(-225 + k * 75, y, z).color(flavours[(k + si) % 6]));
+    } else {
+      for (let k = 0; k < 8; k++) add(`can-${si}-${c}-${k}`, cylinder(122, 33, 10).translate(-232 + k * 66, y, z).color(flavours[(k + si + 2) % 6]));
+    }
   }
-}
-p.part("top-header", b(0, -40, 1950, 780, 620, 100).color(powderCoat));
-p.part("compressor-grille", b(0, -356, 190, 500, 12, 150).color(stainless));
-for (let slat = 0; slat < 4; slat++) {
-  p.part(`compressor-slat-${slat}`, b(0, -365, 140 + slat * 32, 440, 10, 8).color(powderCoat));
-}
+});
+
+// Glass door in a thick frame with a full-height pull handle. Hinge on +X.
+const DW = W - 20;
+const DH = H - PL - 60;
+const frame = blk(-DW / 2, -30, 0, DW, 50, DH).subtract(blk(-DW / 2, -30, 70, DW - 120, 60, DH - 140));
+const pane = blk(-DW / 2, -30, 70, DW - 120, 14, DH - 140);
+const handle = blk(-DW + 40, -90, 300, 30, 30, DH - 600).union(blk(-DW + 40, -60, 300, 30, 40, 30)).union(blk(-DW + 40, -60, DH - 330, 30, 40, 30));
+const swing = door.value === 'open' ? 105 : 0;
+const hinge = (s: Shape) => s.rotateZ(swing).translate(W / 2 - 10, -D / 2, PL + 20);
+add("door-frame", hinge(frame).color(doorFrame));
+add("door-glass", hinge(pane).color(glass));
+add("door-handle", hinge(handle).color('#c4cbcf'));
+add("door-gasket", hinge(blk(-DW / 2, 4, 20, DW - 40, 6, DH - 40).subtract(blk(-DW / 2, 4, 40, DW - 80, 20, DH - 80))).color('#4a4f53'));
 
 return p.model();

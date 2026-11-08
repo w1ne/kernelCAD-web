@@ -231277,10 +231277,15 @@
       "id": "checkout-conveyor",
       "kit": "retail-store",
       "title": "Checkout conveyor lane",
-      "description": "Short checkout belt with side rails, cashier end, scanner deck and a bagging platform. Knobs: overall scale and powder-coated steel, rubber, glass color controls. Presets: cleanStore and nightRestock.",
+      "description": "Supermarket checkout belt at about real size: rubber belt wrapping round end drums, rolled side rails, photo-eye stop sensors, red stop button, triangular next-customer divider bar and a kicked cabinet with vent slots, with optional groceries on the belt (cereal box, milk carton, bottle, cans). Material controls: cabinet, belt rubber, rails, accent. laneGrey, brightWhite and nightShift presets; goods choice.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "checkout",
+        "conveyor",
+        "belt",
+        "till lane",
+        "supermarket",
         "retail",
         "grocery",
         "shop",
@@ -231297,8 +231302,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/checkout-conveyor.kcad.ts",
       "preview": "/assets/retail-store-checkout-conveyor.png",
-      "sourceSha256": "313e6bf74f5d1408f273bc1280b553b3b481832b0cf904a01232bbcb1497d5c8",
-      "triangleBudget": 1800,
+      "sourceSha256": "f480c9b6016062bdeea9653f29ff9bb697863d580d07cf11cb7658ef108f4e11",
+      "triangleBudget": 1600,
       "params": [
         {
           "name": "scale",
@@ -231310,74 +231315,214 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "cabinet",
           "type": "color",
-          "default": "#46545d",
-          "label": "Powder-coated steel color"
+          "default": "#8d9aa1",
+          "label": "Cabinet panels"
         },
         {
-          "name": "rubber",
+          "name": "belt",
           "type": "color",
-          "default": "#252a2d",
-          "label": "Rubber color"
+          "default": "#25292c",
+          "label": "Belt rubber"
         },
         {
-          "name": "glass",
+          "name": "rails",
           "type": "color",
-          "default": "#72b8c5",
-          "label": "Glass color"
+          "default": "#c3cacd",
+          "label": "Side rails"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e2a623",
+          "label": "Divider and trim accent"
+        },
+        {
+          "name": "goods",
+          "type": "choice",
+          "default": "loaded",
+          "label": "Goods on belt",
+          "choices": [
+            "loaded",
+            "empty"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "powderCoat": "#e5ebed",
-          "rubber": "#40474b",
-          "glass": "#9ccfd6"
+        "laneGrey": {
+          "cabinet": "#8d9aa1",
+          "belt": "#25292c",
+          "rails": "#c3cacd",
+          "accent": "#e2a623"
         },
-        "nightRestock": {
-          "powderCoat": "#354750",
-          "rubber": "#262b2e",
-          "glass": "#3e6677"
+        "brightWhite": {
+          "cabinet": "#e8ecec",
+          "belt": "#3a4044",
+          "rails": "#9aa4a8",
+          "accent": "#2f8fd1"
+        },
+        "nightShift": {
+          "cabinet": "#2d363c",
+          "belt": "#1a1d1f",
+          "rails": "#7d878c",
+          "accent": "#d2362d"
         }
       },
       "stats": {
-        "triangles": 116,
+        "triangles": 950,
         "sizeM": [
-          1.88,
-          0.84,
-          0.62
+          1.82,
+          1.1,
+          0.65
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "rubber",
-          "color": "#252a2d",
+          "name": "cabinet",
+          "color": "#8d9aa1",
           "parts": [
-            "belt-base",
-            "belt-surface"
+            "cabinet"
           ],
-          "param": "rubber"
+          "param": "cabinet"
         },
         {
-          "name": "powderCoat",
-          "color": "#46545d",
+          "name": "belt",
+          "color": "#25292c",
           "parts": [
-            "rail-left",
-            "rail-right",
-            "cashier-end",
-            "bagging-deck"
+            "toe-kick",
+            "belt-top",
+            "drum-l",
+            "drum-r"
           ],
-          "param": "powderCoat"
+          "param": "belt"
         },
         {
-          "name": "glass",
-          "color": "#72b8c5",
+          "name": "accent",
+          "color": "#e2a623",
           "parts": [
-            "scanner"
+            "accent-band",
+            "end-stop",
+            "divider-bar"
           ],
-          "param": "glass"
+          "param": "accent"
+        },
+        {
+          "name": "belt-rib-0",
+          "color": "#34393c",
+          "parts": [
+            "belt-rib-0",
+            "belt-rib-1",
+            "belt-rib-2",
+            "belt-rib-3",
+            "belt-rib-4",
+            "belt-rib-5",
+            "belt-rib-6",
+            "belt-rib-7",
+            "belt-rib-8",
+            "belt-rib-9",
+            "belt-rib-10",
+            "belt-rib-11",
+            "belt-rib-12",
+            "belt-rib-13",
+            "belt-rib-14",
+            "belt-rib-15",
+            "belt-rib-16"
+          ]
+        },
+        {
+          "name": "rails",
+          "color": "#c3cacd",
+          "parts": [
+            "rail-aisle",
+            "rail-back",
+            "eye-post-aisle",
+            "eye-post-back"
+          ],
+          "param": "rails"
+        },
+        {
+          "name": "eye-lens-aisle",
+          "color": "#d2362d",
+          "parts": [
+            "eye-lens-aisle",
+            "eye-lens-back",
+            "stop-button"
+          ]
+        },
+        {
+          "name": "stop-button-base",
+          "color": "#f2c230",
+          "parts": [
+            "stop-button-base"
+          ]
+        },
+        {
+          "name": "cereal-box",
+          "color": "#d8452e",
+          "parts": [
+            "cereal-box"
+          ]
+        },
+        {
+          "name": "cereal-label",
+          "color": "#f4d24a",
+          "parts": [
+            "cereal-label"
+          ]
+        },
+        {
+          "name": "milk-carton",
+          "color": "#f4f6f6",
+          "parts": [
+            "milk-carton"
+          ]
+        },
+        {
+          "name": "milk-gable",
+          "color": "#2f6fc1",
+          "parts": [
+            "milk-gable",
+            "milk-band"
+          ]
+        },
+        {
+          "name": "bottle",
+          "color": "#2f8a4a",
+          "parts": [
+            "bottle"
+          ]
+        },
+        {
+          "name": "can-0",
+          "color": "#c92a2a",
+          "parts": [
+            "can-0",
+            "can-2"
+          ]
+        },
+        {
+          "name": "can-1",
+          "color": "#c4cbcf",
+          "parts": [
+            "can-1"
+          ]
+        },
+        {
+          "name": "bread-loaf",
+          "color": "#c8914f",
+          "parts": [
+            "bread-loaf"
+          ]
+        },
+        {
+          "name": "bread-top",
+          "color": "#b47a3c",
+          "parts": [
+            "bread-top"
+          ]
         }
       ]
     },
@@ -231385,10 +231530,15 @@
       "id": "checkout-counter",
       "kit": "retail-store",
       "title": "Checkout counter",
-      "description": "Retail checkout counter with customer ledge, cashier worktop, front kick panel and bagging return. Knobs: overall scale and powder-coated steel, laminate, glass color controls. Presets: cleanStore and nightRestock.",
+      "description": "Supermarket checkout counter at about real size: curved customer fascia with brand stripe and kick plate, worktop with flush flatbed scanner and raised customer ledge, card terminal on a swivel pole, cashier POS screen, cash drawer, bagging well and a lane-number light pole. Material controls: fascia, worktop, steel trim, brand accent. freshGreen, discountRed and boutiqueOak presets; bagging choice.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "checkout",
+        "till",
+        "cash desk",
+        "pos",
+        "supermarket",
         "retail",
         "grocery",
         "shop",
@@ -231405,8 +231555,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/checkout-counter.kcad.ts",
       "preview": "/assets/retail-store-checkout-counter.png",
-      "sourceSha256": "5238a02dc519409846e8845cace021bc20177df2901566a88a2e8cefa80c794a",
-      "triangleBudget": 1800,
+      "sourceSha256": "469b01c0441803e2f74ccba4a250e31533edb7d79e16483d1dfce41189796650",
+      "triangleBudget": 2200,
       "params": [
         {
           "name": "scale",
@@ -231418,80 +231568,190 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "fascia",
           "type": "color",
-          "default": "#4c616d",
-          "label": "Powder-coated steel color"
+          "default": "#e9ecea",
+          "label": "Fascia panels"
         },
         {
-          "name": "laminate",
+          "name": "worktop",
           "type": "color",
-          "default": "#c1a77e",
-          "label": "Laminate color"
+          "default": "#4a4f53",
+          "label": "Worktop laminate"
         },
         {
-          "name": "glass",
+          "name": "steel",
           "type": "color",
-          "default": "#83c8d2",
-          "label": "Glass color"
+          "default": "#b9c1c5",
+          "label": "Steel trim and poles"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#2f9e52",
+          "label": "Brand accent"
+        },
+        {
+          "name": "bagging",
+          "type": "choice",
+          "default": "well",
+          "label": "Bagging end",
+          "choices": [
+            "well",
+            "carousel"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "powderCoat": "#e5ebed",
-          "laminate": "#d5c3a5",
-          "glass": "#9ccfd6"
+        "freshGreen": {
+          "fascia": "#e9ecea",
+          "worktop": "#4a4f53",
+          "steel": "#b9c1c5",
+          "accent": "#2f9e52"
         },
-        "nightRestock": {
-          "powderCoat": "#354750",
-          "laminate": "#685744",
-          "glass": "#3e6677"
+        "discountRed": {
+          "fascia": "#f3e9d2",
+          "worktop": "#2c2e30",
+          "steel": "#9aa2a6",
+          "accent": "#d2362d"
+        },
+        "boutiqueOak": {
+          "fascia": "#b78a5c",
+          "worktop": "#e8e4dc",
+          "steel": "#2e3134",
+          "accent": "#c9a54a"
         }
       },
       "stats": {
-        "triangles": 188,
+        "triangles": 1552,
         "sizeM": [
-          2.11,
-          0.81,
-          0.845
+          1.91,
+          2.43,
+          0.785
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#4c616d",
+          "name": "steel",
+          "color": "#b9c1c5",
           "parts": [
-            "base",
-            "fascia-end-left",
-            "fascia-end-right",
-            "toe-kick",
-            "cashier-display-post",
-            "cashier-display",
-            "cash-drawer"
+            "kick-plate",
+            "scanner-bed",
+            "ledge-bracket-l",
+            "ledge-bracket-m",
+            "ledge-bracket-r",
+            "ledge-edge",
+            "terminal-pole",
+            "pos-post",
+            "bag-well-rim",
+            "lane-pole",
+            "lane-light-ring"
           ],
-          "param": "powderCoat"
+          "param": "steel"
         },
         {
-          "name": "laminate",
-          "color": "#c1a77e",
+          "name": "fascia",
+          "color": "#e9ecea",
           "parts": [
-            "customer-ledge",
+            "body"
+          ],
+          "param": "fascia"
+        },
+        {
+          "name": "accent",
+          "color": "#2f9e52",
+          "parts": [
+            "brand-stripe",
+            "lane-logo",
+            "lane-light"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "worktop",
+          "color": "#4a4f53",
+          "parts": [
             "worktop",
-            "bagging-return",
-            "front-fascia"
+            "scanner-tower",
+            "customer-ledge",
+            "bag-well-floor"
           ],
-          "param": "laminate"
+          "param": "worktop"
         },
         {
-          "name": "glass",
-          "color": "#83c8d2",
+          "name": "scanner-glass",
+          "color": "#3c5a66",
           "parts": [
-            "scanner-window",
-            "cashier-screen"
-          ],
-          "param": "glass"
+            "scanner-glass",
+            "scanner-tower-glass"
+          ]
+        },
+        {
+          "name": "terminal",
+          "color": "#24282b",
+          "parts": [
+            "terminal"
+          ]
+        },
+        {
+          "name": "terminal-screen",
+          "color": "#5cb8d9",
+          "parts": [
+            "terminal-screen"
+          ]
+        },
+        {
+          "name": "pos-screen",
+          "color": "#1f2326",
+          "parts": [
+            "pos-screen"
+          ]
+        },
+        {
+          "name": "pos-glass",
+          "color": "#4f9fc4",
+          "parts": [
+            "pos-glass"
+          ]
+        },
+        {
+          "name": "cash-drawer",
+          "color": "#2b2f32",
+          "parts": [
+            "cash-drawer",
+            "receipt-printer"
+          ]
+        },
+        {
+          "name": "receipt-paper",
+          "color": "#f4f1e8",
+          "parts": [
+            "receipt-paper"
+          ]
+        },
+        {
+          "name": "bag",
+          "color": "#f2efe6",
+          "parts": [
+            "bag",
+            "bag-handle"
+          ]
+        },
+        {
+          "name": "bag-groceries",
+          "color": "#e0a03a",
+          "parts": [
+            "bag-groceries"
+          ]
+        },
+        {
+          "name": "lane-number-face",
+          "color": "#ffffff",
+          "parts": [
+            "lane-number-face"
+          ]
         }
       ]
     },
@@ -231674,10 +231934,14 @@
       "id": "chest-freezer",
       "kit": "retail-store",
       "title": "Chest freezer",
-      "description": "Lidded chest freezer with raised sliding cover rails, insulated tub and recessed foot plinth. Knobs: overall scale and powder-coated steel, stainless steel, abs plastic color controls. Presets: cleanStore and nightRestock.",
+      "description": "Glass-lid ice-cream chest freezer at about real size: rounded insulated tub with moulded rim bumper, two curved sliding glass lids on rails, stocked well with ice-cream tubs and lolly boxes, front brand panel with a cone logo, louvred compressor grille, thermometer display and levelling feet. Material controls: cabinet, glass lids, rim bumper, brand panel. iceCreamPink, frozenBlue and plainWhite presets; lid choice.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "chest freezer",
+        "ice cream freezer",
+        "freezer",
+        "refrigeration",
         "retail",
         "grocery",
         "shop",
@@ -231694,8 +231958,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/chest-freezer.kcad.ts",
       "preview": "/assets/retail-store-chest-freezer.png",
-      "sourceSha256": "075739c835356312229ed12d8280aaf96f1499d146a2325e389af0207f588d9e",
-      "triangleBudget": 1800,
+      "sourceSha256": "01bd23f778d94ee34b76ff5894200d02502dd86cda230894850e8f8fbadce487",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -231707,73 +231971,232 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "cabinet",
           "type": "color",
-          "default": "#cbd5d5",
-          "label": "Powder-coated steel color"
+          "default": "#f1f3f2",
+          "label": "Cabinet enamel"
         },
         {
-          "name": "stainless",
+          "name": "lids",
           "type": "color",
-          "default": "#8b999d",
-          "label": "Stainless steel color"
+          "default": "#9fc9d6",
+          "label": "Glass lids"
         },
         {
-          "name": "abs",
+          "name": "bumper",
           "type": "color",
-          "default": "#4d6975",
-          "label": "ABS plastic color"
+          "default": "#7a8287",
+          "label": "Rim bumper and rails"
+        },
+        {
+          "name": "brand",
+          "type": "color",
+          "default": "#e2508a",
+          "label": "Brand panel"
+        },
+        {
+          "name": "lid",
+          "type": "choice",
+          "default": "open",
+          "label": "Lids",
+          "choices": [
+            "open",
+            "closed"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "powderCoat": "#e5ebed",
-          "stainless": "#bfc8cb",
-          "abs": "#e5e9e9"
+        "iceCreamPink": {
+          "cabinet": "#f1f3f2",
+          "lids": "#9fc9d6",
+          "bumper": "#7a8287",
+          "brand": "#e2508a"
         },
-        "nightRestock": {
-          "powderCoat": "#354750",
-          "stainless": "#66747a",
-          "abs": "#364a55"
+        "frozenBlue": {
+          "cabinet": "#e6edf2",
+          "lids": "#a8d4e2",
+          "bumper": "#2f5fa8",
+          "brand": "#3d8fd6"
+        },
+        "plainWhite": {
+          "cabinet": "#fafafa",
+          "lids": "#c4dce2",
+          "bumper": "#b8bfc3",
+          "brand": "#d7dcdd"
         }
       },
       "stats": {
-        "triangles": 104,
+        "triangles": 1848,
         "sizeM": [
-          1.48,
-          0.78,
-          0.767
+          1.516,
+          0.926,
+          0.7305
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#cbd5d5",
+          "name": "bumper",
+          "color": "#7a8287",
           "parts": [
-            "plinth",
+            "foot-fl",
+            "foot-fr",
+            "foot-bl",
+            "foot-br",
+            "rim-bumper",
+            "base-band",
+            "lid-front-handle",
+            "lid-rear-handle"
+          ],
+          "param": "bumper"
+        },
+        {
+          "name": "cabinet",
+          "color": "#f1f3f2",
+          "parts": [
             "tub"
           ],
-          "param": "powderCoat"
+          "param": "cabinet"
         },
         {
-          "name": "stainless",
-          "color": "#8b999d",
+          "name": "well-liner",
+          "color": "#dfe6ea",
           "parts": [
-            "lid-left",
-            "lid-right",
-            "handle"
-          ],
-          "param": "stainless"
+            "well-liner"
+          ]
         },
         {
-          "name": "abs",
-          "color": "#4d6975",
+          "name": "brand",
+          "color": "#e2508a",
           "parts": [
-            "thermostat"
+            "brand-panel",
+            "cone-box-1",
+            "cone-box-3"
           ],
-          "param": "abs"
+          "param": "brand"
+        },
+        {
+          "name": "cone-logo",
+          "color": "#d9a35a",
+          "parts": [
+            "cone-logo"
+          ]
+        },
+        {
+          "name": "scoop-logo",
+          "color": "#fbe9ef",
+          "parts": [
+            "scoop-logo"
+          ]
+        },
+        {
+          "name": "brand-stripe",
+          "color": "#ffffff",
+          "parts": [
+            "brand-stripe",
+            "brand-stripe-low"
+          ]
+        },
+        {
+          "name": "thermo-box",
+          "color": "#2b2f32",
+          "parts": [
+            "thermo-box"
+          ]
+        },
+        {
+          "name": "thermo-digits",
+          "color": "#e2423a",
+          "parts": [
+            "thermo-digits",
+            "lolly-box-1"
+          ]
+        },
+        {
+          "name": "tub-0",
+          "color": "#f7f4ec",
+          "parts": [
+            "tub-0",
+            "tub-1",
+            "tub-2",
+            "tub-3",
+            "tub-4",
+            "tub-5",
+            "tub-6",
+            "tub-7"
+          ]
+        },
+        {
+          "name": "tub-lid-0",
+          "color": "#f4e3c1",
+          "parts": [
+            "tub-lid-0",
+            "tub-lid-4"
+          ]
+        },
+        {
+          "name": "tub-lid-1",
+          "color": "#7a4a2e",
+          "parts": [
+            "tub-lid-1",
+            "tub-lid-6"
+          ]
+        },
+        {
+          "name": "tub-lid-2",
+          "color": "#f1a7c2",
+          "parts": [
+            "tub-lid-2",
+            "tub-lid-7"
+          ]
+        },
+        {
+          "name": "tub-lid-3",
+          "color": "#c7e3a4",
+          "parts": [
+            "tub-lid-3"
+          ]
+        },
+        {
+          "name": "tub-lid-5",
+          "color": "#a8d8ea",
+          "parts": [
+            "tub-lid-5"
+          ]
+        },
+        {
+          "name": "lolly-box-0",
+          "color": "#3d8fd6",
+          "parts": [
+            "lolly-box-0",
+            "lolly-box-3"
+          ]
+        },
+        {
+          "name": "lolly-box-2",
+          "color": "#f2c230",
+          "parts": [
+            "lolly-box-2",
+            "cone-box-0",
+            "cone-box-2"
+          ]
+        },
+        {
+          "name": "lolly-box-4",
+          "color": "#5cb85c",
+          "parts": [
+            "lolly-box-4"
+          ]
+        },
+        {
+          "name": "lids",
+          "color": "#9fc9d6",
+          "parts": [
+            "lid-rear",
+            "lid-front"
+          ],
+          "param": "lids"
         }
       ]
     },
@@ -231781,12 +232204,16 @@
       "id": "clothing-rail",
       "kit": "retail-store",
       "title": "Clothing rail",
-      "description": "Retail garment rail with straight hanging bar, four corner posts and stabilizing feet. Knobs: overall scale and stainless steel, rubber, abs plastic color controls. Presets: cleanStore and nightRestock.",
+      "description": "Rolling chrome garment rail at about real size: round top bar on telescopic uprights with clamp collars, splayed base legs on swivel castors, a wire base shelf with folded stock, and a row of shirts and dresses on hook hangers. Material controls: chrome frame, castors, main garment colour, second garment colour. boutiqueNeutral, summerBright and denimStore presets; load choice.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "clothing rail",
+        "garment rack",
+        "clothes rack",
+        "fashion",
+        "apparel",
         "retail",
-        "grocery",
         "shop",
         "low poly",
         "scene prop"
@@ -231801,8 +232228,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/clothing-rail.kcad.ts",
       "preview": "/assets/retail-store-clothing-rail.png",
-      "sourceSha256": "6e061e716156febfe606c0e10e7c5db784c615ee2470d11be66a97a3ed8d6eb6",
-      "triangleBudget": 1800,
+      "sourceSha256": "edb20283bc563b81c646d84c93478be1af1f78bfc65b25738290e198c76e863a",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -231814,75 +232241,183 @@
           "step": 0.05
         },
         {
-          "name": "stainless",
+          "name": "chrome",
           "type": "color",
-          "default": "#727f84",
-          "label": "Stainless steel color"
+          "default": "#c9d0d4",
+          "label": "Chrome frame"
         },
         {
-          "name": "rubber",
+          "name": "castors",
           "type": "color",
-          "default": "#363c40",
-          "label": "Rubber color"
+          "default": "#26292c",
+          "label": "Castors"
         },
         {
-          "name": "abs",
+          "name": "fabricA",
           "type": "color",
-          "default": "#d8dedf",
-          "label": "ABS plastic color"
+          "default": "#d9c7a7",
+          "label": "Main garment fabric"
+        },
+        {
+          "name": "fabricB",
+          "type": "color",
+          "default": "#3b4f6b",
+          "label": "Second garment fabric"
+        },
+        {
+          "name": "load",
+          "type": "choice",
+          "default": "garments",
+          "label": "Load",
+          "choices": [
+            "garments",
+            "empty"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "stainless": "#bfc8cb",
-          "rubber": "#40474b",
-          "abs": "#e5e9e9"
+        "boutiqueNeutral": {
+          "chrome": "#c9d0d4",
+          "castors": "#26292c",
+          "fabricA": "#d9c7a7",
+          "fabricB": "#3b4f6b"
         },
-        "nightRestock": {
-          "stainless": "#66747a",
-          "rubber": "#262b2e",
-          "abs": "#364a55"
+        "summerBright": {
+          "chrome": "#e3e6e8",
+          "castors": "#f4f1ea",
+          "fabricA": "#f29a7a",
+          "fabricB": "#4fb3bf"
+        },
+        "denimStore": {
+          "chrome": "#2e3134",
+          "castors": "#1a1c1e",
+          "fabricA": "#4a6a96",
+          "fabricB": "#b8463a"
         }
       },
       "stats": {
-        "triangles": 128,
+        "triangles": 2364,
         "sizeM": [
-          1.62,
-          1.55,
-          0.452
+          1.47561,
+          1.622,
+          0.594151
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainless",
-          "color": "#727f84",
+          "name": "chrome",
+          "color": "#c9d0d4",
           "parts": [
-            "top-rail",
-            "post--700--205",
-            "post--700-205",
-            "post-700--205",
-            "post-700-205"
+            "base-leg-l",
+            "castor-fork-lf",
+            "castor-fork-lb",
+            "upright-low-l",
+            "upright-high-l",
+            "bar-elbow-l",
+            "base-leg-r",
+            "castor-fork-rf",
+            "castor-fork-rb",
+            "upright-low-r",
+            "upright-high-r",
+            "bar-elbow-r",
+            "top-bar",
+            "base-cross-bar",
+            "shelf-rail-f",
+            "shelf-rail-b",
+            "shelf-wire-0",
+            "shelf-wire-1",
+            "shelf-wire-2",
+            "shelf-wire-3",
+            "shelf-wire-4",
+            "shelf-wire-5",
+            "shelf-wire-6",
+            "shelf-wire-7",
+            "shelf-wire-8",
+            "hanger-hook-0",
+            "hanger-hook-1",
+            "hanger-hook-2",
+            "hanger-hook-3",
+            "hanger-hook-4",
+            "hanger-hook-5",
+            "hanger-hook-6",
+            "hanger-hook-7",
+            "hanger-hook-8",
+            "hanger-hook-9"
           ],
-          "param": "stainless"
+          "param": "chrome"
         },
         {
-          "name": "rubber",
-          "color": "#363c40",
+          "name": "castors",
+          "color": "#26292c",
           "parts": [
-            "foot--700",
-            "foot-700"
+            "castor-lf",
+            "castor-lb",
+            "collar-l",
+            "collar-knob-l",
+            "castor-rf",
+            "castor-rb",
+            "collar-r",
+            "collar-knob-r"
           ],
-          "param": "rubber"
+          "param": "castors"
         },
         {
-          "name": "abs",
-          "color": "#d8dedf",
+          "name": "fabricA",
+          "color": "#d9c7a7",
           "parts": [
-            "end-cap"
+            "folded-0",
+            "folded-2",
+            "garment-0",
+            "garment-2",
+            "garment-4",
+            "garment-6",
+            "garment-8"
           ],
-          "param": "abs"
+          "param": "fabricA"
+        },
+        {
+          "name": "fabricB",
+          "color": "#3b4f6b",
+          "parts": [
+            "folded-1",
+            "garment-1",
+            "garment-3",
+            "garment-5",
+            "garment-7",
+            "garment-9"
+          ],
+          "param": "fabricB"
+        },
+        {
+          "name": "hanger-bar-0",
+          "color": "#8a5a3a",
+          "parts": [
+            "hanger-bar-0",
+            "hanger-bar-1",
+            "hanger-bar-2",
+            "hanger-bar-3",
+            "hanger-bar-4",
+            "hanger-bar-5",
+            "hanger-bar-6",
+            "hanger-bar-7",
+            "hanger-bar-8",
+            "hanger-bar-9"
+          ]
+        },
+        {
+          "name": "collar-0",
+          "color": "#f4f1ea",
+          "parts": [
+            "collar-0",
+            "collar-1",
+            "collar-3",
+            "collar-4",
+            "collar-6",
+            "collar-7",
+            "collar-9"
+          ]
         }
       ]
     },
@@ -236383,10 +236918,14 @@
       "id": "upright-drink-cooler",
       "kit": "retail-store",
       "title": "Upright drink cooler",
-      "description": "Single-door beverage cooler with a framed glass door, six bottles on visible shelves, a pull handle, and lower compressor grille. Knobs: overall scale and powder-coated steel, glass, stainless steel color controls. Presets: cleanStore and nightRestock.",
+      "description": "Single-door glass-front drink fridge at about real size: tall cabinet with lit brand canopy, framed glass door with full-height pull handle (open or closed), four wire shelves with price strips stocked with bottles and cans, and a louvred compressor plinth. Material controls: cabinet, door frame, glass, brand canopy. colaRed, energyBlack and dairyWhite presets; door choice.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "drink cooler",
+        "fridge",
+        "beverage cooler",
+        "refrigeration",
         "retail",
         "grocery",
         "shop",
@@ -236403,8 +236942,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/upright-drink-cooler.kcad.ts",
       "preview": "/assets/retail-store-upright-drink-cooler.png",
-      "sourceSha256": "a40cd410a0840a8964e46690353299f80e5e7b7a7b5b6d98ba0253cd9e6cade9",
-      "triangleBudget": 1800,
+      "sourceSha256": "9d10e08ee0a45e6d2c395e23dd51e58055d34584fe63ec584fbece420be477d6",
+      "triangleBudget": 4500,
       "params": [
         {
           "name": "scale",
@@ -236416,103 +236955,232 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "cabinet",
           "type": "color",
-          "default": "#536d78",
-          "label": "Powder-coated steel color"
+          "default": "#c8232c",
+          "label": "Cabinet paint"
+        },
+        {
+          "name": "doorFrame",
+          "type": "color",
+          "default": "#2a2d30",
+          "label": "Door frame"
         },
         {
           "name": "glass",
           "type": "color",
-          "default": "#92cbd3",
-          "label": "Glass color"
+          "default": "#a9d3df",
+          "label": "Door glass"
         },
         {
-          "name": "stainless",
+          "name": "canopy",
           "type": "color",
-          "default": "#aeb8ba",
-          "label": "Stainless steel color"
+          "default": "#f4f1ea",
+          "label": "Brand canopy"
+        },
+        {
+          "name": "door",
+          "type": "choice",
+          "default": "open",
+          "label": "Door",
+          "choices": [
+            "open",
+            "closed"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "powderCoat": "#e5ebed",
-          "glass": "#9ccfd6",
-          "stainless": "#bfc8cb"
+        "colaRed": {
+          "cabinet": "#c8232c",
+          "doorFrame": "#2a2d30",
+          "glass": "#a9d3df",
+          "canopy": "#f4f1ea"
         },
-        "nightRestock": {
-          "powderCoat": "#354750",
-          "glass": "#3e6677",
-          "stainless": "#66747a"
+        "energyBlack": {
+          "cabinet": "#1e2124",
+          "doorFrame": "#3a3f43",
+          "glass": "#8fb3bf",
+          "canopy": "#9bd23c"
+        },
+        "dairyWhite": {
+          "cabinet": "#eef1f1",
+          "doorFrame": "#9aa3a8",
+          "glass": "#c4e0e8",
+          "canopy": "#2f6fc1"
         }
       },
       "stats": {
-        "triangles": 816,
+        "triangles": 3840,
         "sizeM": [
-          0.78,
-          2,
-          0.778
+          0.835067,
+          2.06,
+          1.178943
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#536d78",
+          "name": "cabinet",
+          "color": "#c8232c",
           "parts": [
-            "cabinet-left-side",
-            "cabinet-right-side",
-            "cabinet-back",
-            "cabinet-top",
-            "cabinet-base",
-            "door-frame-left",
-            "door-frame-right",
-            "door-frame-top",
-            "door-frame-bottom",
-            "top-header",
-            "compressor-slat-0",
-            "compressor-slat-1",
-            "compressor-slat-2",
-            "compressor-slat-3"
+            "cabinet",
+            "canopy-band",
+            "bottle-0-0-0",
+            "bottle-0-0-3",
+            "bottle-0-0-6",
+            "can-0-1-1",
+            "can-0-1-4",
+            "can-0-1-7",
+            "can-1-0-0",
+            "can-1-0-3",
+            "can-1-0-6",
+            "can-1-1-0",
+            "can-1-1-3",
+            "can-1-1-6",
+            "bottle-2-0-1",
+            "bottle-2-0-4",
+            "can-2-1-2",
+            "can-2-1-5",
+            "can-3-0-1",
+            "can-3-0-4",
+            "can-3-0-7",
+            "can-3-1-1",
+            "can-3-1-4",
+            "can-3-1-7"
           ],
-          "param": "powderCoat"
+          "param": "cabinet"
+        },
+        {
+          "name": "bay-liner",
+          "color": "#e9eeef",
+          "parts": [
+            "bay-liner"
+          ]
+        },
+        {
+          "name": "doorFrame",
+          "color": "#2a2d30",
+          "parts": [
+            "plinth-grille",
+            "louvre-0",
+            "louvre-1",
+            "louvre-2",
+            "louvre-3",
+            "louvre-4",
+            "foot-strip",
+            "door-frame"
+          ],
+          "param": "doorFrame"
+        },
+        {
+          "name": "canopy",
+          "color": "#f4f1ea",
+          "parts": [
+            "canopy",
+            "price-strip-0",
+            "price-strip-1",
+            "price-strip-2",
+            "price-strip-3"
+          ],
+          "param": "canopy"
+        },
+        {
+          "name": "canopy-wave",
+          "color": "#ffffff",
+          "parts": [
+            "canopy-wave"
+          ]
+        },
+        {
+          "name": "shelf-0",
+          "color": "#c4cbcf",
+          "parts": [
+            "shelf-0",
+            "shelf-1",
+            "shelf-2",
+            "shelf-3",
+            "door-handle"
+          ]
+        },
+        {
+          "name": "bottle-0-0-1",
+          "color": "#2f8a4a",
+          "parts": [
+            "bottle-0-0-1",
+            "can-0-1-5",
+            "can-1-0-4",
+            "can-1-1-4",
+            "bottle-2-0-5",
+            "can-2-1-3",
+            "can-3-0-2",
+            "can-3-1-2"
+          ]
+        },
+        {
+          "name": "bottle-0-0-2",
+          "color": "#f2a51a",
+          "parts": [
+            "bottle-0-0-2",
+            "can-0-1-0",
+            "can-0-1-6",
+            "can-1-0-5",
+            "can-1-1-5",
+            "bottle-2-0-0",
+            "bottle-2-0-6",
+            "can-2-1-4",
+            "can-3-0-3",
+            "can-3-1-3"
+          ]
+        },
+        {
+          "name": "bottle-0-0-4",
+          "color": "#3d6fc1",
+          "parts": [
+            "bottle-0-0-4",
+            "can-0-1-2",
+            "can-1-0-1",
+            "can-1-0-7",
+            "can-1-1-1",
+            "can-1-1-7",
+            "bottle-2-0-2",
+            "can-2-1-0",
+            "can-2-1-6",
+            "can-3-0-5",
+            "can-3-1-5"
+          ]
+        },
+        {
+          "name": "bottle-0-0-5",
+          "color": "#8b2a8a",
+          "parts": [
+            "bottle-0-0-5",
+            "can-0-1-3",
+            "can-1-0-2",
+            "can-1-1-2",
+            "bottle-2-0-3",
+            "can-2-1-1",
+            "can-2-1-7",
+            "can-3-0-0",
+            "can-3-0-6",
+            "can-3-1-0",
+            "can-3-1-6"
+          ]
         },
         {
           "name": "glass",
-          "color": "#92cbd3",
+          "color": "#a9d3df",
           "parts": [
-            "door-glass-left",
-            "door-glass-right",
-            "door-glass-top",
-            "door-glass-bottom",
-            "beverage-bottle-554--175",
-            "beverage-bottle-554-0",
-            "beverage-bottle-554-175",
-            "beverage-bottle-874--175",
-            "beverage-bottle-874-0",
-            "beverage-bottle-874-175"
+            "door-glass"
           ],
           "param": "glass"
         },
         {
-          "name": "stainless",
-          "color": "#aeb8ba",
+          "name": "door-gasket",
+          "color": "#4a4f53",
           "parts": [
-            "handle",
-            "inner-shelf-0",
-            "inner-shelf-1",
-            "inner-shelf-2",
-            "inner-shelf-3",
-            "bottle-cap-554--175",
-            "bottle-cap-554-0",
-            "bottle-cap-554-175",
-            "bottle-cap-874--175",
-            "bottle-cap-874-0",
-            "bottle-cap-874-175",
-            "compressor-grille"
-          ],
-          "param": "stainless"
+            "door-gasket"
+          ]
         }
       ]
     },
