@@ -230896,10 +230896,15 @@
       "id": "cash-drawer",
       "kit": "retail-store",
       "title": "Cash drawer",
-      "description": "Retail till drawer with broad faceplate, recessed pull and compact lock cylinder. Knobs: overall scale and stainless steel, abs plastic, brass color controls. Presets: cleanStore and nightRestock.",
+      "description": "POS cash drawer at about real size: low steel cabinet with the drawer sprung open, a till tray with five note compartments under spring clips and eight coin cups, a key lock and cheque media slot on the faceplate, and the RJ trigger cable out of the back, with notes and coins in the tray. Material controls: cabinet steel, till tray, banknotes, coins. blackSteel, whiteSteel and stainless presets; drawer open or closed.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "cash drawer",
+        "till",
+        "cash register drawer",
+        "pos",
+        "checkout",
         "retail",
         "grocery",
         "shop",
@@ -230916,8 +230921,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/cash-drawer.kcad.ts",
       "preview": "/assets/retail-store-cash-drawer.png",
-      "sourceSha256": "1f21255f1d1adbc6a6bc42b1dde94ddd56bc795878da4b29ec613c78a0d37990",
-      "triangleBudget": 1800,
+      "sourceSha256": "227eecaa248d94c1e94dec9149805fc5d0fb7f6304f1fcd38c2d8ec86d84dd6a",
+      "triangleBudget": 2500,
       "params": [
         {
           "name": "scale",
@@ -230929,71 +230934,234 @@
           "step": 0.05
         },
         {
-          "name": "stainless",
+          "name": "cabinet",
           "type": "color",
-          "default": "#69767c",
-          "label": "Stainless steel color"
+          "default": "#26292c",
+          "label": "Cabinet steel"
         },
         {
-          "name": "abs",
+          "name": "tray",
           "type": "color",
-          "default": "#373f44",
-          "label": "ABS plastic color"
+          "default": "#6a7078",
+          "label": "Till tray"
         },
         {
-          "name": "brass",
+          "name": "notes",
           "type": "color",
-          "default": "#c19740",
-          "label": "Brass color"
+          "default": "#7fae7a",
+          "label": "Banknotes"
+        },
+        {
+          "name": "coins",
+          "type": "color",
+          "default": "#c9a24a",
+          "label": "Coins"
+        },
+        {
+          "name": "drawer",
+          "type": "choice",
+          "default": "open",
+          "label": "Drawer",
+          "choices": [
+            "open",
+            "closed"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "stainless": "#bfc8cb",
-          "abs": "#e5e9e9",
-          "brass": "#c29a4c"
+        "blackSteel": {
+          "cabinet": "#26292c",
+          "tray": "#6a7078",
+          "notes": "#7fae7a",
+          "coins": "#c9a24a"
         },
-        "nightRestock": {
-          "stainless": "#66747a",
-          "abs": "#364a55",
-          "brass": "#8f682c"
+        "whiteSteel": {
+          "cabinet": "#e6e8e8",
+          "tray": "#4a5058",
+          "notes": "#8a9fc8",
+          "coins": "#bfc4c6"
+        },
+        "stainless": {
+          "cabinet": "#a9b0b4",
+          "tray": "#3a3f45",
+          "notes": "#d39a6a",
+          "coins": "#c9a24a"
         }
       },
       "stats": {
-        "triangles": 80,
+        "triangles": 2360,
         "sizeM": [
-          0.45,
-          0.16,
-          0.482
+          0.41,
+          0.1,
+          0.939
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainless",
-          "color": "#69767c",
+          "name": "cabinet",
+          "color": "#26292c",
           "parts": [
-            "drawer-box",
-            "faceplate"
+            "cabinet-top",
+            "cabinet-top-lip",
+            "cabinet-left",
+            "cabinet-right",
+            "cabinet-back",
+            "cabinet-floor",
+            "faceplate",
+            "pull-lip",
+            "drawer-left",
+            "drawer-right"
           ],
-          "param": "stainless"
+          "param": "cabinet"
         },
         {
-          "name": "abs",
-          "color": "#373f44",
+          "name": "cabinet-inside",
+          "color": "#0f1012",
           "parts": [
-            "pull"
-          ],
-          "param": "abs"
+            "cabinet-inside",
+            "media-slot"
+          ]
         },
         {
-          "name": "brass",
-          "color": "#c19740",
+          "name": "foot-l-f",
+          "color": "#121314",
           "parts": [
-            "lock"
+            "foot-l-f",
+            "foot-l-b",
+            "foot-r-f",
+            "foot-r-b"
+          ]
+        },
+        {
+          "name": "cable-boot",
+          "color": "#d8d8d2",
+          "parts": [
+            "cable-boot",
+            "cable"
+          ]
+        },
+        {
+          "name": "lock",
+          "color": "#c0c4c6",
+          "parts": [
+            "lock",
+            "clip-arm-0",
+            "clip-roller-0",
+            "clip-arm-1",
+            "clip-roller-1",
+            "clip-arm-2",
+            "clip-roller-2",
+            "clip-arm-3",
+            "clip-roller-3",
+            "clip-arm-4",
+            "clip-roller-4"
+          ]
+        },
+        {
+          "name": "lock-key",
+          "color": "#3a3d40",
+          "parts": [
+            "lock-key"
+          ]
+        },
+        {
+          "name": "tray",
+          "color": "#6a7078",
+          "parts": [
+            "drawer-floor",
+            "cup-0",
+            "cup-1",
+            "cup-2",
+            "cup-3",
+            "cup-4",
+            "cup-5",
+            "cup-6",
+            "cup-7",
+            "coin-wall",
+            "divider-1",
+            "divider-2",
+            "divider-3",
+            "divider-4"
           ],
-          "param": "brass"
+          "param": "tray"
+        },
+        {
+          "name": "coins",
+          "color": "#c9a24a",
+          "parts": [
+            "coin-0-0",
+            "coin-0-1",
+            "coin-1-0",
+            "coin-1-1",
+            "coin-1-2",
+            "coin-1-3",
+            "coin-1-4",
+            "coin-2-0",
+            "coin-2-1",
+            "coin-2-2",
+            "coin-2-3",
+            "coin-3-0",
+            "coin-3-1",
+            "coin-3-2",
+            "coin-4-0",
+            "coin-4-1",
+            "coin-5-0",
+            "coin-5-1",
+            "coin-5-2",
+            "coin-5-3",
+            "coin-5-4"
+          ],
+          "param": "coins"
+        },
+        {
+          "name": "coin-6-0",
+          "color": "#bfc4c6",
+          "parts": [
+            "coin-6-0",
+            "coin-6-1",
+            "coin-6-2",
+            "coin-6-3",
+            "coin-7-0",
+            "coin-7-1",
+            "coin-7-2"
+          ]
+        },
+        {
+          "name": "notes-0",
+          "color": "#d39a6a",
+          "parts": [
+            "notes-0"
+          ]
+        },
+        {
+          "name": "note-print-0",
+          "color": "#3c5a3a",
+          "parts": [
+            "note-print-0",
+            "note-print-1",
+            "note-print-2",
+            "note-print-3",
+            "note-print-4"
+          ]
+        },
+        {
+          "name": "notes",
+          "color": "#7fae7a",
+          "parts": [
+            "notes-1",
+            "notes-2",
+            "notes-3"
+          ],
+          "param": "notes"
+        },
+        {
+          "name": "notes-4",
+          "color": "#8a9fc8",
+          "parts": [
+            "notes-4"
+          ]
         }
       ]
     },
@@ -231331,10 +231499,15 @@
       "id": "checkout-divider",
       "kit": "retail-store",
       "title": "Checkout divider",
-      "description": "Low polygon checkout divider with long body, raised grip fin and beveled-looking end blocks. Knobs: overall scale and polypropylene, rubber, abs plastic color controls. Presets: cleanStore and nightRestock.",
+      "description": "'Next customer' checkout divider bar at about real size: a 400 mm triangular prism that cannot roll on the belt, printed message bands with arrow chevrons on both sloped faces, overhanging moulded end caps and a ribbed ridge grip; round-bar variant with flared caps. Material controls: bar plastic, end caps, message band, lettering. supermarket, discount and organic presets; prism or round-bar profile.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "checkout divider",
+        "next customer bar",
+        "conveyor divider",
+        "till divider",
+        "checkout",
         "retail",
         "grocery",
         "shop",
@@ -231351,8 +231524,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/checkout-divider.kcad.ts",
       "preview": "/assets/retail-store-checkout-divider.png",
-      "sourceSha256": "cef6a5c6840f74d3b8776a1b3d0143f786351b6bc50395909064d87b22851bd5",
-      "triangleBudget": 1800,
+      "sourceSha256": "4a603737fe6166192de86e45b5e2380a3064a82c641e42fdda8745943f862df3",
+      "triangleBudget": 1500,
       "params": [
         {
           "name": "scale",
@@ -231364,72 +231537,136 @@
           "step": 0.05
         },
         {
-          "name": "polypropylene",
+          "name": "bar",
           "type": "color",
-          "default": "#df8f38",
-          "label": "Polypropylene color"
+          "default": "#d8dcdc",
+          "label": "Bar plastic"
         },
         {
-          "name": "rubber",
+          "name": "caps",
           "type": "color",
-          "default": "#41484d",
-          "label": "Rubber color"
+          "default": "#2a2d30",
+          "label": "End caps"
         },
         {
-          "name": "abs",
+          "name": "band",
           "type": "color",
-          "default": "#f0b747",
-          "label": "ABS plastic color"
+          "default": "#d23a2c",
+          "label": "Message band"
+        },
+        {
+          "name": "lettering",
+          "type": "color",
+          "default": "#f4f2ea",
+          "label": "Lettering"
+        },
+        {
+          "name": "profile",
+          "type": "choice",
+          "default": "prism",
+          "label": "Profile",
+          "choices": [
+            "prism",
+            "round"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "polypropylene": "#d6e0d5",
-          "rubber": "#40474b",
-          "abs": "#e5e9e9"
+        "supermarket": {
+          "bar": "#d8dcdc",
+          "caps": "#2a2d30",
+          "band": "#d23a2c",
+          "lettering": "#f4f2ea"
         },
-        "nightRestock": {
-          "polypropylene": "#45614e",
-          "rubber": "#262b2e",
-          "abs": "#364a55"
+        "discount": {
+          "bar": "#f2d23a",
+          "caps": "#1f3f8a",
+          "band": "#1f3f8a",
+          "lettering": "#f2d23a"
+        },
+        "organic": {
+          "bar": "#c9b48a",
+          "caps": "#3f5a32",
+          "band": "#5c8a3e",
+          "lettering": "#f2eedc"
         }
       },
       "stats": {
-        "triangles": 92,
+        "triangles": 456,
         "sizeM": [
-          0.262,
-          0.09,
-          0.076
+          0.4,
+          0.066,
+          0.08
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polypropylene",
-          "color": "#df8f38",
+          "name": "bar",
+          "color": "#d8dcdc",
           "parts": [
-            "body"
+            "bar"
           ],
-          "param": "polypropylene"
+          "param": "bar"
         },
         {
-          "name": "rubber",
-          "color": "#41484d",
+          "name": "caps",
+          "color": "#2a2d30",
           "parts": [
-            "grip-fin",
-            "end-left",
-            "end-right"
+            "cap-l",
+            "cap-r",
+            "rib-0",
+            "rib-1",
+            "rib-2",
+            "rib-3",
+            "rib-4",
+            "rib-5",
+            "rib-6",
+            "rib-7",
+            "rib-8"
           ],
-          "param": "rubber"
+          "param": "caps"
         },
         {
-          "name": "abs",
-          "color": "#f0b747",
+          "name": "band",
+          "color": "#d23a2c",
           "parts": [
-            "top-button"
+            "band-f",
+            "band-b"
           ],
-          "param": "abs"
+          "param": "band"
+        },
+        {
+          "name": "lettering",
+          "color": "#f4f2ea",
+          "parts": [
+            "letter-f-0",
+            "letter-f-1",
+            "letter-f-2",
+            "letter-f-3",
+            "letter-f-4",
+            "letter-f-5",
+            "letter-f-6",
+            "letter-f-7",
+            "letter-f-8",
+            "letter-f-9",
+            "chevron-f-l",
+            "chevron-f-r",
+            "letter-b-0",
+            "letter-b-1",
+            "letter-b-2",
+            "letter-b-3",
+            "letter-b-4",
+            "letter-b-5",
+            "letter-b-6",
+            "letter-b-7",
+            "letter-b-8",
+            "letter-b-9",
+            "chevron-b-l",
+            "chevron-b-r"
+          ],
+          "param": "lettering"
         }
       ]
     },
@@ -232221,10 +232458,14 @@
       "id": "gondola-shelf",
       "kit": "retail-store",
       "title": "Gondola shelf",
-      "description": "Double-sided supermarket gondola with perforated-look back panel, six shelves and stabilizing feet. Knobs: overall scale and powder-coated steel, stainless steel, polypropylene color controls. Presets: cleanStore and nightRestock.",
+      "description": "One bay of a double-sided supermarket gondola at about real size: pegboard back panel on slotted uprights, cantilever shelves on angled brackets, deep base deck over a kick plate, price-ticket rails on every shelf edge and faced-up boxed and bottled stock. Material controls: steel frame, shelf steel, ticket rail, stock packaging. grocery, pharmacy and hardware presets; stocked choice.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "gondola",
+        "supermarket shelf",
+        "grocery shelving",
+        "aisle shelving",
         "retail",
         "grocery",
         "shop",
@@ -232241,8 +232482,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/gondola-shelf.kcad.ts",
       "preview": "/assets/retail-store-gondola-shelf.png",
-      "sourceSha256": "c505e8622d156a021614c496753fe7b9d8838333734668f26f04c5c93af51603",
-      "triangleBudget": 1800,
+      "sourceSha256": "c88ebcbc66f436e8f33b4ec1ff228403486cce159dde0e08f382b6717d5f2f95",
+      "triangleBudget": 3500,
       "params": [
         {
           "name": "scale",
@@ -232254,78 +232495,238 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "frame",
           "type": "color",
-          "default": "#536971",
-          "label": "Powder-coated steel color"
+          "default": "#e3e6e4",
+          "label": "Steel frame"
         },
         {
-          "name": "stainless",
+          "name": "shelfSteel",
           "type": "color",
-          "default": "#c0c9ca",
-          "label": "Stainless steel color"
+          "default": "#cfd4d3",
+          "label": "Shelf steel"
         },
         {
-          "name": "polypropylene",
+          "name": "ticket",
           "type": "color",
-          "default": "#3d484b",
-          "label": "Polypropylene color"
+          "default": "#e8c43a",
+          "label": "Ticket rail"
+        },
+        {
+          "name": "stock",
+          "type": "color",
+          "default": "#c8412f",
+          "label": "Stock packaging"
+        },
+        {
+          "name": "stocked",
+          "type": "choice",
+          "default": "full",
+          "label": "Stock",
+          "choices": [
+            "full",
+            "empty"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "powderCoat": "#e5ebed",
-          "stainless": "#bfc8cb",
-          "polypropylene": "#d6e0d5"
+        "grocery": {
+          "frame": "#e3e6e4",
+          "shelfSteel": "#cfd4d3",
+          "ticket": "#e8c43a",
+          "stock": "#c8412f"
         },
-        "nightRestock": {
-          "powderCoat": "#354750",
-          "stainless": "#66747a",
-          "polypropylene": "#45614e"
+        "pharmacy": {
+          "frame": "#f2f4f5",
+          "shelfSteel": "#e2e6e8",
+          "ticket": "#3a8fd0",
+          "stock": "#5aa86a"
+        },
+        "hardware": {
+          "frame": "#3c4247",
+          "shelfSteel": "#59616a",
+          "ticket": "#e0742a",
+          "stock": "#2f5f9e"
         }
       },
       "stats": {
-        "triangles": 132,
+        "triangles": 2416,
         "sizeM": [
+          1.3,
           1.8,
-          2,
-          1.06
+          0.982
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#536971",
+          "name": "frame",
+          "color": "#e3e6e4",
           "parts": [
-            "back-panel",
-            "upright--840",
-            "upright-840"
+            "upright--625",
+            "upright-625",
+            "pegboard",
+            "header",
+            "kick--1",
+            "foot--1-l",
+            "foot--1-r",
+            "kick-1",
+            "foot-1-l",
+            "foot-1-r",
+            "bracket--1-0--585",
+            "bracket--1-0-585",
+            "bracket--1-1--585",
+            "bracket--1-1-585",
+            "bracket--1-2--585",
+            "bracket--1-2-585",
+            "bracket-1-0--585",
+            "bracket-1-0-585",
+            "bracket-1-1--585",
+            "bracket-1-1-585",
+            "bracket-1-2--585",
+            "bracket-1-2-585"
           ],
-          "param": "powderCoat"
+          "param": "frame"
         },
         {
-          "name": "stainless",
-          "color": "#c0c9ca",
+          "name": "slots--625",
+          "color": "#2c3033",
           "parts": [
-            "shelf-0",
-            "shelf-1",
-            "shelf-2",
-            "shelf-0",
-            "shelf-1",
-            "shelf-2"
-          ],
-          "param": "stainless"
+            "slots--625",
+            "slots-625",
+            "neck-1-0",
+            "neck-1-1",
+            "neck-1-2",
+            "neck-1-3",
+            "neck-1-4",
+            "neck-1-5",
+            "neck-1-6",
+            "neck-1-7",
+            "neck-3-0",
+            "neck-3-1",
+            "neck-3-2",
+            "neck-3-3",
+            "neck-3-4",
+            "neck-3-5",
+            "neck-3-6",
+            "neck-3-7"
+          ]
         },
         {
-          "name": "polypropylene",
-          "color": "#3d484b",
+          "name": "peg-row-0",
+          "color": "#a9b0b1",
           "parts": [
-            "foot--730",
-            "foot-730"
+            "peg-row-0",
+            "peg-row-1",
+            "peg-row-2",
+            "peg-row-3",
+            "peg-row-4",
+            "peg-row-5",
+            "peg-row-6",
+            "peg-row-7",
+            "peg-row-8",
+            "peg-row-9",
+            "peg-row-10",
+            "peg-row-11",
+            "peg-row-12",
+            "peg-row-13",
+            "peg-row-14",
+            "peg-row-15",
+            "peg-row-16",
+            "peg-row-17",
+            "peg-row-18",
+            "peg-row-19"
+          ]
+        },
+        {
+          "name": "shelfSteel",
+          "color": "#cfd4d3",
+          "parts": [
+            "base-deck--1",
+            "base-deck-1",
+            "shelf--1-0",
+            "shelf--1-1",
+            "shelf--1-2",
+            "shelf-1-0",
+            "shelf-1-1",
+            "shelf-1-2"
           ],
-          "param": "polypropylene"
+          "param": "shelfSteel"
+        },
+        {
+          "name": "ticket",
+          "color": "#e8c43a",
+          "parts": [
+            "base-rail--1",
+            "base-rail-1",
+            "ticket--1-0",
+            "ticket--1-1",
+            "ticket--1-2",
+            "ticket-1-0",
+            "ticket-1-1",
+            "ticket-1-2"
+          ],
+          "param": "ticket"
+        },
+        {
+          "name": "stock",
+          "color": "#c8412f",
+          "parts": [
+            "stock-0-0",
+            "label-0-1",
+            "stock-0-2",
+            "label-0-3",
+            "stock-0-4",
+            "label-0-5",
+            "bottle-1-1",
+            "bottle-1-2",
+            "bottle-1-4",
+            "bottle-1-5",
+            "bottle-1-7",
+            "stock-2-0",
+            "label-2-1",
+            "stock-2-2",
+            "label-2-3",
+            "stock-2-4",
+            "label-2-5",
+            "bottle-3-1",
+            "bottle-3-2",
+            "bottle-3-4",
+            "bottle-3-5",
+            "bottle-3-7"
+          ],
+          "param": "stock"
+        },
+        {
+          "name": "label-0-0",
+          "color": "#f0e4c8",
+          "parts": [
+            "label-0-0",
+            "stock-0-1",
+            "label-0-2",
+            "stock-0-3",
+            "label-0-4",
+            "stock-0-5",
+            "label-2-0",
+            "stock-2-1",
+            "label-2-2",
+            "stock-2-3",
+            "label-2-4",
+            "stock-2-5"
+          ]
+        },
+        {
+          "name": "bottle-1-0",
+          "color": "#e8ece8",
+          "parts": [
+            "bottle-1-0",
+            "bottle-1-3",
+            "bottle-1-6",
+            "bottle-3-0",
+            "bottle-3-3",
+            "bottle-3-6"
+          ]
         }
       ]
     },
@@ -233693,10 +234094,14 @@
       "id": "queue-stanchion",
       "kit": "retail-store",
       "title": "Queue stanchion",
-      "description": "Single retail queue post with a broad weighted base, slender pole and four-way strap cap. Knobs: overall scale and stainless steel, polypropylene color controls. Presets: cleanStore and nightRestock.",
+      "description": "Retractable-belt queue post at about real size: heavy domed cast base with a rubber floor ring, polished post, belt cassette head with the webbing belt pulled out to its end clip, four receiver slots round the head and an optional 'please queue here' sign topper. Material controls: post finish, base, belt webbing, sign. chrome, blackOut and brass presets; topper choice.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "queue stanchion",
+        "retractable belt",
+        "crowd control",
+        "queue post",
         "retail",
         "grocery",
         "shop",
@@ -233713,8 +234118,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/queue-stanchion.kcad.ts",
       "preview": "/assets/retail-store-queue-stanchion.png",
-      "sourceSha256": "c1e35e990b8a1276512d435395d1a680b45fe1ff2e916752c395146716ab13e6",
-      "triangleBudget": 1800,
+      "sourceSha256": "4e0c09bb685313cc5128a8425f828900db528d684338a809fa08692a892ab050",
+      "triangleBudget": 2500,
       "params": [
         {
           "name": "scale",
@@ -233726,56 +234131,129 @@
           "step": 0.05
         },
         {
-          "name": "stainless",
+          "name": "post",
           "type": "color",
-          "default": "#727f83",
-          "label": "Stainless steel color"
+          "default": "#c9ced2",
+          "label": "Post finish"
         },
         {
-          "name": "polypropylene",
+          "name": "base",
           "type": "color",
-          "default": "#bf5949",
-          "label": "Polypropylene color"
+          "default": "#3a3e42",
+          "label": "Cast base"
+        },
+        {
+          "name": "belt",
+          "type": "color",
+          "default": "#c8302c",
+          "label": "Belt webbing"
+        },
+        {
+          "name": "sign",
+          "type": "color",
+          "default": "#f4f1e8",
+          "label": "Sign card"
+        },
+        {
+          "name": "topper",
+          "type": "choice",
+          "default": "sign",
+          "label": "Topper",
+          "choices": [
+            "sign",
+            "none"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "stainless": "#bfc8cb",
-          "polypropylene": "#d6e0d5"
+        "chrome": {
+          "post": "#c9ced2",
+          "base": "#3a3e42",
+          "belt": "#c8302c",
+          "sign": "#f4f1e8"
         },
-        "nightRestock": {
-          "stainless": "#66747a",
-          "polypropylene": "#45614e"
+        "blackOut": {
+          "post": "#2b2e31",
+          "base": "#1d1f21",
+          "belt": "#2f5fa8",
+          "sign": "#f2f2f0"
+        },
+        "brass": {
+          "post": "#c39a4a",
+          "base": "#4a3a2a",
+          "belt": "#7a1f2c",
+          "sign": "#f1e6cc"
         }
       },
       "stats": {
-        "triangles": 144,
+        "triangles": 560,
         "sizeM": [
-          0.35,
-          0.988,
-          0.35
+          0.778,
+          1.22,
+          0.36
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainless",
-          "color": "#727f83",
+          "name": "rubber-ring",
+          "color": "#151618",
           "parts": [
-            "base",
-            "pole",
-            "top-cap"
-          ],
-          "param": "stainless"
+            "rubber-ring",
+            "slot-0",
+            "slot-1",
+            "slot-2",
+            "slot-3",
+            "belt-mouth"
+          ]
         },
         {
-          "name": "polypropylene",
-          "color": "#bf5949",
+          "name": "base",
+          "color": "#3a3e42",
           "parts": [
-            "strap-slot"
+            "base",
+            "head-band"
           ],
-          "param": "polypropylene"
+          "param": "base"
+        },
+        {
+          "name": "post",
+          "color": "#c9ced2",
+          "parts": [
+            "collar",
+            "post",
+            "head",
+            "clip",
+            "clip-tongue",
+            "topper-stem",
+            "topper-frame"
+          ],
+          "param": "post"
+        },
+        {
+          "name": "belt",
+          "color": "#c8302c",
+          "parts": [
+            "belt",
+            "topper-band"
+          ],
+          "param": "belt"
+        },
+        {
+          "name": "sign",
+          "color": "#f4f1e8",
+          "parts": [
+            "topper-card"
+          ],
+          "param": "sign"
+        },
+        {
+          "name": "arrow",
+          "color": "#2b2e31",
+          "parts": [
+            "arrow"
+          ]
         }
       ]
     },
@@ -233783,10 +234261,15 @@
       "id": "receipt-printer",
       "kit": "retail-store",
       "title": "Receipt printer",
-      "description": "Small point-of-sale receipt printer with paper slot, lid seam and roll cover. Knobs: overall scale and abs plastic, rubber, polycarbonate color controls. Presets: cleanStore and nightRestock.",
+      "description": "Thermal POS receipt printer at about real size: rounded clamshell body with the lid sweeping down to a serrated tear-bar paper slot, a printed receipt curling out of the slot, lid-release button and status LEDs, and with the lid open the paper roll in its cradle. Material controls: body plastic, lid plastic, paper, accent button. charcoal, white and kitchen presets; lid open or closed.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "receipt printer",
+        "thermal printer",
+        "pos printer",
+        "till printer",
+        "checkout",
         "retail",
         "grocery",
         "shop",
@@ -233803,8 +234286,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/receipt-printer.kcad.ts",
       "preview": "/assets/retail-store-receipt-printer.png",
-      "sourceSha256": "735dd2f196586f47c1e092b41ce6479b0883e16ea415a4087523690771aaec4e",
-      "triangleBudget": 1800,
+      "sourceSha256": "6f21cc8910db5057cf5ec25d7c9510aef7adb74f966c416611695fbcf24f838e",
+      "triangleBudget": 2500,
       "params": [
         {
           "name": "scale",
@@ -233816,71 +234299,168 @@
           "step": 0.05
         },
         {
-          "name": "abs",
+          "name": "body",
           "type": "color",
-          "default": "#59636a",
-          "label": "ABS plastic color"
+          "default": "#2e3236",
+          "label": "Body plastic"
         },
         {
-          "name": "rubber",
+          "name": "lid",
           "type": "color",
-          "default": "#292d30",
-          "label": "Rubber color"
+          "default": "#43494f",
+          "label": "Lid plastic"
         },
         {
-          "name": "polycarbonate",
+          "name": "paper",
           "type": "color",
-          "default": "#d6a53c",
-          "label": "Polycarbonate color"
+          "default": "#f4f2ea",
+          "label": "Receipt paper"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#3a8fd0",
+          "label": "Accent button"
+        },
+        {
+          "name": "lidState",
+          "type": "choice",
+          "default": "closed",
+          "label": "Lid",
+          "choices": [
+            "closed",
+            "open"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "abs": "#e5e9e9",
-          "rubber": "#40474b",
-          "polycarbonate": "#a2d1d7"
+        "charcoal": {
+          "body": "#2e3236",
+          "lid": "#43494f",
+          "paper": "#f4f2ea",
+          "accent": "#3a8fd0"
         },
-        "nightRestock": {
-          "abs": "#364a55",
-          "rubber": "#262b2e",
-          "polycarbonate": "#486b7b"
+        "white": {
+          "body": "#e4e6e6",
+          "lid": "#f2f3f2",
+          "paper": "#f8f6ee",
+          "accent": "#8a9196"
+        },
+        "kitchen": {
+          "body": "#1d1f21",
+          "lid": "#2a2d30",
+          "paper": "#f2e78c",
+          "accent": "#d2462f"
         }
       },
       "stats": {
-        "triangles": 80,
+        "triangles": 608,
         "sizeM": [
-          0.255,
-          0.182,
-          0.2495
+          0.145,
+          0.150309,
+          0.252864
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "abs",
-          "color": "#59636a",
+          "name": "body",
+          "color": "#2e3236",
           "parts": [
-            "base",
-            "cover"
+            "body"
           ],
-          "param": "abs"
+          "param": "body"
         },
         {
-          "name": "rubber",
-          "color": "#292d30",
+          "name": "foot-l-f",
+          "color": "#151618",
           "parts": [
-            "paper-slot"
-          ],
-          "param": "rubber"
+            "foot-l-f",
+            "foot-l-b",
+            "foot-r-f",
+            "foot-r-b"
+          ]
         },
         {
-          "name": "polycarbonate",
-          "color": "#d6a53c",
+          "name": "lid",
+          "color": "#43494f",
           "parts": [
-            "status-button"
+            "lid"
           ],
-          "param": "polycarbonate"
+          "param": "lid"
+        },
+        {
+          "name": "tear-bar",
+          "color": "#9aa0a4",
+          "parts": [
+            "tear-bar",
+            "tooth-0",
+            "tooth-1",
+            "tooth-2",
+            "tooth-3",
+            "tooth-4",
+            "tooth-5",
+            "tooth-6",
+            "tooth-7",
+            "tooth-8",
+            "tooth-9",
+            "tooth-10",
+            "tooth-11",
+            "brand-badge"
+          ]
+        },
+        {
+          "name": "paper",
+          "color": "#f4f2ea",
+          "parts": [
+            "receipt-0",
+            "receipt-1",
+            "receipt-2",
+            "receipt-3",
+            "receipt-4",
+            "receipt-5"
+          ],
+          "param": "paper"
+        },
+        {
+          "name": "print-0",
+          "color": "#3a3d40",
+          "parts": [
+            "print-0",
+            "print-1",
+            "print-2",
+            "print-3"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#3a8fd0",
+          "parts": [
+            "release"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "led-0",
+          "color": "#46c46a",
+          "parts": [
+            "led-0"
+          ]
+        },
+        {
+          "name": "led-1",
+          "color": "#e0b43a",
+          "parts": [
+            "led-1"
+          ]
+        },
+        {
+          "name": "led-2",
+          "color": "#d2462f",
+          "parts": [
+            "led-2"
+          ]
         }
       ]
     },
