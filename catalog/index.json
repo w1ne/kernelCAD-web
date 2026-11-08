@@ -222601,11 +222601,17 @@
       "id": "glass-washer-trommel",
       "kit": "recycling-facility",
       "title": "Glass washer trommel",
-      "description": "Glass washer trommel: a faceted rotating screen drum, feed hopper and opposed discharge chute. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Cullet washing trommel at about real size: inclined perforated drum with two riding tyres on trunnion rollers, girth gear and geared drive motor, spray header with drop nozzles and a back splash screen, feed chute at the high end, discharge chute with wet cullet at the low end, tapering sump with drain to a pump, and a base frame. Material controls: drum, frame, water pipework and sump. plant, stainless, weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "trommel",
+        "washer",
+        "glass",
+        "cullet",
+        "spray",
+        "drum",
         "materials recovery",
         "waste management",
         "glass plastics",
@@ -222621,8 +222627,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/glass-washer-trommel.kcad.ts",
       "preview": "/assets/recycling-facility-glass-washer-trommel.png",
-      "sourceSha256": "705d78699ceec65167d1ef4b830377f3744420409012f3b4ffe90d9bef7eb249",
-      "triangleBudget": 1800,
+      "sourceSha256": "cfc727d50daf6ed63cb39738155f4b34e924d766596fdfc572d69bcf222c5e62",
+      "triangleBudget": 3800,
       "params": [
         {
           "name": "scale",
@@ -222634,59 +222640,273 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "drum",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#b6bec1",
+          "label": "Screen drum (stainless)"
         },
         {
-          "name": "paintedSteel",
+          "name": "frame",
           "type": "color",
           "default": "#4a7980",
-          "label": "Painted steel"
+          "label": "Base frame (paint)"
+        },
+        {
+          "name": "pipework",
+          "type": "color",
+          "default": "#2f5d9a",
+          "label": "Water pipework (paint)"
+        },
+        {
+          "name": "sump",
+          "type": "color",
+          "default": "#6c7376",
+          "label": "Sump and chutes"
         }
       ],
       "presets": {
+        "plant": {
+          "drum": "#b6bec1",
+          "frame": "#4a7980",
+          "pipework": "#2f5d9a",
+          "sump": "#6c7376"
+        },
+        "stainless": {
+          "drum": "#d0d4d6",
+          "frame": "#a8b0b3",
+          "pipework": "#c9ccce",
+          "sump": "#b6bec1"
+        },
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#567574"
+          "drum": "#8e9294",
+          "frame": "#5b6a62",
+          "pipework": "#4f6478",
+          "sump": "#5c5650"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "drum": "#c4c9cb",
+          "frame": "#e0a526",
+          "pipework": "#2f6b8f",
+          "sump": "#3a3d40"
         }
       },
       "stats": {
-        "triangles": 400,
+        "triangles": 3122,
         "sizeM": [
-          1.104637,
-          0.9414,
-          2.3392
+          8.45,
+          3,
+          2.33
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "drum",
+          "color": "#b6bec1",
           "parts": [
-            "base-rail-left",
-            "base-rail-right",
-            "screen-drum",
-            "drive-ring-front",
-            "drive-ring-back"
+            "drum-shell",
+            "end-ring-m2500",
+            "end-ring-p2460"
           ],
-          "param": "stainlessSteel"
+          "param": "drum"
         },
         {
-          "name": "paintedSteel",
+          "name": "screen-band-0",
+          "color": "#5d6366",
+          "parts": [
+            "screen-band-0",
+            "screen-band-1",
+            "screen-band-2",
+            "screen-band-3",
+            "screen-band-4",
+            "screen-band-5",
+            "screen-band-6",
+            "screen-band-7",
+            "screen-band-8",
+            "girth-gear",
+            "gear-tooth-0",
+            "gear-tooth-1",
+            "gear-tooth-2",
+            "gear-tooth-3",
+            "gear-tooth-4",
+            "gear-tooth-5",
+            "gear-tooth-6",
+            "gear-tooth-7",
+            "roller-m1900-f",
+            "roller-m1900-b",
+            "roller-p1900-f",
+            "roller-p1900-b",
+            "pinion"
+          ]
+        },
+        {
+          "name": "riding-tyre-m1900",
+          "color": "#3a3d40",
+          "parts": [
+            "riding-tyre-m1900",
+            "riding-tyre-p1900"
+          ]
+        },
+        {
+          "name": "feed-mouth",
+          "color": "#2c2f31",
+          "parts": [
+            "feed-mouth",
+            "roller-bearing-m1900-f-a",
+            "roller-bearing-m1900-f-b",
+            "roller-bearing-m1900-b-a",
+            "roller-bearing-m1900-b-b",
+            "roller-bearing-p1900-f-a",
+            "roller-bearing-p1900-f-b",
+            "roller-bearing-p1900-b-a",
+            "roller-bearing-p1900-b-b"
+          ]
+        },
+        {
+          "name": "frame",
           "color": "#4a7980",
           "parts": [
-            "feed-hopper",
-            "discharge-chute",
-            "drive-motor"
+            "roller-pedestal-m1900-f",
+            "roller-pedestal-m1900-b",
+            "roller-pedestal-p1900-f",
+            "roller-pedestal-p1900-b",
+            "gearbox",
+            "drive-plate",
+            "drive-leg-m1130-f",
+            "drive-leg-m1130-b",
+            "drive-leg-m50-f",
+            "drive-leg-m50-b",
+            "drive-brace",
+            "header-post-m2700",
+            "header-post-p2700",
+            "splash-post-m2550",
+            "splash-post-p2550",
+            "sump-beam-m1100",
+            "sump-beam-p1100",
+            "pump-base",
+            "base-rail-f",
+            "base-leg-m2700-f",
+            "base-leg-m900-f",
+            "base-leg-p900-f",
+            "base-leg-p2700-f",
+            "base-rail-b",
+            "base-leg-m2700-b",
+            "base-leg-m900-b",
+            "base-leg-p900-b",
+            "base-leg-p2700-b",
+            "base-cross-m2700",
+            "base-cross-p2700",
+            "feed-leg-f",
+            "feed-leg-b",
+            "discharge-leg-f",
+            "discharge-leg-b"
           ],
-          "param": "paintedSteel"
+          "param": "frame"
+        },
+        {
+          "name": "pinion-shaft",
+          "color": "#a8b4b6",
+          "parts": [
+            "pinion-shaft"
+          ]
+        },
+        {
+          "name": "drive-motor",
+          "color": "#2f6b4f",
+          "parts": [
+            "drive-motor",
+            "pump-motor"
+          ]
+        },
+        {
+          "name": "motor-fan-cover",
+          "color": "#1c1d1e",
+          "parts": [
+            "motor-fan-cover"
+          ]
+        },
+        {
+          "name": "gear-guard",
+          "color": "#f0c419",
+          "parts": [
+            "gear-guard"
+          ]
+        },
+        {
+          "name": "pipework",
+          "color": "#2f5d9a",
+          "parts": [
+            "spray-header",
+            "spray-drop-0",
+            "spray-drop-1",
+            "spray-drop-2",
+            "spray-drop-3",
+            "spray-drop-4",
+            "spray-drop-5",
+            "spray-drop-6",
+            "spray-drop-7",
+            "spray-drop-8",
+            "water-supply",
+            "supply-elbow",
+            "sump-drain",
+            "drain-run",
+            "pump-body",
+            "pump-suction",
+            "pump-riser"
+          ],
+          "param": "pipework"
+        },
+        {
+          "name": "spray-nozzle-0",
+          "color": "#c9ccce",
+          "parts": [
+            "spray-nozzle-0",
+            "spray-nozzle-1",
+            "spray-nozzle-2",
+            "spray-nozzle-3",
+            "spray-nozzle-4",
+            "spray-nozzle-5",
+            "spray-nozzle-6",
+            "spray-nozzle-7",
+            "spray-nozzle-8"
+          ]
+        },
+        {
+          "name": "supply-valve",
+          "color": "#c8322a",
+          "parts": [
+            "supply-valve",
+            "supply-handwheel"
+          ]
+        },
+        {
+          "name": "sump",
+          "color": "#6c7376",
+          "parts": [
+            "splash-screen",
+            "sump-hopper",
+            "sump-rim",
+            "feed-chute",
+            "discharge-chute"
+          ],
+          "param": "sump"
+        },
+        {
+          "name": "wash-water",
+          "color": "#4f7f95",
+          "parts": [
+            "wash-water"
+          ]
+        },
+        {
+          "name": "feed-cullet",
+          "color": "#3f7a4a",
+          "parts": [
+            "feed-cullet",
+            "wet-cullet",
+            "cullet-pile"
+          ]
         }
       ]
     },
@@ -225437,11 +225657,18 @@
       "id": "leachate-well",
       "kit": "recycling-facility",
       "title": "Leachate well",
-      "description": "Leachate well: its surface pad, well casing and head collar. Low-poly visualization prop. Material controls: painted steel, stainless steel, rubber.",
+      "description": "Landfill leachate extraction wellhead at about real size: HDPE casing from a concrete apron on a capped soil mound, bolted blind flange with air and discharge hose glands, discharge line with check valve, sample tap and flow meter into the buried header, dip-meter port, pump controller cabinet on a post, numbered well tag and three protective bollards. Material controls: casing, concrete apron, fittings and bollards. landfill, stainless, weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "landfill",
+        "leachate",
+        "well",
+        "wellhead",
+        "pump",
+        "pipework",
+        "bollard",
         "materials recovery",
         "waste management",
         "residuals",
@@ -225457,8 +225684,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/leachate-well.kcad.ts",
       "preview": "/assets/recycling-facility-leachate-well.png",
-      "sourceSha256": "1773073892336d8af4b59189ad32ebf6190dad3e338c6731755674074fa3fb78",
-      "triangleBudget": 1800,
+      "sourceSha256": "5d215fe457cbd8c7bcbc800f477909f94c01de8792c85928e866d68e3e159cae",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -225470,73 +225697,208 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "casing",
           "type": "color",
-          "default": "#6e775d",
-          "label": "Painted steel"
+          "default": "#26292b",
+          "label": "Well casing (HDPE)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "apron",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#a39e93",
+          "label": "Apron (concrete)"
         },
         {
-          "name": "rubber",
+          "name": "fittings",
           "type": "color",
-          "default": "#303638",
-          "label": "Rubber"
+          "default": "#2f5d9a",
+          "label": "Valves and fittings (paint)"
+        },
+        {
+          "name": "bollards",
+          "type": "color",
+          "default": "#f0c419",
+          "label": "Bollards (paint)"
         }
       ],
       "presets": {
+        "landfill": {
+          "casing": "#26292b",
+          "apron": "#a39e93",
+          "fittings": "#2f5d9a",
+          "bollards": "#f0c419"
+        },
+        "stainless": {
+          "casing": "#c4c9cb",
+          "apron": "#b5b0a5",
+          "fittings": "#8a9196",
+          "bollards": "#e0a526"
+        },
         "weathered": {
-          "paintedSteel": "#6f735c",
-          "stainlessSteel": "#9ea7a5",
-          "rubber": "#3c403e"
+          "casing": "#3a3936",
+          "apron": "#8a857a",
+          "fittings": "#4f6478",
+          "bollards": "#a88f3c"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "casing": "#2f6b4f",
+          "apron": "#c4bfb3",
+          "fittings": "#d9692c",
+          "bollards": "#f5d000"
         }
       },
       "stats": {
-        "triangles": 384,
+        "triangles": 2304,
         "sizeM": [
-          1.14,
-          1.219,
-          0.912
+          3.799697,
+          1.795,
+          3.198777
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#6e775d",
+          "name": "soil-mound",
+          "color": "#6b5a44",
           "parts": [
-            "surface-pad",
-            "well-casing",
-            "instrument-bridge",
-            "sampling-port"
-          ],
-          "param": "paintedSteel"
+            "soil-mound"
+          ]
         },
         {
-          "name": "stainlessSteel",
+          "name": "apron",
+          "color": "#a39e93",
+          "parts": [
+            "apron",
+            "apron-chamfer",
+            "pipe-support"
+          ],
+          "param": "apron"
+        },
+        {
+          "name": "casing",
+          "color": "#26292b",
+          "parts": [
+            "well-casing",
+            "stub-flange",
+            "header-pipe-stub"
+          ],
+          "param": "casing"
+        },
+        {
+          "name": "fittings",
+          "color": "#2f5d9a",
+          "parts": [
+            "blind-flange",
+            "discharge-riser",
+            "discharge-elbow",
+            "discharge-run",
+            "check-valve",
+            "check-valve-cap",
+            "flow-meter",
+            "header-elbow",
+            "header-drop"
+          ],
+          "param": "fittings"
+        },
+        {
+          "name": "flange-bolt-0",
           "color": "#a8b4b6",
           "parts": [
-            "head-collar",
-            "protective-post-left",
-            "protective-post-right"
-          ],
-          "param": "stainlessSteel"
+            "flange-bolt-0",
+            "flange-bolt-1",
+            "flange-bolt-2",
+            "flange-bolt-3",
+            "flange-bolt-4",
+            "flange-bolt-5",
+            "flange-bolt-6",
+            "flange-bolt-7",
+            "air-gland",
+            "discharge-gland",
+            "dip-port",
+            "sample-tap"
+          ]
         },
         {
-          "name": "rubber",
-          "color": "#303638",
+          "name": "dip-cap",
+          "color": "#c8322a",
           "parts": [
-            "valve-wheel"
+            "dip-cap",
+            "sample-handle",
+            "well-tag-band"
+          ]
+        },
+        {
+          "name": "air-hose-rise",
+          "color": "#1c1d1e",
+          "parts": [
+            "air-hose-rise",
+            "air-hose-bend",
+            "air-hose-run",
+            "air-hose-corner",
+            "air-hose-cross",
+            "air-hose-drop",
+            "cabinet-panel",
+            "well-tag-digit-0",
+            "well-tag-digit-1",
+            "well-tag-digit-2",
+            "bollard-band-0",
+            "bollard-band-1",
+            "bollard-band-2"
+          ]
+        },
+        {
+          "name": "flow-meter-head",
+          "color": "#c9ccce",
+          "parts": [
+            "flow-meter-head",
+            "controller-cabinet",
+            "cabinet-hood"
+          ]
+        },
+        {
+          "name": "flow-meter-dial",
+          "color": "#f2f2ee",
+          "parts": [
+            "flow-meter-dial",
+            "well-tag"
+          ]
+        },
+        {
+          "name": "line-support",
+          "color": "#5d6366",
+          "parts": [
+            "line-support",
+            "controller-post",
+            "cabinet-door-line"
+          ]
+        },
+        {
+          "name": "cabinet-counter",
+          "color": "#7fd27f",
+          "parts": [
+            "cabinet-counter"
+          ]
+        },
+        {
+          "name": "status-beacon",
+          "color": "#2f9a4f",
+          "parts": [
+            "status-beacon"
+          ]
+        },
+        {
+          "name": "bollards",
+          "color": "#f0c419",
+          "parts": [
+            "bollard-0",
+            "bollard-cap-0",
+            "bollard-1",
+            "bollard-cap-1",
+            "bollard-2",
+            "bollard-cap-2"
           ],
-          "param": "rubber"
+          "param": "bollards"
         }
       ]
     },
@@ -230544,11 +230906,17 @@
       "id": "reject-diverter-gate",
       "kit": "recycling-facility",
       "title": "Reject diverter gate",
-      "description": "Reject diverter gate: its support, upper crossbeam and material channel. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Pneumatic reject diverter gate at about real size: trouser chute splitting into accept and reject spouts, wear-lined flap at the crotch, shaft lever and pneumatic cylinder on the front, inspection window, four-column support frame, feed conveyor head over the inlet, reject skip under one spout and take-away belt under the other. Flap set to reject or accept. Material controls: chute, frame, wear liner and belt. plant, weathered, stainless and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "diverter",
+        "flap gate",
+        "trouser chute",
+        "pneumatic",
+        "reject",
+        "conveyor",
         "materials recovery",
         "waste management",
         "sorting",
@@ -230564,8 +230932,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/reject-diverter-gate.kcad.ts",
       "preview": "/assets/recycling-facility-reject-diverter-gate.png",
-      "sourceSha256": "af620d304bf886dd2a4ee403bec09901ddfc7e6bd2e3ebe739d9d8db721be5b1",
-      "triangleBudget": 1800,
+      "sourceSha256": "2a899bd3d1e4beca501514e4da4196405077301f884a7bf6373cf0ccb7868e53",
+      "triangleBudget": 2500,
       "params": [
         {
           "name": "scale",
@@ -230577,59 +230945,234 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "chute",
           "type": "color",
-          "default": "#75656d",
-          "label": "Painted steel"
+          "default": "#5d7f8c",
+          "label": "Chute plate (paint)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#e0a526",
+          "label": "Support frame (paint)"
+        },
+        {
+          "name": "liner",
+          "type": "color",
+          "default": "#d9692c",
+          "label": "Flap wear liner (polyurethane)"
+        },
+        {
+          "name": "belt",
+          "type": "color",
+          "default": "#24272a",
+          "label": "Belts (rubber)"
+        },
+        {
+          "name": "flapPosition",
+          "type": "choice",
+          "default": "reject",
+          "label": "Flap position",
+          "choices": [
+            "reject",
+            "accept"
+          ]
         }
       ],
       "presets": {
+        "plant": {
+          "chute": "#5d7f8c",
+          "frame": "#e0a526",
+          "liner": "#d9692c",
+          "belt": "#24272a"
+        },
         "weathered": {
-          "paintedSteel": "#736767",
-          "stainlessSteel": "#9ea7a5"
+          "chute": "#6e6a62",
+          "frame": "#8a7a52",
+          "liner": "#9a6040",
+          "belt": "#2c2a28"
+        },
+        "stainless": {
+          "chute": "#c4c9cb",
+          "frame": "#8a9196",
+          "liner": "#2f7d4f",
+          "belt": "#2a2c2e"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "chute": "#2f6b8f",
+          "frame": "#f0c419",
+          "liner": "#e2462e",
+          "belt": "#1c1d1e"
         }
       },
       "stats": {
-        "triangles": 160,
+        "triangles": 1236,
         "sizeM": [
-          1.0715,
-          1.19,
-          2.1308
+          2.85,
+          3.400381,
+          4.55
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#75656d",
+          "name": "chute",
+          "color": "#5d7f8c",
           "parts": [
-            "support-frame-left",
-            "support-frame-right",
-            "material-channel",
-            "inspection-hood",
-            "discharge-transition",
-            "idler"
+            "trouser-chute",
+            "inlet-flange",
+            "spout-flange-l",
+            "leg-stiffener-l",
+            "spout-flange-r",
+            "leg-stiffener-r"
           ],
-          "param": "paintedSteel"
+          "param": "chute"
         },
         {
-          "name": "stainlessSteel",
+          "name": "liner",
+          "color": "#d9692c",
+          "parts": [
+            "window-rail-1750",
+            "window-rail-2560",
+            "window-stile-l",
+            "window-stile-r",
+            "flap-blade"
+          ],
+          "param": "liner"
+        },
+        {
+          "name": "flap-hub",
+          "color": "#3a3d40",
+          "parts": [
+            "flap-hub",
+            "shaft-bearing-f",
+            "shaft-bearing-b",
+            "lever-arm",
+            "head-bearing-l",
+            "head-bearing-r",
+            "skip-skid-f",
+            "skip-skid-b"
+          ]
+        },
+        {
+          "name": "flap-shaft",
           "color": "#a8b4b6",
           "parts": [
-            "upper-crossbeam",
-            "access-ladder"
+            "flap-shaft"
+          ]
+        },
+        {
+          "name": "frame",
+          "color": "#e0a526",
+          "parts": [
+            "cylinder-bracket",
+            "column-l-f",
+            "foot-l-f",
+            "column-l-b",
+            "foot-l-b",
+            "column-r-f",
+            "foot-r-f",
+            "column-r-b",
+            "foot-r-b",
+            "ring-beam-x-f",
+            "ring-beam-x-b",
+            "ring-beam-y-l",
+            "ring-beam-y-r",
+            "brace-f-l",
+            "brace-f-r",
+            "brace-b-l",
+            "brace-b-r",
+            "head-pulley",
+            "feed-stringer-l",
+            "feed-leg-l",
+            "feed-stringer-r",
+            "feed-leg-r",
+            "head-strut-l",
+            "head-strut-r",
+            "takeaway-stringer-l",
+            "takeaway-leg-l-f",
+            "takeaway-leg-l-b",
+            "takeaway-stringer-r",
+            "takeaway-leg-r-f",
+            "takeaway-leg-r-b"
           ],
-          "param": "stainlessSteel"
+          "param": "frame"
+        },
+        {
+          "name": "cylinder-barrel",
+          "color": "#c9ccce",
+          "parts": [
+            "cylinder-barrel"
+          ]
+        },
+        {
+          "name": "cylinder-cap",
+          "color": "#2f5d9a",
+          "parts": [
+            "cylinder-cap",
+            "air-line",
+            "valve-box"
+          ]
+        },
+        {
+          "name": "piston-rod",
+          "color": "#e6e8ea",
+          "parts": [
+            "piston-rod"
+          ]
+        },
+        {
+          "name": "belt",
+          "color": "#24272a",
+          "parts": [
+            "feed-belt",
+            "takeaway-belt"
+          ],
+          "param": "belt"
+        },
+        {
+          "name": "feed-load",
+          "color": "#8f8a6e",
+          "parts": [
+            "feed-load"
+          ]
+        },
+        {
+          "name": "reject-skip",
+          "color": "#c8322a",
+          "parts": [
+            "reject-skip",
+            "reject-arrow"
+          ]
+        },
+        {
+          "name": "reject-heap",
+          "color": "#6f6a5e",
+          "parts": [
+            "reject-heap"
+          ]
+        },
+        {
+          "name": "reject-label",
+          "color": "#f2f2ee",
+          "parts": [
+            "reject-label"
+          ]
+        },
+        {
+          "name": "takeaway-load",
+          "color": "#4f8a5c",
+          "parts": [
+            "takeaway-load"
+          ]
+        },
+        {
+          "name": "accept-arrow",
+          "color": "#2f9a4f",
+          "parts": [
+            "accept-arrow"
+          ]
         }
       ]
     },
@@ -231443,11 +231986,16 @@
       "id": "site-boundary-gate",
       "kit": "recycling-facility",
       "title": "Site boundary gate",
-      "description": "Site boundary gate: a counterweighted barrier boom with a hinge drum and visible signal beacon. Low-poly visualization prop. Material controls: painted steel, safety amber, stainless steel.",
+      "description": "Double-leaf palisade site entrance gate at about real size: two braced leaves of triple-pointed pales on square gate posts with caps and hinges, palisade fence runs either side, drop bolt and padlocked chain, keep-gate-clear plate, site sign with opening hours and a concrete threshold. Gate open or closed. Material controls: palisade, gate posts, sign board and sign band. green, galvanised, black and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "gate",
+        "palisade",
+        "security fence",
+        "site entrance",
+        "sign",
         "materials recovery",
         "waste management",
         "reception",
@@ -231463,8 +232011,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/site-boundary-gate.kcad.ts",
       "preview": "/assets/recycling-facility-site-boundary-gate.png",
-      "sourceSha256": "f27053869a7aa0a924d3deb2621ea43ddff284cecc7102a0e9d6023d9d96b06d",
-      "triangleBudget": 1800,
+      "sourceSha256": "094fa4319541d5abc648910b45e93d99bc95a0411ed2c35066e8968579e637f3",
+      "triangleBudget": 4500,
       "params": [
         {
           "name": "scale",
@@ -231476,73 +232024,285 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "palisade",
           "type": "color",
-          "default": "#7b6f56",
-          "label": "Painted steel"
+          "default": "#2f5e3c",
+          "label": "Palisade pales and rails (paint)"
         },
         {
-          "name": "safetyAmber",
+          "name": "posts",
           "type": "color",
-          "default": "#f0ae32",
-          "label": "Safety amber"
+          "default": "#26292b",
+          "label": "Gate posts (paint)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "signBoard",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#f2f2ee",
+          "label": "Sign board"
+        },
+        {
+          "name": "signBand",
+          "type": "color",
+          "default": "#2f8a4f",
+          "label": "Sign header band"
+        },
+        {
+          "name": "gateState",
+          "type": "choice",
+          "default": "closed",
+          "label": "Gate",
+          "choices": [
+            "closed",
+            "open"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "paintedSteel": "#776e57",
-          "safetyAmber": "#d9a239",
-          "stainlessSteel": "#9ea7a5"
+        "green": {
+          "palisade": "#2f5e3c",
+          "posts": "#26292b",
+          "signBoard": "#f2f2ee",
+          "signBand": "#2f8a4f"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632",
-          "safetyAmber": "#ffd044"
+        "galvanised": {
+          "palisade": "#a9b0b2",
+          "posts": "#8e9598",
+          "signBoard": "#f2f2ee",
+          "signBand": "#2f5d9a"
+        },
+        "black": {
+          "palisade": "#1f2224",
+          "posts": "#1f2224",
+          "signBoard": "#f5f3e8",
+          "signBand": "#c8322a"
+        },
+        "weathered": {
+          "palisade": "#5b6650",
+          "posts": "#4a4640",
+          "signBoard": "#d8d4c4",
+          "signBand": "#5f7a58"
         }
       },
       "stats": {
-        "triangles": 212,
+        "triangles": 3584,
         "sizeM": [
-          1.675,
-          0.9609,
-          0.5975
+          9.72,
+          2.68,
+          0.5
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#7b6f56",
+          "name": "palisade",
+          "color": "#2f5e3c",
           "parts": [
-            "control-pedestal",
-            "counterweight-box",
-            "boom-arm"
+            "leaf-l-rail-330",
+            "leaf-l-rail-1330",
+            "leaf-l-rail-2130",
+            "leaf-l-stile-60",
+            "leaf-l-stile-2320",
+            "leaf-l-pale-0",
+            "leaf-l-pale-1",
+            "leaf-l-pale-2",
+            "leaf-l-pale-3",
+            "leaf-l-pale-4",
+            "leaf-l-pale-5",
+            "leaf-l-pale-6",
+            "leaf-l-pale-7",
+            "leaf-l-pale-8",
+            "leaf-l-pale-9",
+            "leaf-l-pale-10",
+            "leaf-l-pale-11",
+            "leaf-l-pale-12",
+            "leaf-l-pale-13",
+            "leaf-l-pale-14",
+            "leaf-l-pale-15",
+            "leaf-l-pale-16",
+            "leaf-l-pale-17",
+            "leaf-l-brace",
+            "leaf-r-rail-330",
+            "leaf-r-rail-1330",
+            "leaf-r-rail-2130",
+            "leaf-r-stile-60",
+            "leaf-r-stile-2320",
+            "leaf-r-pale-0",
+            "leaf-r-pale-1",
+            "leaf-r-pale-2",
+            "leaf-r-pale-3",
+            "leaf-r-pale-4",
+            "leaf-r-pale-5",
+            "leaf-r-pale-6",
+            "leaf-r-pale-7",
+            "leaf-r-pale-8",
+            "leaf-r-pale-9",
+            "leaf-r-pale-10",
+            "leaf-r-pale-11",
+            "leaf-r-pale-12",
+            "leaf-r-pale-13",
+            "leaf-r-pale-14",
+            "leaf-r-pale-15",
+            "leaf-r-pale-16",
+            "leaf-r-pale-17",
+            "leaf-r-brace",
+            "fence-post-l",
+            "fence-rail-l-400",
+            "fence-rail-l-2000",
+            "fence-pale-l-0",
+            "fence-pale-l-1",
+            "fence-pale-l-2",
+            "fence-pale-l-3",
+            "fence-pale-l-4",
+            "fence-pale-l-5",
+            "fence-pale-l-6",
+            "fence-pale-l-7",
+            "fence-pale-l-8",
+            "fence-pale-l-9",
+            "fence-pale-l-10",
+            "fence-pale-l-11",
+            "fence-pale-l-12",
+            "fence-pale-l-13",
+            "fence-pale-l-14",
+            "fence-pale-l-15",
+            "fence-pale-l-16",
+            "fence-post-r",
+            "fence-rail-r-400",
+            "fence-rail-r-2000",
+            "fence-pale-r-0",
+            "fence-pale-r-1",
+            "fence-pale-r-2",
+            "fence-pale-r-3",
+            "fence-pale-r-4",
+            "fence-pale-r-5",
+            "fence-pale-r-6",
+            "fence-pale-r-7",
+            "fence-pale-r-8",
+            "fence-pale-r-9",
+            "fence-pale-r-10",
+            "fence-pale-r-11",
+            "fence-pale-r-12",
+            "fence-pale-r-13",
+            "fence-pale-r-14",
+            "fence-pale-r-15",
+            "fence-pale-r-16"
           ],
-          "param": "paintedSteel"
+          "param": "palisade"
         },
         {
-          "name": "safetyAmber",
-          "color": "#f0ae32",
+          "name": "posts",
+          "color": "#26292b",
           "parts": [
-            "boom-tip",
-            "beacon"
+            "leaf-l-hinge-380",
+            "leaf-l-hinge-1980",
+            "leaf-r-hinge-380",
+            "leaf-r-hinge-1980",
+            "gate-post-l",
+            "gate-post-cap-l",
+            "gate-post-r",
+            "gate-post-cap-r"
           ],
-          "param": "safetyAmber"
+          "param": "posts"
         },
         {
-          "name": "stainlessSteel",
+          "name": "drop-bolt",
           "color": "#a8b4b6",
           "parts": [
-            "photo-eye-post",
-            "hinge-drum"
+            "drop-bolt",
+            "drop-bolt-guide",
+            "padlock-shackle",
+            "sign-clamp-l",
+            "sign-clamp-r"
+          ]
+        },
+        {
+          "name": "chain-link-0",
+          "color": "#8a9196",
+          "parts": [
+            "chain-link-0",
+            "chain-link-1",
+            "chain-link-2",
+            "chain-link-3",
+            "chain-link-4",
+            "chain-link-5",
+            "chain-link-6"
+          ]
+        },
+        {
+          "name": "padlock-body",
+          "color": "#c9a227",
+          "parts": [
+            "padlock-body"
+          ]
+        },
+        {
+          "name": "keep-clear-plate",
+          "color": "#c8322a",
+          "parts": [
+            "keep-clear-plate"
+          ]
+        },
+        {
+          "name": "signBoard",
+          "color": "#f2f2ee",
+          "parts": [
+            "keep-clear-text",
+            "keep-clear-bar",
+            "sign-board",
+            "sign-logo",
+            "sign-title"
           ],
-          "param": "stainlessSteel"
+          "param": "signBoard"
+        },
+        {
+          "name": "gate-post-pad-l",
+          "color": "#a39e93",
+          "parts": [
+            "gate-post-pad-l",
+            "gate-post-pad-r",
+            "threshold"
+          ]
+        },
+        {
+          "name": "gate-stop",
+          "color": "#d7a52b",
+          "parts": [
+            "gate-stop"
+          ]
+        },
+        {
+          "name": "signBand",
+          "color": "#2f8a4f",
+          "parts": [
+            "sign-band"
+          ],
+          "param": "signBand"
+        },
+        {
+          "name": "sign-hours-0",
+          "color": "#3a3d40",
+          "parts": [
+            "sign-hours-0",
+            "sign-hours-1",
+            "sign-hours-2",
+            "sign-hours-3",
+            "sign-hours-4"
+          ]
+        },
+        {
+          "name": "sign-warning",
+          "color": "#f0c419",
+          "parts": [
+            "sign-warning"
+          ]
+        },
+        {
+          "name": "sign-warning-mark",
+          "color": "#1c1d1e",
+          "parts": [
+            "sign-warning-mark"
+          ]
         }
       ]
     },
@@ -234467,11 +235227,17 @@
       "id": "waste-inspection-platform",
       "kit": "recycling-facility",
       "title": "Waste inspection platform",
-      "description": "Waste inspection platform: an elevated inspection deck with apron, rear rail and cross-braced posts. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Load inspection gantry at about real size: grating deck 3.2 m up on braced steel columns, yellow handrails with knee rails and toe boards, steep stair with rails, self-closing safety gate, sloped lectern, floodlight and convex inspection mirror on an arm over the lane, and an optional mono-pitch rain canopy. Canopy on or off. Material controls: steel structure, handrails, deck grating and canopy. galvanised, painted, weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "inspection",
+        "platform",
+        "gantry",
+        "stair",
+        "handrail",
+        "canopy",
         "materials recovery",
         "waste management",
         "reception",
@@ -234487,8 +235253,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/waste-inspection-platform.kcad.ts",
       "preview": "/assets/recycling-facility-waste-inspection-platform.png",
-      "sourceSha256": "abdcd659a7603649ec2118aed4c9bab7b119ef75d490b288ba3037eee7ddb984",
-      "triangleBudget": 1800,
+      "sourceSha256": "1666e49c504f1ee23b842515a3464530e26c9a2f8e4b3135bbf3a85e522dd669",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "scale",
@@ -234500,59 +235266,264 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "steel",
           "type": "color",
-          "default": "#7b6f56",
-          "label": "Painted steel"
+          "default": "#8e9598",
+          "label": "Steel structure (galvanised)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "handrail",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#f0c419",
+          "label": "Handrails (paint)"
+        },
+        {
+          "name": "grating",
+          "type": "color",
+          "default": "#4a4f52",
+          "label": "Deck and tread grating"
+        },
+        {
+          "name": "canopyColor",
+          "type": "color",
+          "default": "#2f6b8f",
+          "label": "Canopy sheeting"
+        },
+        {
+          "name": "roof",
+          "type": "choice",
+          "default": "canopy",
+          "label": "Rain canopy",
+          "choices": [
+            "canopy",
+            "open"
+          ]
         }
       ],
       "presets": {
+        "galvanised": {
+          "steel": "#8e9598",
+          "handrail": "#f0c419",
+          "grating": "#4a4f52",
+          "canopyColor": "#2f6b8f"
+        },
+        "painted": {
+          "steel": "#2f5e3c",
+          "handrail": "#e0a526",
+          "grating": "#3a3d40",
+          "canopyColor": "#c4c9cb"
+        },
         "weathered": {
-          "paintedSteel": "#776e57",
-          "stainlessSteel": "#9ea7a5"
+          "steel": "#6e6a62",
+          "handrail": "#a88f3c",
+          "grating": "#3c3a36",
+          "canopyColor": "#5f6f74"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "steel": "#3a3d40",
+          "handrail": "#f5d000",
+          "grating": "#2c2f31",
+          "canopyColor": "#d9692c"
         }
       },
       "stats": {
-        "triangles": 224,
+        "triangles": 1584,
         "sizeM": [
-          1.83,
-          0.77,
-          0.9621
+          7.877135,
+          6.029337,
+          2.274851
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#7b6f56",
+          "name": "grating",
+          "color": "#4a4f52",
           "parts": [
-            "platform-deck",
-            "front-apron"
+            "deck-grating",
+            "tread-0",
+            "tread-1",
+            "tread-2",
+            "tread-3",
+            "tread-4",
+            "tread-5",
+            "tread-6",
+            "tread-7",
+            "tread-8",
+            "tread-9",
+            "tread-10",
+            "tread-11",
+            "tread-12",
+            "tread-13",
+            "tread-14"
           ],
-          "param": "paintedSteel"
+          "param": "grating"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "grating-bar-0",
+          "color": "#2c2f31",
           "parts": [
-            "rear-rail",
-            "left-post",
-            "right-post",
-            "cross-brace",
-            "level-foot-left",
-            "level-foot-right"
+            "grating-bar-0",
+            "grating-bar-1",
+            "grating-bar-2",
+            "grating-bar-3",
+            "grating-bar-4",
+            "grating-bar-5",
+            "grating-bar-6",
+            "grating-bar-7",
+            "grating-bar-8",
+            "grating-bar-9",
+            "grating-bar-10",
+            "grating-bar-11",
+            "grating-bar-12"
+          ]
+        },
+        {
+          "name": "steel",
+          "color": "#8e9598",
+          "parts": [
+            "deck-beam-f",
+            "deck-beam-b",
+            "deck-beam-m1500",
+            "deck-beam-p1500",
+            "column-m1420-f",
+            "base-plate-m1420-f",
+            "column-m1420-b",
+            "base-plate-m1420-b",
+            "column-p1420-f",
+            "base-plate-p1420-f",
+            "column-p1420-b",
+            "base-plate-p1420-b",
+            "brace-a-f",
+            "brace-b-f",
+            "brace-a-b",
+            "brace-b-b",
+            "brace-tie-m1420",
+            "brace-tie-p1420",
+            "stringer-f",
+            "stair-foot-f",
+            "stringer-b",
+            "stair-foot-b",
+            "lectern-post",
+            "lectern-top",
+            "arm-mast",
+            "arm-boom",
+            "mirror-hanger",
+            "mirror-arm",
+            "canopy-post-m1440-f",
+            "canopy-post-m1440-b",
+            "canopy-post-p1340-f",
+            "canopy-post-p1340-b"
           ],
-          "param": "stainlessSteel"
+          "param": "steel"
+        },
+        {
+          "name": "handrail",
+          "color": "#f0c419",
+          "parts": [
+            "top-rail-front",
+            "knee-rail-front",
+            "toe-board-front",
+            "top-rail-back",
+            "knee-rail-back",
+            "toe-board-back",
+            "top-rail-stair-side",
+            "knee-rail-stair-side",
+            "toe-board-stair-side",
+            "top-rail-lane-side",
+            "knee-rail-lane-side",
+            "toe-board-lane-side",
+            "rail-post-m1475-m775",
+            "rail-post-p0-m775",
+            "rail-post-p1475-m775",
+            "rail-post-m1475-p775",
+            "rail-post-p0-p775",
+            "rail-post-p1475-p775",
+            "rail-post-m1475-p125",
+            "rail-post-p1475-p0",
+            "safety-gate-rail",
+            "safety-gate-knee",
+            "safety-gate-stile",
+            "stair-rail-f",
+            "stair-post-f-2",
+            "stair-post-f-8",
+            "stair-post-f-14",
+            "stair-rail-b",
+            "stair-post-b-2",
+            "stair-post-b-8",
+            "stair-post-b-14",
+            "nosing-0",
+            "nosing-1",
+            "nosing-2",
+            "nosing-3",
+            "nosing-4",
+            "nosing-5",
+            "nosing-6",
+            "nosing-7",
+            "nosing-8",
+            "nosing-9",
+            "nosing-10",
+            "nosing-11",
+            "nosing-12",
+            "nosing-13",
+            "nosing-14"
+          ],
+          "param": "handrail"
+        },
+        {
+          "name": "safety-gate-spring",
+          "color": "#3a3d40",
+          "parts": [
+            "safety-gate-spring",
+            "floodlight-body",
+            "canopy-gutter"
+          ]
+        },
+        {
+          "name": "lectern-sheet",
+          "color": "#f2f2ee",
+          "parts": [
+            "lectern-sheet"
+          ]
+        },
+        {
+          "name": "floodlight-lens",
+          "color": "#f6f0c8",
+          "parts": [
+            "floodlight-lens"
+          ]
+        },
+        {
+          "name": "mirror-rim",
+          "color": "#c8322a",
+          "parts": [
+            "mirror-rim"
+          ]
+        },
+        {
+          "name": "mirror-face",
+          "color": "#cfe0ea",
+          "parts": [
+            "mirror-face"
+          ]
+        },
+        {
+          "name": "canopyColor",
+          "color": "#2f6b8f",
+          "parts": [
+            "canopy-sheet",
+            "canopy-rib-0",
+            "canopy-rib-1",
+            "canopy-rib-2",
+            "canopy-rib-3",
+            "canopy-rib-4",
+            "canopy-rib-5",
+            "canopy-rib-6",
+            "canopy-rib-7",
+            "canopy-rib-8"
+          ],
+          "param": "canopyColor"
         }
       ]
     },
