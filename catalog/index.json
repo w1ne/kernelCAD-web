@@ -278826,10 +278826,15 @@
       "id": "dance-floor-panel",
       "kit": "theatre-production",
       "title": "Dance floor panel",
-      "description": "Portable sprung-floor section with surface boards, perimeter fascia and underfloor blocks. Knobs: overall scale; stage timber, painted steel, rubber and isolation pads; houseShow and touring appearance presets.",
+      "description": "Portable sprung dance-floor panel at about real size (1.2 m square, 104 mm high) with a stepped corner cutaway showing the build-up: vinyl performance surface with taped seam and spike marks, two crossed plywood skins, a timber batten grid on round elastomer shock pads, an aluminium bevelled edge ramp on the front edge and alignment dowels for the next panel. Material controls: vinyl surface, plywood and battens, shock pads, edge ramp and tape. studio, ballet and touring presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "dance floor",
+        "sprung floor",
+        "marley",
+        "vinyl dance floor",
+        "portable floor",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -278846,8 +278851,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/dance-floor-panel.kcad.ts",
       "preview": "/assets/theatre-production-dance-floor-panel.png",
-      "sourceSha256": "d64ed24c3d3e6174068f06706e711b6ec815c9dd307087804c8de71dd2909a7a",
-      "triangleBudget": 1800,
+      "sourceSha256": "0ed8217a72b874780dc47a5158f8760a070712625cf0a7d1e5690a434752b2cb",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -278859,80 +278864,168 @@
           "step": 0.05
         },
         {
+          "name": "vinyl",
+          "type": "color",
+          "default": "#1f2124",
+          "label": "Vinyl performance surface"
+        },
+        {
           "name": "timber",
           "type": "color",
-          "default": "#946b43",
-          "label": "Stage timber"
+          "default": "#c99a5f",
+          "label": "Plywood and battens"
         },
         {
-          "name": "steel",
+          "name": "pads",
           "type": "color",
-          "default": "#46515a",
-          "label": "Painted steel"
+          "default": "#3d7fc4",
+          "label": "Elastomer shock pads"
         },
         {
-          "name": "rubber",
+          "name": "trim",
           "type": "color",
-          "default": "#272a2d",
-          "label": "Rubber and isolation pads"
+          "default": "#b9c0c4",
+          "label": "Edge ramp and seam tape"
         }
       ],
       "presets": {
-        "houseShow": {
-          "timber": "#725137",
-          "steel": "#343b41",
-          "rubber": "#222629"
+        "studio": {
+          "vinyl": "#1f2124",
+          "timber": "#c99a5f",
+          "pads": "#3d7fc4",
+          "trim": "#b9c0c4"
+        },
+        "ballet": {
+          "vinyl": "#8d8f92",
+          "timber": "#d8b07a",
+          "pads": "#d24b3a",
+          "trim": "#e8e6e0"
         },
         "touring": {
-          "timber": "#cd914b",
-          "steel": "#315968",
-          "rubber": "#25292c"
+          "vinyl": "#2a2b2e",
+          "timber": "#9b7246",
+          "pads": "#e0a91d",
+          "trim": "#3a3e42"
         }
       },
       "stats": {
-        "triangles": 284,
+        "triangles": 1620,
         "sizeM": [
-          1.805,
-          0.205,
-          1.225
+          1.2,
+          0.102,
+          1.38
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "timber",
-          "color": "#946b43",
+          "name": "pads",
+          "color": "#3d7fc4",
           "parts": [
-            "floor-surface",
-            "front-fascia",
-            "back-fascia",
-            "left-fascia",
-            "right-fascia"
+            "pad-0-0",
+            "pad-0-1",
+            "pad-0-2",
+            "pad-0-3",
+            "pad-0-4",
+            "pad-1-0",
+            "pad-1-1",
+            "pad-1-2",
+            "pad-1-3",
+            "pad-1-4",
+            "pad-2-0",
+            "pad-2-1",
+            "pad-2-2",
+            "pad-2-3",
+            "pad-2-4",
+            "pad-3-0",
+            "pad-3-1",
+            "pad-3-2",
+            "pad-3-3",
+            "pad-3-4",
+            "pad-4-0",
+            "pad-4-1",
+            "pad-4-2",
+            "pad-4-3",
+            "pad-4-4"
+          ],
+          "param": "pads"
+        },
+        {
+          "name": "timber",
+          "color": "#c99a5f",
+          "parts": [
+            "batten-0",
+            "batten-1",
+            "batten-2",
+            "batten-3",
+            "batten-4",
+            "noggin-l",
+            "noggin-r",
+            "ply-lower",
+            "ply-upper"
           ],
           "param": "timber"
         },
         {
-          "name": "steel",
-          "color": "#46515a",
+          "name": "vinyl",
+          "color": "#1f2124",
           "parts": [
-            "under-rail-front",
-            "under-rail-back",
-            "under-rail-left",
-            "under-rail-right"
+            "vinyl"
           ],
-          "param": "steel"
+          "param": "vinyl"
         },
         {
-          "name": "rubber",
-          "color": "#272a2d",
+          "name": "ply-joint",
+          "color": "#5a4630",
           "parts": [
-            "isolation-pad-a",
-            "isolation-pad-b",
-            "isolation-pad-c",
-            "isolation-pad-d"
+            "ply-joint"
+          ]
+        },
+        {
+          "name": "trim",
+          "color": "#b9c0c4",
+          "parts": [
+            "seam-tape",
+            "edge-ramp",
+            "dowel-0",
+            "dowel-1",
+            "dowel-2"
           ],
-          "param": "rubber"
+          "param": "trim"
+        },
+        {
+          "name": "spike-0-a",
+          "color": "#f2c418",
+          "parts": [
+            "spike-0-a",
+            "spike-0-b"
+          ]
+        },
+        {
+          "name": "spike-1-a",
+          "color": "#e0483c",
+          "parts": [
+            "spike-1-a",
+            "spike-1-b"
+          ]
+        },
+        {
+          "name": "spike-2-a",
+          "color": "#3fb26b",
+          "parts": [
+            "spike-2-a",
+            "spike-2-b"
+          ]
+        },
+        {
+          "name": "ramp-screw-0",
+          "color": "#4a4f54",
+          "parts": [
+            "ramp-screw-0",
+            "ramp-screw-1",
+            "ramp-screw-2"
+          ]
         }
       ]
     },
@@ -279433,10 +279526,15 @@
       "id": "floor-cable-trough",
       "kit": "theatre-production",
       "title": "Floor cable trough",
-      "description": "Open-top cable trough section with removable lid strips, sidewalls and joining flanges. Knobs: overall scale; polymer controls and cable jacket, aluminum, steel hardware; houseShow and touring appearance presets.",
+      "description": "In-floor cable trench at about real size: a 1.5 m length of lipped aluminium channel set flush into a timber stage deck, chequer-plate lids with lifting holes (one lifted off and laid beside the trench), feeder and signal cables lying in the open channel and dropping out of the end onto the floor, and a flush floor-box outlet with two sockets in the closed lid. Material controls: stage deck, aluminium channel, chequer lids, cable jackets. houseShow, touring and blackBox presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "cable trough",
+        "cable trench",
+        "floor trunking",
+        "floor box",
+        "stage cabling",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -279453,8 +279551,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/floor-cable-trough.kcad.ts",
       "preview": "/assets/theatre-production-floor-cable-trough.png",
-      "sourceSha256": "13ac9745262e86832871437ba882f8024d2604b65dbc48d132edc7599753f808",
-      "triangleBudget": 1800,
+      "sourceSha256": "ed086e143b9c5f5b84e21c6c622532890eacea4384c7105249f2ab3ec880fe1d",
+      "triangleBudget": 3500,
       "params": [
         {
           "name": "scale",
@@ -279466,77 +279564,186 @@
           "step": 0.05
         },
         {
-          "name": "polymer",
+          "name": "deck",
           "type": "color",
-          "default": "#426878",
-          "label": "Polymer controls and cable jacket"
+          "default": "#8a6542",
+          "label": "Stage deck"
         },
         {
-          "name": "aluminum",
+          "name": "channel",
           "type": "color",
-          "default": "#bac3c6",
-          "label": "Aluminum"
+          "default": "#c3cacd",
+          "label": "Aluminium channel"
         },
         {
-          "name": "hardware",
+          "name": "lid",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#6f767c",
+          "label": "Chequer-plate lids"
+        },
+        {
+          "name": "cable",
+          "type": "color",
+          "default": "#1d1f22",
+          "label": "Signal cable jackets"
         }
       ],
       "presets": {
         "houseShow": {
-          "polymer": "#344e5b",
-          "aluminum": "#c7cecf",
-          "hardware": "#c5a052"
+          "deck": "#8a6542",
+          "channel": "#c3cacd",
+          "lid": "#6f767c",
+          "cable": "#1d1f22"
         },
         "touring": {
-          "polymer": "#e3a928",
-          "aluminum": "#dce3e2",
-          "hardware": "#e2b347"
+          "deck": "#2a2b2e",
+          "channel": "#c3cacd",
+          "lid": "#e0b22a",
+          "cable": "#1d1f22"
+        },
+        "blackBox": {
+          "deck": "#1c1d1f",
+          "channel": "#4a4f54",
+          "lid": "#2e3236",
+          "cable": "#3a3c40"
         }
       },
       "stats": {
-        "triangles": 184,
+        "triangles": 1536,
         "sizeM": [
-          1.58,
-          0.263,
-          0.4
+          2.06,
+          0.171,
+          0.9
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#426878",
+          "name": "deck",
+          "color": "#8a6542",
           "parts": [
-            "floor",
-            "wall-left",
-            "wall-right",
-            "lid-left",
-            "lid-right",
-            "splice-plate-left",
-            "splice-plate-right"
+            "deck-f",
+            "deck-b",
+            "deck-under"
           ],
-          "param": "polymer"
+          "param": "deck"
         },
         {
-          "name": "aluminum",
-          "color": "#bac3c6",
+          "name": "deck-joint-f",
+          "color": "#141516",
           "parts": [
-            "support-crossbar"
-          ],
-          "param": "aluminum"
+            "deck-joint-f",
+            "deck-joint-b",
+            "lid-closed-lift-l",
+            "lid-closed-lift-r",
+            "lid-lifted-lift-l",
+            "lid-lifted-lift-r",
+            "floorbox-socket-a",
+            "floorbox-socket-b"
+          ]
         },
         {
-          "name": "hardware",
-          "color": "#c28f3e",
+          "name": "channel",
+          "color": "#c3cacd",
           "parts": [
-            "join-pin-left",
-            "join-pin-right"
+            "channel",
+            "floorbox-flap"
           ],
-          "param": "hardware"
+          "param": "channel"
+        },
+        {
+          "name": "cable-0",
+          "color": "#2a62b8",
+          "parts": [
+            "cable-0",
+            "cable-0-drop",
+            "cable-0-run"
+          ]
+        },
+        {
+          "name": "cable",
+          "color": "#1d1f22",
+          "parts": [
+            "cable-1",
+            "cable-1-drop",
+            "cable-1-run",
+            "cable-2",
+            "cable-2-drop",
+            "cable-2-run",
+            "cable-4",
+            "cable-4-drop",
+            "cable-4-run"
+          ],
+          "param": "cable"
+        },
+        {
+          "name": "cable-3",
+          "color": "#c23b2a",
+          "parts": [
+            "cable-3",
+            "cable-3-drop",
+            "cable-3-run",
+            "floorbox-socket-a-key",
+            "floorbox-socket-b-key"
+          ]
+        },
+        {
+          "name": "lid",
+          "color": "#6f767c",
+          "parts": [
+            "lid-closed-plate",
+            "lid-closed-tread-0-0",
+            "lid-closed-tread-0-1",
+            "lid-closed-tread-0-2",
+            "lid-closed-tread-1-0",
+            "lid-closed-tread-1-1",
+            "lid-closed-tread-1-2",
+            "lid-closed-tread-2-0",
+            "lid-closed-tread-2-1",
+            "lid-closed-tread-2-2",
+            "lid-closed-tread-3-0",
+            "lid-closed-tread-3-1",
+            "lid-closed-tread-3-2",
+            "lid-closed-tread-4-0",
+            "lid-closed-tread-4-1",
+            "lid-closed-tread-4-2",
+            "lid-closed-tread-5-0",
+            "lid-closed-tread-5-1",
+            "lid-closed-tread-5-2",
+            "lid-closed-tread-6-0",
+            "lid-closed-tread-6-1",
+            "lid-closed-tread-6-2",
+            "lid-closed-tread-7-0",
+            "lid-closed-tread-7-1",
+            "lid-closed-tread-7-2",
+            "lid-lifted-plate",
+            "lid-lifted-tread-0-0",
+            "lid-lifted-tread-0-1",
+            "lid-lifted-tread-0-2",
+            "lid-lifted-tread-1-0",
+            "lid-lifted-tread-1-1",
+            "lid-lifted-tread-1-2",
+            "lid-lifted-tread-2-0",
+            "lid-lifted-tread-2-1",
+            "lid-lifted-tread-2-2",
+            "lid-lifted-tread-3-0",
+            "lid-lifted-tread-3-1",
+            "lid-lifted-tread-3-2",
+            "lid-lifted-tread-4-0",
+            "lid-lifted-tread-4-1",
+            "lid-lifted-tread-4-2",
+            "lid-lifted-tread-5-0",
+            "lid-lifted-tread-5-1",
+            "lid-lifted-tread-5-2",
+            "lid-lifted-tread-6-0",
+            "lid-lifted-tread-6-1",
+            "lid-lifted-tread-6-2",
+            "lid-lifted-tread-7-0",
+            "lid-lifted-tread-7-1",
+            "lid-lifted-tread-7-2"
+          ],
+          "param": "lid"
         }
       ]
     },
@@ -284882,10 +285089,15 @@
       "id": "stage-edge-trim",
       "kit": "theatre-production",
       "title": "Stage edge trim",
-      "description": "Short modular stage-edge fascia section with corner return, fixing tabs and end cap. Knobs: overall scale; stage timber, painted steel, steel hardware; houseShow and touring appearance presets.",
+      "description": "Finished front corner of a 600 mm platform stage at about real size: rounded aluminium bullnose nosing screwed along the deck edge and returned round the corner, a photoluminescent glow strip along the nosing, pleated velour skirting hung on clips down to the floor on both faces, and a painted safety line back from the edge. Material controls: stage deck, nosing, glow strip, skirt velour. houseShow, touring and gala presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "stage edge",
+        "stage nosing",
+        "stage skirt",
+        "stage skirting",
+        "glow tape",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -284902,8 +285114,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/stage-edge-trim.kcad.ts",
       "preview": "/assets/theatre-production-stage-edge-trim.png",
-      "sourceSha256": "da1c3d39407bbc68ca203dd49b3d9e95c4b1bb4898a7da9d9783d87f3c41ed05",
-      "triangleBudget": 1800,
+      "sourceSha256": "0c727cca18eb05b872685f1e21b0a0e609b2ce0ac111ad0f65eee9a9149193cc",
+      "triangleBudget": 3500,
       "params": [
         {
           "name": "scale",
@@ -284915,78 +285127,134 @@
           "step": 0.05
         },
         {
-          "name": "timber",
+          "name": "deck",
           "type": "color",
-          "default": "#946b43",
-          "label": "Stage timber"
+          "default": "#2a2b2e",
+          "label": "Stage deck"
         },
         {
-          "name": "steel",
+          "name": "nosing",
           "type": "color",
-          "default": "#46515a",
-          "label": "Painted steel"
+          "default": "#b9c0c4",
+          "label": "Aluminium nosing"
         },
         {
-          "name": "hardware",
+          "name": "glow",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#c9e86a",
+          "label": "Glow strip"
+        },
+        {
+          "name": "skirt",
+          "type": "color",
+          "default": "#1e1f23",
+          "label": "Skirt velour"
         }
       ],
       "presets": {
         "houseShow": {
-          "timber": "#725137",
-          "steel": "#343b41",
-          "hardware": "#c5a052"
+          "deck": "#2a2b2e",
+          "nosing": "#b9c0c4",
+          "glow": "#c9e86a",
+          "skirt": "#1e1f23"
         },
         "touring": {
-          "timber": "#cd914b",
-          "steel": "#315968",
-          "hardware": "#e2b347"
+          "deck": "#7a5a3a",
+          "nosing": "#2e3236",
+          "glow": "#e6d24a",
+          "skirt": "#1c1d20"
+        },
+        "gala": {
+          "deck": "#1c1d1f",
+          "nosing": "#c8a45a",
+          "glow": "#d8ef8a",
+          "skirt": "#6b1f2a"
         }
       },
       "stats": {
-        "triangles": 228,
+        "triangles": 1152,
         "sizeM": [
-          1.745,
-          0.355,
-          0.345
+          1.572,
+          0.608,
+          0.666
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "timber",
-          "color": "#946b43",
+          "name": "deck",
+          "color": "#2a2b2e",
           "parts": [
-            "fascia"
+            "deck",
+            "deck-frame-front",
+            "deck-frame-left"
           ],
-          "param": "timber"
+          "param": "deck"
         },
         {
-          "name": "steel",
-          "color": "#46515a",
+          "name": "safety-line",
+          "color": "#e8e6e0",
           "parts": [
-            "top-lip",
-            "left-return",
-            "right-return",
-            "end-cap"
-          ],
-          "param": "steel"
+            "safety-line",
+            "safety-line-return"
+          ]
         },
         {
-          "name": "hardware",
-          "color": "#c28f3e",
+          "name": "nosing",
+          "color": "#b9c0c4",
           "parts": [
-            "fixing-tab-a",
-            "fixing-tab-b",
-            "fixing-tab-c",
-            "fastener-a",
-            "fastener-b",
-            "fastener-c"
+            "nosing-front",
+            "nosing-left",
+            "nosing-corner"
           ],
-          "param": "hardware"
+          "param": "nosing"
+        },
+        {
+          "name": "glow",
+          "color": "#c9e86a",
+          "parts": [
+            "glow-front",
+            "glow-left",
+            "glow-corner"
+          ],
+          "param": "glow"
+        },
+        {
+          "name": "screw-f-0",
+          "color": "#6a7076",
+          "parts": [
+            "screw-f-0",
+            "screw-f-1",
+            "screw-f-2",
+            "screw-f-3",
+            "screw-f-4",
+            "screw-f-5",
+            "screw-l-0",
+            "screw-l-1"
+          ]
+        },
+        {
+          "name": "skirt",
+          "color": "#1e1f23",
+          "parts": [
+            "skirt-front",
+            "skirt-left"
+          ],
+          "param": "skirt"
+        },
+        {
+          "name": "clip-f-0",
+          "color": "#2e3236",
+          "parts": [
+            "clip-f-0",
+            "clip-f-1",
+            "clip-f-2",
+            "clip-f-3",
+            "clip-f-4",
+            "clip-l-0",
+            "clip-l-1"
+          ]
         }
       ]
     },
@@ -284994,10 +285262,15 @@
       "id": "stage-extension-wing",
       "kit": "theatre-production",
       "title": "Stage extension wing",
-      "description": "Side-stage extension platform with a box frame, guard posts and a small tie-in plate. Knobs: overall scale; stage timber, painted steel, steel hardware; houseShow and touring appearance presets.",
+      "description": "Tapered side-stage extension at about real size: a 1.5 m deck tapering from 1.2 m to 0.8 m deep with an angled hi-vis front nosing, a steel perimeter frame, four adjustable legs on screw jacks with base plates and diagonal braces, a guard rail on posts round the open outer end, and tie-in clamp plates bridging onto a stub of the main stage. Material controls: deck top, steel frame, screw jacks and clamps, nosing. houseShow, touring and outdoor presets; with or without guard rail.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "stage extension",
+        "stage wing",
+        "thrust stage",
+        "staging",
+        "stage deck",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -285014,8 +285287,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/stage-extension-wing.kcad.ts",
       "preview": "/assets/theatre-production-stage-extension-wing.png",
-      "sourceSha256": "2065962bdc5922595f401765b319a697a0b2be71105b185de45a750400a85c55",
-      "triangleBudget": 1800,
+      "sourceSha256": "9be45dc44d62b4ef907b3d6f0a8fe1ca594607f05fe7cf5edd6054d265487844",
+      "triangleBudget": 3500,
       "params": [
         {
           "name": "scale",
@@ -285027,79 +285300,153 @@
           "step": 0.05
         },
         {
-          "name": "timber",
-          "type": "color",
-          "default": "#946b43",
-          "label": "Stage timber"
+          "name": "rail",
+          "type": "choice",
+          "default": "guarded",
+          "label": "Outer guard rail",
+          "choices": [
+            "guarded",
+            "open"
+          ]
         },
         {
-          "name": "steel",
+          "name": "deck",
           "type": "color",
-          "default": "#46515a",
-          "label": "Painted steel"
+          "default": "#2a2b2e",
+          "label": "Deck top"
         },
         {
-          "name": "hardware",
+          "name": "frame",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#5a646c",
+          "label": "Steel frame and legs"
+        },
+        {
+          "name": "jacks",
+          "type": "color",
+          "default": "#d9a321",
+          "label": "Screw jacks and clamps"
+        },
+        {
+          "name": "nosing",
+          "type": "color",
+          "default": "#f2f2ee",
+          "label": "Edge nosing"
         }
       ],
       "presets": {
         "houseShow": {
-          "timber": "#725137",
-          "steel": "#343b41",
-          "hardware": "#c5a052"
+          "deck": "#2a2b2e",
+          "frame": "#5a646c",
+          "jacks": "#d9a321",
+          "nosing": "#f2f2ee"
         },
         "touring": {
-          "timber": "#cd914b",
-          "steel": "#315968",
-          "hardware": "#e2b347"
+          "deck": "#7a5a3a",
+          "frame": "#c3cacd",
+          "jacks": "#2e3236",
+          "nosing": "#e6b31e"
+        },
+        "outdoor": {
+          "deck": "#3b3f2e",
+          "frame": "#8f9aa1",
+          "jacks": "#c2452f",
+          "nosing": "#f2c418"
         }
       },
       "stats": {
-        "triangles": 208,
+        "triangles": 1472,
         "sizeM": [
-          1.575,
-          0.525,
-          0.9325
+          1.905153,
+          1.622,
+          1.4
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "timber",
-          "color": "#946b43",
+          "name": "deck",
+          "color": "#2a2b2e",
           "parts": [
-            "platform",
-            "front-apron"
+            "deck",
+            "main-stage-top"
           ],
-          "param": "timber"
+          "param": "deck"
         },
         {
-          "name": "steel",
-          "color": "#46515a",
+          "name": "frame",
+          "color": "#5a646c",
           "parts": [
-            "left-rail",
-            "right-rail",
-            "rear-rail",
-            "leg-left-front",
-            "leg-right-front",
-            "leg-left-back",
-            "leg-right-back",
-            "level-left",
-            "level-right"
+            "frame",
+            "frame-cross",
+            "leg-of",
+            "leg-ob",
+            "leg-if",
+            "leg-ib",
+            "brace-o",
+            "brace-o-low",
+            "brace-i",
+            "brace-i-low",
+            "clamp-0-bolt-a",
+            "clamp-0-bolt-b",
+            "clamp-1-bolt-a",
+            "clamp-1-bolt-b",
+            "clamp-2-bolt-a",
+            "clamp-2-bolt-b",
+            "rail-post-0",
+            "rail-post-1",
+            "rail-post-2",
+            "rail-top",
+            "rail-mid",
+            "rail-toe"
           ],
-          "param": "steel"
+          "param": "frame"
         },
         {
-          "name": "hardware",
-          "color": "#c28f3e",
+          "name": "nosing",
+          "color": "#f2f2ee",
           "parts": [
-            "tie-in-tab"
+            "nosing-front",
+            "nosing-end"
           ],
-          "param": "hardware"
+          "param": "nosing"
+        },
+        {
+          "name": "jacks",
+          "color": "#d9a321",
+          "parts": [
+            "base-of",
+            "jack-of",
+            "jack-nut-of",
+            "jack-handle-of",
+            "base-ob",
+            "jack-ob",
+            "jack-nut-ob",
+            "jack-handle-ob",
+            "base-if",
+            "jack-if",
+            "jack-nut-if",
+            "jack-handle-if",
+            "base-ib",
+            "jack-ib",
+            "jack-nut-ib",
+            "jack-handle-ib",
+            "clamp-0",
+            "clamp-1",
+            "clamp-2",
+            "rail-socket-0",
+            "rail-socket-1",
+            "rail-socket-2"
+          ],
+          "param": "jacks"
+        },
+        {
+          "name": "main-stage",
+          "color": "#1c1d1f",
+          "parts": [
+            "main-stage"
+          ]
         }
       ]
     },
