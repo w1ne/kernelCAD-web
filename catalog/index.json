@@ -19042,10 +19042,16 @@
       "id": "miniature-park-tram-coach",
       "kit": "amusement-park",
       "title": "Miniature park tram coach",
-      "description": "Open-air visitor train coach with paired bench rows, side step, canopy roof, and four rail wheels. Controls: overall scale, enamel, steel, rubber; festival and twilight material presets.",
+      "description": "Open-air park railway coach at about real size: panelled enamel body with a side step-in opening and lining stripe, slatted timber cross benches with curved backs in facing bays, turned canopy posts, a curved canopy roof with scalloped valance, buffer beams with buffers and couplings, and four spoked wheels in a sprung frame. Material controls: baked enamel, bench timber, canopy, ironwork. Festival, twilight and heritage presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "park railway",
+        "miniature railway",
+        "train coach",
+        "carriage",
+        "open coach",
+        "train ride",
         "amusement park",
         "theme park",
         "guest experience",
@@ -19062,8 +19068,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/miniature-park-tram-coach.kcad.ts",
       "preview": "/assets/amusement-park-miniature-park-tram-coach.png",
-      "sourceSha256": "18cfc8c42b5f6c70f23d9eb3e85afd96378135e0afd6c86b12d962ea5335a716",
-      "triangleBudget": 1800,
+      "sourceSha256": "448444fb19a598d10d5e95ef871678df22dfb586189b1d62cefebf3ad4bf4ac3",
+      "triangleBudget": 7000,
       "params": [
         {
           "name": "scale",
@@ -19077,80 +19083,200 @@
         {
           "name": "enamel",
           "type": "color",
-          "default": "#cc684e",
-          "label": "Baked enamel"
+          "default": "#2f7d4f",
+          "label": "Baked enamel body, beams and wheel centres"
         },
         {
-          "name": "steel",
+          "name": "timber",
           "type": "color",
-          "default": "#738087",
-          "label": "Painted steel"
+          "default": "#b9844f",
+          "label": "Varnished bench timber"
         },
         {
-          "name": "rubber",
+          "name": "canopy",
           "type": "color",
-          "default": "#292f33",
-          "label": "Rubber"
+          "default": "#f1e6c8",
+          "label": "Canopy roof and valance"
+        },
+        {
+          "name": "ironwork",
+          "type": "color",
+          "default": "#2b2f33",
+          "label": "Frame, wheels, posts and buffers"
         }
       ],
       "presets": {
         "festival": {
-          "enamel": "#edb34d",
-          "steel": "#9da3a0",
-          "rubber": "#3c4245"
+          "enamel": "#2f6fb8",
+          "timber": "#c99559",
+          "canopy": "#e0a033",
+          "ironwork": "#30353a"
         },
         "twilight": {
-          "enamel": "#385b81",
-          "steel": "#4f626c",
-          "rubber": "#20262a"
+          "enamel": "#4a3f78",
+          "timber": "#8e6a48",
+          "canopy": "#c9b8e0",
+          "ironwork": "#202428"
+        },
+        "heritage": {
+          "enamel": "#7a2a22",
+          "timber": "#a87445",
+          "canopy": "#efe3c4",
+          "ironwork": "#26292c"
         }
       },
       "stats": {
-        "triangles": 308,
+        "triangles": 5722,
         "sizeM": [
-          1.98,
-          1.695,
-          1.04
+          2.296,
+          1.864,
+          1.08
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "steel",
-          "color": "#738087",
+          "name": "ironwork",
+          "color": "#2b2f33",
           "parts": [
             "underframe",
-            "canopy-post-0",
-            "canopy-post-1",
-            "canopy-post-2",
-            "canopy-post-3"
+            "buffer-front-f",
+            "buffer-head-front-f",
+            "buffer-front-b",
+            "buffer-head-front-b",
+            "coupling-front",
+            "buffer-rear-f",
+            "buffer-head-rear-f",
+            "buffer-rear-b",
+            "buffer-head-rear-b",
+            "coupling-rear",
+            "wheel-tread-f-0",
+            "axlebox-f-0",
+            "spring-f-0",
+            "wheel-tread-f-1",
+            "axlebox-f-1",
+            "spring-f-1",
+            "wheel-tread-b-0",
+            "axlebox-b-0",
+            "spring-b-0",
+            "wheel-tread-b-1",
+            "axlebox-b-1",
+            "spring-b-1",
+            "step-f",
+            "step-hanger-f",
+            "step-b",
+            "step-hanger-b",
+            "bench-legs-a",
+            "bench-leg-a-f",
+            "bench-leg-a-b",
+            "bench-legs-b",
+            "bench-leg-b-f",
+            "bench-leg-b-b",
+            "bench-legs-c",
+            "bench-leg-c-f",
+            "bench-leg-c-b",
+            "bench-legs-d",
+            "bench-leg-d-f",
+            "bench-leg-d-b",
+            "post--910-f",
+            "post-collar--910-f",
+            "post--910-b",
+            "post-collar--910-b",
+            "post--230-f",
+            "post-collar--230-f",
+            "post--230-b",
+            "post-collar--230-b",
+            "post-230-f",
+            "post-collar-230-f",
+            "post-230-b",
+            "post-collar-230-b",
+            "post-910-f",
+            "post-collar-910-f",
+            "post-910-b",
+            "post-collar-910-b"
           ],
-          "param": "steel"
+          "param": "ironwork"
         },
         {
           "name": "enamel",
-          "color": "#cc684e",
+          "color": "#2f7d4f",
           "parts": [
-            "floor",
-            "canopy-roof",
-            "bench-0",
-            "bench-1",
-            "bench-2",
-            "bench-3"
+            "buffer-beam-front",
+            "buffer-beam-rear",
+            "wheel-centre-f-0",
+            "spoke-f-0-0",
+            "spoke-f-0-1",
+            "spoke-f-0-2",
+            "spoke-f-0-3",
+            "wheel-centre-f-1",
+            "spoke-f-1-0",
+            "spoke-f-1-1",
+            "spoke-f-1-2",
+            "spoke-f-1-3",
+            "wheel-centre-b-0",
+            "spoke-b-0-0",
+            "spoke-b-0-1",
+            "spoke-b-0-2",
+            "spoke-b-0-3",
+            "wheel-centre-b-1",
+            "spoke-b-1-0",
+            "spoke-b-1-1",
+            "spoke-b-1-2",
+            "spoke-b-1-3",
+            "side-f-l",
+            "side-f-r",
+            "side-b-l",
+            "side-b-r",
+            "end-panel-front",
+            "end-panel-rear",
+            "roof-ridge",
+            "valance-f",
+            "valance-b"
           ],
           "param": "enamel"
         },
         {
-          "name": "rubber",
-          "color": "#292f33",
+          "name": "timber",
+          "color": "#b9844f",
           "parts": [
-            "wheel-0",
-            "wheel-1",
-            "wheel-2",
-            "wheel-3"
+            "floor",
+            "cap-rail-f",
+            "cap-rail-b",
+            "seat-slat-a-0",
+            "seat-slat-a-1",
+            "seat-slat-a-2",
+            "seat-slat-a-3",
+            "bench-back-a",
+            "seat-slat-b-0",
+            "seat-slat-b-1",
+            "seat-slat-b-2",
+            "seat-slat-b-3",
+            "bench-back-b",
+            "seat-slat-c-0",
+            "seat-slat-c-1",
+            "seat-slat-c-2",
+            "seat-slat-c-3",
+            "bench-back-c",
+            "seat-slat-d-0",
+            "seat-slat-d-1",
+            "seat-slat-d-2",
+            "seat-slat-d-3",
+            "bench-back-d"
           ],
-          "param": "rubber"
+          "param": "timber"
+        },
+        {
+          "name": "canopy",
+          "color": "#f1e6c8",
+          "parts": [
+            "stripe-f-l",
+            "stripe-f-r",
+            "stripe-b-l",
+            "stripe-b-r",
+            "canopy-roof"
+          ],
+          "param": "canopy"
         }
       ]
     },
@@ -19158,10 +19284,16 @@
       "id": "miniature-park-tram-engine",
       "kit": "amusement-park",
       "title": "Miniature park tram engine",
-      "description": "Low-speed park railway locomotive with an open cab, front buffer, boiler hood, and four wheels. Controls: overall scale, enamel, steel, rubber; festival and twilight material presets.",
+      "description": "Ride-on park railway steam-outline locomotive at about real size: round boiler with brass bands, smokebox with round door and headlamp, flared chimney, brass dome and whistle, cow-catcher, red buffer beams with sprung buffers, four spoked driving wheels with coupling rods, running boards and an open cab with arched windows and a curved roof. Material controls: baked enamel, brass fittings, ironwork, wheel paint. Festival, twilight and heritage presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "park railway",
+        "miniature railway",
+        "locomotive",
+        "steam engine",
+        "tram engine",
+        "train ride",
         "amusement park",
         "theme park",
         "guest experience",
@@ -19178,8 +19310,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/miniature-park-tram-engine.kcad.ts",
       "preview": "/assets/amusement-park-miniature-park-tram-engine.png",
-      "sourceSha256": "7e474c89be660519643753fefb726f8d50fd10c3161776de740c91b7962268fe",
-      "triangleBudget": 1800,
+      "sourceSha256": "3f1a8d2250aa8e8e25d8b18c251467b2f5377352bbcee5f23abc89a0f6c6558a",
+      "triangleBudget": 7000,
       "params": [
         {
           "name": "scale",
@@ -19193,76 +19325,174 @@
         {
           "name": "enamel",
           "type": "color",
-          "default": "#cc684e",
-          "label": "Baked enamel"
+          "default": "#2f7d4f",
+          "label": "Baked enamel boiler, cab and tanks"
         },
         {
-          "name": "steel",
+          "name": "brass",
           "type": "color",
-          "default": "#738087",
-          "label": "Painted steel"
+          "default": "#d2a443",
+          "label": "Brass dome, bands, whistle and lamp"
         },
         {
-          "name": "rubber",
+          "name": "ironwork",
           "type": "color",
-          "default": "#292f33",
-          "label": "Rubber"
+          "default": "#2b2f33",
+          "label": "Smokebox, frame, chimney and roof"
+        },
+        {
+          "name": "wheelPaint",
+          "type": "color",
+          "default": "#c0392b",
+          "label": "Wheel centres and buffer beams"
         }
       ],
       "presets": {
         "festival": {
-          "enamel": "#edb34d",
-          "steel": "#9da3a0",
-          "rubber": "#3c4245"
+          "enamel": "#2f6fb8",
+          "brass": "#e3b54e",
+          "ironwork": "#30353a",
+          "wheelPaint": "#e0a033"
         },
         "twilight": {
-          "enamel": "#385b81",
-          "steel": "#4f626c",
-          "rubber": "#20262a"
+          "enamel": "#4a3f78",
+          "brass": "#b89140",
+          "ironwork": "#202428",
+          "wheelPaint": "#8a3a52"
+        },
+        "heritage": {
+          "enamel": "#7a2a22",
+          "brass": "#c99a3a",
+          "ironwork": "#26292c",
+          "wheelPaint": "#1f1f1f"
         }
       },
       "stats": {
-        "triangles": 324,
+        "triangles": 5744,
         "sizeM": [
-          2.19,
-          1.6825,
-          0.975
+          2.38,
+          1.595,
+          0.94
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "steel",
-          "color": "#738087",
+          "name": "ironwork",
+          "color": "#2b2f33",
           "parts": [
-            "chassis",
-            "boiler"
+            "frame",
+            "running-board-f",
+            "running-board-b",
+            "buffer-front-f",
+            "buffer-head-front-f",
+            "buffer-front-b",
+            "buffer-head-front-b",
+            "buffer-rear-f",
+            "buffer-head-rear-f",
+            "buffer-rear-b",
+            "buffer-head-rear-b",
+            "catcher-slat-0",
+            "catcher-slat-1",
+            "catcher-slat-2",
+            "catcher-slat-3",
+            "wheel-tread-f-0",
+            "wheel-tread-f-1",
+            "coupling-rod-f",
+            "wheel-tread-b-0",
+            "wheel-tread-b-1",
+            "coupling-rod-b",
+            "smokebox",
+            "smokebox-saddle",
+            "smokebox-door",
+            "chimney",
+            "cab-floor",
+            "cab-roof",
+            "coal-bunker"
           ],
-          "param": "steel"
+          "param": "ironwork"
+        },
+        {
+          "name": "wheelPaint",
+          "color": "#c0392b",
+          "parts": [
+            "buffer-beam-front",
+            "buffer-beam-rear",
+            "catcher-spine",
+            "wheel-centre-f-0",
+            "wheel-hub-f-0",
+            "spoke-f-0-0",
+            "spoke-f-0-1",
+            "spoke-f-0-2",
+            "spoke-f-0-3",
+            "spoke-f-0-4",
+            "wheel-centre-f-1",
+            "wheel-hub-f-1",
+            "spoke-f-1-0",
+            "spoke-f-1-1",
+            "spoke-f-1-2",
+            "spoke-f-1-3",
+            "spoke-f-1-4",
+            "wheel-centre-b-0",
+            "wheel-hub-b-0",
+            "spoke-b-0-0",
+            "spoke-b-0-1",
+            "spoke-b-0-2",
+            "spoke-b-0-3",
+            "spoke-b-0-4",
+            "wheel-centre-b-1",
+            "wheel-hub-b-1",
+            "spoke-b-1-0",
+            "spoke-b-1-1",
+            "spoke-b-1-2",
+            "spoke-b-1-3",
+            "spoke-b-1-4",
+            "headlamp-lens"
+          ],
+          "param": "wheelPaint"
+        },
+        {
+          "name": "brass",
+          "color": "#d2a443",
+          "parts": [
+            "coupling-front",
+            "coupling-rear",
+            "crank-f-0",
+            "crank-f-1",
+            "crank-b-0",
+            "crank-b-1",
+            "door-hinge-dart",
+            "boiler-band-0",
+            "boiler-band-1",
+            "boiler-band-2",
+            "boiler-band-3",
+            "headlamp",
+            "chimney-cap",
+            "steam-dome",
+            "safety-valve",
+            "whistle",
+            "tank-plate-f",
+            "tank-plate-b",
+            "cab-handrail-f",
+            "cab-handrail-b",
+            "regulator"
+          ],
+          "param": "brass"
         },
         {
           "name": "enamel",
-          "color": "#cc684e",
+          "color": "#2f7d4f",
           "parts": [
-            "cab-floor",
-            "cab-back",
-            "cab-roof",
-            "smokestack"
+            "boiler",
+            "side-tank-f",
+            "side-tank-b",
+            "cab-front",
+            "cab-side-f",
+            "cab-side-b",
+            "cab-back"
           ],
           "param": "enamel"
-        },
-        {
-          "name": "rubber",
-          "color": "#292f33",
-          "parts": [
-            "front-buffer",
-            "wheel-0",
-            "wheel-1",
-            "wheel-2",
-            "wheel-3"
-          ],
-          "param": "rubber"
         }
       ]
     },
@@ -19379,10 +19609,16 @@
       "id": "park-entry-arch",
       "kit": "amusement-park",
       "title": "Park entry arch",
-      "description": "Freestanding entry portal with paired columns, overhead canopy, and a raised central crest. Controls: overall scale, concrete, powderCoat, enamel; festival and twilight material presets.",
+      "description": "Themed park entry arch at about real size: two towers on stone plinths with gilt bands, arched niches and onion domes topped by spires and pennant flags, an elliptical arch band with a keystone springing between them, and a framed welcome sign on the crown ringed with marquee bulbs. Material controls: masonry plinths, baked enamel towers and arch, gilt trim and bulbs, sign panel and flags. Festival, twilight and storybook presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "entry arch",
+        "park entrance",
+        "gateway",
+        "welcome sign",
+        "marquee",
+        "onion dome",
         "amusement park",
         "theme park",
         "guest experience",
@@ -19399,8 +19635,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/park-entry-arch.kcad.ts",
       "preview": "/assets/amusement-park-park-entry-arch.png",
-      "sourceSha256": "b08b87b9c98a4157c60c0b811f152a20c77decd4c81f98dcdd500ad78d11b73f",
-      "triangleBudget": 1800,
+      "sourceSha256": "5dfeb4897bc13523b8c2688276d0dca4d7f7a219b59d2edb98f0fe2483e2f77e",
+      "triangleBudget": 7000,
       "params": [
         {
           "name": "scale",
@@ -19412,75 +19648,149 @@
           "step": 0.05
         },
         {
-          "name": "concrete",
+          "name": "masonry",
           "type": "color",
-          "default": "#92938b",
-          "label": "Concrete"
-        },
-        {
-          "name": "powderCoat",
-          "type": "color",
-          "default": "#477985",
-          "label": "Powder-coated steel"
+          "default": "#a49d8f",
+          "label": "Stone plinths and keystone"
         },
         {
           "name": "enamel",
           "type": "color",
           "default": "#cc684e",
-          "label": "Baked enamel"
+          "label": "Baked enamel towers and arch"
+        },
+        {
+          "name": "gilt",
+          "type": "color",
+          "default": "#e0b04a",
+          "label": "Gilt bands, domes and bulbs"
+        },
+        {
+          "name": "signPanel",
+          "type": "color",
+          "default": "#2f6fb8",
+          "label": "Welcome sign panel and flags"
         }
       ],
       "presets": {
         "festival": {
-          "concrete": "#aaa99e",
-          "powderCoat": "#d47452",
-          "enamel": "#edb34d"
+          "masonry": "#b8b0a0",
+          "enamel": "#e8d9b8",
+          "gilt": "#e3b54e",
+          "signPanel": "#c0392b"
         },
         "twilight": {
-          "concrete": "#6f7477",
-          "powderCoat": "#35576f",
-          "enamel": "#385b81"
+          "masonry": "#6f7477",
+          "enamel": "#385b81",
+          "gilt": "#c9a04a",
+          "signPanel": "#4a3f78"
+        },
+        "storybook": {
+          "masonry": "#9b8f7e",
+          "enamel": "#f1e6d0",
+          "gilt": "#d9a7c7",
+          "signPanel": "#2f7d8a"
         }
       },
       "stats": {
-        "triangles": 162,
+        "triangles": 4456,
         "sizeM": [
-          2.74,
-          3.45,
-          0.64
+          4.86,
+          5.46,
+          0.76
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#477985",
+          "name": "masonry",
+          "color": "#a49d8f",
           "parts": [
-            "left-column",
-            "right-column",
-            "header-beam",
-            "column-band-0",
-            "column-band-1"
+            "plinth-l",
+            "plinth-cap-l",
+            "plinth-r",
+            "plinth-cap-r",
+            "keystone"
           ],
-          "param": "powderCoat"
+          "param": "masonry"
         },
         {
-          "name": "concrete",
-          "color": "#92938b",
+          "name": "signPanel",
+          "color": "#2f6fb8",
           "parts": [
-            "canopy"
+            "niche-back-l",
+            "flag-l",
+            "niche-back-r",
+            "flag-r",
+            "sign-panel"
           ],
-          "param": "concrete"
+          "param": "signPanel"
         },
         {
           "name": "enamel",
           "color": "#cc684e",
           "parts": [
-            "crest-plinth",
-            "crest"
+            "tower-l",
+            "cornice-l",
+            "drum-l",
+            "tower-r",
+            "cornice-r",
+            "drum-r",
+            "arch-band",
+            "sign-post-l",
+            "sign-post-r"
           ],
           "param": "enamel"
+        },
+        {
+          "name": "gilt",
+          "color": "#e0b04a",
+          "parts": [
+            "band-l-860",
+            "band-l-2500",
+            "band-l-3800",
+            "niche-star-l",
+            "dome-l",
+            "spire-l",
+            "spire-ball-l",
+            "band-r-860",
+            "band-r-2500",
+            "band-r-3800",
+            "niche-star-r",
+            "dome-r",
+            "spire-r",
+            "spire-ball-r",
+            "arch-trim",
+            "sign-frame",
+            "sign-stripe",
+            "sign-star",
+            "bulb-top-0",
+            "bulb-bottom-0",
+            "bulb-top-1",
+            "bulb-bottom-1",
+            "bulb-top-2",
+            "bulb-bottom-2",
+            "bulb-top-3",
+            "bulb-bottom-3",
+            "bulb-top-4",
+            "bulb-bottom-4",
+            "bulb-top-5",
+            "bulb-bottom-5",
+            "bulb-top-6",
+            "bulb-bottom-6",
+            "bulb-top-7",
+            "bulb-bottom-7",
+            "bulb-top-8",
+            "bulb-bottom-8",
+            "bulb-side-l--150",
+            "bulb-side-l-0",
+            "bulb-side-l-150",
+            "bulb-side-r--150",
+            "bulb-side-r-0",
+            "bulb-side-r-150"
+          ],
+          "param": "gilt"
         }
       ]
     },
@@ -20042,10 +20352,15 @@
       "id": "park-stroller",
       "kit": "amusement-park",
       "title": "Park stroller",
-      "description": "Single-seat visitor stroller with folding canopy, push handle, footrest, and paired wheels. Controls: overall scale, aluminum, fabric, rubber; festival and twilight material presets.",
+      "description": "Single-seat rental park stroller at about real size: raked aluminium A-frame legs with hinge blocks, reclined fabric sling seat with footrest and padded bumper bar, domed folding hood with trimmed opening, foam-gripped push handle, under-seat shopping basket, big rear wheels and swivel twin front wheels. Material controls: anodised aluminium, seat and hood fabric, plastic trim, rubber tyres. Festival, twilight and rental-fleet presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "stroller",
+        "pushchair",
+        "buggy",
+        "pram",
+        "rental stroller",
         "amusement park",
         "theme park",
         "guest experience",
@@ -20062,8 +20377,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/park-stroller.kcad.ts",
       "preview": "/assets/amusement-park-park-stroller.png",
-      "sourceSha256": "d904cc7179a7f6e70773aaabdc741e82fcb157e1219891e9ce6efcec1a6b6a4f",
-      "triangleBudget": 1800,
+      "sourceSha256": "a579d8abb98926ce1500c0b28cbd4230d3803fca549b70b3f2f48ce04806656a",
+      "triangleBudget": 6000,
       "params": [
         {
           "name": "scale",
@@ -20077,53 +20392,111 @@
         {
           "name": "aluminum",
           "type": "color",
-          "default": "#9caeb0",
-          "label": "Anodized aluminum"
+          "default": "#b8c2c4",
+          "label": "Anodised aluminium frame"
         },
         {
           "name": "fabric",
           "type": "color",
           "default": "#c77786",
-          "label": "Upholstery fabric"
+          "label": "Seat sling and hood fabric"
+        },
+        {
+          "name": "plastic",
+          "type": "color",
+          "default": "#2e3a40",
+          "label": "Hood trim, hubs, hinges and basket"
         },
         {
           "name": "rubber",
           "type": "color",
           "default": "#292f33",
-          "label": "Rubber"
+          "label": "Rubber tyres and foam grip"
         }
       ],
       "presets": {
         "festival": {
-          "aluminum": "#c2c9c5",
+          "aluminum": "#c9cec9",
           "fabric": "#e4b765",
+          "plastic": "#2f6fb8",
           "rubber": "#3c4245"
         },
         "twilight": {
           "aluminum": "#718a94",
           "fabric": "#557b8a",
+          "plastic": "#2a2f45",
           "rubber": "#20262a"
+        },
+        "rentalFleet": {
+          "aluminum": "#d8dcdc",
+          "fabric": "#2f7d4f",
+          "plastic": "#e0a033",
+          "rubber": "#26292c"
         }
       },
       "stats": {
-        "triangles": 208,
+        "triangles": 4710,
         "sizeM": [
-          0.79,
-          1.661666,
-          0.9575
+          0.64,
+          1.185,
+          0.953893
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "aluminum",
-          "color": "#9caeb0",
+          "name": "rubber",
+          "color": "#292f33",
           "parts": [
-            "seat-pan",
-            "backrest",
-            "canopy-rib",
-            "canopy"
+            "rear-tyre-l",
+            "rear-tyre-r",
+            "front-tyre-l-i",
+            "front-tyre-l-o",
+            "front-tyre-r-i",
+            "front-tyre-r-o",
+            "handle-grip"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "plastic",
+          "color": "#2e3a40",
+          "parts": [
+            "rear-hub-l",
+            "rear-hub-r",
+            "front-hub-l",
+            "caster-fork-l",
+            "front-hub-r",
+            "caster-fork-r",
+            "hinge-l",
+            "hinge-r",
+            "footrest",
+            "bumper-post-l",
+            "bumper-post-r",
+            "hood-trim",
+            "hood-pivot-l",
+            "hood-pivot-r",
+            "basket"
+          ],
+          "param": "plastic"
+        },
+        {
+          "name": "aluminum",
+          "color": "#b8c2c4",
+          "parts": [
+            "rear-cap-l",
+            "rear-cap-r",
+            "rear-axle",
+            "rear-leg-l",
+            "front-leg-l",
+            "seat-rail-l",
+            "rear-leg-r",
+            "front-leg-r",
+            "seat-rail-r",
+            "front-cross",
+            "rear-cross",
+            "handle-bar"
           ],
           "param": "aluminum"
         },
@@ -20131,23 +20504,15 @@
           "name": "fabric",
           "color": "#c77786",
           "parts": [
-            "footrest",
-            "push-handle",
-            "frame-leg-0",
-            "frame-leg-1",
-            "frame-leg-2",
-            "frame-leg-3"
+            "seat-pan",
+            "backrest",
+            "seat-wing-l",
+            "seat-wing-r",
+            "calf-rest",
+            "bumper-bar",
+            "hood"
           ],
           "param": "fabric"
-        },
-        {
-          "name": "rubber",
-          "color": "#292f33",
-          "parts": [
-            "wheel-0",
-            "wheel-1"
-          ],
-          "param": "rubber"
         }
       ]
     },
@@ -20377,10 +20742,16 @@
       "id": "picnic-table-with-umbrella",
       "kit": "amusement-park",
       "title": "Picnic table with umbrella",
-      "description": "Family dining table with two bench seats, umbrella mast, and a broad shade canopy. Controls: overall scale, timber, steel, canvas; festival and twilight material presets.",
+      "description": "Park picnic table with umbrella at about real size: spaced timber plank tabletop and bench seats, splayed steel A-frame legs with bench beams and top cleats, and a market umbrella with a mast through the table into a weighted base, an eight-panel striped canopy on ribs, a scalloped valance and a finial. Material controls: sealed timber, painted steel, canvas and canvas stripe. Festival, twilight and seaside presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "picnic table",
+        "picnic bench",
+        "umbrella",
+        "parasol",
+        "shade",
+        "outdoor dining",
         "amusement park",
         "theme park",
         "guest experience",
@@ -20397,8 +20768,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/picnic-table-with-umbrella.kcad.ts",
       "preview": "/assets/amusement-park-picnic-table-with-umbrella.png",
-      "sourceSha256": "fb419d7e151e13e50b168848f9a3a79e25fcc77db6cf346ac6c6817ccb72f1c6",
-      "triangleBudget": 1800,
+      "sourceSha256": "054942190d1238c7d39f2bc9a15ed4df47125639b278f21f07cf600be2080e37",
+      "triangleBudget": 4000,
       "params": [
         {
           "name": "scale",
@@ -20412,40 +20783,54 @@
         {
           "name": "timber",
           "type": "color",
-          "default": "#8a6748",
-          "label": "Sealed timber"
+          "default": "#9a7148",
+          "label": "Sealed timber planks"
         },
         {
           "name": "steel",
           "type": "color",
-          "default": "#738087",
-          "label": "Painted steel"
+          "default": "#3d4a52",
+          "label": "Painted steel frame and mast"
         },
         {
           "name": "canvas",
           "type": "color",
-          "default": "#e0c98e",
-          "label": "Canvas"
+          "default": "#efe6cf",
+          "label": "Canopy canvas"
+        },
+        {
+          "name": "stripe",
+          "type": "color",
+          "default": "#c0392b",
+          "label": "Canopy stripe and valance"
         }
       ],
       "presets": {
         "festival": {
-          "timber": "#ab8051",
-          "steel": "#9da3a0",
-          "canvas": "#eddaa9"
+          "timber": "#b88a56",
+          "steel": "#2f6fb8",
+          "canvas": "#f4ead2",
+          "stripe": "#e0a033"
         },
         "twilight": {
-          "timber": "#604b3b",
-          "steel": "#4f626c",
-          "canvas": "#a85e4f"
+          "timber": "#7a5a3e",
+          "steel": "#2a2f45",
+          "canvas": "#c9b8e0",
+          "stripe": "#4a3f78"
+        },
+        "seaside": {
+          "timber": "#b9a585",
+          "steel": "#e8ece9",
+          "canvas": "#ffffff",
+          "stripe": "#2f78b8"
         }
       },
       "stats": {
-        "triangles": 152,
+        "triangles": 2474,
         "sizeM": [
-          2.35,
-          2.84,
-          2.2
+          2.251256,
+          2.54,
+          2.251256
         ],
         "minUpM": 0,
         "materials": 1
@@ -20453,32 +20838,96 @@
       "palette": [
         {
           "name": "timber",
-          "color": "#8a6748",
+          "color": "#9a7148",
           "parts": [
-            "tabletop",
-            "table-pedestal",
-            "bench-front",
-            "bench-back"
+            "top-plank-0",
+            "top-plank-1",
+            "top-plank-2",
+            "top-plank-3",
+            "top-plank-4",
+            "seat-plank-f-0",
+            "seat-plank-f-1",
+            "seat-plank-b-0",
+            "seat-plank-b-1"
           ],
           "param": "timber"
         },
         {
           "name": "steel",
-          "color": "#738087",
+          "color": "#3d4a52",
           "parts": [
-            "bench-leg-0",
-            "bench-leg-1",
-            "bench-leg-2",
-            "bench-leg-3"
+            "leg-0-f",
+            "foot-0-f",
+            "leg-0-b",
+            "foot-0-b",
+            "bench-beam-0",
+            "top-cleat-0",
+            "leg-1-f",
+            "foot-1-f",
+            "leg-1-b",
+            "foot-1-b",
+            "bench-beam-1",
+            "top-cleat-1",
+            "brace",
+            "base-weight",
+            "mast",
+            "runner",
+            "tilt-collar",
+            "rib-0",
+            "rib-tip-0",
+            "stretcher-0",
+            "rib-1",
+            "rib-tip-1",
+            "stretcher-1",
+            "rib-2",
+            "rib-tip-2",
+            "stretcher-2",
+            "rib-3",
+            "rib-tip-3",
+            "stretcher-3",
+            "rib-4",
+            "rib-tip-4",
+            "stretcher-4",
+            "rib-5",
+            "rib-tip-5",
+            "stretcher-5",
+            "rib-6",
+            "rib-tip-6",
+            "stretcher-6",
+            "rib-7",
+            "rib-tip-7",
+            "stretcher-7"
           ],
           "param": "steel"
         },
         {
-          "name": "canvas",
-          "color": "#e0c98e",
+          "name": "stripe",
+          "color": "#c0392b",
           "parts": [
-            "umbrella-mast",
-            "umbrella-canopy"
+            "canopy-panel-0",
+            "valance-1",
+            "canopy-panel-2",
+            "valance-3",
+            "canopy-panel-4",
+            "valance-5",
+            "canopy-panel-6",
+            "valance-7",
+            "finial"
+          ],
+          "param": "stripe"
+        },
+        {
+          "name": "canvas",
+          "color": "#efe6cf",
+          "parts": [
+            "valance-0",
+            "canopy-panel-1",
+            "valance-2",
+            "canopy-panel-3",
+            "valance-4",
+            "canopy-panel-5",
+            "valance-6",
+            "canopy-panel-7"
           ],
           "param": "canvas"
         }
