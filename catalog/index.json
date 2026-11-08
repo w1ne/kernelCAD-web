@@ -225535,14 +225535,18 @@
       "id": "fines-screen",
       "kit": "recycling-facility",
       "title": "Fines screen",
-      "description": "Fines screen: a guarded screening bed with a feed hopper, discharge lip and support rollers. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Inclined vibrating fines screen at about real size: sloped deck of woven mesh panels between braced side plates, exciter beam with twin motors across the top, four coil springs on a four-leg support stand, feed box at the high end, funnel under the deck onto a fines cross belt, and an overs chute dropping onto a pile at the low end. Material controls: frame paint, screen mesh, coil springs, fines. plant, weathered, highVisibility and compost presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "fines screen",
+        "vibrating screen",
+        "inclined screen",
+        "screening",
+        "grit removal",
         "materials recovery",
-        "waste management",
-        "sorting",
+        "MRF",
         "low poly",
         "scene prop"
       ],
@@ -225555,8 +225559,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/fines-screen.kcad.ts",
       "preview": "/assets/recycling-facility-fines-screen.png",
-      "sourceSha256": "b59d7297e0cf87f5aa417b2c7da65a2ab1fba2cde2501c30be41807cf55e909e",
-      "triangleBudget": 1800,
+      "sourceSha256": "6b294aacbd1779acc475e27be4f531a7a2f797c78f6f3a84f21341785f698662",
+      "triangleBudget": 4400,
       "params": [
         {
           "name": "scale",
@@ -225568,64 +225572,236 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#2f6f9e",
+          "label": "Frame and side plates (paint)"
         },
         {
-          "name": "paintedSteel",
+          "name": "mesh",
           "type": "color",
-          "default": "#8b754b",
-          "label": "Painted steel"
+          "default": "#b9c0c4",
+          "label": "Screen mesh (woven wire)"
+        },
+        {
+          "name": "springs",
+          "type": "color",
+          "default": "#e0b52f",
+          "label": "Coil springs"
+        },
+        {
+          "name": "fines",
+          "type": "color",
+          "default": "#6b5640",
+          "label": "Fines (grit, soil, glass)"
         }
       ],
       "presets": {
+        "plant": {
+          "frame": "#2f6f9e",
+          "mesh": "#b9c0c4",
+          "springs": "#e0b52f",
+          "fines": "#6b5640"
+        },
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#82724f"
+          "frame": "#566673",
+          "mesh": "#8f918c",
+          "springs": "#8d7f4e",
+          "fines": "#5e5243"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "frame": "#e3742b",
+          "mesh": "#c9d0d4",
+          "springs": "#2f8f4e",
+          "fines": "#6b5640"
+        },
+        "compost": {
+          "frame": "#3c7a4e",
+          "mesh": "#d36a2c",
+          "springs": "#e8c12c",
+          "fines": "#3f2f22"
         }
       },
       "stats": {
-        "triangles": 540,
+        "triangles": 3768,
         "sizeM": [
-          0.8388,
-          0.745,
-          1.9918
+          7.199459,
+          4.026267,
+          4.19
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "frame",
+          "color": "#2f6f9e",
           "parts": [
-            "support-rail-left",
-            "support-rail-right",
-            "screen-bed",
-            "support-roller-1",
-            "support-roller-2",
-            "support-roller-3",
-            "support-roller-4"
+            "side-plate-f",
+            "side-flange-f",
+            "side-plate-b",
+            "side-flange-b",
+            "cross-tube-700",
+            "cross-tube-1900",
+            "cross-tube-3100",
+            "cross-tube-4300",
+            "exciter-beam",
+            "exciter-post-f",
+            "exciter-post-b",
+            "feed-box",
+            "spring-bracket-f-500",
+            "leg-f-500",
+            "foot-f-500",
+            "spring-bracket-f-4300",
+            "leg-f-4300",
+            "foot-f-4300",
+            "spring-bracket-b-500",
+            "leg-b-500",
+            "foot-b-500",
+            "spring-bracket-b-4300",
+            "leg-b-4300",
+            "foot-b-4300",
+            "stand-rail-f",
+            "stand-rail-b",
+            "stand-cross",
+            "fines-funnel",
+            "belt-rail-l",
+            "belt-rail-r",
+            "belt-leg--1000-l",
+            "belt-leg--1000-r",
+            "belt-leg-2400-l",
+            "belt-leg-2400-r",
+            "overs-chute"
           ],
-          "param": "stainlessSteel"
+          "param": "frame"
         },
         {
-          "name": "paintedSteel",
-          "color": "#8b754b",
+          "name": "mesh",
+          "color": "#b9c0c4",
           "parts": [
-            "feed-hopper",
-            "oversize-chute",
-            "side-guard-left",
-            "side-guard-right",
-            "vibrator-left",
-            "vibrator-right"
+            "mesh-panel-0",
+            "mesh-panel-1",
+            "mesh-panel-2",
+            "mesh-panel-3",
+            "mesh-panel-4",
+            "mesh-panel-5"
           ],
-          "param": "paintedSteel"
+          "param": "mesh"
+        },
+        {
+          "name": "panel-bar-0",
+          "color": "#2a2e31",
+          "parts": [
+            "panel-bar-0",
+            "panel-bar-1",
+            "panel-bar-2",
+            "panel-bar-3",
+            "panel-bar-4",
+            "panel-bar-5",
+            "motor-f",
+            "motor-b",
+            "spring-core-f-500",
+            "spring-core-f-4300",
+            "spring-core-b-500",
+            "spring-core-b-4300"
+          ]
+        },
+        {
+          "name": "wire-0-1",
+          "color": "#8a9296",
+          "parts": [
+            "wire-0-1",
+            "wire-0-2",
+            "wire-0-3",
+            "wire-1-1",
+            "wire-1-2",
+            "wire-1-3",
+            "wire-2-1",
+            "wire-2-2",
+            "wire-2-3",
+            "wire-3-1",
+            "wire-3-2",
+            "wire-3-3",
+            "wire-4-1",
+            "wire-4-2",
+            "wire-4-3",
+            "wire-5-1",
+            "wire-5-2",
+            "wire-5-3"
+          ]
+        },
+        {
+          "name": "fines",
+          "color": "#6b5640",
+          "parts": [
+            "fines-bed",
+            "clod-0",
+            "clod-2",
+            "clod-4",
+            "fines-on-belt"
+          ],
+          "param": "fines"
+        },
+        {
+          "name": "clod-1",
+          "color": "#8a7a64",
+          "parts": [
+            "clod-1",
+            "clod-3",
+            "clod-5"
+          ]
+        },
+        {
+          "name": "springs",
+          "color": "#e0b52f",
+          "parts": [
+            "motor-cap-f",
+            "motor-cap-b",
+            "spring-f-500-0",
+            "spring-f-500-1",
+            "spring-f-500-2",
+            "spring-f-4300-0",
+            "spring-f-4300-1",
+            "spring-f-4300-2",
+            "spring-b-500-0",
+            "spring-b-500-1",
+            "spring-b-500-2",
+            "spring-b-4300-0",
+            "spring-b-4300-1",
+            "spring-b-4300-2"
+          ],
+          "param": "springs"
+        },
+        {
+          "name": "fines-belt",
+          "color": "#2b2f33",
+          "parts": [
+            "fines-belt"
+          ]
+        },
+        {
+          "name": "overs-pile",
+          "color": "#8a7f70",
+          "parts": [
+            "overs-pile"
+          ]
+        },
+        {
+          "name": "overs-lump-0",
+          "color": "#5c7a8c",
+          "parts": [
+            "overs-lump-0",
+            "overs-lump-2",
+            "overs-lump-4"
+          ]
+        },
+        {
+          "name": "overs-lump-1",
+          "color": "#c9b48a",
+          "parts": [
+            "overs-lump-1",
+            "overs-lump-3"
+          ]
         }
       ]
     },
@@ -227451,14 +227627,18 @@
       "id": "glass-breaker-screen",
       "kit": "recycling-facility",
       "title": "Glass breaker screen",
-      "description": "Glass breaker screen: a guarded screening bed with a feed hopper, discharge lip and support rollers. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Bottle breaker and screen at about real size: inclined infeed belt carrying green, amber and flint bottles into a hooded breaker housing on four legs, inspection window open on a chain-flail rotor, belt-drive motor on the side, sprung vibrating screen deck under the breaker with cullet on the mesh, cullet bin under the deck and a reject cage of labels and caps off the end. Material controls: housing paint, wear steel, glass, labels and caps. plant, weathered, highVisibility and flintLine presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "glass recycling",
+        "bottle breaker",
+        "glass crusher",
+        "cullet",
+        "screening",
+        "bottle bank",
         "materials recovery",
-        "waste management",
-        "sorting",
         "low poly",
         "scene prop"
       ],
@@ -227471,8 +227651,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/glass-breaker-screen.kcad.ts",
       "preview": "/assets/recycling-facility-glass-breaker-screen.png",
-      "sourceSha256": "2f4c49befa510ed8ef94712596c60ce117c17aca010eb442c0bfa8c3528ad10e",
-      "triangleBudget": 1800,
+      "sourceSha256": "e87fc5ce20949b4eee3e26cdd9f2da70ed0c4584f8a0179493fc935b2c834cc2",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -227484,64 +227664,255 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "housing",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#3a6d9c",
+          "label": "Breaker housing and frames (paint)"
         },
         {
-          "name": "paintedSteel",
+          "name": "wearSteel",
           "type": "color",
-          "default": "#61727c",
-          "label": "Painted steel"
+          "default": "#9aa2a7",
+          "label": "Rotor, flails and mesh (wear steel)"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#3f8a52",
+          "label": "Glass (bottles, cullet)"
+        },
+        {
+          "name": "labels",
+          "type": "color",
+          "default": "#e8e1cf",
+          "label": "Labels and caps"
         }
       ],
       "presets": {
+        "plant": {
+          "housing": "#3a6d9c",
+          "wearSteel": "#9aa2a7",
+          "glass": "#3f8a52",
+          "labels": "#e8e1cf"
+        },
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#667071"
+          "housing": "#5d6a73",
+          "wearSteel": "#7d7f7b",
+          "glass": "#4f7a58",
+          "labels": "#c9c1ad"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "housing": "#e3742b",
+          "wearSteel": "#b9c0c4",
+          "glass": "#3f8a52",
+          "labels": "#f2f0e8"
+        },
+        "flintLine": {
+          "housing": "#4f8a3c",
+          "wearSteel": "#9aa2a7",
+          "glass": "#cfe3df",
+          "labels": "#e0b52f"
         }
       },
       "stats": {
-        "triangles": 540,
+        "triangles": 2988,
         "sizeM": [
-          0.7428,
-          0.69,
-          1.75
+          9.932585,
+          3.55,
+          3.190151
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "housing",
+          "color": "#3a6d9c",
           "parts": [
-            "support-rail-left",
-            "support-rail-right",
-            "screen-bed",
-            "support-roller-1",
-            "support-roller-2",
-            "support-roller-3",
-            "support-roller-4"
+            "breaker-housing",
+            "inspection-door",
+            "housing-leg--610--660",
+            "housing-leg--610-660",
+            "housing-leg-610--660",
+            "housing-leg-610-660",
+            "motor-base",
+            "infeed-rail-l",
+            "infeed-rail-r",
+            "infeed-leg-616-l",
+            "infeed-leg-616-r",
+            "infeed-leg-3081-l",
+            "infeed-leg-3081-r",
+            "screen-side-f",
+            "spring-arm-f--500",
+            "screen-leg-f--500",
+            "spring-arm-f-2600",
+            "screen-leg-f-2600",
+            "screen-side-b",
+            "spring-arm-b--500",
+            "screen-leg-b--500",
+            "spring-arm-b-2600",
+            "screen-leg-b-2600",
+            "screen-motor-mount",
+            "cullet-funnel",
+            "reject-lip",
+            "cage-base",
+            "cage-post-3400--600",
+            "cage-post-3400-600",
+            "cage-post-4600--600",
+            "cage-post-4600-600",
+            "cage-rail-x-500--1",
+            "cage-rail-y-500--1",
+            "cage-rail-x-500-1",
+            "cage-rail-y-500-1",
+            "cage-rail-x-960--1",
+            "cage-rail-y-960--1",
+            "cage-rail-x-960-1",
+            "cage-rail-y-960-1",
+            "cage-mesh-0",
+            "cage-mesh-1",
+            "cage-mesh-2",
+            "cage-mesh-3",
+            "cage-mesh-4"
           ],
-          "param": "stainlessSteel"
+          "param": "housing"
         },
         {
-          "name": "paintedSteel",
-          "color": "#61727c",
+          "name": "window-frame",
+          "color": "#26292b",
           "parts": [
-            "feed-hopper",
-            "oversize-chute",
-            "side-guard-left",
-            "side-guard-right",
-            "vibrator-left",
-            "vibrator-right"
+            "window-frame",
+            "flail-0-0",
+            "flail-0-1",
+            "flail-0-2",
+            "flail-0-3",
+            "flail-1-0",
+            "flail-1-1",
+            "flail-1-2",
+            "flail-1-3",
+            "flail-2-0",
+            "flail-2-1",
+            "flail-2-2",
+            "flail-2-3",
+            "flail-3-0",
+            "flail-3-1",
+            "flail-3-2",
+            "flail-3-3",
+            "drive-motor",
+            "infeed-belt",
+            "mesh-bar-1",
+            "mesh-bar-2",
+            "mesh-bar-3",
+            "mesh-bar-4",
+            "mesh-bar-5",
+            "mesh-bar-6",
+            "mesh-bar-7",
+            "screen-motor",
+            "cullet-bin"
+          ]
+        },
+        {
+          "name": "wearSteel",
+          "color": "#9aa2a7",
+          "parts": [
+            "rotor-shaft",
+            "rotor-disc-0",
+            "rotor-disc-1",
+            "rotor-disc-2",
+            "rotor-disc-3",
+            "infeed-tail",
+            "screen-mesh"
           ],
-          "param": "paintedSteel"
+          "param": "wearSteel"
+        },
+        {
+          "name": "belt-guard",
+          "color": "#e0b52f",
+          "parts": [
+            "belt-guard",
+            "spring-f--500",
+            "spring-f-2600",
+            "spring-b--500",
+            "spring-b-2600"
+          ]
+        },
+        {
+          "name": "glass",
+          "color": "#3f8a52",
+          "parts": [
+            "bottle-0",
+            "bottle-3",
+            "bottle-6",
+            "cullet-2",
+            "cullet-5",
+            "cullet-8",
+            "cullet-11",
+            "cullet-14",
+            "cullet-17",
+            "cullet-heap"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "bottle-1",
+          "color": "#a8662a",
+          "parts": [
+            "bottle-1",
+            "bottle-4",
+            "bottle-7",
+            "cullet-0",
+            "cullet-3",
+            "cullet-6",
+            "cullet-9",
+            "cullet-12",
+            "cullet-15"
+          ]
+        },
+        {
+          "name": "bottle-2",
+          "color": "#d8e6e2",
+          "parts": [
+            "bottle-2",
+            "bottle-5",
+            "bottle-8",
+            "cullet-1",
+            "cullet-4",
+            "cullet-7",
+            "cullet-10",
+            "cullet-13",
+            "cullet-16"
+          ]
+        },
+        {
+          "name": "labels",
+          "color": "#e8e1cf",
+          "parts": [
+            "label-0",
+            "label-1",
+            "label-2",
+            "label-3",
+            "label-4",
+            "label-5",
+            "reject-heap"
+          ],
+          "param": "labels"
+        },
+        {
+          "name": "cap-0",
+          "color": "#2f6f9e",
+          "parts": [
+            "cap-0",
+            "cap-2",
+            "cap-4"
+          ]
+        },
+        {
+          "name": "cap-1",
+          "color": "#d6402e",
+          "parts": [
+            "cap-1",
+            "cap-3",
+            "cap-5"
+          ]
         }
       ]
     },
@@ -228381,14 +228752,18 @@
       "id": "glass-screening-deck",
       "kit": "recycling-facility",
       "title": "Glass screening deck",
-      "description": "Glass screening deck: a guarded screening bed with a feed hopper, discharge lip and support rollers. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Double-deck cullet sizing screen at about real size: open steel screen box with an upper deck of coarse polyurethane panels and a lower deck of fine panels, twin unbalanced motors on raked side brackets, four rubber buffer mounts on a leg frame, feed chute at the rear, and three stepped outlets (coarse, middle, fines) each dropping into its own bin of cullet. Material controls: frame paint, screen panels, cullet glass, bins. plant, flintLine, weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "glass recycling",
+        "cullet",
+        "screening deck",
+        "double-deck screen",
+        "sizing screen",
+        "vibrating screen",
         "materials recovery",
-        "waste management",
-        "glass plastics",
         "low poly",
         "scene prop"
       ],
@@ -228401,8 +228776,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/glass-screening-deck.kcad.ts",
       "preview": "/assets/recycling-facility-glass-screening-deck.png",
-      "sourceSha256": "4b051767e0fb8d0cfbe45c6ac1a30a9aa68c625831da0aca3c885fee3d17fdcd",
-      "triangleBudget": 1800,
+      "sourceSha256": "66c292a12720f62572d674b547b2954c6135769c2f7b8e2b31b70fe65bf1c1b8",
+      "triangleBudget": 2800,
       "params": [
         {
           "name": "scale",
@@ -228414,64 +228789,238 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#5a6b7a",
+          "label": "Frame and screen box (paint)"
         },
         {
-          "name": "paintedSteel",
+          "name": "panels",
           "type": "color",
-          "default": "#77715b",
-          "label": "Painted steel"
+          "default": "#d4572e",
+          "label": "Polyurethane screen panels"
+        },
+        {
+          "name": "cullet",
+          "type": "color",
+          "default": "#3f8a52",
+          "label": "Cullet (crushed glass)"
+        },
+        {
+          "name": "bins",
+          "type": "color",
+          "default": "#2f6f9e",
+          "label": "Collection bins"
         }
       ],
       "presets": {
+        "plant": {
+          "frame": "#5a6b7a",
+          "panels": "#d4572e",
+          "cullet": "#3f8a52",
+          "bins": "#2f6f9e"
+        },
+        "flintLine": {
+          "frame": "#e1ddd0",
+          "panels": "#3b8fc4",
+          "cullet": "#cfe3df",
+          "bins": "#556270"
+        },
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#756f5a"
+          "frame": "#6d6a62",
+          "panels": "#9a5a3c",
+          "cullet": "#5d7a5c",
+          "bins": "#4d5a63"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "frame": "#e8c12c",
+          "panels": "#2f8f4e",
+          "cullet": "#a8662a",
+          "bins": "#d6402e"
         }
       },
       "stats": {
-        "triangles": 540,
+        "triangles": 2016,
         "sizeM": [
-          1.0308,
-          0.8471,
-          1.75
+          5.975,
+          2.9,
+          3.945
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "frame",
+          "color": "#5a6b7a",
           "parts": [
-            "support-rail-left",
-            "support-rail-right",
-            "screen-bed",
-            "support-roller-1",
-            "support-roller-2",
-            "support-roller-3",
-            "support-roller-4"
+            "side-plate-f",
+            "side-rib-f",
+            "side-stiffener-f--1000",
+            "side-stiffener-f-250",
+            "side-stiffener-f-1600",
+            "side-plate-b",
+            "side-rib-b",
+            "side-stiffener-b--1000",
+            "side-stiffener-b-250",
+            "side-stiffener-b-1600",
+            "rear-plate",
+            "deck-bearer-0",
+            "deck-bearer-1",
+            "deck-bearer-2",
+            "deck-bearer-3",
+            "deck-bearer-4",
+            "deck-bearer-5",
+            "fines-pan",
+            "motor-bracket-f",
+            "motor-plate-f",
+            "motor-bracket-b",
+            "motor-plate-b",
+            "mount-arm-f--1300",
+            "leg-f--1300",
+            "foot-f--1300",
+            "mount-arm-f-1600",
+            "leg-f-1600",
+            "foot-f-1600",
+            "leg-rail-f",
+            "mount-arm-b--1300",
+            "leg-b--1300",
+            "foot-b--1300",
+            "mount-arm-b-1600",
+            "leg-b-1600",
+            "foot-b-1600",
+            "leg-rail-b",
+            "feed-chute",
+            "feed-cheek-f",
+            "feed-cheek-b",
+            "feed-post",
+            "coarse-lip",
+            "middle-chute",
+            "fines-chute"
           ],
-          "param": "stainlessSteel"
+          "param": "frame"
         },
         {
-          "name": "paintedSteel",
-          "color": "#77715b",
+          "name": "panels",
+          "color": "#d4572e",
           "parts": [
-            "feed-hopper",
-            "oversize-chute",
-            "side-guard-left",
-            "side-guard-right",
-            "vibrator-left",
-            "vibrator-right"
+            "upper-panel-0-f",
+            "upper-panel-0-b",
+            "lower-panel-0",
+            "upper-panel-1-f",
+            "upper-panel-1-b",
+            "lower-panel-1",
+            "upper-panel-2-f",
+            "upper-panel-2-b",
+            "lower-panel-2",
+            "upper-panel-3-f",
+            "upper-panel-3-b",
+            "lower-panel-3",
+            "upper-panel-4-f",
+            "upper-panel-4-b",
+            "lower-panel-4",
+            "upper-panel-5-f",
+            "upper-panel-5-b",
+            "lower-panel-5",
+            "motor-cap-f",
+            "motor-cap-b"
           ],
-          "param": "paintedSteel"
+          "param": "panels"
+        },
+        {
+          "name": "upper-slot-0-0",
+          "color": "#26292c",
+          "parts": [
+            "upper-slot-0-0",
+            "upper-slot-0-1",
+            "upper-slot-0-2",
+            "upper-slot-1-0",
+            "upper-slot-1-1",
+            "upper-slot-1-2",
+            "upper-slot-2-0",
+            "upper-slot-2-1",
+            "upper-slot-2-2",
+            "upper-slot-3-0",
+            "upper-slot-3-1",
+            "upper-slot-3-2",
+            "upper-slot-4-0",
+            "upper-slot-4-1",
+            "upper-slot-4-2",
+            "upper-slot-5-0",
+            "upper-slot-5-1",
+            "upper-slot-5-2",
+            "motor-f",
+            "motor-b",
+            "buffer-f--1300",
+            "buffer-f-1600",
+            "buffer-b--1300",
+            "buffer-b-1600"
+          ]
+        },
+        {
+          "name": "cullet",
+          "color": "#3f8a52",
+          "parts": [
+            "cullet-bed",
+            "shard-2",
+            "shard-5",
+            "shard-8",
+            "shard-11",
+            "shard-14",
+            "shard-17",
+            "coarse-heap",
+            "coarse-piece-0",
+            "coarse-piece-2",
+            "fines-piece-1",
+            "fines-piece-3"
+          ],
+          "param": "cullet"
+        },
+        {
+          "name": "shard-0",
+          "color": "#b8742a",
+          "parts": [
+            "shard-0",
+            "shard-3",
+            "shard-6",
+            "shard-9",
+            "shard-12",
+            "shard-15",
+            "shard-18",
+            "coarse-piece-1",
+            "coarse-piece-3",
+            "middle-heap",
+            "middle-piece-0",
+            "middle-piece-2"
+          ]
+        },
+        {
+          "name": "shard-1",
+          "color": "#d8e6e2",
+          "parts": [
+            "shard-1",
+            "shard-4",
+            "shard-7",
+            "shard-10",
+            "shard-13",
+            "shard-16",
+            "shard-19",
+            "middle-piece-1",
+            "middle-piece-3",
+            "fines-heap",
+            "fines-piece-0",
+            "fines-piece-2"
+          ]
+        },
+        {
+          "name": "bins",
+          "color": "#2f6f9e",
+          "parts": [
+            "coarse-bin",
+            "middle-bin",
+            "fines-bin"
+          ],
+          "param": "bins"
         }
       ]
     },
@@ -241920,15 +242469,18 @@
     {
       "id": "star-screen",
       "kit": "recycling-facility",
-      "title": "Star screen",
-      "description": "Star screen: a guarded screening bed with a feed hopper, discharge lip and support rollers. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "title": "Mobile star screen",
+      "description": "Tracked mobile star screen at about real size: crawler chassis, flared tipping hopper full of green waste with an apron feed belt, open deck of twelve shafts carrying rubber stars, power pack with exhaust stack, fines conveyor folding out to the side onto a compost pile, and a long overs conveyor off the end of the deck onto a pile of oversize. Material controls: machine paint, rubber stars, compost, running gear. yard, weathered, highVisibility and woodChip presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
-        "materials recovery",
-        "waste management",
-        "sorting",
+        "star screen",
+        "mobile screener",
+        "compost screening",
+        "green waste",
+        "tracked plant",
+        "screening",
         "low poly",
         "scene prop"
       ],
@@ -241941,8 +242493,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/star-screen.kcad.ts",
       "preview": "/assets/recycling-facility-star-screen.png",
-      "sourceSha256": "e0b93368499ebcce80c3cfa2461d6a91be893369ca04ce9ae9308f516c36033d",
-      "triangleBudget": 1800,
+      "sourceSha256": "91031dc7dfbfe765be133796157ed94b4361705d3f3c91b97e4d77af1546fce0",
+      "triangleBudget": 4600,
       "params": [
         {
           "name": "scale",
@@ -241954,64 +242506,264 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "machine",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#4f8a3c",
+          "label": "Machine body (paint)"
         },
         {
-          "name": "paintedSteel",
+          "name": "stars",
           "type": "color",
-          "default": "#566d83",
-          "label": "Painted steel"
+          "default": "#e0b52f",
+          "label": "Rubber stars"
+        },
+        {
+          "name": "compost",
+          "type": "color",
+          "default": "#4a3626",
+          "label": "Compost and green waste"
+        },
+        {
+          "name": "runningGear",
+          "type": "color",
+          "default": "#2b2e30",
+          "label": "Tracks and running gear"
         }
       ],
       "presets": {
+        "yard": {
+          "machine": "#4f8a3c",
+          "stars": "#e0b52f",
+          "compost": "#4a3626",
+          "runningGear": "#2b2e30"
+        },
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#5e6c76"
+          "machine": "#6c7458",
+          "stars": "#9a8a5a",
+          "compost": "#56473a",
+          "runningGear": "#3a3835"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "machine": "#e3742b",
+          "stars": "#2f2f2f",
+          "compost": "#4a3626",
+          "runningGear": "#23262a"
+        },
+        "woodChip": {
+          "machine": "#2f6f9e",
+          "stars": "#d6402e",
+          "compost": "#9c7a4e",
+          "runningGear": "#2b2e30"
         }
       },
       "stats": {
-        "triangles": 540,
+        "triangles": 3708,
         "sizeM": [
-          0.9348,
-          0.731,
-          2.7172
+          15.983065,
+          3.84919,
+          8.803103
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "runningGear",
+          "color": "#2b2e30",
           "parts": [
-            "support-rail-left",
-            "support-rail-right",
-            "screen-bed",
-            "support-roller-1",
-            "support-roller-2",
-            "support-roller-3",
-            "support-roller-4"
+            "track-f",
+            "track-b"
           ],
-          "param": "stainlessSteel"
+          "param": "runningGear"
         },
         {
-          "name": "paintedSteel",
-          "color": "#566d83",
+          "name": "machine",
+          "color": "#4f8a3c",
           "parts": [
-            "feed-hopper",
-            "oversize-chute",
-            "side-guard-left",
-            "side-guard-right",
-            "vibrator-left",
-            "vibrator-right"
+            "track-frame-f",
+            "track-frame-b",
+            "chassis",
+            "power-pack",
+            "fuel-tank",
+            "hopper",
+            "hopper-support",
+            "deck-wall-f",
+            "drive-guard-f",
+            "deck-wall-b",
+            "deck-support-a",
+            "deck-support-b",
+            "apron-rail-l",
+            "apron-rail-r",
+            "overs-conveyor-rail-l",
+            "overs-conveyor-rail-r",
+            "overs-strut-l",
+            "overs-strut-r",
+            "fines-conveyor-rail-l",
+            "fines-conveyor-rail-r",
+            "fines-strut",
+            "fines-hopper"
           ],
-          "param": "paintedSteel"
+          "param": "machine"
+        },
+        {
+          "name": "idler-f--2180",
+          "color": "#5b6064",
+          "parts": [
+            "idler-f--2180",
+            "idler-f-2180",
+            "idler-b--2180",
+            "idler-b-2180"
+          ]
+        },
+        {
+          "name": "power-pack-grille",
+          "color": "#26292b",
+          "parts": [
+            "power-pack-grille",
+            "drive-guard-b",
+            "apron-belt",
+            "overs-conveyor-belt",
+            "fines-conveyor-belt"
+          ]
+        },
+        {
+          "name": "exhaust",
+          "color": "#7b8084",
+          "parts": [
+            "exhaust"
+          ]
+        },
+        {
+          "name": "compost",
+          "color": "#4a3626",
+          "parts": [
+            "hopper-heap",
+            "deck-bed",
+            "apron-load",
+            "fines-conveyor-load",
+            "fines-pile"
+          ],
+          "param": "compost"
+        },
+        {
+          "name": "branch-0",
+          "color": "#7a5a38",
+          "parts": [
+            "branch-0",
+            "branch-1",
+            "branch-2",
+            "branch-3",
+            "branch-4",
+            "branch-5",
+            "overs-1",
+            "overs-2",
+            "overs-4",
+            "overs-5",
+            "overs-conveyor-load"
+          ]
+        },
+        {
+          "name": "shaft-0",
+          "color": "#8f969b",
+          "parts": [
+            "shaft-0",
+            "shaft-1",
+            "shaft-2",
+            "shaft-3",
+            "shaft-4",
+            "shaft-5",
+            "shaft-6",
+            "shaft-7",
+            "shaft-8",
+            "shaft-9",
+            "shaft-10",
+            "shaft-11",
+            "apron-head",
+            "overs-conveyor-head",
+            "fines-conveyor-head"
+          ]
+        },
+        {
+          "name": "stars",
+          "color": "#e0b52f",
+          "parts": [
+            "star-0-0",
+            "star-0-1",
+            "star-0-2",
+            "star-0-3",
+            "star-1-0",
+            "star-1-1",
+            "star-1-2",
+            "star-1-3",
+            "star-2-0",
+            "star-2-1",
+            "star-2-2",
+            "star-2-3",
+            "star-3-0",
+            "star-3-1",
+            "star-3-2",
+            "star-3-3",
+            "star-4-0",
+            "star-4-1",
+            "star-4-2",
+            "star-4-3",
+            "star-5-0",
+            "star-5-1",
+            "star-5-2",
+            "star-5-3",
+            "star-6-0",
+            "star-6-1",
+            "star-6-2",
+            "star-6-3",
+            "star-7-0",
+            "star-7-1",
+            "star-7-2",
+            "star-7-3",
+            "star-8-0",
+            "star-8-1",
+            "star-8-2",
+            "star-8-3",
+            "star-9-0",
+            "star-9-1",
+            "star-9-2",
+            "star-9-3",
+            "star-10-0",
+            "star-10-1",
+            "star-10-2",
+            "star-10-3",
+            "star-11-0",
+            "star-11-1",
+            "star-11-2",
+            "star-11-3"
+          ],
+          "param": "stars"
+        },
+        {
+          "name": "overs-0",
+          "color": "#4c8fd0",
+          "parts": [
+            "overs-0",
+            "overs-3",
+            "overs-6"
+          ]
+        },
+        {
+          "name": "overs-pile",
+          "color": "#6e5236",
+          "parts": [
+            "overs-pile"
+          ]
+        },
+        {
+          "name": "overs-stick-0",
+          "color": "#8a6a44",
+          "parts": [
+            "overs-stick-0",
+            "overs-stick-1",
+            "overs-stick-2",
+            "overs-stick-3",
+            "overs-stick-4"
+          ]
         }
       ]
     },
@@ -245071,15 +245823,18 @@
     {
       "id": "vibrating-grizzly",
       "kit": "recycling-facility",
-      "title": "Vibrating grizzly",
-      "description": "Vibrating grizzly: a guarded screening bed with a feed hopper, discharge lip and support rollers. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "title": "Vibrating grizzly feeder",
+      "description": "Vibrating grizzly feeder at about real size: deep open-top steel pan with flared feed skirts, standing on four coil springs over a base frame, twin unbalanced vibrator motors on the side walls, stepped discharge onto nine tapered grizzly bars, unders chute below the bars with a fines pile, and rubble on the pan and bars. Material controls: frame paint, wear liner, coil springs, rubble. quarry, weathered, highVisibility and recycledConcrete presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "grizzly feeder",
+        "vibrating feeder",
+        "scalping",
+        "C&D waste",
+        "crusher feed",
         "materials recovery",
-        "waste management",
-        "sorting",
         "low poly",
         "scene prop"
       ],
@@ -245092,8 +245847,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/vibrating-grizzly.kcad.ts",
       "preview": "/assets/recycling-facility-vibrating-grizzly.png",
-      "sourceSha256": "0fdcfaa6a4d5ae7a9d01f0e85d8dcb56486b72eb2f4fb6341b89a30f5ea5cb41",
-      "triangleBudget": 1800,
+      "sourceSha256": "fc6404d38c4d67cd5a48fb6ed368a5a915030138b4c11556d5ddf5266ef54ac2",
+      "triangleBudget": 4800,
       "params": [
         {
           "name": "scale",
@@ -245105,64 +245860,198 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#d49a2a",
+          "label": "Frame and pan paint"
         },
         {
-          "name": "paintedSteel",
+          "name": "liner",
           "type": "color",
-          "default": "#75656d",
-          "label": "Painted steel"
+          "default": "#5d6266",
+          "label": "Wear liner and grizzly bars (steel)"
+        },
+        {
+          "name": "springs",
+          "type": "color",
+          "default": "#3f7f4a",
+          "label": "Coil springs"
+        },
+        {
+          "name": "rubble",
+          "type": "color",
+          "default": "#9a8f80",
+          "label": "Rubble (concrete, stone)"
         }
       ],
       "presets": {
+        "quarry": {
+          "frame": "#d49a2a",
+          "liner": "#5d6266",
+          "springs": "#3f7f4a",
+          "rubble": "#9a8f80"
+        },
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#736767"
+          "frame": "#9c7f4c",
+          "liner": "#4f4a44",
+          "springs": "#5a5f52",
+          "rubble": "#8a8070"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "frame": "#e8c12c",
+          "liner": "#3e4347",
+          "springs": "#d6402e",
+          "rubble": "#a39a8c"
+        },
+        "recycledConcrete": {
+          "frame": "#3a6d9c",
+          "liner": "#686d70",
+          "springs": "#e0b52f",
+          "rubble": "#c2bcb0"
         }
       },
       "stats": {
-        "triangles": 540,
+        "triangles": 4168,
         "sizeM": [
-          1.0308,
-          0.8471,
-          2.4754
+          5.2,
+          2.324325,
+          3.77
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "liner",
+          "color": "#5d6266",
           "parts": [
-            "support-rail-left",
-            "support-rail-right",
-            "screen-bed",
-            "support-roller-1",
-            "support-roller-2",
-            "support-roller-3",
-            "support-roller-4"
+            "pan-floor",
+            "grizzly-bar-0",
+            "grizzly-bar-1",
+            "grizzly-bar-2",
+            "grizzly-bar-3",
+            "grizzly-bar-4",
+            "grizzly-bar-5",
+            "grizzly-bar-6",
+            "grizzly-bar-7",
+            "grizzly-bar-8",
+            "step-lip"
           ],
-          "param": "stainlessSteel"
+          "param": "liner"
         },
         {
-          "name": "paintedSteel",
-          "color": "#75656d",
+          "name": "frame",
+          "color": "#d49a2a",
           "parts": [
-            "feed-hopper",
-            "oversize-chute",
-            "side-guard-left",
-            "side-guard-right",
-            "vibrator-left",
-            "vibrator-right"
+            "pan-back",
+            "side-wall-f",
+            "wall-rib-top-f",
+            "feed-skirt-f",
+            "bracket-f--1700",
+            "gusset-f--1700",
+            "bracket-f-1700",
+            "gusset-f-1700",
+            "motor-weight-cover-f",
+            "side-wall-b",
+            "wall-rib-top-b",
+            "feed-skirt-b",
+            "bracket-b--1700",
+            "gusset-b--1700",
+            "bracket-b-1700",
+            "gusset-b-1700",
+            "motor-weight-cover-b",
+            "feed-skirt-back",
+            "bar-carrier",
+            "base-beam-f",
+            "pedestal-f--1700",
+            "pedestal-f-1700",
+            "base-beam-b",
+            "pedestal-b--1700",
+            "pedestal-b-1700",
+            "base-cross--2000",
+            "base-cross-0",
+            "base-cross-2000",
+            "unders-chute"
           ],
-          "param": "paintedSteel"
+          "param": "frame"
+        },
+        {
+          "name": "motor-f",
+          "color": "#2a2e31",
+          "parts": [
+            "motor-f",
+            "motor-foot-f",
+            "motor-b",
+            "motor-foot-b",
+            "spring-core-f--1700",
+            "spring-core-f-1700",
+            "spring-core-b--1700",
+            "spring-core-b-1700",
+            "unders-mouth"
+          ]
+        },
+        {
+          "name": "springs",
+          "color": "#3f7f4a",
+          "parts": [
+            "spring-f--1700-0",
+            "spring-f--1700-1",
+            "spring-f--1700-2",
+            "spring-f--1700-3",
+            "spring-f-1700-0",
+            "spring-f-1700-1",
+            "spring-f-1700-2",
+            "spring-f-1700-3",
+            "spring-b--1700-0",
+            "spring-b--1700-1",
+            "spring-b--1700-2",
+            "spring-b--1700-3",
+            "spring-b-1700-0",
+            "spring-b-1700-1",
+            "spring-b-1700-2",
+            "spring-b-1700-3"
+          ],
+          "param": "springs"
+        },
+        {
+          "name": "rubble",
+          "color": "#9a8f80",
+          "parts": [
+            "fines-pile",
+            "rubble-heap",
+            "rubble-1",
+            "rubble-2",
+            "rubble-4",
+            "rubble-5",
+            "rubble-7",
+            "rubble-8",
+            "rubble-10",
+            "rubble-11",
+            "rubble-13",
+            "oversize-0",
+            "oversize-2",
+            "oversize-4"
+          ],
+          "param": "rubble"
+        },
+        {
+          "name": "rubble-0",
+          "color": "#7f7468",
+          "parts": [
+            "rubble-0",
+            "rubble-3",
+            "rubble-6",
+            "rubble-9",
+            "rubble-12"
+          ]
+        },
+        {
+          "name": "oversize-1",
+          "color": "#b0a596",
+          "parts": [
+            "oversize-1",
+            "oversize-3"
+          ]
         }
       ]
     },
