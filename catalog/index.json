@@ -17156,10 +17156,15 @@
       "id": "ice-cream-cart",
       "kit": "amusement-park",
       "title": "Ice cream cart",
-      "description": "Mobile frozen-treat cart with insulated chest, hinged lid, flavor-board canopy, and four wheels. Controls: overall scale, powderCoat, stainlessSteel, rubber; festival and twilight material presets.",
+      "description": "Midway ice cream push cart at about real size: rounded enamel cabinet on two big spoked wheels and stand legs with a push bar, a stainless chest top with domed dipping-well lids and one open tub, a coloured band with a cone-and-scoop emblem, and a striped parasol with a ball finial. Material controls: enamel cabinet, parasol and band colour, stainless steel, rubber tyres. Festival, twilight and safety presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "ice cream cart",
+        "push cart",
+        "concession",
+        "parasol",
+        "vending cart",
         "amusement park",
         "theme park",
         "guest experience",
@@ -17176,8 +17181,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/ice-cream-cart.kcad.ts",
       "preview": "/assets/amusement-park-ice-cream-cart.png",
-      "sourceSha256": "adddbe690157d16cf284318c9d57306dad00bcee345ec5afd895d3f7c389caeb",
-      "triangleBudget": 1800,
+      "sourceSha256": "1dcfaa2ee27c0a26ed8f005eb85bbf3ea2b470887b81584c7895e1c04d08c546",
+      "triangleBudget": 5000,
       "params": [
         {
           "name": "scale",
@@ -17189,75 +17194,140 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "enamel",
           "type": "color",
-          "default": "#477985",
-          "label": "Powder-coated steel"
+          "default": "#f4ecd8",
+          "label": "Enamel cabinet and parasol panels"
+        },
+        {
+          "name": "canopy",
+          "type": "color",
+          "default": "#e0607e",
+          "label": "Parasol stripe, band and ice cream"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#b0b9b6",
-          "label": "Stainless steel"
+          "label": "Stainless chest, lids and frame"
         },
         {
           "name": "rubber",
           "type": "color",
           "default": "#292f33",
-          "label": "Rubber"
+          "label": "Rubber tyres and feet"
         }
       ],
       "presets": {
         "festival": {
-          "powderCoat": "#d47452",
+          "enamel": "#fff4dc",
+          "canopy": "#3f9bd8",
           "stainlessSteel": "#d1d1c6",
           "rubber": "#3c4245"
         },
         "twilight": {
-          "powderCoat": "#35576f",
+          "enamel": "#c9c3d8",
+          "canopy": "#6a4c93",
           "stainlessSteel": "#788b91",
           "rubber": "#20262a"
+        },
+        "mint": {
+          "enamel": "#f2f6ee",
+          "canopy": "#5fc4a0",
+          "stainlessSteel": "#c3cbc8",
+          "rubber": "#2b2f33"
         }
       },
       "stats": {
-        "triangles": 248,
+        "triangles": 4660,
         "sizeM": [
-          1.65,
-          1.985,
-          1.055
+          2.1,
+          2.415,
+          1.9
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#477985",
+          "name": "enamel",
+          "color": "#f4ecd8",
           "parts": [
-            "cart-body",
-            "insulated-chest",
-            "hinged-lid",
-            "menu-board",
-            "awning"
+            "cabinet",
+            "emblem-disc",
+            "hub-f",
+            "hub-b",
+            "parasol-panel-1",
+            "parasol-panel-3",
+            "parasol-panel-5",
+            "parasol-panel-7"
           ],
-          "param": "powderCoat"
+          "param": "enamel"
         },
         {
           "name": "stainlessSteel",
           "color": "#b0b9b6",
           "parts": [
-            "handle"
+            "cabinet-skirt",
+            "chest-top",
+            "well-rim-0",
+            "lid-0",
+            "well-rim-1",
+            "lid-1",
+            "well-rim-2",
+            "open-lid",
+            "scoop",
+            "rim-f",
+            "spoke-f-0",
+            "spoke-f-1",
+            "spoke-f-2",
+            "spoke-f-3",
+            "spoke-f-4",
+            "spoke-f-5",
+            "rim-b",
+            "spoke-b-0",
+            "spoke-b-1",
+            "spoke-b-2",
+            "spoke-b-3",
+            "spoke-b-4",
+            "spoke-b-5",
+            "axle",
+            "stand-leg-f",
+            "push-arm-f",
+            "stand-leg-b",
+            "push-arm-b",
+            "push-bar",
+            "parasol-pole"
           ],
           "param": "stainlessSteel"
+        },
+        {
+          "name": "canopy",
+          "color": "#e0607e",
+          "parts": [
+            "band",
+            "emblem-scoop",
+            "open-tub-cream",
+            "parasol-panel-0",
+            "parasol-panel-2",
+            "parasol-panel-4",
+            "parasol-panel-6",
+            "parasol-finial"
+          ],
+          "param": "canopy"
         },
         {
           "name": "rubber",
           "color": "#292f33",
           "parts": [
-            "wheel-0",
-            "wheel-1",
-            "wheel-2",
-            "wheel-3"
+            "emblem-cone",
+            "lid-knob-0",
+            "lid-knob-1",
+            "tyre-f",
+            "tyre-b",
+            "stand-foot-f",
+            "stand-foot-b",
+            "push-grip"
           ],
           "param": "rubber"
         }
@@ -21008,10 +21078,16 @@
       "id": "ride-load-platform",
       "kit": "amusement-park",
       "title": "Ride load platform",
-      "description": "Queue-side loading deck with three boarding bays, stairs, handrails, and a hinged-looking access gate. Controls: overall scale, steel, concrete, rubber; festival and twilight material presets.",
+      "description": "Raised ride load platform at about real size: steel deck on round columns with a fascia skirt, three rubber-matted boarding bays behind swing gate pairs with numbered bay discs, a painted safety edge stripe, a stringer stair from the queue with tube handrails, and a rear guard rail. Material controls: painted steel, concrete treads, rubber matting, safety paint. Festival, twilight and safety presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "load platform",
+        "boarding bay",
+        "ride station",
+        "swing gate",
+        "stairs",
+        "handrail",
         "amusement park",
         "theme park",
         "guest experience",
@@ -21028,8 +21104,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/ride-load-platform.kcad.ts",
       "preview": "/assets/amusement-park-ride-load-platform.png",
-      "sourceSha256": "4cfb7a9f4ecc81a52aaa57c0bc2f9c1b328d9fdd3f9c050bfcd24704ac091e82",
-      "triangleBudget": 1800,
+      "sourceSha256": "6307e0e2f23acb209888b61f894b800b97714dc969ea882a7b4ec450faf3bffe",
+      "triangleBudget": 6000,
       "params": [
         {
           "name": "scale",
@@ -21043,40 +21119,54 @@
         {
           "name": "steel",
           "type": "color",
-          "default": "#738087",
-          "label": "Painted steel"
+          "default": "#4f7a8c",
+          "label": "Painted steel deck, gates and rails"
         },
         {
           "name": "concrete",
           "type": "color",
-          "default": "#92938b",
-          "label": "Concrete"
+          "default": "#a3a49b",
+          "label": "Concrete stair treads"
         },
         {
           "name": "rubber",
           "type": "color",
-          "default": "#292f33",
-          "label": "Rubber"
+          "default": "#2c3236",
+          "label": "Rubber bay matting"
+        },
+        {
+          "name": "safetyPaint",
+          "type": "color",
+          "default": "#f0c230",
+          "label": "Safety edge paint and bay discs"
         }
       ],
       "presets": {
         "festival": {
-          "steel": "#9da3a0",
-          "concrete": "#aaa99e",
-          "rubber": "#3c4245"
+          "steel": "#c8553d",
+          "concrete": "#c2bfb2",
+          "rubber": "#3c4245",
+          "safetyPaint": "#f6d65c"
         },
         "twilight": {
-          "steel": "#4f626c",
+          "steel": "#2f4858",
           "concrete": "#6f7477",
-          "rubber": "#20262a"
+          "rubber": "#20262a",
+          "safetyPaint": "#d9a63a"
+        },
+        "safety": {
+          "steel": "#59636a",
+          "concrete": "#9a9b94",
+          "rubber": "#2b2f33",
+          "safetyPaint": "#ffd400"
         }
       },
       "stats": {
-        "triangles": 216,
+        "triangles": 3948,
         "sizeM": [
-          2.8,
-          1.5825,
-          2.295
+          4.13,
+          2.48,
+          1.510997
         ],
         "minUpM": 0,
         "materials": 1
@@ -21084,40 +21174,143 @@
       "palette": [
         {
           "name": "steel",
-          "color": "#738087",
+          "color": "#4f7a8c",
           "parts": [
             "deck",
-            "stair-base"
+            "fascia-front",
+            "fascia-end",
+            "column-0",
+            "column-1",
+            "column-2",
+            "column-3",
+            "column-4",
+            "column-5",
+            "gate-post-0-l",
+            "gate-top-0-l",
+            "gate-bottom-0-l",
+            "gate-bar-0-l-1",
+            "gate-bar-0-l-2",
+            "gate-bar-0-l-3",
+            "gate-post-0-r",
+            "gate-top-0-r",
+            "gate-bottom-0-r",
+            "gate-bar-0-r-1",
+            "gate-bar-0-r-2",
+            "gate-bar-0-r-3",
+            "bay-mast-0",
+            "gate-post-1-l",
+            "gate-top-1-l",
+            "gate-bottom-1-l",
+            "gate-bar-1-l-1",
+            "gate-bar-1-l-2",
+            "gate-bar-1-l-3",
+            "gate-post-1-r",
+            "gate-top-1-r",
+            "gate-bottom-1-r",
+            "gate-bar-1-r-1",
+            "gate-bar-1-r-2",
+            "gate-bar-1-r-3",
+            "bay-mast-1",
+            "gate-post-2-l",
+            "gate-top-2-l",
+            "gate-bottom-2-l",
+            "gate-bar-2-l-1",
+            "gate-bar-2-l-2",
+            "gate-bar-2-l-3",
+            "gate-post-2-r",
+            "gate-top-2-r",
+            "gate-bottom-2-r",
+            "gate-bar-2-r-1",
+            "gate-bar-2-r-2",
+            "gate-bar-2-r-3",
+            "bay-mast-2",
+            "front-rail-l",
+            "front-rail-r",
+            "rear-post-0",
+            "rear-post-1",
+            "rear-post-2",
+            "rear-post-3",
+            "end-post-4",
+            "end-post-5",
+            "rear-rail-1000",
+            "end-rail-1000",
+            "rear-rail-500",
+            "end-rail-500",
+            "stringer-f",
+            "stringer-b",
+            "stair-post-low-f",
+            "stair-post-high-f",
+            "stair-handrail-f",
+            "stair-midrail-f",
+            "stair-post-low-b",
+            "stair-post-high-b",
+            "stair-handrail-b",
+            "stair-midrail-b"
           ],
           "param": "steel"
         },
         {
           "name": "concrete",
-          "color": "#92938b",
+          "color": "#a3a49b",
           "parts": [
-            "stair-step-0",
-            "stair-step-1",
-            "stair-step-2",
-            "stair-step-3",
-            "stair-step-4",
-            "stair-step-5",
-            "rail-post-0",
-            "rail-post-1",
-            "rail-post-2",
-            "rail-post-3",
-            "rail-post-4",
-            "rail-post-5",
-            "rear-handrail",
-            "side-handrail-left",
-            "side-handrail-right"
+            "column-base-0",
+            "column-base-1",
+            "column-base-2",
+            "column-base-3",
+            "column-base-4",
+            "column-base-5",
+            "tread-0",
+            "tread-1",
+            "tread-2",
+            "tread-3",
+            "tread-4"
           ],
           "param": "concrete"
         },
         {
-          "name": "rubber",
-          "color": "#292f33",
+          "name": "safetyPaint",
+          "color": "#f0c230",
           "parts": [
-            "boarding-gate"
+            "edge-stripe",
+            "bay-mat-stripe-0",
+            "gate-panel-0-l",
+            "gate-panel-0-r",
+            "bay-disc-0",
+            "bay-mat-stripe-1",
+            "gate-panel-1-l",
+            "gate-panel-1-r",
+            "bay-disc-1",
+            "bay-mat-stripe-2",
+            "gate-panel-2-l",
+            "gate-panel-2-r",
+            "bay-disc-2",
+            "tread-nosing-0",
+            "tread-nosing-1",
+            "tread-nosing-2",
+            "tread-nosing-3",
+            "tread-nosing-4"
+          ],
+          "param": "safetyPaint"
+        },
+        {
+          "name": "rubber",
+          "color": "#2c3236",
+          "parts": [
+            "bay-mat-0",
+            "gate-post-cap-0-l",
+            "gate-post-cap-0-r",
+            "bay-number-0-0",
+            "bay-mat-1",
+            "gate-post-cap-1-l",
+            "gate-post-cap-1-r",
+            "bay-number-1-0",
+            "bay-number-1-1",
+            "bay-mat-2",
+            "gate-post-cap-2-l",
+            "gate-post-cap-2-r",
+            "bay-number-2-0",
+            "bay-number-2-1",
+            "bay-number-2-2"
           ],
           "param": "rubber"
         }
@@ -21463,10 +21656,15 @@
       "id": "ride-photo-preview-kiosk",
       "kit": "amusement-park",
       "title": "Ride photo preview kiosk",
-      "description": "Guest-facing image preview station with a large display, purchase ledge, and a tilted sun shield. Controls: overall scale, powderCoat, stainlessSteel, glass; festival and twilight material presets.",
+      "description": "Ride-exit photo preview kiosk at about real size: wide display tilted back under a curved sun hood with side cheeks, a row of on-ride photo thumbnails, a sloped purchase ledge with card reader and receipt slot, a rounded pedestal on a stainless base plate, and a photos sign with a camera emblem. Material controls: powder-coated steel, stainless steel, display glass, sign panel. Festival, twilight and safety presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "photo kiosk",
+        "on-ride photo",
+        "display",
+        "point of sale",
+        "ride exit",
         "amusement park",
         "theme park",
         "guest experience",
@@ -21483,8 +21681,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/ride-photo-preview-kiosk.kcad.ts",
       "preview": "/assets/amusement-park-ride-photo-preview-kiosk.png",
-      "sourceSha256": "2753ceaa44846c3e02d95e9c83f0d5774c473d1dab31ca05e1df51c9c748602f",
-      "triangleBudget": 1800,
+      "sourceSha256": "32ab7ec0c8c7fb3578a419efaadf96a7c4ae6b57349412c1e75eb22cc0352353",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -21498,40 +21696,54 @@
         {
           "name": "powderCoat",
           "type": "color",
-          "default": "#477985",
-          "label": "Powder-coated steel"
+          "default": "#2f6f80",
+          "label": "Powder-coated pedestal and hood"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#b0b9b6",
-          "label": "Stainless steel"
+          "label": "Stainless base, ledge and trim"
         },
         {
           "name": "glass",
           "type": "color",
-          "default": "#75b9bf",
-          "label": "Tinted glass"
+          "default": "#1d2b38",
+          "label": "Display glass"
+        },
+        {
+          "name": "signPanel",
+          "type": "color",
+          "default": "#f2b84b",
+          "label": "Sign panel and photo thumbnails"
         }
       ],
       "presets": {
         "festival": {
           "powderCoat": "#d47452",
           "stainlessSteel": "#d1d1c6",
-          "glass": "#efce70"
+          "glass": "#22303d",
+          "signPanel": "#ffd86b"
         },
         "twilight": {
           "powderCoat": "#35576f",
           "stainlessSteel": "#788b91",
-          "glass": "#6387aa"
+          "glass": "#141c26",
+          "signPanel": "#8fc7e0"
+        },
+        "safety": {
+          "powderCoat": "#59636a",
+          "stainlessSteel": "#c3cbc8",
+          "glass": "#1a1f24",
+          "signPanel": "#ffd400"
         }
       },
       "stats": {
-        "triangles": 84,
+        "triangles": 912,
         "sizeM": [
-          1.25,
-          2.155698,
-          0.65
+          1.24,
+          2.38,
+          0.74
         ],
         "minUpM": 0,
         "materials": 1
@@ -21541,29 +21753,62 @@
           "name": "stainlessSteel",
           "color": "#b0b9b6",
           "parts": [
-            "base"
+            "base-plate",
+            "pedestal-band",
+            "purchase-ledge",
+            "receipt-lip",
+            "hero-photo",
+            "sign-post-l",
+            "sign-post-r",
+            "camera-lens"
           ],
           "param": "stainlessSteel"
         },
         {
           "name": "powderCoat",
-          "color": "#477985",
+          "color": "#2f6f80",
           "parts": [
             "pedestal",
-            "purchase-ledge",
-            "sun-shield",
-            "receipt-slot"
+            "ledge-bracket",
+            "display-housing",
+            "thumbnail-hill-0",
+            "thumbnail-hill-1",
+            "thumbnail-hill-2",
+            "hero-photo-car",
+            "sun-hood",
+            "hood-cheek-l",
+            "hood-cheek-r",
+            "sign-letter-0",
+            "sign-letter-1",
+            "sign-letter-2",
+            "sign-letter-3"
           ],
           "param": "powderCoat"
         },
         {
           "name": "glass",
-          "color": "#75b9bf",
+          "color": "#1d2b38",
           "parts": [
-            "display-frame",
-            "display-face"
+            "card-reader",
+            "receipt-slot",
+            "display-glass",
+            "camera-body",
+            "camera-hump"
           ],
           "param": "glass"
+        },
+        {
+          "name": "signPanel",
+          "color": "#f2b84b",
+          "parts": [
+            "card-reader-slot",
+            "thumbnail-0",
+            "thumbnail-1",
+            "thumbnail-2",
+            "price-button",
+            "sign-panel"
+          ],
+          "param": "signPanel"
         }
       ]
     },
@@ -21684,10 +21929,15 @@
       "id": "rope-net-tunnel",
       "kit": "amusement-park",
       "title": "Rope net tunnel",
-      "description": "Short crawl-through play tunnel with six arch frames, cross braces, and a low net-grid silhouette. Controls: overall scale, steel, nylon, rubber; festival and twilight material presets.",
+      "description": "Crawl-through rope net play tunnel at about real size: six round steel hoops on a rubber safety mat with ground rails at the feet, a see-through rope net of lengthwise ropes crossed by a rope hoop in every bay, and foam bumper rings on both entry hoops. Material controls: painted steel, nylon rope, rubber mat, foam padding. Festival, twilight and safety presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "net tunnel",
+        "crawl tunnel",
+        "rope net",
+        "playground",
+        "play equipment",
         "amusement park",
         "theme park",
         "guest experience",
@@ -21699,13 +21949,14 @@
         "amusement-park",
         "theme-park",
         "midway",
-        "visitor-attraction"
+        "visitor-attraction",
+        "playground"
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/rope-net-tunnel.kcad.ts",
       "preview": "/assets/amusement-park-rope-net-tunnel.png",
-      "sourceSha256": "bfa72b9fe3972491fb1d435068f8d5eede78257c61a59da2121eaf9e19ec03b1",
-      "triangleBudget": 1800,
+      "sourceSha256": "151633977d11033138c39bab0787945ed59e96025c33468b5cdb6f4c172aae5c",
+      "triangleBudget": 9000,
       "params": [
         {
           "name": "scale",
@@ -21719,85 +21970,134 @@
         {
           "name": "steel",
           "type": "color",
-          "default": "#738087",
-          "label": "Painted steel"
+          "default": "#2f7d5b",
+          "label": "Painted steel hoops and rails"
         },
         {
           "name": "nylon",
           "type": "color",
-          "default": "#a98b58",
-          "label": "Nylon"
+          "default": "#d8a640",
+          "label": "Nylon rope net"
         },
         {
           "name": "rubber",
           "type": "color",
-          "default": "#292f33",
-          "label": "Rubber"
+          "default": "#5b6b70",
+          "label": "Rubber safety mat"
+        },
+        {
+          "name": "padding",
+          "type": "color",
+          "default": "#d6473d",
+          "label": "Foam bumper padding"
         }
       ],
       "presets": {
         "festival": {
-          "steel": "#9da3a0",
-          "nylon": "#d3a84f",
-          "rubber": "#3c4245"
+          "steel": "#3f6fb5",
+          "nylon": "#f0c35a",
+          "rubber": "#8a5a44",
+          "padding": "#e65a8c"
         },
         "twilight": {
-          "steel": "#4f626c",
-          "nylon": "#627e8d",
-          "rubber": "#20262a"
+          "steel": "#2f4858",
+          "nylon": "#8fa3b0",
+          "rubber": "#30383c",
+          "padding": "#6a4c93"
+        },
+        "safety": {
+          "steel": "#59636a",
+          "nylon": "#e2d6b6",
+          "rubber": "#3a3f42",
+          "padding": "#ffd400"
         }
       },
       "stats": {
-        "triangles": 240,
+        "triangles": 7684,
         "sizeM": [
-          2.38,
-          1.515,
-          1.876892
+          3.2,
+          0.895,
+          2
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "nylon",
-          "color": "#a98b58",
+          "name": "rubber",
+          "color": "#5b6b70",
           "parts": [
-            "arch-foot-0",
-            "arch-foot-1",
-            "arch-foot-2",
-            "arch-foot-3",
-            "cross-brace-0",
-            "cross-brace-1"
+            "safety-mat"
           ],
-          "param": "nylon"
+          "param": "rubber"
         },
         {
           "name": "steel",
-          "color": "#738087",
+          "color": "#2f7d5b",
           "parts": [
-            "arch-rib-0",
-            "arch-rib-1",
-            "arch-rib-2",
-            "arch-rib-3",
-            "arch-rib-4",
-            "arch-rib-5",
-            "net-strand-0",
-            "net-strand-1",
-            "net-strand-2",
-            "net-strand-3",
-            "net-strand-4",
-            "net-strand-5",
-            "net-strand-6"
+            "hoop-0",
+            "hoop-foot-0-f",
+            "hoop-foot-0-b",
+            "hoop-1",
+            "hoop-foot-1-f",
+            "hoop-foot-1-b",
+            "hoop-2",
+            "hoop-foot-2-f",
+            "hoop-foot-2-b",
+            "hoop-3",
+            "hoop-foot-3-f",
+            "hoop-foot-3-b",
+            "hoop-4",
+            "hoop-foot-4-f",
+            "hoop-foot-4-b",
+            "hoop-5",
+            "hoop-foot-5-f",
+            "hoop-foot-5-b",
+            "ground-rail-f",
+            "ground-rail-b"
           ],
           "param": "steel"
         },
         {
-          "name": "rubber",
-          "color": "#292f33",
+          "name": "padding",
+          "color": "#d6473d",
           "parts": [
-            "cross-brace-2"
+            "bumper-entry",
+            "bumper-exit"
           ],
-          "param": "rubber"
+          "param": "padding"
+        },
+        {
+          "name": "nylon",
+          "color": "#d8a640",
+          "parts": [
+            "rope-long-0",
+            "rope-long-1",
+            "rope-long-2",
+            "rope-long-3",
+            "rope-long-4",
+            "rope-long-5",
+            "rope-long-6",
+            "rope-long-7",
+            "rope-long-8",
+            "rope-hoop-0-a",
+            "rope-hoop-0-b",
+            "rope-hoop-1-a",
+            "rope-hoop-1-b",
+            "rope-hoop-2-a",
+            "rope-hoop-2-b",
+            "rope-hoop-3-a",
+            "rope-hoop-3-b",
+            "rope-hoop-4-a",
+            "rope-hoop-4-b",
+            "crown-knot-0",
+            "crown-knot-1",
+            "crown-knot-2",
+            "crown-knot-3",
+            "crown-knot-4",
+            "crown-knot-5"
+          ],
+          "param": "nylon"
         }
       ]
     },
@@ -23221,10 +23521,16 @@
       "id": "wristband-checkin-desk",
       "kit": "amusement-park",
       "title": "Wristband check-in desk",
-      "description": "Guest check-in counter with wristband dispenser, handheld scanner cradle, and an accessible return shelf. Controls: overall scale, paintedTimber, stainlessSteel, acrylic; festival and twilight material presets.",
+      "description": "Guest check-in counter at about real size: bow-fronted timber counter with a coloured band, standing-height and lowered accessible sections with stainless tops, a wristband dispenser showing its coil, a handheld scanner in a tilted cradle, spare wristband loops, an acrylic screen on stainless standoffs, and a check-in sign with a wristband emblem. Material controls: painted timber, stainless steel, acrylic, wristband colour. Festival, twilight and safety presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "check-in desk",
+        "wristband",
+        "guest services",
+        "counter",
+        "scanner",
+        "accessible counter",
         "amusement park",
         "theme park",
         "guest experience",
@@ -23241,8 +23547,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/wristband-checkin-desk.kcad.ts",
       "preview": "/assets/amusement-park-wristband-checkin-desk.png",
-      "sourceSha256": "d4000c0bad989578689b7d64656a4b5d54f3c6815987ac34c9df55fbb91eb679",
-      "triangleBudget": 1800,
+      "sourceSha256": "fa7758a52cdd32c1cef2937c8a3dc650507ac6636c0068d5402c733d122a3702",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -23256,69 +23562,114 @@
         {
           "name": "paintedTimber",
           "type": "color",
-          "default": "#92704e",
-          "label": "Painted timber"
+          "default": "#e8e0cf",
+          "label": "Painted timber counter"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#b0b9b6",
-          "label": "Stainless steel"
+          "label": "Stainless tops and fittings"
         },
         {
           "name": "acrylic",
           "type": "color",
-          "default": "#63aab8",
-          "label": "Tinted acrylic"
+          "default": "#9fcbd3",
+          "label": "Acrylic screen"
+        },
+        {
+          "name": "wristband",
+          "type": "color",
+          "default": "#e2405e",
+          "label": "Wristband and brand colour"
         }
       ],
       "presets": {
         "festival": {
-          "paintedTimber": "#be8a4e",
+          "paintedTimber": "#f4e6c4",
           "stainlessSteel": "#d1d1c6",
-          "acrylic": "#79c8d2"
+          "acrylic": "#bfe3ea",
+          "wristband": "#7b3fbf"
         },
         "twilight": {
           "paintedTimber": "#5e7181",
           "stainlessSteel": "#788b91",
-          "acrylic": "#41768b"
+          "acrylic": "#41768b",
+          "wristband": "#f2b84b"
+        },
+        "safety": {
+          "paintedTimber": "#d9d4c6",
+          "stainlessSteel": "#c3cbc8",
+          "acrylic": "#c8d7da",
+          "wristband": "#ff7a00"
         }
       },
       "stats": {
-        "triangles": 72,
+        "triangles": 2584,
         "sizeM": [
-          1.9,
-          1.38,
-          0.85
+          2.52,
+          1.84,
+          0.86996
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedTimber",
-          "color": "#92704e",
-          "parts": [
-            "counter-body",
-            "countertop",
-            "wristband-dispenser"
-          ],
-          "param": "paintedTimber"
-        },
-        {
           "name": "stainlessSteel",
           "color": "#b0b9b6",
           "parts": [
+            "plinth",
+            "accessible-top",
+            "standing-top",
+            "dispenser-housing",
+            "dispenser-hub",
             "scanner-cradle",
-            "lower-return-shelf"
+            "screen-standoff-l",
+            "screen-standoff-r",
+            "screen-pass-slot",
+            "sign-foot",
+            "sign-post"
           ],
           "param": "stainlessSteel"
         },
         {
-          "name": "acrylic",
-          "color": "#63aab8",
+          "name": "paintedTimber",
+          "color": "#e8e0cf",
           "parts": [
-            "privacy-screen"
+            "accessible-body",
+            "standing-body",
+            "accessible-sign-mark",
+            "wristband-loop-1",
+            "sign-emblem",
+            "sign-text-0",
+            "sign-text-1",
+            "sign-text-2"
+          ],
+          "param": "paintedTimber"
+        },
+        {
+          "name": "wristband",
+          "color": "#e2405e",
+          "parts": [
+            "band-low",
+            "band-high",
+            "accessible-sign",
+            "dispenser-coil",
+            "dispenser-tongue",
+            "scanner-window",
+            "wristband-loop-0",
+            "wristband-loop-2",
+            "sign-panel"
+          ],
+          "param": "wristband"
+        },
+        {
+          "name": "acrylic",
+          "color": "#9fcbd3",
+          "parts": [
+            "scanner",
+            "screen"
           ],
           "param": "acrylic"
         }
