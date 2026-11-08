@@ -279322,10 +279322,16 @@
       "id": "folding-flat-brace",
       "kit": "theatre-production",
       "title": "Folding flat brace",
-      "description": "Scenery-panel kick brace with a lower floor shoe, pivot plate and adjustable support rod. Knobs: overall scale; painted steel, galvanized steel, steel hardware; houseShow and touring appearance presets.",
+      "description": "Adjustable wooden stage brace at about real size: two overlapping hardwood rails with two sliding iron clamp collars and thumbscrews, forked brace hook caught in a brace cleat on a short length of flat (stile, toggle, muslin face), bent foot iron with a stage screw into the deck, and a sandbag over the foot. Material controls: brace hardwood, iron hardware, flat timber and muslin, sandbag canvas. houseShow, touring and blackBox presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "stage brace",
+        "adjustable brace",
+        "flat brace",
+        "brace cleat",
+        "stage screw",
+        "foot iron",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -279342,8 +279348,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/folding-flat-brace.kcad.ts",
       "preview": "/assets/theatre-production-folding-flat-brace.png",
-      "sourceSha256": "705a247ca6fa571fe3e62ac05bbd83f8b52826c0522653c9f9302283a1d8094c",
-      "triangleBudget": 1800,
+      "sourceSha256": "42c1a90b7f66e4842e3d44f1f6ebbb3a2a65b5fc257c1249994c56105d3402bf",
+      "triangleBudget": 2200,
       "params": [
         {
           "name": "scale",
@@ -279355,76 +279361,118 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "hardwood",
           "type": "color",
-          "default": "#454d54",
-          "label": "Painted steel"
+          "default": "#b98a52",
+          "label": "Brace hardwood"
         },
         {
-          "name": "galvanizedSteel",
+          "name": "iron",
           "type": "color",
-          "default": "#aab5b9",
-          "label": "Galvanized steel"
+          "default": "#3a3f44",
+          "label": "Iron hardware"
         },
         {
-          "name": "hardware",
+          "name": "flat",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#d8cdb4",
+          "label": "Flat timber and muslin"
+        },
+        {
+          "name": "canvas",
+          "type": "color",
+          "default": "#8a7a55",
+          "label": "Sandbag canvas"
         }
       ],
       "presets": {
         "houseShow": {
-          "paintedSteel": "#313940",
-          "galvanizedSteel": "#c0c8ca",
-          "hardware": "#c5a052"
+          "hardwood": "#b98a52",
+          "iron": "#3a3f44",
+          "flat": "#d8cdb4",
+          "canvas": "#8a7a55"
         },
         "touring": {
-          "paintedSteel": "#dda21f",
-          "galvanizedSteel": "#dce2e2",
-          "hardware": "#e2b347"
+          "hardwood": "#d2a56a",
+          "iron": "#9aa3a8",
+          "flat": "#c9b48c",
+          "canvas": "#3d5a3a"
+        },
+        "blackBox": {
+          "hardwood": "#3b3229",
+          "iron": "#1c1d1f",
+          "flat": "#26272a",
+          "canvas": "#2e2e2e"
         }
       },
       "stats": {
-        "triangles": 172,
+        "triangles": 1104,
         "sizeM": [
-          0.25,
-          1.53,
-          0.24
+          1.645068,
+          2.3,
+          0.713872
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#454d54",
+          "name": "flat",
+          "color": "#d8cdb4",
           "parts": [
-            "floor-shoe",
-            "lower-bracket",
-            "upper-bracket"
+            "flat-stile",
+            "flat-toggle",
+            "flat-rail",
+            "flat-face"
           ],
-          "param": "paintedSteel"
+          "param": "flat"
         },
         {
-          "name": "galvanizedSteel",
-          "color": "#aab5b9",
+          "name": "iron",
+          "color": "#3a3f44",
           "parts": [
-            "brace-rail"
+            "brace-cleat",
+            "cleat-screw-1880",
+            "cleat-screw-1960",
+            "collar-low",
+            "thumbscrew-low",
+            "thumbscrew-low-wing",
+            "collar-high",
+            "thumbscrew-high",
+            "thumbscrew-high-wing",
+            "hook-strap",
+            "hook-tongue",
+            "hook-tip",
+            "hook-bolt-2082",
+            "hook-bolt-2172",
+            "foot-strap",
+            "foot-plate",
+            "stage-screw",
+            "stage-screw-handle",
+            "foot-bolt-60",
+            "foot-bolt-180",
+            "sandbag-tie",
+            "sandbag-handle"
           ],
-          "param": "galvanizedSteel"
+          "param": "iron"
         },
         {
-          "name": "hardware",
-          "color": "#c28f3e",
+          "name": "hardwood",
+          "color": "#b98a52",
           "parts": [
-            "telescoping-rail",
-            "locking-tab",
-            "panel-hook",
-            "pivot",
-            "locking-pin"
+            "rail-lower",
+            "rail-upper"
           ],
-          "param": "hardware"
+          "param": "hardwood"
+        },
+        {
+          "name": "canvas",
+          "color": "#8a7a55",
+          "parts": [
+            "sandbag",
+            "sandbag-neck"
+          ],
+          "param": "canvas"
         }
       ]
     },
@@ -280655,10 +280703,16 @@
       "id": "marley-floor-roll",
       "kit": "theatre-production",
       "title": "Marley floor roll",
-      "description": "Rolled performance-floor sheet with a broad cylindrical core, loose leading edge and carry cradle. Knobs: overall scale; painted steel, stage fabric, steel hardware; houseShow and touring appearance presets.",
+      "description": "Reversible vinyl dance floor roll at about real size: vinyl wound on a cardboard core with the layer rings showing on the ends, steel axle with locking collars carried by two A-frame end stands on rubber feet, a loose sheet peeling off the bottom of the roll and laid flat across the deck performance face up, floor tape along the seam, spike marks and a roll of tape on the sheet. Material controls: performance face, reverse face, stand steel, floor tape. black, grey and whiteFloor presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "marley",
+        "dance floor",
+        "vinyl floor",
+        "floor roll",
+        "roll stand",
+        "floor tape",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -280675,7 +280729,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/marley-floor-roll.kcad.ts",
       "preview": "/assets/theatre-production-marley-floor-roll.png",
-      "sourceSha256": "0105ff35db704eec921f1754b06a56ec0ae1370216fc4a767a3b734daa2a9e36",
+      "sourceSha256": "3f7152321589ea621e5fe521719469271de106f0ddc83027972a41f82b76bc18",
       "triangleBudget": 1800,
       "params": [
         {
@@ -280688,77 +280742,131 @@
           "step": 0.05
         },
         {
+          "name": "vinyl",
+          "type": "color",
+          "default": "#2a2b2e",
+          "label": "Performance face vinyl"
+        },
+        {
+          "name": "reverse",
+          "type": "color",
+          "default": "#8e9296",
+          "label": "Reverse face vinyl"
+        },
+        {
           "name": "steel",
           "type": "color",
-          "default": "#46515a",
-          "label": "Painted steel"
+          "default": "#c43d2f",
+          "label": "Stand steel"
         },
         {
-          "name": "fabric",
+          "name": "tape",
           "type": "color",
-          "default": "#463849",
-          "label": "Stage fabric"
-        },
-        {
-          "name": "hardware",
-          "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#e9e6dc",
+          "label": "Floor tape"
         }
       ],
       "presets": {
-        "houseShow": {
-          "steel": "#343b41",
-          "fabric": "#28262d",
-          "hardware": "#c5a052"
+        "black": {
+          "vinyl": "#2a2b2e",
+          "reverse": "#8e9296",
+          "steel": "#c43d2f",
+          "tape": "#e9e6dc"
         },
-        "touring": {
-          "steel": "#315968",
-          "fabric": "#a14469",
-          "hardware": "#e2b347"
+        "grey": {
+          "vinyl": "#8e9296",
+          "reverse": "#2a2b2e",
+          "steel": "#2f5f8a",
+          "tape": "#2a2b2e"
+        },
+        "whiteFloor": {
+          "vinyl": "#ecebe6",
+          "reverse": "#1f2022",
+          "steel": "#3a3f44",
+          "tape": "#ecebe6"
         }
       },
       "stats": {
-        "triangles": 248,
+        "triangles": 1380,
         "sizeM": [
-          1.07,
-          0.95,
-          0.5575
+          1.922434,
+          0.605,
+          2.25
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "steel",
-          "color": "#46515a",
+          "name": "reverse",
+          "color": "#8e9296",
           "parts": [
-            "cradle-left",
-            "cradle-right",
-            "cradle-crossbar",
-            "roll-core"
+            "roll",
+            "end-ring-l-1",
+            "end-ring-l-3",
+            "end-ring-r-1",
+            "end-ring-r-3",
+            "axle"
+          ],
+          "param": "reverse"
+        },
+        {
+          "name": "vinyl",
+          "color": "#2a2b2e",
+          "parts": [
+            "end-ring-l-0",
+            "end-ring-l-2",
+            "end-ring-r-0",
+            "end-ring-r-2",
+            "sheet"
+          ],
+          "param": "vinyl"
+        },
+        {
+          "name": "core-l",
+          "color": "#b48a5a",
+          "parts": [
+            "core-l",
+            "core-r"
+          ]
+        },
+        {
+          "name": "steel",
+          "color": "#c43d2f",
+          "parts": [
+            "stand-l",
+            "collar-l",
+            "stand-r",
+            "collar-r",
+            "tie-rail"
           ],
           "param": "steel"
         },
         {
-          "name": "fabric",
-          "color": "#463849",
+          "name": "axle-knob-l",
+          "color": "#18191b",
           "parts": [
-            "loose-sheet",
-            "end-strap-left",
-            "end-strap-right"
-          ],
-          "param": "fabric"
+            "axle-knob-l",
+            "foot-l-f",
+            "foot-l-b",
+            "axle-knob-r",
+            "foot-r-f",
+            "foot-r-b"
+          ]
         },
         {
-          "name": "hardware",
-          "color": "#c28f3e",
+          "name": "tape",
+          "color": "#e9e6dc",
           "parts": [
-            "core-cap-left",
-            "core-cap-right",
-            "retainer-pin"
+            "seam-tape",
+            "edge-tape",
+            "spike--200-a",
+            "spike--200-b",
+            "spike-260-a",
+            "spike-260-b",
+            "tape-roll"
           ],
-          "param": "hardware"
+          "param": "tape"
         }
       ]
     },
@@ -281386,10 +281494,15 @@
       "id": "orchestra-shell-panel",
       "kit": "theatre-production",
       "title": "Orchestra shell panel",
-      "description": "Freestanding acoustic-shell section with broad reflector face, folded side returns and support feet. Knobs: overall scale; stage timber, painted steel, steel hardware; houseShow and touring appearance presets.",
+      "description": "Concert acoustic shell tower at about real size: convex curved timber reflector face in alternating veneer staves with a trim edge, forward-tilted curved canopy reflector, steel space-frame behind with diagonal bracing, rolling base with four swivel casters and rear outrigger legs with levelling pads. Material controls: face veneer, inlay staves and trim, steel frame, casters and pads. maple, walnut and whiteHall presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "orchestra shell",
+        "acoustic shell",
+        "shell tower",
+        "acoustic reflector",
+        "concert stage",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -281406,8 +281519,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/orchestra-shell-panel.kcad.ts",
       "preview": "/assets/theatre-production-orchestra-shell-panel.png",
-      "sourceSha256": "332094f00d7c1912f4fe35d31e3edf18acc1394860fa28e7fead4c098049446c",
-      "triangleBudget": 1800,
+      "sourceSha256": "fff6163992bbcb9197ef18435d301721ff1164df6f3530787a64c506b4e8bf5a",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "scale",
@@ -281419,77 +281532,141 @@
           "step": 0.05
         },
         {
-          "name": "timber",
+          "name": "veneer",
           "type": "color",
-          "default": "#946b43",
-          "label": "Stage timber"
+          "default": "#e8bd80",
+          "label": "Face veneer"
         },
         {
-          "name": "steel",
+          "name": "inlay",
           "type": "color",
-          "default": "#46515a",
-          "label": "Painted steel"
+          "default": "#c48d52",
+          "label": "Inlay staves and trim"
         },
         {
-          "name": "hardware",
+          "name": "frame",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#2e3236",
+          "label": "Steel frame"
+        },
+        {
+          "name": "rubber",
+          "type": "color",
+          "default": "#18191b",
+          "label": "Casters and pads"
         }
       ],
       "presets": {
-        "houseShow": {
-          "timber": "#725137",
-          "steel": "#343b41",
-          "hardware": "#c5a052"
+        "maple": {
+          "veneer": "#e8bd80",
+          "inlay": "#c48d52",
+          "frame": "#2e3236",
+          "rubber": "#18191b"
         },
-        "touring": {
-          "timber": "#cd914b",
-          "steel": "#315968",
-          "hardware": "#e2b347"
+        "walnut": {
+          "veneer": "#7a5235",
+          "inlay": "#5a3a24",
+          "frame": "#1f2124",
+          "rubber": "#141516"
+        },
+        "whiteHall": {
+          "veneer": "#ece8df",
+          "inlay": "#c9b48a",
+          "frame": "#7d868b",
+          "rubber": "#2a2c2e"
         }
       },
       "stats": {
-        "triangles": 184,
+        "triangles": 1212,
         "sizeM": [
-          1.47,
-          2.115,
-          0.42
+          1.527015,
+          3.344287,
+          1.409129
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "timber",
-          "color": "#946b43",
+          "name": "veneer",
+          "color": "#e8bd80",
           "parts": [
-            "reflector-face",
-            "rear-stiffener-low",
-            "rear-stiffener-high"
+            "stave-0",
+            "stave-2",
+            "stave-4",
+            "stave-6",
+            "canopy"
           ],
-          "param": "timber"
+          "param": "veneer"
         },
         {
-          "name": "steel",
-          "color": "#46515a",
+          "name": "inlay",
+          "color": "#c48d52",
           "parts": [
-            "left-return",
-            "right-return",
-            "top-cap",
-            "left-foot",
-            "right-foot"
+            "stave-1",
+            "stave-3",
+            "stave-5",
+            "trim-bottom",
+            "trim-top",
+            "canopy-trim"
           ],
-          "param": "steel"
+          "param": "inlay"
         },
         {
-          "name": "hardware",
-          "color": "#c28f3e",
+          "name": "frame",
+          "color": "#2e3236",
           "parts": [
-            "hinge-left",
-            "hinge-right"
+            "chord-front-l",
+            "chord-rear-l",
+            "strut-l-360",
+            "strut-l-1360",
+            "strut-l-2310",
+            "diag-l-400",
+            "diag-l-1400",
+            "chord-front-r",
+            "chord-rear-r",
+            "strut-r-360",
+            "strut-r-1360",
+            "strut-r-2310",
+            "diag-r-400",
+            "diag-r-1400",
+            "cross-rail-860",
+            "cross-rail-1860",
+            "canopy-arm-l",
+            "canopy-arm-r",
+            "base-front",
+            "base-rear",
+            "base-side-l",
+            "kick-l",
+            "caster-plate-l-120",
+            "caster-fork-l-120",
+            "caster-plate-l-320",
+            "caster-fork-l-320",
+            "outrigger-l",
+            "leveller-l",
+            "base-side-r",
+            "kick-r",
+            "caster-plate-r-120",
+            "caster-fork-r-120",
+            "caster-plate-r-320",
+            "caster-fork-r-320",
+            "outrigger-r",
+            "leveller-r"
           ],
-          "param": "hardware"
+          "param": "frame"
+        },
+        {
+          "name": "rubber",
+          "color": "#18191b",
+          "parts": [
+            "caster-wheel-l-120",
+            "caster-wheel-l-320",
+            "pad-l",
+            "caster-wheel-r-120",
+            "caster-wheel-r-320",
+            "pad-r"
+          ],
+          "param": "rubber"
         }
       ]
     },
@@ -283289,10 +283466,16 @@
       "id": "scenic-flat-panel",
       "kit": "theatre-production",
       "title": "Scenic flat panel",
-      "description": "Lightweight scenery flat with a broad facing, perimeter rails, two battens and foot blocks. Knobs: overall scale; stage timber, painted steel, rubber and isolation pads, steel hardware; houseShow and touring appearance presets.",
+      "description": "Hard scenic flat at about real size: painted face on a visible timber frame with toggles, painted-in window with casing, sash bars and sky backing, chair rail, two wainscot panels and baseboard in trim paint, and two triangular stage jacks behind it with stage weights. Material controls: wall paint, trim paint, frame timber, stage weights. parlour, cottage and blackBox presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "scenic flat",
+        "hard flat",
+        "theatre flat",
+        "stage jack",
+        "scenery wall",
+        "set piece",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -283309,7 +283492,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/scenic-flat-panel.kcad.ts",
       "preview": "/assets/theatre-production-scenic-flat-panel.png",
-      "sourceSha256": "874d7bfb20ebc12232ec0efb3e0887d7532275b1c6f143ec613d1dd0840cbd9b",
+      "sourceSha256": "4c976d0aeaa9001f7c84c5c875569c8f3a60f6f3a14ad2a2b006e8d29085b7aa",
       "triangleBudget": 1800,
       "params": [
         {
@@ -283322,93 +283505,133 @@
           "step": 0.05
         },
         {
+          "name": "wallPaint",
+          "type": "color",
+          "default": "#6f8f6a",
+          "label": "Wall paint"
+        },
+        {
+          "name": "trimPaint",
+          "type": "color",
+          "default": "#efe6d2",
+          "label": "Trim paint"
+        },
+        {
           "name": "timber",
           "type": "color",
-          "default": "#946b43",
-          "label": "Stage timber"
+          "default": "#c7a272",
+          "label": "Frame timber"
         },
         {
-          "name": "steel",
+          "name": "weights",
           "type": "color",
-          "default": "#46515a",
-          "label": "Painted steel"
-        },
-        {
-          "name": "rubber",
-          "type": "color",
-          "default": "#272a2d",
-          "label": "Rubber and isolation pads"
-        },
-        {
-          "name": "hardware",
-          "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#2a2d30",
+          "label": "Stage weights"
         }
       ],
       "presets": {
-        "houseShow": {
-          "timber": "#725137",
-          "steel": "#343b41",
-          "rubber": "#222629",
-          "hardware": "#c5a052"
+        "parlour": {
+          "wallPaint": "#6f8f6a",
+          "trimPaint": "#efe6d2",
+          "timber": "#c7a272",
+          "weights": "#2a2d30"
         },
-        "touring": {
-          "timber": "#cd914b",
-          "steel": "#315968",
-          "rubber": "#25292c",
-          "hardware": "#e2b347"
+        "cottage": {
+          "wallPaint": "#d9b98a",
+          "trimPaint": "#6b3f2a",
+          "timber": "#b58d5c",
+          "weights": "#3a3f44"
+        },
+        "blackBox": {
+          "wallPaint": "#1d1e20",
+          "trimPaint": "#4a4d50",
+          "timber": "#2b2b2b",
+          "weights": "#121314"
         }
       },
       "stats": {
-        "triangles": 196,
+        "triangles": 528,
         "sizeM": [
-          1.5,
-          2.1,
-          0.3
+          1.2,
+          2.4,
+          1.046
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "timber",
-          "color": "#946b43",
+          "name": "wallPaint",
+          "color": "#6f8f6a",
           "parts": [
             "face"
+          ],
+          "param": "wallPaint"
+        },
+        {
+          "name": "sky-backing",
+          "color": "#8fb8dc",
+          "parts": [
+            "sky-backing"
+          ]
+        },
+        {
+          "name": "timber",
+          "color": "#c7a272",
+          "parts": [
+            "stile-l",
+            "stile-r",
+            "bottom-rail",
+            "top-rail",
+            "toggle-low",
+            "window-head",
+            "window-sill-frame",
+            "jack-l",
+            "jack-stile-l",
+            "jack-r",
+            "jack-stile-r"
           ],
           "param": "timber"
         },
         {
-          "name": "steel",
-          "color": "#46515a",
+          "name": "trimPaint",
+          "color": "#efe6d2",
           "parts": [
-            "left-stile",
-            "right-stile",
-            "top-rail",
-            "bottom-rail",
-            "batten-low",
-            "batten-high"
+            "casing-l",
+            "casing-r",
+            "casing-head",
+            "sill",
+            "sash-mullion",
+            "sash-meeting-rail",
+            "chair-rail",
+            "baseboard",
+            "wainscot-l-top",
+            "wainscot-l-bottom",
+            "wainscot-l-side-a",
+            "wainscot-l-side-b",
+            "wainscot-r-top",
+            "wainscot-r-bottom",
+            "wainscot-r-side-a",
+            "wainscot-r-side-b"
           ],
-          "param": "steel"
+          "param": "trimPaint"
         },
         {
-          "name": "rubber",
-          "color": "#272a2d",
+          "name": "weights",
+          "color": "#2a2d30",
           "parts": [
-            "foot-left",
-            "foot-right"
+            "jack-hinge-l",
+            "weight-l-0",
+            "weight-l-0-notch",
+            "weight-l-1",
+            "weight-l-1-notch",
+            "jack-hinge-r",
+            "weight-r-0",
+            "weight-r-0-notch",
+            "weight-r-1",
+            "weight-r-1-notch"
           ],
-          "param": "rubber"
-        },
-        {
-          "name": "hardware",
-          "color": "#c28f3e",
-          "parts": [
-            "hinge-pin-left",
-            "hinge-pin-right"
-          ],
-          "param": "hardware"
+          "param": "weights"
         }
       ]
     },
@@ -283852,10 +284075,17 @@
       "id": "stage-batten-section",
       "kit": "theatre-production",
       "title": "Stage batten section",
-      "description": "Short overhead batten assembly with a long tube, end plates, two suspension eyes and a cable clip. Knobs: overall scale; powder-coated steel, steel hardware; houseShow and touring appearance presets.",
+      "description": "Flown electric pipe batten at about real size: 3 m of 48 mm pipe with a bolted splice sleeve and capped ends with trim tape, two trim-chain pickups with shackles, turnbuckles and wire-rope lift lines, an electric plugging raceway strapped behind the pipe with circuit labels and four dangling stage-pin pigtails, and two PAR cans on C-clamps and yokes focused down to the stage. Material controls: pipe and fixtures, rigging hardware, raceway, trim tape. houseShow, touring and schoolHall presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "batten",
+        "pipe batten",
+        "electric batten",
+        "fly system",
+        "lift line",
+        "trim chain",
+        "raceway",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -283872,8 +284102,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/stage-batten-section.kcad.ts",
       "preview": "/assets/theatre-production-stage-batten-section.png",
-      "sourceSha256": "7f17adf67811a93e7b89934d434014b947be4cee1f25bfc0631d3c0f325c3dd5",
-      "triangleBudget": 1800,
+      "sourceSha256": "9b1c6f1225ec5b9cacfb93a7ae808f9c02390011fec6542bb4e4e01301d32255",
+      "triangleBudget": 7500,
       "params": [
         {
           "name": "scale",
@@ -283885,60 +284115,174 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "pipe",
           "type": "color",
-          "default": "#353b41",
-          "label": "Powder-coated steel"
+          "default": "#26282b",
+          "label": "Pipe and fixtures"
         },
         {
-          "name": "hardware",
+          "name": "rigging",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#b9c0c4",
+          "label": "Rigging hardware"
+        },
+        {
+          "name": "raceway",
+          "type": "color",
+          "default": "#5d6670",
+          "label": "Electric raceway"
+        },
+        {
+          "name": "tape",
+          "type": "color",
+          "default": "#f2f0e8",
+          "label": "Trim tape and labels"
         }
       ],
       "presets": {
         "houseShow": {
-          "powderCoat": "#272d33",
-          "hardware": "#c5a052"
+          "pipe": "#26282b",
+          "rigging": "#b9c0c4",
+          "raceway": "#5d6670",
+          "tape": "#f2f0e8"
         },
         "touring": {
-          "powderCoat": "#315465",
-          "hardware": "#e2b347"
+          "pipe": "#a9b0b5",
+          "rigging": "#d8a21f",
+          "raceway": "#1f2124",
+          "tape": "#e8443a"
+        },
+        "schoolHall": {
+          "pipe": "#3a4a5c",
+          "rigging": "#c7ccce",
+          "raceway": "#c9b48a",
+          "tape": "#f0c419"
         }
       },
       "stats": {
-        "triangles": 160,
+        "triangles": 6696,
         "sizeM": [
-          2.525,
-          0.26,
-          0.155
+          3.028,
+          2,
+          0.339388
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#353b41",
+          "name": "pipe",
+          "color": "#26282b",
           "parts": [
-            "batten"
+            "pipe",
+            "splice-sleeve",
+            "raceway-cap-l",
+            "raceway-cap-r",
+            "pigtail-0",
+            "pigtail-plug-0",
+            "pigtail-1",
+            "pigtail-plug-1",
+            "pigtail-2",
+            "pigtail-plug-2",
+            "pigtail-3",
+            "pigtail-plug-3",
+            "c-clamp-l",
+            "clamp-bolt-l",
+            "yoke-top-l",
+            "yoke-arm-l-a",
+            "yoke-arm-l-b",
+            "can-l",
+            "c-clamp-r",
+            "clamp-bolt-r",
+            "yoke-top-r",
+            "yoke-arm-r-a",
+            "yoke-arm-r-b",
+            "can-r"
           ],
-          "param": "powderCoat"
+          "param": "pipe"
         },
         {
-          "name": "hardware",
-          "color": "#c28f3e",
+          "name": "rigging",
+          "color": "#b9c0c4",
           "parts": [
-            "end-plate-left",
-            "end-plate-right",
-            "cable-clip",
-            "suspension-tab-left",
-            "suspension-tab-right",
-            "hanger-eye-left",
-            "hanger-eye-right"
+            "splice-bolt--110",
+            "splice-bolt--50",
+            "splice-bolt-50",
+            "splice-bolt-110",
+            "end-cap-l",
+            "end-cap-r",
+            "basket-l--24",
+            "basket-l-24",
+            "chain-l-0",
+            "chain-l-1",
+            "chain-l-2",
+            "chain-l-3",
+            "shackle-l",
+            "shackle-pin-l",
+            "turnbuckle-eye-low-l",
+            "turnbuckle-body-l",
+            "turnbuckle-eye-high-l",
+            "lift-line-l",
+            "rope-sleeve-l",
+            "basket-r--24",
+            "basket-r-24",
+            "chain-r-0",
+            "chain-r-1",
+            "chain-r-2",
+            "chain-r-3",
+            "shackle-r",
+            "shackle-pin-r",
+            "turnbuckle-eye-low-r",
+            "turnbuckle-body-r",
+            "turnbuckle-eye-high-r",
+            "lift-line-r",
+            "rope-sleeve-r",
+            "raceway-strap--700",
+            "raceway-strap-0",
+            "raceway-strap-700",
+            "yoke-knob-l-a",
+            "yoke-knob-l-b",
+            "gel-frame-l",
+            "safety-cable-l",
+            "yoke-knob-r-a",
+            "yoke-knob-r-b",
+            "gel-frame-r",
+            "safety-cable-r"
           ],
-          "param": "hardware"
+          "param": "rigging"
+        },
+        {
+          "name": "tape",
+          "color": "#f2f0e8",
+          "parts": [
+            "trim-tape-l",
+            "trim-tape-r",
+            "circuit-label-0",
+            "pigtail-band-0",
+            "circuit-label-1",
+            "pigtail-band-1",
+            "circuit-label-2",
+            "pigtail-band-2",
+            "circuit-label-3",
+            "pigtail-band-3"
+          ],
+          "param": "tape"
+        },
+        {
+          "name": "raceway",
+          "color": "#5d6670",
+          "parts": [
+            "raceway"
+          ],
+          "param": "raceway"
+        },
+        {
+          "name": "lens-l",
+          "color": "#f3e2a8",
+          "parts": [
+            "lens-l",
+            "lens-r"
+          ]
         }
       ]
     },
