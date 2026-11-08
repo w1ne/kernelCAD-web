@@ -230172,10 +230172,14 @@
       "id": "aisle-sign",
       "kit": "retail-store",
       "title": "Aisle sign",
-      "description": "Single aisle marker with a broad hanging panel, two ceiling rods and compact end caps. Knobs: overall scale and aluminium, acrylic, vinyl color controls. Presets: cleanStore and nightRestock.",
+      "description": "Double-sided hanging aisle sign at about real size: rounded aluminium frame, white acrylic face, coloured aisle-number block with a big 7, category lettering under a header band, a direction chevron, and two drop rods to ceiling clamps. Material controls: frame, face, category accent, lettering. produce, frozen and bakery presets; arrow choice.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "aisle sign",
+        "hanging sign",
+        "wayfinding",
+        "supermarket",
         "retail",
         "grocery",
         "shop",
@@ -230192,8 +230196,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/aisle-sign.kcad.ts",
       "preview": "/assets/retail-store-aisle-sign.png",
-      "sourceSha256": "40087ae6b0387cc31bb0c8b09dc4d02bf93e644284fc69a3c0b33b3d299fbf55",
-      "triangleBudget": 1800,
+      "sourceSha256": "4e03f263470d4b308e84d0454f8deba6663455c3515218da7a290cb82ea643f6",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -230205,73 +230209,133 @@
           "step": 0.05
         },
         {
-          "name": "aluminium",
+          "name": "frame",
           "type": "color",
-          "default": "#77858b",
-          "label": "Aluminium color"
+          "default": "#a9b3b8",
+          "label": "Aluminium frame and rods"
         },
         {
-          "name": "acrylic",
+          "name": "face",
           "type": "color",
-          "default": "#e6d6ab",
-          "label": "Acrylic color"
+          "default": "#f6f5ef",
+          "label": "Acrylic face"
         },
         {
-          "name": "vinyl",
+          "name": "accent",
           "type": "color",
-          "default": "#c65b3e",
-          "label": "Vinyl color"
+          "default": "#2f9e52",
+          "label": "Category accent"
+        },
+        {
+          "name": "lettering",
+          "type": "color",
+          "default": "#26302c",
+          "label": "Lettering"
+        },
+        {
+          "name": "arrow",
+          "type": "choice",
+          "default": "right",
+          "label": "Direction arrow",
+          "choices": [
+            "right",
+            "left",
+            "none"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "aluminium": "#c4cdd0",
-          "acrylic": "#a1d1dc",
-          "vinyl": "#dce9dc"
+        "produce": {
+          "frame": "#a9b3b8",
+          "face": "#f6f5ef",
+          "accent": "#2f9e52",
+          "lettering": "#26302c"
         },
-        "nightRestock": {
-          "aluminium": "#6b7a80",
-          "acrylic": "#486b80",
-          "vinyl": "#d2a536"
+        "frozen": {
+          "frame": "#c9d1d6",
+          "face": "#eef5fa",
+          "accent": "#2f6fc1",
+          "lettering": "#1b2a3a"
+        },
+        "bakery": {
+          "frame": "#5a4a3c",
+          "face": "#f7eedc",
+          "accent": "#d27a2c",
+          "lettering": "#3b2a1e"
         }
       },
       "stats": {
-        "triangles": 168,
+        "triangles": 1940,
         "sizeM": [
-          0.76,
-          1.005,
-          0.09
+          1.2,
+          1.1,
+          0.14
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "acrylic",
-          "color": "#e6d6ab",
+          "name": "frame",
+          "color": "#a9b3b8",
           "parts": [
-            "sign-panel"
+            "frame",
+            "clamp-l",
+            "rod-l",
+            "ceiling-plate-l",
+            "ceiling-clip-l",
+            "clamp-r",
+            "rod-r",
+            "ceiling-plate-r",
+            "ceiling-clip-r"
           ],
-          "param": "acrylic"
+          "param": "frame"
         },
         {
-          "name": "vinyl",
-          "color": "#c65b3e",
+          "name": "face",
+          "color": "#f6f5ef",
           "parts": [
-            "top-border",
-            "bottom-border"
+            "face",
+            "number-f",
+            "header-text-f",
+            "number-b",
+            "header-text-b"
           ],
-          "param": "vinyl"
+          "param": "face"
         },
         {
-          "name": "aluminium",
-          "color": "#77858b",
+          "name": "accent",
+          "color": "#2f9e52",
           "parts": [
-            "rod-left",
-            "rod-right",
-            "cap"
+            "number-block-f",
+            "header-band-f",
+            "arrow-f",
+            "number-block-b",
+            "header-band-b",
+            "arrow-b"
           ],
-          "param": "aluminium"
+          "param": "accent"
+        },
+        {
+          "name": "lettering",
+          "color": "#26302c",
+          "parts": [
+            "word-f-0-0",
+            "word-f-0-1",
+            "word-f-0-2",
+            "word-f-1-0",
+            "word-f-1-1",
+            "word-f-1-2",
+            "word-b-0-0",
+            "word-b-0-1",
+            "word-b-0-2",
+            "word-b-1-0",
+            "word-b-1-1",
+            "word-b-1-2",
+            "turnbuckle-l",
+            "turnbuckle-r"
+          ],
+          "param": "lettering"
         }
       ]
     },
@@ -230279,10 +230343,15 @@
       "id": "assisted-checkout-till",
       "kit": "retail-store",
       "title": "Assisted checkout till",
-      "description": "Cashier station with a register housing, customer-facing display, receipt printer and till top. Knobs: overall scale and abs plastic, glass, paper color controls. Presets: cleanStore and nightRestock.",
+      "description": "Countertop POS till set at about real size: steel cash drawer (open or shut) with note compartments and coin cups, tilted touchscreen showing product keys, receipt printer with paper curl, card terminal with keypad, handheld barcode scanner in its stand, and a customer pole display. Material controls: housing, drawer steel, screen glass, brand accent. classicBlack, retailWhite and cafeTeal presets; drawer choice.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "till",
+        "pos",
+        "cash register",
+        "checkout",
+        "cash drawer",
         "retail",
         "grocery",
         "shop",
@@ -230299,8 +230368,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/assisted-checkout-till.kcad.ts",
       "preview": "/assets/retail-store-assisted-checkout-till.png",
-      "sourceSha256": "d1390cc951476e9834346175b6f401b88635013a3bdbd6f9ead593bf8edf44ba",
-      "triangleBudget": 1800,
+      "sourceSha256": "de7314d5b3f257a998fdffb78a543423d6e8160edbaaff741f7fa5a46fcf4566",
+      "triangleBudget": 1600,
       "params": [
         {
           "name": "scale",
@@ -230312,73 +230381,250 @@
           "step": 0.05
         },
         {
-          "name": "abs",
+          "name": "housing",
           "type": "color",
-          "default": "#56656d",
-          "label": "ABS plastic color"
+          "default": "#2a2d31",
+          "label": "Housing plastic"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#8d969b",
+          "label": "Cash drawer steel"
         },
         {
           "name": "glass",
           "type": "color",
-          "default": "#8dc8d2",
-          "label": "Glass color"
+          "default": "#28465a",
+          "label": "Screen glass"
         },
         {
-          "name": "paper",
+          "name": "accent",
           "type": "color",
-          "default": "#f0e3c3",
-          "label": "Paper color"
+          "default": "#e0a526",
+          "label": "Brand accent and keys"
+        },
+        {
+          "name": "drawer",
+          "type": "choice",
+          "default": "open",
+          "label": "Cash drawer",
+          "choices": [
+            "open",
+            "shut"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "abs": "#e5e9e9",
-          "glass": "#9ccfd6",
-          "paper": "#f0e5c9"
+        "classicBlack": {
+          "housing": "#2a2d31",
+          "steel": "#8d969b",
+          "glass": "#28465a",
+          "accent": "#e0a526"
         },
-        "nightRestock": {
-          "abs": "#364a55",
-          "glass": "#3e6677",
-          "paper": "#c9b27e"
+        "retailWhite": {
+          "housing": "#e9ebea",
+          "steel": "#b4bcc0",
+          "glass": "#22384a",
+          "accent": "#2f6fc1"
+        },
+        "cafeTeal": {
+          "housing": "#2f5f63",
+          "steel": "#6f777b",
+          "glass": "#1d2f38",
+          "accent": "#f08a5d"
         }
       },
       "stats": {
-        "triangles": 104,
+        "triangles": 1076,
         "sizeM": [
-          0.5,
-          0.53,
-          0.35
+          0.76,
+          0.51,
+          0.74079
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "abs",
-          "color": "#56656d",
+          "name": "steel",
+          "color": "#8d969b",
           "parts": [
-            "register-base",
-            "register-body",
-            "keypad-deck",
-            "customer-display"
+            "drawer-case",
+            "drawer-tray",
+            "note-divider-0",
+            "note-divider-1",
+            "note-divider-2",
+            "note-divider-3",
+            "pole"
           ],
-          "param": "abs"
+          "param": "steel"
+        },
+        {
+          "name": "housing",
+          "color": "#2a2d31",
+          "parts": [
+            "drawer-front",
+            "coin-insert",
+            "stand-foot",
+            "stand-neck",
+            "screen-bezel",
+            "printer-body",
+            "terminal-cradle",
+            "terminal-body",
+            "scanner-stand",
+            "scanner-gun",
+            "pole-display"
+          ],
+          "param": "housing"
+        },
+        {
+          "name": "accent",
+          "color": "#e0a526",
+          "parts": [
+            "drawer-lock",
+            "screen-header",
+            "key-0-0",
+            "key-0-1",
+            "key-0-2",
+            "key-0-3",
+            "key-1-0",
+            "key-1-1",
+            "key-1-2",
+            "key-1-3",
+            "key-2-0",
+            "key-2-1",
+            "key-2-2",
+            "printer-button",
+            "scanner-trigger"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "notes-0",
+          "color": "#7aa86a",
+          "parts": [
+            "notes-0"
+          ]
+        },
+        {
+          "name": "notes-1",
+          "color": "#c78a4d",
+          "parts": [
+            "notes-1"
+          ]
+        },
+        {
+          "name": "notes-2",
+          "color": "#6c8fc0",
+          "parts": [
+            "notes-2"
+          ]
+        },
+        {
+          "name": "notes-3",
+          "color": "#b86a8c",
+          "parts": [
+            "notes-3"
+          ]
+        },
+        {
+          "name": "notes-4",
+          "color": "#d2c06a",
+          "parts": [
+            "notes-4"
+          ]
+        },
+        {
+          "name": "coins-0",
+          "color": "#c3c7c9",
+          "parts": [
+            "coins-0",
+            "coins-2"
+          ]
+        },
+        {
+          "name": "coins-1",
+          "color": "#c9a54a",
+          "parts": [
+            "coins-1",
+            "coins-3"
+          ]
         },
         {
           "name": "glass",
-          "color": "#8dc8d2",
+          "color": "#28465a",
           "parts": [
-            "display-screen"
+            "screen-glass",
+            "terminal-screen"
           ],
           "param": "glass"
         },
         {
-          "name": "paper",
-          "color": "#f0e3c3",
+          "name": "key-2-3",
+          "color": "#3fae5a",
           "parts": [
-            "receipt-roll"
-          ],
-          "param": "paper"
+            "key-2-3",
+            "pin-key-3-2"
+          ]
+        },
+        {
+          "name": "screen-total-bar",
+          "color": "#e8eef0",
+          "parts": [
+            "screen-total-bar"
+          ]
+        },
+        {
+          "name": "printer-slot",
+          "color": "#111315",
+          "parts": [
+            "printer-slot"
+          ]
+        },
+        {
+          "name": "receipt",
+          "color": "#f6f3ea",
+          "parts": [
+            "receipt"
+          ]
+        },
+        {
+          "name": "pin-key-0-0",
+          "color": "#c9ced1",
+          "parts": [
+            "pin-key-0-0",
+            "pin-key-0-1",
+            "pin-key-0-2",
+            "pin-key-1-0",
+            "pin-key-1-1",
+            "pin-key-1-2",
+            "pin-key-2-0",
+            "pin-key-2-1",
+            "pin-key-2-2"
+          ]
+        },
+        {
+          "name": "pin-key-3-0",
+          "color": "#c8382c",
+          "parts": [
+            "pin-key-3-0",
+            "scanner-window"
+          ]
+        },
+        {
+          "name": "pin-key-3-1",
+          "color": "#e0b84a",
+          "parts": [
+            "pin-key-3-1"
+          ]
+        },
+        {
+          "name": "pole-display-glass",
+          "color": "#3cbf9a",
+          "parts": [
+            "pole-display-glass"
+          ]
         }
       ]
     },
@@ -230386,10 +230632,15 @@
       "id": "bakery-display-case",
       "kit": "retail-store",
       "title": "Bakery display case",
-      "description": "Counter-height bakery case with lower cabinet, display plinth, glass-frame posts and canopy. Knobs: overall scale and laminate, tempered glass, stainless steel color controls. Presets: cleanStore and nightRestock.",
+      "description": "Serve-over bakery counter at about real size: timber-faced cabinet with brand band and kick, curved front glass hinged at the top (lifted or closed), shaped glass ends, stainless deck with trays of iced cakes, cupcakes and croissants, two stepped tiers of loaves and a baguette basket on the lit top shelf. Material controls: cabinet facing, stainless trim, glass, brand band. frenchOak, modernWhite and patisseriePink presets; front glass choice.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "bakery case",
+        "display case",
+        "pastry counter",
+        "serve-over",
+        "bakery",
         "retail",
         "grocery",
         "shop",
@@ -230406,8 +230657,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/bakery-display-case.kcad.ts",
       "preview": "/assets/retail-store-bakery-display-case.png",
-      "sourceSha256": "3ca4733584ba4deae5922cfa13f4dcd143a9d767f34f1c3ed62537d2af7e9451",
-      "triangleBudget": 1800,
+      "sourceSha256": "e5fcb9330d3b2cbf197f91c7b76eff3bfdf5c7f25f55e45bdb6ece7feafff5b6",
+      "triangleBudget": 4200,
       "params": [
         {
           "name": "scale",
@@ -230419,78 +230670,288 @@
           "step": 0.05
         },
         {
-          "name": "laminate",
+          "name": "facing",
           "type": "color",
-          "default": "#876f58",
-          "label": "Laminate color"
-        },
-        {
-          "name": "temperedGlass",
-          "type": "color",
-          "default": "#9acfd4",
-          "label": "Tempered glass color"
+          "default": "#9a6b42",
+          "label": "Cabinet facing"
         },
         {
           "name": "stainless",
           "type": "color",
-          "default": "#aeb8ba",
-          "label": "Stainless steel color"
+          "default": "#c3cacd",
+          "label": "Stainless trim and deck"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#b9dde3",
+          "label": "Front and end glass"
+        },
+        {
+          "name": "band",
+          "type": "color",
+          "default": "#3b2a1e",
+          "label": "Brand band"
+        },
+        {
+          "name": "front",
+          "type": "choice",
+          "default": "lifted",
+          "label": "Front glass",
+          "choices": [
+            "lifted",
+            "closed"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "laminate": "#d5c3a5",
-          "temperedGlass": "#a7d4d9",
-          "stainless": "#bfc8cb"
+        "frenchOak": {
+          "facing": "#9a6b42",
+          "stainless": "#c3cacd",
+          "glass": "#b9dde3",
+          "band": "#3b2a1e"
         },
-        "nightRestock": {
-          "laminate": "#685744",
-          "temperedGlass": "#476d78",
-          "stainless": "#66747a"
+        "modernWhite": {
+          "facing": "#eef0ee",
+          "stainless": "#a7b0b4",
+          "glass": "#c4e0e8",
+          "band": "#2b2f33"
+        },
+        "patisseriePink": {
+          "facing": "#e6b8c2",
+          "stainless": "#d8c9a0",
+          "glass": "#cfe6ea",
+          "band": "#7a3550"
         }
       },
       "stats": {
-        "triangles": 164,
+        "triangles": 3726,
         "sizeM": [
-          1.54,
-          1.5,
-          0.68
+          1.62,
+          1.547449,
+          1.015675
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "laminate",
-          "color": "#876f58",
+          "name": "kick",
+          "color": "#2b2f33",
           "parts": [
-            "cabinet",
-            "display-deck"
-          ],
-          "param": "laminate"
+            "kick"
+          ]
         },
         {
-          "name": "temperedGlass",
-          "color": "#9acfd4",
+          "name": "facing",
+          "color": "#9a6b42",
           "parts": [
-            "canopy",
-            "glass-side-left",
-            "glass-side-right",
-            "post--710--275",
-            "post--710-275",
-            "post-710--275",
-            "post-710-275"
+            "cabinet"
           ],
-          "param": "temperedGlass"
+          "param": "facing"
+        },
+        {
+          "name": "band",
+          "color": "#3b2a1e",
+          "parts": [
+            "facing-groove-0",
+            "facing-groove-1",
+            "facing-groove-2",
+            "facing-groove-3",
+            "facing-groove-4",
+            "facing-groove-5",
+            "facing-groove-6",
+            "brand-band",
+            "bread-sign"
+          ],
+          "param": "band"
         },
         {
           "name": "stainless",
-          "color": "#aeb8ba",
+          "color": "#c3cacd",
           "parts": [
-            "front-rail",
-            "corner-trim"
+            "band-plaque",
+            "deck-rail",
+            "deck",
+            "glass-edge",
+            "top-shelf",
+            "post-l",
+            "post-r",
+            "tier-0",
+            "tier-lip-0",
+            "tier-leg-0-l",
+            "tier-leg-0-r",
+            "tier-1",
+            "tier-lip-1",
+            "tier-leg-1-l",
+            "tier-leg-1-r"
           ],
           "param": "stainless"
+        },
+        {
+          "name": "glass",
+          "color": "#b9dde3",
+          "parts": [
+            "end-glass-l",
+            "end-glass-r",
+            "front-glass"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "gas-strut-l",
+          "color": "#3a3f43",
+          "parts": [
+            "gas-strut-l",
+            "gas-strut-r"
+          ]
+        },
+        {
+          "name": "light-strip",
+          "color": "#fff4c8",
+          "parts": [
+            "light-strip"
+          ]
+        },
+        {
+          "name": "tray-a",
+          "color": "#34383b",
+          "parts": [
+            "tray-a",
+            "tray-b",
+            "tray-c"
+          ]
+        },
+        {
+          "name": "cake-0",
+          "color": "#d9a35b",
+          "parts": [
+            "cake-0",
+            "cake-1",
+            "cake-2"
+          ]
+        },
+        {
+          "name": "icing-0",
+          "color": "#f2e6d0",
+          "parts": [
+            "icing-0",
+            "frosting-2",
+            "frosting-5"
+          ]
+        },
+        {
+          "name": "icing-1",
+          "color": "#5a3524",
+          "parts": [
+            "icing-1"
+          ]
+        },
+        {
+          "name": "icing-2",
+          "color": "#e98aa0",
+          "parts": [
+            "icing-2",
+            "frosting-1",
+            "frosting-4"
+          ]
+        },
+        {
+          "name": "berry",
+          "color": "#c8232c",
+          "parts": [
+            "berry"
+          ]
+        },
+        {
+          "name": "cupcake-0",
+          "color": "#e8d2a8",
+          "parts": [
+            "cupcake-0",
+            "cupcake-1",
+            "cupcake-2",
+            "cupcake-3",
+            "cupcake-4",
+            "cupcake-5"
+          ]
+        },
+        {
+          "name": "frosting-0",
+          "color": "#f5c2d0",
+          "parts": [
+            "frosting-0",
+            "frosting-3"
+          ]
+        },
+        {
+          "name": "croissant-0",
+          "color": "#c98a3c",
+          "parts": [
+            "croissant-0",
+            "croissant-1",
+            "croissant-2",
+            "croissant-3",
+            "croissant-4",
+            "croissant-5"
+          ]
+        },
+        {
+          "name": "price-tag-a",
+          "color": "#f4f1ea",
+          "parts": [
+            "price-tag-a",
+            "price-tag-b",
+            "price-tag-c",
+            "bread-sign-text"
+          ]
+        },
+        {
+          "name": "loaf-0-0",
+          "color": "#b07a3c",
+          "parts": [
+            "loaf-0-0",
+            "loaf-0-3",
+            "loaf-1-2",
+            "loaf-1-5"
+          ]
+        },
+        {
+          "name": "loaf-0-1",
+          "color": "#8a5a2c",
+          "parts": [
+            "loaf-0-1",
+            "loaf-0-4",
+            "loaf-1-0",
+            "loaf-1-3"
+          ]
+        },
+        {
+          "name": "loaf-0-2",
+          "color": "#c9944c",
+          "parts": [
+            "loaf-0-2",
+            "loaf-0-5",
+            "loaf-1-1",
+            "loaf-1-4"
+          ]
+        },
+        {
+          "name": "basket",
+          "color": "#a8743e",
+          "parts": [
+            "basket"
+          ]
+        },
+        {
+          "name": "baguette-0",
+          "color": "#d0974a",
+          "parts": [
+            "baguette-0",
+            "baguette-1",
+            "baguette-2",
+            "baguette-3",
+            "baguette-4"
+          ]
         }
       ]
     },
@@ -230682,10 +231143,14 @@
       "id": "bottle-return-kiosk",
       "kit": "retail-store",
       "title": "Bottle return kiosk",
-      "description": "Bottle return fixture with tapered-looking intake hood, bin body, status panel and service door. Knobs: overall scale and powder-coated steel, stainless steel, polycarbonate color controls. Presets: cleanStore and nightRestock.",
+      "description": "Reverse vending machine at about real size: round lit intake with a bottle half-fed in, touchscreen, donate and print buttons, voucher slot, crate hatch (open or shut) with roller bed, recycling-loop graphic and raked lit header. Material controls: cabinet, front fascia, light ring and graphics, stainless trim. ecoGreen, municipalBlue and charcoalOrange presets; crate hatch choice.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "bottle return",
+        "reverse vending machine",
+        "deposit return",
+        "recycling",
         "retail",
         "grocery",
         "shop",
@@ -230702,8 +231167,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/bottle-return-kiosk.kcad.ts",
       "preview": "/assets/retail-store-bottle-return-kiosk.png",
-      "sourceSha256": "6d2e4321c6551425b75e1cd87939e45909c2086cf3720a10e5aee6e7a6028664",
-      "triangleBudget": 1800,
+      "sourceSha256": "a98f3f2dd5ae798dcd94f6dbaa86a85638bab10d1853a6e8f825b36716a7bec3",
+      "triangleBudget": 1900,
       "params": [
         {
           "name": "scale",
@@ -230715,73 +231180,204 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "cabinet",
           "type": "color",
-          "default": "#4e665d",
-          "label": "Powder-coated steel color"
+          "default": "#2f3a36",
+          "label": "Cabinet paint"
+        },
+        {
+          "name": "fascia",
+          "type": "color",
+          "default": "#eef1ee",
+          "label": "Front fascia"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#3fae5a",
+          "label": "Light ring and graphics"
         },
         {
           "name": "stainless",
           "type": "color",
-          "default": "#aab4b5",
-          "label": "Stainless steel color"
+          "default": "#b7bfc3",
+          "label": "Stainless trim"
         },
         {
-          "name": "polycarbonate",
-          "type": "color",
-          "default": "#8bc9b0",
-          "label": "Polycarbonate color"
+          "name": "hatch",
+          "type": "choice",
+          "default": "open",
+          "label": "Crate hatch",
+          "choices": [
+            "open",
+            "shut"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "powderCoat": "#e5ebed",
-          "stainless": "#bfc8cb",
-          "polycarbonate": "#a2d1d7"
+        "ecoGreen": {
+          "cabinet": "#2f3a36",
+          "fascia": "#eef1ee",
+          "accent": "#3fae5a",
+          "stainless": "#b7bfc3"
         },
-        "nightRestock": {
-          "powderCoat": "#354750",
-          "stainless": "#66747a",
-          "polycarbonate": "#486b7b"
+        "municipalBlue": {
+          "cabinet": "#1f3550",
+          "fascia": "#e6edf3",
+          "accent": "#2f8fd8",
+          "stainless": "#a9b3ba"
+        },
+        "charcoalOrange": {
+          "cabinet": "#26282b",
+          "fascia": "#3a3d41",
+          "accent": "#f08a2c",
+          "stainless": "#8d969b"
         }
       },
       "stats": {
-        "triangles": 104,
+        "triangles": 1450,
         "sizeM": [
-          0.92,
-          1.31,
-          0.827
+          0.9,
+          1.95,
+          1.021442
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#4e665d",
+          "name": "cabinet",
+          "color": "#2f3a36",
           "parts": [
-            "bin",
-            "opening"
+            "cabinet",
+            "screen-hood",
+            "header"
           ],
-          "param": "powderCoat"
-        },
-        {
-          "name": "polycarbonate",
-          "color": "#8bc9b0",
-          "parts": [
-            "intake-hood",
-            "control-panel",
-            "status-light"
-          ],
-          "param": "polycarbonate"
+          "param": "cabinet"
         },
         {
           "name": "stainless",
-          "color": "#aab4b5",
+          "color": "#b7bfc3",
           "parts": [
-            "service-door"
+            "kick-plate",
+            "voucher-bezel",
+            "roller-0",
+            "roller-1",
+            "roller-2",
+            "roller-3",
+            "roller-4",
+            "roller-5",
+            "crate-lip",
+            "hatch-handle"
           ],
           "param": "stainless"
+        },
+        {
+          "name": "fascia",
+          "color": "#eef1ee",
+          "parts": [
+            "fascia",
+            "hatch",
+            "header-text",
+            "header-bottle",
+            "header-bottle-neck"
+          ],
+          "param": "fascia"
+        },
+        {
+          "name": "accent",
+          "color": "#3fae5a",
+          "parts": [
+            "intake-ring",
+            "intake-label",
+            "screen-tile-a",
+            "button-print",
+            "loop-ring",
+            "loop-arrow-0",
+            "loop-arrow-1",
+            "loop-arrow-2",
+            "header-panel"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "intake-throat",
+          "color": "#2a2d30",
+          "parts": [
+            "intake-throat"
+          ]
+        },
+        {
+          "name": "intake-back",
+          "color": "#1a1c1e",
+          "parts": [
+            "intake-back",
+            "crate-bay"
+          ]
+        },
+        {
+          "name": "bottle",
+          "color": "#3f8a5a",
+          "parts": [
+            "bottle"
+          ]
+        },
+        {
+          "name": "bottle-cap",
+          "color": "#d2362d",
+          "parts": [
+            "bottle-cap"
+          ]
+        },
+        {
+          "name": "bottle-label",
+          "color": "#f2e6c8",
+          "parts": [
+            "bottle-label"
+          ]
+        },
+        {
+          "name": "screen",
+          "color": "#1d3340",
+          "parts": [
+            "screen"
+          ]
+        },
+        {
+          "name": "screen-tile-b",
+          "color": "#f4f1ea",
+          "parts": [
+            "screen-tile-b",
+            "screen-tile-c"
+          ]
+        },
+        {
+          "name": "button-donate",
+          "color": "#f2b632",
+          "parts": [
+            "button-donate"
+          ]
+        },
+        {
+          "name": "voucher-slot",
+          "color": "#111315",
+          "parts": [
+            "voucher-slot"
+          ]
+        },
+        {
+          "name": "voucher",
+          "color": "#f6f3ea",
+          "parts": [
+            "voucher"
+          ]
+        },
+        {
+          "name": "bay-floor",
+          "color": "#3a3f43",
+          "parts": [
+            "bay-floor"
+          ]
         }
       ]
     },
@@ -230789,10 +231385,15 @@
       "id": "bulk-food-bin",
       "kit": "retail-store",
       "title": "Bulk goods bin",
-      "description": "Open-top bulk dispenser with tapered-look stand, front scoop tray and a shallow lid lip. Knobs: overall scale and timber, acrylic, stainless steel color controls. Presets: cleanStore and nightRestock.",
+      "description": "Three-bin gravity dispenser stand at about real size: clear bins with sloped floors filled to different levels, stainless chutes with lever gates, hinged lids, label cards, drip shelf with scoop and paper bags, timber cabinet and a chalkboard header. Material controls: timber, bin acrylic, stainless, chalkboard. farmShop, zeroWaste and modernMarket presets; contents choice.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "bulk bin",
+        "gravity bin",
+        "dispenser",
+        "refill",
+        "zero waste",
         "retail",
         "grocery",
         "shop",
@@ -230809,7 +231410,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/bulk-food-bin.kcad.ts",
       "preview": "/assets/retail-store-bulk-food-bin.png",
-      "sourceSha256": "53541d373363a0170a2e942c65e1b2154368cb9ee9955e4f7ed9faf202d9098b",
+      "sourceSha256": "9b2711d58de6221bea4e3ada37902d3b642f5def3b4defeb6a92917d0366945e",
       "triangleBudget": 1800,
       "params": [
         {
@@ -230824,71 +231425,207 @@
         {
           "name": "timber",
           "type": "color",
-          "default": "#877355",
-          "label": "Timber color"
+          "default": "#a7774a",
+          "label": "Timber stand"
         },
         {
           "name": "acrylic",
           "type": "color",
-          "default": "#b5d4ce",
-          "label": "Acrylic color"
+          "default": "#cfe6ea",
+          "label": "Bin acrylic edges and lids"
         },
         {
           "name": "stainless",
           "type": "color",
-          "default": "#a9b1b2",
-          "label": "Stainless steel color"
+          "default": "#b9c1c5",
+          "label": "Stainless chutes and shelf"
+        },
+        {
+          "name": "board",
+          "type": "color",
+          "default": "#2c332f",
+          "label": "Chalkboard header"
+        },
+        {
+          "name": "contents",
+          "type": "choice",
+          "default": "pantry",
+          "label": "Bin contents",
+          "choices": [
+            "pantry",
+            "sweets"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "timber": "#b9915c",
-          "acrylic": "#a1d1dc",
-          "stainless": "#bfc8cb"
+        "farmShop": {
+          "timber": "#a7774a",
+          "acrylic": "#cfe6ea",
+          "stainless": "#b9c1c5",
+          "board": "#2c332f"
         },
-        "nightRestock": {
-          "timber": "#6e5133",
-          "acrylic": "#486b80",
-          "stainless": "#66747a"
+        "zeroWaste": {
+          "timber": "#d9c29a",
+          "acrylic": "#e4efe9",
+          "stainless": "#8f9a96",
+          "board": "#3f6b4a"
+        },
+        "modernMarket": {
+          "timber": "#3b3f42",
+          "acrylic": "#d6e4ec",
+          "stainless": "#d2d6d8",
+          "board": "#c9a54a"
         }
       },
       "stats": {
-        "triangles": 104,
+        "triangles": 1456,
         "sizeM": [
-          0.72,
           1.07,
-          0.802
+          1.94,
+          0.53
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "timber",
-          "color": "#877355",
+          "name": "plinth",
+          "color": "#2b2f33",
           "parts": [
-            "base"
+            "plinth"
+          ]
+        },
+        {
+          "name": "timber",
+          "color": "#a7774a",
+          "parts": [
+            "cabinet",
+            "door-l",
+            "door-r",
+            "back-panel",
+            "side-rail-l",
+            "side-rail-r",
+            "header-frame"
           ],
           "param": "timber"
         },
         {
-          "name": "acrylic",
-          "color": "#b5d4ce",
+          "name": "stainless",
+          "color": "#b9c1c5",
           "parts": [
-            "hopper"
+            "door-knob-l",
+            "door-knob-r",
+            "drip-shelf",
+            "shelf-lip",
+            "scoop",
+            "lid-knob-0",
+            "chute-0",
+            "chute-spout-0",
+            "lever-pivot-0",
+            "lever-0",
+            "lid-knob-1",
+            "chute-1",
+            "chute-spout-1",
+            "lever-pivot-1",
+            "lever-1",
+            "lid-knob-2",
+            "chute-2",
+            "chute-spout-2",
+            "lever-pivot-2",
+            "lever-2"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "board",
+          "color": "#2c332f",
+          "parts": [
+            "scoop-handle",
+            "label-text-0",
+            "lever-grip-0",
+            "label-text-1",
+            "lever-grip-1",
+            "label-text-2",
+            "lever-grip-2",
+            "header"
+          ],
+          "param": "board"
+        },
+        {
+          "name": "paper-bag-0",
+          "color": "#b58a5c",
+          "parts": [
+            "paper-bag-0",
+            "paper-bag-2"
+          ]
+        },
+        {
+          "name": "paper-bag-1",
+          "color": "#c49a6c",
+          "parts": [
+            "paper-bag-1"
+          ]
+        },
+        {
+          "name": "contents-0",
+          "color": "#5a3524",
+          "parts": [
+            "contents-0"
+          ]
+        },
+        {
+          "name": "acrylic",
+          "color": "#cfe6ea",
+          "parts": [
+            "bin-edge-0-l",
+            "bin-edge-0-r",
+            "bin-back-0",
+            "bin-top-rim-0",
+            "lid-0",
+            "bin-edge-1-l",
+            "bin-edge-1-r",
+            "bin-back-1",
+            "bin-top-rim-1",
+            "lid-1",
+            "bin-edge-2-l",
+            "bin-edge-2-r",
+            "bin-back-2",
+            "bin-top-rim-2",
+            "lid-2"
           ],
           "param": "acrylic"
         },
         {
-          "name": "stainless",
-          "color": "#a9b1b2",
+          "name": "label-0",
+          "color": "#f4f1ea",
           "parts": [
-            "top-rim",
-            "scoop-tray",
-            "scoop-lip",
-            "dispense-knob"
-          ],
-          "param": "stainless"
+            "label-0",
+            "label-1",
+            "label-2"
+          ]
+        },
+        {
+          "name": "contents-1",
+          "color": "#c9a46a",
+          "parts": [
+            "contents-1"
+          ]
+        },
+        {
+          "name": "contents-2",
+          "color": "#e6d7ad",
+          "parts": [
+            "contents-2"
+          ]
+        },
+        {
+          "name": "chalk-0",
+          "color": "#efece4",
+          "parts": [
+            "chalk-0",
+            "chalk-1",
+            "chalk-2"
+          ]
         }
       ]
     },
