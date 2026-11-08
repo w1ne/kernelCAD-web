@@ -234951,10 +234951,14 @@
       "id": "hanging-wayfinding-sign",
       "kit": "retail-store",
       "title": "Hanging wayfinding sign",
-      "description": "Double-sided overhead store direction sign with a long panel and two ceiling suspension rods. Knobs: overall scale and aluminium, acrylic, vinyl color controls. Presets: cleanStore and nightRestock.",
+      "description": "Double-sided overhead aisle sign at about real size: rounded aluminium frame, printed faces with an aisle-number roundel, two lines of category lettering and a direction arrow, hung from two steel wires with turnbuckles and ceiling clips. Material controls: frame, sign face, lettering, roundel accent. freshMarket, discountStore and organicGrocer presets; arrow direction choice.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "aisle sign",
+        "wayfinding",
+        "hanging sign",
+        "ceiling sign",
         "retail",
         "grocery",
         "shop",
@@ -234971,8 +234975,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/hanging-wayfinding-sign.kcad.ts",
       "preview": "/assets/retail-store-hanging-wayfinding-sign.png",
-      "sourceSha256": "dc45cda71229a43db0ae14879822a27cc6ab7bcf2966cbb2f4e71ebab0b4e771",
-      "triangleBudget": 1800,
+      "sourceSha256": "2a138dc3bd2de15f0af2b389f6f76ee1a7fb526f362a45550021e66f72f07f57",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -234984,72 +234988,141 @@
           "step": 0.05
         },
         {
-          "name": "aluminium",
+          "name": "frame",
           "type": "color",
-          "default": "#727f84",
-          "label": "Aluminium color"
+          "default": "#b8c1c4",
+          "label": "Aluminium frame"
         },
         {
-          "name": "acrylic",
+          "name": "face",
           "type": "color",
-          "default": "#e8e1c8",
-          "label": "Acrylic color"
+          "default": "#1f5f8b",
+          "label": "Sign face"
         },
         {
-          "name": "vinyl",
+          "name": "lettering",
           "type": "color",
-          "default": "#397c99",
-          "label": "Vinyl color"
+          "default": "#f4f2ea",
+          "label": "Lettering"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#f2b632",
+          "label": "Number roundel"
+        },
+        {
+          "name": "arrow",
+          "type": "choice",
+          "default": "right",
+          "label": "Arrow direction",
+          "choices": [
+            "right",
+            "left"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "aluminium": "#c4cdd0",
-          "acrylic": "#a1d1dc",
-          "vinyl": "#dce9dc"
+        "freshMarket": {
+          "frame": "#b8c1c4",
+          "face": "#1f5f8b",
+          "lettering": "#f4f2ea",
+          "accent": "#f2b632"
         },
-        "nightRestock": {
-          "aluminium": "#6b7a80",
-          "acrylic": "#486b80",
-          "vinyl": "#d2a536"
+        "discountStore": {
+          "frame": "#3a3f44",
+          "face": "#e2231a",
+          "lettering": "#ffffff",
+          "accent": "#ffd400"
+        },
+        "organicGrocer": {
+          "frame": "#8a6a45",
+          "face": "#e9e1cc",
+          "lettering": "#2f5a32",
+          "accent": "#7aa13d"
         }
       },
       "stats": {
-        "triangles": 124,
+        "triangles": 1508,
         "sizeM": [
-          1.64,
-          1.118,
-          0.1335
+          1.6,
+          1.34,
+          0.1
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "acrylic",
-          "color": "#e8e1c8",
+          "name": "frame",
+          "color": "#b8c1c4",
           "parts": [
-            "panel"
+            "frame",
+            "eye-l",
+            "ceiling-plate-l",
+            "eye-r",
+            "ceiling-plate-r"
           ],
-          "param": "acrylic"
+          "param": "frame"
         },
         {
-          "name": "aluminium",
-          "color": "#727f84",
+          "name": "face",
+          "color": "#1f5f8b",
           "parts": [
-            "top-edge",
-            "hanger-left",
-            "hanger-right"
+            "face-front",
+            "digit-front",
+            "face-back",
+            "digit-back"
           ],
-          "param": "aluminium"
+          "param": "face"
         },
         {
-          "name": "vinyl",
-          "color": "#397c99",
+          "name": "accent",
+          "color": "#f2b632",
           "parts": [
-            "arrow-block"
+            "roundel-front",
+            "roundel-back"
           ],
-          "param": "vinyl"
+          "param": "accent"
+        },
+        {
+          "name": "lettering",
+          "color": "#f4f2ea",
+          "parts": [
+            "word-front-0",
+            "word-front-1",
+            "word-front-2",
+            "word-front-3",
+            "word-front-4",
+            "arrow-front",
+            "word-back-0",
+            "word-back-1",
+            "word-back-2",
+            "word-back-3",
+            "word-back-4",
+            "arrow-back"
+          ],
+          "param": "lettering"
+        },
+        {
+          "name": "wire-lo-l",
+          "color": "#8e9699",
+          "parts": [
+            "wire-lo-l",
+            "wire-hi-l",
+            "wire-lo-r",
+            "wire-hi-r"
+          ]
+        },
+        {
+          "name": "turnbuckle-l",
+          "color": "#5d6468",
+          "parts": [
+            "turnbuckle-l",
+            "clip-l",
+            "turnbuckle-r",
+            "clip-r"
+          ]
         }
       ]
     },
@@ -235057,10 +235130,14 @@
       "id": "impulse-merchandiser",
       "kit": "retail-store",
       "title": "Impulse merchandiser",
-      "description": "Narrow checkout-side impulse display with four shallow trays and a signboard mast. Knobs: overall scale and powder-coated steel, paper, aluminium color controls. Presets: cleanStore and nightRestock.",
+      "description": "Checkout-lane impulse rack at about real size: five raked wire trays with front fences and price strips, rows of chocolate bars and gum packs, a side peg strip with hanging blister packs, kick plinth on levelling feet and a printed header card. Material controls: powder-coated frame, header print, wrapper colours A and B. checkoutRed, minimalWhite and nightShift presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "impulse rack",
+        "checkout display",
+        "confectionery stand",
+        "candy rack",
         "retail",
         "grocery",
         "shop",
@@ -235077,8 +235154,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/impulse-merchandiser.kcad.ts",
       "preview": "/assets/retail-store-impulse-merchandiser.png",
-      "sourceSha256": "633a5b2ba459fc359f6d9ef605b58d2e379b85e4b7a19195d4fead29d06aa325",
-      "triangleBudget": 1800,
+      "sourceSha256": "d14a019688bba4c05ad05938b147184f2e8ad4589f44e72181511c7135cf710d",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -235090,75 +235167,248 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "frame",
           "type": "color",
-          "default": "#b87a3d",
-          "label": "Powder-coated steel color"
+          "default": "#2e3236",
+          "label": "Powder-coated frame"
         },
         {
-          "name": "paper",
+          "name": "print",
           "type": "color",
-          "default": "#efe0bc",
-          "label": "Paper color"
+          "default": "#d8282f",
+          "label": "Header print"
         },
         {
-          "name": "aluminium",
+          "name": "wrapA",
           "type": "color",
-          "default": "#aab5b6",
-          "label": "Aluminium color"
+          "default": "#5a2d1c",
+          "label": "Wrapper A (chocolate)"
+        },
+        {
+          "name": "wrapB",
+          "type": "color",
+          "default": "#2fa65a",
+          "label": "Wrapper B (gum)"
         }
       ],
       "presets": {
-        "cleanStore": {
-          "powderCoat": "#e5ebed",
-          "paper": "#f0e5c9",
-          "aluminium": "#c4cdd0"
+        "checkoutRed": {
+          "frame": "#2e3236",
+          "print": "#d8282f",
+          "wrapA": "#5a2d1c",
+          "wrapB": "#2fa65a"
         },
-        "nightRestock": {
-          "powderCoat": "#354750",
-          "paper": "#c9b27e",
-          "aluminium": "#6b7a80"
+        "minimalWhite": {
+          "frame": "#e6eaec",
+          "print": "#1f6fb5",
+          "wrapA": "#7b3fa0",
+          "wrapB": "#f2b632"
+        },
+        "nightShift": {
+          "frame": "#1d2a33",
+          "print": "#f2b632",
+          "wrapA": "#c0392b",
+          "wrapB": "#3aa0d8"
         }
       },
       "stats": {
-        "triangles": 128,
+        "triangles": 1852,
         "sizeM": [
-          0.44,
-          1.724,
-          0.39
+          0.578,
+          1.74,
+          0.364
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#b87a3d",
+          "name": "foot-lf",
+          "color": "#1a1c1e",
           "parts": [
-            "base",
-            "backboard",
+            "foot-lf",
+            "foot-rf",
+            "foot-lb",
+            "foot-rb"
+          ]
+        },
+        {
+          "name": "frame",
+          "color": "#2e3236",
+          "parts": [
+            "plinth",
+            "back",
+            "upright-l",
+            "upright-r",
+            "peg-strip"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "print",
+          "color": "#d8282f",
+          "parts": [
+            "plinth-strip",
+            "bar-band-0-0",
+            "bar-band-0-1",
+            "bar-band-0-2",
+            "bar-band-0-3",
+            "bar-band-2-0",
+            "bar-band-2-1",
+            "bar-band-2-2",
+            "bar-band-2-3",
+            "bar-band-4-0",
+            "bar-band-4-1",
+            "bar-band-4-2",
+            "bar-band-4-3",
+            "header"
+          ],
+          "param": "print"
+        },
+        {
+          "name": "tray-0",
+          "color": "#9aa3a7",
+          "parts": [
             "tray-0",
             "tray-1",
             "tray-2",
-            "tray-3"
-          ],
-          "param": "powderCoat"
+            "tray-3",
+            "tray-4"
+          ]
         },
         {
-          "name": "paper",
-          "color": "#efe0bc",
+          "name": "tray-wire-0-0",
+          "color": "#c9cfd2",
           "parts": [
-            "header"
-          ],
-          "param": "paper"
+            "tray-wire-0-0",
+            "tray-wire-0-1",
+            "tray-wire-0-2",
+            "tray-wire-0-3",
+            "tray-wire-0-4",
+            "tray-wire-0-5",
+            "fence-0",
+            "tray-wire-1-0",
+            "tray-wire-1-1",
+            "tray-wire-1-2",
+            "tray-wire-1-3",
+            "tray-wire-1-4",
+            "tray-wire-1-5",
+            "fence-1",
+            "tray-wire-2-0",
+            "tray-wire-2-1",
+            "tray-wire-2-2",
+            "tray-wire-2-3",
+            "tray-wire-2-4",
+            "tray-wire-2-5",
+            "fence-2",
+            "tray-wire-3-0",
+            "tray-wire-3-1",
+            "tray-wire-3-2",
+            "tray-wire-3-3",
+            "tray-wire-3-4",
+            "tray-wire-3-5",
+            "fence-3",
+            "tray-wire-4-0",
+            "tray-wire-4-1",
+            "tray-wire-4-2",
+            "tray-wire-4-3",
+            "tray-wire-4-4",
+            "tray-wire-4-5",
+            "fence-4",
+            "peg-0",
+            "peg-1"
+          ]
         },
         {
-          "name": "aluminium",
-          "color": "#aab5b6",
+          "name": "price-strip-0",
+          "color": "#f4f2ea",
           "parts": [
-            "mast-cap"
+            "price-strip-0",
+            "price-strip-1",
+            "gum-label-1-0",
+            "gum-label-1-1",
+            "gum-label-1-2",
+            "gum-label-1-3",
+            "price-strip-2",
+            "price-strip-3",
+            "gum-label-3-0",
+            "gum-label-3-1",
+            "gum-label-3-2",
+            "gum-label-3-3",
+            "price-strip-4",
+            "blister-card-0-0",
+            "blister-card-0-1",
+            "blister-card-0-2",
+            "blister-card-1-0",
+            "blister-card-1-1",
+            "blister-card-1-2",
+            "header-word"
+          ]
+        },
+        {
+          "name": "price-tag-0",
+          "color": "#f2d24a",
+          "parts": [
+            "price-tag-0",
+            "price-tag-1",
+            "price-tag-2",
+            "price-tag-3",
+            "price-tag-4",
+            "header-star",
+            "header-sub"
+          ]
+        },
+        {
+          "name": "wrapA",
+          "color": "#5a2d1c",
+          "parts": [
+            "bar-0-0-0",
+            "bar-0-0-1",
+            "bar-0-1-0",
+            "bar-0-1-1",
+            "bar-0-2-0",
+            "bar-0-2-1",
+            "bar-0-3-0",
+            "bar-0-3-1",
+            "bar-2-0-0",
+            "bar-2-0-1",
+            "bar-2-1-0",
+            "bar-2-1-1",
+            "bar-2-2-0",
+            "bar-2-2-1",
+            "bar-2-3-0",
+            "bar-2-3-1",
+            "bar-4-0-0",
+            "bar-4-0-1",
+            "bar-4-1-0",
+            "bar-4-1-1",
+            "bar-4-2-0",
+            "bar-4-2-1",
+            "bar-4-3-0",
+            "bar-4-3-1",
+            "blister-0-0",
+            "blister-0-2",
+            "blister-1-0",
+            "blister-1-2"
           ],
-          "param": "aluminium"
+          "param": "wrapA"
+        },
+        {
+          "name": "wrapB",
+          "color": "#2fa65a",
+          "parts": [
+            "gum-1-0",
+            "gum-1-1",
+            "gum-1-2",
+            "gum-1-3",
+            "gum-3-0",
+            "gum-3-1",
+            "gum-3-2",
+            "gum-3-3",
+            "blister-0-1",
+            "blister-1-1"
+          ],
+          "param": "wrapB"
         }
       ]
     },
@@ -235166,10 +235416,14 @@
       "id": "magazine-rack",
       "kit": "retail-store",
       "title": "Magazine rack",
-      "description": "Angled multi-pocket magazine stand with four front lips, tall backboard and side supports. Knobs: overall scale and powder-coated steel, acrylic, rubber color controls. Presets: cleanStore and nightRestock.",
+      "description": "Stepped supermarket press stand at about real size: four tiers of back-leaning pockets with clear acrylic front lips, magazines showing masthead bands and cover photos, staircase side cheeks, kick plinth on glides and a header card. Material controls: frame, acrylic lip, cover colours A and B. newsstandOak, modernWhite and nightShift presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "magazine rack",
+        "press stand",
+        "newspaper rack",
+        "literature display",
         "retail",
         "grocery",
         "shop",
@@ -235186,8 +235440,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/magazine-rack.kcad.ts",
       "preview": "/assets/retail-store-magazine-rack.png",
-      "sourceSha256": "6850ea1fedb68658333db02d6332e9b8e2c09e3087304e34160cec8ae13a72d7",
-      "triangleBudget": 1800,
+      "sourceSha256": "0d4cc799607f462cbc5d409f87d727fa38ad83c5d96eab055991e4a21827ef37",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "scale",
@@ -235199,75 +235453,182 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "frame",
           "type": "color",
-          "default": "#64594c",
-          "label": "Powder-coated steel color"
+          "default": "#8a6440",
+          "label": "Frame (oak or steel)"
         },
         {
           "name": "acrylic",
           "type": "color",
-          "default": "#c0d0cf",
-          "label": "Acrylic color"
+          "default": "#bcd9de",
+          "label": "Acrylic lip"
         },
         {
-          "name": "rubber",
+          "name": "coverA",
           "type": "color",
-          "default": "#373b3d",
-          "label": "Rubber color"
+          "default": "#c8323a",
+          "label": "Cover colour A"
+        },
+        {
+          "name": "coverB",
+          "type": "color",
+          "default": "#2f6fb0",
+          "label": "Cover colour B"
         }
       ],
       "presets": {
-        "cleanStore": {
-          "powderCoat": "#e5ebed",
-          "acrylic": "#a1d1dc",
-          "rubber": "#40474b"
+        "newsstandOak": {
+          "frame": "#8a6440",
+          "acrylic": "#bcd9de",
+          "coverA": "#c8323a",
+          "coverB": "#2f6fb0"
         },
-        "nightRestock": {
-          "powderCoat": "#354750",
-          "acrylic": "#486b80",
-          "rubber": "#262b2e"
+        "modernWhite": {
+          "frame": "#e8ecee",
+          "acrylic": "#cfe4e8",
+          "coverA": "#e86a2f",
+          "coverB": "#3a8f5a"
+        },
+        "nightShift": {
+          "frame": "#2b3136",
+          "acrylic": "#7fa6b0",
+          "coverA": "#d8b13a",
+          "coverB": "#8e3a8a"
         }
       },
       "stats": {
-        "triangles": 128,
+        "triangles": 1136,
         "sizeM": [
-          0.738,
-          1.42,
-          0.474
+          0.75,
+          1.67,
+          0.47
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#64594c",
+          "name": "glide-lf",
+          "color": "#1a1c1e",
           "parts": [
-            "backboard",
-            "side--350",
-            "side-350"
+            "glide-lf",
+            "glide-rf",
+            "glide-lb",
+            "glide-rb"
+          ]
+        },
+        {
+          "name": "frame",
+          "color": "#8a6440",
+          "parts": [
+            "plinth",
+            "cheek-l",
+            "cheek-r",
+            "back",
+            "pocket-floor-0",
+            "pocket-back-0",
+            "pocket-floor-1",
+            "pocket-back-1",
+            "pocket-floor-2",
+            "pocket-back-2",
+            "pocket-floor-3",
+            "pocket-back-3",
+            "header"
           ],
-          "param": "powderCoat"
+          "param": "frame"
+        },
+        {
+          "name": "coverA",
+          "color": "#c8323a",
+          "parts": [
+            "mag-0-0",
+            "photo-0-1",
+            "mag-0-2",
+            "photo-1-0",
+            "mag-1-1",
+            "photo-1-2",
+            "mag-2-0",
+            "photo-2-1",
+            "mag-2-2",
+            "photo-3-0",
+            "mag-3-1",
+            "photo-3-2",
+            "header-word"
+          ],
+          "param": "coverA"
+        },
+        {
+          "name": "masthead-0-0",
+          "color": "#f4f2ea",
+          "parts": [
+            "masthead-0-0",
+            "barcode-0-0",
+            "masthead-0-1",
+            "barcode-0-1",
+            "masthead-0-2",
+            "barcode-0-2",
+            "masthead-1-0",
+            "barcode-1-0",
+            "masthead-1-1",
+            "barcode-1-1",
+            "masthead-1-2",
+            "barcode-1-2",
+            "masthead-2-0",
+            "barcode-2-0",
+            "masthead-2-1",
+            "barcode-2-1",
+            "masthead-2-2",
+            "barcode-2-2",
+            "masthead-3-0",
+            "barcode-3-0",
+            "masthead-3-1",
+            "barcode-3-1",
+            "masthead-3-2",
+            "barcode-3-2",
+            "header-panel"
+          ]
+        },
+        {
+          "name": "coverB",
+          "color": "#2f6fb0",
+          "parts": [
+            "photo-0-0",
+            "mag-0-1",
+            "photo-0-2",
+            "mag-1-0",
+            "photo-1-1",
+            "mag-1-2",
+            "photo-2-0",
+            "mag-2-1",
+            "photo-2-2",
+            "mag-3-0",
+            "photo-3-1",
+            "mag-3-2",
+            "header-dot"
+          ],
+          "param": "coverB"
         },
         {
           "name": "acrylic",
-          "color": "#c0d0cf",
+          "color": "#bcd9de",
           "parts": [
-            "pocket-0",
-            "pocket-1",
-            "pocket-2",
-            "pocket-3"
+            "lip-0",
+            "lip-1",
+            "lip-2",
+            "lip-3"
           ],
           "param": "acrylic"
         },
         {
-          "name": "rubber",
-          "color": "#373b3d",
+          "name": "lip-edge-0",
+          "color": "#e9f3f5",
           "parts": [
-            "floor-foot"
-          ],
-          "param": "rubber"
+            "lip-edge-0",
+            "lip-edge-1",
+            "lip-edge-2",
+            "lip-edge-3"
+          ]
         }
       ]
     },
@@ -235275,10 +235636,14 @@
       "id": "pallet-display",
       "kit": "retail-store",
       "title": "Promotional pallet display",
-      "description": "Low promotional island with a pallet base, stacked riser blocks and a tall branded sign panel. Knobs: overall scale and timber, steel, vinyl color controls. Presets: cleanStore and nightRestock.",
+      "description": "Drop-and-sell drinks pallet at about real size: Euro pallet base with deck boards, stringers and blocks, three layers of shelf-ready trays with printed cut-down fronts showing rows of cans, card tier sheets, a pyramid of shrink-wrapped multipacks, a price card and a branded header card on a pole. Material controls: pallet timber, tray card, can colour, brand print. colaPromo, citrusSummer and craftBeer presets; optional printed skirt.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "pallet display",
+        "promo pallet",
+        "drop and sell",
+        "aisle display",
         "retail",
         "grocery",
         "shop",
@@ -235295,8 +235660,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/pallet-display.kcad.ts",
       "preview": "/assets/retail-store-pallet-display.png",
-      "sourceSha256": "796f11717659f4c7671cd423a115dd460ec41f8b01727c5d03f61e1a30b07277",
-      "triangleBudget": 1800,
+      "sourceSha256": "331da6876e111547e89295308dda3626c7147e1a91ba245fce7919005563ce03",
+      "triangleBudget": 4600,
       "params": [
         {
           "name": "scale",
@@ -235310,40 +235675,64 @@
         {
           "name": "timber",
           "type": "color",
-          "default": "#94754e",
-          "label": "Timber color"
+          "default": "#b48d5a",
+          "label": "Pallet timber"
         },
         {
-          "name": "steel",
+          "name": "card",
           "type": "color",
-          "default": "#66757a",
-          "label": "Steel color"
+          "default": "#e9dfc8",
+          "label": "Tray card"
         },
         {
-          "name": "vinyl",
+          "name": "can",
           "type": "color",
-          "default": "#d9b64d",
-          "label": "Vinyl color"
+          "default": "#c8232c",
+          "label": "Can colour"
+        },
+        {
+          "name": "print",
+          "type": "color",
+          "default": "#1d1d1f",
+          "label": "Brand print"
+        },
+        {
+          "name": "skirt",
+          "type": "choice",
+          "default": "bare",
+          "label": "Pallet skirt",
+          "choices": [
+            "bare",
+            "printed"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "timber": "#b9915c",
-          "steel": "#9ca8ab",
-          "vinyl": "#dce9dc"
+        "colaPromo": {
+          "timber": "#b48d5a",
+          "card": "#e9dfc8",
+          "can": "#c8232c",
+          "print": "#1d1d1f"
         },
-        "nightRestock": {
-          "timber": "#6e5133",
-          "steel": "#4a585d",
-          "vinyl": "#d2a536"
+        "citrusSummer": {
+          "timber": "#c49c66",
+          "card": "#f4f1e6",
+          "can": "#f2c230",
+          "print": "#2f8f3a"
+        },
+        "craftBeer": {
+          "timber": "#8a6640",
+          "card": "#c8a878",
+          "can": "#2a5b7a",
+          "print": "#e8e1cc"
         }
       },
       "stats": {
-        "triangles": 128,
+        "triangles": 4248,
         "sizeM": [
           1.2,
-          1.708,
-          1
+          1.82,
+          0.808
         ],
         "minUpM": 0,
         "materials": 1
@@ -235351,32 +235740,206 @@
       "palette": [
         {
           "name": "timber",
-          "color": "#94754e",
+          "color": "#b48d5a",
           "parts": [
-            "pallet-deck",
-            "runner--440",
-            "runner-0",
-            "runner-440",
-            "display-base"
+            "bottom-board-0",
+            "bottom-board-1",
+            "bottom-board-2",
+            "stringer-l",
+            "stringer-m",
+            "stringer-r",
+            "top-board-0",
+            "top-board-1",
+            "top-board-2",
+            "top-board-3",
+            "top-board-4"
           ],
           "param": "timber"
         },
         {
-          "name": "steel",
-          "color": "#66757a",
+          "name": "block-lf",
+          "color": "#9a7548",
           "parts": [
-            "sign-mast",
-            "mast-cap"
-          ],
-          "param": "steel"
+            "block-lf",
+            "block-lm",
+            "block-lb",
+            "block-mf",
+            "block-mm",
+            "block-mb",
+            "block-rf",
+            "block-rm",
+            "block-rb"
+          ]
         },
         {
-          "name": "vinyl",
-          "color": "#d9b64d",
+          "name": "card",
+          "color": "#e9dfc8",
           "parts": [
-            "sign-panel"
+            "tray-floor-0",
+            "tray-band-0",
+            "tier-sheet-0",
+            "tray-floor-1",
+            "tray-band-1",
+            "tier-sheet-1",
+            "tray-floor-2",
+            "tray-band-2",
+            "tier-sheet-2",
+            "pack-label-0",
+            "pack-label-1",
+            "pack-label-2",
+            "pack-label-3",
+            "pack-label-4",
+            "pack-label-5",
+            "pack-label-6",
+            "pack-label-7",
+            "header-word"
           ],
-          "param": "vinyl"
+          "param": "card"
+        },
+        {
+          "name": "stock-core-0",
+          "color": "#5a5e62",
+          "parts": [
+            "stock-core-0",
+            "stock-core-1",
+            "stock-core-2"
+          ]
+        },
+        {
+          "name": "can",
+          "color": "#c8232c",
+          "parts": [
+            "can-f-0-0",
+            "can-f-0-1",
+            "can-f-0-2",
+            "can-f-0-3",
+            "can-f-0-4",
+            "can-f-0-5",
+            "can-f-0-6",
+            "can-f-0-7",
+            "can-f-0-8",
+            "can-f-0-9",
+            "can-f-0-10",
+            "can-f-0-11",
+            "can-f-0-12",
+            "can-f-0-13",
+            "can-f-0-14",
+            "can-f-0-15",
+            "can-s-0-1",
+            "can-s-0-2",
+            "can-s-0-3",
+            "can-s-0-4",
+            "can-s-0-5",
+            "can-s-0-6",
+            "can-s-0-7",
+            "can-s-0-8",
+            "can-s-0-9",
+            "can-f-1-0",
+            "can-f-1-1",
+            "can-f-1-2",
+            "can-f-1-3",
+            "can-f-1-4",
+            "can-f-1-5",
+            "can-f-1-6",
+            "can-f-1-7",
+            "can-f-1-8",
+            "can-f-1-9",
+            "can-f-1-10",
+            "can-f-1-11",
+            "can-f-1-12",
+            "can-f-1-13",
+            "can-f-1-14",
+            "can-f-1-15",
+            "can-s-1-1",
+            "can-s-1-2",
+            "can-s-1-3",
+            "can-s-1-4",
+            "can-s-1-5",
+            "can-s-1-6",
+            "can-s-1-7",
+            "can-s-1-8",
+            "can-s-1-9",
+            "can-f-2-0",
+            "can-f-2-1",
+            "can-f-2-2",
+            "can-f-2-3",
+            "can-f-2-4",
+            "can-f-2-5",
+            "can-f-2-6",
+            "can-f-2-7",
+            "can-f-2-8",
+            "can-f-2-9",
+            "can-f-2-10",
+            "can-f-2-11",
+            "can-f-2-12",
+            "can-f-2-13",
+            "can-f-2-14",
+            "can-f-2-15",
+            "can-s-2-1",
+            "can-s-2-2",
+            "can-s-2-3",
+            "can-s-2-4",
+            "can-s-2-5",
+            "can-s-2-6",
+            "can-s-2-7",
+            "can-s-2-8",
+            "can-s-2-9",
+            "pack-0",
+            "pack-1",
+            "pack-2",
+            "pack-3",
+            "pack-4",
+            "pack-5",
+            "pack-6",
+            "pack-7",
+            "price-figure",
+            "header-roundel",
+            "header-sub"
+          ],
+          "param": "can"
+        },
+        {
+          "name": "print",
+          "color": "#1d1d1f",
+          "parts": [
+            "tray-front-0",
+            "tray-side-0",
+            "tray-front-1",
+            "tray-side-1",
+            "tray-front-2",
+            "tray-side-2",
+            "pack-logo-0",
+            "pack-logo-1",
+            "pack-logo-2",
+            "pack-logo-3",
+            "pack-logo-4",
+            "pack-logo-5",
+            "pack-logo-6",
+            "pack-logo-7",
+            "header"
+          ],
+          "param": "print"
+        },
+        {
+          "name": "price-card",
+          "color": "#f2d24a",
+          "parts": [
+            "price-card"
+          ]
+        },
+        {
+          "name": "pole",
+          "color": "#9aa3a7",
+          "parts": [
+            "pole"
+          ]
+        },
+        {
+          "name": "pole-shoe",
+          "color": "#5d6468",
+          "parts": [
+            "pole-shoe"
+          ]
         }
       ]
     },
@@ -235384,10 +235947,14 @@
       "id": "parcel-locker-bank",
       "kit": "retail-store",
       "title": "Parcel locker bank",
-      "description": "Self-service parcel locker bank with mixed-size door bays, keypad column and top sign panel. Knobs: overall scale and powder-coated steel, brass, polycarbonate color controls. Presets: cleanStore and nightRestock.",
+      "description": "Self-service parcel locker bank at about real size: two columns of small, medium and large doors with recessed pulls and number tags, a central terminal with touch screen, scanner window, keypad and card reader, one large door open with a taped parcel inside, branded canopy header and kick plinth. Material controls: cabinet body, locker doors, screen glass, brand accent. postalYellow, retailGrey and ecoGreen presets; open-door choice.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "parcel locker",
+        "pickup locker",
+        "click and collect",
+        "self service",
         "retail",
         "grocery",
         "shop",
@@ -235404,8 +235971,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/parcel-locker-bank.kcad.ts",
       "preview": "/assets/retail-store-parcel-locker-bank.png",
-      "sourceSha256": "03fd38471aafbd1670535ccd94ed1ebdf28ab58626100a1a83c9a1ddf2f7ae81",
-      "triangleBudget": 1800,
+      "sourceSha256": "99801887634e8d722034464e08cd54a0d40d82f04746e8aa072ceb8900fb7983",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "scale",
@@ -235417,94 +235984,227 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "body",
           "type": "color",
-          "default": "#62737a",
-          "label": "Powder-coated steel color"
+          "default": "#3b4248",
+          "label": "Cabinet body"
         },
         {
-          "name": "brass",
+          "name": "doors",
           "type": "color",
-          "default": "#c39b46",
-          "label": "Brass color"
+          "default": "#f2c230",
+          "label": "Locker doors"
         },
         {
-          "name": "polycarbonate",
+          "name": "glass",
           "type": "color",
-          "default": "#81bdc7",
-          "label": "Polycarbonate color"
+          "default": "#1d2a33",
+          "label": "Screen glass"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#c8232c",
+          "label": "Brand accent"
+        },
+        {
+          "name": "openDoor",
+          "type": "choice",
+          "default": "open",
+          "label": "Large door",
+          "choices": [
+            "open",
+            "closed"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "powderCoat": "#e5ebed",
-          "brass": "#c29a4c",
-          "polycarbonate": "#a2d1d7"
+        "postalYellow": {
+          "body": "#3b4248",
+          "doors": "#f2c230",
+          "glass": "#1d2a33",
+          "accent": "#c8232c"
         },
-        "nightRestock": {
-          "powderCoat": "#354750",
-          "brass": "#8f682c",
-          "polycarbonate": "#486b7b"
+        "retailGrey": {
+          "body": "#d9dee0",
+          "doors": "#9aa5ab",
+          "glass": "#22303a",
+          "accent": "#1f6fb5"
+        },
+        "ecoGreen": {
+          "body": "#2f3a33",
+          "doors": "#7aa13d",
+          "glass": "#1b2620",
+          "accent": "#e8e1cc"
         }
       },
       "stats": {
-        "triangles": 708,
+        "triangles": 1372,
         "sizeM": [
-          1.61,
-          2.64,
-          0.265
+          1.799727,
+          2.2,
+          1.118418
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#62737a",
+          "name": "body",
+          "color": "#3b4248",
           "parts": [
-            "back",
-            "header"
+            "cabinet",
+            "canopy"
           ],
-          "param": "powderCoat"
+          "param": "body"
         },
         {
-          "name": "brass",
-          "color": "#c39b46",
+          "name": "plinth",
+          "color": "#1a1c1e",
           "parts": [
-            "locker-0-0",
-            "locker-0-1",
-            "locker-0-2",
-            "locker-0-3",
-            "locker-1-0",
-            "locker-1-1",
-            "locker-1-2",
-            "locker-1-3",
-            "locker-2-0",
-            "locker-2-1",
-            "locker-2-2",
-            "locker-2-3",
-            "lock-0-0",
-            "lock-0-1",
-            "lock-0-2",
-            "lock-0-3",
-            "lock-1-0",
-            "lock-1-1",
-            "lock-1-2",
-            "lock-1-3",
-            "lock-2-0",
-            "lock-2-1",
-            "lock-2-2",
-            "lock-2-3"
-          ],
-          "param": "brass"
+            "plinth",
+            "door-pull-1",
+            "door-pull-2",
+            "door-pull-3",
+            "door-pull-4",
+            "door-pull-5",
+            "door-pull-6",
+            "door-pull-7",
+            "door-pull-8",
+            "door-pull-9",
+            "door-pull-10",
+            "door-pull-11",
+            "screen-bezel",
+            "scanner",
+            "card-reader",
+            "receipt-slot",
+            "terminal-pull-0",
+            "terminal-pull-1"
+          ]
         },
         {
-          "name": "polycarbonate",
-          "color": "#81bdc7",
+          "name": "parcel",
+          "color": "#b8895a",
           "parts": [
-            "keypad-panel"
+            "parcel"
+          ]
+        },
+        {
+          "name": "parcel-tape",
+          "color": "#d9c9a8",
+          "parts": [
+            "parcel-tape",
+            "parcel-tape-top"
+          ]
+        },
+        {
+          "name": "parcel-label",
+          "color": "#f4f2ea",
+          "parts": [
+            "parcel-label",
+            "door-tag-1",
+            "door-tag-2",
+            "door-tag-3",
+            "door-tag-4",
+            "door-tag-5",
+            "door-tag-6",
+            "door-tag-7",
+            "door-tag-8",
+            "door-tag-9",
+            "door-tag-10",
+            "door-tag-11",
+            "screen-ui"
+          ]
+        },
+        {
+          "name": "doors",
+          "color": "#f2c230",
+          "parts": [
+            "door-1",
+            "door-2",
+            "door-3",
+            "door-4",
+            "door-5",
+            "door-6",
+            "door-7",
+            "door-8",
+            "door-9",
+            "door-10",
+            "door-11",
+            "screen-button",
+            "card-slot",
+            "terminal-door-0",
+            "terminal-door-1",
+            "logo-panel"
           ],
-          "param": "polycarbonate"
+          "param": "doors"
+        },
+        {
+          "name": "door-led-1",
+          "color": "#3ad86a",
+          "parts": [
+            "door-led-1"
+          ]
+        },
+        {
+          "name": "door-led-2",
+          "color": "#d8282f",
+          "parts": [
+            "door-led-2",
+            "door-led-3",
+            "door-led-4",
+            "door-led-5",
+            "door-led-6",
+            "door-led-7",
+            "door-led-8",
+            "door-led-9",
+            "door-led-10",
+            "door-led-11",
+            "scanner-window"
+          ]
+        },
+        {
+          "name": "accent",
+          "color": "#c8232c",
+          "parts": [
+            "terminal-face",
+            "canopy-stripe",
+            "logo-mark"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "glass",
+          "color": "#1d2a33",
+          "parts": [
+            "screen"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "keypad-housing",
+          "color": "#2b2f33",
+          "parts": [
+            "keypad-housing"
+          ]
+        },
+        {
+          "name": "key-0-0",
+          "color": "#c9cfd2",
+          "parts": [
+            "key-0-0",
+            "key-0-1",
+            "key-0-2",
+            "key-1-0",
+            "key-1-1",
+            "key-1-2",
+            "key-2-0",
+            "key-2-1",
+            "key-2-2",
+            "key-3-0",
+            "key-3-1",
+            "key-3-2"
+          ]
         }
       ]
     },
