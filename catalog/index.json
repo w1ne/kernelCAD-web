@@ -277075,10 +277075,16 @@
       "id": "audio-mixing-console",
       "kit": "theatre-production",
       "title": "Audio mixing console",
-      "description": "Portable audio desk with a sloped control panel, display bridge, channel fader strips and rack base. Knobs: overall scale; steel hardware, powder-coated steel, lens and display glass, polymer controls and cable jacket; houseShow and touring appearance presets.",
+      "description": "Front-of-house audio mixing desk at about real size: sloped work surface with sixteen channel strips (rotary EQ knobs over long-throw faders in slots), a master section with wide faders, tilted meter bridge with touchscreen and LED level meters, padded arm rest, timber end cheeks, gooseneck desk lamp, on a flight-case rack base with stage-box and effects units. Material controls: console chassis, timber end cheeks, fader caps and knobs, screen and meter glass, flight-case shell. houseShow, touring and studio presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "mixing console",
+        "sound desk",
+        "audio mixer",
+        "front of house",
+        "FOH",
+        "faders",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -277095,8 +277101,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/audio-mixing-console.kcad.ts",
       "preview": "/assets/theatre-production-audio-mixing-console.png",
-      "sourceSha256": "e18be7438d0633cf11bd9a03ea71b26cfd0cf5d2da1e268829c997c6534e88df",
-      "triangleBudget": 1800,
+      "sourceSha256": "694c152f7069ab1d5d1c788fe5e49fa6206fd59bdc3496b9b7c1efbb50a478e6",
+      "triangleBudget": 9000,
       "params": [
         {
           "name": "scale",
@@ -277108,93 +277114,347 @@
           "step": 0.05
         },
         {
-          "name": "hardware",
+          "name": "chassis",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#2c3035",
+          "label": "Console chassis and work surface"
         },
         {
-          "name": "powderCoat",
+          "name": "timber",
           "type": "color",
-          "default": "#353b41",
-          "label": "Powder-coated steel"
-        },
-        {
-          "name": "glass",
-          "type": "color",
-          "default": "#f3e9bf",
-          "label": "Lens and display glass"
+          "default": "#7a4a2b",
+          "label": "Timber end cheeks"
         },
         {
           "name": "polymer",
           "type": "color",
-          "default": "#426878",
-          "label": "Polymer controls and cable jacket"
+          "default": "#d9dcde",
+          "label": "Fader caps and knobs"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#3fa7c9",
+          "label": "Touchscreen and meter glass"
+        },
+        {
+          "name": "flightCase",
+          "type": "color",
+          "default": "#1d2023",
+          "label": "Flight-case rack base"
         }
       ],
       "presets": {
         "houseShow": {
-          "hardware": "#c5a052",
-          "powderCoat": "#272d33",
-          "glass": "#ffd15d",
-          "polymer": "#344e5b"
+          "chassis": "#2c3035",
+          "timber": "#7a4a2b",
+          "polymer": "#d9dcde",
+          "glass": "#3fa7c9",
+          "flightCase": "#1d2023"
         },
         "touring": {
-          "hardware": "#e2b347",
-          "powderCoat": "#315465",
-          "glass": "#31b9d2",
-          "polymer": "#e3a928"
+          "chassis": "#1f2225",
+          "timber": "#23272a",
+          "polymer": "#f0b532",
+          "glass": "#4fc6a0",
+          "flightCase": "#3a4a57"
+        },
+        "studio": {
+          "chassis": "#8f969b",
+          "timber": "#a8743f",
+          "polymer": "#2a2d30",
+          "glass": "#7ad0f0",
+          "flightCase": "#2b2e31"
         }
       },
       "stats": {
-        "triangles": 228,
+        "triangles": 4934,
         "sizeM": [
-          1.2,
-          0.65,
-          0.81
+          1.18,
+          1.294,
+          0.74395
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "hardware",
-          "color": "#c28f3e",
+          "name": "flightCase",
+          "color": "#1d2023",
           "parts": [
-            "base",
-            "arm-rest"
+            "case-shell",
+            "arm-rest",
+            "master-panel",
+            "screen-bezel"
           ],
-          "param": "hardware"
+          "param": "flightCase"
         },
         {
-          "name": "powderCoat",
-          "color": "#353b41",
+          "name": "case-edge--1--1",
+          "color": "#b8c0c4",
           "parts": [
-            "sloped-panel"
-          ],
-          "param": "powderCoat"
+            "case-edge--1--1",
+            "case-edge--1-1",
+            "case-handle--1",
+            "case-edge-1--1",
+            "case-edge-1-1",
+            "case-handle-1",
+            "case-top-rim",
+            "rack-rail--1",
+            "rack-rail-1",
+            "stage-box-sockets",
+            "lamp-socket"
+          ]
         },
         {
-          "name": "glass",
-          "color": "#f3e9bf",
+          "name": "case-foot--1--1",
+          "color": "#121416",
           "parts": [
-            "display-bridge",
-            "display-left",
-            "display-right"
+            "case-foot--1--1",
+            "case-foot--1-1",
+            "case-foot-1--1",
+            "case-foot-1-1",
+            "rack-bay",
+            "fader-slot-l0",
+            "fader-slot-l1",
+            "fader-slot-l2",
+            "fader-slot-l3",
+            "fader-slot-l4",
+            "fader-slot-l5",
+            "fader-slot-l6",
+            "fader-slot-l7",
+            "fader-slot-r0",
+            "fader-slot-r1",
+            "fader-slot-r2",
+            "fader-slot-r3",
+            "fader-slot-r4",
+            "fader-slot-r5",
+            "fader-slot-r6",
+            "fader-slot-r7",
+            "master-slot--1",
+            "master-slot-1",
+            "lamp-neck-0",
+            "lamp-joint-0",
+            "lamp-neck-1",
+            "lamp-joint-1",
+            "lamp-neck-2",
+            "lamp-joint-2",
+            "lamp-head"
+          ]
+        },
+        {
+          "name": "chassis",
+          "color": "#2c3035",
+          "parts": [
+            "unit-stage-box",
+            "unit-effects",
+            "unit-power",
+            "tub",
+            "mute-l1",
+            "mute-l2",
+            "mute-l4",
+            "mute-l5",
+            "mute-l7",
+            "mute-r1",
+            "mute-r2",
+            "mute-r4",
+            "mute-r5",
+            "mute-r7",
+            "meter-bridge",
+            "screen-stand"
           ],
-          "param": "glass"
+          "param": "chassis"
+        },
+        {
+          "name": "unit-stage-box-led-0",
+          "color": "#45c45a",
+          "parts": [
+            "unit-stage-box-led-0",
+            "unit-stage-box-led-1",
+            "unit-stage-box-led-3",
+            "unit-stage-box-led-4",
+            "unit-effects-led-0",
+            "unit-effects-led-1",
+            "unit-effects-led-3",
+            "unit-effects-led-4",
+            "unit-power-led-0",
+            "unit-power-led-1",
+            "unit-power-led-3",
+            "unit-power-led-4",
+            "meter--1-0",
+            "meter--1-1",
+            "meter--1-2",
+            "meter--1-3",
+            "meter--1-4",
+            "meter--1-5",
+            "meter--1-6",
+            "meter--1-7",
+            "meter-1-0",
+            "meter-1-1",
+            "meter-1-2",
+            "meter-1-3",
+            "meter-1-4",
+            "meter-1-5",
+            "meter-1-6",
+            "meter-1-7"
+          ]
+        },
+        {
+          "name": "unit-stage-box-led-2",
+          "color": "#f2a531",
+          "parts": [
+            "unit-stage-box-led-2",
+            "unit-stage-box-led-5",
+            "unit-effects-led-2",
+            "unit-effects-led-5",
+            "unit-power-led-2",
+            "unit-power-led-5",
+            "talkback",
+            "lamp-lens"
+          ]
+        },
+        {
+          "name": "timber",
+          "color": "#7a4a2b",
+          "parts": [
+            "end-cheek--1",
+            "end-cheek-1"
+          ],
+          "param": "timber"
         },
         {
           "name": "polymer",
-          "color": "#426878",
+          "color": "#d9dcde",
           "parts": [
-            "fader-bank-left",
-            "fader-bank-right",
-            "encoder-left",
-            "encoder-mid",
-            "encoder-right"
+            "fader-cap-l0",
+            "knob-l0-1",
+            "knob-l0-2",
+            "knob-l0-3",
+            "fader-cap-l1",
+            "knob-l1-1",
+            "knob-l1-2",
+            "knob-l1-3",
+            "fader-cap-l2",
+            "knob-l2-1",
+            "knob-l2-2",
+            "knob-l2-3",
+            "fader-cap-l3",
+            "knob-l3-1",
+            "knob-l3-2",
+            "knob-l3-3",
+            "fader-cap-l4",
+            "knob-l4-1",
+            "knob-l4-2",
+            "knob-l4-3",
+            "fader-cap-l5",
+            "knob-l5-1",
+            "knob-l5-2",
+            "knob-l5-3",
+            "fader-cap-l6",
+            "knob-l6-1",
+            "knob-l6-2",
+            "knob-l6-3",
+            "fader-cap-l7",
+            "knob-l7-1",
+            "knob-l7-2",
+            "knob-l7-3",
+            "fader-cap-r0",
+            "knob-r0-1",
+            "knob-r0-2",
+            "knob-r0-3",
+            "fader-cap-r1",
+            "knob-r1-1",
+            "knob-r1-2",
+            "knob-r1-3",
+            "fader-cap-r2",
+            "knob-r2-1",
+            "knob-r2-2",
+            "knob-r2-3",
+            "fader-cap-r3",
+            "knob-r3-1",
+            "knob-r3-2",
+            "knob-r3-3",
+            "fader-cap-r4",
+            "knob-r4-1",
+            "knob-r4-2",
+            "knob-r4-3",
+            "fader-cap-r5",
+            "knob-r5-1",
+            "knob-r5-2",
+            "knob-r5-3",
+            "fader-cap-r6",
+            "knob-r6-1",
+            "knob-r6-2",
+            "knob-r6-3",
+            "fader-cap-r7",
+            "knob-r7-1",
+            "knob-r7-2",
+            "knob-r7-3",
+            "master-knob"
           ],
           "param": "polymer"
+        },
+        {
+          "name": "knob-l0-0",
+          "color": "#d64a3a",
+          "parts": [
+            "knob-l0-0",
+            "knob-l4-0",
+            "knob-r0-0",
+            "knob-r4-0"
+          ]
+        },
+        {
+          "name": "mute-l0",
+          "color": "#e2392f",
+          "parts": [
+            "mute-l0",
+            "mute-l3",
+            "mute-l6",
+            "mute-r0",
+            "mute-r3",
+            "mute-r6",
+            "master-cap--1",
+            "master-cap-1"
+          ]
+        },
+        {
+          "name": "knob-l1-0",
+          "color": "#e2b33b",
+          "parts": [
+            "knob-l1-0",
+            "knob-l5-0",
+            "knob-r1-0",
+            "knob-r5-0"
+          ]
+        },
+        {
+          "name": "knob-l2-0",
+          "color": "#4d9fd6",
+          "parts": [
+            "knob-l2-0",
+            "knob-l6-0",
+            "knob-r2-0",
+            "knob-r6-0"
+          ]
+        },
+        {
+          "name": "knob-l3-0",
+          "color": "#5cb36a",
+          "parts": [
+            "knob-l3-0",
+            "knob-l7-0",
+            "knob-r3-0",
+            "knob-r7-0"
+          ]
+        },
+        {
+          "name": "glass",
+          "color": "#3fa7c9",
+          "parts": [
+            "touchscreen"
+          ],
+          "param": "glass"
         }
       ]
     },
@@ -277202,10 +277462,15 @@
       "id": "audio-monitor-wedge",
       "kit": "theatre-production",
       "title": "Audio monitor wedge",
-      "description": "Low angled stage monitor enclosure with a broad grille, end cheeks and rear connector plate. Knobs: overall scale; powder-coated steel, polymer controls and cable jacket; houseShow and touring appearance presets.",
+      "description": "Stage floor monitor wedge at about real size: trapezoid cabinet tilting the baffle up at the performer, 15-inch woofer cone with dust cap and compression-driver horn behind a bar grille, steel corner protectors, recessed side pocket handles, rubber skids and a rear connector plate. Material controls: coated plywood cabinet, steel grille, woofer cone, zinc corner hardware. houseShow, touring and whiteWedge presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "monitor wedge",
+        "floor monitor",
+        "stage monitor",
+        "loudspeaker",
+        "foldback",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -277222,8 +277487,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/audio-monitor-wedge.kcad.ts",
       "preview": "/assets/theatre-production-audio-monitor-wedge.png",
-      "sourceSha256": "64ae3ff2ef7cffaf8fbd7028dbcb1f8d4d20fac8dbd246b30044ae0329330ba1",
-      "triangleBudget": 1800,
+      "sourceSha256": "808cc604687781b17d04ed340094a23538287570c96b2c9a4d52688f271474e3",
+      "triangleBudget": 5000,
       "params": [
         {
           "name": "scale",
@@ -277235,61 +277500,132 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "cabinet",
           "type": "color",
-          "default": "#353b41",
-          "label": "Powder-coated steel"
+          "default": "#24272a",
+          "label": "Coated plywood cabinet"
         },
         {
-          "name": "polymer",
+          "name": "grille",
           "type": "color",
-          "default": "#426878",
-          "label": "Polymer controls and cable jacket"
+          "default": "#3c4246",
+          "label": "Steel grille"
+        },
+        {
+          "name": "cone",
+          "type": "color",
+          "default": "#5a5f63",
+          "label": "Woofer cone and horn"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#b6bec2",
+          "label": "Zinc corner protectors and connectors"
         }
       ],
       "presets": {
         "houseShow": {
-          "powderCoat": "#272d33",
-          "polymer": "#344e5b"
+          "cabinet": "#24272a",
+          "grille": "#3c4246",
+          "cone": "#5a5f63",
+          "hardware": "#b6bec2"
         },
         "touring": {
-          "powderCoat": "#315465",
-          "polymer": "#e3a928"
+          "cabinet": "#1a1c1e",
+          "grille": "#202325",
+          "cone": "#3d4246",
+          "hardware": "#d9a43a"
+        },
+        "whiteWedge": {
+          "cabinet": "#e7e9ea",
+          "grille": "#c4c9cc",
+          "cone": "#3b3f42",
+          "hardware": "#8c9599"
         }
       },
       "stats": {
-        "triangles": 172,
+        "triangles": 1668,
         "sizeM": [
-          0.765,
-          0.32,
-          0.755
+          0.65,
+          0.429,
+          0.559161
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#353b41",
+          "name": "cabinet",
+          "color": "#24272a",
           "parts": [
-            "speaker-body",
-            "top-panel",
-            "left-cheek",
-            "right-cheek",
-            "rear-panel",
-            "carry-recess"
+            "cabinet"
           ],
-          "param": "powderCoat"
+          "param": "cabinet"
         },
         {
-          "name": "polymer",
-          "color": "#426878",
+          "name": "cone",
+          "color": "#5a5f63",
           "parts": [
-            "front-grille",
-            "woofer",
-            "connector"
+            "woofer-cone",
+            "horn-throat"
           ],
-          "param": "polymer"
+          "param": "cone"
+        },
+        {
+          "name": "woofer-surround",
+          "color": "#141617",
+          "parts": [
+            "woofer-surround",
+            "dust-cap",
+            "horn-flare",
+            "skid--1",
+            "skid-1",
+            "socket--1",
+            "socket-1"
+          ]
+        },
+        {
+          "name": "grille",
+          "color": "#3c4246",
+          "parts": [
+            "grille-frame-lo",
+            "grille-frame-hi",
+            "grille-frame--1",
+            "grille-frame-1",
+            "grille-bar-0",
+            "grille-bar-1",
+            "grille-bar-2",
+            "grille-bar-3",
+            "grille-bar-4",
+            "grille-bar-5",
+            "grille-bar-6",
+            "grille-bar-7",
+            "grille-bar-8"
+          ],
+          "param": "grille"
+        },
+        {
+          "name": "hardware",
+          "color": "#b6bec2",
+          "parts": [
+            "badge",
+            "corner--1--250-14",
+            "corner--1-250-14",
+            "corner--1-250-344",
+            "corner--1-160-420",
+            "corner--1--250-120",
+            "corner-1--250-14",
+            "corner-1-250-14",
+            "corner-1-250-344",
+            "corner-1-160-420",
+            "corner-1--250-120",
+            "rear-plate",
+            "rear-handle",
+            "rear-handle-post-20",
+            "rear-handle-post-210"
+          ],
+          "param": "hardware"
         }
       ]
     },
@@ -277491,10 +277827,17 @@
       "id": "counterweight-arbor",
       "kit": "theatre-production",
       "title": "Counterweight arbor",
-      "description": "Stage counterweight frame with guide rails, compact weight stack, top crosshead and bottom stop. Knobs: overall scale; painted steel, galvanized steel; houseShow and touring appearance presets.",
+      "description": "Counterweight fly-system arbor at about real size: two arbor rods clamping notched cast-iron bricks between top and bottom plates, galvanised spreader plates, locking collar, nylon guide shoes on a pair of T-track bars, wire-rope lift lines with turnbuckles and a hemp-look purchase line to the floor block, resting on rubber stops. Choose the brick load (light, half or full). Material controls: painted arbor frame and track, cast-iron bricks, galvanised plates and lift lines, purchase rope. houseShow, touring and safetyMarked presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "counterweight arbor",
+        "fly system",
+        "rigging",
+        "counterweight",
+        "stage weights",
+        "T-track",
+        "purchase line",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -277511,8 +277854,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/counterweight-arbor.kcad.ts",
       "preview": "/assets/theatre-production-counterweight-arbor.png",
-      "sourceSha256": "59ade09ce9cbd15cdfdba4ff978ed585d9defda3d1e91edf2120757d181b1313",
-      "triangleBudget": 1800,
+      "sourceSha256": "804eb85bcc6fe4064a7d121a9b8682b2759e0cccf7d6fd4678c3f28792a72009",
+      "triangleBudget": 6000,
       "params": [
         {
           "name": "scale",
@@ -277524,34 +277867,67 @@
           "step": 0.05
         },
         {
+          "name": "load",
+          "type": "choice",
+          "default": "half",
+          "label": "Brick load",
+          "choices": [
+            "light",
+            "half",
+            "full"
+          ]
+        },
+        {
           "name": "paintedSteel",
           "type": "color",
-          "default": "#454d54",
-          "label": "Painted steel"
+          "default": "#2f3438",
+          "label": "Painted arbor frame and track"
+        },
+        {
+          "name": "castIron",
+          "type": "color",
+          "default": "#5b6166",
+          "label": "Cast-iron bricks"
         },
         {
           "name": "galvanizedSteel",
           "type": "color",
-          "default": "#aab5b9",
-          "label": "Galvanized steel"
+          "default": "#b3bdc1",
+          "label": "Galvanised plates and lift lines"
+        },
+        {
+          "name": "rope",
+          "type": "color",
+          "default": "#c9a86a",
+          "label": "Purchase line rope"
         }
       ],
       "presets": {
         "houseShow": {
-          "paintedSteel": "#313940",
-          "galvanizedSteel": "#c0c8ca"
+          "paintedSteel": "#2f3438",
+          "castIron": "#5b6166",
+          "galvanizedSteel": "#b3bdc1",
+          "rope": "#c9a86a"
         },
         "touring": {
-          "paintedSteel": "#dda21f",
-          "galvanizedSteel": "#dce2e2"
+          "paintedSteel": "#1e2124",
+          "castIron": "#3f4448",
+          "galvanizedSteel": "#9aa5aa",
+          "rope": "#3b3f44"
+        },
+        "safetyMarked": {
+          "paintedSteel": "#d8b12a",
+          "castIron": "#6c7277",
+          "galvanizedSteel": "#c4ccd0",
+          "rope": "#e7e2d2"
         }
       },
       "stats": {
-        "triangles": 208,
+        "triangles": 2252,
         "sizeM": [
-          0.7,
-          2.26,
-          0.15
+          0.81,
+          2.6,
+          0.322
         ],
         "minUpM": 0,
         "materials": 1
@@ -277559,29 +277935,105 @@
       "palette": [
         {
           "name": "paintedSteel",
-          "color": "#454d54",
+          "color": "#2f3438",
           "parts": [
-            "guide-left",
-            "guide-right",
-            "crosshead",
-            "base-crossbar"
+            "track-bar--1",
+            "track-flange--1",
+            "track-bar-1",
+            "track-flange-1",
+            "bottom-plate",
+            "top-plate",
+            "collar-handle--1",
+            "collar-handle-1",
+            "purchase-tie-top",
+            "purchase-tie-bottom",
+            "floor-block",
+            "floor-block-mount",
+            "floor-block-cheek"
           ],
           "param": "paintedSteel"
         },
         {
-          "name": "galvanizedSteel",
-          "color": "#aab5b9",
+          "name": "stop--1",
+          "color": "#161819",
           "parts": [
-            "weight-one",
-            "weight-two",
-            "weight-three",
-            "weight-four",
-            "weight-five",
-            "tie-bar",
-            "sheave-left",
-            "sheave-right"
+            "stop--1",
+            "stop-1"
+          ]
+        },
+        {
+          "name": "guide-shoe--1-175",
+          "color": "#e9e6dc",
+          "parts": [
+            "guide-shoe--1-175",
+            "guide-shoe--1-2080",
+            "guide-shoe-1-175",
+            "guide-shoe-1-2080"
+          ]
+        },
+        {
+          "name": "galvanizedSteel",
+          "color": "#b3bdc1",
+          "parts": [
+            "arbor-rod--1",
+            "arbor-rod-1",
+            "spreader-6",
+            "spreader-12",
+            "lock-plate",
+            "collar--1",
+            "collar-screw--1",
+            "collar-1",
+            "collar-screw-1",
+            "lift-eye--150",
+            "turnbuckle--150",
+            "lift-line--150",
+            "lift-eye--50",
+            "turnbuckle--50",
+            "lift-line--50",
+            "lift-eye-50",
+            "turnbuckle-50",
+            "lift-line-50",
+            "lift-eye-150",
+            "turnbuckle-150",
+            "lift-line-150",
+            "floor-block-sheave"
           ],
           "param": "galvanizedSteel"
+        },
+        {
+          "name": "castIron",
+          "color": "#5b6166",
+          "parts": [
+            "brick-0",
+            "brick-1",
+            "brick-2",
+            "brick-3",
+            "brick-4",
+            "brick-5",
+            "brick-6",
+            "brick-7",
+            "brick-8",
+            "brick-9",
+            "brick-10",
+            "brick-11",
+            "brick-12",
+            "brick-13",
+            "brick-14",
+            "brick-15",
+            "brick-16",
+            "brick-17"
+          ],
+          "param": "castIron"
+        },
+        {
+          "name": "rope",
+          "color": "#c9a86a",
+          "parts": [
+            "purchase-up",
+            "purchase-down",
+            "purchase-return"
+          ],
+          "param": "rope"
         }
       ]
     },
@@ -279017,10 +279469,17 @@
       "id": "lighting-control-console",
       "kit": "theatre-production",
       "title": "Lighting control console",
-      "description": "Theatre lighting desk with two display hoods, angled control surface, key bays and side cheeks. Knobs: overall scale; steel hardware, powder-coated steel, lens and display glass, polymer controls and cable jacket; houseShow and touring appearance presets.",
+      "description": "Theatre lighting desk on a production table at about real size: sloped control surface with a row of playback faders and their flash buttons, big lit GO button, two tilted touchscreens in hooded bezels, four attribute encoder wheels, command keypad, trackball, side carry handles and two gooseneck desk lamps. Material controls: console housing, playback keys and fader caps, touchscreen glass, production-table top, table legs. houseShow, touring and blackout presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "lighting console",
+        "lighting desk",
+        "light board",
+        "cue stack",
+        "GO button",
+        "encoder",
+        "production table",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -279037,8 +279496,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/lighting-control-console.kcad.ts",
       "preview": "/assets/theatre-production-lighting-control-console.png",
-      "sourceSha256": "44a2d45e603f4b143aaa9313907aa703924b7ed6887b95aa9d35a49d5e71f75d",
-      "triangleBudget": 1800,
+      "sourceSha256": "d6c2cf83cf5fbe1c4c6769c8b95abaaf3264d239a068ce2251f12d1a32f4f09d",
+      "triangleBudget": 9000,
       "params": [
         {
           "name": "scale",
@@ -279050,94 +279509,245 @@
           "step": 0.05
         },
         {
-          "name": "hardware",
+          "name": "housing",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#34383d",
+          "label": "Console housing"
         },
         {
-          "name": "powderCoat",
+          "name": "keys",
           "type": "color",
-          "default": "#353b41",
-          "label": "Powder-coated steel"
+          "default": "#e3e6e8",
+          "label": "Playback keys and fader caps"
         },
         {
           "name": "glass",
           "type": "color",
-          "default": "#f3e9bf",
-          "label": "Lens and display glass"
+          "default": "#3b78c2",
+          "label": "Touchscreen glass"
         },
         {
-          "name": "polymer",
+          "name": "tableTop",
           "type": "color",
-          "default": "#426878",
-          "label": "Polymer controls and cable jacket"
+          "default": "#1b1d1f",
+          "label": "Production-table top (black masking)"
+        },
+        {
+          "name": "legs",
+          "type": "color",
+          "default": "#8d969b",
+          "label": "Table legs (steel)"
         }
       ],
       "presets": {
         "houseShow": {
-          "hardware": "#c5a052",
-          "powderCoat": "#272d33",
-          "glass": "#ffd15d",
-          "polymer": "#344e5b"
+          "housing": "#34383d",
+          "keys": "#e3e6e8",
+          "glass": "#3b78c2",
+          "tableTop": "#1b1d1f",
+          "legs": "#8d969b"
         },
         "touring": {
-          "hardware": "#e2b347",
-          "powderCoat": "#315465",
-          "glass": "#31b9d2",
-          "polymer": "#e3a928"
+          "housing": "#1f2124",
+          "keys": "#f0a830",
+          "glass": "#e0553b",
+          "tableTop": "#2a2c2f",
+          "legs": "#25282b"
+        },
+        "blackout": {
+          "housing": "#141618",
+          "keys": "#5e8fd0",
+          "glass": "#2f4a6b",
+          "tableTop": "#0f1011",
+          "legs": "#3a3e42"
         }
       },
       "stats": {
-        "triangles": 240,
+        "triangles": 2970,
         "sizeM": [
-          1.205,
-          0.72,
-          0.73
+          1.4,
+          1.34,
+          0.808
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "hardware",
-          "color": "#c28f3e",
+          "name": "tableTop",
+          "color": "#1b1d1f",
           "parts": [
-            "console-base"
+            "table-top",
+            "table-skirt"
           ],
-          "param": "hardware"
+          "param": "tableTop"
         },
         {
-          "name": "powderCoat",
-          "color": "#353b41",
+          "name": "legs",
+          "color": "#8d969b",
           "parts": [
-            "control-surface",
-            "left-cheek",
-            "right-cheek",
-            "keyboard-panel"
+            "leg--1--1",
+            "leg--1-1",
+            "side-rail--1",
+            "leg-1--1",
+            "leg-1-1",
+            "side-rail-1",
+            "back-rail",
+            "handle--1",
+            "handle-post--1--240",
+            "handle-post--1-120",
+            "handle-1",
+            "handle-post-1--240",
+            "handle-post-1-120",
+            "encoder-grip-0",
+            "encoder-grip-1",
+            "encoder-grip-2",
+            "encoder-grip-3",
+            "lamp-socket--1",
+            "lamp-socket-1"
           ],
-          "param": "powderCoat"
+          "param": "legs"
+        },
+        {
+          "name": "foot--1--1",
+          "color": "#101214",
+          "parts": [
+            "foot--1--1",
+            "foot--1-1",
+            "foot-1--1",
+            "foot-1-1",
+            "pb-slot-0",
+            "pb-slot-1",
+            "pb-slot-2",
+            "pb-slot-3",
+            "pb-slot-4",
+            "pb-slot-5",
+            "pb-slot-6",
+            "pb-slot-7",
+            "pb-slot-8",
+            "pb-slot-9",
+            "master-slot",
+            "trackball-well",
+            "encoder-0",
+            "encoder-1",
+            "encoder-2",
+            "encoder-3",
+            "lamp-neck--1-0",
+            "lamp-joint--1-0",
+            "lamp-neck--1-1",
+            "lamp-joint--1-1",
+            "lamp-neck--1-2",
+            "lamp-joint--1-2",
+            "lamp-head--1",
+            "lamp-neck-1-0",
+            "lamp-joint-1-0",
+            "lamp-neck-1-1",
+            "lamp-joint-1-1",
+            "lamp-neck-1-2",
+            "lamp-joint-1-2",
+            "lamp-head-1"
+          ]
+        },
+        {
+          "name": "housing",
+          "color": "#34383d",
+          "parts": [
+            "body",
+            "screen-wing",
+            "screen-hood--1",
+            "screen-hood-1",
+            "pb-go-3",
+            "pb-go-4",
+            "pb-go-5",
+            "pb-go-6",
+            "pb-go-7",
+            "pb-go-8",
+            "pb-go-9"
+          ],
+          "param": "housing"
         },
         {
           "name": "glass",
-          "color": "#f3e9bf",
+          "color": "#3b78c2",
           "parts": [
-            "left-display",
-            "right-display"
+            "touchscreen--1",
+            "touchscreen-1"
           ],
           "param": "glass"
         },
         {
-          "name": "polymer",
-          "color": "#426878",
+          "name": "keys",
+          "color": "#e3e6e8",
           "parts": [
-            "fader-bank-left",
-            "fader-bank-right",
-            "trackball",
-            "encoder-left",
-            "encoder-right"
+            "pb-cap-0",
+            "pb-flash-0",
+            "pb-cap-1",
+            "pb-flash-1",
+            "pb-cap-2",
+            "pb-flash-2",
+            "pb-cap-3",
+            "pb-flash-3",
+            "pb-cap-4",
+            "pb-flash-4",
+            "pb-cap-5",
+            "pb-flash-5",
+            "pb-cap-6",
+            "pb-flash-6",
+            "pb-cap-7",
+            "pb-flash-7",
+            "pb-cap-8",
+            "pb-flash-8",
+            "pb-cap-9",
+            "pb-flash-9",
+            "key-0-0",
+            "key-0-1",
+            "key-0-2",
+            "key-0-3",
+            "key-0-4",
+            "key-1-0",
+            "key-1-1",
+            "key-1-2",
+            "key-1-3",
+            "key-1-4",
+            "key-2-0",
+            "key-2-1",
+            "key-2-2",
+            "key-2-3",
+            "key-2-4",
+            "key-3-0",
+            "key-3-1",
+            "key-3-2",
+            "key-3-3",
+            "trackball"
           ],
-          "param": "polymer"
+          "param": "keys"
+        },
+        {
+          "name": "pb-go-0",
+          "color": "#f2a531",
+          "parts": [
+            "pb-go-0",
+            "pb-go-1",
+            "pb-go-2",
+            "key-3-4",
+            "lamp-lens--1",
+            "lamp-lens-1"
+          ]
+        },
+        {
+          "name": "go-button",
+          "color": "#36c25a",
+          "parts": [
+            "go-button"
+          ]
+        },
+        {
+          "name": "pause-button",
+          "color": "#e2392f",
+          "parts": [
+            "pause-button",
+            "master-cap"
+          ]
         }
       ]
     },
@@ -282436,10 +283046,15 @@
       "id": "stage-stair-unit",
       "kit": "theatre-production",
       "title": "Stage stair unit",
-      "description": "Three-step stage access unit with boxed treads, side cheeks and rear stabilizing pads. Knobs: overall scale; stage timber, painted steel, rubber and isolation pads; houseShow and touring appearance presets.",
+      "description": "Portable stage stair unit at about real size: sawtooth side stringers, timber treads with contrasting nosing strips, closed risers, steel hook plate that drops over the deck edge, tubular handrail on posts, and rubber feet. Choose three or four 190 mm steps and a handrail on one side, both sides or none. Material controls: tread timber, painted stringers and risers, steel handrail and hook plate, nosing tape. houseShow, touring and rehearsal presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "stage stairs",
+        "treads",
+        "step unit",
+        "access stair",
+        "handrail",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -282456,8 +283071,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/stage-stair-unit.kcad.ts",
       "preview": "/assets/theatre-production-stage-stair-unit.png",
-      "sourceSha256": "cc1a129618d6e2221422a9c52ed66b0467476a0b5ebfe563111461df62cdf75a",
-      "triangleBudget": 1800,
+      "sourceSha256": "385978ae71d587b6e0a4f83aea59f6eb50c13ad3076882d9e637a0e8477af9d9",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -282469,76 +283084,138 @@
           "step": 0.05
         },
         {
+          "name": "steps",
+          "type": "choice",
+          "default": "3",
+          "label": "Number of steps",
+          "choices": [
+            "3",
+            "4"
+          ]
+        },
+        {
+          "name": "rails",
+          "type": "choice",
+          "default": "one side",
+          "label": "Handrail",
+          "choices": [
+            "one side",
+            "both sides",
+            "none"
+          ]
+        },
+        {
           "name": "timber",
           "type": "color",
-          "default": "#946b43",
-          "label": "Stage timber"
+          "default": "#9a7048",
+          "label": "Tread timber"
+        },
+        {
+          "name": "paint",
+          "type": "color",
+          "default": "#1f2124",
+          "label": "Painted stringers and risers"
         },
         {
           "name": "steel",
           "type": "color",
-          "default": "#46515a",
-          "label": "Painted steel"
+          "default": "#8a959b",
+          "label": "Steel handrail and hook plate"
         },
         {
-          "name": "rubber",
+          "name": "nosing",
           "type": "color",
-          "default": "#272a2d",
-          "label": "Rubber and isolation pads"
+          "default": "#eeeeea",
+          "label": "Nosing tape"
         }
       ],
       "presets": {
         "houseShow": {
-          "timber": "#725137",
-          "steel": "#343b41",
-          "rubber": "#222629"
+          "timber": "#2a2c2f",
+          "paint": "#1f2124",
+          "steel": "#5d666b",
+          "nosing": "#eeeeea"
         },
         "touring": {
-          "timber": "#cd914b",
-          "steel": "#315968",
-          "rubber": "#25292c"
+          "timber": "#4a5056",
+          "paint": "#2b3034",
+          "steel": "#a8b2b7",
+          "nosing": "#f2c230"
+        },
+        "rehearsal": {
+          "timber": "#c9a571",
+          "paint": "#b08a5a",
+          "steel": "#8a959b",
+          "nosing": "#e04a2f"
         }
       },
       "stats": {
-        "triangles": 172,
+        "triangles": 388,
         "sizeM": [
-          0.805,
-          0.63,
-          1.11
+          0.960923,
+          1.519925,
+          1.029327
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "timber",
-          "color": "#946b43",
+          "name": "paint",
+          "color": "#1f2124",
           "parts": [
-            "step-one",
-            "step-two",
-            "step-three"
+            "stringer--1",
+            "stringer-1",
+            "riser-1",
+            "riser-2",
+            "riser-3",
+            "back-panel"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "timber",
+          "color": "#9a7048",
+          "parts": [
+            "tread-1",
+            "tread-2",
+            "tread-3"
           ],
           "param": "timber"
         },
         {
-          "name": "steel",
-          "color": "#46515a",
+          "name": "nosing",
+          "color": "#eeeeea",
           "parts": [
-            "left-cheek",
-            "right-cheek",
-            "top-landing",
-            "rear-brace"
+            "nosing-1",
+            "nosing-2",
+            "nosing-3"
+          ],
+          "param": "nosing"
+        },
+        {
+          "name": "steel",
+          "color": "#8a959b",
+          "parts": [
+            "brace",
+            "hook-plate",
+            "hook-lip",
+            "post--1-0",
+            "post-bracket--1-0",
+            "post--1-1",
+            "post-bracket--1-1",
+            "rail--1",
+            "mid-rail--1"
           ],
           "param": "steel"
         },
         {
-          "name": "rubber",
-          "color": "#272a2d",
+          "name": "foot--1",
+          "color": "#161819",
           "parts": [
-            "front-foot-left",
-            "front-foot-right"
-          ],
-          "param": "rubber"
+            "foot--1",
+            "foot-1"
+          ]
         }
       ]
     },
