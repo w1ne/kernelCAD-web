@@ -214890,14 +214890,21 @@
       "id": "baler-wire-tier",
       "kit": "recycling-facility",
       "title": "Baler wire tier",
-      "description": "Baler wire tier: a press chamber, ram, upper gantry and clear discharge floor. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Automatic baler wire tier at about real size: portal frame straddling the bale channel, five twister heads on the top beam with drive shaft and gearmotor, needle carriage with curved needles rising through the channel floor, a bale passing through with wire bands, wire coils on payoff cages with guide pulleys, and an operator station. Material controls: frame paint, wire and machined steel, bale material and guard yellow. plant, weathered, plasticBale and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "baler",
+        "wire tier",
+        "auto-tie",
+        "knotter",
+        "twister",
+        "baling wire",
+        "horizontal baler",
+        "bale",
         "materials recovery",
         "waste management",
-        "baling",
         "low poly",
         "scene prop"
       ],
@@ -214910,8 +214917,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/baler-wire-tier.kcad.ts",
       "preview": "/assets/recycling-facility-baler-wire-tier.png",
-      "sourceSha256": "36c2fe7238675c878e631530d2b23161c174bbb0983c4602133ddd2763eeb041",
-      "triangleBudget": 1800,
+      "sourceSha256": "22397a5c3f12a5f2f6a3fed7ffac68a3056516fc3e178d2802c48750033740d4",
+      "triangleBudget": 4000,
       "params": [
         {
           "name": "scale",
@@ -214923,60 +214930,261 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
-          "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
-        },
-        {
-          "name": "paintedSteel",
+          "name": "frame",
           "type": "color",
           "default": "#566d6d",
-          "label": "Painted steel"
+          "label": "Tier frame (paint)"
+        },
+        {
+          "name": "wire",
+          "type": "color",
+          "default": "#c4c9cb",
+          "label": "Wire, needles and shafts (steel)"
+        },
+        {
+          "name": "bale",
+          "type": "color",
+          "default": "#b8895a",
+          "label": "Bale material"
+        },
+        {
+          "name": "guard",
+          "type": "color",
+          "default": "#f0c419",
+          "label": "Guards and payoff cages (yellow)"
+        },
+        {
+          "name": "needles",
+          "type": "choice",
+          "default": "raised",
+          "label": "Needles",
+          "choices": [
+            "raised",
+            "parked"
+          ]
         }
       ],
       "presets": {
+        "plant": {
+          "frame": "#566d6d",
+          "wire": "#c4c9cb",
+          "bale": "#b8895a",
+          "guard": "#f0c419"
+        },
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#5e6c67"
+          "frame": "#4f5a58",
+          "wire": "#9ea4a4",
+          "bale": "#9c7a55",
+          "guard": "#c9a640"
+        },
+        "plasticBale": {
+          "frame": "#2f5d9a",
+          "wire": "#d0d4d6",
+          "bale": "#5f9ec4",
+          "guard": "#f0c419"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "frame": "#d9d9d4",
+          "wire": "#c4c9cb",
+          "bale": "#b8895a",
+          "guard": "#e2672a"
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 3500,
         "sizeM": [
-          1.6764,
-          1.486,
-          1.2024
+          4.486,
+          3.38,
+          4.78
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
-          "parts": [
-            "base-skid",
-            "pressure-gauge"
-          ],
-          "param": "stainlessSteel"
-        },
-        {
-          "name": "paintedSteel",
+          "name": "frame",
           "color": "#566d6d",
           "parts": [
-            "press-chamber",
-            "front-door-frame",
-            "press-plate",
-            "upper-gantry",
-            "discharge-floor",
-            "control-cabinet",
-            "hydraulic-cylinder"
+            "channel-base",
+            "channel-floor",
+            "channel-wall-f",
+            "channel-wall-b",
+            "channel-leg-l-f",
+            "channel-leg-l-b",
+            "channel-leg-r-f",
+            "channel-leg-r-b",
+            "portal-post-f",
+            "post-brace-f",
+            "portal-post-b",
+            "post-brace-b",
+            "top-beam",
+            "needle-carriage",
+            "pulley-arm-0",
+            "pulley-arm-1",
+            "station-pedestal"
           ],
-          "param": "paintedSteel"
+          "param": "frame"
+        },
+        {
+          "name": "bale",
+          "color": "#b8895a",
+          "parts": [
+            "bale"
+          ],
+          "param": "bale"
+        },
+        {
+          "name": "bale-layer-0",
+          "color": "#9c7448",
+          "parts": [
+            "bale-layer-0",
+            "bale-layer-1",
+            "bale-layer-2",
+            "bale-layer-3",
+            "bale-layer-4"
+          ]
+        },
+        {
+          "name": "wire",
+          "color": "#c4c9cb",
+          "parts": [
+            "band--1800-0",
+            "band-top--1800-0",
+            "band--1800-200",
+            "band-top--1800-200",
+            "band--1800-400",
+            "band-top--1800-400",
+            "band--1800-600",
+            "band-top--1800-600",
+            "band--1800-800",
+            "band-top--1800-800",
+            "band--1200-0",
+            "band-top--1200-0",
+            "band--1200-200",
+            "band-top--1200-200",
+            "band--1200-400",
+            "band-top--1200-400",
+            "band--1200-600",
+            "band-top--1200-600",
+            "band--1200-800",
+            "band-top--1200-800",
+            "band-front-0",
+            "band-front-200",
+            "band-front-400",
+            "band-front-600",
+            "band-front-800",
+            "new-wire-0",
+            "new-wire-200",
+            "new-wire-400",
+            "new-wire-600",
+            "new-wire-800",
+            "twister-hook-0",
+            "twister-hook-200",
+            "twister-hook-400",
+            "twister-hook-600",
+            "twister-hook-800",
+            "drive-shaft",
+            "carriage-rod",
+            "needle-0",
+            "needle-200",
+            "needle-400",
+            "needle-600",
+            "needle-800",
+            "wire-coil-0",
+            "guide-pulley-0",
+            "payoff-wire-0",
+            "wire-coil-1",
+            "guide-pulley-1",
+            "payoff-wire-1"
+          ],
+          "param": "wire"
+        },
+        {
+          "name": "post-foot-f",
+          "color": "#2b2f33",
+          "parts": [
+            "post-foot-f",
+            "post-foot-b",
+            "twister-gear-0",
+            "twister-gear-200",
+            "twister-gear-400",
+            "twister-gear-600",
+            "twister-gear-800",
+            "gearmotor-fan",
+            "carriage-cylinder",
+            "coil-core-0",
+            "coil-core-1"
+          ]
+        },
+        {
+          "name": "guard",
+          "color": "#f0c419",
+          "parts": [
+            "twister-housing-0",
+            "twister-housing-200",
+            "twister-housing-400",
+            "twister-housing-600",
+            "twister-housing-800",
+            "payoff-base-0",
+            "cage-post-0-0-0",
+            "cage-post-0-0-800",
+            "cage-post-0-800-0",
+            "cage-post-0-800-800",
+            "cage-ring-0",
+            "payoff-base-1",
+            "cage-post-1-0-0",
+            "cage-post-1-0-800",
+            "cage-post-1-800-0",
+            "cage-post-1-800-800",
+            "cage-ring-1",
+            "safety-fence",
+            "fence-bar-0",
+            "fence-bar-1",
+            "fence-bar-2",
+            "fence-bar-3",
+            "fence-bar-4",
+            "fence-bar-5",
+            "fence-bar-6",
+            "fence-bar-7",
+            "fence-bar-8"
+          ],
+          "param": "guard"
+        },
+        {
+          "name": "gearmotor",
+          "color": "#3d4f63",
+          "parts": [
+            "gearmotor",
+            "gearmotor-body"
+          ]
+        },
+        {
+          "name": "control-panel",
+          "color": "#d9d9d4",
+          "parts": [
+            "control-panel"
+          ]
+        },
+        {
+          "name": "panel-screen",
+          "color": "#3f6e8a",
+          "parts": [
+            "panel-screen"
+          ]
+        },
+        {
+          "name": "estop",
+          "color": "#d62f2a",
+          "parts": [
+            "estop"
+          ]
+        },
+        {
+          "name": "beacon",
+          "color": "#f08a24",
+          "parts": [
+            "beacon"
+          ]
         }
       ]
     },
@@ -217125,14 +217333,21 @@
       "id": "can-densifier",
       "kit": "recycling-facility",
       "title": "Can densifier",
-      "description": "Can densifier: a press chamber, ram, upper gantry and clear discharge floor. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Hydraulic can densifier at about real size: cleated incline infeed conveyor with loose cans, flared feed hopper, horizontal press box on legs with main ram and ejection cylinders, front discharge door and roller table with a stack of pressed can biscuits, hydraulic power pack and operator panel. Material controls: machine paint, hopper and guards, machined steel and can metal. aluminium, weathered, steelCans and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "can densifier",
+        "can crusher",
+        "aluminium",
+        "ubc",
+        "hydraulic press",
+        "biscuit",
+        "conveyor",
         "materials recovery",
         "waste management",
-        "baling",
+        "metals",
         "low poly",
         "scene prop"
       ],
@@ -217145,8 +217360,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/can-densifier.kcad.ts",
       "preview": "/assets/recycling-facility-can-densifier.png",
-      "sourceSha256": "8d731bcd88419674d9e707d29f7f7b62189a28958d576656a87551ebf49bb7d6",
-      "triangleBudget": 1800,
+      "sourceSha256": "b4746336109d206b7c051d9032c2c543bfd88d93d7132e54b2edddb7a61770ce",
+      "triangleBudget": 2800,
       "params": [
         {
           "name": "scale",
@@ -217158,60 +217373,253 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
-          "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
-        },
-        {
-          "name": "paintedSteel",
+          "name": "body",
           "type": "color",
           "default": "#766078",
-          "label": "Painted steel"
+          "label": "Press body (paint)"
+        },
+        {
+          "name": "guards",
+          "type": "color",
+          "default": "#e2a72a",
+          "label": "Hopper, guards and conveyor (paint)"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#c4c9cb",
+          "label": "Cylinder rods, rollers and fittings (steel)"
+        },
+        {
+          "name": "cans",
+          "type": "color",
+          "default": "#b9c2c8",
+          "label": "Cans and biscuits (metal)"
+        },
+        {
+          "name": "output",
+          "type": "choice",
+          "default": "stacked",
+          "label": "Biscuits on the roller table",
+          "choices": [
+            "stacked",
+            "empty"
+          ]
         }
       ],
       "presets": {
+        "aluminium": {
+          "body": "#766078",
+          "guards": "#e2a72a",
+          "steel": "#c4c9cb",
+          "cans": "#b9c2c8"
+        },
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#74646e"
+          "body": "#5f5560",
+          "guards": "#b48c3e",
+          "steel": "#9ea4a4",
+          "cans": "#9aa2a4"
+        },
+        "steelCans": {
+          "body": "#2f5d9a",
+          "guards": "#d9d9d4",
+          "steel": "#c4c9cb",
+          "cans": "#8a8378"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "body": "#2b2f33",
+          "guards": "#ffd044",
+          "steel": "#d0d4d6",
+          "cans": "#c9d2d8"
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 2252,
         "sizeM": [
-          1.8142,
-          1.369,
-          1.0652
+          7.89,
+          3.015679,
+          2.89
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
-          "parts": [
-            "base-skid",
-            "pressure-gauge"
-          ],
-          "param": "stainlessSteel"
-        },
-        {
-          "name": "paintedSteel",
+          "name": "body",
           "color": "#766078",
           "parts": [
-            "press-chamber",
-            "front-door-frame",
-            "press-plate",
-            "upper-gantry",
-            "discharge-floor",
-            "control-cabinet",
-            "hydraulic-cylinder"
+            "leg-l-f",
+            "leg-l-b",
+            "leg-r-f",
+            "leg-r-b",
+            "press-box",
+            "stiffener-500",
+            "stiffener-1100",
+            "stiffener-1700",
+            "ram-housing",
+            "main-cylinder",
+            "conveyor-drive",
+            "door-cylinder",
+            "table-rail-l",
+            "table-leg-l",
+            "table-rail-r",
+            "table-leg-r",
+            "oil-tank"
           ],
-          "param": "paintedSteel"
+          "param": "body"
+        },
+        {
+          "name": "foot-l-f",
+          "color": "#2b2f33",
+          "parts": [
+            "foot-l-f",
+            "foot-l-b",
+            "foot-r-f",
+            "foot-r-b",
+            "main-cylinder-cap",
+            "main-cylinder-gland",
+            "hopper-rim",
+            "belt",
+            "cleat-1",
+            "cleat-2",
+            "cleat-3",
+            "cleat-4",
+            "cleat-5",
+            "cleat-6",
+            "cleat-7",
+            "cleat-8",
+            "cleat-9",
+            "motor-fan-cover"
+          ]
+        },
+        {
+          "name": "steel",
+          "color": "#c4c9cb",
+          "parts": [
+            "tie-rod-f",
+            "tie-rod-b",
+            "head-pulley",
+            "tail-pulley",
+            "door-cylinder-rod",
+            "roller-0",
+            "roller-1",
+            "roller-2",
+            "roller-3",
+            "roller-4",
+            "roller-5",
+            "roller-6",
+            "roller-7",
+            "roller-8",
+            "valve-block"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "guards",
+          "color": "#e2a72a",
+          "parts": [
+            "hopper",
+            "conveyor-side-f",
+            "conveyor-side-b",
+            "conveyor-leg-0p3-f",
+            "conveyor-leg-0p3-b",
+            "conveyor-leg-0p65-f",
+            "conveyor-leg-0p65-b",
+            "feed-trough",
+            "discharge-door"
+          ],
+          "param": "guards"
+        },
+        {
+          "name": "cans",
+          "color": "#b9c2c8",
+          "parts": [
+            "can-heap",
+            "loose-can-2",
+            "loose-can-5",
+            "belt-can-1",
+            "belt-can-5",
+            "belt-can-7",
+            "biscuit-0",
+            "biscuit-1",
+            "biscuit-2",
+            "biscuit-3",
+            "biscuit-4",
+            "biscuit-5"
+          ],
+          "param": "cans"
+        },
+        {
+          "name": "loose-can-0",
+          "color": "#c8322a",
+          "parts": [
+            "loose-can-0",
+            "loose-can-3",
+            "loose-can-6",
+            "belt-can-3",
+            "biscuit-band-0",
+            "biscuit-band-3"
+          ]
+        },
+        {
+          "name": "loose-can-1",
+          "color": "#2f5d9a",
+          "parts": [
+            "loose-can-1",
+            "loose-can-4"
+          ]
+        },
+        {
+          "name": "biscuit-band-1",
+          "color": "#8f979c",
+          "parts": [
+            "biscuit-band-1",
+            "biscuit-band-2",
+            "biscuit-band-4",
+            "biscuit-band-5"
+          ]
+        },
+        {
+          "name": "pump-motor",
+          "color": "#3d4f63",
+          "parts": [
+            "pump-motor"
+          ]
+        },
+        {
+          "name": "operator-panel",
+          "color": "#d9d9d4",
+          "parts": [
+            "operator-panel"
+          ]
+        },
+        {
+          "name": "panel-screen",
+          "color": "#3f6e8a",
+          "parts": [
+            "panel-screen"
+          ]
+        },
+        {
+          "name": "button-stop",
+          "color": "#d62f2a",
+          "parts": [
+            "button-stop"
+          ]
+        },
+        {
+          "name": "button-start",
+          "color": "#2f9a4f",
+          "parts": [
+            "button-start"
+          ]
+        },
+        {
+          "name": "beacon",
+          "color": "#f08a24",
+          "parts": [
+            "beacon"
+          ]
         }
       ]
     },
@@ -217461,14 +217869,21 @@
       "id": "cardboard-compactor",
       "kit": "recycling-facility",
       "title": "Cardboard compactor",
-      "description": "Cardboard compactor: a press chamber, ram, upper gantry and clear discharge floor. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Upright cardboard baler at about real size: press chamber with a loading opening behind a sliding mesh safety gate and flattened cardboard inside, bale door with strapping slots and two latch wheels, corner columns and crosshead with twin hydraulic cylinders, side power pack, control box, and a strapped cardboard bale on a pallet (gate closed or raised). Material controls: body paint, safety yellow, machined steel and cardboard. retail, weathered, industrial and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "baler",
+        "vertical baler",
+        "compactor",
+        "cardboard",
+        "occ",
+        "hydraulic press",
+        "bale",
+        "retail back-of-store",
         "materials recovery",
         "waste management",
-        "baling",
         "low poly",
         "scene prop"
       ],
@@ -217481,8 +217896,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/cardboard-compactor.kcad.ts",
       "preview": "/assets/recycling-facility-cardboard-compactor.png",
-      "sourceSha256": "a6c452a9ec6ed543ea0748522dc3b997c32cd6327ea39d1ab9005392e2659658",
-      "triangleBudget": 1800,
+      "sourceSha256": "4dd12175eaca145f4e5132ac808f7b037178c6eda4a61dc1e9f147ed4e15f49f",
+      "triangleBudget": 2900,
       "params": [
         {
           "name": "scale",
@@ -217494,60 +217909,256 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "body",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#2f7a4f",
+          "label": "Machine body (paint)"
         },
         {
-          "name": "paintedSteel",
+          "name": "safety",
           "type": "color",
-          "default": "#6b7756",
-          "label": "Painted steel"
+          "default": "#f0c419",
+          "label": "Safety gate and latches (yellow)"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#c4c9cb",
+          "label": "Cylinder rods and fittings (steel)"
+        },
+        {
+          "name": "cardboard",
+          "type": "color",
+          "default": "#b8895a",
+          "label": "Cardboard"
+        },
+        {
+          "name": "gate",
+          "type": "choice",
+          "default": "closed",
+          "label": "Safety gate",
+          "choices": [
+            "closed",
+            "raised"
+          ]
         }
       ],
       "presets": {
+        "retail": {
+          "body": "#2f7a4f",
+          "safety": "#f0c419",
+          "steel": "#c4c9cb",
+          "cardboard": "#b8895a"
+        },
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#6d7357"
+          "body": "#4c6650",
+          "safety": "#c9a640",
+          "steel": "#9ea4a4",
+          "cardboard": "#9c7a55"
+        },
+        "industrial": {
+          "body": "#2f5d9a",
+          "safety": "#e2672a",
+          "steel": "#d0d4d6",
+          "cardboard": "#c29464"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "body": "#d9d9d4",
+          "safety": "#ffd044",
+          "steel": "#c4c9cb",
+          "cardboard": "#b8895a"
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 2472,
         "sizeM": [
-          1.4008,
-          1.135,
-          0.928
+          3.79,
+          3.51,
+          1.4
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "skid-l",
+          "color": "#2b2f33",
           "parts": [
-            "base-skid",
-            "pressure-gauge"
-          ],
-          "param": "stainlessSteel"
+            "skid-l",
+            "skid-r",
+            "gate-handle",
+            "strap-slot-0",
+            "strap-slot-1",
+            "strap-slot-2",
+            "strap-slot-3",
+            "crosshead",
+            "cylinder-cap-l",
+            "cylinder-gland-l",
+            "hose-l",
+            "cylinder-cap-r",
+            "cylinder-gland-r",
+            "hose-r",
+            "tank-cap",
+            "motor-fan-cover",
+            "pressure-line",
+            "pressure-line-top",
+            "bale-strap-0",
+            "bale-strap-1",
+            "bale-strap-2",
+            "bale-strap-3"
+          ]
         },
         {
-          "name": "paintedSteel",
-          "color": "#6b7756",
+          "name": "body",
+          "color": "#2f7a4f",
           "parts": [
-            "press-chamber",
-            "front-door-frame",
-            "press-plate",
-            "upper-gantry",
-            "discharge-floor",
-            "control-cabinet",
-            "hydraulic-cylinder"
+            "chamber",
+            "bale-door",
+            "column-l-f",
+            "column-l-b",
+            "column-r-f",
+            "column-r-b",
+            "head-box",
+            "cylinder-barrel-l",
+            "cylinder-barrel-r",
+            "oil-tank"
           ],
-          "param": "paintedSteel"
+          "param": "body"
+        },
+        {
+          "name": "safety",
+          "color": "#f0c419",
+          "parts": [
+            "opening-sill",
+            "gate-guide-l",
+            "gate-guide-r",
+            "gate-rail-0",
+            "gate-rail-395",
+            "gate-rail-750",
+            "gate-wire-0",
+            "gate-wire-1",
+            "gate-wire-2",
+            "gate-wire-3",
+            "gate-wire-4",
+            "gate-wire-5",
+            "gate-wire-6",
+            "gate-wire-7",
+            "gate-wire-8",
+            "gate-wire-9",
+            "gate-wire-10",
+            "gate-wire-11",
+            "gate-wire-12",
+            "gate-wire-13",
+            "gate-wire-14",
+            "gate-wire-15",
+            "door-edge-stripe",
+            "latch-wheel-low",
+            "latch-spoke-low-0",
+            "latch-spoke-low-120",
+            "latch-spoke-low-240",
+            "latch-wheel-high",
+            "latch-spoke-high-0",
+            "latch-spoke-high-120",
+            "latch-spoke-high-240",
+            "warning-plate",
+            "isolator-plate"
+          ],
+          "param": "safety"
+        },
+        {
+          "name": "cardboard",
+          "color": "#b8895a",
+          "parts": [
+            "cardboard-sheet-0",
+            "cardboard-sheet-2",
+            "cardboard-box",
+            "bale"
+          ],
+          "param": "cardboard"
+        },
+        {
+          "name": "cardboard-sheet-1",
+          "color": "#a77c50",
+          "parts": [
+            "cardboard-sheet-1",
+            "cardboard-sheet-3"
+          ]
+        },
+        {
+          "name": "cardboard-flap",
+          "color": "#c79a68",
+          "parts": [
+            "cardboard-flap"
+          ]
+        },
+        {
+          "name": "steel",
+          "color": "#c4c9cb",
+          "parts": [
+            "door-hinge-240",
+            "door-hinge-830",
+            "latch-hub-low",
+            "latch-hub-high",
+            "ram-rod-guide",
+            "pump-bell",
+            "ram-gauge"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "motor",
+          "color": "#3d4f63",
+          "parts": [
+            "motor"
+          ]
+        },
+        {
+          "name": "control-box",
+          "color": "#d9d9d4",
+          "parts": [
+            "control-box"
+          ]
+        },
+        {
+          "name": "isolator",
+          "color": "#d62f2a",
+          "parts": [
+            "isolator",
+            "button-stop"
+          ]
+        },
+        {
+          "name": "button-start",
+          "color": "#2f9a4f",
+          "parts": [
+            "button-start"
+          ]
+        },
+        {
+          "name": "pallet-board-0",
+          "color": "#9b7a52",
+          "parts": [
+            "pallet-board-0",
+            "pallet-board-1",
+            "pallet-board-2"
+          ]
+        },
+        {
+          "name": "pallet-deck",
+          "color": "#b08a5a",
+          "parts": [
+            "pallet-deck"
+          ]
+        },
+        {
+          "name": "bale-layer-0",
+          "color": "#9c7448",
+          "parts": [
+            "bale-layer-0",
+            "bale-layer-1",
+            "bale-layer-2",
+            "bale-layer-3"
+          ]
         }
       ]
     },
@@ -228662,14 +229273,20 @@
       "id": "mobile-compactor",
       "kit": "recycling-facility",
       "title": "Mobile compactor",
-      "description": "Mobile compactor: a press chamber, ram, upper gantry and clear discharge floor. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Portable hooklift self-contained compactor at about real size: ribbed sealed container body with tapered roof, front charge box with open loading hopper and ram, on-board hydraulic power pack and control box, hooklift A-frame with hook bar, long-sill runners with rear rollers, hinged rear door with lever locks and chevron stripes, and bags in the hopper (hopper lid open or closed). Material controls: container paint, charge box paint, hydraulics and fittings, and waste bags. municipal, weathered, retail and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "compactor",
+        "portable compactor",
+        "self-contained",
+        "hooklift",
+        "roll-off",
+        "container",
+        "waste transport",
         "materials recovery",
         "waste management",
-        "baling",
         "low poly",
         "scene prop"
       ],
@@ -228682,7 +229299,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/mobile-compactor.kcad.ts",
       "preview": "/assets/recycling-facility-mobile-compactor.png",
-      "sourceSha256": "a3bb1b941a280c2cacac9f1f924d1842b66196695b9fa743a84f471742730018",
+      "sourceSha256": "5cfcbe196a7be3fefae679651d4f413f1f3a244e957f22100742366ff16182f0",
       "triangleBudget": 1800,
       "params": [
         {
@@ -228695,60 +229312,196 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
-          "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
-        },
-        {
-          "name": "paintedSteel",
+          "name": "container",
           "type": "color",
           "default": "#566d6d",
-          "label": "Painted steel"
+          "label": "Container body (paint)"
+        },
+        {
+          "name": "chargeBox",
+          "type": "color",
+          "default": "#f0c419",
+          "label": "Charge box and hopper (paint)"
+        },
+        {
+          "name": "hydraulics",
+          "type": "color",
+          "default": "#2b2f33",
+          "label": "Hydraulics, runners and hook (dark steel)"
+        },
+        {
+          "name": "bags",
+          "type": "color",
+          "default": "#3a3d40",
+          "label": "Waste bags"
+        },
+        {
+          "name": "lidPosition",
+          "type": "choice",
+          "default": "open",
+          "label": "Hopper lid",
+          "choices": [
+            "open",
+            "closed"
+          ]
         }
       ],
       "presets": {
+        "municipal": {
+          "container": "#566d6d",
+          "chargeBox": "#f0c419",
+          "hydraulics": "#2b2f33",
+          "bags": "#3a3d40"
+        },
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#5e6c67"
+          "container": "#5e6157",
+          "chargeBox": "#c49a3c",
+          "hydraulics": "#3a3a36",
+          "bags": "#4a4a46"
+        },
+        "retail": {
+          "container": "#2f5d9a",
+          "chargeBox": "#d9d9d4",
+          "hydraulics": "#2b2f33",
+          "bags": "#2f7a4f"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "container": "#c8322a",
+          "chargeBox": "#ffd044",
+          "hydraulics": "#2b2f33",
+          "bags": "#3a3d40"
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 1184,
         "sizeM": [
-          1.6764,
-          1.369,
-          1.2024
+          6.5,
+          3.331137,
+          2.910617
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "hydraulics",
+          "color": "#2b2f33",
           "parts": [
-            "base-skid",
-            "pressure-gauge"
+            "runner-f",
+            "roller-f",
+            "runner-b",
+            "roller-b",
+            "runner-nose",
+            "bottom-rail-f",
+            "bottom-rail-b",
+            "door-hinge-660",
+            "door-hinge-2310",
+            "ram-guide",
+            "pack-vent",
+            "cylinder",
+            "aframe-leg-f",
+            "aframe-leg-b",
+            "hook-plate"
           ],
-          "param": "stainlessSteel"
+          "param": "hydraulics"
         },
         {
-          "name": "paintedSteel",
+          "name": "container",
           "color": "#566d6d",
           "parts": [
-            "press-chamber",
-            "front-door-frame",
-            "press-plate",
-            "upper-gantry",
-            "discharge-floor",
-            "control-cabinet",
-            "hydraulic-cylinder"
+            "body",
+            "rib-0-f",
+            "rib-0-b",
+            "rib-1-f",
+            "rib-1-b",
+            "rib-2-f",
+            "rib-2-b",
+            "rib-3-f",
+            "rib-3-b",
+            "rib-4-f",
+            "rib-4-b",
+            "rib-5-f",
+            "rib-5-b",
+            "top-rail-f",
+            "top-rail-b",
+            "rear-door",
+            "power-pack"
           ],
-          "param": "paintedSteel"
+          "param": "container"
+        },
+        {
+          "name": "lock-bar-f",
+          "color": "#c4c9cb",
+          "parts": [
+            "lock-bar-f",
+            "lock-lever-f",
+            "lock-bar-b",
+            "lock-lever-b",
+            "ram-face",
+            "cylinder-rod",
+            "hook-bar"
+          ]
+        },
+        {
+          "name": "chargeBox",
+          "color": "#f0c419",
+          "parts": [
+            "chevron-0",
+            "chevron-1",
+            "chevron-2",
+            "chevron-3",
+            "charge-box",
+            "hopper",
+            "hopper-lid"
+          ],
+          "param": "chargeBox"
+        },
+        {
+          "name": "bags",
+          "color": "#3a3d40",
+          "parts": [
+            "chamber-floor-load",
+            "bag-0",
+            "bag-1",
+            "bag-3",
+            "bag-4"
+          ],
+          "param": "bags"
+        },
+        {
+          "name": "bag-2",
+          "color": "#5f9ec4",
+          "parts": [
+            "bag-2"
+          ]
+        },
+        {
+          "name": "control-box",
+          "color": "#d9d9d4",
+          "parts": [
+            "control-box"
+          ]
+        },
+        {
+          "name": "control-buttons",
+          "color": "#2f9a4f",
+          "parts": [
+            "control-buttons"
+          ]
+        },
+        {
+          "name": "estop",
+          "color": "#d62f2a",
+          "parts": [
+            "estop"
+          ]
+        },
+        {
+          "name": "beacon",
+          "color": "#f08a24",
+          "parts": [
+            "beacon"
+          ]
         }
       ]
     },
@@ -231041,14 +231794,21 @@
       "id": "plastic-film-compactor",
       "kit": "recycling-facility",
       "title": "Plastic-film compactor",
-      "description": "Plastic-film compactor: a press chamber, ram, upper gantry and clear discharge floor. Low-poly visualization prop. Material controls: stainless steel, painted steel.",
+      "description": "Horizontal screw compactor for plastic film at about real size: open hopper with screw flights visible in the throat, gearmotor drive, ribbed barrel with bolted flanges and conical discharge nozzle, compressed film plug curving into a wheeled roll cage, loose film on the hopper rim and a control box with emergency stop. Material controls: frame paint, hopper and barrel steel, drive paint and plastic film. plant, weathered, stainless and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "compactor",
+        "screw compactor",
+        "auger",
+        "plastic film",
+        "stretch wrap",
+        "ldpe",
+        "roll cage",
         "materials recovery",
         "waste management",
-        "baling",
+        "plastics",
         "low poly",
         "scene prop"
       ],
@@ -231061,8 +231821,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/plastic-film-compactor.kcad.ts",
       "preview": "/assets/recycling-facility-plastic-film-compactor.png",
-      "sourceSha256": "575a3e3da3d320223a17fc273bbc58aa0714b420e8a3cf8b729b3e4253a14887",
-      "triangleBudget": 1800,
+      "sourceSha256": "e29f6012d8b1072bc3fb6d301344acefdd323e8aa6da8bcb8d41f7a5ba86fbc7",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "scale",
@@ -231074,60 +231834,234 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
-          "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
-        },
-        {
-          "name": "paintedSteel",
+          "name": "frame",
           "type": "color",
           "default": "#5f7380",
-          "label": "Painted steel"
+          "label": "Stand and roll cage (paint)"
+        },
+        {
+          "name": "hopper",
+          "type": "color",
+          "default": "#b8bec0",
+          "label": "Hopper and barrel (steel)"
+        },
+        {
+          "name": "drive",
+          "type": "color",
+          "default": "#2f5d9a",
+          "label": "Gearmotor (paint)"
+        },
+        {
+          "name": "film",
+          "type": "color",
+          "default": "#e4eaee",
+          "label": "Plastic film"
+        },
+        {
+          "name": "cage",
+          "type": "choice",
+          "default": "filling",
+          "label": "Roll cage",
+          "choices": [
+            "filling",
+            "empty"
+          ]
         }
       ],
       "presets": {
+        "plant": {
+          "frame": "#5f7380",
+          "hopper": "#b8bec0",
+          "drive": "#2f5d9a",
+          "film": "#e4eaee"
+        },
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#647074"
+          "frame": "#5a5f5c",
+          "hopper": "#9ea4a4",
+          "drive": "#4a5a6a",
+          "film": "#d4d6cc"
+        },
+        "stainless": {
+          "frame": "#c4c9cb",
+          "hopper": "#d6dadb",
+          "drive": "#2b2f33",
+          "film": "#e4eaee"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "frame": "#f0c419",
+          "hopper": "#b8bec0",
+          "drive": "#c8322a",
+          "film": "#b9dcef"
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 2102,
         "sizeM": [
-          1.263,
-          1.486,
-          1.2024
+          5.27,
+          2.444,
+          1.74
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
-          "parts": [
-            "base-skid",
-            "pressure-gauge"
-          ],
-          "param": "stainlessSteel"
-        },
-        {
-          "name": "paintedSteel",
+          "name": "frame",
           "color": "#5f7380",
           "parts": [
-            "press-chamber",
-            "front-door-frame",
-            "press-plate",
-            "upper-gantry",
-            "discharge-floor",
-            "control-cabinet",
-            "hydraulic-cylinder"
+            "leg-0-f",
+            "leg-0-b",
+            "leg-beam-0",
+            "leg-1200-f",
+            "leg-1200-b",
+            "leg-beam-1200",
+            "leg-2600-f",
+            "leg-2600-b",
+            "leg-beam-2600",
+            "base-rail-f",
+            "base-rail-b",
+            "hopper-rim",
+            "flange-320",
+            "flange-1300",
+            "flange-2100",
+            "barrel-rib-f",
+            "barrel-rib-b",
+            "cage-base",
+            "cage-post-l-f",
+            "cage-post-l-b",
+            "cage-post-r-f",
+            "cage-post-r-b",
+            "cage-hoop-700",
+            "cage-hoop-1300",
+            "cage-hoop-1860",
+            "cage-bar-back-1",
+            "cage-bar-right-1",
+            "cage-bar-back-2",
+            "cage-bar-right-2",
+            "cage-bar-back-3",
+            "cage-bar-right-3",
+            "cage-bar-back-4",
+            "cage-bar-right-4",
+            "cage-bar-back-5",
+            "cage-bar-right-5",
+            "control-post"
           ],
-          "param": "paintedSteel"
+          "param": "frame"
+        },
+        {
+          "name": "hopper",
+          "color": "#b8bec0",
+          "parts": [
+            "hopper",
+            "throat",
+            "barrel",
+            "nozzle"
+          ],
+          "param": "hopper"
+        },
+        {
+          "name": "screw-shaft",
+          "color": "#2b2f33",
+          "parts": [
+            "screw-shaft",
+            "back-pressure-cylinder",
+            "motor-fan-cover",
+            "cage-wheel-l-f",
+            "cage-wheel-l-b",
+            "cage-wheel-r-f",
+            "cage-wheel-r-b",
+            "hour-meter"
+          ]
+        },
+        {
+          "name": "flight-0",
+          "color": "#8f979c",
+          "parts": [
+            "flight-0",
+            "flight-1",
+            "flight-2",
+            "flight-3",
+            "flight-4",
+            "flight-5"
+          ]
+        },
+        {
+          "name": "drive",
+          "color": "#2f5d9a",
+          "parts": [
+            "back-pressure-plate",
+            "gearbox",
+            "gearbox-flange",
+            "motor",
+            "motor-terminal-box"
+          ],
+          "param": "drive"
+        },
+        {
+          "name": "drive-guard",
+          "color": "#f0c419",
+          "parts": [
+            "drive-guard"
+          ]
+        },
+        {
+          "name": "film",
+          "color": "#e4eaee",
+          "parts": [
+            "film-plug",
+            "film-plug-elbow",
+            "film-plug-drop",
+            "film-pile",
+            "film-bag-2",
+            "loose-film-0",
+            "loose-film-2",
+            "loose-film-4"
+          ],
+          "param": "film"
+        },
+        {
+          "name": "film-bag-0",
+          "color": "#e58aa8",
+          "parts": [
+            "film-bag-0",
+            "loose-film-1"
+          ]
+        },
+        {
+          "name": "film-bag-1",
+          "color": "#7fb8d8",
+          "parts": [
+            "film-bag-1",
+            "loose-film-3"
+          ]
+        },
+        {
+          "name": "film-bag-3",
+          "color": "#9ccf8a",
+          "parts": [
+            "film-bag-3"
+          ]
+        },
+        {
+          "name": "control-box",
+          "color": "#d9d9d4",
+          "parts": [
+            "control-box"
+          ]
+        },
+        {
+          "name": "estop",
+          "color": "#d62f2a",
+          "parts": [
+            "estop"
+          ]
+        },
+        {
+          "name": "button-start",
+          "color": "#2f9a4f",
+          "parts": [
+            "button-start"
+          ]
         }
       ]
     },
