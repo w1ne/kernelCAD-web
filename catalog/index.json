@@ -232734,10 +232734,14 @@
       "id": "handbasket",
       "kit": "retail-store",
       "title": "Hand basket",
-      "description": "Compact hand basket with open-frame sides, reinforced rim and raised swing handle. Knobs: overall scale and polypropylene, rubber, stainless steel color controls. Presets: cleanStore and nightRestock.",
+      "description": "Moulded plastic shop hand basket at about real size: tapered nesting tub with rows of vent slots punched through the walls, rolled rim with a printed logo panel on the front, and two folding wire handles with plastic grips (one raised, one laid on the rim). Material controls: basket plastic, handle wire, grips, logo panel. classicRed, freshGreen and premiumBlack presets; handle pose choice.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "hand basket",
+        "shopping basket",
+        "carry basket",
+        "plastic basket",
         "retail",
         "grocery",
         "shop",
@@ -232754,8 +232758,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/handbasket.kcad.ts",
       "preview": "/assets/retail-store-handbasket.png",
-      "sourceSha256": "dc1d2d4d102b4aa56b408b2b9fb938887ed6fda84ae1ebd21454896aa98f3e4f",
-      "triangleBudget": 1800,
+      "sourceSha256": "a55242ed1e9a243648bdf01e08aef736d2237aca190b273ef483a4271a5b277b",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -232767,85 +232771,118 @@
           "step": 0.05
         },
         {
-          "name": "polypropylene",
+          "name": "plastic",
           "type": "color",
-          "default": "#d18c42",
-          "label": "Polypropylene color"
+          "default": "#c8302c",
+          "label": "Basket plastic"
         },
         {
-          "name": "rubber",
+          "name": "wire",
           "type": "color",
-          "default": "#52463b",
-          "label": "Rubber color"
+          "default": "#b9c0c4",
+          "label": "Handle wire"
         },
         {
-          "name": "stainless",
+          "name": "grip",
           "type": "color",
-          "default": "#8a969a",
-          "label": "Stainless steel color"
+          "default": "#1f2124",
+          "label": "Handle grips"
+        },
+        {
+          "name": "logo",
+          "type": "color",
+          "default": "#f4f1e8",
+          "label": "Logo panel"
+        },
+        {
+          "name": "handles",
+          "type": "choice",
+          "default": "oneUp",
+          "label": "Handle pose",
+          "choices": [
+            "oneUp",
+            "bothDown"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "polypropylene": "#d6e0d5",
-          "rubber": "#40474b",
-          "stainless": "#bfc8cb"
+        "classicRed": {
+          "plastic": "#c8302c",
+          "wire": "#b9c0c4",
+          "grip": "#1f2124",
+          "logo": "#f4f1e8"
         },
-        "nightRestock": {
-          "polypropylene": "#45614e",
-          "rubber": "#262b2e",
-          "stainless": "#66747a"
+        "freshGreen": {
+          "plastic": "#3f8f4a",
+          "wire": "#c9ced2",
+          "grip": "#2a3a2e",
+          "logo": "#f2efd8"
+        },
+        "premiumBlack": {
+          "plastic": "#25282b",
+          "wire": "#c39a4a",
+          "grip": "#6b4a2e",
+          "logo": "#c39a4a"
         }
       },
       "stats": {
-        "triangles": 248,
+        "triangles": 2244,
         "sizeM": [
-          0.5,
-          0.623,
-          0.36
+          0.43,
+          0.446504,
+          0.493522
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polypropylene",
-          "color": "#d18c42",
+          "name": "plastic",
+          "color": "#c8302c",
           "parts": [
-            "basket-base",
+            "tub",
             "rim",
-            "side-rib-x-0",
-            "side-rib-x-1",
-            "side-rib-x-2",
-            "side-rib-x-3",
-            "side-rib-x-4",
-            "side-rib-x-5",
-            "side-rib-x-6",
-            "side-rib-y-0",
-            "side-rib-y-1",
-            "side-rib-y-2",
-            "side-rib-y-3",
-            "side-rib-y-4",
-            "handle-side--220",
-            "handle-side-220"
+            "foot-lf",
+            "foot-rf",
+            "foot-lb",
+            "foot-rb"
           ],
-          "param": "polypropylene"
+          "param": "plastic"
         },
         {
-          "name": "rubber",
-          "color": "#52463b",
+          "name": "logo",
+          "color": "#f4f1e8",
           "parts": [
-            "handle-grip"
+            "logo-panel",
+            "logo-panel-lower"
           ],
-          "param": "rubber"
+          "param": "logo"
         },
         {
-          "name": "stainless",
-          "color": "#8a969a",
+          "name": "wire",
+          "color": "#b9c0c4",
           "parts": [
-            "pivot-cap"
+            "pivot-l-f",
+            "pivot-l-b",
+            "pivot-r-f",
+            "pivot-r-b",
+            "front-handle-wire-0",
+            "front-handle-wire-1",
+            "front-handle-wire-2",
+            "back-handle-wire-0",
+            "back-handle-wire-1",
+            "back-handle-wire-2"
           ],
-          "param": "stainless"
+          "param": "wire"
+        },
+        {
+          "name": "grip",
+          "color": "#1f2124",
+          "parts": [
+            "front-grip",
+            "back-grip"
+          ],
+          "param": "grip"
         }
       ]
     },
@@ -234799,13 +234836,19 @@
       "id": "roll-cage-trolley",
       "kit": "retail-store",
       "title": "Roll cage trolley",
-      "description": "Four-wheel roll cage with raised side grid, loading deck, swing door and pull handle. Knobs: overall scale and galvanized steel, rubber, polypropylene color controls. Presets: cleanStore and nightRestock.",
+      "description": "Four-castor roll cage at about real size: low deck on swivel castors, three tall mesh walls (two sides and the back) of tube frames filled with welded wire, optional fold-down mid shelf and coloured retaining straps across the open front. Material controls: wire mesh, deck, castors, straps. galvanized, warehouseBlue and chilledGreen presets; shelf choice.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "roll cage",
+        "cage trolley",
+        "roll container",
+        "stock cage",
+        "delivery cage",
         "retail",
         "grocery",
         "shop",
+        "logistics",
         "low poly",
         "scene prop"
       ],
@@ -234814,13 +234857,14 @@
         "shop",
         "grocery",
         "interior",
+        "warehouse",
         "scene"
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/roll-cage-trolley.kcad.ts",
       "preview": "/assets/retail-store-roll-cage-trolley.png",
-      "sourceSha256": "0e2ea942cfa23672d9d8ddd01b26a87b8957154d2939b6694d561a8903c11d2f",
-      "triangleBudget": 1800,
+      "sourceSha256": "db7b1541092364544c8465198497816354afaad79f65b7a7e31b093a0fed946a",
+      "triangleBudget": 2500,
       "params": [
         {
           "name": "scale",
@@ -234832,88 +234876,204 @@
           "step": 0.05
         },
         {
-          "name": "galvanizedSteel",
+          "name": "mesh",
           "type": "color",
-          "default": "#7d898c",
-          "label": "Galvanized steel color"
+          "default": "#aeb6ba",
+          "label": "Wire mesh"
         },
         {
-          "name": "rubber",
+          "name": "deck",
           "type": "color",
-          "default": "#292d30",
-          "label": "Rubber color"
+          "default": "#2f5fa8",
+          "label": "Deck"
         },
         {
-          "name": "polypropylene",
+          "name": "castors",
           "type": "color",
-          "default": "#d7a33e",
-          "label": "Polypropylene color"
+          "default": "#2b2e31",
+          "label": "Castors"
+        },
+        {
+          "name": "straps",
+          "type": "color",
+          "default": "#f2a63a",
+          "label": "Retaining straps"
+        },
+        {
+          "name": "shelf",
+          "type": "choice",
+          "default": "shelf",
+          "label": "Mid shelf",
+          "choices": [
+            "shelf",
+            "none"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "galvanizedSteel": "#afbabb",
-          "rubber": "#40474b",
-          "polypropylene": "#d6e0d5"
+        "galvanized": {
+          "mesh": "#aeb6ba",
+          "deck": "#2f5fa8",
+          "castors": "#2b2e31",
+          "straps": "#f2a63a"
         },
-        "nightRestock": {
-          "galvanizedSteel": "#566468",
-          "rubber": "#262b2e",
-          "polypropylene": "#45614e"
+        "warehouseBlue": {
+          "mesh": "#3f6fb4",
+          "deck": "#2b2e31",
+          "castors": "#1d1f21",
+          "straps": "#f2c230"
+        },
+        "chilledGreen": {
+          "mesh": "#c9ced2",
+          "deck": "#3f8f4a",
+          "castors": "#262829",
+          "straps": "#c8302c"
         }
       },
       "stats": {
-        "triangles": 380,
+        "triangles": 1696,
         "sizeM": [
-          0.9,
-          1.54,
-          0.888
+          0.808,
+          1.7,
+          0.705
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "galvanizedSteel",
-          "color": "#7d898c",
+          "name": "mesh",
+          "color": "#aeb6ba",
           "parts": [
-            "base-deck",
-            "post--420--330",
-            "post--420-330",
-            "post-420--330",
-            "post-420-330",
-            "crossbar-0",
-            "crossbar-1",
-            "crossbar-2",
-            "crossbar-3",
-            "crossbar-4",
-            "crossbar-5",
-            "door-bar",
-            "caster-mount--370--350",
-            "caster-mount--370-350",
-            "caster-mount-370--350",
-            "caster-mount-370-350"
+            "castor-plate-lf",
+            "castor-swivel-lf",
+            "castor-fork-l-lf",
+            "castor-fork-r-lf",
+            "castor-plate-rf",
+            "castor-swivel-rf",
+            "castor-fork-l-rf",
+            "castor-fork-r-rf",
+            "castor-plate-lb",
+            "castor-swivel-lb",
+            "castor-fork-l-lb",
+            "castor-fork-r-lb",
+            "castor-plate-rb",
+            "castor-swivel-rb",
+            "castor-fork-l-rb",
+            "castor-fork-r-rb",
+            "deck-frame",
+            "side-l-0",
+            "side-r-0",
+            "side-l-1",
+            "side-r-1",
+            "side-l-2",
+            "side-r-2",
+            "side-l-3",
+            "side-r-3",
+            "side-l-4",
+            "side-r-4",
+            "side-l-5",
+            "side-r-5",
+            "side-l-6",
+            "side-r-6",
+            "side-l-7",
+            "side-r-7",
+            "side-l-8",
+            "side-r-8",
+            "side-l-9",
+            "side-r-9",
+            "side-l-10",
+            "side-r-10",
+            "side-l-11",
+            "side-r-11",
+            "side-l-12",
+            "side-r-12",
+            "side-l-13",
+            "side-r-13",
+            "side-l-14",
+            "side-r-14",
+            "side-l-15",
+            "side-r-15",
+            "side-l-16",
+            "side-r-16",
+            "side-l-17",
+            "side-r-17",
+            "side-l-18",
+            "side-r-18",
+            "back-0",
+            "back-1",
+            "back-2",
+            "back-3",
+            "back-4",
+            "back-5",
+            "back-6",
+            "back-7",
+            "back-8",
+            "back-9",
+            "back-10",
+            "back-11",
+            "back-12",
+            "back-13",
+            "back-14",
+            "back-15",
+            "back-16",
+            "back-17",
+            "back-18",
+            "back-19",
+            "hinge-lf",
+            "hinge-rf",
+            "hinge-lb",
+            "hinge-rb",
+            "shelf-wire-1",
+            "shelf-wire-2",
+            "shelf-wire-3",
+            "shelf-wire-4",
+            "shelf-wire-5",
+            "shelf-wire-6",
+            "shelf-wire-7",
+            "shelf-bracket-l",
+            "shelf-bracket-r"
           ],
-          "param": "galvanizedSteel"
+          "param": "mesh"
         },
         {
-          "name": "polypropylene",
-          "color": "#d7a33e",
+          "name": "castors",
+          "color": "#2b2e31",
           "parts": [
-            "pull-handle"
+            "castor-wheel-lf",
+            "castor-wheel-rf",
+            "castor-wheel-lb",
+            "castor-wheel-rb",
+            "strap-buckle-620-l",
+            "strap-buckle-620-r",
+            "strap-buckle-1300-l",
+            "strap-buckle-1300-r"
           ],
-          "param": "polypropylene"
+          "param": "castors"
         },
         {
-          "name": "rubber",
-          "color": "#292d30",
+          "name": "deck",
+          "color": "#2f5fa8",
           "parts": [
-            "caster--370--390",
-            "caster--370-390",
-            "caster-370--390",
-            "caster-370-390"
+            "deck",
+            "deck-lip",
+            "deck-rib-0",
+            "deck-rib-1",
+            "deck-rib-2",
+            "deck-rib-3",
+            "deck-rib-4",
+            "shelf-frame"
           ],
-          "param": "rubber"
+          "param": "deck"
+        },
+        {
+          "name": "straps",
+          "color": "#f2a63a",
+          "parts": [
+            "strap-620",
+            "strap-1300"
+          ],
+          "param": "straps"
         }
       ]
     },
@@ -235245,11 +235405,15 @@
     {
       "id": "shopping-basket",
       "kit": "retail-store",
-      "title": "Shopping basket",
-      "description": "Open-frame shopping basket with a slatted polypropylene body, reinforced rim and a raised carry handle. Knobs: overall scale and polypropylene, rubber, stainless steel color controls. Presets: cleanStore and nightRestock.",
+      "title": "Rolling shopping basket",
+      "description": "Tall rolling supermarket basket at about real size: deep tapered tub with a grid of mesh windows, rolled rim with a front logo band, two wheels in housings at the back foot, front skid feet, and a telescopic pull handle up the back with a looped grip, extended or stowed. Material controls: basket plastic, handle metal, wheels, accent band. lagoonBlue, berryRed and slateGrey presets; handle pose choice.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "shopping basket",
+        "rolling basket",
+        "trolley basket",
+        "wheeled basket",
         "retail",
         "grocery",
         "shop",
@@ -235266,8 +235430,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/shopping-basket.kcad.ts",
       "preview": "/assets/retail-store-shopping-basket.png",
-      "sourceSha256": "a3591b11bb943394da87ac5ac14d98fbd366e31f905a84f426ec0b5177fc3993",
-      "triangleBudget": 1800,
+      "sourceSha256": "7cf22bd3775187d40d5901be87e2078df7ab09382d0ad7ab9ae3c59cb6d2263a",
+      "triangleBudget": 3500,
       "params": [
         {
           "name": "scale",
@@ -235279,93 +235443,120 @@
           "step": 0.05
         },
         {
-          "name": "polypropylene",
+          "name": "plastic",
           "type": "color",
-          "default": "#b56c3b",
-          "label": "Polypropylene color"
+          "default": "#2f7fb8",
+          "label": "Basket plastic"
         },
         {
-          "name": "rubber",
+          "name": "metal",
           "type": "color",
-          "default": "#4a4140",
-          "label": "Rubber color"
+          "default": "#c9ced2",
+          "label": "Pull handle"
         },
         {
-          "name": "stainless",
+          "name": "wheels",
           "type": "color",
-          "default": "#7e8b90",
-          "label": "Stainless steel color"
+          "default": "#1d1f21",
+          "label": "Wheels"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#f2c230",
+          "label": "Accent band and grip"
+        },
+        {
+          "name": "pull",
+          "type": "choice",
+          "default": "extended",
+          "label": "Handle pose",
+          "choices": [
+            "extended",
+            "stowed"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "polypropylene": "#d6e0d5",
-          "rubber": "#40474b",
-          "stainless": "#bfc8cb"
+        "lagoonBlue": {
+          "plastic": "#2f7fb8",
+          "metal": "#c9ced2",
+          "wheels": "#1d1f21",
+          "accent": "#f2c230"
         },
-        "nightRestock": {
-          "polypropylene": "#45614e",
-          "rubber": "#262b2e",
-          "stainless": "#66747a"
+        "berryRed": {
+          "plastic": "#b52a3a",
+          "metal": "#d0d4d8",
+          "wheels": "#262829",
+          "accent": "#f4f1e8"
+        },
+        "slateGrey": {
+          "plastic": "#4a5056",
+          "metal": "#9aa3a8",
+          "wheels": "#1a1b1c",
+          "accent": "#7fbf3f"
         }
       },
       "stats": {
-        "triangles": 376,
+        "triangles": 2508,
         "sizeM": [
-          0.6,
-          0.635,
-          0.404
+          0.548,
+          0.958,
+          0.396578
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polypropylene",
-          "color": "#b56c3b",
+          "name": "plastic",
+          "color": "#2f7fb8",
           "parts": [
-            "basket-floor",
-            "rim-front",
-            "rim-back",
-            "rim-left",
-            "rim-right",
-            "corner--258--168",
-            "corner--258-168",
-            "corner-258--168",
-            "corner-258-168",
-            "front-rail-0",
-            "back-rail-0",
-            "left-rail-0",
-            "right-rail-0",
-            "front-rail-1",
-            "back-rail-1",
-            "left-rail-1",
-            "right-rail-1",
-            "front-rail-2",
-            "back-rail-2",
-            "left-rail-2",
-            "right-rail-2",
-            "handle-left",
-            "handle-right"
+            "tub",
+            "rim",
+            "base-frame",
+            "wheel-housing-l",
+            "wheel-housing-r",
+            "sleeve-clip-lo-l",
+            "sleeve-clip-hi-l",
+            "sleeve-clip-lo-r",
+            "sleeve-clip-hi-r"
           ],
-          "param": "polypropylene"
+          "param": "plastic"
         },
         {
-          "name": "rubber",
-          "color": "#4a4140",
+          "name": "accent",
+          "color": "#f2c230",
           "parts": [
+            "logo-band",
+            "hub-l",
+            "hub-r",
             "grip"
           ],
-          "param": "rubber"
+          "param": "accent"
         },
         {
-          "name": "stainless",
-          "color": "#7e8b90",
+          "name": "wheels",
+          "color": "#1d1f21",
           "parts": [
-            "pivot-left",
-            "pivot-right"
+            "skid-l",
+            "skid-r",
+            "wheel-l",
+            "wheel-r"
           ],
-          "param": "stainless"
+          "param": "wheels"
+        },
+        {
+          "name": "metal",
+          "color": "#c9ced2",
+          "parts": [
+            "sleeve-l",
+            "slider-l",
+            "sleeve-r",
+            "slider-r",
+            "grip-loop"
+          ],
+          "param": "metal"
         }
       ]
     },
@@ -235603,10 +235794,15 @@
       "id": "stock-hand-truck",
       "kit": "retail-store",
       "title": "Stock hand truck",
-      "description": "Two-wheel stock hand truck with toe plate, tall spine, upper grip and chunky tires. Knobs: overall scale and aluminium, rubber, stainless steel color controls. Presets: cleanStore and nightRestock.",
+      "description": "Two-wheel stockroom hand truck at about real size: tall tubular frame with cross ties curving back into a looped handle with grips, flat steel toe plate with a back flange, axle brackets carrying two pneumatic tyres on pressed rims, and an optional stack of taped cartons on the plate. Material controls: frame paint, toe plate, tyres, grips. safetyRed, depotBlue and bareAlloy presets; load choice.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "hand truck",
+        "sack truck",
+        "dolly",
+        "stock trolley",
+        "stockroom",
         "retail",
         "grocery",
         "shop",
@@ -235623,8 +235819,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/stock-hand-truck.kcad.ts",
       "preview": "/assets/retail-store-stock-hand-truck.png",
-      "sourceSha256": "8a3a9e62954645466e8468d1b069454ea44d4c73edbe440d9a285f7723fdc487",
-      "triangleBudget": 1800,
+      "sourceSha256": "156b96de4268efa36683e6ffe475a718ade3ebaf00443768e04e541fc647fec6",
+      "triangleBudget": 2500,
       "params": [
         {
           "name": "scale",
@@ -235636,74 +235832,154 @@
           "step": 0.05
         },
         {
-          "name": "aluminium",
+          "name": "frame",
           "type": "color",
-          "default": "#78868a",
-          "label": "Aluminium color"
+          "default": "#c8302c",
+          "label": "Frame paint"
         },
         {
-          "name": "rubber",
+          "name": "plate",
           "type": "color",
-          "default": "#292d30",
-          "label": "Rubber color"
+          "default": "#9aa3a8",
+          "label": "Toe plate and rims"
         },
         {
-          "name": "stainless",
+          "name": "tyres",
           "type": "color",
-          "default": "#b3bec0",
-          "label": "Stainless steel color"
+          "default": "#1d1f21",
+          "label": "Tyres"
+        },
+        {
+          "name": "grips",
+          "type": "color",
+          "default": "#2b2e31",
+          "label": "Handle grips"
+        },
+        {
+          "name": "load",
+          "type": "choice",
+          "default": "cartons",
+          "label": "Load",
+          "choices": [
+            "cartons",
+            "empty"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "aluminium": "#c4cdd0",
-          "rubber": "#40474b",
-          "stainless": "#bfc8cb"
+        "safetyRed": {
+          "frame": "#c8302c",
+          "plate": "#9aa3a8",
+          "tyres": "#1d1f21",
+          "grips": "#2b2e31"
         },
-        "nightRestock": {
-          "aluminium": "#6b7a80",
-          "rubber": "#262b2e",
-          "stainless": "#66747a"
+        "depotBlue": {
+          "frame": "#2f5fa8",
+          "plate": "#b8bec2",
+          "tyres": "#202224",
+          "grips": "#f2c230"
+        },
+        "bareAlloy": {
+          "frame": "#c4cbcf",
+          "plate": "#8e979c",
+          "tyres": "#2a2c2e",
+          "grips": "#c8302c"
         }
       },
       "stats": {
-        "triangles": 148,
+        "triangles": 1572,
         "sizeM": [
-          0.56,
-          1.127,
-          0.455
+          0.606,
+          1.424,
+          0.569499
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "aluminium",
-          "color": "#78868a",
+          "name": "plate",
+          "color": "#9aa3a8",
           "parts": [
-            "spine",
-            "toe-plate"
+            "toe-plate",
+            "toe-flange",
+            "gusset-l",
+            "gusset-r",
+            "axle",
+            "rim-l",
+            "rim-r"
           ],
-          "param": "aluminium"
+          "param": "plate"
         },
         {
-          "name": "rubber",
-          "color": "#292d30",
+          "name": "frame",
+          "color": "#c8302c",
           "parts": [
-            "top-grip",
-            "wheel--235",
-            "wheel-235"
+            "upright-l",
+            "handle-rake-l",
+            "upright-elbow-l",
+            "upright-r",
+            "handle-rake-r",
+            "upright-elbow-r",
+            "cross-tie-420",
+            "cross-tie-720",
+            "cross-tie-1000",
+            "handle-loop",
+            "axle-bracket-l",
+            "axle-bracket-r",
+            "hub-l",
+            "hub-r"
           ],
-          "param": "rubber"
+          "param": "frame"
         },
         {
-          "name": "stainless",
-          "color": "#b3bec0",
+          "name": "grips",
+          "color": "#2b2e31",
           "parts": [
-            "wheel-guard--180",
-            "wheel-guard-180"
+            "grip-l",
+            "grip-r"
           ],
-          "param": "stainless"
+          "param": "grips"
+        },
+        {
+          "name": "tyres",
+          "color": "#1d1f21",
+          "parts": [
+            "tyre-l",
+            "tyre-r"
+          ],
+          "param": "tyres"
+        },
+        {
+          "name": "carton-low",
+          "color": "#b8875a",
+          "parts": [
+            "carton-low"
+          ]
+        },
+        {
+          "name": "carton-low-tape",
+          "color": "#d9c49a",
+          "parts": [
+            "carton-low-tape",
+            "carton-low-tape-front",
+            "carton-high-tape",
+            "carton-high-tape-front"
+          ]
+        },
+        {
+          "name": "carton-low-label",
+          "color": "#f4f1e8",
+          "parts": [
+            "carton-low-label"
+          ]
+        },
+        {
+          "name": "carton-high",
+          "color": "#a87a50",
+          "parts": [
+            "carton-high"
+          ]
         }
       ]
     },
@@ -236472,13 +236748,20 @@
       "id": "wooden-pallet",
       "kit": "retail-store",
       "title": "Wooden pallet",
-      "description": "Reusable three-runner pallet with spaced top boards and open forklift entry gaps. Knobs: overall scale and timber, steel color controls. Presets: cleanStore and nightRestock.",
+      "description": "1200 x 800 mm Euro pallet at real size: five chamfered top deck boards in the 145/100 mm wide pattern, three cross stringer boards, nine blocks with branded stamps on the corner blocks, three bottom boards, open four-way fork entries and nail heads. Optional stack of taped cartons. Material controls: deck boards, blocks, stamps, nail heads. freshPine, weathered and poolBlue presets; load choice.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "pallet",
+        "euro pallet",
+        "wooden pallet",
+        "epal",
+        "skid",
+        "logistics",
         "retail",
         "grocery",
         "shop",
+        "warehouse",
         "low poly",
         "scene prop"
       ],
@@ -236487,13 +236770,14 @@
         "shop",
         "grocery",
         "interior",
+        "warehouse",
         "scene"
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/wooden-pallet.kcad.ts",
       "preview": "/assets/retail-store-wooden-pallet.png",
-      "sourceSha256": "7be5fa677abaa0ba20ff6e8fdb4d9f0f46493855032aab6d8de7d1a8981b0d4c",
-      "triangleBudget": 1800,
+      "sourceSha256": "f44a636cbb0cb0abf7ed3c4f2a9e2a90d88b95290817b02020158a8fc76134ab",
+      "triangleBudget": 2500,
       "params": [
         {
           "name": "scale",
@@ -236505,67 +236789,157 @@
           "step": 0.05
         },
         {
-          "name": "timber",
+          "name": "boards",
           "type": "color",
-          "default": "#a3865c",
-          "label": "Timber color"
+          "default": "#d8b47a",
+          "label": "Deck boards"
         },
         {
-          "name": "steel",
+          "name": "blocks",
           "type": "color",
-          "default": "#78868a",
-          "label": "Steel color"
+          "default": "#c9a46a",
+          "label": "Blocks"
+        },
+        {
+          "name": "stamp",
+          "type": "color",
+          "default": "#3a2a1e",
+          "label": "Branded stamps"
+        },
+        {
+          "name": "nails",
+          "type": "color",
+          "default": "#7d858a",
+          "label": "Nail heads"
+        },
+        {
+          "name": "load",
+          "type": "choice",
+          "default": "empty",
+          "label": "Load",
+          "choices": [
+            "empty",
+            "cartons"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "timber": "#b9915c",
-          "steel": "#9ca8ab"
+        "freshPine": {
+          "boards": "#d8b47a",
+          "blocks": "#c9a46a",
+          "stamp": "#3a2a1e",
+          "nails": "#7d858a"
         },
-        "nightRestock": {
-          "timber": "#6e5133",
-          "steel": "#4a585d"
+        "weathered": {
+          "boards": "#9a9184",
+          "blocks": "#857c70",
+          "stamp": "#3d3832",
+          "nails": "#5d4a3a"
+        },
+        "poolBlue": {
+          "boards": "#2f5fa8",
+          "blocks": "#2a5596",
+          "stamp": "#f4f1e8",
+          "nails": "#c9ced2"
         }
       },
       "stats": {
-        "triangles": 212,
+        "triangles": 1732,
         "sizeM": [
-          1.2,
-          0.184,
-          0.95
+          1.2025,
+          0.1455,
+          0.8035
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "timber",
-          "color": "#a3865c",
+          "name": "boards",
+          "color": "#d8b47a",
           "parts": [
+            "bottom-board-0",
+            "bottom-board-1",
+            "bottom-board-2",
+            "stringer-l",
+            "stringer-m",
+            "stringer-r",
             "top-board-0",
             "top-board-1",
             "top-board-2",
             "top-board-3",
-            "top-board-4",
-            "runner--440",
-            "runner-0",
-            "runner-440",
-            "block--440--335",
-            "block--440-335",
-            "block-0--335",
-            "block-0-335",
-            "block-440--335",
-            "block-440-335"
+            "top-board-4"
           ],
-          "param": "timber"
+          "param": "boards"
         },
         {
-          "name": "steel",
-          "color": "#78868a",
+          "name": "blocks",
+          "color": "#c9a46a",
           "parts": [
-            "nail-head"
+            "block-lf",
+            "block-lm",
+            "block-lb",
+            "block-mf",
+            "block-mm",
+            "block-mb",
+            "block-rf",
+            "block-rm",
+            "block-rb",
+            "stamp-front-mark-l",
+            "stamp-front-mark-m",
+            "stamp-front-mark-r"
           ],
-          "param": "steel"
+          "param": "blocks"
+        },
+        {
+          "name": "stamp",
+          "color": "#3a2a1e",
+          "parts": [
+            "stamp-front-l",
+            "stamp-front-m",
+            "stamp-front-r",
+            "stamp-end-f",
+            "stamp-end-m",
+            "stamp-end-b"
+          ],
+          "param": "stamp"
+        },
+        {
+          "name": "nails",
+          "color": "#7d858a",
+          "parts": [
+            "nail-0",
+            "nail-1",
+            "nail-2",
+            "nail-3",
+            "nail-4",
+            "nail-5",
+            "nail-6",
+            "nail-7",
+            "nail-8",
+            "nail-9",
+            "nail-10",
+            "nail-11",
+            "nail-12",
+            "nail-13",
+            "nail-14",
+            "nail-15",
+            "nail-16",
+            "nail-17",
+            "nail-18",
+            "nail-19",
+            "nail-20",
+            "nail-21",
+            "nail-22",
+            "nail-23",
+            "nail-24",
+            "nail-25",
+            "nail-26",
+            "nail-27",
+            "nail-28",
+            "nail-29"
+          ],
+          "param": "nails"
         }
       ]
     },
