@@ -277633,10 +277633,16 @@
       "id": "backstage-call-board",
       "kit": "theatre-production",
       "title": "Backstage call board",
-      "description": "Freestanding call-time board with a broad display panel, marker ledge and weighted feet. Knobs: overall scale; powder-coated steel, steel hardware; houseShow and touring appearance presets.",
+      "description": "Freestanding stage-door call board at about real size: framed cork board with pinned call sheets, rehearsal report and notes held by coloured push pins, a sign-in clipboard with a pen on a cord, a whiteboard strip with ruled call times, a marker ledge with markers, a header with a round wall clock, and two tube posts on splayed feet with rubber end caps. Material controls: frame and posts, cork board, paper, push pins and markers. houseShow, touring and schoolHall presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "call board",
+        "callboard",
+        "notice board",
+        "sign-in board",
+        "stage door",
+        "backstage",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -277653,8 +277659,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/backstage-call-board.kcad.ts",
       "preview": "/assets/theatre-production-backstage-call-board.png",
-      "sourceSha256": "9c952ff23c6d82d819f93b6350e28fa0828b0d0bc799cbb666ede3db6cded578",
-      "triangleBudget": 1800,
+      "sourceSha256": "6dfbd8d6f07645fa7aedb72e0faef71920f137a59b9dfa1217f40acaa97d03ed",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -277666,64 +277672,215 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "frame",
           "type": "color",
-          "default": "#353b41",
-          "label": "Powder-coated steel"
+          "default": "#2f353b",
+          "label": "Frame and posts"
         },
         {
-          "name": "hardware",
+          "name": "cork",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#b98a58",
+          "label": "Cork board"
+        },
+        {
+          "name": "paper",
+          "type": "color",
+          "default": "#f3f0e6",
+          "label": "Paper sheets"
+        },
+        {
+          "name": "pins",
+          "type": "color",
+          "default": "#d23b2f",
+          "label": "Push pins and markers"
         }
       ],
       "presets": {
         "houseShow": {
-          "powderCoat": "#272d33",
-          "hardware": "#c5a052"
+          "frame": "#2f353b",
+          "cork": "#b98a58",
+          "paper": "#f3f0e6",
+          "pins": "#d23b2f"
         },
         "touring": {
-          "powderCoat": "#315465",
-          "hardware": "#e2b347"
+          "frame": "#1d1f22",
+          "cork": "#8a6a4a",
+          "paper": "#fff6c9",
+          "pins": "#2a7fd4"
+        },
+        "schoolHall": {
+          "frame": "#7a8a96",
+          "cork": "#c99e6a",
+          "paper": "#eaf3ff",
+          "pins": "#3aa64a"
         }
       },
       "stats": {
-        "triangles": 208,
+        "triangles": 2018,
         "sizeM": [
-          1.1,
-          1.61,
-          0.32
+          1.311722,
+          2.07,
+          0.66
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#353b41",
+          "name": "frame",
+          "color": "#2f353b",
           "parts": [
-            "panel",
-            "header-strip",
-            "marker-ledge",
-            "row-line-one",
-            "row-line-two",
-            "row-line-three",
-            "magnet-left",
-            "magnet-right"
+            "post-left",
+            "foot-left",
+            "foot-hub-left",
+            "post-right",
+            "foot-right",
+            "foot-hub-right",
+            "board-back",
+            "frame-top",
+            "frame-bottom",
+            "frame-side-l",
+            "frame-side-r",
+            "header",
+            "clock-bracket",
+            "clock-rim",
+            "clipboard-clip",
+            "ledge",
+            "ledge-lip"
           ],
-          "param": "powderCoat"
+          "param": "frame"
         },
         {
-          "name": "hardware",
-          "color": "#c28f3e",
+          "name": "foot-cap-left-f",
+          "color": "#18191b",
           "parts": [
-            "left-post",
-            "right-post",
-            "base-left",
-            "base-right"
+            "foot-cap-left-f",
+            "foot-cap-left-b",
+            "foot-cap-right-f",
+            "foot-cap-right-b",
+            "clock-hour",
+            "clock-minute",
+            "clock-tick-0",
+            "clock-tick-1",
+            "clock-tick-2",
+            "clock-tick-3",
+            "clock-tick-4",
+            "clock-tick-5",
+            "clock-tick-6",
+            "clock-tick-7",
+            "clock-tick-8",
+            "clock-tick-9",
+            "clock-tick-10",
+            "clock-tick-11",
+            "pen-cord"
+          ]
+        },
+        {
+          "name": "cork",
+          "color": "#b98a58",
+          "parts": [
+            "cork"
           ],
-          "param": "hardware"
+          "param": "cork"
+        },
+        {
+          "name": "clock-face",
+          "color": "#f7f8f6",
+          "parts": [
+            "clock-face",
+            "whiteboard"
+          ]
+        },
+        {
+          "name": "pins",
+          "color": "#d23b2f",
+          "parts": [
+            "clock-second",
+            "pin-call-sheet",
+            "pin-notes-a",
+            "pin-costume-list",
+            "pen",
+            "call-time-1",
+            "marker-0"
+          ],
+          "param": "pins"
+        },
+        {
+          "name": "paper",
+          "color": "#f3f0e6",
+          "parts": [
+            "sheet-call-sheet",
+            "sheet-rehearsal-report",
+            "sheet-notes-b",
+            "sheet-costume-list",
+            "clipboard-sheet"
+          ],
+          "param": "paper"
+        },
+        {
+          "name": "sheet-call-sheet-line-0",
+          "color": "#2b3a55",
+          "parts": [
+            "sheet-call-sheet-line-0",
+            "sheet-call-sheet-line-1",
+            "sheet-call-sheet-line-2",
+            "sheet-call-sheet-line-3",
+            "sheet-call-sheet-line-4",
+            "sheet-call-sheet-line-5",
+            "sheet-rehearsal-report-line-0",
+            "sheet-rehearsal-report-line-1",
+            "sheet-rehearsal-report-line-2",
+            "sheet-rehearsal-report-line-3",
+            "sheet-rehearsal-report-line-4",
+            "sheet-rehearsal-report-line-5",
+            "sheet-notes-a-line-0",
+            "sheet-notes-a-line-1",
+            "sheet-notes-a-line-2",
+            "sheet-notes-b-line-0",
+            "sheet-notes-b-line-1",
+            "sheet-notes-b-line-2",
+            "sheet-notes-b-line-3",
+            "sheet-notes-b-line-4",
+            "sheet-costume-list-line-0",
+            "sheet-costume-list-line-1",
+            "sheet-costume-list-line-2",
+            "sheet-costume-list-line-3",
+            "sheet-costume-list-line-4",
+            "sheet-costume-list-line-5",
+            "sign-in-row-0",
+            "sign-in-row-1",
+            "sign-in-row-2",
+            "sign-in-row-3",
+            "sign-in-row-4",
+            "sign-in-row-5",
+            "call-time-0",
+            "call-time-2",
+            "marker-1"
+          ]
+        },
+        {
+          "name": "pin-rehearsal-report",
+          "color": "#2a7fd4",
+          "parts": [
+            "pin-rehearsal-report",
+            "pin-notes-b",
+            "marker-2"
+          ]
+        },
+        {
+          "name": "sheet-notes-a",
+          "color": "#f7e26b",
+          "parts": [
+            "sheet-notes-a"
+          ]
+        },
+        {
+          "name": "clipboard",
+          "color": "#8a6b45",
+          "parts": [
+            "clipboard"
+          ]
         }
       ]
     },
@@ -277731,10 +277888,16 @@
       "id": "cable-ramp-crossing",
       "kit": "theatre-production",
       "title": "Cable ramp crossing",
-      "description": "Low stage-floor cable cover with a central raceway, sloped shoulders and two end guards. Knobs: overall scale; polymer controls and cable jacket, steel hardware; houseShow and touring appearance presets.",
+      "description": "Drop-over cable protector at about real size: two linked 900 mm sections with sloped tread ramps either side, five cable channels, hinged high-visibility lids (one closed, one flipped open), a dog-bone connector between sections, anti-slip tread ribs, and five feeder and signal cables running through the channels and out across the floor. Material controls: ramp body, channel lid, cable jackets, feeder cable. houseShow, touring and outdoorEvent presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "cable ramp",
+        "cable protector",
+        "cable crossover",
+        "yellow jacket",
+        "cable cover",
+        "stage power",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -277751,8 +277914,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/cable-ramp-crossing.kcad.ts",
       "preview": "/assets/theatre-production-cable-ramp-crossing.png",
-      "sourceSha256": "4c84229362ecf32da038a7499ef94c409808623d40052b3d7d8e4624231d1d49",
-      "triangleBudget": 1800,
+      "sourceSha256": "24f1fd6ea6400ba9e61edfc0abde5a818455aefd9f2146fb2ce7db2bb71067dd",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -277764,62 +277927,143 @@
           "step": 0.05
         },
         {
-          "name": "polymer",
+          "name": "body",
           "type": "color",
-          "default": "#426878",
-          "label": "Polymer controls and cable jacket"
+          "default": "#d9661f",
+          "label": "Ramp body"
         },
         {
-          "name": "hardware",
+          "name": "lid",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#f2c418",
+          "label": "Channel lid"
+        },
+        {
+          "name": "cable",
+          "type": "color",
+          "default": "#1d1f22",
+          "label": "Signal cable jackets"
+        },
+        {
+          "name": "feeder",
+          "type": "color",
+          "default": "#2a62b8",
+          "label": "Feeder cable"
         }
       ],
       "presets": {
         "houseShow": {
-          "polymer": "#344e5b",
-          "hardware": "#c5a052"
+          "body": "#2a2c2f",
+          "lid": "#f2c418",
+          "cable": "#1d1f22",
+          "feeder": "#2a62b8"
         },
         "touring": {
-          "polymer": "#e3a928",
-          "hardware": "#e2b347"
+          "body": "#d9661f",
+          "lid": "#f2c418",
+          "cable": "#1d1f22",
+          "feeder": "#2a62b8"
+        },
+        "outdoorEvent": {
+          "body": "#3b4a2f",
+          "lid": "#e8e4d8",
+          "cable": "#2b2b2b",
+          "feeder": "#c23b2a"
         }
       },
       "stats": {
-        "triangles": 184,
+        "triangles": 1756,
         "sizeM": [
-          1.2,
-          0.195,
-          0.38
+          3.09,
+          0.288889,
+          0.5
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#426878",
+          "name": "body",
+          "color": "#d9661f",
           "parts": [
-            "base",
-            "center-raceway",
-            "left-shoulder",
-            "right-shoulder",
-            "top-cover",
-            "end-guard-left",
-            "end-guard-right",
-            "anchor-left",
-            "anchor-right"
+            "body-a",
+            "body-b"
           ],
-          "param": "polymer"
+          "param": "body"
         },
         {
-          "name": "hardware",
-          "color": "#c28f3e",
+          "name": "tread-a-f-0",
+          "color": "#1a1b1d",
           "parts": [
-            "hinge-strip"
+            "tread-a-f-0",
+            "tread-a-f-1",
+            "tread-a-f-2",
+            "tread-a-b-0",
+            "tread-a-b-1",
+            "tread-a-b-2",
+            "tread-b-f-0",
+            "tread-b-f-1",
+            "tread-b-f-2",
+            "tread-b-b-0",
+            "tread-b-b-1",
+            "tread-b-b-2",
+            "dogbone-f",
+            "dogbone-knob-f-l",
+            "dogbone-knob-f-r",
+            "dogbone-b",
+            "dogbone-knob-b-l",
+            "dogbone-knob-b-r"
+          ]
+        },
+        {
+          "name": "lid",
+          "color": "#f2c418",
+          "parts": [
+            "lid-a",
+            "lid-a-hinge",
+            "lid-b",
+            "lid-b-hinge"
           ],
-          "param": "hardware"
+          "param": "lid"
+        },
+        {
+          "name": "cable",
+          "color": "#1d1f22",
+          "parts": [
+            "cable-0",
+            "cable-0-drop-in",
+            "cable-0-run-in",
+            "cable-0-drop-out",
+            "cable-0-run-out",
+            "cable-1",
+            "cable-1-drop-in",
+            "cable-1-run-in",
+            "cable-1-drop-out",
+            "cable-1-run-out",
+            "cable-3",
+            "cable-3-drop-in",
+            "cable-3-run-in",
+            "cable-3-drop-out",
+            "cable-3-run-out",
+            "cable-4",
+            "cable-4-drop-in",
+            "cable-4-run-in",
+            "cable-4-drop-out",
+            "cable-4-run-out"
+          ],
+          "param": "cable"
+        },
+        {
+          "name": "feeder",
+          "color": "#2a62b8",
+          "parts": [
+            "cable-2",
+            "cable-2-drop-in",
+            "cable-2-run-in",
+            "cable-2-drop-out",
+            "cable-2-run-out"
+          ],
+          "param": "feeder"
         }
       ]
     },
@@ -280632,10 +280876,15 @@
       "id": "modular-stage-deck",
       "kit": "theatre-production",
       "title": "Modular stage deck",
-      "description": "Portable stage module with a broad top, perimeter edge trim, braced underframe and leveling feet. Knobs: overall scale; stage timber, painted steel, rubber and isolation pads; houseShow and touring appearance presets.",
+      "description": "Portable 8 x 4 ft stage platform at about real size: painted hardboard top over a birch ply core, aluminium extrusion frame, six tube legs in round sockets with clamp collars, diagonal cross-bracing on the front and sides, screw-jack levelling feet on rubber-padded floor plates, and cam-lock deck clamps with levers along the frame. Material controls: deck surface, ply core, aluminium frame, steel legs. houseShow, touring and danceFloor presets; low, standard and high leg heights.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "stage deck",
+        "stage platform",
+        "portable stage",
+        "riser",
+        "staging",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -280652,8 +280901,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/modular-stage-deck.kcad.ts",
       "preview": "/assets/theatre-production-modular-stage-deck.png",
-      "sourceSha256": "7d05920b402d877fab03e275a85fd0aac5121b28f114ded3103ee7ff868733d9",
-      "triangleBudget": 1800,
+      "sourceSha256": "88b081228215ea7f0079251d7de32b901feffa0b59bb75a385fc0bcc8613cab2",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -280665,80 +280914,174 @@
           "step": 0.05
         },
         {
-          "name": "timber",
-          "type": "color",
-          "default": "#946b43",
-          "label": "Stage timber"
+          "name": "height",
+          "type": "choice",
+          "default": "standard",
+          "label": "Leg height",
+          "choices": [
+            "low",
+            "standard",
+            "high"
+          ]
         },
         {
-          "name": "steel",
+          "name": "surface",
           "type": "color",
-          "default": "#46515a",
-          "label": "Painted steel"
+          "default": "#1f2124",
+          "label": "Deck surface"
         },
         {
-          "name": "rubber",
+          "name": "ply",
           "type": "color",
-          "default": "#272a2d",
-          "label": "Rubber and isolation pads"
+          "default": "#c9a06a",
+          "label": "Ply core edge"
+        },
+        {
+          "name": "frame",
+          "type": "color",
+          "default": "#b8c0c4",
+          "label": "Aluminium frame"
+        },
+        {
+          "name": "legs",
+          "type": "color",
+          "default": "#3a4147",
+          "label": "Steel legs and braces"
         }
       ],
       "presets": {
         "houseShow": {
-          "timber": "#725137",
-          "steel": "#343b41",
-          "rubber": "#222629"
+          "surface": "#1f2124",
+          "ply": "#c9a06a",
+          "frame": "#b8c0c4",
+          "legs": "#3a4147"
         },
         "touring": {
-          "timber": "#cd914b",
-          "steel": "#315968",
-          "rubber": "#25292c"
+          "surface": "#2c2f33",
+          "ply": "#b8874f",
+          "frame": "#2a2d30",
+          "legs": "#d4a31f"
+        },
+        "danceFloor": {
+          "surface": "#6f6a62",
+          "ply": "#d9b98a",
+          "frame": "#d6dadb",
+          "legs": "#59626a"
         }
       },
       "stats": {
-        "triangles": 284,
+        "triangles": 2364,
         "sizeM": [
-          1.82,
-          0.52,
-          1.225
+          2.49,
+          0.614,
+          1.245
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "timber",
-          "color": "#946b43",
+          "name": "surface",
+          "color": "#1f2124",
           "parts": [
-            "deck-top"
+            "deck-surface"
           ],
-          "param": "timber"
+          "param": "surface"
         },
         {
-          "name": "steel",
-          "color": "#46515a",
+          "name": "ply",
+          "color": "#c9a06a",
           "parts": [
-            "edge-front",
-            "edge-back",
-            "edge-left",
-            "edge-right",
-            "underframe-front",
-            "underframe-back",
-            "underframe-left",
-            "underframe-right"
+            "ply-core"
           ],
-          "param": "steel"
+          "param": "ply"
         },
         {
-          "name": "rubber",
-          "color": "#272a2d",
+          "name": "frame",
+          "color": "#b8c0c4",
           "parts": [
-            "foot-a",
-            "foot-b",
-            "foot-c",
-            "foot-d"
+            "frame-front",
+            "frame-back",
+            "frame-left",
+            "frame-right",
+            "frame-mid",
+            "socket-lf",
+            "collar-lf",
+            "jack-lf",
+            "socket-mf",
+            "collar-mf",
+            "jack-mf",
+            "socket-rf",
+            "collar-rf",
+            "jack-rf",
+            "socket-lb",
+            "collar-lb",
+            "jack-lb",
+            "socket-mb",
+            "collar-mb",
+            "jack-mb",
+            "socket-rb",
+            "collar-rb",
+            "jack-rb"
           ],
-          "param": "rubber"
+          "param": "frame"
+        },
+        {
+          "name": "legs",
+          "color": "#3a4147",
+          "parts": [
+            "leg-lf",
+            "jack-nut-lf",
+            "foot-plate-lf",
+            "leg-mf",
+            "jack-nut-mf",
+            "foot-plate-mf",
+            "leg-rf",
+            "jack-nut-rf",
+            "foot-plate-rf",
+            "leg-lb",
+            "jack-nut-lb",
+            "foot-plate-lb",
+            "leg-mb",
+            "jack-nut-mb",
+            "foot-plate-mb",
+            "leg-rb",
+            "jack-nut-rb",
+            "foot-plate-rb",
+            "brace-front-l",
+            "brace-front-r",
+            "brace-back-l",
+            "brace-back-r",
+            "brace-left",
+            "brace-right",
+            "clamp-front-a",
+            "clamp-front-b",
+            "clamp-left",
+            "clamp-right"
+          ],
+          "param": "legs"
+        },
+        {
+          "name": "collar-bolt-lf",
+          "color": "#18191b",
+          "parts": [
+            "collar-bolt-lf",
+            "foot-pad-lf",
+            "collar-bolt-mf",
+            "foot-pad-mf",
+            "collar-bolt-rf",
+            "foot-pad-rf",
+            "collar-bolt-lb",
+            "foot-pad-lb",
+            "collar-bolt-mb",
+            "foot-pad-mb",
+            "collar-bolt-rb",
+            "foot-pad-rb",
+            "clamp-lever-front-a",
+            "clamp-lever-front-b",
+            "clamp-lever-left",
+            "clamp-lever-right"
+          ]
         }
       ]
     },
@@ -281315,10 +281658,16 @@
       "id": "prop-storage-rack",
       "kit": "theatre-production",
       "title": "Prop storage rack",
-      "description": "Three-tier backstage storage rack with open shelves, side uprights and caster housings. Knobs: overall scale; aluminum, polymer controls and cable jacket, rubber and isolation pads; houseShow and touring appearance presets.",
+      "description": "Rolling backstage prop shelving at about real size: four round posts with collars, three open wire shelf mats with perimeter frames, gaffer-tape scene labels, four swivel casters with brakes, and props on each tier: a slatted wooden crate and a domed travel trunk, a turned teapot, brass candlestick and a stack of books, two hat boxes and a lantern. Material controls: rack wire, prop timber, prop fabric and leather, label tape. houseShow, touring and periodDrama presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "prop rack",
+        "prop shelf",
+        "prop table",
+        "wire shelving",
+        "backstage storage",
+        "hand props",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -281335,8 +281684,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/prop-storage-rack.kcad.ts",
       "preview": "/assets/theatre-production-prop-storage-rack.png",
-      "sourceSha256": "148658253539b77ed441555f3a6ae23a8fb6fd2bc74fadd48611c722e4210356",
-      "triangleBudget": 1800,
+      "sourceSha256": "4cb7138e89abfb584f51b61112f13823e82394ccbceb9a723ae23efb29b411f3",
+      "triangleBudget": 6500,
       "params": [
         {
           "name": "scale",
@@ -281348,70 +281697,328 @@
           "step": 0.05
         },
         {
-          "name": "aluminum",
+          "name": "wire",
           "type": "color",
-          "default": "#bac3c6",
-          "label": "Aluminum"
+          "default": "#c3c9cc",
+          "label": "Rack wire and posts"
         },
         {
-          "name": "polymer",
+          "name": "timber",
           "type": "color",
-          "default": "#426878",
-          "label": "Polymer controls and cable jacket"
+          "default": "#a4763f",
+          "label": "Prop timber"
         },
         {
-          "name": "rubber",
+          "name": "fabric",
           "type": "color",
-          "default": "#272a2d",
-          "label": "Rubber and isolation pads"
+          "default": "#6d2a3a",
+          "label": "Prop fabric and leather"
+        },
+        {
+          "name": "tape",
+          "type": "color",
+          "default": "#f2efe4",
+          "label": "Label tape"
         }
       ],
       "presets": {
         "houseShow": {
-          "aluminum": "#c7cecf",
-          "polymer": "#344e5b",
-          "rubber": "#222629"
+          "wire": "#c3c9cc",
+          "timber": "#a4763f",
+          "fabric": "#6d2a3a",
+          "tape": "#f2efe4"
         },
         "touring": {
-          "aluminum": "#dce3e2",
-          "polymer": "#e3a928",
-          "rubber": "#25292c"
+          "wire": "#2c3034",
+          "timber": "#7d5a36",
+          "fabric": "#2f4f6e",
+          "tape": "#f0c419"
+        },
+        "periodDrama": {
+          "wire": "#8d969b",
+          "timber": "#5e3d22",
+          "fabric": "#3f5a34",
+          "tape": "#e6d9b8"
         }
       },
       "stats": {
-        "triangles": 120,
+        "triangles": 6026,
         "sizeM": [
-          1.255,
-          1.75,
-          0.6575
+          1.269108,
+          1.894,
+          0.662
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "aluminum",
-          "color": "#bac3c6",
+          "name": "wire",
+          "color": "#c3c9cc",
           "parts": [
-            "left-upright",
-            "right-upright",
-            "left-front-post",
-            "right-front-post"
+            "post-lf",
+            "caster-plate-lf",
+            "caster-fork-lf",
+            "post-lb",
+            "caster-plate-lb",
+            "caster-fork-lb",
+            "post-rf",
+            "caster-plate-rf",
+            "caster-fork-rf",
+            "post-rb",
+            "caster-plate-rb",
+            "caster-fork-rb",
+            "shelf-low-rail-f",
+            "shelf-low-truss-f",
+            "shelf-low-rail-b",
+            "shelf-low-truss-b",
+            "shelf-low-end-l",
+            "shelf-low-end-r",
+            "shelf-low-wire-1",
+            "shelf-low-wire-2",
+            "shelf-low-wire-3",
+            "shelf-low-wire-4",
+            "shelf-low-wire-5",
+            "shelf-low-wire-6",
+            "shelf-low-wire-7",
+            "shelf-low-wire-8",
+            "shelf-low-wire-9",
+            "shelf-low-wire-10",
+            "shelf-low-wire-11",
+            "shelf-low-bar--135",
+            "shelf-low-bar-0",
+            "shelf-low-bar-135",
+            "shelf-low-collar-lf",
+            "shelf-low-collar-lb",
+            "shelf-low-collar-rf",
+            "shelf-low-collar-rb",
+            "shelf-mid-rail-f",
+            "shelf-mid-truss-f",
+            "shelf-mid-rail-b",
+            "shelf-mid-truss-b",
+            "shelf-mid-end-l",
+            "shelf-mid-end-r",
+            "shelf-mid-wire-1",
+            "shelf-mid-wire-2",
+            "shelf-mid-wire-3",
+            "shelf-mid-wire-4",
+            "shelf-mid-wire-5",
+            "shelf-mid-wire-6",
+            "shelf-mid-wire-7",
+            "shelf-mid-wire-8",
+            "shelf-mid-wire-9",
+            "shelf-mid-wire-10",
+            "shelf-mid-wire-11",
+            "shelf-mid-bar--135",
+            "shelf-mid-bar-0",
+            "shelf-mid-bar-135",
+            "shelf-mid-collar-lf",
+            "shelf-mid-collar-lb",
+            "shelf-mid-collar-rf",
+            "shelf-mid-collar-rb",
+            "shelf-high-rail-f",
+            "shelf-high-truss-f",
+            "shelf-high-rail-b",
+            "shelf-high-truss-b",
+            "shelf-high-end-l",
+            "shelf-high-end-r",
+            "shelf-high-wire-1",
+            "shelf-high-wire-2",
+            "shelf-high-wire-3",
+            "shelf-high-wire-4",
+            "shelf-high-wire-5",
+            "shelf-high-wire-6",
+            "shelf-high-wire-7",
+            "shelf-high-wire-8",
+            "shelf-high-wire-9",
+            "shelf-high-wire-10",
+            "shelf-high-wire-11",
+            "shelf-high-bar--135",
+            "shelf-high-bar-0",
+            "shelf-high-bar-135",
+            "shelf-high-collar-lf",
+            "shelf-high-collar-lb",
+            "shelf-high-collar-rf",
+            "shelf-high-collar-rb"
           ],
-          "param": "aluminum"
+          "param": "wire"
         },
         {
-          "name": "polymer",
-          "color": "#426878",
+          "name": "post-cap-lf",
+          "color": "#18191b",
           "parts": [
-            "shelf-low",
-            "shelf-mid",
-            "shelf-high",
-            "front-lip-low",
-            "front-lip-mid",
-            "front-lip-high"
+            "post-cap-lf",
+            "caster-wheel-lf",
+            "post-cap-lb",
+            "caster-wheel-lb",
+            "post-cap-rf",
+            "caster-wheel-rf",
+            "post-cap-rb",
+            "caster-wheel-rb"
+          ]
+        },
+        {
+          "name": "caster-brake-lf",
+          "color": "#c23b2a",
+          "parts": [
+            "caster-brake-lf",
+            "caster-brake-rf"
+          ]
+        },
+        {
+          "name": "tape",
+          "color": "#f2efe4",
+          "parts": [
+            "label-low",
+            "label-mid",
+            "label-high",
+            "book-0-pages",
+            "book-1-pages",
+            "book-2-pages",
+            "book-3-pages",
+            "hatbox-a-lid",
+            "hatbox-ribbon"
           ],
-          "param": "polymer"
+          "param": "tape"
+        },
+        {
+          "name": "label-low-ink",
+          "color": "#26292c",
+          "parts": [
+            "label-low-ink",
+            "label-mid-ink",
+            "label-high-ink",
+            "lantern-base",
+            "lantern-post--75--75",
+            "lantern-post--75-75",
+            "lantern-post-75--75",
+            "lantern-post-75-75",
+            "lantern-roof",
+            "lantern-ring"
+          ]
+        },
+        {
+          "name": "timber",
+          "color": "#a4763f",
+          "parts": [
+            "crate-base",
+            "crate-slat-front-0",
+            "crate-slat-front-1",
+            "crate-slat-front-2",
+            "crate-slat-front-3",
+            "crate-slat-side-0",
+            "crate-slat-side-1",
+            "crate-slat-side-2",
+            "crate-slat-side-3",
+            "crate-back",
+            "crate-side-r",
+            "trunk-band-100",
+            "trunk-band-480"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "crate-post-l",
+          "color": "#7a5530",
+          "parts": [
+            "crate-post-l",
+            "crate-post-r"
+          ]
+        },
+        {
+          "name": "crate-straw",
+          "color": "#d8bd6a",
+          "parts": [
+            "crate-straw"
+          ]
+        },
+        {
+          "name": "fabric",
+          "color": "#6d2a3a",
+          "parts": [
+            "trunk-body",
+            "trunk-lid",
+            "teapot-band",
+            "hatbox-a",
+            "hatbox-b-lid"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "trunk-hasp",
+          "color": "#c9a241",
+          "parts": [
+            "trunk-hasp",
+            "trunk-corner-65",
+            "trunk-corner-515",
+            "candlestick"
+          ]
+        },
+        {
+          "name": "teapot-body",
+          "color": "#e9eef0",
+          "parts": [
+            "teapot-body",
+            "teapot-lid-knob",
+            "teapot-spout",
+            "teapot-handle"
+          ]
+        },
+        {
+          "name": "candle",
+          "color": "#f4efdc",
+          "parts": [
+            "candle"
+          ]
+        },
+        {
+          "name": "flame",
+          "color": "#f2a33a",
+          "parts": [
+            "flame"
+          ]
+        },
+        {
+          "name": "book-0",
+          "color": "#2f4f6e",
+          "parts": [
+            "book-0"
+          ]
+        },
+        {
+          "name": "book-1",
+          "color": "#7d2b2b",
+          "parts": [
+            "book-1"
+          ]
+        },
+        {
+          "name": "book-2",
+          "color": "#3f5a34",
+          "parts": [
+            "book-2"
+          ]
+        },
+        {
+          "name": "book-3",
+          "color": "#d1a043",
+          "parts": [
+            "book-3"
+          ]
+        },
+        {
+          "name": "hatbox-b",
+          "color": "#d8b46a",
+          "parts": [
+            "hatbox-b"
+          ]
+        },
+        {
+          "name": "lantern-glass",
+          "color": "#f2c46a",
+          "parts": [
+            "lantern-glass"
+          ]
         }
       ]
     },
@@ -284947,10 +285554,16 @@
       "id": "traveler-curtain-track",
       "kit": "theatre-production",
       "title": "Traveler curtain track",
-      "description": "Straight curtain track with end stops, suspended support points and paired traveler panels. Knobs: overall scale; painted steel, stage fabric, steel hardware; houseShow and touring appearance presets.",
+      "description": "Hand-operated draw-curtain rig at about real size, shown half open: 3.2 m box track on hanger clamps under a pipe batten, carriers along the track, master carriers at the leading edges, live-end and dead-end pulley blocks, an operating line looping down to a weighted floor block, and two pleated drape panels with header webbing and hem chain, one stacked off and one drawn to centre. Material controls: track and batten, drape, pulleys and hardware, operating line. houseShow, touring and blackMasking presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "traveler curtain",
+        "traveller track",
+        "draw curtain",
+        "curtain track",
+        "drape",
+        "theatre rigging",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -284967,8 +285580,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/traveler-curtain-track.kcad.ts",
       "preview": "/assets/theatre-production-traveler-curtain-track.png",
-      "sourceSha256": "413b10d43a3c650653fa53ee0f0d74afedb33345491db485eb60a432b8defc21",
-      "triangleBudget": 1800,
+      "sourceSha256": "329a07dd3f8ec21da9181514db2d1dd011a1a0f07eb8918e06e6ac3b009abe79",
+      "triangleBudget": 4500,
       "params": [
         {
           "name": "scale",
@@ -284980,78 +285593,166 @@
           "step": 0.05
         },
         {
-          "name": "steel",
+          "name": "track",
           "type": "color",
-          "default": "#46515a",
-          "label": "Painted steel"
+          "default": "#26292c",
+          "label": "Track and batten"
         },
         {
-          "name": "fabric",
+          "name": "drape",
           "type": "color",
-          "default": "#463849",
-          "label": "Stage fabric"
+          "default": "#9a2430",
+          "label": "Drape fabric"
         },
         {
           "name": "hardware",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#aab2b6",
+          "label": "Pulleys, carriers and clamps"
+        },
+        {
+          "name": "line",
+          "type": "color",
+          "default": "#e8e2cf",
+          "label": "Operating line"
         }
       ],
       "presets": {
         "houseShow": {
-          "steel": "#343b41",
-          "fabric": "#28262d",
-          "hardware": "#c5a052"
+          "track": "#26292c",
+          "drape": "#9a2430",
+          "hardware": "#aab2b6",
+          "line": "#e8e2cf"
         },
         "touring": {
-          "steel": "#315968",
-          "fabric": "#a14469",
-          "hardware": "#e2b347"
+          "track": "#b9c0c3",
+          "drape": "#203d6a",
+          "hardware": "#e0b13c",
+          "line": "#1f2225"
+        },
+        "blackMasking": {
+          "track": "#1b1d1f",
+          "drape": "#242528",
+          "hardware": "#6c757a",
+          "line": "#d8d2bf"
         }
       },
       "stats": {
-        "triangles": 228,
+        "triangles": 3016,
         "sizeM": [
-          2.4,
-          2.185,
-          0.09
+          3.632,
+          2.624,
+          0.161
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "steel",
-          "color": "#46515a",
+          "name": "track",
+          "color": "#26292c",
           "parts": [
             "track",
-            "support-left",
-            "support-center",
-            "support-right"
+            "batten",
+            "live-end-housing",
+            "live-end-cheek-f",
+            "live-end-cheek-m",
+            "live-end-cheek-b",
+            "dead-end-housing",
+            "floor-block-cheek-a",
+            "floor-block-cheek-b"
           ],
-          "param": "steel"
-        },
-        {
-          "name": "fabric",
-          "color": "#463849",
-          "parts": [
-            "left-curtain",
-            "right-curtain",
-            "bottom-hem-left",
-            "bottom-hem-right"
-          ],
-          "param": "fabric"
+          "param": "track"
         },
         {
           "name": "hardware",
-          "color": "#c28f3e",
+          "color": "#aab2b6",
           "parts": [
-            "carrier-left",
-            "carrier-center",
-            "carrier-right"
+            "hanger-l1200",
+            "clamp-l1200",
+            "hanger-l400",
+            "clamp-l400",
+            "hanger-r400",
+            "clamp-r400",
+            "hanger-r1200",
+            "clamp-r1200",
+            "live-end-sheave-front",
+            "live-end-sheave-back",
+            "dead-end-sheave",
+            "floor-block-sheave",
+            "floor-block-stem",
+            "carrier-left-0",
+            "hook-left-0",
+            "carrier-left-4",
+            "hook-left-4",
+            "carrier-left-8",
+            "hook-left-8",
+            "carrier-left-12",
+            "hook-left-12",
+            "carrier-left-16",
+            "hook-left-16",
+            "carrier-right-0",
+            "hook-right-0",
+            "carrier-right-4",
+            "hook-right-4",
+            "carrier-right-8",
+            "hook-right-8",
+            "carrier-right-12",
+            "hook-right-12",
+            "carrier-right-16",
+            "hook-right-16",
+            "carrier-right-20",
+            "hook-right-20",
+            "carrier-right-24",
+            "hook-right-24",
+            "carrier-right-28",
+            "hook-right-28",
+            "carrier-right-32",
+            "hook-right-32",
+            "carrier-right-36",
+            "hook-right-36",
+            "carrier-right-40",
+            "hook-right-40",
+            "master-left",
+            "master-right",
+            "master-arm"
           ],
           "param": "hardware"
+        },
+        {
+          "name": "line",
+          "color": "#e8e2cf",
+          "parts": [
+            "line-front",
+            "line-back"
+          ],
+          "param": "line"
+        },
+        {
+          "name": "floor-block-weight",
+          "color": "#141516",
+          "parts": [
+            "floor-block-weight"
+          ]
+        },
+        {
+          "name": "drape",
+          "color": "#9a2430",
+          "parts": [
+            "drape-left",
+            "hem-left",
+            "drape-right",
+            "hem-right"
+          ],
+          "param": "drape"
+        },
+        {
+          "name": "header-left",
+          "color": "#e9e3d2",
+          "parts": [
+            "header-left",
+            "header-right"
+          ]
         }
       ]
     },
