@@ -231906,10 +231906,15 @@
       "id": "checkout-bagging-stand",
       "kit": "retail-store",
       "title": "Bagging stand",
-      "description": "Freestanding bagging station with broad work surface, four legs and lower storage brace. Knobs: overall scale and stainless steel, laminate, polypropylene color controls. Presets: cleanStore and nightRestock.",
+      "description": "Checkout bagging stand at about real size: tubular stainless legs and bag rack, laminate top with a security weigh plate and rubber mat, carrier bags hung open over forward prongs with shopping inside, a pad of fresh bags, lane sign and a lower shelf of spare bag packs. Material controls: stainless frame, laminate top, carrier bags, signage. supermarket, discounter and organicGrocer presets; bag count choice.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "bagging stand",
+        "bagging area",
+        "self checkout",
+        "carrier bag",
+        "checkout",
         "retail",
         "grocery",
         "shop",
@@ -231926,8 +231931,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/checkout-bagging-stand.kcad.ts",
       "preview": "/assets/retail-store-checkout-bagging-stand.png",
-      "sourceSha256": "7b2db0488ff4bb5eabe90d469a34a2f7edc92c15f5223cc43af65103f3861290",
-      "triangleBudget": 1800,
+      "sourceSha256": "8dc37230168e7088e4df94f7fbab336873e6661a1a33117b0ee753892d89e06a",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "scale",
@@ -231941,72 +231946,224 @@
         {
           "name": "stainless",
           "type": "color",
-          "default": "#879397",
-          "label": "Stainless steel color"
+          "default": "#b7c0c4",
+          "label": "Stainless frame and rack"
         },
         {
           "name": "laminate",
           "type": "color",
-          "default": "#b99b70",
-          "label": "Laminate color"
+          "default": "#c9a77a",
+          "label": "Laminate top"
         },
         {
-          "name": "polypropylene",
+          "name": "bagPoly",
           "type": "color",
-          "default": "#4e6861",
-          "label": "Polypropylene color"
+          "default": "#eef1ec",
+          "label": "Carrier bags"
+        },
+        {
+          "name": "signage",
+          "type": "color",
+          "default": "#2f8f4e",
+          "label": "Lane signage and bag print"
+        },
+        {
+          "name": "bags",
+          "type": "choice",
+          "default": "two",
+          "label": "Bags hung open",
+          "choices": [
+            "two",
+            "one"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "stainless": "#bfc8cb",
-          "laminate": "#d5c3a5",
-          "polypropylene": "#d6e0d5"
+        "supermarket": {
+          "stainless": "#b7c0c4",
+          "laminate": "#c9a77a",
+          "bagPoly": "#eef1ec",
+          "signage": "#2f8f4e"
         },
-        "nightRestock": {
-          "stainless": "#66747a",
-          "laminate": "#685744",
-          "polypropylene": "#45614e"
+        "discounter": {
+          "stainless": "#8f9a9e",
+          "laminate": "#5c6468",
+          "bagPoly": "#f2d24a",
+          "signage": "#1d4fa0"
+        },
+        "organicGrocer": {
+          "stainless": "#2f3437",
+          "laminate": "#a7774a",
+          "bagPoly": "#d8c4a0",
+          "signage": "#6b8f3a"
         }
       },
       "stats": {
-        "triangles": 116,
+        "triangles": 1912,
         "sizeM": [
-          0.85,
-          0.865,
-          0.62
+          0.92032,
+          1.406,
+          0.508
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
+          "name": "glide-lf",
+          "color": "#2b2f33",
+          "parts": [
+            "glide-lf",
+            "glide-rf",
+            "glide-lb",
+            "glide-rb",
+            "mat",
+            "prong-tip-al",
+            "prong-tip-ar",
+            "prong-tip-bl",
+            "prong-tip-br"
+          ]
+        },
+        {
+          "name": "stainless",
+          "color": "#b7c0c4",
+          "parts": [
+            "leg-lf",
+            "leg-rf",
+            "leg-lb",
+            "leg-rb",
+            "apron-f",
+            "apron-b",
+            "lower-shelf",
+            "bumper",
+            "weigh-plate",
+            "post-l",
+            "post-r",
+            "top-rail",
+            "prong-al",
+            "prong-ar",
+            "prong-bl",
+            "prong-br"
+          ],
+          "param": "stainless"
+        },
+        {
+          "name": "bagPoly",
+          "color": "#eef1ec",
+          "parts": [
+            "bag-pack-0",
+            "bag-pack-2",
+            "bag-a",
+            "bag-handle-a-l",
+            "bag-handle-a-r",
+            "bag-b",
+            "bag-handle-b-l",
+            "bag-handle-b-r"
+          ],
+          "param": "bagPoly"
+        },
+        {
+          "name": "signage",
+          "color": "#2f8f4e",
+          "parts": [
+            "bag-pack-1",
+            "sign",
+            "bag-print-a",
+            "bag-print-text-a",
+            "bag-print-b",
+            "bag-print-text-b"
+          ],
+          "param": "signage"
+        },
+        {
           "name": "laminate",
-          "color": "#b99b70",
+          "color": "#c9a77a",
           "parts": [
             "top"
           ],
           "param": "laminate"
         },
         {
-          "name": "stainless",
-          "color": "#879397",
+          "name": "mat-rib-0",
+          "color": "#3d4246",
           "parts": [
-            "lower-brace",
-            "leg--370--245",
-            "leg--370-245",
-            "leg-370--245",
-            "leg-370-245"
-          ],
-          "param": "stainless"
+            "mat-rib-0",
+            "mat-rib-1",
+            "mat-rib-2",
+            "mat-rib-3",
+            "mat-rib-4",
+            "mat-rib-5",
+            "mat-rib-6",
+            "mat-rib-7",
+            "mat-rib-8"
+          ]
         },
         {
-          "name": "polypropylene",
-          "color": "#4e6861",
+          "name": "sign-text",
+          "color": "#f4f1ea",
           "parts": [
-            "bag-holder"
-          ],
-          "param": "polypropylene"
+            "sign-text",
+            "sign-bag-icon",
+            "sign-bag-handle"
+          ]
+        },
+        {
+          "name": "bottle",
+          "color": "#3f8f5a",
+          "parts": [
+            "bottle",
+            "bottle-neck"
+          ]
+        },
+        {
+          "name": "bottle-cap",
+          "color": "#c8232c",
+          "parts": [
+            "bottle-cap",
+            "cereal-box-band"
+          ]
+        },
+        {
+          "name": "cereal-box",
+          "color": "#e3a72f",
+          "parts": [
+            "cereal-box"
+          ]
+        },
+        {
+          "name": "baguette",
+          "color": "#d0974a",
+          "parts": [
+            "baguette"
+          ]
+        },
+        {
+          "name": "milk-jug",
+          "color": "#f4f6f8",
+          "parts": [
+            "milk-jug"
+          ]
+        },
+        {
+          "name": "milk-cap",
+          "color": "#2f6fd0",
+          "parts": [
+            "milk-cap"
+          ]
+        },
+        {
+          "name": "leek",
+          "color": "#e6ead2",
+          "parts": [
+            "leek"
+          ]
+        },
+        {
+          "name": "leek-leaves",
+          "color": "#4f8f3a",
+          "parts": [
+            "leek-leaves"
+          ]
         }
       ]
     },
@@ -233162,10 +233319,15 @@
       "id": "customer-service-desk",
       "kit": "retail-store",
       "title": "Customer service desk",
-      "description": "Store service counter with lowered accessible return ledge, raised worktop and back display panel. Knobs: overall scale and laminate, powder-coated steel, glass, polycarbonate color controls. Presets: cleanStore and nightRestock.",
+      "description": "Store customer service counter at about real size: curved laminate front with kick and accent band, raised customer ledge over a staff worktop, information plaque, lowered accessible return with knee space, ticket dispenser, desk bell, card terminal, brochure rack, POS monitor, parcels and a header sign on posts. Material controls: laminate body, worktop, accent signage, metal posts. supermarket, department and diyStore presets; accessible return choice.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "service desk",
+        "customer service",
+        "returns desk",
+        "information desk",
+        "counter",
         "retail",
         "grocery",
         "shop",
@@ -233182,8 +233344,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/customer-service-desk.kcad.ts",
       "preview": "/assets/retail-store-customer-service-desk.png",
-      "sourceSha256": "f20eb68e5c399b11859ecca0c1d4cad03afd0629ed7f7e0d87f0b2fc5745048b",
-      "triangleBudget": 1800,
+      "sourceSha256": "e07de51e3914b8f7133b40f7256f62d836e0768b4358020492140273387c340e",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -233197,86 +233359,219 @@
         {
           "name": "laminate",
           "type": "color",
-          "default": "#87745d",
-          "label": "Laminate color"
+          "default": "#7d6650",
+          "label": "Laminate body"
         },
         {
-          "name": "powderCoat",
+          "name": "worktop",
           "type": "color",
-          "default": "#59666d",
-          "label": "Powder-coated steel color"
+          "default": "#e8e2d6",
+          "label": "Worktop and ledge"
         },
         {
-          "name": "glass",
+          "name": "accent",
           "type": "color",
-          "default": "#86c6d0",
-          "label": "Glass color"
+          "default": "#d0562a",
+          "label": "Accent band and signage"
         },
         {
-          "name": "polycarbonate",
+          "name": "metal",
           "type": "color",
-          "default": "#dd9c37",
-          "label": "Polycarbonate color"
+          "default": "#9aa4a8",
+          "label": "Metal posts and stands"
+        },
+        {
+          "name": "section",
+          "type": "choice",
+          "default": "accessible",
+          "label": "Lowered return",
+          "choices": [
+            "accessible",
+            "straight"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "laminate": "#d5c3a5",
-          "powderCoat": "#e5ebed",
-          "glass": "#9ccfd6",
-          "polycarbonate": "#a2d1d7"
+        "supermarket": {
+          "laminate": "#7d6650",
+          "worktop": "#e8e2d6",
+          "accent": "#d0562a",
+          "metal": "#9aa4a8"
         },
-        "nightRestock": {
-          "laminate": "#685744",
-          "powderCoat": "#354750",
-          "glass": "#3e6677",
-          "polycarbonate": "#486b7b"
+        "department": {
+          "laminate": "#2e3236",
+          "worktop": "#f2efe8",
+          "accent": "#b8975a",
+          "metal": "#c9ccce"
+        },
+        "diyStore": {
+          "laminate": "#e4e6e3",
+          "worktop": "#9a7b55",
+          "accent": "#f08a1c",
+          "metal": "#4a5257"
         }
       },
       "stats": {
-        "triangles": 104,
+        "triangles": 1474,
         "sizeM": [
-          1.95,
-          1.71,
-          0.951
+          2.46,
+          2.2,
+          0.67
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "laminate",
-          "color": "#87745d",
+          "name": "kick",
+          "color": "#2b2f33",
           "parts": [
-            "main-counter",
-            "customer-ledge",
-            "accessible-return"
+            "kick",
+            "groove-l",
+            "groove-r",
+            "plaque-text",
+            "card-terminal",
+            "monitor"
+          ]
+        },
+        {
+          "name": "laminate",
+          "color": "#7d6650",
+          "parts": [
+            "body",
+            "raised-front",
+            "return-end",
+            "return-modesty",
+            "sign-face"
           ],
           "param": "laminate"
         },
         {
-          "name": "powderCoat",
-          "color": "#59666d",
+          "name": "worktop",
+          "color": "#e8e2d6",
           "parts": [
-            "back-display"
+            "worktop",
+            "ledge",
+            "plaque",
+            "info-stem",
+            "info-dot",
+            "return-top",
+            "sign-subline"
           ],
-          "param": "powderCoat"
+          "param": "worktop"
         },
         {
-          "name": "glass",
-          "color": "#86c6d0",
+          "name": "accent",
+          "color": "#d0562a",
           "parts": [
-            "screen"
+            "accent-band",
+            "info-disc",
+            "return-edge",
+            "sign",
+            "sign-info-disc"
           ],
-          "param": "glass"
+          "param": "accent"
         },
         {
-          "name": "polycarbonate",
-          "color": "#dd9c37",
+          "name": "access-sign",
+          "color": "#2a62b8",
           "parts": [
-            "call-button"
+            "access-sign"
+          ]
+        },
+        {
+          "name": "access-wheel",
+          "color": "#f4f1ea",
+          "parts": [
+            "access-wheel",
+            "access-figure",
+            "form-pad",
+            "ticket-tab",
+            "parcel-label",
+            "sign-info-stem",
+            "sign-info-dot",
+            "sign-word-0",
+            "sign-word-1",
+            "sign-word-2"
+          ]
+        },
+        {
+          "name": "metal",
+          "color": "#9aa4a8",
+          "parts": [
+            "pen-holder",
+            "ticket-post",
+            "brochure-base",
+            "monitor-stand",
+            "monitor-foot",
+            "sign-post-l",
+            "sign-post-r"
           ],
-          "param": "polycarbonate"
+          "param": "metal"
+        },
+        {
+          "name": "ticket-dispenser",
+          "color": "#c8232c",
+          "parts": [
+            "ticket-dispenser"
+          ]
+        },
+        {
+          "name": "bell",
+          "color": "#d8b24a",
+          "parts": [
+            "bell",
+            "bell-button"
+          ]
+        },
+        {
+          "name": "card-screen",
+          "color": "#7fd0e6",
+          "parts": [
+            "card-screen"
+          ]
+        },
+        {
+          "name": "brochure-0",
+          "color": "#2f6fd0",
+          "parts": [
+            "brochure-0"
+          ]
+        },
+        {
+          "name": "brochure-1",
+          "color": "#f2b632",
+          "parts": [
+            "brochure-1"
+          ]
+        },
+        {
+          "name": "brochure-2",
+          "color": "#4f9a52",
+          "parts": [
+            "brochure-2"
+          ]
+        },
+        {
+          "name": "keyboard",
+          "color": "#3a3f43",
+          "parts": [
+            "keyboard"
+          ]
+        },
+        {
+          "name": "parcel-a",
+          "color": "#b98a52",
+          "parts": [
+            "parcel-a"
+          ]
+        },
+        {
+          "name": "parcel-b",
+          "color": "#c79a62",
+          "parts": [
+            "parcel-b"
+          ]
         }
       ]
     },
@@ -233284,10 +233579,15 @@
       "id": "deli-service-case",
       "kit": "retail-store",
       "title": "Deli service case",
-      "description": "Customer-facing deli counter with raised display deck, sneeze-guard frame and base cabinet. Knobs: overall scale and stainless steel, tempered glass, laminate color controls. Presets: cleanStore and nightRestock.",
+      "description": "Refrigerated serve-over deli counter at about real size: fluted facade with brand band and bumper rail, raked front glass and top shelf, shaped glass ends, two stepped rows of gastronorm trays with salami, ham, cheese wheels, olives and cured meats or salads, price tags, scale and wrap-paper roll. Material controls: stainless, glass, facade, brand band. classicDeli, freshMarket and darkBistro presets; display choice.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "deli case",
+        "deli counter",
+        "serve-over counter",
+        "refrigerated display",
+        "charcuterie",
         "retail",
         "grocery",
         "shop",
@@ -233304,8 +233604,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/deli-service-case.kcad.ts",
       "preview": "/assets/retail-store-deli-service-case.png",
-      "sourceSha256": "f17e7142d09890658d704f77166c6f509bf93d3d72fcf2707eacf2e484114090",
-      "triangleBudget": 1800,
+      "sourceSha256": "91483d44b05fb58f8e61ab1ddc042af0ff94aa5e77f4da19fcef3939574c74dd",
+      "triangleBudget": 4200,
       "params": [
         {
           "name": "scale",
@@ -233319,75 +233619,366 @@
         {
           "name": "stainless",
           "type": "color",
-          "default": "#9ba6a8",
-          "label": "Stainless steel color"
+          "default": "#c3cacd",
+          "label": "Stainless deck, trays and rails"
         },
         {
-          "name": "temperedGlass",
+          "name": "glass",
           "type": "color",
-          "default": "#9ed0d4",
-          "label": "Tempered glass color"
+          "default": "#b9dde3",
+          "label": "Glass edges and top shelf"
         },
         {
-          "name": "laminate",
+          "name": "facade",
           "type": "color",
-          "default": "#b18c5e",
-          "label": "Laminate color"
+          "default": "#7a2e2a",
+          "label": "Facade panels"
+        },
+        {
+          "name": "band",
+          "type": "color",
+          "default": "#e9dcc0",
+          "label": "Brand band"
+        },
+        {
+          "name": "display",
+          "type": "choice",
+          "default": "charcuterie",
+          "label": "Display",
+          "choices": [
+            "charcuterie",
+            "salads"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "stainless": "#bfc8cb",
-          "temperedGlass": "#a7d4d9",
-          "laminate": "#d5c3a5"
+        "classicDeli": {
+          "stainless": "#c3cacd",
+          "glass": "#b9dde3",
+          "facade": "#7a2e2a",
+          "band": "#e9dcc0"
         },
-        "nightRestock": {
-          "stainless": "#66747a",
-          "temperedGlass": "#476d78",
-          "laminate": "#685744"
+        "freshMarket": {
+          "stainless": "#d2d6d8",
+          "glass": "#c8e6ea",
+          "facade": "#3f7a4a",
+          "band": "#f4f1ea"
+        },
+        "darkBistro": {
+          "stainless": "#a8b0b3",
+          "glass": "#a9cdd6",
+          "facade": "#24282b",
+          "band": "#c9a54a"
         }
       },
       "stats": {
-        "triangles": 152,
+        "triangles": 3308,
         "sizeM": [
-          1.76,
-          1.59,
-          0.75
+          1.8,
+          1.534,
+          0.858
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainless",
-          "color": "#9ba6a8",
+          "name": "kick",
+          "color": "#2b2f33",
           "parts": [
-            "base",
-            "customer-rail",
-            "scale-platform"
+            "kick",
+            "scale-display"
+          ]
+        },
+        {
+          "name": "stainless",
+          "color": "#c3cacd",
+          "parts": [
+            "cabinet",
+            "rail-bracket-l",
+            "rail-bracket-m",
+            "rail-bracket-r",
+            "bumper-rail",
+            "deck",
+            "deck-front-lip",
+            "front-glass-foot",
+            "front-glass-head",
+            "top-shelf-edge",
+            "shelf-post-l",
+            "shelf-post-r",
+            "scale-pan",
+            "paper-holder",
+            "rear-step",
+            "tray-0-0",
+            "tray-0-1",
+            "tray-0-2",
+            "tray-0-3",
+            "tray-0-4",
+            "tray-1-0",
+            "tray-1-1",
+            "tray-1-2",
+            "tray-1-3",
+            "tray-1-4"
           ],
           "param": "stainless"
         },
         {
-          "name": "laminate",
-          "color": "#b18c5e",
+          "name": "facade",
+          "color": "#7a2e2a",
           "parts": [
-            "display-deck"
+            "flute-0",
+            "flute-1",
+            "flute-2",
+            "flute-3",
+            "flute-4",
+            "flute-5",
+            "flute-6",
+            "flute-7",
+            "flute-8",
+            "flute-9",
+            "flute-10",
+            "flute-11",
+            "band-name"
           ],
-          "param": "laminate"
+          "param": "facade"
         },
         {
-          "name": "temperedGlass",
-          "color": "#9ed0d4",
+          "name": "band",
+          "color": "#e9dcc0",
           "parts": [
-            "canopy",
-            "glass-side-left",
-            "glass-side-right",
-            "glass-post--800",
-            "glass-post-0",
-            "glass-post-800"
+            "brand-band"
           ],
-          "param": "temperedGlass"
+          "param": "band"
+        },
+        {
+          "name": "glass",
+          "color": "#b9dde3",
+          "parts": [
+            "end-glass-l",
+            "end-glass-r",
+            "front-glass-sheen",
+            "top-shelf"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "scale-body",
+          "color": "#e8eaea",
+          "parts": [
+            "scale-body"
+          ]
+        },
+        {
+          "name": "scale-readout",
+          "color": "#7fe0a0",
+          "parts": [
+            "scale-readout"
+          ]
+        },
+        {
+          "name": "paper-roll",
+          "color": "#f4ece0",
+          "parts": [
+            "paper-roll"
+          ]
+        },
+        {
+          "name": "price-board",
+          "color": "#2c332f",
+          "parts": [
+            "price-board"
+          ]
+        },
+        {
+          "name": "price-line-0",
+          "color": "#efece4",
+          "parts": [
+            "price-line-0",
+            "price-line-1",
+            "price-line-2",
+            "price-line-3"
+          ]
+        },
+        {
+          "name": "tag-pick-0-0",
+          "color": "#f4f1ea",
+          "parts": [
+            "tag-pick-0-0",
+            "tag-0-0",
+            "tag-pick-0-1",
+            "tag-0-1",
+            "tag-pick-0-2",
+            "tag-0-2",
+            "tag-pick-0-3",
+            "tag-0-3",
+            "tag-pick-0-4",
+            "tag-0-4",
+            "tag-pick-1-0",
+            "tag-1-0",
+            "tag-pick-1-1",
+            "tag-1-1",
+            "tag-pick-1-2",
+            "tag-1-2",
+            "tag-pick-1-3",
+            "tag-1-3",
+            "tag-pick-1-4",
+            "tag-1-4"
+          ]
+        },
+        {
+          "name": "tag-price-0-0",
+          "color": "#c8232c",
+          "parts": [
+            "tag-price-0-0",
+            "tag-price-0-1",
+            "tag-price-0-2",
+            "tag-price-0-3",
+            "tag-price-0-4",
+            "tag-price-1-0",
+            "tag-price-1-1",
+            "tag-price-1-2",
+            "tag-price-1-3",
+            "tag-price-1-4"
+          ]
+        },
+        {
+          "name": "salami-0",
+          "color": "#8a2f2f",
+          "parts": [
+            "salami-0",
+            "salami-1",
+            "salami-2"
+          ]
+        },
+        {
+          "name": "salami-face-0",
+          "color": "#d07a78",
+          "parts": [
+            "salami-face-0",
+            "salami-face-1",
+            "salami-face-2"
+          ]
+        },
+        {
+          "name": "ham",
+          "color": "#e59a94",
+          "parts": [
+            "ham"
+          ]
+        },
+        {
+          "name": "ham-rind",
+          "color": "#c98a5a",
+          "parts": [
+            "ham-rind"
+          ]
+        },
+        {
+          "name": "cheese-wheel",
+          "color": "#f0c75a",
+          "parts": [
+            "cheese-wheel",
+            "cheese-wedge"
+          ]
+        },
+        {
+          "name": "cheese-rind",
+          "color": "#c99a3a",
+          "parts": [
+            "cheese-rind"
+          ]
+        },
+        {
+          "name": "blue-cheese",
+          "color": "#e6e2d0",
+          "parts": [
+            "blue-cheese"
+          ]
+        },
+        {
+          "name": "blue-vein-0",
+          "color": "#5a7a9a",
+          "parts": [
+            "blue-vein-0",
+            "blue-vein-1",
+            "blue-vein-2",
+            "blue-vein-3"
+          ]
+        },
+        {
+          "name": "olives",
+          "color": "#5a6e2a",
+          "parts": [
+            "olives"
+          ]
+        },
+        {
+          "name": "olive-0",
+          "color": "#7a8e3a",
+          "parts": [
+            "olive-0",
+            "olive-2",
+            "olive-4"
+          ]
+        },
+        {
+          "name": "olive-1",
+          "color": "#3b4a1c",
+          "parts": [
+            "olive-1",
+            "olive-3",
+            "olive-5"
+          ]
+        },
+        {
+          "name": "slice-0-0",
+          "color": "#b6403e",
+          "parts": [
+            "slice-0-0",
+            "slice-2-3",
+            "slice-3-2",
+            "slice-4-1"
+          ]
+        },
+        {
+          "name": "slice-0-1",
+          "color": "#d98a7a",
+          "parts": [
+            "slice-0-1",
+            "slice-1-0",
+            "slice-3-3",
+            "slice-4-2"
+          ]
+        },
+        {
+          "name": "slice-0-2",
+          "color": "#9a3a2a",
+          "parts": [
+            "slice-0-2",
+            "slice-1-1",
+            "slice-2-0",
+            "slice-4-3"
+          ]
+        },
+        {
+          "name": "slice-0-3",
+          "color": "#e8b0a0",
+          "parts": [
+            "slice-0-3",
+            "slice-1-2",
+            "slice-2-1",
+            "slice-3-0"
+          ]
+        },
+        {
+          "name": "slice-1-3",
+          "color": "#c0504a",
+          "parts": [
+            "slice-1-3",
+            "slice-2-2",
+            "slice-3-1",
+            "slice-4-0"
+          ]
         }
       ]
     },
@@ -233395,10 +233986,15 @@
       "id": "entry-security-gate",
       "kit": "retail-store",
       "title": "Entry security gate",
-      "description": "One retail entrance security pedestal with sensing tower, status light and floor anchor plate. Knobs: overall scale and powder-coated steel, glass, polycarbonate color controls. Presets: cleanStore and nightRestock.",
+      "description": "Retail EAS anti-theft antenna pedestal at about real size: rounded frame around a clear acrylic panel with the antenna loop inside, top LED status strip, brand badge, sloped foot with speaker grille; single or as a pair with a floor cable cover. Material controls: frame, acrylic, status LED, foot shell. modernStore, fashionBoutique and discounter presets; layout choice.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "security gate",
+        "EAS",
+        "anti-theft",
+        "antenna pedestal",
+        "entrance",
         "retail",
         "grocery",
         "shop",
@@ -233415,8 +234011,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/entry-security-gate.kcad.ts",
       "preview": "/assets/retail-store-entry-security-gate.png",
-      "sourceSha256": "ae629a8ecc8a919e7e5c3158966020544afe501eed6a6ff7c112b87d779fc100",
-      "triangleBudget": 1800,
+      "sourceSha256": "5912f887030cedfa28223d90f66cad809d145b9061565190002e68b74e1a9fa8",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -233428,75 +234024,141 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "frame",
           "type": "color",
-          "default": "#555f64",
-          "label": "Powder-coated steel color"
+          "default": "#d9dcdd",
+          "label": "Pedestal frame"
         },
         {
-          "name": "glass",
+          "name": "acrylic",
           "type": "color",
-          "default": "#83c8d1",
-          "label": "Glass color"
+          "default": "#b6dce4",
+          "label": "Clear acrylic panel"
         },
         {
-          "name": "polycarbonate",
+          "name": "led",
           "type": "color",
-          "default": "#e3ad2b",
-          "label": "Polycarbonate color"
+          "default": "#3fd07a",
+          "label": "Status LED strip"
+        },
+        {
+          "name": "shell",
+          "type": "color",
+          "default": "#3a4045",
+          "label": "Foot shell and badge"
+        },
+        {
+          "name": "layout",
+          "type": "choice",
+          "default": "pair",
+          "label": "Layout",
+          "choices": [
+            "pair",
+            "single"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "powderCoat": "#e5ebed",
-          "glass": "#9ccfd6",
-          "polycarbonate": "#a2d1d7"
+        "modernStore": {
+          "frame": "#d9dcdd",
+          "acrylic": "#b6dce4",
+          "led": "#3fd07a",
+          "shell": "#3a4045"
         },
-        "nightRestock": {
-          "powderCoat": "#354750",
-          "glass": "#3e6677",
-          "polycarbonate": "#486b7b"
+        "fashionBoutique": {
+          "frame": "#1f2326",
+          "acrylic": "#cfd8dc",
+          "led": "#f2f2f2",
+          "shell": "#b8975a"
+        },
+        "discounter": {
+          "frame": "#e3ad2b",
+          "acrylic": "#a8d4dc",
+          "led": "#e8473a",
+          "shell": "#2b2f33"
         }
       },
       "stats": {
-        "triangles": 128,
+        "triangles": 1772,
         "sizeM": [
-          0.35,
-          0.96,
-          0.286
+          1.745,
+          1.756,
+          0.56
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#555f64",
+          "name": "shell",
+          "color": "#3a4045",
           "parts": [
-            "base",
-            "pedestal",
-            "anchor--130--90",
-            "anchor--130-90",
-            "anchor-130--90",
-            "anchor-130-90"
+            "foot-l",
+            "badge-l",
+            "foot-r",
+            "badge-r",
+            "cable-cover"
           ],
-          "param": "powderCoat"
+          "param": "shell"
         },
         {
-          "name": "glass",
-          "color": "#83c8d1",
+          "name": "grille-l-0",
+          "color": "#1c1f22",
           "parts": [
-            "sensor-face"
-          ],
-          "param": "glass"
+            "grille-l-0",
+            "grille-l-1",
+            "grille-l-2",
+            "grille-l-3",
+            "grille-l-4",
+            "grille-r-0",
+            "grille-r-1",
+            "grille-r-2",
+            "grille-r-3",
+            "grille-r-4"
+          ]
         },
         {
-          "name": "polycarbonate",
-          "color": "#e3ad2b",
+          "name": "frame",
+          "color": "#d9dcdd",
           "parts": [
-            "status-light"
+            "frame-l",
+            "badge-text-l",
+            "frame-r",
+            "badge-text-r"
           ],
-          "param": "polycarbonate"
+          "param": "frame"
+        },
+        {
+          "name": "acrylic",
+          "color": "#b6dce4",
+          "parts": [
+            "acrylic-l",
+            "acrylic-r"
+          ],
+          "param": "acrylic"
+        },
+        {
+          "name": "antenna-l-a",
+          "color": "#b87333",
+          "parts": [
+            "antenna-l-a",
+            "antenna-l-b",
+            "antenna-r-a",
+            "antenna-r-b"
+          ]
+        },
+        {
+          "name": "led",
+          "color": "#3fd07a",
+          "parts": [
+            "led-l",
+            "badge-dot-l",
+            "led-r",
+            "badge-dot-r",
+            "cable-cover-stripe-l",
+            "cable-cover-stripe-r"
+          ],
+          "param": "led"
         }
       ]
     },
@@ -233621,10 +234283,15 @@
       "id": "floor-display-stand",
       "kit": "retail-store",
       "title": "Floor display stand",
-      "description": "Compact promotional floor stand with tiered shelves, side cheeks and broad header panel. Knobs: overall scale and plywood, stainless steel, paper color controls. Presets: cleanStore and nightRestock.",
+      "description": "Printed cardboard promotional floor display (FSDU) at about real size: raked side cheeks, four stepped shelves with price lips, rows of cereal boxes or stacked cans, arched header with brand roundel and lettering, and a starburst offer wobbler. Material controls: card body, brand print, pack colour, pack label. breakfastPromo, summerDrinks and ecoBrand presets; product choice.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "floor display",
+        "FSDU",
+        "promo stand",
+        "cardboard display",
+        "point of sale",
         "retail",
         "grocery",
         "shop",
@@ -233641,8 +234308,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/floor-display-stand.kcad.ts",
       "preview": "/assets/retail-store-floor-display-stand.png",
-      "sourceSha256": "23f5737ae7e57548bad780d2ce22469b82323c6a13b0bbedd2a7ad12664dfdb9",
-      "triangleBudget": 1800,
+      "sourceSha256": "5725e44060b5ee74c0c9b478fefe5f6e54b470ead68e5c6accc3956ee9bc4f3f",
+      "triangleBudget": 4400,
       "params": [
         {
           "name": "scale",
@@ -233654,75 +234321,197 @@
           "step": 0.05
         },
         {
-          "name": "plywood",
+          "name": "card",
           "type": "color",
-          "default": "#97724d",
-          "label": "Plywood color"
+          "default": "#f2ede2",
+          "label": "Card body"
         },
         {
-          "name": "stainless",
+          "name": "print",
           "type": "color",
-          "default": "#8d999c",
-          "label": "Stainless steel color"
+          "default": "#c8232c",
+          "label": "Brand print"
         },
         {
-          "name": "paper",
+          "name": "pack",
           "type": "color",
-          "default": "#f0e1bf",
-          "label": "Paper color"
+          "default": "#e3a72f",
+          "label": "Product packs"
+        },
+        {
+          "name": "label",
+          "type": "color",
+          "default": "#2f5fb0",
+          "label": "Pack labels"
+        },
+        {
+          "name": "product",
+          "type": "choice",
+          "default": "cereal",
+          "label": "Product",
+          "choices": [
+            "cereal",
+            "cans"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "plywood": "#c9ad7b",
-          "stainless": "#bfc8cb",
-          "paper": "#f0e5c9"
+        "breakfastPromo": {
+          "card": "#f2ede2",
+          "print": "#c8232c",
+          "pack": "#e3a72f",
+          "label": "#2f5fb0"
         },
-        "nightRestock": {
-          "plywood": "#6d5839",
-          "stainless": "#66747a",
-          "paper": "#c9b27e"
+        "summerDrinks": {
+          "card": "#e8f4f8",
+          "print": "#1f7ac0",
+          "pack": "#d8dcde",
+          "label": "#e8473a"
+        },
+        "ecoBrand": {
+          "card": "#c8a878",
+          "print": "#3f7a3a",
+          "pack": "#eae2c8",
+          "label": "#6b4a2a"
         }
       },
       "stats": {
-        "triangles": 128,
+        "triangles": 1216,
         "sizeM": [
-          0.68,
-          1.554,
-          0.62
+          0.844,
+          1.78,
+          0.412
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainless",
-          "color": "#8d999c",
+          "name": "print",
+          "color": "#c8232c",
           "parts": [
-            "foot",
-            "top-bolt"
+            "base",
+            "cheek-stripe-l",
+            "cheek-stripe-r",
+            "back-print",
+            "lip-0",
+            "lip-1",
+            "lip-2",
+            "lip-3",
+            "header",
+            "wobbler-text"
           ],
-          "param": "stainless"
+          "param": "print"
         },
         {
-          "name": "plywood",
-          "color": "#97724d",
+          "name": "card",
+          "color": "#f2ede2",
           "parts": [
+            "base-band",
             "back",
-            "shelf-0",
+            "cheek-l",
+            "cheek-r",
+            "box-bowl-0-0",
+            "box-bowl-0-1",
+            "box-bowl-0-2",
+            "box-bowl-0-3",
+            "box-bowl-0-4",
             "shelf-1",
+            "box-bowl-1-0",
+            "box-bowl-1-1",
+            "box-bowl-1-2",
+            "box-bowl-1-3",
+            "box-bowl-1-4",
             "shelf-2",
-            "shelf-3"
+            "box-bowl-2-0",
+            "box-bowl-2-1",
+            "box-bowl-2-2",
+            "box-bowl-2-3",
+            "box-bowl-2-4",
+            "shelf-3",
+            "box-bowl-3-0",
+            "box-bowl-3-1",
+            "box-bowl-3-2",
+            "box-bowl-3-3",
+            "box-bowl-3-4",
+            "header-roundel",
+            "header-word"
           ],
-          "param": "plywood"
+          "param": "card"
         },
         {
-          "name": "paper",
-          "color": "#f0e1bf",
+          "name": "price-0",
+          "color": "#f2d24a",
           "parts": [
-            "header"
+            "price-0",
+            "price-1",
+            "price-2",
+            "price-3",
+            "wobbler"
+          ]
+        },
+        {
+          "name": "pack",
+          "color": "#e3a72f",
+          "parts": [
+            "box-0-0",
+            "box-0-1",
+            "box-0-2",
+            "box-0-3",
+            "box-0-4",
+            "box-1-0",
+            "box-1-1",
+            "box-1-2",
+            "box-1-3",
+            "box-1-4",
+            "box-2-0",
+            "box-2-1",
+            "box-2-2",
+            "box-2-3",
+            "box-2-4",
+            "box-3-0",
+            "box-3-1",
+            "box-3-2",
+            "box-3-3",
+            "box-3-4",
+            "roundel-mark",
+            "header-subline"
           ],
-          "param": "paper"
+          "param": "pack"
+        },
+        {
+          "name": "label",
+          "color": "#2f5fb0",
+          "parts": [
+            "box-label-0-0",
+            "box-label-0-1",
+            "box-label-0-2",
+            "box-label-0-3",
+            "box-label-0-4",
+            "box-label-1-0",
+            "box-label-1-1",
+            "box-label-1-2",
+            "box-label-1-3",
+            "box-label-1-4",
+            "box-label-2-0",
+            "box-label-2-1",
+            "box-label-2-2",
+            "box-label-2-3",
+            "box-label-2-4",
+            "box-label-3-0",
+            "box-label-3-1",
+            "box-label-3-2",
+            "box-label-3-3",
+            "box-label-3-4"
+          ],
+          "param": "label"
+        },
+        {
+          "name": "wobbler-stalk",
+          "color": "#d9dcdd",
+          "parts": [
+            "wobbler-stalk"
+          ]
         }
       ]
     },
