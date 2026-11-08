@@ -278041,10 +278041,16 @@
       "id": "curtain-track-carrier",
       "kit": "theatre-production",
       "title": "Curtain track carrier",
-      "description": "Compact trolley carriage with roller wheels, curtain hook and end-stop tab. Knobs: overall scale; painted steel, steel hardware, rubber and isolation pads; houseShow and touring appearance presets.",
+      "description": "Traveller-track carriers at about real size, shown on a 1.2 m track section hung from a batten: four nylon wheels either side of a centre plate, stem through the track slot, swivel eye and hook, a pleated drape with header webbing hanging from six carriers, a spare carrier at the open track end, hanger clamps and a rubber end stop. Material controls: track, carrier wheels, hooks and clamps, drape. houseShow, touring and blackMasking presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "curtain track",
+        "track carrier",
+        "traveller track",
+        "curtain runner",
+        "drape",
+        "theatre rigging",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -278061,8 +278067,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/curtain-track-carrier.kcad.ts",
       "preview": "/assets/theatre-production-curtain-track-carrier.png",
-      "sourceSha256": "2bc954abc0b0cb23e6425bbb61466d313dded893c0896e0a9d084e006892341c",
-      "triangleBudget": 1800,
+      "sourceSha256": "1db8c8a9780d59008e4a96c5a02a7c2fc0454bd3c8d85b90722ccf0a24c9dc73",
+      "triangleBudget": 6000,
       "params": [
         {
           "name": "scale",
@@ -278074,76 +278080,168 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "track",
           "type": "color",
-          "default": "#454d54",
-          "label": "Painted steel"
+          "default": "#26292c",
+          "label": "Track and batten"
+        },
+        {
+          "name": "carrier",
+          "type": "color",
+          "default": "#eceae2",
+          "label": "Carrier wheels and plate"
         },
         {
           "name": "hardware",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#a8b0b4",
+          "label": "Hooks, eyes and clamps"
         },
         {
-          "name": "rubber",
+          "name": "drape",
           "type": "color",
-          "default": "#272a2d",
-          "label": "Rubber and isolation pads"
+          "default": "#8e1f26",
+          "label": "Drape"
         }
       ],
       "presets": {
         "houseShow": {
-          "paintedSteel": "#313940",
-          "hardware": "#c5a052",
-          "rubber": "#222629"
+          "track": "#26292c",
+          "carrier": "#eceae2",
+          "hardware": "#a8b0b4",
+          "drape": "#8e1f26"
         },
         "touring": {
-          "paintedSteel": "#dda21f",
-          "hardware": "#e2b347",
-          "rubber": "#25292c"
+          "track": "#b9c0c3",
+          "carrier": "#2b2f32",
+          "hardware": "#e0b13c",
+          "drape": "#1d3f6e"
+        },
+        "blackMasking": {
+          "track": "#1b1d1f",
+          "carrier": "#d8d6cf",
+          "hardware": "#6c757a",
+          "drape": "#232427"
         }
       },
       "stats": {
-        "triangles": 204,
+        "triangles": 5656,
         "sizeM": [
-          0.2925,
-          0.235,
-          0.15
+          1.444,
+          1.457,
+          0.073
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#454d54",
+          "name": "track",
+          "color": "#26292c",
           "parts": [
-            "carriage",
-            "left-cheek",
-            "right-cheek"
+            "track",
+            "batten"
           ],
-          "param": "paintedSteel"
+          "param": "track"
         },
         {
           "name": "hardware",
-          "color": "#c28f3e",
+          "color": "#a8b0b4",
           "parts": [
-            "hook-stem",
-            "hook-tip",
-            "stop-tab",
-            "hanger-eye"
+            "hanger-strap-left",
+            "hanger-clamp-left",
+            "hanger-bolt-left",
+            "hanger-strap-right",
+            "hanger-clamp-right",
+            "hanger-bolt-right",
+            "end-stop",
+            "stem-1",
+            "eye-1",
+            "hook-1",
+            "stem-2",
+            "eye-2",
+            "hook-2",
+            "stem-3",
+            "eye-3",
+            "hook-3",
+            "stem-4",
+            "eye-4",
+            "hook-4",
+            "stem-5",
+            "eye-5",
+            "hook-5",
+            "stem-6",
+            "eye-6",
+            "hook-6",
+            "stem-spare",
+            "eye-spare",
+            "hook-spare"
           ],
           "param": "hardware"
         },
         {
-          "name": "rubber",
-          "color": "#272a2d",
+          "name": "end-bumper",
+          "color": "#141516",
           "parts": [
-            "wheel-left",
-            "wheel-right"
+            "end-bumper"
+          ]
+        },
+        {
+          "name": "drape",
+          "color": "#8e1f26",
+          "parts": [
+            "drape"
           ],
-          "param": "rubber"
+          "param": "drape"
+        },
+        {
+          "name": "header-webbing",
+          "color": "#e9e3d2",
+          "parts": [
+            "header-webbing"
+          ]
+        },
+        {
+          "name": "carrier",
+          "color": "#eceae2",
+          "parts": [
+            "plate-1",
+            "wheel-1-a-back",
+            "wheel-1-a-front",
+            "wheel-1-b-back",
+            "wheel-1-b-front",
+            "plate-2",
+            "wheel-2-a-back",
+            "wheel-2-a-front",
+            "wheel-2-b-back",
+            "wheel-2-b-front",
+            "plate-3",
+            "wheel-3-a-back",
+            "wheel-3-a-front",
+            "wheel-3-b-back",
+            "wheel-3-b-front",
+            "plate-4",
+            "wheel-4-a-back",
+            "wheel-4-a-front",
+            "wheel-4-b-back",
+            "wheel-4-b-front",
+            "plate-5",
+            "wheel-5-a-back",
+            "wheel-5-a-front",
+            "wheel-5-b-back",
+            "wheel-5-b-front",
+            "plate-6",
+            "wheel-6-a-back",
+            "wheel-6-a-front",
+            "wheel-6-b-back",
+            "wheel-6-b-front",
+            "plate-spare",
+            "wheel-spare-a-back",
+            "wheel-spare-a-front",
+            "wheel-spare-b-back",
+            "wheel-spare-b-front"
+          ],
+          "param": "carrier"
         }
       ]
     },
@@ -280160,10 +280258,15 @@
       "id": "lighting-yoke-bracket",
       "kit": "theatre-production",
       "title": "Lighting yoke bracket",
-      "description": "U-shaped luminaire yoke with paired side arms, crossbar, pivot bosses and a center clamp stem. Knobs: overall scale; painted steel, galvanized steel, steel hardware; houseShow and touring appearance presets.",
+      "description": "Luminaire yoke on a floor base at about real size: one flat-bar U with radiused bends and rounded arm tips, adjustment slots and a centre bolt through the crossbar, cast-iron floor base with boss, pivot hubs with T-handle yoke locks, and a fixture trunnion ring on stubs tilted on the pivot axis. Material controls: yoke, floor base, trunnion ring, yoke locks. houseShow, touring and whiteBox presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "lighting yoke",
+        "yoke bracket",
+        "luminaire yoke",
+        "floor mount",
+        "theatre lighting",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -280180,8 +280283,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/lighting-yoke-bracket.kcad.ts",
       "preview": "/assets/theatre-production-lighting-yoke-bracket.png",
-      "sourceSha256": "cbf3e9cdc18789572a3450de08073066c66dada13a88aafc6f953b7d7aea4dae",
-      "triangleBudget": 1800,
+      "sourceSha256": "b8d573a59499fb050443994208a5734693730acff34a82b2ecd2dcb316b81761",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -280193,76 +280296,114 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "yoke",
           "type": "color",
-          "default": "#454d54",
-          "label": "Painted steel"
+          "default": "#2c3136",
+          "label": "Yoke"
         },
         {
-          "name": "galvanizedSteel",
+          "name": "baseIron",
           "type": "color",
-          "default": "#aab5b9",
-          "label": "Galvanized steel"
+          "default": "#4a4f53",
+          "label": "Floor base"
         },
         {
-          "name": "hardware",
+          "name": "ring",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#b9c1c5",
+          "label": "Trunnion ring"
+        },
+        {
+          "name": "locks",
+          "type": "color",
+          "default": "#d23a2a",
+          "label": "Yoke locks"
         }
       ],
       "presets": {
         "houseShow": {
-          "paintedSteel": "#313940",
-          "galvanizedSteel": "#c0c8ca",
-          "hardware": "#c5a052"
+          "yoke": "#2c3136",
+          "baseIron": "#4a4f53",
+          "ring": "#b9c1c5",
+          "locks": "#d23a2a"
         },
         "touring": {
-          "paintedSteel": "#dda21f",
-          "galvanizedSteel": "#dce2e2",
-          "hardware": "#e2b347"
+          "yoke": "#e0a520",
+          "baseIron": "#2a2e31",
+          "ring": "#d6dbdd",
+          "locks": "#1d2022"
+        },
+        "whiteBox": {
+          "yoke": "#e8e8e4",
+          "baseIron": "#9aa0a3",
+          "ring": "#3a3f43",
+          "locks": "#2f6fb0"
         }
       },
       "stats": {
-        "triangles": 204,
+        "triangles": 1752,
         "sizeM": [
-          0.548,
-          0.62,
-          0.28
+          0.649266,
+          0.715558,
+          0.44
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#454d54",
+          "name": "yoke",
+          "color": "#2c3136",
           "parts": [
-            "arm-left",
-            "arm-right",
-            "mount-plate",
-            "stiffener-left",
-            "stiffener-right",
-            "spigot"
+            "yoke",
+            "hub-left",
+            "hub-right"
           ],
-          "param": "paintedSteel"
+          "param": "yoke"
         },
         {
-          "name": "galvanizedSteel",
-          "color": "#aab5b9",
+          "name": "baseIron",
+          "color": "#4a4f53",
           "parts": [
-            "crossbar"
+            "floor-base",
+            "base-boss"
           ],
-          "param": "galvanizedSteel"
+          "param": "baseIron"
         },
         {
-          "name": "hardware",
-          "color": "#c28f3e",
+          "name": "centre-bolt",
+          "color": "#8d969b",
           "parts": [
-            "pivot-left",
-            "pivot-right"
+            "centre-bolt",
+            "centre-washer",
+            "lock-stem-left",
+            "trunnion-stub-left",
+            "lock-stem-right",
+            "trunnion-stub-right"
+          ]
+        },
+        {
+          "name": "locks",
+          "color": "#d23a2a",
+          "parts": [
+            "lock-handle-left",
+            "lock-tip-top-left",
+            "lock-tip-bottom-left",
+            "lock-handle-right",
+            "lock-tip-top-right",
+            "lock-tip-bottom-right"
           ],
-          "param": "hardware"
+          "param": "locks"
+        },
+        {
+          "name": "ring",
+          "color": "#b9c1c5",
+          "parts": [
+            "trunnion-ring",
+            "ring-lug-left",
+            "ring-lug-right"
+          ],
+          "param": "ring"
         }
       ]
     },
@@ -281679,10 +281820,18 @@
       "id": "rigging-handline-cleat",
       "kit": "theatre-production",
       "title": "Rigging handline cleat",
-      "description": "Wall-mounted handline cleat panel with twin rope posts, fairlead and a lower locking bar. Knobs: overall scale; painted steel, steel hardware, galvanized steel; houseShow and touring appearance presets.",
+      "description": "Hemp-house cleat board at about real size: plywood board in a steel angle frame, two cast horn cleats with legs, tapered horns and the rope gap, handlines down through a top fairlead tied off in figure-eights with hanging coils, set-name cards, and a belaying-pin rail with three turned pins. Material controls: board, cleats, rope, steel hardware. houseShow, touring and naturalPly presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "cleat",
+        "horn cleat",
+        "handline",
+        "hemp rigging",
+        "pin rail",
+        "belaying pin",
+        "fly floor",
+        "theatre rigging",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -281699,8 +281848,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/rigging-handline-cleat.kcad.ts",
       "preview": "/assets/theatre-production-rigging-handline-cleat.png",
-      "sourceSha256": "61162adbfb2403017bfbbcca063b4fbfaab55c6df17d5f0d8b7de18da4e9b64a",
-      "triangleBudget": 1800,
+      "sourceSha256": "c10cc19f26a75a8d8f1791a7d992cc376e201114ba8603352d08bace2d87b3d5",
+      "triangleBudget": 5000,
       "params": [
         {
           "name": "scale",
@@ -281712,76 +281861,138 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "board",
           "type": "color",
-          "default": "#454d54",
-          "label": "Painted steel"
+          "default": "#2a2c2e",
+          "label": "Cleat board"
+        },
+        {
+          "name": "cleat",
+          "type": "color",
+          "default": "#8e979c",
+          "label": "Horn cleats"
+        },
+        {
+          "name": "rope",
+          "type": "color",
+          "default": "#c9a466",
+          "label": "Handlines"
         },
         {
           "name": "hardware",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
-        },
-        {
-          "name": "galvanizedSteel",
-          "type": "color",
-          "default": "#aab5b9",
-          "label": "Galvanized steel"
+          "default": "#5b646a",
+          "label": "Frame, fairlead and pin rail"
         }
       ],
       "presets": {
         "houseShow": {
-          "paintedSteel": "#313940",
-          "hardware": "#c5a052",
-          "galvanizedSteel": "#c0c8ca"
+          "board": "#2a2c2e",
+          "cleat": "#8e979c",
+          "rope": "#c9a466",
+          "hardware": "#5b646a"
         },
         "touring": {
-          "paintedSteel": "#dda21f",
-          "hardware": "#e2b347",
-          "galvanizedSteel": "#dce2e2"
+          "board": "#24466e",
+          "cleat": "#d9dcdc",
+          "rope": "#ece6d6",
+          "hardware": "#e2a21c"
+        },
+        "naturalPly": {
+          "board": "#c49a62",
+          "cleat": "#2b2f32",
+          "rope": "#b7894a",
+          "hardware": "#3c4247"
         }
       },
       "stats": {
-        "triangles": 204,
+        "triangles": 4570,
         "sizeM": [
-          0.42,
-          0.675,
-          0.185
+          0.96,
+          1.85,
+          0.1665
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#454d54",
+          "name": "board",
+          "color": "#2a2c2e",
           "parts": [
-            "backplate",
-            "top-cap",
-            "left-cheek",
-            "right-cheek",
-            "rope-guide"
+            "board"
           ],
-          "param": "paintedSteel"
+          "param": "board"
         },
         {
           "name": "hardware",
-          "color": "#c28f3e",
+          "color": "#5b646a",
           "parts": [
-            "locking-bar",
-            "cleat-post-left",
-            "cleat-post-right"
+            "frame-left",
+            "frame-right",
+            "frame-top",
+            "frame-bottom",
+            "fairlead-bar",
+            "fairlead-ring-stage-left",
+            "fairlead-ring-stage-right",
+            "pin-rail",
+            "rail-bracket-left",
+            "rail-bracket-right"
           ],
           "param": "hardware"
         },
         {
-          "name": "galvanizedSteel",
-          "color": "#aab5b9",
+          "name": "cleat",
+          "color": "#8e979c",
           "parts": [
-            "fairlead"
+            "cleat-stage-left",
+            "cleat-stage-right",
+            "belaying-pin-a",
+            "belaying-pin-b",
+            "belaying-pin-c"
           ],
-          "param": "galvanizedSteel"
+          "param": "cleat"
+        },
+        {
+          "name": "rope",
+          "color": "#c9a466",
+          "parts": [
+            "line-stage-left",
+            "turn-top-stage-left",
+            "cross-a-stage-left",
+            "cross-b-stage-left",
+            "turn-bottom-stage-left",
+            "tail-stage-left",
+            "coil-stage-left-1",
+            "coil-stage-left-2",
+            "coil-stage-left-3",
+            "line-stage-right",
+            "turn-top-stage-right",
+            "cross-a-stage-right",
+            "cross-b-stage-right",
+            "turn-bottom-stage-right",
+            "tail-stage-right",
+            "coil-stage-right-1",
+            "coil-stage-right-2",
+            "coil-stage-right-3"
+          ],
+          "param": "rope"
+        },
+        {
+          "name": "card-stage-left",
+          "color": "#f1efe6",
+          "parts": [
+            "card-stage-left",
+            "card-stage-right"
+          ]
+        },
+        {
+          "name": "card-band-stage-left",
+          "color": "#1d1f21",
+          "parts": [
+            "card-band-stage-left",
+            "card-band-stage-right"
+          ]
         }
       ]
     },
@@ -281789,10 +282000,15 @@
       "id": "riser-cart",
       "kit": "theatre-production",
       "title": "Riser cart",
-      "description": "Rolling cart with stacked folding platform sections, end guards and a tall pull handle. Knobs: overall scale; polymer controls and cable jacket, steel hardware, aluminum, rubber and isolation pads; houseShow and touring appearance presets.",
+      "description": "Stage deck dolly at about real size: four 8 x 4 ft platform decks stood on edge with carpeted faces and aluminium frames, low steel tube base with rubber cradle strips, upright end frames with padded rails, two ratchet straps with buckles, four swivel casters with forks and top plates, and a looped push handle. Material controls: cart frame, deck carpet, deck frames, straps. houseShow, touring and choirRiser presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "riser cart",
+        "platform dolly",
+        "deck cart",
+        "stage deck",
+        "stage platform",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -281809,8 +282025,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/riser-cart.kcad.ts",
       "preview": "/assets/theatre-production-riser-cart.png",
-      "sourceSha256": "ec677dfdba8aa8204323a71dd0fc9c9f18b82ea488d1fc49374e26eceea212e4",
-      "triangleBudget": 1800,
+      "sourceSha256": "059d3b4f56fe077df775d6d71ad9324a900e3a747ca960ea201820313d703819",
+      "triangleBudget": 2000,
       "params": [
         {
           "name": "scale",
@@ -281822,96 +282038,160 @@
           "step": 0.05
         },
         {
-          "name": "polymer",
+          "name": "frame",
           "type": "color",
-          "default": "#426878",
-          "label": "Polymer controls and cable jacket"
+          "default": "#2d3236",
+          "label": "Cart frame"
         },
         {
-          "name": "hardware",
+          "name": "carpet",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#3a3d41",
+          "label": "Deck carpet"
         },
         {
-          "name": "aluminum",
+          "name": "deckFrame",
           "type": "color",
-          "default": "#bac3c6",
-          "label": "Aluminum"
+          "default": "#b9c1c5",
+          "label": "Deck frames"
         },
         {
-          "name": "rubber",
+          "name": "strap",
           "type": "color",
-          "default": "#272a2d",
-          "label": "Rubber and isolation pads"
+          "default": "#f0b323",
+          "label": "Ratchet straps"
         }
       ],
       "presets": {
         "houseShow": {
-          "polymer": "#344e5b",
-          "hardware": "#c5a052",
-          "aluminum": "#c7cecf",
-          "rubber": "#222629"
+          "frame": "#2d3236",
+          "carpet": "#3a3d41",
+          "deckFrame": "#b9c1c5",
+          "strap": "#f0b323"
         },
         "touring": {
-          "polymer": "#e3a928",
-          "hardware": "#e2b347",
-          "aluminum": "#dce3e2",
-          "rubber": "#25292c"
+          "frame": "#d8a21f",
+          "carpet": "#1c1e20",
+          "deckFrame": "#7d868b",
+          "strap": "#2a5fae"
+        },
+        "choirRiser": {
+          "frame": "#5c656b",
+          "carpet": "#7a2430",
+          "deckFrame": "#d9dcda",
+          "strap": "#e8e4d8"
         }
       },
       "stats": {
-        "triangles": 296,
+        "triangles": 1420,
         "sizeM": [
-          1.05,
-          1.185,
-          0.665
+          2.862,
+          1.449,
+          0.62
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#426878",
+          "name": "frame",
+          "color": "#2d3236",
           "parts": [
-            "lower-platform",
-            "middle-platform",
-            "upper-platform",
-            "front-stop",
-            "back-stop"
+            "base-rail-front",
+            "base-rail-back",
+            "base-cross-left",
+            "base-cross-mid-left",
+            "base-cross-mid-right",
+            "base-cross-right",
+            "caster-plate-lf",
+            "caster-fork-lf-a",
+            "caster-fork-lf-b",
+            "caster-plate-lb",
+            "caster-fork-lb-a",
+            "caster-fork-lb-b",
+            "caster-plate-rf",
+            "caster-fork-rf-a",
+            "caster-fork-rf-b",
+            "caster-plate-rb",
+            "caster-fork-rb-a",
+            "caster-fork-rb-b",
+            "upright-left-f",
+            "upright-left-b",
+            "end-top-left",
+            "end-mid-left",
+            "upright-right-f",
+            "upright-right-b",
+            "end-top-right",
+            "end-mid-right",
+            "handle-arm-front",
+            "handle-elbow-front",
+            "handle-arm-back",
+            "handle-elbow-back"
           ],
-          "param": "polymer"
+          "param": "frame"
         },
         {
-          "name": "hardware",
-          "color": "#c28f3e",
+          "name": "cradle-strip-front",
+          "color": "#18191b",
           "parts": [
-            "handle-left",
-            "handle-right",
-            "handle-top"
-          ],
-          "param": "hardware"
+            "cradle-strip-front",
+            "cradle-strip-mid",
+            "cradle-strip-back",
+            "caster-wheel-lf",
+            "caster-wheel-lb",
+            "caster-wheel-rf",
+            "caster-wheel-rb",
+            "end-pad-left",
+            "end-pad-right",
+            "handle-grip",
+            "buckle-lever-left",
+            "buckle-lever-right"
+          ]
         },
         {
-          "name": "aluminum",
-          "color": "#bac3c6",
+          "name": "deckFrame",
+          "color": "#b9c1c5",
           "parts": [
-            "side-rail-left",
-            "side-rail-right"
+            "caster-kingpin-lf",
+            "caster-hub-lf",
+            "caster-kingpin-lb",
+            "caster-hub-lb",
+            "caster-kingpin-rf",
+            "caster-hub-rf",
+            "caster-kingpin-rb",
+            "caster-hub-rb",
+            "deck-1",
+            "deck-2",
+            "deck-3",
+            "deck-4",
+            "buckle-left",
+            "buckle-right"
           ],
-          "param": "aluminum"
+          "param": "deckFrame"
         },
         {
-          "name": "rubber",
-          "color": "#272a2d",
+          "name": "carpet",
+          "color": "#3a3d41",
           "parts": [
-            "wheel-a",
-            "wheel-b",
-            "wheel-c",
-            "wheel-d"
+            "deck-carpet-1",
+            "deck-carpet-2",
+            "deck-carpet-3",
+            "deck-carpet-4"
           ],
-          "param": "rubber"
+          "param": "carpet"
+        },
+        {
+          "name": "strap",
+          "color": "#f0b323",
+          "parts": [
+            "strap-top-left",
+            "strap-front-left",
+            "strap-back-left",
+            "strap-top-right",
+            "strap-front-right",
+            "strap-back-right"
+          ],
+          "param": "strap"
         }
       ]
     },
@@ -284224,10 +284504,15 @@
       "id": "strip-light-battens",
       "kit": "theatre-production",
       "title": "Strip-light batten set",
-      "description": "Three compact strip-light housings with mounting tabs and end caps, arranged as a touring set. Knobs: overall scale; powder-coated steel, lens and display glass, steel hardware; houseShow and touring appearance presets.",
+      "description": "Ground row of three 1 m cyc strip lights at about real size: trapezoid trough housings with end caps, eight round colour cells each alternating warm and cool circuits, gel-frame runners, rear connector box, and a floor trunnion stand with pivot knobs at each end tilting the trough up at the cyc. Material controls: housing, stand hardware, warm and cool colour cells. houseShow, touring and cycRGB presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "strip light",
+        "cyc light",
+        "ground row",
+        "border light",
+        "theatre lighting",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -284244,8 +284529,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/strip-light-battens.kcad.ts",
       "preview": "/assets/theatre-production-strip-light-battens.png",
-      "sourceSha256": "71acd520b02e10dd8bbea0d541446b38bb61aa9d781aa22086f8b7b1637bb0b6",
-      "triangleBudget": 1800,
+      "sourceSha256": "636d6b5a2b957c21d0526e1aace8aa637658e2ecb0926c5ff165fd969292568b",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -284257,79 +284542,159 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "housing",
           "type": "color",
-          "default": "#353b41",
-          "label": "Powder-coated steel"
-        },
-        {
-          "name": "glass",
-          "type": "color",
-          "default": "#f3e9bf",
-          "label": "Lens and display glass"
+          "default": "#2b3035",
+          "label": "Housing"
         },
         {
           "name": "hardware",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#9aa3a8",
+          "label": "Stands, runners and knobs"
+        },
+        {
+          "name": "gelWarm",
+          "type": "color",
+          "default": "#f2a43a",
+          "label": "Warm colour cells"
+        },
+        {
+          "name": "gelCool",
+          "type": "color",
+          "default": "#3f7fd8",
+          "label": "Cool colour cells"
         }
       ],
       "presets": {
         "houseShow": {
-          "powderCoat": "#272d33",
-          "glass": "#ffd15d",
-          "hardware": "#c5a052"
+          "housing": "#2b3035",
+          "hardware": "#9aa3a8",
+          "gelWarm": "#f2a43a",
+          "gelCool": "#3f7fd8"
         },
         "touring": {
-          "powderCoat": "#315465",
-          "glass": "#31b9d2",
-          "hardware": "#e2b347"
+          "housing": "#e0e2e0",
+          "hardware": "#3a4045",
+          "gelWarm": "#ffd35c",
+          "gelCool": "#2fb8c9"
+        },
+        "cycRGB": {
+          "housing": "#16181a",
+          "hardware": "#6b747a",
+          "gelWarm": "#e0342c",
+          "gelCool": "#36b24a"
         }
       },
       "stats": {
-        "triangles": 208,
+        "triangles": 1804,
         "sizeM": [
-          1.5,
-          0.28,
-          1.025
+          3.424,
+          0.353699,
+          0.32
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#353b41",
+          "name": "housing",
+          "color": "#2b3035",
           "parts": [
-            "batten-one",
-            "batten-two",
-            "batten-three"
+            "housing-left",
+            "end-cap-left-l",
+            "end-cap-left-r",
+            "housing-centre",
+            "end-cap-centre-l",
+            "end-cap-centre-r",
+            "housing-right",
+            "end-cap-right-l",
+            "end-cap-right-r"
           ],
-          "param": "powderCoat"
+          "param": "housing"
         },
         {
-          "name": "glass",
-          "color": "#f3e9bf",
+          "name": "baffle-left",
+          "color": "#17191b",
           "parts": [
-            "lens-one",
-            "lens-two",
-            "lens-three"
-          ],
-          "param": "glass"
+            "baffle-left",
+            "connector-left",
+            "pivot-knob-left-l",
+            "pivot-knob-left-r",
+            "baffle-centre",
+            "connector-centre",
+            "pivot-knob-centre-l",
+            "pivot-knob-centre-r",
+            "baffle-right",
+            "connector-right",
+            "pivot-knob-right-l",
+            "pivot-knob-right-r",
+            "jumper-a",
+            "jumper-b"
+          ]
         },
         {
           "name": "hardware",
-          "color": "#c28f3e",
+          "color": "#9aa3a8",
           "parts": [
-            "tab-left-one",
-            "tab-right-one",
-            "tab-left-two",
-            "tab-right-two",
-            "hanger-left",
-            "hanger-right"
+            "runner-left-front",
+            "runner-left-back",
+            "stand-foot-left-l",
+            "stand-upright-left-l",
+            "stand-foot-left-r",
+            "stand-upright-left-r",
+            "runner-centre-front",
+            "runner-centre-back",
+            "stand-foot-centre-l",
+            "stand-upright-centre-l",
+            "stand-foot-centre-r",
+            "stand-upright-centre-r",
+            "runner-right-front",
+            "runner-right-back",
+            "stand-foot-right-l",
+            "stand-upright-right-l",
+            "stand-foot-right-r",
+            "stand-upright-right-r"
           ],
           "param": "hardware"
+        },
+        {
+          "name": "gelWarm",
+          "color": "#f2a43a",
+          "parts": [
+            "cell-left-1",
+            "cell-left-3",
+            "cell-left-5",
+            "cell-left-7",
+            "cell-centre-1",
+            "cell-centre-3",
+            "cell-centre-5",
+            "cell-centre-7",
+            "cell-right-1",
+            "cell-right-3",
+            "cell-right-5",
+            "cell-right-7"
+          ],
+          "param": "gelWarm"
+        },
+        {
+          "name": "gelCool",
+          "color": "#3f7fd8",
+          "parts": [
+            "cell-left-2",
+            "cell-left-4",
+            "cell-left-6",
+            "cell-left-8",
+            "cell-centre-2",
+            "cell-centre-4",
+            "cell-centre-6",
+            "cell-centre-8",
+            "cell-right-2",
+            "cell-right-4",
+            "cell-right-6",
+            "cell-right-8"
+          ],
+          "param": "gelCool"
         }
       ]
     },
