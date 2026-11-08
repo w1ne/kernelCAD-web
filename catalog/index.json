@@ -278553,10 +278553,17 @@
       "id": "cyclorama-drop",
       "kit": "theatre-production",
       "title": "Cyclorama drop",
-      "description": "Broad rear-stage cloth drop with top pipe pocket, lower batten and two side tie tabs. Knobs: overall scale; stage fabric, painted steel, steel hardware; houseShow and touring appearance presets.",
+      "description": "Framed cyclorama at about real size: a 3.5 m by 2.6 m seamless pale cyc cloth with a webbing header tied to a top pipe, grommets down both side edges laced to the frame uprights, and a bottom pipe in a hem pocket; the freestanding frame is two uprights on cross-foot bases with clamped top pipe. Tension choice: shock-cord loops or tie lines. Material controls: cyc cloth, webbing, frame steel, shock cord. houseShow, touring and blueSky presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "cyclorama",
+        "cyc",
+        "sky cloth",
+        "backdrop",
+        "cyc frame",
+        "soft goods",
+        "muslin",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -278573,8 +278580,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/cyclorama-drop.kcad.ts",
       "preview": "/assets/theatre-production-cyclorama-drop.png",
-      "sourceSha256": "24d5b4a1b281f4ebed97fcf72683a8c285f94721ab918039821485a51b3f819b",
-      "triangleBudget": 1800,
+      "sourceSha256": "ebcc3e1bc35425330d1f5188e8008a3202c65ea7245649a16c4461817ebfcb7b",
+      "triangleBudget": 5600,
       "params": [
         {
           "name": "scale",
@@ -278586,77 +278593,232 @@
           "step": 0.05
         },
         {
-          "name": "fabric",
-          "type": "color",
-          "default": "#463849",
-          "label": "Stage fabric"
+          "name": "tension",
+          "type": "choice",
+          "default": "shockCord",
+          "label": "Side lacing",
+          "choices": [
+            "shockCord",
+            "tieLine"
+          ]
         },
         {
-          "name": "steel",
+          "name": "cloth",
           "type": "color",
-          "default": "#46515a",
-          "label": "Painted steel"
+          "default": "#e9e7e1",
+          "label": "Cyc cloth"
         },
         {
-          "name": "hardware",
+          "name": "webbing",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#c9b58a",
+          "label": "Webbing header"
+        },
+        {
+          "name": "frame",
+          "type": "color",
+          "default": "#2e3236",
+          "label": "Frame steel"
+        },
+        {
+          "name": "cord",
+          "type": "color",
+          "default": "#16171a",
+          "label": "Shock cord and ties"
         }
       ],
       "presets": {
         "houseShow": {
-          "fabric": "#28262d",
-          "steel": "#343b41",
-          "hardware": "#c5a052"
+          "cloth": "#e9e7e1",
+          "webbing": "#c9b58a",
+          "frame": "#2e3236",
+          "cord": "#16171a"
         },
         "touring": {
-          "fabric": "#a14469",
-          "steel": "#315968",
-          "hardware": "#e2b347"
+          "cloth": "#d8dbe0",
+          "webbing": "#2a2a2a",
+          "frame": "#a9b0b5",
+          "cord": "#d8a21f"
+        },
+        "blueSky": {
+          "cloth": "#8fbbe8",
+          "webbing": "#e3dac2",
+          "frame": "#1f2124",
+          "cord": "#e8e2cf"
         }
       },
       "stats": {
-        "triangles": 184,
+        "triangles": 5216,
         "sizeM": [
-          2.704,
-          2.195,
-          0.11
+          5.02,
+          3.054,
+          0.92
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "fabric",
-          "color": "#463849",
+          "name": "frame",
+          "color": "#2e3236",
+          "parts": [
+            "foot-x-left",
+            "foot-y-left",
+            "socket-left",
+            "upright-left",
+            "foot-x-right",
+            "foot-y-right",
+            "socket-right",
+            "upright-right",
+            "top-pipe"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "cord",
+          "color": "#16171a",
+          "parts": [
+            "foot-pad-left--420-0",
+            "foot-pad-left-420-0",
+            "foot-pad-left-0--420",
+            "foot-pad-left-0-420",
+            "foot-pad-right--420-0",
+            "foot-pad-right-420-0",
+            "foot-pad-right-0--420",
+            "foot-pad-right-0-420",
+            "header-tie-0",
+            "header-knot-0",
+            "header-tie-1",
+            "header-knot-1",
+            "header-tie-2",
+            "header-knot-2",
+            "header-tie-3",
+            "header-knot-3",
+            "header-tie-4",
+            "header-knot-4",
+            "header-tie-5",
+            "header-knot-5",
+            "header-tie-6",
+            "header-knot-6",
+            "header-tie-7",
+            "header-knot-7",
+            "header-tie-8",
+            "header-knot-8",
+            "header-tie-9",
+            "header-knot-9",
+            "header-tie-10",
+            "header-knot-10",
+            "header-tie-11",
+            "header-knot-11",
+            "header-tie-12",
+            "header-knot-12",
+            "cord-upper-l-0",
+            "cord-lower-l-0",
+            "cord-ball-l-0",
+            "cord-upper-l-1",
+            "cord-lower-l-1",
+            "cord-ball-l-1",
+            "cord-upper-l-2",
+            "cord-lower-l-2",
+            "cord-ball-l-2",
+            "cord-upper-l-3",
+            "cord-lower-l-3",
+            "cord-ball-l-3",
+            "cord-upper-l-4",
+            "cord-lower-l-4",
+            "cord-ball-l-4",
+            "cord-upper-l-5",
+            "cord-lower-l-5",
+            "cord-ball-l-5",
+            "cord-upper-l-6",
+            "cord-lower-l-6",
+            "cord-ball-l-6",
+            "cord-upper-l-7",
+            "cord-lower-l-7",
+            "cord-ball-l-7",
+            "cord-upper-r-0",
+            "cord-lower-r-0",
+            "cord-ball-r-0",
+            "cord-upper-r-1",
+            "cord-lower-r-1",
+            "cord-ball-r-1",
+            "cord-upper-r-2",
+            "cord-lower-r-2",
+            "cord-ball-r-2",
+            "cord-upper-r-3",
+            "cord-lower-r-3",
+            "cord-ball-r-3",
+            "cord-upper-r-4",
+            "cord-lower-r-4",
+            "cord-ball-r-4",
+            "cord-upper-r-5",
+            "cord-lower-r-5",
+            "cord-ball-r-5",
+            "cord-upper-r-6",
+            "cord-lower-r-6",
+            "cord-ball-r-6",
+            "cord-upper-r-7",
+            "cord-lower-r-7",
+            "cord-ball-r-7"
+          ],
+          "param": "cord"
+        },
+        {
+          "name": "top-clamp-left",
+          "color": "#aab2b6",
+          "parts": [
+            "top-clamp-left",
+            "upright-cap-left",
+            "top-clamp-right",
+            "upright-cap-right",
+            "bottom-pipe",
+            "header-grommet-0",
+            "header-grommet-1",
+            "header-grommet-2",
+            "header-grommet-3",
+            "header-grommet-4",
+            "header-grommet-5",
+            "header-grommet-6",
+            "header-grommet-7",
+            "header-grommet-8",
+            "header-grommet-9",
+            "header-grommet-10",
+            "header-grommet-11",
+            "header-grommet-12",
+            "side-grommet-l-0",
+            "side-grommet-l-1",
+            "side-grommet-l-2",
+            "side-grommet-l-3",
+            "side-grommet-l-4",
+            "side-grommet-l-5",
+            "side-grommet-l-6",
+            "side-grommet-l-7",
+            "side-grommet-r-0",
+            "side-grommet-r-1",
+            "side-grommet-r-2",
+            "side-grommet-r-3",
+            "side-grommet-r-4",
+            "side-grommet-r-5",
+            "side-grommet-r-6",
+            "side-grommet-r-7"
+          ]
+        },
+        {
+          "name": "cloth",
+          "color": "#e9e7e1",
           "parts": [
             "cloth",
-            "side-hem-left",
-            "side-hem-right"
+            "hem-pocket"
           ],
-          "param": "fabric"
+          "param": "cloth"
         },
         {
-          "name": "steel",
-          "color": "#46515a",
+          "name": "webbing",
+          "color": "#c9b58a",
           "parts": [
-            "top-pocket",
-            "bottom-pocket"
+            "header"
           ],
-          "param": "steel"
-        },
-        {
-          "name": "hardware",
-          "color": "#c28f3e",
-          "parts": [
-            "top-tab-left",
-            "top-tab-center",
-            "top-tab-right",
-            "sleeve-cap-left",
-            "sleeve-cap-right"
-          ],
-          "param": "hardware"
+          "param": "webbing"
         }
       ]
     },
@@ -279882,10 +280044,19 @@
       "id": "grand-drape-valance",
       "kit": "theatre-production",
       "title": "Grand drape valance",
-      "description": "Gathered-looking theatre valance panel with upper rail, hanging tabs and weighted lower seam. Knobs: overall scale; stage fabric, painted steel, steel hardware; houseShow and touring appearance presets.",
+      "description": "Swagged grand-drape valance at about real size: a 3.6 m by 1 m pleated velour panel with three festoon swags edged in gold bullion fringe, contrast-lined jabot cascades, turned tassels at the swag joins, gold braid along the top, fringe along the hem and a pelmet board on a pipe batten. Swags choice: swagged or plain pleated. Material controls: velour, fringe and braid, jabot lining, pelmet and batten. houseShow, touring and operaHouse presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "grand drape",
+        "valance",
+        "house curtain",
+        "swag",
+        "fringe",
+        "tassel",
+        "proscenium",
+        "soft goods",
+        "velour",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -279902,8 +280073,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/grand-drape-valance.kcad.ts",
       "preview": "/assets/theatre-production-grand-drape-valance.png",
-      "sourceSha256": "6286d75425a6eac71797bace277fa0845f4f07f150d875908fd7d9b57ed5a26b",
-      "triangleBudget": 1800,
+      "sourceSha256": "d8ff07de1cde305b5e8023a99568fdb357fa623dbbd51e239c607de5fdc008e4",
+      "triangleBudget": 4800,
       "params": [
         {
           "name": "scale",
@@ -279915,78 +280086,138 @@
           "step": 0.05
         },
         {
-          "name": "fabric",
-          "type": "color",
-          "default": "#463849",
-          "label": "Stage fabric"
+          "name": "swags",
+          "type": "choice",
+          "default": "swagged",
+          "label": "Dress",
+          "choices": [
+            "swagged",
+            "plain"
+          ]
         },
         {
-          "name": "steel",
+          "name": "velour",
           "type": "color",
-          "default": "#46515a",
-          "label": "Painted steel"
+          "default": "#8e1b26",
+          "label": "Velour"
         },
         {
-          "name": "hardware",
+          "name": "fringe",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#d4a640",
+          "label": "Fringe, braid and tassels"
+        },
+        {
+          "name": "lining",
+          "type": "color",
+          "default": "#e2cf9a",
+          "label": "Jabot lining"
+        },
+        {
+          "name": "pelmet",
+          "type": "color",
+          "default": "#2b2a2e",
+          "label": "Pelmet board and batten"
         }
       ],
       "presets": {
         "houseShow": {
-          "fabric": "#28262d",
-          "steel": "#343b41",
-          "hardware": "#c5a052"
+          "velour": "#8e1b26",
+          "fringe": "#d4a640",
+          "lining": "#e2cf9a",
+          "pelmet": "#2b2a2e"
         },
         "touring": {
-          "fabric": "#a14469",
-          "steel": "#315968",
-          "hardware": "#e2b347"
+          "velour": "#1f3366",
+          "fringe": "#c9ced2",
+          "lining": "#9fb3d6",
+          "pelmet": "#1d1f22"
+        },
+        "operaHouse": {
+          "velour": "#5c1630",
+          "fringe": "#e6c15c",
+          "lining": "#3b0f20",
+          "pelmet": "#d9cfb4"
         }
       },
       "stats": {
-        "triangles": 196,
+        "triangles": 3960,
         "sizeM": [
-          2.66,
-          0.775,
-          0.2075
+          4,
+          1.134,
+          0.382
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "fabric",
-          "color": "#463849",
+          "name": "velour",
+          "color": "#8e1b26",
           "parts": [
             "valance",
-            "hem"
+            "swag-0-fold-0",
+            "swag-0-fold-1",
+            "swag-0-fold-2",
+            "swag-1-fold-0",
+            "swag-1-fold-1",
+            "swag-1-fold-2",
+            "swag-2-fold-0",
+            "swag-2-fold-1",
+            "swag-2-fold-2",
+            "jabot-0",
+            "jabot-1",
+            "jabot-2",
+            "jabot-3"
           ],
-          "param": "fabric"
+          "param": "velour"
         },
         {
-          "name": "steel",
-          "color": "#46515a",
+          "name": "fringe",
+          "color": "#d4a640",
           "parts": [
-            "top-rail",
-            "gather-panel-left",
-            "gather-panel-center",
-            "gather-panel-right"
+            "hem-fringe",
+            "top-braid",
+            "swag-0-fringe",
+            "swag-1-fringe",
+            "swag-2-fringe",
+            "tassel-cord-0",
+            "tassel-0",
+            "rosette-0",
+            "tassel-cord-1",
+            "tassel-1",
+            "rosette-1",
+            "tassel-cord-2",
+            "tassel-2",
+            "rosette-2",
+            "tassel-cord-3",
+            "tassel-3",
+            "rosette-3"
           ],
-          "param": "steel"
+          "param": "fringe"
         },
         {
-          "name": "hardware",
-          "color": "#c28f3e",
+          "name": "pelmet",
+          "color": "#2b2a2e",
           "parts": [
-            "hanger-left",
-            "hanger-center",
-            "hanger-right",
-            "eyelet-left",
-            "eyelet-right"
+            "pelmet-board",
+            "batten",
+            "pelmet-hanger--1500",
+            "pelmet-hanger-0",
+            "pelmet-hanger-1500"
           ],
-          "param": "hardware"
+          "param": "pelmet"
+        },
+        {
+          "name": "lining",
+          "color": "#e2cf9a",
+          "parts": [
+            "jabot-lining-0",
+            "jabot-lining-1",
+            "jabot-lining-2",
+            "jabot-lining-3"
+          ],
+          "param": "lining"
         }
       ]
     },
@@ -280999,10 +281230,17 @@
       "id": "masking-leg",
       "kit": "theatre-production",
       "title": "Masking leg",
-      "description": "Narrow masking curtain section with a hanging cloth panel, top sleeve and weighted floor hem. Knobs: overall scale; stage fabric, painted steel, steel hardware; houseShow and touring appearance presets.",
+      "description": "Theatre masking leg at about real size: a 1.2 m by 2.5 m velour panel with sewn-in box pleats, jute webbing header with brass grommets, cotton tie lines knotted round a pipe batten, turned-back side hems and a chain pocket at the hem with the weight chain showing. Material controls: velour, webbing and ties, grommets and chain, batten. Fullness choice: flat, 50 % or 100 %. houseShow, touring and greyMasking presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "masking leg",
+        "theatre leg",
+        "masking",
+        "soft goods",
+        "velour curtain",
+        "drape",
+        "wings",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -281019,8 +281257,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/masking-leg.kcad.ts",
       "preview": "/assets/theatre-production-masking-leg.png",
-      "sourceSha256": "c5b7b63b15ce1aaabea625e6da4ac2db24a7cb839f4d3681b5b66c5bfbe2c1d3",
-      "triangleBudget": 1800,
+      "sourceSha256": "f908c74ea8e71fb92e7a74179411ae05517405f0557a971381a7cb92860dd699",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -281032,76 +281270,136 @@
           "step": 0.05
         },
         {
-          "name": "fabric",
-          "type": "color",
-          "default": "#463849",
-          "label": "Stage fabric"
+          "name": "fullness",
+          "type": "choice",
+          "default": "fifty",
+          "label": "Sewn-in fullness",
+          "choices": [
+            "flat",
+            "fifty",
+            "hundred"
+          ]
         },
         {
-          "name": "steel",
+          "name": "velour",
           "type": "color",
-          "default": "#46515a",
-          "label": "Painted steel"
+          "default": "#1d1b20",
+          "label": "Velour"
         },
         {
-          "name": "hardware",
+          "name": "webbing",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#c9b58a",
+          "label": "Webbing and tie lines"
+        },
+        {
+          "name": "metal",
+          "type": "color",
+          "default": "#c9a24a",
+          "label": "Grommets and chain"
+        },
+        {
+          "name": "batten",
+          "type": "color",
+          "default": "#34383c",
+          "label": "Pipe batten"
         }
       ],
       "presets": {
         "houseShow": {
-          "fabric": "#28262d",
-          "steel": "#343b41",
-          "hardware": "#c5a052"
+          "velour": "#1d1b20",
+          "webbing": "#c9b58a",
+          "metal": "#c9a24a",
+          "batten": "#34383c"
         },
         "touring": {
-          "fabric": "#a14469",
-          "steel": "#315968",
-          "hardware": "#e2b347"
+          "velour": "#232a3a",
+          "webbing": "#2a2a2a",
+          "metal": "#aeb6ba",
+          "batten": "#9aa2a7"
+        },
+        "greyMasking": {
+          "velour": "#4c4f55",
+          "webbing": "#e1dccb",
+          "metal": "#b8bec2",
+          "batten": "#2a2d30"
         }
       },
       "stats": {
-        "triangles": 172,
+        "triangles": 2436,
         "sizeM": [
-          1,
-          2.205,
-          0.08
+          1.724,
+          2.665,
+          0.078
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "fabric",
-          "color": "#463849",
+          "name": "velour",
+          "color": "#1d1b20",
           "parts": [
-            "cloth-panel",
-            "weighted-hem",
-            "side-seam-left",
-            "side-seam-right",
-            "hem-weight-left",
-            "hem-weight-right"
+            "cloth",
+            "chain-pocket"
           ],
-          "param": "fabric"
+          "param": "velour"
         },
         {
-          "name": "steel",
-          "color": "#46515a",
+          "name": "pocket-stitch",
+          "color": "#0f0e11",
           "parts": [
-            "top-sleeve"
-          ],
-          "param": "steel"
+            "pocket-stitch",
+            "side-hem-left",
+            "side-hem-right"
+          ]
         },
         {
-          "name": "hardware",
-          "color": "#c28f3e",
+          "name": "webbing",
+          "color": "#c9b58a",
           "parts": [
-            "top-hook-left",
-            "top-hook-right"
+            "header",
+            "tie-0",
+            "knot-0",
+            "tie-1",
+            "knot-1",
+            "tie-2",
+            "knot-2",
+            "tie-3",
+            "knot-3",
+            "tie-4",
+            "knot-4",
+            "tie-5",
+            "knot-5"
           ],
-          "param": "hardware"
+          "param": "webbing"
+        },
+        {
+          "name": "metal",
+          "color": "#c9a24a",
+          "parts": [
+            "grommet-0",
+            "grommet-1",
+            "grommet-2",
+            "grommet-3",
+            "grommet-4",
+            "grommet-5",
+            "batten-cap-l",
+            "batten-cap-r",
+            "chain-link-0",
+            "chain-link-1",
+            "chain-link-2",
+            "chain-link-3"
+          ],
+          "param": "metal"
+        },
+        {
+          "name": "batten",
+          "color": "#34383c",
+          "parts": [
+            "batten"
+          ],
+          "param": "batten"
         }
       ]
     },
@@ -283981,10 +284279,18 @@
       "id": "scrim-frame",
       "kit": "theatre-production",
       "title": "Scrim frame",
-      "description": "Freestanding scenic scrim panel with a rectangular support frame and weighted stabilizer feet. Knobs: overall scale; stage fabric, painted steel, steel hardware; houseShow and touring appearance presets.",
+      "description": "Freestanding painted scrim at about real size: a 2.4 m by 2.2 m timber frame with plywood corner blocks, sharkstooth gauze stretched in the opening and painted with a moon, layered hills and a pine treeline, held up by two hinged stage jacks with cast-iron stage weights. Scene choice: painted landscape or plain gauze. Material controls: gauze, far and near scenic paint, timber, iron weights. houseShow, touring and duskScene presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "scrim",
+        "gauze",
+        "sharkstooth",
+        "painted drop",
+        "scenic flat",
+        "stage jack",
+        "stage weight",
+        "scenery",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -284001,8 +284307,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/scrim-frame.kcad.ts",
       "preview": "/assets/theatre-production-scrim-frame.png",
-      "sourceSha256": "b8228190472d905c5bd19188ed7d73563aa8f1fe8266d5c45f44ac6a10c681a6",
-      "triangleBudget": 1800,
+      "sourceSha256": "5cab657dca0e8376c5c85e1a338e2e73eb4a9e6fb697ec39df7c64fbdf2df25a",
+      "triangleBudget": 900,
       "params": [
         {
           "name": "scale",
@@ -284014,77 +284320,155 @@
           "step": 0.05
         },
         {
-          "name": "fabric",
-          "type": "color",
-          "default": "#463849",
-          "label": "Stage fabric"
+          "name": "scene",
+          "type": "choice",
+          "default": "landscape",
+          "label": "Painted scene",
+          "choices": [
+            "landscape",
+            "plain"
+          ]
         },
         {
-          "name": "steel",
+          "name": "gauze",
           "type": "color",
-          "default": "#46515a",
-          "label": "Painted steel"
+          "default": "#b9c7d6",
+          "label": "Scrim gauze"
         },
         {
-          "name": "hardware",
+          "name": "paint",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#6f8ea6",
+          "label": "Scenic paint, far hills"
+        },
+        {
+          "name": "shadow",
+          "type": "color",
+          "default": "#24323d",
+          "label": "Scenic paint, near hill and pines"
+        },
+        {
+          "name": "timber",
+          "type": "color",
+          "default": "#c8a676",
+          "label": "Frame timber"
+        },
+        {
+          "name": "iron",
+          "type": "color",
+          "default": "#2f3236",
+          "label": "Stage weights and hardware"
         }
       ],
       "presets": {
         "houseShow": {
-          "fabric": "#28262d",
-          "steel": "#343b41",
-          "hardware": "#c5a052"
+          "gauze": "#b9c7d6",
+          "paint": "#6f8ea6",
+          "shadow": "#24323d",
+          "timber": "#c8a676",
+          "iron": "#2f3236"
         },
         "touring": {
-          "fabric": "#a14469",
-          "steel": "#315968",
-          "hardware": "#e2b347"
+          "gauze": "#d9d5cc",
+          "paint": "#8f9a6a",
+          "shadow": "#33401f",
+          "timber": "#1f1f22",
+          "iron": "#9aa2a7"
+        },
+        "duskScene": {
+          "gauze": "#e2a77a",
+          "paint": "#9a5a6e",
+          "shadow": "#2e1a33",
+          "timber": "#a5815a",
+          "iron": "#1c1d20"
         }
       },
       "stats": {
-        "triangles": 184,
+        "triangles": 520,
         "sizeM": [
-          1.82,
-          1.935,
-          0.4
+          2.4,
+          2.2,
+          0.89
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "fabric",
-          "color": "#463849",
+          "name": "timber",
+          "color": "#c8a676",
           "parts": [
-            "scrim"
+            "stile-left",
+            "stile-right",
+            "bottom-rail",
+            "top-rail",
+            "jack-left",
+            "jack-right"
           ],
-          "param": "fabric"
+          "param": "timber"
         },
         {
-          "name": "steel",
-          "color": "#46515a",
+          "name": "corner-block-l-b",
+          "color": "#d9c296",
           "parts": [
-            "top-frame",
-            "bottom-frame",
-            "left-frame",
-            "right-frame",
-            "mid-rail",
-            "foot-left",
-            "foot-right"
-          ],
-          "param": "steel"
+            "corner-block-l-b",
+            "corner-block-l-t",
+            "corner-block-r-b",
+            "corner-block-r-t"
+          ]
         },
         {
-          "name": "hardware",
-          "color": "#c28f3e",
+          "name": "gauze",
+          "color": "#b9c7d6",
           "parts": [
-            "foot-pin-left",
-            "foot-pin-right"
+            "gauze"
           ],
-          "param": "hardware"
+          "param": "gauze"
+        },
+        {
+          "name": "moon",
+          "color": "#f3ecd0",
+          "parts": [
+            "moon"
+          ]
+        },
+        {
+          "name": "paint",
+          "color": "#6f8ea6",
+          "parts": [
+            "far-hills"
+          ],
+          "param": "paint"
+        },
+        {
+          "name": "shadow",
+          "color": "#24323d",
+          "parts": [
+            "near-hill",
+            "pine-0",
+            "pine-1",
+            "pine-2",
+            "pine-3",
+            "pine-4",
+            "pine-5",
+            "pine-6"
+          ],
+          "param": "shadow"
+        },
+        {
+          "name": "iron",
+          "color": "#2f3236",
+          "parts": [
+            "jack-hinge-left-300",
+            "jack-hinge-left-1600",
+            "stage-weight-left-0",
+            "stage-weight-left-1",
+            "jack-hinge-right-300",
+            "jack-hinge-right-1600",
+            "stage-weight-right-0",
+            "stage-weight-right-1"
+          ],
+          "param": "iron"
         }
       ]
     },
@@ -286019,10 +286403,17 @@
       "id": "teaser-border",
       "kit": "theatre-production",
       "title": "Teaser border",
-      "description": "Horizontal masking border with a rectangular frame, hanging cloth and top rigging sleeves. Knobs: overall scale; stage fabric, painted steel, steel hardware; houseShow and touring appearance presets.",
+      "description": "Theatre teaser border at about real size: a 3.6 m by 0.9 m flat velour panel sewn from vertical widths with visible seams, jute webbing header with grommets and tie lines to a pipe batten, a hem pipe pocket with the bottom pipe showing at each end, and trim-chain pickups with wire-rope lift lines. Optional side returns folding back upstage. Material controls: velour, webbing and ties, pipes, rigging hardware. houseShow, touring and schoolHall presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "teaser",
+        "border",
+        "masking border",
+        "soft goods",
+        "velour",
+        "proscenium",
+        "fly system",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -286039,8 +286430,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/teaser-border.kcad.ts",
       "preview": "/assets/theatre-production-teaser-border.png",
-      "sourceSha256": "0b5eca66e21582e35a817d910d6bddbe94a895be12fd920d30baabc4e858bf60",
-      "triangleBudget": 1800,
+      "sourceSha256": "db6f78e41fbc8373846ec6065cdc94d854d5df052d17b28b94eed964b87f2a3f",
+      "triangleBudget": 4200,
       "params": [
         {
           "name": "scale",
@@ -286052,77 +286443,161 @@
           "step": 0.05
         },
         {
-          "name": "fabric",
-          "type": "color",
-          "default": "#463849",
-          "label": "Stage fabric"
+          "name": "returns",
+          "type": "choice",
+          "default": "none",
+          "label": "Side returns",
+          "choices": [
+            "none",
+            "both"
+          ]
         },
         {
-          "name": "steel",
+          "name": "velour",
           "type": "color",
-          "default": "#46515a",
-          "label": "Painted steel"
+          "default": "#211f25",
+          "label": "Velour"
         },
         {
-          "name": "hardware",
+          "name": "webbing",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#c9b58a",
+          "label": "Webbing and tie lines"
+        },
+        {
+          "name": "pipe",
+          "type": "color",
+          "default": "#3a3f44",
+          "label": "Batten and bottom pipe"
+        },
+        {
+          "name": "rigging",
+          "type": "color",
+          "default": "#b9c0c4",
+          "label": "Rigging hardware"
         }
       ],
       "presets": {
         "houseShow": {
-          "fabric": "#28262d",
-          "steel": "#343b41",
-          "hardware": "#c5a052"
+          "velour": "#211f25",
+          "webbing": "#c9b58a",
+          "pipe": "#3a3f44",
+          "rigging": "#b9c0c4"
         },
         "touring": {
-          "fabric": "#a14469",
-          "steel": "#315968",
-          "hardware": "#e2b347"
+          "velour": "#1e2a44",
+          "webbing": "#2a2a2a",
+          "pipe": "#a9b0b5",
+          "rigging": "#d8a21f"
+        },
+        "schoolHall": {
+          "velour": "#7a1e2a",
+          "webbing": "#e3dac2",
+          "pipe": "#3a4a5c",
+          "rigging": "#c7ccce"
         }
       },
       "stats": {
-        "triangles": 184,
+        "triangles": 3924,
         "sizeM": [
-          2.16,
-          0.81,
-          0.1
+          4.124,
+          1.834,
+          0.074809
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "fabric",
-          "color": "#463849",
+          "name": "velour",
+          "color": "#211f25",
           "parts": [
-            "cloth",
-            "left-hem",
-            "right-hem"
+            "pipe-pocket",
+            "cloth"
           ],
-          "param": "fabric"
+          "param": "velour"
         },
         {
-          "name": "steel",
-          "color": "#46515a",
+          "name": "webbing",
+          "color": "#c9b58a",
           "parts": [
-            "top-sleeve"
+            "header",
+            "tie-0",
+            "knot-0",
+            "tie-1",
+            "knot-1",
+            "tie-2",
+            "knot-2",
+            "tie-3",
+            "knot-3",
+            "tie-4",
+            "knot-4",
+            "tie-5",
+            "knot-5",
+            "tie-6",
+            "knot-6",
+            "tie-7",
+            "knot-7",
+            "tie-8",
+            "knot-8",
+            "tie-9",
+            "knot-9",
+            "tie-10",
+            "knot-10"
           ],
-          "param": "steel"
+          "param": "webbing"
         },
         {
-          "name": "hardware",
-          "color": "#c28f3e",
+          "name": "pocket-stitch",
+          "color": "#0f0e11",
           "parts": [
-            "bottom-weight",
-            "hang-tab-left",
-            "hang-tab-mid",
-            "hang-tab-right",
-            "grommet-left",
-            "grommet-right"
+            "pocket-stitch",
+            "seam-1",
+            "seam-2"
+          ]
+        },
+        {
+          "name": "pipe",
+          "color": "#3a3f44",
+          "parts": [
+            "bottom-pipe",
+            "batten"
           ],
-          "param": "hardware"
+          "param": "pipe"
+        },
+        {
+          "name": "rigging",
+          "color": "#b9c0c4",
+          "parts": [
+            "bottom-cap-l",
+            "bottom-cap-r",
+            "grommet-0",
+            "grommet-1",
+            "grommet-2",
+            "grommet-3",
+            "grommet-4",
+            "grommet-5",
+            "grommet-6",
+            "grommet-7",
+            "grommet-8",
+            "grommet-9",
+            "grommet-10",
+            "batten-cap-l",
+            "batten-cap-r",
+            "basket-l",
+            "chain-l-0",
+            "chain-l-1",
+            "chain-l-2",
+            "shackle-l",
+            "lift-line-l",
+            "basket-r",
+            "chain-r-0",
+            "chain-r-1",
+            "chain-r-2",
+            "shackle-r",
+            "lift-line-r"
+          ],
+          "param": "rigging"
         }
       ]
     },
