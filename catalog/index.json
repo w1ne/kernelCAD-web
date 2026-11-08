@@ -276966,10 +276966,15 @@
       "id": "adjustable-stage-leg",
       "kit": "theatre-production",
       "title": "Adjustable stage leg",
-      "description": "Telescoping stage support with a broad floor plate, outer sleeve, adjustment collar and cap pad. Knobs: overall scale; painted steel, steel hardware, rubber and isolation pads; houseShow and touring appearance presets.",
+      "description": "Telescoping steel stage-deck leg at about real size: round floor plate on a rubber isolation pad with four welded gussets, square outer sleeve with a T-handle clamp screw, inner tube with a row of adjustment holes and a spring locking pin, fine-adjust screw jack with hand nut, and a square deck head plate with bolt holes and socket spigot. Material controls: painted steel, zinc hardware, rubber pad, hi-vis band. houseShow, touring and blackout presets; short, mid and full extension.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "stage leg",
+        "telescopic leg",
+        "deck leg",
+        "riser leg",
+        "staging",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -276986,7 +276991,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/adjustable-stage-leg.kcad.ts",
       "preview": "/assets/theatre-production-adjustable-stage-leg.png",
-      "sourceSha256": "a0f98263781bf5b3e2a5ab0bfb9e658fc1eb418caebe282ec384362953d93070",
+      "sourceSha256": "a09d42b5e166ee8107178bd2493b7e4aed4423e6bad17cfd452d3c074774ce12",
       "triangleBudget": 1800,
       "params": [
         {
@@ -276999,75 +277004,130 @@
           "step": 0.05
         },
         {
+          "name": "extension",
+          "type": "choice",
+          "default": "mid",
+          "label": "Leg extension",
+          "choices": [
+            "short",
+            "mid",
+            "full"
+          ]
+        },
+        {
           "name": "paintedSteel",
           "type": "color",
-          "default": "#454d54",
+          "default": "#3c444b",
           "label": "Painted steel"
         },
         {
           "name": "hardware",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#c9ced1",
+          "label": "Zinc-plated hardware"
         },
         {
           "name": "rubber",
           "type": "color",
-          "default": "#272a2d",
-          "label": "Rubber and isolation pads"
+          "default": "#1c1e20",
+          "label": "Rubber pad and grips"
+        },
+        {
+          "name": "band",
+          "type": "color",
+          "default": "#e8b21c",
+          "label": "Hi-vis height band"
         }
       ],
       "presets": {
         "houseShow": {
-          "paintedSteel": "#313940",
-          "hardware": "#c5a052",
-          "rubber": "#222629"
+          "paintedSteel": "#3c444b",
+          "hardware": "#c9ced1",
+          "rubber": "#1c1e20",
+          "band": "#e8b21c"
         },
         "touring": {
-          "paintedSteel": "#dda21f",
-          "hardware": "#e2b347",
-          "rubber": "#25292c"
+          "paintedSteel": "#d8a21f",
+          "hardware": "#b9bfc3",
+          "rubber": "#202326",
+          "band": "#1f2124"
+        },
+        "blackout": {
+          "paintedSteel": "#1d1f22",
+          "hardware": "#55595d",
+          "rubber": "#141516",
+          "band": "#d8d8d8"
         }
       },
       "stats": {
-        "triangles": 192,
+        "triangles": 1112,
         "sizeM": [
-          0.36,
-          0.96,
-          0.36
+          0.33,
+          0.972,
+          0.33
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
+          "name": "rubber",
+          "color": "#1c1e20",
+          "parts": [
+            "pad",
+            "clamp-handle",
+            "adjust-hole-0",
+            "adjust-hole-1",
+            "adjust-hole-2",
+            "pin-lanyard",
+            "spigot-tip"
+          ],
+          "param": "rubber"
+        },
+        {
           "name": "paintedSteel",
-          "color": "#454d54",
+          "color": "#3c444b",
           "parts": [
             "floor-plate",
+            "gusset-0",
+            "gusset-1",
+            "gusset-2",
+            "gusset-3",
             "sleeve",
-            "inner-post",
-            "deck-cap"
+            "sleeve-collar",
+            "jack-nut",
+            "jack-nut-wing-0",
+            "jack-nut-wing-1",
+            "jack-nut-wing-2",
+            "head-plate",
+            "socket-spigot"
           ],
           "param": "paintedSteel"
         },
         {
-          "name": "hardware",
-          "color": "#c28f3e",
+          "name": "band",
+          "color": "#e8b21c",
           "parts": [
-            "pin-tab",
-            "collar",
-            "locking-pin"
+            "height-band"
           ],
-          "param": "hardware"
+          "param": "band"
         },
         {
-          "name": "rubber",
-          "color": "#272a2d",
+          "name": "hardware",
+          "color": "#c9ced1",
           "parts": [
-            "level-foot"
+            "clamp-boss",
+            "clamp-screw",
+            "inner-tube",
+            "pin-shaft",
+            "pin-ring",
+            "jack-screw",
+            "head-bolt-0",
+            "head-bolt-1",
+            "head-bolt-2",
+            "head-bolt-3"
           ],
-          "param": "rubber"
+          "param": "hardware"
         }
       ]
     },
@@ -279480,10 +279540,15 @@
       "id": "folding-stage-ramp",
       "kit": "theatre-production",
       "title": "Folding stage ramp",
-      "description": "Portable inclined-access blockout with a broad tread surface, side rails and hinge-like end drums. Knobs: overall scale; stage timber, painted steel, steel hardware; houseShow and touring appearance presets.",
+      "description": "Portable folding access ramp at about real size: two deck leaves joined by a centre piano hinge, raised kerb rails down both sides, anti-slip tread strips across the slope, a hooked top lip plate with hinge knuckles, a bevelled toe plate, folding support legs under the top end and a tube handrail on posts. Material controls: deck surface, aluminium frame, tread strips, handrail. houseShow, accessible and touring presets; with or without handrail.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "ramp",
+        "access ramp",
+        "wheelchair ramp",
+        "stage ramp",
+        "folding ramp",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -279500,8 +279565,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/folding-stage-ramp.kcad.ts",
       "preview": "/assets/theatre-production-folding-stage-ramp.png",
-      "sourceSha256": "a6ae1bf6e53e52cabfd150ef5a3a4a2d8cae26751293cc5edff4c29e353f738f",
-      "triangleBudget": 1800,
+      "sourceSha256": "db90a25c2ed816e0e75305d936f6d571c2d3ddbdf0360584e6e1c511bb767c50",
+      "triangleBudget": 1200,
       "params": [
         {
           "name": "scale",
@@ -279513,77 +279578,137 @@
           "step": 0.05
         },
         {
-          "name": "timber",
-          "type": "color",
-          "default": "#946b43",
-          "label": "Stage timber"
+          "name": "handrail",
+          "type": "choice",
+          "default": "one side",
+          "label": "Handrail",
+          "choices": [
+            "one side",
+            "none"
+          ]
         },
         {
-          "name": "steel",
+          "name": "deck",
           "type": "color",
-          "default": "#46515a",
-          "label": "Painted steel"
+          "default": "#2b2e33",
+          "label": "Deck surface"
         },
         {
-          "name": "hardware",
+          "name": "frame",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#b6bdc2",
+          "label": "Aluminium frame and kerbs"
+        },
+        {
+          "name": "tread",
+          "type": "color",
+          "default": "#e5b01c",
+          "label": "Anti-slip tread strips"
+        },
+        {
+          "name": "rail",
+          "type": "color",
+          "default": "#3a4147",
+          "label": "Handrail and legs"
         }
       ],
       "presets": {
         "houseShow": {
-          "timber": "#725137",
-          "steel": "#343b41",
-          "hardware": "#c5a052"
+          "deck": "#2b2e33",
+          "frame": "#b6bdc2",
+          "tread": "#e5b01c",
+          "rail": "#3a4147"
+        },
+        "accessible": {
+          "deck": "#3a4a5c",
+          "frame": "#c9cfd3",
+          "tread": "#f2f0e8",
+          "rail": "#2a62b8"
         },
         "touring": {
-          "timber": "#cd914b",
-          "steel": "#315968",
-          "hardware": "#e2b347"
+          "deck": "#1c1d20",
+          "frame": "#2a2d30",
+          "tread": "#d9661f",
+          "rail": "#d4a31f"
         }
       },
       "stats": {
-        "triangles": 184,
+        "triangles": 716,
         "sizeM": [
-          1.3,
-          0.46,
-          0.965
+          0.915,
+          1.253519,
+          1.98
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "timber",
-          "color": "#946b43",
+          "name": "deck",
+          "color": "#2b2e33",
           "parts": [
-            "ramp-surface"
+            "deck-lower",
+            "deck-upper"
           ],
-          "param": "timber"
+          "param": "deck"
         },
         {
-          "name": "steel",
-          "color": "#46515a",
+          "name": "frame",
+          "color": "#b6bdc2",
           "parts": [
-            "left-side-rail",
-            "right-side-rail",
-            "anti-slip-rib-a",
-            "anti-slip-rib-b",
-            "anti-slip-rib-c",
-            "lower-stop"
+            "centre-hinge",
+            "kerb-l",
+            "kerb-r",
+            "toe-plate",
+            "lip-plate",
+            "lip-hook",
+            "lip-knuckle-0",
+            "lip-knuckle-1",
+            "lip-knuckle-2",
+            "lip-knuckle-3",
+            "rail-post-base-0",
+            "rail-post-base-1",
+            "rail-post-base-2"
           ],
-          "param": "steel"
+          "param": "frame"
         },
         {
-          "name": "hardware",
-          "color": "#c28f3e",
+          "name": "tread",
+          "color": "#e5b01c",
           "parts": [
-            "top-hinge-plate",
-            "hinge-left",
-            "hinge-right"
+            "tread-0",
+            "tread-1",
+            "tread-2",
+            "tread-3",
+            "tread-5",
+            "tread-6",
+            "tread-7",
+            "tread-8"
           ],
-          "param": "hardware"
+          "param": "tread"
+        },
+        {
+          "name": "rail",
+          "color": "#3a4147",
+          "parts": [
+            "leg-l",
+            "leg-r",
+            "leg-brace",
+            "rail-post-0",
+            "rail-post-1",
+            "rail-post-2",
+            "rail-top",
+            "rail-mid"
+          ],
+          "param": "rail"
+        },
+        {
+          "name": "leg-foot-l",
+          "color": "#18191b",
+          "parts": [
+            "leg-foot-l",
+            "leg-foot-r"
+          ]
         }
       ]
     },
@@ -281382,10 +281507,15 @@
       "id": "orchestra-pit-filler",
       "kit": "theatre-production",
       "title": "Orchestra pit filler",
-      "description": "Removable pit-cover module with edge rails, underframe and two recessed handling grips. Knobs: overall scale; stage timber, painted steel, steel hardware; houseShow and touring appearance presets.",
+      "description": "Removable orchestra pit-filler platform at about real size: black hardboard surface over a ply deck in a welded steel frame, white downstage edge marking and rubber nosing, four flush lifting-ring pockets, location spigots on the upstage edge, and four telescopic square legs with pin-lock collars, X-braces and adjustable foot plates. Material controls: deck surface, ply edge, steel frame, edge marking. houseShow, operaHouse and touring presets; shallow or deep pit.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "orchestra pit",
+        "pit filler",
+        "pit cover",
+        "stage extension",
+        "staging",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -281402,8 +281532,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/orchestra-pit-filler.kcad.ts",
       "preview": "/assets/theatre-production-orchestra-pit-filler.png",
-      "sourceSha256": "9e599bc05f129ade4a7563eb760729b02f4f4f5d9a46ce912bb55b5d6cadb904",
-      "triangleBudget": 1800,
+      "sourceSha256": "53a7976535205dd78cc26a94ecc5886e8284c17aa23a6c36ad218e96f9246c1c",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -281415,78 +281545,156 @@
           "step": 0.05
         },
         {
-          "name": "timber",
+          "name": "pit",
+          "type": "choice",
+          "default": "shallow",
+          "label": "Pit depth",
+          "choices": [
+            "shallow",
+            "deep"
+          ]
+        },
+        {
+          "name": "surface",
           "type": "color",
-          "default": "#946b43",
-          "label": "Stage timber"
+          "default": "#1e2023",
+          "label": "Deck surface"
+        },
+        {
+          "name": "ply",
+          "type": "color",
+          "default": "#c49a63",
+          "label": "Ply deck edge"
         },
         {
           "name": "steel",
           "type": "color",
-          "default": "#46515a",
-          "label": "Painted steel"
+          "default": "#4a535b",
+          "label": "Steel frame and legs"
         },
         {
-          "name": "hardware",
+          "name": "marking",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#f1efe6",
+          "label": "Edge marking"
         }
       ],
       "presets": {
         "houseShow": {
-          "timber": "#725137",
-          "steel": "#343b41",
-          "hardware": "#c5a052"
+          "surface": "#1e2023",
+          "ply": "#c49a63",
+          "steel": "#4a535b",
+          "marking": "#f1efe6"
+        },
+        "operaHouse": {
+          "surface": "#3a2a20",
+          "ply": "#a8784a",
+          "steel": "#2b2f33",
+          "marking": "#d8b45a"
         },
         "touring": {
-          "timber": "#cd914b",
-          "steel": "#315968",
-          "hardware": "#e2b347"
+          "surface": "#26282b",
+          "ply": "#b8874f",
+          "steel": "#d4a31f",
+          "marking": "#e6b31e"
         }
       },
       "stats": {
-        "triangles": 196,
+        "triangles": 2688,
         "sizeM": [
-          1.6,
-          0.415,
-          1.019
+          2,
+          0.91,
+          1.096
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "timber",
-          "color": "#946b43",
+          "name": "surface",
+          "color": "#1e2023",
           "parts": [
-            "deck",
-            "stiffener-front",
-            "stiffener-back"
+            "surface"
           ],
-          "param": "timber"
+          "param": "surface"
+        },
+        {
+          "name": "ply",
+          "color": "#c49a63",
+          "parts": [
+            "ply-deck"
+          ],
+          "param": "ply"
         },
         {
           "name": "steel",
-          "color": "#46515a",
+          "color": "#4a535b",
           "parts": [
-            "front-edge",
-            "back-edge",
-            "support-rail-left",
-            "support-rail-right"
+            "frame-front",
+            "frame-back",
+            "frame-left",
+            "frame-right",
+            "frame-joist-0",
+            "frame-joist-1",
+            "lift-pocket-0",
+            "lift-pocket-1",
+            "lift-pocket-2",
+            "lift-pocket-3",
+            "spigot-plate-0",
+            "spigot-0",
+            "spigot-plate-1",
+            "spigot-1",
+            "leg-outer-lf",
+            "leg-inner-lf",
+            "leg-collar-lf",
+            "foot-screw-lf",
+            "leg-outer-rf",
+            "leg-inner-rf",
+            "leg-collar-rf",
+            "foot-screw-rf",
+            "leg-outer-lb",
+            "leg-inner-lb",
+            "leg-collar-lb",
+            "foot-screw-lb",
+            "leg-outer-rb",
+            "leg-inner-rb",
+            "leg-collar-rb",
+            "foot-screw-rb",
+            "brace-front-a",
+            "brace-front-b",
+            "brace-back-a",
+            "brace-back-b",
+            "brace-left",
+            "brace-right"
           ],
           "param": "steel"
         },
         {
-          "name": "hardware",
-          "color": "#c28f3e",
+          "name": "nosing",
+          "color": "#18191b",
           "parts": [
-            "grip-left",
-            "grip-right",
-            "pin-left",
-            "pin-right"
+            "nosing",
+            "foot-plate-lf",
+            "foot-plate-rf",
+            "foot-plate-lb",
+            "foot-plate-rb"
+          ]
+        },
+        {
+          "name": "marking",
+          "color": "#f1efe6",
+          "parts": [
+            "edge-line",
+            "lift-ring-0",
+            "lift-ring-1",
+            "lift-ring-2",
+            "lift-ring-3",
+            "leg-pin-lf",
+            "leg-pin-rf",
+            "leg-pin-lb",
+            "leg-pin-rb"
           ],
-          "param": "hardware"
+          "param": "marking"
         }
       ]
     },
@@ -284759,10 +284967,15 @@
       "id": "stage-pocket-hatch",
       "kit": "theatre-production",
       "title": "Stage pocket hatch",
-      "description": "Flush access-hatch panel with a perimeter frame, lift recess and corner hinge barrels. Knobs: overall scale; painted steel, stage timber, steel hardware; houseShow and touring appearance presets.",
+      "description": "Stage floor pocket at about real size: a recessed steel box cut into a section of timber stage floor, a hinged checker-plate lid propped open on its back edge with a cable-exit notch and lift ring, and a socket panel inside with blue power, red three-phase and black XLR/DMX connectors and label strips. Material controls: stage floor, steel lid and box, power outlets, signal connectors. houseShow, blackStage and touring presets; lid open or closed.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "floor pocket",
+        "stage pocket",
+        "floor box",
+        "stage power",
+        "hatch",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -284779,8 +284992,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/stage-pocket-hatch.kcad.ts",
       "preview": "/assets/theatre-production-stage-pocket-hatch.png",
-      "sourceSha256": "e406d1487658e704a40c4dcdbc39d646902e7c86d3476a4501382e5b0c0531fc",
-      "triangleBudget": 1800,
+      "sourceSha256": "ee2c04127b2efaa87eef26002dc12a29b1c77378ad94eecb8562a4d0ae65bcfa",
+      "triangleBudget": 2000,
       "params": [
         {
           "name": "scale",
@@ -284792,77 +285005,137 @@
           "step": 0.05
         },
         {
+          "name": "lid",
+          "type": "choice",
+          "default": "open",
+          "label": "Lid",
+          "choices": [
+            "open",
+            "closed"
+          ]
+        },
+        {
+          "name": "floor",
+          "type": "color",
+          "default": "#8a6440",
+          "label": "Stage floor timber"
+        },
+        {
           "name": "steel",
           "type": "color",
-          "default": "#46515a",
-          "label": "Painted steel"
+          "default": "#8e979d",
+          "label": "Steel lid and box"
         },
         {
-          "name": "timber",
+          "name": "power",
           "type": "color",
-          "default": "#946b43",
-          "label": "Stage timber"
+          "default": "#2a62b8",
+          "label": "Power outlet"
         },
         {
-          "name": "hardware",
+          "name": "signal",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#1d1f22",
+          "label": "Signal connectors"
         }
       ],
       "presets": {
         "houseShow": {
-          "steel": "#343b41",
-          "timber": "#725137",
-          "hardware": "#c5a052"
+          "floor": "#8a6440",
+          "steel": "#8e979d",
+          "power": "#2a62b8",
+          "signal": "#1d1f22"
+        },
+        "blackStage": {
+          "floor": "#202226",
+          "steel": "#5d646a",
+          "power": "#2a62b8",
+          "signal": "#111214"
         },
         "touring": {
-          "steel": "#315968",
-          "timber": "#cd914b",
-          "hardware": "#e2b347"
+          "floor": "#6e5236",
+          "steel": "#b6bdc2",
+          "power": "#d9661f",
+          "signal": "#2b2d30"
         }
       },
       "stats": {
-        "triangles": 184,
+        "triangles": 1518,
         "sizeM": [
-          0.905,
-          0.15,
-          0.7405
+          1,
+          0.448926,
+          0.8
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "steel",
-          "color": "#46515a",
+          "name": "floor",
+          "color": "#8a6440",
           "parts": [
-            "frame-front",
-            "frame-back",
-            "frame-left",
-            "frame-right",
-            "lift-recess"
+            "floor"
+          ],
+          "param": "floor"
+        },
+        {
+          "name": "signal",
+          "color": "#1d1f22",
+          "parts": [
+            "board-seam-0",
+            "board-seam-3",
+            "socket-face-power",
+            "socket-face-three-phase",
+            "socket-xlr-a",
+            "socket-face-xlr-a",
+            "socket-xlr-b",
+            "socket-face-xlr-b",
+            "socket-dmx",
+            "socket-face-dmx",
+            "hinge",
+            "cable-riser",
+            "cable-elbow",
+            "cable-run"
+          ],
+          "param": "signal"
+        },
+        {
+          "name": "steel",
+          "color": "#8e979d",
+          "parts": [
+            "pocket-rim",
+            "box-floor",
+            "socket-panel",
+            "lid"
           ],
           "param": "steel"
         },
         {
-          "name": "timber",
-          "color": "#946b43",
+          "name": "power",
+          "color": "#2a62b8",
           "parts": [
-            "hatch-panel"
+            "socket-power"
           ],
-          "param": "timber"
+          "param": "power"
         },
         {
-          "name": "hardware",
-          "color": "#c28f3e",
+          "name": "label-power",
+          "color": "#e9e6dc",
           "parts": [
-            "hinge-strap-left",
-            "hinge-strap-right",
-            "hinge-barrel-left",
-            "hinge-barrel-right"
-          ],
-          "param": "hardware"
+            "label-power",
+            "label-three-phase",
+            "label-xlr-a",
+            "label-xlr-b",
+            "label-dmx",
+            "lift-ring"
+          ]
+        },
+        {
+          "name": "socket-three-phase",
+          "color": "#c23b2a",
+          "parts": [
+            "socket-three-phase"
+          ]
         }
       ]
     },
@@ -285165,10 +285438,15 @@
       "id": "stage-riser-platform",
       "kit": "theatre-production",
       "title": "Stage riser platform",
-      "description": "Two-level riser assembly with stepped decks, boxed supports and a low access step. Knobs: overall scale; stage timber, painted steel, rubber and isolation pads; houseShow and touring appearance presets.",
+      "description": "Two-tier choir and band riser at about real size: carpeted deck tops in aluminium edge frames with hi-vis step nosings, folding steel leg frames with diagonal braces under each tier, a tube guard rail on four posts along the back of the top tier, a carpeted front access step and rubber feet. Material controls: deck carpet, aluminium frame, steel legs, nosing. houseShow, choir and touring presets; with or without guard rail.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "riser",
+        "choir riser",
+        "stage riser",
+        "band riser",
+        "staging",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -285185,8 +285463,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/stage-riser-platform.kcad.ts",
       "preview": "/assets/theatre-production-stage-riser-platform.png",
-      "sourceSha256": "34c1561f28552628f46060bb78fd5d7ba77ea975c720f09f5c5a8ecbb63b1504",
-      "triangleBudget": 1800,
+      "sourceSha256": "4f7c9d715adb96e4ac73b43cd89b93ce4485d5cf8ac73a5e1fe6f1a66fab6924",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -285198,79 +285476,167 @@
           "step": 0.05
         },
         {
-          "name": "timber",
+          "name": "rail",
+          "type": "choice",
+          "default": "guarded",
+          "label": "Back guard rail",
+          "choices": [
+            "guarded",
+            "open"
+          ]
+        },
+        {
+          "name": "carpet",
           "type": "color",
-          "default": "#946b43",
-          "label": "Stage timber"
+          "default": "#2a2d33",
+          "label": "Deck carpet"
+        },
+        {
+          "name": "frame",
+          "type": "color",
+          "default": "#b9c0c4",
+          "label": "Aluminium edge frame"
         },
         {
           "name": "steel",
           "type": "color",
-          "default": "#46515a",
-          "label": "Painted steel"
+          "default": "#3a4147",
+          "label": "Steel legs and rail"
         },
         {
-          "name": "rubber",
+          "name": "nosing",
           "type": "color",
-          "default": "#272a2d",
-          "label": "Rubber and isolation pads"
+          "default": "#e6b31e",
+          "label": "Step nosing"
         }
       ],
       "presets": {
         "houseShow": {
-          "timber": "#725137",
-          "steel": "#343b41",
-          "rubber": "#222629"
+          "carpet": "#2a2d33",
+          "frame": "#b9c0c4",
+          "steel": "#3a4147",
+          "nosing": "#e6b31e"
+        },
+        "choir": {
+          "carpet": "#6b2430",
+          "frame": "#c8b07a",
+          "steel": "#2e3236",
+          "nosing": "#d9d4c6"
         },
         "touring": {
-          "timber": "#cd914b",
-          "steel": "#315968",
-          "rubber": "#25292c"
+          "carpet": "#1b1c1e",
+          "frame": "#2a2d30",
+          "steel": "#d4a31f",
+          "nosing": "#f2f2ee"
         }
       },
       "stats": {
-        "triangles": 208,
+        "triangles": 2100,
         "sizeM": [
-          1.7,
-          0.66,
-          1.32
+          1.8,
+          1.622,
+          1.525
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "timber",
-          "color": "#946b43",
+          "name": "carpet",
+          "color": "#2a2d33",
           "parts": [
-            "lower-deck",
-            "upper-deck",
-            "step"
+            "carpet-low",
+            "carpet-high",
+            "step-carpet"
           ],
-          "param": "timber"
+          "param": "carpet"
+        },
+        {
+          "name": "frame",
+          "color": "#b9c0c4",
+          "parts": [
+            "frame-low-f",
+            "frame-low-b",
+            "frame-low-l",
+            "frame-low-r",
+            "frame-high-f",
+            "frame-high-b",
+            "frame-high-l",
+            "frame-high-r",
+            "step-box",
+            "rail-clamp-0",
+            "rail-clamp-1",
+            "rail-clamp-2",
+            "rail-clamp-3"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "nosing",
+          "color": "#e6b31e",
+          "parts": [
+            "nosing-low",
+            "nosing-high",
+            "step-nosing"
+          ],
+          "param": "nosing"
         },
         {
           "name": "steel",
-          "color": "#46515a",
+          "color": "#3a4147",
           "parts": [
-            "lower-front",
-            "upper-front",
-            "support-left-low",
-            "support-right-low",
-            "support-left-high",
-            "support-right-high",
-            "cross-rail"
+            "leg-low-l-f",
+            "leg-low-l-b",
+            "leg-rail-low-l",
+            "leg-brace-low-l",
+            "leg-low-m-f",
+            "leg-low-m-b",
+            "leg-rail-low-m",
+            "leg-brace-low-m",
+            "leg-low-r-f",
+            "leg-low-r-b",
+            "leg-rail-low-r",
+            "leg-brace-low-r",
+            "leg-high-l-f",
+            "leg-high-l-b",
+            "leg-rail-high-l",
+            "leg-brace-high-l",
+            "leg-high-m-f",
+            "leg-high-m-b",
+            "leg-rail-high-m",
+            "leg-brace-high-m",
+            "leg-high-r-f",
+            "leg-high-r-b",
+            "leg-rail-high-r",
+            "leg-brace-high-r",
+            "rail-post-0",
+            "rail-post-1",
+            "rail-post-2",
+            "rail-post-3",
+            "rail-top",
+            "rail-mid"
           ],
           "param": "steel"
         },
         {
-          "name": "rubber",
-          "color": "#272a2d",
+          "name": "foot-low-l-f",
+          "color": "#18191b",
           "parts": [
-            "foot-left",
-            "foot-right"
-          ],
-          "param": "rubber"
+            "foot-low-l-f",
+            "foot-low-l-b",
+            "foot-low-m-f",
+            "foot-low-m-b",
+            "foot-low-r-f",
+            "foot-low-r-b",
+            "foot-high-l-f",
+            "foot-high-l-b",
+            "foot-high-m-f",
+            "foot-high-m-b",
+            "foot-high-r-f",
+            "foot-high-r-b",
+            "step-foot-l",
+            "step-foot-r"
+          ]
         }
       ]
     },
