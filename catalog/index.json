@@ -226886,10 +226886,16 @@
       "id": "public-scale-display",
       "kit": "recycling-facility",
       "title": "Public scale display",
-      "description": "Public scale display: a tall site pedestal with a hooded instrument head, antenna and service door. Low-poly visualization prop. Material controls: concrete, painted steel, safety amber, stainless steel.",
+      "description": "Remote weighbridge weight display at about real size: wide black-faced LED cabinet with 300 mm seven-segment digits and kg unit, sun hood with side cheeks, stop/go signal pair, twin posts on a concrete base with a cable duct and a 'read weight' plate. Choice of reading and signal state. Material controls: cabinet, posts, LED digits and signage. redLed, amberLed and greenLed presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "weighbridge",
+        "scale display",
+        "remote display",
+        "weight display",
+        "led display",
+        "truck scale",
         "recycling",
         "materials recovery",
         "waste management",
@@ -226906,8 +226912,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/public-scale-display.kcad.ts",
       "preview": "/assets/recycling-facility-public-scale-display.png",
-      "sourceSha256": "493060092e94718d1efcfcec9c0dd91cee049cef8e7c0f8d131f713c5a30f790",
-      "triangleBudget": 1800,
+      "sourceSha256": "da5c9d5f23aed1850cad2aea435aeff0bb8f84a28152687f1b38bf8af88284c4",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -226919,88 +226925,226 @@
           "step": 0.05
         },
         {
-          "name": "concrete",
+          "name": "cabinet",
           "type": "color",
-          "default": "#898b83",
-          "label": "Concrete"
+          "default": "#2c4f7c",
+          "label": "Cabinet and hood (powder coat)"
         },
         {
-          "name": "paintedSteel",
+          "name": "posts",
           "type": "color",
-          "default": "#55766b",
-          "label": "Painted steel"
+          "default": "#a7adaa",
+          "label": "Posts (galvanised steel)"
         },
         {
-          "name": "safetyAmber",
+          "name": "led",
           "type": "color",
-          "default": "#f0ae32",
-          "label": "Safety amber"
+          "default": "#ff3b2e",
+          "label": "LED digits"
         },
         {
-          "name": "stainlessSteel",
+          "name": "signage",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#f0c419",
+          "label": "Signage plate"
+        },
+        {
+          "name": "reading",
+          "type": "choice",
+          "default": "24680",
+          "label": "Displayed weight (kg)",
+          "choices": [
+            "24680",
+            "38260",
+            "7140",
+            "0"
+          ]
+        },
+        {
+          "name": "signal",
+          "type": "choice",
+          "default": "go",
+          "label": "Driver signal",
+          "choices": [
+            "stop",
+            "go"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "concrete": "#84857b",
-          "paintedSteel": "#5e7265",
-          "safetyAmber": "#d9a239",
-          "stainlessSteel": "#9ea7a5"
+        "redLed": {
+          "cabinet": "#2c4f7c",
+          "posts": "#a7adaa",
+          "led": "#ff3b2e",
+          "signage": "#f0c419"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632",
-          "safetyAmber": "#ffd044"
+        "amberLed": {
+          "cabinet": "#3a3d40",
+          "posts": "#a7adaa",
+          "led": "#ffb020",
+          "signage": "#f0c419"
+        },
+        "greenLed": {
+          "cabinet": "#4f7a5a",
+          "posts": "#c3c9cb",
+          "led": "#4dff6a",
+          "signage": "#e9ebe6"
         }
       },
       "stats": {
-        "triangles": 224,
+        "triangles": 1316,
         "sizeM": [
-          0.8736,
-          1.5204,
-          0.535
+          1.68,
+          3.216934,
+          0.649918
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "concrete",
-          "color": "#898b83",
+          "name": "base",
+          "color": "#9a9b94",
           "parts": [
-            "mounting-plinth"
-          ],
-          "param": "concrete"
+            "base"
+          ]
         },
         {
-          "name": "paintedSteel",
-          "color": "#55766b",
+          "name": "posts",
+          "color": "#a7adaa",
           "parts": [
-            "pedestal-column",
-            "equipment-head",
-            "sun-hood",
-            "service-door",
-            "antenna"
+            "plate-0",
+            "post-0",
+            "plate-1",
+            "post-1",
+            "cross-bar",
+            "signal-bracket"
           ],
-          "param": "paintedSteel"
+          "param": "posts"
         },
         {
-          "name": "safetyAmber",
-          "color": "#f0ae32",
+          "name": "nut-0-lf",
+          "color": "#5d6366",
           "parts": [
-            "warning-beacon"
-          ],
-          "param": "safetyAmber"
+            "nut-0-lf",
+            "nut-0-rf",
+            "nut-0-lb",
+            "nut-0-rb",
+            "nut-1-lf",
+            "nut-1-rf",
+            "nut-1-lb",
+            "nut-1-rb"
+          ]
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "cable-duct",
+          "color": "#3a3d40",
           "parts": [
-            "cable-gland"
+            "cable-duct",
+            "status-1",
+            "status-2"
+          ]
+        },
+        {
+          "name": "cabinet",
+          "color": "#2c4f7c",
+          "parts": [
+            "cabinet-body",
+            "hood",
+            "cheek-0",
+            "cheek-1"
           ],
-          "param": "stainlessSteel"
+          "param": "cabinet"
+        },
+        {
+          "name": "face",
+          "color": "#121416",
+          "parts": [
+            "face"
+          ]
+        },
+        {
+          "name": "led",
+          "color": "#ff3b2e",
+          "parts": [
+            "digit-0-a",
+            "digit-0-b",
+            "digit-0-g",
+            "digit-0-e",
+            "digit-0-d",
+            "digit-1-f",
+            "digit-1-g",
+            "digit-1-b",
+            "digit-1-c",
+            "digit-2-a",
+            "digit-2-f",
+            "digit-2-g",
+            "digit-2-e",
+            "digit-2-d",
+            "digit-2-c",
+            "digit-3-a",
+            "digit-3-b",
+            "digit-3-c",
+            "digit-3-d",
+            "digit-3-e",
+            "digit-3-f",
+            "digit-3-g",
+            "digit-4-a",
+            "digit-4-b",
+            "digit-4-c",
+            "digit-4-d",
+            "digit-4-e",
+            "digit-4-f",
+            "unit-k-stem",
+            "unit-k-arm-a",
+            "unit-k-arm-b",
+            "unit-g-bowl",
+            "unit-g-top",
+            "unit-g-left",
+            "unit-g-right",
+            "unit-g-tail",
+            "status-0"
+          ],
+          "param": "led"
+        },
+        {
+          "name": "signal-head-0",
+          "color": "#1b1c1d",
+          "parts": [
+            "signal-head-0",
+            "signal-visor-0",
+            "signal-head-1",
+            "signal-visor-1",
+            "read-plate-arrow",
+            "read-plate-word-0",
+            "read-plate-word-1",
+            "read-plate-word-2",
+            "read-plate-word-3",
+            "read-plate-word-4",
+            "read-plate-word-5"
+          ]
+        },
+        {
+          "name": "signal-lamp-0",
+          "color": "#4a1612",
+          "parts": [
+            "signal-lamp-0"
+          ]
+        },
+        {
+          "name": "signal-lamp-1",
+          "color": "#3cdc5a",
+          "parts": [
+            "signal-lamp-1"
+          ]
+        },
+        {
+          "name": "signage",
+          "color": "#f0c419",
+          "parts": [
+            "read-plate"
+          ],
+          "param": "signage"
         }
       ]
     },
@@ -229676,10 +229820,15 @@
       "id": "turntable-vehicle-scale",
       "kit": "recycling-facility",
       "title": "Turntable vehicle scale",
-      "description": "Turntable vehicle scale: a raised vehicle deck, approach ramps and a separate scale display. Low-poly visualization prop. Material controls: concrete, painted steel.",
+      "description": "Weighing turntable at about real size: 4.2 m round steel deck with raised wheel tracks, anti-slip bars and central pivot cap, concrete ring with hazard-striped rim and running gap, load-cell inspection covers, side drive gearmotor housing, entry ramp, and control pedestal with weight readout, turn buttons and emergency stop. Deck turn angle 0, 45 or 90 degrees. Material controls: deck, concrete ring, hazard rim and control pedestal. blueDeck, galvanised and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "turntable",
+        "vehicle turntable",
+        "weighbridge",
+        "vehicle scale",
+        "truck scale",
         "recycling",
         "materials recovery",
         "waste management",
@@ -229696,8 +229845,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/turntable-vehicle-scale.kcad.ts",
       "preview": "/assets/recycling-facility-turntable-vehicle-scale.png",
-      "sourceSha256": "963fd4ff7a0714a2ce90caebef451e022239fbcd5ae56723c59b47486f6effe8",
-      "triangleBudget": 1800,
+      "sourceSha256": "d46f229e9dae8c7672f0750fcb2da8b37b5fdc49fbe5abb5f4732244fb488b53",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -229709,63 +229858,245 @@
           "step": 0.05
         },
         {
-          "name": "concrete",
+          "name": "deck",
           "type": "color",
-          "default": "#898b83",
-          "label": "Concrete"
+          "default": "#2f5f86",
+          "label": "Turntable deck (painted steel)"
         },
         {
-          "name": "paintedSteel",
+          "name": "ring",
           "type": "color",
-          "default": "#47758a",
-          "label": "Painted steel"
+          "default": "#9a9b94",
+          "label": "Concrete ring"
+        },
+        {
+          "name": "hazard",
+          "type": "color",
+          "default": "#f0c419",
+          "label": "Hazard rim (safety yellow)"
+        },
+        {
+          "name": "console",
+          "type": "color",
+          "default": "#e2e3df",
+          "label": "Control pedestal"
+        },
+        {
+          "name": "turn",
+          "type": "choice",
+          "default": "0",
+          "label": "Deck turn angle (degrees)",
+          "choices": [
+            "0",
+            "45",
+            "90"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "concrete": "#84857b",
-          "paintedSteel": "#54727a"
+        "blueDeck": {
+          "deck": "#2f5f86",
+          "ring": "#9a9b94",
+          "hazard": "#f0c419",
+          "console": "#e2e3df"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "galvanised": {
+          "deck": "#a7adaa",
+          "ring": "#9a9b94",
+          "hazard": "#e8b41c",
+          "console": "#2c4f7c"
+        },
+        "weathered": {
+          "deck": "#5b5246",
+          "ring": "#86857c",
+          "hazard": "#b99a3a",
+          "console": "#bdb8a8"
         }
       },
       "stats": {
-        "triangles": 512,
+        "triangles": 1360,
         "sizeM": [
-          3.04,
-          1.05,
-          4.08
+          5.680479,
+          1.551081,
+          6.3
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "concrete",
-          "color": "#898b83",
+          "name": "pit-floor",
+          "color": "#3a3d40",
           "parts": [
-            "scale-foundation"
-          ],
-          "param": "concrete"
+            "pit-floor"
+          ]
         },
         {
-          "name": "paintedSteel",
-          "color": "#47758a",
+          "name": "ring",
+          "color": "#9a9b94",
           "parts": [
-            "rotating-weigh-deck",
-            "approach-ramp-front",
-            "approach-ramp-back",
-            "deck-edge-left",
-            "deck-edge-right",
-            "control-pedestal",
-            "scale-display",
-            "load-cell-front-left",
-            "load-cell-front-right",
-            "load-cell-back-left",
-            "load-cell-back-right"
+            "ring",
+            "ramp",
+            "drive-plinth"
           ],
-          "param": "paintedSteel"
+          "param": "ring"
+        },
+        {
+          "name": "hazard",
+          "color": "#f0c419",
+          "parts": [
+            "hazard-rim",
+            "arrow-0",
+            "arrow-1",
+            "drive-warning",
+            "estop-collar"
+          ],
+          "param": "hazard"
+        },
+        {
+          "name": "rim-stripe-0",
+          "color": "#1b1c1d",
+          "parts": [
+            "rim-stripe-0",
+            "rim-stripe-2",
+            "rim-stripe-4",
+            "rim-stripe-6",
+            "rim-stripe-8",
+            "rim-stripe-10",
+            "rim-stripe-12",
+            "rim-stripe-14",
+            "rim-stripe-16",
+            "rim-stripe-18"
+          ]
+        },
+        {
+          "name": "cell-cover-0",
+          "color": "#7d8386",
+          "parts": [
+            "cell-cover-0",
+            "cell-cover-1",
+            "cell-cover-2",
+            "cell-cover-3",
+            "pedestal-base"
+          ]
+        },
+        {
+          "name": "deck",
+          "color": "#2f5f86",
+          "parts": [
+            "deck-plate",
+            "drive-housing"
+          ],
+          "param": "deck"
+        },
+        {
+          "name": "deck-skirt",
+          "color": "#1f2a33",
+          "parts": [
+            "deck-skirt",
+            "track-bar-0-0",
+            "track-bar-0-1",
+            "track-bar-0-2",
+            "track-bar-0-3",
+            "track-bar-0-4",
+            "track-bar-0-5",
+            "track-bar-0-6",
+            "track-bar-0-7",
+            "track-bar-0-8",
+            "track-bar-1-0",
+            "track-bar-1-1",
+            "track-bar-1-2",
+            "track-bar-1-3",
+            "track-bar-1-4",
+            "track-bar-1-5",
+            "track-bar-1-6",
+            "track-bar-1-7",
+            "track-bar-1-8"
+          ]
+        },
+        {
+          "name": "track-0",
+          "color": "#3a4650",
+          "parts": [
+            "track-0",
+            "track-1"
+          ]
+        },
+        {
+          "name": "pivot-cap",
+          "color": "#c3c9cb",
+          "parts": [
+            "pivot-cap"
+          ]
+        },
+        {
+          "name": "pivot-bolt-ring",
+          "color": "#5d6366",
+          "parts": [
+            "pivot-bolt-ring",
+            "drive-motor"
+          ]
+        },
+        {
+          "name": "ramp-groove-0",
+          "color": "#7c7d77",
+          "parts": [
+            "ramp-groove-0",
+            "ramp-groove-1",
+            "ramp-groove-2",
+            "ramp-groove-3",
+            "ramp-groove-4",
+            "ramp-groove-5"
+          ]
+        },
+        {
+          "name": "drive-motor-fan",
+          "color": "#2b2d2f",
+          "parts": [
+            "drive-motor-fan",
+            "drive-vent"
+          ]
+        },
+        {
+          "name": "console",
+          "color": "#e2e3df",
+          "parts": [
+            "pedestal",
+            "console-head"
+          ],
+          "param": "console"
+        },
+        {
+          "name": "readout",
+          "color": "#121416",
+          "parts": [
+            "readout"
+          ]
+        },
+        {
+          "name": "readout-digit-0",
+          "color": "#ff3b2e",
+          "parts": [
+            "readout-digit-0",
+            "readout-digit-1",
+            "readout-digit-2",
+            "readout-digit-3"
+          ]
+        },
+        {
+          "name": "btn-left",
+          "color": "#3cdc5a",
+          "parts": [
+            "btn-left",
+            "btn-right"
+          ]
+        },
+        {
+          "name": "estop",
+          "color": "#d23a2a",
+          "parts": [
+            "estop"
+          ]
         }
       ]
     },
@@ -231461,10 +231792,14 @@
       "id": "weighbridge-approach-ramp",
       "kit": "recycling-facility",
       "title": "Weighbridge approach ramp",
-      "description": "Weighbridge approach ramp: a sloped approach plate with side curbs, transition plate and ground anchors. Low-poly visualization prop. Material controls: painted steel, concrete, stainless steel.",
+      "description": "Steel approach ramp for a surface-mounted weighbridge at about real size: 3 m wide sloped tread plate rising to 620 mm, triangular side cheeks and ribs, anti-slip bars across the slope, tapered yellow guide kerbs, hazard-striped toe nose, bolted foot flanges on a concrete apron and a rubber gap seal at the deck end. Optional guide kerbs. Material controls: ramp steel, guide kerbs, anti-slip bars and concrete. blueSteel, galvanised and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "weighbridge",
+        "approach ramp",
+        "truck scale",
+        "vehicle ramp",
         "recycling",
         "materials recovery",
         "waste management",
@@ -231481,8 +231816,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/weighbridge-approach-ramp.kcad.ts",
       "preview": "/assets/recycling-facility-weighbridge-approach-ramp.png",
-      "sourceSha256": "0b2fb79b25e2fe3270ae22589ce01df63b8e52b1e8e2f7c858368f5ab949cc69",
-      "triangleBudget": 1800,
+      "sourceSha256": "4293725d02fcc1c12b403e60cb9936e9b7f35cdc9adc2dd880eaae593044f0b9",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "scale",
@@ -231494,74 +231829,175 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "rampSteel",
           "type": "color",
-          "default": "#6c7882",
-          "label": "Painted steel"
+          "default": "#2f5f86",
+          "label": "Ramp plate and cheeks (painted steel)"
+        },
+        {
+          "name": "kerb",
+          "type": "color",
+          "default": "#f0c419",
+          "label": "Guide kerbs (safety yellow)"
+        },
+        {
+          "name": "tread",
+          "type": "color",
+          "default": "#3a4650",
+          "label": "Anti-slip bars"
         },
         {
           "name": "concrete",
           "type": "color",
-          "default": "#898b83",
-          "label": "Concrete"
+          "default": "#9a9b94",
+          "label": "Concrete apron"
         },
         {
-          "name": "stainlessSteel",
-          "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "name": "kerbs",
+          "type": "boolean",
+          "default": true,
+          "label": "Guide kerbs"
         }
       ],
       "presets": {
-        "weathered": {
-          "paintedSteel": "#6d7475",
-          "concrete": "#84857b",
-          "stainlessSteel": "#9ea7a5"
+        "blueSteel": {
+          "rampSteel": "#2f5f86",
+          "kerb": "#f0c419",
+          "tread": "#3a4650",
+          "concrete": "#9a9b94"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "galvanised": {
+          "rampSteel": "#a7adaa",
+          "kerb": "#e8b41c",
+          "tread": "#6c7275",
+          "concrete": "#9a9b94"
+        },
+        "weathered": {
+          "rampSteel": "#5b5246",
+          "kerb": "#b99a3a",
+          "tread": "#3b3833",
+          "concrete": "#86857c"
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 1404,
         "sizeM": [
-          3,
-          0.38,
-          1.445
+          3.95,
+          0.782,
+          3.5
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#6c7882",
-          "parts": [
-            "ramp-apron",
-            "ramp-surface",
-            "side-curb-left",
-            "side-curb-right",
-            "transition-plate"
-          ],
-          "param": "paintedSteel"
-        },
-        {
           "name": "concrete",
-          "color": "#898b83",
+          "color": "#9a9b94",
           "parts": [
-            "ground-anchor-left",
-            "ground-anchor-right"
+            "apron"
           ],
           "param": "concrete"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "apron-edge",
+          "color": "#7c7d77",
           "parts": [
-            "roller-left",
-            "roller-right"
+            "apron-edge"
+          ]
+        },
+        {
+          "name": "rampSteel",
+          "color": "#2f5f86",
+          "parts": [
+            "tread-plate",
+            "cheek-l",
+            "cheek-r",
+            "rib-0",
+            "rib-1",
+            "head-plate",
+            "toe-nose",
+            "foot-0",
+            "foot-1",
+            "foot-2",
+            "foot-3"
           ],
-          "param": "stainlessSteel"
+          "param": "rampSteel"
+        },
+        {
+          "name": "base-bar",
+          "color": "#4a4f53",
+          "parts": [
+            "base-bar"
+          ]
+        },
+        {
+          "name": "cheek-hole-0",
+          "color": "#1f2224",
+          "parts": [
+            "cheek-hole-0",
+            "cheek-hole-1",
+            "cheek-hole-2"
+          ]
+        },
+        {
+          "name": "kerb",
+          "color": "#f0c419",
+          "parts": [
+            "toe-stripe-0",
+            "toe-stripe-2",
+            "toe-stripe-4",
+            "toe-stripe-6",
+            "toe-stripe-8",
+            "kerb-l",
+            "kerb-r"
+          ],
+          "param": "kerb"
+        },
+        {
+          "name": "toe-stripe-1",
+          "color": "#1b1c1d",
+          "parts": [
+            "toe-stripe-1",
+            "toe-stripe-3",
+            "toe-stripe-5",
+            "toe-stripe-7",
+            "toe-stripe-9",
+            "kerb-cap-l",
+            "kerb-cap-r",
+            "gap-seal"
+          ]
+        },
+        {
+          "name": "tread",
+          "color": "#3a4650",
+          "parts": [
+            "bar-0",
+            "bar-1",
+            "bar-2",
+            "bar-3",
+            "bar-4",
+            "bar-5",
+            "bar-6",
+            "bar-7",
+            "bar-8"
+          ],
+          "param": "tread"
+        },
+        {
+          "name": "bolt-0-a",
+          "color": "#c3c9cb",
+          "parts": [
+            "bolt-0-a",
+            "bolt-0-b",
+            "bolt-1-a",
+            "bolt-1-b",
+            "bolt-2-a",
+            "bolt-2-b",
+            "bolt-3-a",
+            "bolt-3-b",
+            "lift-eye-0",
+            "lift-eye-1"
+          ]
         }
       ]
     },
@@ -231569,10 +232005,14 @@
       "id": "weighbridge-deck",
       "kit": "recycling-facility",
       "title": "Weighbridge deck",
-      "description": "Weighbridge deck: its scale deck, side beam and approach pad. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Surface-mounted truck weighbridge at about real size: modular 3 m wide steel deck with anti-slip tread bars on deep I-beam side stringers, stainless load cells on concrete foundation plinths at every module joint, yellow guide kerbs along both edges, hazard-striped end plates and a lane-side junction box. Two or three 6 m modules. Material controls: deck, concrete, guide kerbs and load cells. blueDeck, galvanised and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "weighbridge",
+        "truck scale",
+        "vehicle scale",
+        "load cell",
         "recycling",
         "materials recovery",
         "waste management",
@@ -231589,8 +232029,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/weighbridge-deck.kcad.ts",
       "preview": "/assets/recycling-facility-weighbridge-deck.png",
-      "sourceSha256": "dbfba1ed44158dd6628b2016a8a7ce948f52a189dd910efc8655f7e11a031a09",
-      "triangleBudget": 1800,
+      "sourceSha256": "6bf7e4d3454cac2f9a50f9afd85451cd058a8c197e565a7f63d349d82fe09346",
+      "triangleBudget": 4200,
       "params": [
         {
           "name": "scale",
@@ -231602,60 +232042,253 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "deck",
           "type": "color",
-          "default": "#47758a",
-          "label": "Painted steel"
+          "default": "#2f5f86",
+          "label": "Deck and stringers (painted steel)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "concrete",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#9a9b94",
+          "label": "Foundation concrete"
+        },
+        {
+          "name": "kerb",
+          "type": "color",
+          "default": "#f0c419",
+          "label": "Guide kerbs (safety yellow)"
+        },
+        {
+          "name": "loadCell",
+          "type": "color",
+          "default": "#c3c9cb",
+          "label": "Load cells (stainless)"
+        },
+        {
+          "name": "modules",
+          "type": "choice",
+          "default": "2",
+          "label": "Deck modules (6 m each)",
+          "choices": [
+            "2",
+            "3"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "paintedSteel": "#54727a",
-          "stainlessSteel": "#9ea7a5"
+        "blueDeck": {
+          "deck": "#2f5f86",
+          "concrete": "#9a9b94",
+          "kerb": "#f0c419",
+          "loadCell": "#c3c9cb"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "galvanised": {
+          "deck": "#a7adaa",
+          "concrete": "#9a9b94",
+          "kerb": "#e8b41c",
+          "loadCell": "#d5dadb"
+        },
+        "weathered": {
+          "deck": "#5b5246",
+          "concrete": "#86857c",
+          "kerb": "#b99a3a",
+          "loadCell": "#9ea4a3"
         }
       },
       "stats": {
-        "triangles": 364,
+        "triangles": 1868,
         "sizeM": [
-          5.2,
-          0.36,
-          3.8
+          12.032,
+          1,
+          3.688
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#47758a",
+          "name": "concrete",
+          "color": "#9a9b94",
           "parts": [
-            "scale-deck",
-            "approach-pad-front",
-            "approach-pad-back",
-            "load-cell-a",
-            "load-cell-b",
-            "load-cell-c",
-            "load-cell-d"
+            "plinth-0",
+            "plinth-1",
+            "plinth-2"
           ],
-          "param": "paintedSteel"
+          "param": "concrete"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "loadCell",
+          "color": "#c3c9cb",
           "parts": [
-            "side-beam-left",
-            "side-beam-right"
+            "cell-base-0-l",
+            "cell-0-l",
+            "cell-base-0-r",
+            "cell-0-r",
+            "cell-base-1-l",
+            "cell-1-l",
+            "cell-base-1-r",
+            "cell-1-r",
+            "cell-base-2-l",
+            "cell-2-l",
+            "cell-base-2-r",
+            "cell-2-r"
           ],
-          "param": "stainlessSteel"
+          "param": "loadCell"
+        },
+        {
+          "name": "cell-cap-0-l",
+          "color": "#5d6366",
+          "parts": [
+            "cell-cap-0-l",
+            "cell-cap-0-r",
+            "cell-cap-1-l",
+            "cell-cap-1-r",
+            "cell-cap-2-l",
+            "cell-cap-2-r",
+            "jbox-post"
+          ]
+        },
+        {
+          "name": "cell-cable-0",
+          "color": "#1d1f21",
+          "parts": [
+            "cell-cable-0",
+            "cell-cable-1",
+            "cell-cable-2",
+            "jbox-cable"
+          ]
+        },
+        {
+          "name": "deck",
+          "color": "#2f5f86",
+          "parts": [
+            "stringer-l",
+            "stringer-r",
+            "cross-girder-1",
+            "deck-plate-0",
+            "deck-plate-1",
+            "edge-skirt-l",
+            "edge-skirt-r"
+          ],
+          "param": "deck"
+        },
+        {
+          "name": "tread-0-0",
+          "color": "#3a4650",
+          "parts": [
+            "tread-0-0",
+            "tread-0-1",
+            "tread-0-2",
+            "tread-0-3",
+            "tread-0-4",
+            "tread-0-5",
+            "tread-0-6",
+            "tread-0-7",
+            "tread-0-8",
+            "tread-0-9",
+            "tread-0-10",
+            "tread-0-11",
+            "tread-0-12",
+            "tread-0-13",
+            "tread-0-14",
+            "tread-0-15",
+            "tread-0-16",
+            "tread-0-17",
+            "tread-1-0",
+            "tread-1-1",
+            "tread-1-2",
+            "tread-1-3",
+            "tread-1-4",
+            "tread-1-5",
+            "tread-1-6",
+            "tread-1-7",
+            "tread-1-8",
+            "tread-1-9",
+            "tread-1-10",
+            "tread-1-11",
+            "tread-1-12",
+            "tread-1-13",
+            "tread-1-14",
+            "tread-1-15",
+            "tread-1-16",
+            "tread-1-17"
+          ]
+        },
+        {
+          "name": "joint-seam-1",
+          "color": "#16181a",
+          "parts": [
+            "joint-seam-1"
+          ]
+        },
+        {
+          "name": "kerb",
+          "color": "#f0c419",
+          "parts": [
+            "end-stripe-in-0",
+            "end-stripe-in-2",
+            "end-stripe-in-4",
+            "end-stripe-in-6",
+            "end-stripe-in-8",
+            "end-stripe-out-0",
+            "end-stripe-out-2",
+            "end-stripe-out-4",
+            "end-stripe-out-6",
+            "end-stripe-out-8",
+            "kerb-post-l-0",
+            "kerb-post-l-1",
+            "kerb-post-l-2",
+            "kerb-post-l-3",
+            "kerb-post-l-4",
+            "kerb-post-l-5",
+            "kerb-post-l-6",
+            "kerb-post-l-7",
+            "kerb-post-l-8",
+            "kerb-rail-l",
+            "kerb-post-r-0",
+            "kerb-post-r-1",
+            "kerb-post-r-2",
+            "kerb-post-r-3",
+            "kerb-post-r-4",
+            "kerb-post-r-5",
+            "kerb-post-r-6",
+            "kerb-post-r-7",
+            "kerb-post-r-8",
+            "kerb-rail-r",
+            "jbox-label"
+          ],
+          "param": "kerb"
+        },
+        {
+          "name": "end-stripe-in-1",
+          "color": "#1b1c1d",
+          "parts": [
+            "end-stripe-in-1",
+            "end-stripe-in-3",
+            "end-stripe-in-5",
+            "end-stripe-in-7",
+            "end-stripe-in-9",
+            "end-stripe-out-1",
+            "end-stripe-out-3",
+            "end-stripe-out-5",
+            "end-stripe-out-7",
+            "end-stripe-out-9"
+          ]
+        },
+        {
+          "name": "jbox",
+          "color": "#d9dcd6",
+          "parts": [
+            "jbox"
+          ]
+        },
+        {
+          "name": "jbox-lid-seam",
+          "color": "#9a9d98",
+          "parts": [
+            "jbox-lid-seam"
+          ]
         }
       ]
     },
@@ -231663,10 +232296,15 @@
       "id": "weighbridge-kiosk",
       "kit": "recycling-facility",
       "title": "Weighbridge kiosk",
-      "description": "Weighbridge kiosk: a small weighbridge kiosk with front counter, glazing and roof overhang. Low-poly visualization prop. Material controls: stainless steel, painted steel, glass, safety amber.",
+      "description": "Weighbridge operator cabin at about real size: raised steel cabin with ribbed cladding, long lane-side window with sliding serving hatch and external deal tray, driver intercom and ticket slot post, stop/go signal, mono-pitch overhanging roof, side door with vision panel and step, wall-hung air conditioner. Signal shows stop or go. Material controls: cladding, trim, glazing and accent band. siteGreen, portacabin and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "weighbridge",
+        "kiosk",
+        "weighbridge office",
+        "gatehouse",
+        "operator cabin",
         "recycling",
         "materials recovery",
         "waste management",
@@ -231683,8 +232321,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/weighbridge-kiosk.kcad.ts",
       "preview": "/assets/recycling-facility-weighbridge-kiosk.png",
-      "sourceSha256": "4a1dbea5eddb5e8fcde31bee70c4f0344a697908fd8a5056cf57fefbe5dd9ef4",
-      "triangleBudget": 1800,
+      "sourceSha256": "e181e381933fe6ce537bc28eb6ec06a3a386920db19f55fa91d3f56f87374151",
+      "triangleBudget": 2800,
       "params": [
         {
           "name": "scale",
@@ -231696,89 +232334,233 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "cladding",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#4f7a5a",
+          "label": "Wall cladding (painted steel)"
         },
         {
-          "name": "paintedSteel",
+          "name": "trim",
           "type": "color",
-          "default": "#7b6f56",
-          "label": "Painted steel"
+          "default": "#e9ebe6",
+          "label": "Roof, frames and trim"
         },
         {
           "name": "glass",
           "type": "color",
-          "default": "#4f9ca8",
-          "label": "Glass"
+          "default": "#5d8fa3",
+          "label": "Glazing"
         },
         {
-          "name": "safetyAmber",
+          "name": "accent",
           "type": "color",
-          "default": "#f0ae32",
-          "label": "Safety amber"
+          "default": "#f0b429",
+          "label": "Accent band and signage"
+        },
+        {
+          "name": "signal",
+          "type": "choice",
+          "default": "stop",
+          "label": "Driver signal",
+          "choices": [
+            "stop",
+            "go"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#776e57",
-          "glass": "#55939a",
-          "safetyAmber": "#d9a239"
+        "siteGreen": {
+          "cladding": "#4f7a5a",
+          "trim": "#e9ebe6",
+          "glass": "#5d8fa3",
+          "accent": "#f0b429"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632",
-          "safetyAmber": "#ffd044"
+        "portacabin": {
+          "cladding": "#e6e4dc",
+          "trim": "#2c4f7c",
+          "glass": "#6b97a8",
+          "accent": "#2c4f7c"
+        },
+        "weathered": {
+          "cladding": "#6d6a58",
+          "trim": "#bdb8a8",
+          "glass": "#55767f",
+          "accent": "#b4893a"
         }
       },
       "stats": {
-        "triangles": 172,
+        "triangles": 1012,
         "sizeM": [
-          1.66,
-          1.32,
-          0.72
+          3.18,
+          2.84,
+          3.76
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "pad-0",
+          "color": "#9a9b94",
           "parts": [
-            "floor-skid"
-          ],
-          "param": "stainlessSteel"
+            "pad-0",
+            "pad-1"
+          ]
         },
         {
-          "name": "paintedSteel",
-          "color": "#7b6f56",
+          "name": "skid-0",
+          "color": "#3a3d40",
           "parts": [
-            "rear-wall",
-            "left-wall",
-            "right-wall",
-            "front-counter",
-            "roof",
-            "service-panel"
+            "skid-0",
+            "skid-1",
+            "door-handle",
+            "ac-fan",
+            "ac-bracket-a",
+            "ac-bracket-b",
+            "signal-arm",
+            "intercom-grille"
+          ]
+        },
+        {
+          "name": "cladding",
+          "color": "#4f7a5a",
+          "parts": [
+            "body",
+            "rib-side-0",
+            "rib-side-1",
+            "rib-side-2",
+            "rib-side-3",
+            "rib-side-4",
+            "rib-side-5",
+            "rib-side-6",
+            "post"
           ],
-          "param": "paintedSteel"
+          "param": "cladding"
+        },
+        {
+          "name": "trim",
+          "color": "#e9ebe6",
+          "parts": [
+            "base-flashing",
+            "window-frame",
+            "mullion-a",
+            "mullion-b",
+            "hatch-frame",
+            "hatch-rail",
+            "sill",
+            "roof",
+            "gutter",
+            "downpipe",
+            "door",
+            "intercom-head"
+          ],
+          "param": "trim"
+        },
+        {
+          "name": "accent",
+          "color": "#f0b429",
+          "parts": [
+            "accent-band",
+            "roof-fascia",
+            "intercom-hood",
+            "intercom-button",
+            "sign-panel"
+          ],
+          "param": "accent"
         },
         {
           "name": "glass",
-          "color": "#4f9ca8",
+          "color": "#5d8fa3",
           "parts": [
-            "window-header"
+            "window-glass",
+            "door-vision"
           ],
           "param": "glass"
         },
         {
-          "name": "safetyAmber",
-          "color": "#f0ae32",
+          "name": "hatch-pane",
+          "color": "#8bb3c2",
           "parts": [
-            "corner-beacon"
-          ],
-          "param": "safetyAmber"
+            "hatch-pane"
+          ]
+        },
+        {
+          "name": "deal-tray",
+          "color": "#c3c9cb",
+          "parts": [
+            "deal-tray",
+            "deal-tray-lip"
+          ]
+        },
+        {
+          "name": "tray-bracket",
+          "color": "#7d8386",
+          "parts": [
+            "tray-bracket",
+            "door-kick",
+            "step",
+            "step-tread",
+            "step-side-a",
+            "step-side-b",
+            "post-base"
+          ]
+        },
+        {
+          "name": "ac-unit",
+          "color": "#e2e3df",
+          "parts": [
+            "ac-unit"
+          ]
+        },
+        {
+          "name": "ac-grille-0",
+          "color": "#9a9d98",
+          "parts": [
+            "ac-grille-0",
+            "ac-grille-1",
+            "ac-grille-2",
+            "ac-grille-3"
+          ]
+        },
+        {
+          "name": "signal-head",
+          "color": "#1b1c1d",
+          "parts": [
+            "signal-head",
+            "visor-2130",
+            "visor-1900",
+            "ticket-slot",
+            "sign-letter-0",
+            "sign-letter-1",
+            "sign-letter-2",
+            "sign-letter-3",
+            "sign-letter-4",
+            "sign-letter-5",
+            "sign-letter-6",
+            "sign-letter-7",
+            "sign-letter-8"
+          ]
+        },
+        {
+          "name": "lamp-red",
+          "color": "#ff3b2e",
+          "parts": [
+            "lamp-red"
+          ]
+        },
+        {
+          "name": "lamp-green",
+          "color": "#163d1f",
+          "parts": [
+            "lamp-green"
+          ]
+        },
+        {
+          "name": "intercom-screen",
+          "color": "#1d3340",
+          "parts": [
+            "intercom-screen"
+          ]
         }
       ]
     },
