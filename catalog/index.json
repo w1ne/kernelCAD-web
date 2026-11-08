@@ -222515,14 +222515,22 @@
       "id": "film-wringer",
       "kit": "recycling-facility",
       "title": "Plastic film wringer",
-      "description": "Plastic film wringer: its wash, process tank and top cover. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Plastic film squeezer (wringer) at about real size: hopper of wet washed film over a horizontal screw barrel, slotted dewatering screen with water running into a drain trough, heated compression zone with heater bands under a steam hood, die head with a face cutter, agglomerate pickup hopper with pneumatic take-off pipe, gearbox and drive motor on a base frame. Material controls: frame paint, barrel steel, drive paint and plastic film. plant, weathered, stainless and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "film squeezer",
+        "film wringer",
+        "dewatering",
+        "plastic film",
+        "ldpe",
+        "agglomerate",
+        "screw press",
+        "plastics washing",
         "materials recovery",
         "waste management",
-        "glass plastics",
+        "plastics",
         "low poly",
         "scene prop"
       ],
@@ -222535,8 +222543,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/film-wringer.kcad.ts",
       "preview": "/assets/recycling-facility-film-wringer.png",
-      "sourceSha256": "fb3fb2de7a681bd0353dc08def982fedf4704b91ef6f6be72b7e1bb47a924592",
-      "triangleBudget": 1800,
+      "sourceSha256": "4d5d659f97f7e6d17d44ca18784ff888e636bad5a3ec21e7c848ae5526930e46",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -222548,60 +222556,259 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#77715b",
-          "label": "Painted steel"
+          "default": "#4a5d6e",
+          "label": "Base, pedestals and hood (paint)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "barrel",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#b9c0c2",
+          "label": "Hopper, barrel and screen (steel)"
+        },
+        {
+          "name": "drive",
+          "type": "color",
+          "default": "#d0782e",
+          "label": "Gearbox, motor and cutter (paint)"
+        },
+        {
+          "name": "film",
+          "type": "color",
+          "default": "#dfe8ee",
+          "label": "Plastic film"
+        },
+        {
+          "name": "feed",
+          "type": "choice",
+          "default": "loaded",
+          "label": "Hopper",
+          "choices": [
+            "loaded",
+            "empty"
+          ]
         }
       ],
       "presets": {
+        "plant": {
+          "frame": "#4a5d6e",
+          "barrel": "#b9c0c2",
+          "drive": "#d0782e",
+          "film": "#dfe8ee"
+        },
         "weathered": {
-          "paintedSteel": "#756f5a",
-          "stainlessSteel": "#9ea7a5"
+          "frame": "#585e5c",
+          "barrel": "#9ea4a4",
+          "drive": "#8a6a4a",
+          "film": "#cfd2c4"
+        },
+        "stainless": {
+          "frame": "#c4c9cb",
+          "barrel": "#d6dadb",
+          "drive": "#2f5d9a",
+          "film": "#dfe8ee"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "frame": "#f0c419",
+          "barrel": "#c4c9cb",
+          "drive": "#c8322a",
+          "film": "#b9dcef"
         }
       },
       "stats": {
-        "triangles": 252,
+        "triangles": 2536,
         "sizeM": [
-          1.256316,
-          1.302,
-          1.2042
+          5.9,
+          3.09,
+          2.29
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#77715b",
+          "name": "frame",
+          "color": "#4a5d6e",
           "parts": [
-            "wash-frame-left",
-            "wash-frame-right",
-            "process-tank",
-            "top-cover",
-            "feed-hopper",
-            "outlet-chute",
-            "pump"
+            "base-frame",
+            "pedestal-0",
+            "pedestal-1200",
+            "pedestal-2600",
+            "drain-trough",
+            "steam-hood",
+            "steam-duct",
+            "hood-post-260-f",
+            "hood-post-260-b",
+            "hood-post-1560-f",
+            "hood-post-1560-b",
+            "pickup-stand",
+            "takeoff-support",
+            "hopper-rim",
+            "hopper-platform",
+            "platform-post"
           ],
-          "param": "paintedSteel"
+          "param": "frame"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "drive",
+          "color": "#d0782e",
           "parts": [
-            "agitation-drum",
-            "pipe-run"
+            "gearbox",
+            "gearbox-flange",
+            "motor",
+            "motor-feet",
+            "motor-terminal-box",
+            "cutter-housing",
+            "cutter-motor"
           ],
-          "param": "stainlessSteel"
+          "param": "drive"
+        },
+        {
+          "name": "motor-fan-cover",
+          "color": "#2b2f33",
+          "parts": [
+            "motor-fan-cover",
+            "screen-slot-0",
+            "screen-slot-1",
+            "screen-slot-2",
+            "screen-slot-3",
+            "screen-slot-4",
+            "screen-slot-5",
+            "screen-slot-6",
+            "screen-slot-7",
+            "cable-tray",
+            "heater-lead-0",
+            "heater-lead-1",
+            "heater-lead-2",
+            "heater-lead-3",
+            "heater-lead-4",
+            "drain-pipe",
+            "steam-duct-cap"
+          ]
+        },
+        {
+          "name": "barrel",
+          "color": "#b9c0c2",
+          "parts": [
+            "barrel",
+            "screen-flange--700",
+            "screen-flange-330",
+            "die-head",
+            "pickup-hopper",
+            "takeoff-pipe",
+            "takeoff-riser",
+            "takeoff-bend",
+            "takeoff-run",
+            "feed-hopper"
+          ],
+          "param": "barrel"
+        },
+        {
+          "name": "heater-band-0",
+          "color": "#c6622a",
+          "parts": [
+            "heater-band-0",
+            "heater-band-1",
+            "heater-band-2",
+            "heater-band-3",
+            "heater-band-4"
+          ]
+        },
+        {
+          "name": "trough-water",
+          "color": "#6f8c9a",
+          "parts": [
+            "trough-water"
+          ]
+        },
+        {
+          "name": "water-stream-0",
+          "color": "#7fb0d0",
+          "parts": [
+            "water-stream-0",
+            "water-stream-1",
+            "water-stream-2",
+            "water-stream-3",
+            "water-stream-4",
+            "water-stream-5",
+            "hopper-drip"
+          ]
+        },
+        {
+          "name": "cutter-window",
+          "color": "#4c6878",
+          "parts": [
+            "cutter-window"
+          ]
+        },
+        {
+          "name": "film",
+          "color": "#dfe8ee",
+          "parts": [
+            "agglomerate-0",
+            "agglomerate-1",
+            "agglomerate-2",
+            "agglomerate-3",
+            "agglomerate-4",
+            "agglomerate-5",
+            "wet-film-0",
+            "wet-film-2",
+            "wet-film-4"
+          ],
+          "param": "film"
+        },
+        {
+          "name": "rail-post-f",
+          "color": "#f0c419",
+          "parts": [
+            "rail-post-f",
+            "rail-post-b",
+            "rail-bar-2050",
+            "rail-bar-2510"
+          ]
+        },
+        {
+          "name": "wet-film-1",
+          "color": "#e58aa8",
+          "parts": [
+            "wet-film-1"
+          ]
+        },
+        {
+          "name": "wet-film-3",
+          "color": "#9ccf8a",
+          "parts": [
+            "wet-film-3"
+          ]
+        },
+        {
+          "name": "control-cabinet",
+          "color": "#d9d9d4",
+          "parts": [
+            "control-cabinet"
+          ]
+        },
+        {
+          "name": "cabinet-screen",
+          "color": "#24425e",
+          "parts": [
+            "cabinet-screen"
+          ]
+        },
+        {
+          "name": "cabinet-estop",
+          "color": "#d62f2a",
+          "parts": [
+            "cabinet-estop"
+          ]
+        },
+        {
+          "name": "temperature-display",
+          "color": "#c8322a",
+          "parts": [
+            "temperature-display"
+          ]
         }
       ]
     },
@@ -222801,11 +223008,19 @@
       "id": "food-waste-depackager",
       "kit": "recycling-facility",
       "title": "Food-waste depackager",
-      "description": "Food-waste depackager: its wash, process tank and top cover. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Food-waste depackager at about real size: stainless body with drum-shaped hammer-rotor housing and feed hopper, bin lifter with a wheelie bin of packaged food waste, lowered or tipping into the hopper, belt-guarded rotor motor, inclined packaging screw dropping film and bottles into a skip, slurry pump and pipe to an open buffer tank. Material controls: stainless body, frame and lifter paint, drive paint and food-waste slurry. plant, weathered, municipal and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "depackager",
+        "food waste",
+        "anaerobic digestion",
+        "slurry",
+        "bin lifter",
+        "wheelie bin",
+        "packaging",
+        "skip",
         "materials recovery",
         "waste management",
         "organics",
@@ -222821,8 +223036,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/food-waste-depackager.kcad.ts",
       "preview": "/assets/recycling-facility-food-waste-depackager.png",
-      "sourceSha256": "03f9fb37cdb674bac031acdfbc204e678262c8891b3c6becd3a46cb9919b3c8a",
-      "triangleBudget": 1800,
+      "sourceSha256": "a031d3cd7717f3b7bdf09c2b1ad5b204d51a5fd984ecef6629e707c600b5e6a6",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -222834,60 +223049,297 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "body",
           "type": "color",
-          "default": "#82714c",
-          "label": "Painted steel"
+          "default": "#c3c9cb",
+          "label": "Body, hopper and tank (stainless)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#2f6a5a",
+          "label": "Frame, lifter and skip (paint)"
+        },
+        {
+          "name": "drive",
+          "type": "color",
+          "default": "#355f9e",
+          "label": "Motor, pump and screw (paint)"
+        },
+        {
+          "name": "slurry",
+          "type": "color",
+          "default": "#7a5a34",
+          "label": "Food waste and slurry"
+        },
+        {
+          "name": "lifter",
+          "type": "choice",
+          "default": "lowered",
+          "label": "Bin lifter",
+          "choices": [
+            "lowered",
+            "tipping"
+          ]
         }
       ],
       "presets": {
+        "plant": {
+          "body": "#c3c9cb",
+          "frame": "#2f6a5a",
+          "drive": "#355f9e",
+          "slurry": "#7a5a34"
+        },
         "weathered": {
-          "paintedSteel": "#7c6f50",
-          "stainlessSteel": "#9ea7a5"
+          "body": "#a3a9a8",
+          "frame": "#55605a",
+          "drive": "#4f5a6a",
+          "slurry": "#6a5a42"
+        },
+        "municipal": {
+          "body": "#cdd2d4",
+          "frame": "#3d6fb0",
+          "drive": "#3a3f44",
+          "slurry": "#8a6a3a"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "body": "#cdd2d4",
+          "frame": "#f0c419",
+          "drive": "#c8322a",
+          "slurry": "#7a5a34"
         }
       },
       "stats": {
-        "triangles": 252,
+        "triangles": 2410,
         "sizeM": [
-          1.500716,
-          1.302,
-          1.2042
+          6.75,
+          3.7,
+          5.2
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#82714c",
+          "name": "body",
+          "color": "#c3c9cb",
           "parts": [
-            "wash-frame-left",
-            "wash-frame-right",
-            "process-tank",
-            "top-cover",
+            "body",
+            "rotor-housing",
+            "inspection-door",
             "feed-hopper",
-            "outlet-chute",
-            "pump"
+            "hopper-neck",
+            "buffer-tank"
           ],
-          "param": "paintedSteel"
+          "param": "body"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "frame",
+          "color": "#2f6a5a",
           "parts": [
-            "agitation-drum",
-            "pipe-run"
+            "housing-end-l",
+            "housing-end-r",
+            "leg-l-f",
+            "foot-l-f",
+            "leg-r-f",
+            "foot-r-f",
+            "leg-l-b",
+            "foot-l-b",
+            "leg-r-b",
+            "foot-r-b",
+            "base-rail-f",
+            "base-rail-b",
+            "hopper-rim",
+            "lifter-column",
+            "lifter-foot",
+            "lifter-brace",
+            "lifter-carriage",
+            "motor-base",
+            "screw-leg",
+            "skip",
+            "tank-rim",
+            "tank-mixer-bridge",
+            "tank-ladder-l",
+            "tank-ladder-r",
+            "tank-rung-1",
+            "tank-rung-2",
+            "tank-rung-3",
+            "tank-rung-4",
+            "tank-rung-5",
+            "tank-rung-6",
+            "tank-rung-7",
+            "tank-rung-8",
+            "tank-rung-9",
+            "control-post"
           ],
-          "param": "stainlessSteel"
+          "param": "frame"
+        },
+        {
+          "name": "door-clamp-140",
+          "color": "#2b2f33",
+          "parts": [
+            "door-clamp-140",
+            "door-clamp-860",
+            "lifter-ram-body",
+            "bin-wheel-l",
+            "bin-wheel-r",
+            "bin-comb-bar",
+            "motor-fan-cover",
+            "skip-runner-f",
+            "skip-runner-b",
+            "skip-lug-l",
+            "skip-lug-r",
+            "hour-meter"
+          ]
+        },
+        {
+          "name": "door-window",
+          "color": "#4c6878",
+          "parts": [
+            "door-window"
+          ]
+        },
+        {
+          "name": "water-line",
+          "color": "#4f8fc0",
+          "parts": [
+            "water-line"
+          ]
+        },
+        {
+          "name": "water-valve",
+          "color": "#c8322a",
+          "parts": [
+            "water-valve"
+          ]
+        },
+        {
+          "name": "slurry",
+          "color": "#7a5a34",
+          "parts": [
+            "hopper-food",
+            "bin-food-1",
+            "tank-slurry"
+          ],
+          "param": "slurry"
+        },
+        {
+          "name": "lifter-ram",
+          "color": "#c4c9cb",
+          "parts": [
+            "lifter-ram"
+          ]
+        },
+        {
+          "name": "bin-body",
+          "color": "#58a84c",
+          "parts": [
+            "bin-body",
+            "bin-rim",
+            "bin-lid"
+          ]
+        },
+        {
+          "name": "bin-food-0",
+          "color": "#c98a3a",
+          "parts": [
+            "bin-food-0"
+          ]
+        },
+        {
+          "name": "bin-food-2",
+          "color": "#d8b860",
+          "parts": [
+            "bin-food-2"
+          ]
+        },
+        {
+          "name": "belt-guard",
+          "color": "#f0c419",
+          "parts": [
+            "belt-guard"
+          ]
+        },
+        {
+          "name": "drive",
+          "color": "#355f9e",
+          "parts": [
+            "motor",
+            "motor-terminal-box",
+            "packaging-screw",
+            "screw-gearmotor",
+            "screw-spout",
+            "slurry-outlet",
+            "slurry-pump",
+            "pump-motor",
+            "slurry-pipe",
+            "slurry-riser",
+            "slurry-bend",
+            "slurry-inlet",
+            "tank-mixer-motor"
+          ],
+          "param": "drive"
+        },
+        {
+          "name": "packaging-0",
+          "color": "#e4eaee",
+          "parts": [
+            "packaging-0",
+            "packaging-6",
+            "falling-packaging"
+          ]
+        },
+        {
+          "name": "packaging-1",
+          "color": "#3d6fb0",
+          "parts": [
+            "packaging-1",
+            "packaging-7"
+          ]
+        },
+        {
+          "name": "packaging-2",
+          "color": "#d62f2a",
+          "parts": [
+            "packaging-2",
+            "packaging-8",
+            "estop"
+          ]
+        },
+        {
+          "name": "packaging-3",
+          "color": "#e8c33a",
+          "parts": [
+            "packaging-3"
+          ]
+        },
+        {
+          "name": "packaging-4",
+          "color": "#9ccf8a",
+          "parts": [
+            "packaging-4"
+          ]
+        },
+        {
+          "name": "packaging-5",
+          "color": "#e58aa8",
+          "parts": [
+            "packaging-5"
+          ]
+        },
+        {
+          "name": "control-box",
+          "color": "#d9d9d4",
+          "parts": [
+            "control-box"
+          ]
+        },
+        {
+          "name": "lift-button",
+          "color": "#2f9a4f",
+          "parts": [
+            "lift-button"
+          ]
         }
       ]
     },
@@ -222895,14 +223347,21 @@
       "id": "friction-washer",
       "kit": "recycling-facility",
       "title": "Friction washer",
-      "description": "Friction washer: its wash, process tank and top cover. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Inclined high-speed friction washer for plastic flake at about real size: tilted tube with a helix of paddles on the shaft behind an open (or closed) inspection cover, flared feed hopper with flake, spray-water header with drop nozzles, belt-guarded drive motor at the high end, dirty-water tray draining to a sump tank and a discharge chute into a flake tote. Material controls: frame paint, stainless tube, drive paint and plastic flake. plant, weathered, stainless and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "friction washer",
+        "plastics washing",
+        "wash line",
+        "flake",
+        "pet",
+        "hdpe",
+        "paddle washer",
         "materials recovery",
         "waste management",
-        "glass plastics",
+        "plastics",
         "low poly",
         "scene prop"
       ],
@@ -222915,8 +223374,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/friction-washer.kcad.ts",
       "preview": "/assets/recycling-facility-friction-washer.png",
-      "sourceSha256": "39ccff5143257aef9dbfcc357a60b90d0b3e67d72ffcb25d58cfa1210fe52e0e",
-      "triangleBudget": 1800,
+      "sourceSha256": "91e3e073134e753471707d406f54223dfc5bd1bde2d14d5ded1cd74c16ddf711",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -222928,60 +223387,245 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#5f7484",
-          "label": "Painted steel"
+          "default": "#41627a",
+          "label": "Stand and tray (paint)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "tube",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#bfc6c8",
+          "label": "Washer tube and hopper (stainless)"
+        },
+        {
+          "name": "drive",
+          "type": "color",
+          "default": "#2f7d4f",
+          "label": "Motor and bearings (paint)"
+        },
+        {
+          "name": "flake",
+          "type": "color",
+          "default": "#7fc2e0",
+          "label": "Plastic flake"
+        },
+        {
+          "name": "cover",
+          "type": "choice",
+          "default": "open",
+          "label": "Inspection cover",
+          "choices": [
+            "open",
+            "closed"
+          ]
         }
       ],
       "presets": {
+        "plant": {
+          "frame": "#41627a",
+          "tube": "#bfc6c8",
+          "drive": "#2f7d4f",
+          "flake": "#7fc2e0"
+        },
         "weathered": {
-          "paintedSteel": "#647176",
-          "stainlessSteel": "#9ea7a5"
+          "frame": "#56605f",
+          "tube": "#a2a8a6",
+          "drive": "#4f5e52",
+          "flake": "#9fb4a6"
+        },
+        "hdpeLine": {
+          "frame": "#3a3f44",
+          "tube": "#c8cdcf",
+          "drive": "#2f5d9a",
+          "flake": "#e8e2cc"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "frame": "#f0c419",
+          "tube": "#c8cdcf",
+          "drive": "#c8322a",
+          "flake": "#5fb95f"
         }
       },
       "stats": {
-        "triangles": 252,
+        "triangles": 1990,
         "sizeM": [
-          1.622916,
-          1.506,
-          1.3554
+          4.672253,
+          2.99343,
+          1.795
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#5f7484",
+          "name": "tube",
+          "color": "#bfc6c8",
           "parts": [
-            "wash-frame-left",
-            "wash-frame-right",
-            "process-tank",
-            "top-cover",
+            "tube",
+            "end-plate-feed",
+            "end-plate-top",
+            "sump-rim",
             "feed-hopper",
-            "outlet-chute",
-            "pump"
+            "discharge-chute"
           ],
-          "param": "paintedSteel"
+          "param": "tube"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "frame",
+          "color": "#41627a",
           "parts": [
-            "agitation-drum",
-            "pipe-run"
+            "band-1000",
+            "band-2000",
+            "band-3000",
+            "cover-flange-f",
+            "cover-flange-b",
+            "motor-bracket",
+            "drain-tray",
+            "sump-tank",
+            "leg-feed-f",
+            "foot-feed-f",
+            "leg-feed-b",
+            "foot-feed-b",
+            "cradle-feed",
+            "cross-feed",
+            "leg-top-f",
+            "foot-top-f",
+            "leg-top-b",
+            "foot-top-b",
+            "cradle-top",
+            "cross-top",
+            "brace-f",
+            "brace-b",
+            "hopper-rim",
+            "control-post"
           ],
-          "param": "stainlessSteel"
+          "param": "frame"
+        },
+        {
+          "name": "shaft",
+          "color": "#2b2f33",
+          "parts": [
+            "shaft",
+            "motor-fan-cover",
+            "drain-pipe",
+            "tote-wheel-l-f",
+            "tote-wheel-l-b",
+            "tote-wheel-r-f",
+            "tote-wheel-r-b",
+            "speed-dial"
+          ]
+        },
+        {
+          "name": "paddle-0",
+          "color": "#8f979c",
+          "parts": [
+            "paddle-0",
+            "paddle-1",
+            "paddle-2",
+            "paddle-3",
+            "paddle-4",
+            "paddle-5",
+            "paddle-6",
+            "paddle-7",
+            "paddle-8",
+            "paddle-9",
+            "paddle-10",
+            "paddle-11",
+            "paddle-12",
+            "paddle-13",
+            "paddle-14",
+            "paddle-15",
+            "paddle-16",
+            "paddle-17",
+            "paddle-18",
+            "paddle-19"
+          ]
+        },
+        {
+          "name": "flake",
+          "color": "#7fc2e0",
+          "parts": [
+            "flake-in-tube",
+            "hopper-flake",
+            "tote-flake"
+          ],
+          "param": "flake"
+        },
+        {
+          "name": "drive",
+          "color": "#2f7d4f",
+          "parts": [
+            "bearing-feed",
+            "bearing-top",
+            "motor",
+            "terminal-box"
+          ],
+          "param": "drive"
+        },
+        {
+          "name": "spray-header",
+          "color": "#5b8fb0",
+          "parts": [
+            "spray-header",
+            "spray-drop-0",
+            "spray-drop-1",
+            "spray-drop-2",
+            "spray-drop-3",
+            "spray-drop-4",
+            "spray-drop-5",
+            "spray-drop-6"
+          ]
+        },
+        {
+          "name": "water-valve",
+          "color": "#c8322a",
+          "parts": [
+            "water-valve"
+          ]
+        },
+        {
+          "name": "belt-guard",
+          "color": "#f0c419",
+          "parts": [
+            "belt-guard"
+          ]
+        },
+        {
+          "name": "drain-water",
+          "color": "#6f7d62",
+          "parts": [
+            "drain-water",
+            "sump-water"
+          ]
+        },
+        {
+          "name": "tote",
+          "color": "#3d6fb0",
+          "parts": [
+            "tote"
+          ]
+        },
+        {
+          "name": "control-box",
+          "color": "#d9d9d4",
+          "parts": [
+            "control-box"
+          ]
+        },
+        {
+          "name": "estop",
+          "color": "#d62f2a",
+          "parts": [
+            "estop"
+          ]
+        },
+        {
+          "name": "start-button",
+          "color": "#2f9a4f",
+          "parts": [
+            "start-button"
+          ]
         }
       ]
     },
@@ -224284,14 +224928,20 @@
       "id": "glass-dryer",
       "kit": "recycling-facility",
       "title": "Glass dryer",
-      "description": "Glass dryer: its wash, process tank and top cover. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Rotary drum dryer for washed glass cullet at about real size: slightly inclined drum on two riding rings and trunnion rollers on concrete piers, girth gear with pinion, gearbox and motor, firing hood with burner, combustion-air fan and gas train, wet-cullet feed hopper, discharge hood with exhaust stack and an outlet chute onto a cullet pile or a take-away belt. Material controls: drum paint, hood paint, machined steel and glass cullet. plant, weathered, ambercullet and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "glass dryer",
+        "rotary dryer",
+        "drum dryer",
+        "cullet",
+        "glass recycling",
+        "burner",
         "materials recovery",
         "waste management",
-        "glass plastics",
+        "glass",
         "low poly",
         "scene prop"
       ],
@@ -224304,8 +224954,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/glass-dryer.kcad.ts",
       "preview": "/assets/recycling-facility-glass-dryer.png",
-      "sourceSha256": "741d0884af252da38dfb8ce479fe1ec213aa0667101ba035bfbe63e991e33232",
-      "triangleBudget": 1800,
+      "sourceSha256": "727185f03ed9e75a0e47a540446e0336762de2fd054c5a3abc65bb258d762ac3",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -224317,60 +224967,225 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "drum",
           "type": "color",
-          "default": "#647b66",
-          "label": "Painted steel"
+          "default": "#7a3b2e",
+          "label": "Drum shell (heat-resistant paint)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "hood",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#647b66",
+          "label": "Hoods, stack and fan (paint)"
+        },
+        {
+          "name": "steel",
+          "type": "color",
+          "default": "#b4babc",
+          "label": "Riding rings, rollers and gear (steel)"
+        },
+        {
+          "name": "cullet",
+          "type": "color",
+          "default": "#6fae7f",
+          "label": "Glass cullet"
+        },
+        {
+          "name": "discharge",
+          "type": "choice",
+          "default": "pile",
+          "label": "Dry cullet out to",
+          "choices": [
+            "pile",
+            "belt"
+          ]
         }
       ],
       "presets": {
+        "plant": {
+          "drum": "#7a3b2e",
+          "hood": "#647b66",
+          "steel": "#b4babc",
+          "cullet": "#6fae7f"
+        },
         "weathered": {
-          "paintedSteel": "#687662",
-          "stainlessSteel": "#9ea7a5"
+          "drum": "#5e4a40",
+          "hood": "#687662",
+          "steel": "#9ea7a5",
+          "cullet": "#8aa38c"
+        },
+        "amberCullet": {
+          "drum": "#3a3f44",
+          "hood": "#8a8f92",
+          "steel": "#c4c9cb",
+          "cullet": "#b8732e"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "drum": "#c8322a",
+          "hood": "#f0c419",
+          "steel": "#c4c9cb",
+          "cullet": "#bfe3d6"
         }
       },
       "stats": {
-        "triangles": 252,
+        "triangles": 1858,
         "sizeM": [
-          1.134116,
-          1.506,
-          1.2042
+          8.6,
+          4.48,
+          2.73
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#647b66",
+          "name": "drum",
+          "color": "#7a3b2e",
           "parts": [
-            "wash-frame-left",
-            "wash-frame-right",
-            "process-tank",
-            "top-cover",
-            "feed-hopper",
-            "outlet-chute",
-            "pump"
+            "drum"
           ],
-          "param": "paintedSteel"
+          "param": "drum"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "drum-band-300",
+          "color": "#2b2f33",
           "parts": [
-            "agitation-drum",
-            "pipe-run"
+            "drum-band-300",
+            "drum-band-3900",
+            "girth-gear",
+            "pinion",
+            "motor-fan-cover",
+            "firing-hood-seal",
+            "burner-tube",
+            "fan-motor",
+            "gas-valve-0",
+            "gas-valve-2",
+            "discharge-seal",
+            "stack-cap",
+            "stack-damper",
+            "cabinet-plinth"
+          ]
+        },
+        {
+          "name": "steel",
+          "color": "#b4babc",
+          "parts": [
+            "riding-ring-800",
+            "riding-ring-3400",
+            "girth-gear-flange",
+            "roller-feed-f",
+            "roller-feed-b",
+            "roller-out-f",
+            "roller-out-b",
+            "pinion-shaft",
+            "hood-door"
           ],
-          "param": "stainlessSteel"
+          "param": "steel"
+        },
+        {
+          "name": "hood",
+          "color": "#647b66",
+          "parts": [
+            "roller-block-feed-f",
+            "roller-block-feed-b",
+            "roller-block-out-f",
+            "roller-block-out-b",
+            "drive-skid",
+            "gearbox",
+            "motor",
+            "motor-feet",
+            "firing-hood",
+            "fan-scroll",
+            "fan-duct",
+            "gas-train-stand",
+            "feed-hopper",
+            "hopper-ladder-l",
+            "hopper-ladder-r",
+            "hopper-rung-1",
+            "hopper-rung-2",
+            "hopper-rung-3",
+            "hopper-rung-4",
+            "hopper-rung-5",
+            "hopper-rung-6",
+            "hopper-rung-7",
+            "hopper-rung-8",
+            "hopper-rung-9",
+            "discharge-hood",
+            "stack",
+            "hood-legs-f",
+            "hood-legs-b",
+            "outlet-chute"
+          ],
+          "param": "hood"
+        },
+        {
+          "name": "pier-feed",
+          "color": "#a9a59c",
+          "parts": [
+            "pier-feed",
+            "pier-out"
+          ]
+        },
+        {
+          "name": "gear-guard",
+          "color": "#f0c419",
+          "parts": [
+            "gear-guard"
+          ]
+        },
+        {
+          "name": "burner-head",
+          "color": "#c8322a",
+          "parts": [
+            "burner-head",
+            "gas-valve-1"
+          ]
+        },
+        {
+          "name": "gas-train",
+          "color": "#e8c33a",
+          "parts": [
+            "gas-train",
+            "gas-riser"
+          ]
+        },
+        {
+          "name": "cullet",
+          "color": "#6fae7f",
+          "parts": [
+            "hopper-cullet",
+            "cullet-pile",
+            "cullet-pile-shoulder"
+          ],
+          "param": "cullet"
+        },
+        {
+          "name": "control-cabinet",
+          "color": "#d9d9d4",
+          "parts": [
+            "control-cabinet"
+          ]
+        },
+        {
+          "name": "cabinet-screen",
+          "color": "#24425e",
+          "parts": [
+            "cabinet-screen"
+          ]
+        },
+        {
+          "name": "cabinet-estop",
+          "color": "#d62f2a",
+          "parts": [
+            "cabinet-estop"
+          ]
+        },
+        {
+          "name": "flame-lamp",
+          "color": "#f08c2a",
+          "parts": [
+            "flame-lamp"
+          ]
         }
       ]
     },
@@ -232069,14 +232884,22 @@
       "id": "plastic-flake-dryer",
       "kit": "recycling-facility",
       "title": "Plastic flake dryer",
-      "description": "Plastic flake dryer: its wash, process tank and top cover. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Vertical centrifugal dewatering dryer for washed plastic flake at about real size: tall stainless housing on a leg frame with the paddle rotor behind an open (or closed) access door, top motor with belt guard, inclined wet-flake screw feeder from a floor hopper, water drain to a tray, pneumatic duct over to a cyclone on a stand, rotary valve and a filling big bag. Material controls: stainless housing, frame paint, motor paint and plastic flake. plant, weathered, petLine and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "flake dryer",
+        "centrifugal dryer",
+        "dewatering",
+        "cyclone",
+        "big bag",
+        "fibc",
+        "plastics washing",
+        "pet",
         "materials recovery",
         "waste management",
-        "glass plastics",
+        "plastics",
         "low poly",
         "scene prop"
       ],
@@ -232089,8 +232912,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/plastic-flake-dryer.kcad.ts",
       "preview": "/assets/recycling-facility-plastic-flake-dryer.png",
-      "sourceSha256": "a250e61b891eabb104f6deba0469acea07f7f01f39e12e1f1af0ee61ef11262b",
-      "triangleBudget": 1800,
+      "sourceSha256": "0d1b06e5a2aaf85d2bfe20ebbe43ec92f79d7a4c718c4488515d0dd2d6a8a78b",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -232102,60 +232925,234 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "housing",
           "type": "color",
-          "default": "#5e6982",
-          "label": "Painted steel"
+          "default": "#c2c8ca",
+          "label": "Dryer housing, duct and cyclone (stainless)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#2f6f8f",
+          "label": "Frames and stands (paint)"
+        },
+        {
+          "name": "motor",
+          "type": "color",
+          "default": "#3d7a3f",
+          "label": "Motors and feeder (paint)"
+        },
+        {
+          "name": "flake",
+          "type": "color",
+          "default": "#e7d9a8",
+          "label": "Plastic flake"
+        },
+        {
+          "name": "door",
+          "type": "choice",
+          "default": "open",
+          "label": "Access door",
+          "choices": [
+            "open",
+            "closed"
+          ]
         }
       ],
       "presets": {
+        "plant": {
+          "housing": "#c2c8ca",
+          "frame": "#2f6f8f",
+          "motor": "#3d7a3f",
+          "flake": "#e7d9a8"
+        },
         "weathered": {
-          "paintedSteel": "#646a75",
-          "stainlessSteel": "#9ea7a5"
+          "housing": "#a3a9a8",
+          "frame": "#5a6062",
+          "motor": "#56624f",
+          "flake": "#c9c0a0"
+        },
+        "petLine": {
+          "housing": "#cdd2d4",
+          "frame": "#3a3f44",
+          "motor": "#2f5d9a",
+          "flake": "#9fd3ea"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "housing": "#cdd2d4",
+          "frame": "#f0c419",
+          "motor": "#c8322a",
+          "flake": "#6fbf6a"
         }
       },
       "stats": {
-        "triangles": 252,
+        "triangles": 2306,
         "sizeM": [
-          1.378516,
-          1.404,
-          1.3554
+          4.88,
+          3.88,
+          2.299648
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#5e6982",
+          "name": "housing",
+          "color": "#c2c8ca",
           "parts": [
-            "wash-frame-left",
-            "wash-frame-right",
-            "process-tank",
+            "housing",
+            "housing-base-cone",
             "top-cover",
-            "feed-hopper",
-            "outlet-chute",
-            "pump"
+            "door-panel",
+            "duct-riser",
+            "duct-bend",
+            "duct-run",
+            "duct-inlet",
+            "cyclone-barrel",
+            "cyclone-cone",
+            "vortex-finder"
           ],
-          "param": "paintedSteel"
+          "param": "housing"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "frame",
+          "color": "#2f6f8f",
           "parts": [
-            "agitation-drum",
-            "pipe-run"
+            "housing-flange-470",
+            "housing-flange-1550",
+            "housing-flange-2660",
+            "leg-l-f",
+            "foot-l-f",
+            "leg-r-f",
+            "foot-r-f",
+            "leg-l-b",
+            "foot-l-b",
+            "leg-r-b",
+            "foot-r-b",
+            "leg-ring",
+            "motor-base",
+            "hopper-leg-l-f",
+            "hopper-leg-l-b",
+            "hopper-leg-r-f",
+            "hopper-leg-r-b",
+            "screw-tube-stand",
+            "drain-tray",
+            "cyclone-roof",
+            "stand-leg-l-f",
+            "stand-leg-r-f",
+            "stand-leg-l-b",
+            "stand-leg-r-b",
+            "stand-ring",
+            "bag-beam-1500",
+            "control-post"
           ],
-          "param": "stainlessSteel"
+          "param": "frame"
+        },
+        {
+          "name": "door-hinge",
+          "color": "#2b2f33",
+          "parts": [
+            "door-hinge",
+            "rotor-shaft",
+            "motor-fan-cover",
+            "screw-gearbox",
+            "drain-pipe",
+            "exhaust-cap",
+            "valve-motor",
+            "ammeter"
+          ]
+        },
+        {
+          "name": "rotor-paddle-0",
+          "color": "#8f979c",
+          "parts": [
+            "rotor-paddle-0",
+            "rotor-paddle-1",
+            "rotor-paddle-2",
+            "rotor-paddle-3",
+            "rotor-paddle-4",
+            "rotor-paddle-5",
+            "rotor-paddle-6",
+            "rotor-paddle-7",
+            "rotor-paddle-8"
+          ]
+        },
+        {
+          "name": "screen-basket",
+          "color": "#6f777b",
+          "parts": [
+            "screen-basket"
+          ]
+        },
+        {
+          "name": "motor",
+          "color": "#3d7a3f",
+          "parts": [
+            "motor",
+            "bearing-housing",
+            "feed-hopper",
+            "screw-tube",
+            "screw-motor",
+            "blower",
+            "rotary-valve"
+          ],
+          "param": "motor"
+        },
+        {
+          "name": "belt-guard",
+          "color": "#f0c419",
+          "parts": [
+            "belt-guard"
+          ]
+        },
+        {
+          "name": "flake",
+          "color": "#e7d9a8",
+          "parts": [
+            "hopper-flake",
+            "bag-flake-top"
+          ],
+          "param": "flake"
+        },
+        {
+          "name": "drain-water",
+          "color": "#6f8c9a",
+          "parts": [
+            "drain-water"
+          ]
+        },
+        {
+          "name": "big-bag",
+          "color": "#ece8dc",
+          "parts": [
+            "big-bag",
+            "bag-spout",
+            "bag-loop-l-f",
+            "bag-loop-r-f",
+            "bag-loop-l-b",
+            "bag-loop-r-b"
+          ]
+        },
+        {
+          "name": "bag-pallet",
+          "color": "#a07a4a",
+          "parts": [
+            "bag-pallet"
+          ]
+        },
+        {
+          "name": "control-box",
+          "color": "#d9d9d4",
+          "parts": [
+            "control-box"
+          ]
+        },
+        {
+          "name": "estop",
+          "color": "#d62f2a",
+          "parts": [
+            "estop"
+          ]
         }
       ]
     },
