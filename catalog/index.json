@@ -223611,10 +223611,16 @@
       "id": "open-top-roll-off-skip",
       "kit": "recycling-facility",
       "title": "Open-top roll-off skip",
-      "description": "Open-top roll-off skip: an open-top steel body with a rolled rim and side reinforcing ribs. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Hook-lift roll-off container at about real size: long open steel body on two floor rails with rear rollers, sloped nose with A-frame and hook bar, vertical side posts and top rail, full-height rear door with hinges and locking bars, optional scrap load. Material controls: body paint, rails and A-frame, door hardware, load. municipalGreen, weathered and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "roll-off container",
+        "roll off",
+        "hook lift",
+        "skip",
+        "dumpster",
+        "open top",
         "recycling",
         "materials recovery",
         "waste management",
@@ -223631,8 +223637,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/open-top-roll-off-skip.kcad.ts",
       "preview": "/assets/recycling-facility-open-top-roll-off-skip.png",
-      "sourceSha256": "ca98b76c663f27607c23638070db4aaa7a71fed1a9ba59b41169e263cc9f7558",
-      "triangleBudget": 1800,
+      "sourceSha256": "f0ae0c3998e3a8187c2b55fc8744cf0993f9b6e41f0a93ddaa9875b788201255",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -223644,60 +223650,148 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "body",
           "type": "color",
-          "default": "#4f7080",
-          "label": "Painted steel"
+          "default": "#2f6e3a",
+          "label": "Body (painted steel)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "rails",
+          "type": "color",
+          "default": "#2b2e31",
+          "label": "Rails, rollers and A-frame"
+        },
+        {
+          "name": "hardware",
           "type": "color",
           "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "label": "Hinges, lock bars and hook bar (galvanised)"
+        },
+        {
+          "name": "scrap",
+          "type": "color",
+          "default": "#8a5a3a",
+          "label": "Scrap load (rusty steel)"
+        },
+        {
+          "name": "load",
+          "type": "choice",
+          "default": "scrap",
+          "label": "Load",
+          "choices": [
+            "scrap",
+            "empty"
+          ]
         }
       ],
       "presets": {
+        "municipalGreen": {
+          "body": "#2f6e3a",
+          "rails": "#2b2e31",
+          "hardware": "#a8b4b6",
+          "scrap": "#8a5a3a"
+        },
         "weathered": {
-          "paintedSteel": "#5a6e74",
-          "stainlessSteel": "#9ea7a5"
+          "body": "#5a6e74",
+          "rails": "#3a3632",
+          "hardware": "#8e9692",
+          "scrap": "#7a4a2e"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "body": "#d77632",
+          "rails": "#26292b",
+          "hardware": "#c4ccd0",
+          "scrap": "#6f7a80"
         }
       },
       "stats": {
-        "triangles": 108,
+        "triangles": 992,
         "sizeM": [
-          1.21,
-          0.968,
-          0.825
+          5.45,
+          1.996127,
+          2.46
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#4f7080",
+          "name": "body",
+          "color": "#2f6e3a",
           "parts": [
-            "floor-pan",
-            "front-wall",
-            "rear-wall",
-            "left-wall",
-            "right-wall"
+            "body",
+            "top-rail-f",
+            "post-f-0",
+            "post-f-1",
+            "post-f-2",
+            "post-f-3",
+            "post-f-4",
+            "post-f-5",
+            "top-rail-b",
+            "post-b-0",
+            "post-b-1",
+            "post-b-2",
+            "post-b-3",
+            "post-b-4",
+            "post-b-5",
+            "rear-door"
           ],
-          "param": "paintedSteel"
+          "param": "body"
         },
         {
-          "name": "stainlessSteel",
+          "name": "rails",
+          "color": "#2b2e31",
+          "parts": [
+            "rail-f",
+            "roller-f",
+            "rail-b",
+            "roller-b",
+            "cross-member-0",
+            "cross-member-1",
+            "cross-member-2",
+            "cross-member-3",
+            "cross-member-4",
+            "a-frame-f",
+            "a-frame-b",
+            "a-frame-gusset",
+            "lock-keeper--500",
+            "lock-keeper-300",
+            "scrap-drum"
+          ],
+          "param": "rails"
+        },
+        {
+          "name": "hardware",
           "color": "#a8b4b6",
           "parts": [
-            "front-rim",
-            "rear-rim",
-            "side-rib-left",
-            "side-rib-right"
+            "roller-hub-f",
+            "roller-hub-b",
+            "hook-bar",
+            "hinge-450",
+            "hinge-1050",
+            "hinge-1500",
+            "lock-bar--500",
+            "lock-handle--500",
+            "lock-bar-300",
+            "lock-handle-300",
+            "scrap-beam-0",
+            "scrap-beam-2",
+            "scrap-beam-4"
           ],
-          "param": "stainlessSteel"
+          "param": "hardware"
+        },
+        {
+          "name": "scrap",
+          "color": "#8a5a3a",
+          "parts": [
+            "scrap-bed",
+            "scrap-beam-1",
+            "scrap-beam-3",
+            "scrap-beam-5",
+            "scrap-mound-0",
+            "scrap-mound-1"
+          ],
+          "param": "scrap"
         }
       ]
     },
@@ -229174,14 +229268,19 @@
       "id": "waste-cart-tipping-frame",
       "kit": "recycling-facility",
       "title": "Waste-cart tipping frame",
-      "description": "Waste-cart tipping frame: an open-top steel body with a rolled rim and side reinforcing ribs. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Wheelie-bin lifter at about real size: floor-bolted base plate, two steel masts, lifting carriage with comb bar, hydraulic ram, top deflector hood, hazard-striped guards, two-button control box and a 240-litre wheelie bin in the cradle. Material controls: frame, ram rod and comb (chrome), wheelie bin, hazard stripes. depotBlue, safetyYellow and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "bin lifter",
+        "bin tipper",
+        "wheelie bin",
+        "cart tipper",
+        "hydraulic lift",
         "recycling",
         "materials recovery",
         "waste management",
-        "containers",
+        "equipment",
         "low poly",
         "scene prop"
       ],
@@ -229194,8 +229293,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/waste-cart-tipping-frame.kcad.ts",
       "preview": "/assets/recycling-facility-waste-cart-tipping-frame.png",
-      "sourceSha256": "8c8702b60ca205090afedca7c0becdf70666e4b0be564cbb6ffad2df88f95f73",
-      "triangleBudget": 1800,
+      "sourceSha256": "7a0d8783714c5b5c7136435ec98d128937b34b548124eacc7602a89681f82f67",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -229207,60 +229306,162 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#687b55",
-          "label": "Painted steel"
+          "default": "#3b5d7a",
+          "label": "Frame (painted steel)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "chrome",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#c4ccd0",
+          "label": "Ram rod, comb and fixings (chrome)"
+        },
+        {
+          "name": "bin",
+          "type": "color",
+          "default": "#2f7d3a",
+          "label": "Wheelie bin (HDPE)"
+        },
+        {
+          "name": "hazard",
+          "type": "color",
+          "default": "#f2c230",
+          "label": "Hazard stripes and buttons"
+        },
+        {
+          "name": "cart",
+          "type": "choice",
+          "default": "loaded",
+          "label": "Bin in cradle",
+          "choices": [
+            "loaded",
+            "empty"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "paintedSteel": "#6b7656",
-          "stainlessSteel": "#9ea7a5"
+        "depotBlue": {
+          "frame": "#3b5d7a",
+          "chrome": "#c4ccd0",
+          "bin": "#2f7d3a",
+          "hazard": "#f2c230"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "safetyYellow": {
+          "frame": "#e0b22a",
+          "chrome": "#b9c2c6",
+          "bin": "#3a4046",
+          "hazard": "#1d1f21"
+        },
+        "weathered": {
+          "frame": "#5c6a6e",
+          "chrome": "#9aa3a6",
+          "bin": "#6a4a2a",
+          "hazard": "#c99a2e"
         }
       },
       "stats": {
-        "triangles": 108,
+        "triangles": 1064,
         "sizeM": [
-          1.21,
-          1.248,
-          0.825
+          1.42,
+          2.56,
+          1.63
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#687b55",
+          "name": "frame",
+          "color": "#3b5d7a",
           "parts": [
-            "floor-pan",
-            "front-wall",
-            "rear-wall",
-            "left-wall",
-            "right-wall"
+            "base-plate",
+            "mast-l",
+            "mast-cap-l",
+            "stay-l",
+            "mast-r",
+            "mast-cap-r",
+            "stay-r",
+            "cross-beam",
+            "hood",
+            "ram-barrel",
+            "ram-clevis",
+            "carriage",
+            "lower-cradle",
+            "control-box"
           ],
-          "param": "paintedSteel"
+          "param": "frame"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "chrome",
+          "color": "#c4ccd0",
           "parts": [
-            "front-rim",
-            "rear-rim",
-            "side-rib-left",
-            "side-rib-right"
+            "anchor--1--1",
+            "anchor-1--1",
+            "anchor--1-1",
+            "anchor-1-1",
+            "ram-rod",
+            "carriage-shoe-l",
+            "carriage-shoe-r",
+            "comb-bar",
+            "comb-tooth-0",
+            "comb-tooth-1",
+            "comb-tooth-2",
+            "comb-tooth-3",
+            "comb-tooth-4",
+            "comb-tooth-5",
+            "comb-tooth-6",
+            "button-down",
+            "bin-axle"
           ],
-          "param": "stainlessSteel"
+          "param": "chrome"
+        },
+        {
+          "name": "hazard",
+          "color": "#f2c230",
+          "parts": [
+            "stripe-l-0",
+            "stripe-l-1",
+            "stripe-l-2",
+            "stripe-l-3",
+            "stripe-l-4",
+            "stripe-l-5",
+            "stripe-r-0",
+            "stripe-r-1",
+            "stripe-r-2",
+            "stripe-r-3",
+            "stripe-r-4",
+            "stripe-r-5",
+            "hood-lip",
+            "button-up"
+          ],
+          "param": "hazard"
+        },
+        {
+          "name": "e-stop",
+          "color": "#c8302c",
+          "parts": [
+            "e-stop"
+          ]
+        },
+        {
+          "name": "bin",
+          "color": "#2f7d3a",
+          "parts": [
+            "bin-body",
+            "bin-rim",
+            "bin-lid",
+            "bin-handle"
+          ],
+          "param": "bin"
+        },
+        {
+          "name": "bin-wheel-l",
+          "color": "#1d1f21",
+          "parts": [
+            "bin-wheel-l",
+            "bin-wheel-r"
+          ]
         }
       ]
     },
@@ -234166,13 +234367,19 @@
       "id": "flatbed-stock-trolley",
       "kit": "retail-store",
       "title": "Flatbed stock trolley",
-      "description": "Warehouse-style retail flatbed trolley with deck, raised end handle and four swivel wheels. Knobs: overall scale and powder-coated steel, stainless steel, rubber color controls. Presets: cleanStore and nightRestock.",
+      "description": "Platform stock trolley at about real size: low steel deck with a ribbed anti-slip mat, bent tube U push handle with cross brace and rubber grip, two fixed and two swivel castors on forked brackets, rubber corner bumpers and an optional stack of shrink-wrapped cases. Material controls: frame, deck mat, wheels and grip, load cartons. cleanStore, warehouseBlue and safetyYellow presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "platform trolley",
+        "flatbed trolley",
+        "platform truck",
+        "stock trolley",
+        "hand cart",
         "retail",
         "grocery",
         "shop",
+        "warehouse",
         "low poly",
         "scene prop"
       ],
@@ -234181,13 +234388,14 @@
         "shop",
         "grocery",
         "interior",
+        "warehouse",
         "scene"
       ],
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/flatbed-stock-trolley.kcad.ts",
       "preview": "/assets/retail-store-flatbed-stock-trolley.png",
-      "sourceSha256": "c7753848d8f8a95015cb5267a12df51cecc2561742beb2178cae61f9788e655a",
-      "triangleBudget": 1800,
+      "sourceSha256": "db84ee546ba53bbd11ebe73deaab7ae26ca0fcc355c2f8c0ab9a9bbbc3e3f390",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -234199,83 +234407,151 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "frame",
           "type": "color",
-          "default": "#4e5e66",
-          "label": "Powder-coated steel color"
+          "default": "#2f5fa8",
+          "label": "Frame and handle (powder-coated steel)"
         },
         {
-          "name": "stainless",
+          "name": "mat",
           "type": "color",
-          "default": "#a9b3b5",
-          "label": "Stainless steel color"
+          "default": "#3a3f43",
+          "label": "Deck mat (ribbed rubber)"
         },
         {
           "name": "rubber",
           "type": "color",
-          "default": "#292e31",
-          "label": "Rubber color"
+          "default": "#1f2224",
+          "label": "Wheels, bumpers and grip (rubber)"
+        },
+        {
+          "name": "cartons",
+          "type": "color",
+          "default": "#c79a5c",
+          "label": "Load cartons (corrugated board)"
+        },
+        {
+          "name": "load",
+          "type": "choice",
+          "default": "cases",
+          "label": "Load",
+          "choices": [
+            "cases",
+            "empty"
+          ]
         }
       ],
       "presets": {
         "cleanStore": {
-          "powderCoat": "#e5ebed",
-          "stainless": "#bfc8cb",
-          "rubber": "#40474b"
+          "frame": "#c9d0d3",
+          "mat": "#3a3f43",
+          "rubber": "#2a2e31",
+          "cartons": "#c79a5c"
         },
-        "nightRestock": {
-          "powderCoat": "#354750",
-          "stainless": "#66747a",
-          "rubber": "#262b2e"
+        "warehouseBlue": {
+          "frame": "#2f5fa8",
+          "mat": "#3a3f43",
+          "rubber": "#1f2224",
+          "cartons": "#b98f55"
+        },
+        "safetyYellow": {
+          "frame": "#f2c230",
+          "mat": "#2b2e31",
+          "rubber": "#1a1c1e",
+          "cartons": "#d8b07a"
         }
       },
       "stats": {
-        "triangles": 448,
+        "triangles": 1396,
         "sizeM": [
-          1.1,
-          1.127,
-          0.715
+          1.014595,
+          0.97,
+          0.644
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainless",
-          "color": "#a9b3b5",
+          "name": "frame",
+          "color": "#2f5fa8",
           "parts": [
+            "castor-plate-free-f",
+            "castor-swivel-free-f",
+            "castor-fork-free-f-f",
+            "castor-fork-free-f-b",
+            "castor-hub-free-f",
+            "castor-plate-handle-f",
+            "castor-fork-handle-f-f",
+            "castor-fork-handle-f-b",
+            "castor-hub-handle-f",
+            "castor-plate-free-b",
+            "castor-swivel-free-b",
+            "castor-fork-free-b-f",
+            "castor-fork-free-b-b",
+            "castor-hub-free-b",
+            "castor-plate-handle-b",
+            "castor-fork-handle-b-f",
+            "castor-fork-handle-b-b",
+            "castor-hub-handle-b",
             "deck",
-            "toe-plate",
-            "caster-mount--440--260",
-            "caster-mount--440-260",
-            "caster-mount-440--260",
-            "caster-mount-440-260"
+            "deck-skirt",
+            "handle-upright-f",
+            "handle-socket-f",
+            "handle-elbow-f",
+            "handle-upright-b",
+            "handle-socket-b",
+            "handle-elbow-b",
+            "handle-top",
+            "handle-brace",
+            "case-label"
           ],
-          "param": "stainless"
-        },
-        {
-          "name": "powderCoat",
-          "color": "#4e5e66",
-          "parts": [
-            "handle-upright"
-          ],
-          "param": "powderCoat"
+          "param": "frame"
         },
         {
           "name": "rubber",
-          "color": "#292e31",
+          "color": "#1f2224",
           "parts": [
-            "handle-grip",
-            "caster--440--260",
-            "caster--440-260",
-            "caster-440--260",
-            "caster-440-260",
-            "corner-bumper--480--280",
-            "corner-bumper--480-280",
-            "corner-bumper-480--280",
-            "corner-bumper-480-280"
+            "castor-wheel-free-f",
+            "castor-wheel-handle-f",
+            "castor-wheel-free-b",
+            "castor-wheel-handle-b",
+            "bumper-lf",
+            "bumper-rf",
+            "bumper-lb",
+            "bumper-rb",
+            "handle-grip"
           ],
           "param": "rubber"
+        },
+        {
+          "name": "mat",
+          "color": "#3a3f43",
+          "parts": [
+            "deck-mat",
+            "mat-rib-0",
+            "mat-rib-1",
+            "mat-rib-2",
+            "mat-rib-3",
+            "mat-rib-4",
+            "mat-rib-5",
+            "mat-rib-6",
+            "mat-rib-7",
+            "mat-rib-8",
+            "case-tape"
+          ],
+          "param": "mat"
+        },
+        {
+          "name": "cartons",
+          "color": "#c79a5c",
+          "parts": [
+            "case-0",
+            "case-1",
+            "case-2",
+            "case-3"
+          ],
+          "param": "cartons"
         }
       ]
     },
@@ -238617,10 +238893,18 @@
       "id": "self-checkout-kiosk",
       "kit": "retail-store",
       "title": "Self-checkout kiosk",
-      "description": "Compact self-checkout pedestal with tilted display housing, scanner deck, bag hook and payment shelf. Knobs: overall scale and abs plastic, glass, stainless steel color controls. Presets: cleanStore and nightRestock.",
+      "description": "Self-checkout kiosk at about real size: cabinet with a glass scan bed and upright bioptic scanner window, weighing bagging area with a bag carousel, tilted touchscreen on a column, card terminal, receipt slot, cash module on the front and a status-light pole. Material controls: cabinet, worktop, screen glass, status light / brand accent. cleanStore, nightRestock and discounter presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "self-checkout",
+        "self checkout",
+        "SCO",
+        "kiosk",
+        "checkout",
+        "till",
+        "POS",
+        "scanner",
         "retail",
         "grocery",
         "shop",
@@ -238637,8 +238921,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/self-checkout-kiosk.kcad.ts",
       "preview": "/assets/retail-store-self-checkout-kiosk.png",
-      "sourceSha256": "121f62624de9f74402e845439dad4f4869220624d13ac071d3fc6e983783f9f3",
-      "triangleBudget": 1800,
+      "sourceSha256": "5ba869fd56c91e9257b4feccc078c2f949ee8f615958905d2d9f30b2bb9b4a74",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -238650,74 +238934,125 @@
           "step": 0.05
         },
         {
-          "name": "abs",
+          "name": "cabinet",
           "type": "color",
-          "default": "#536a73",
-          "label": "ABS plastic color"
+          "default": "#e6eaeb",
+          "label": "Cabinet (powder-coated steel)"
+        },
+        {
+          "name": "worktop",
+          "type": "color",
+          "default": "#9aa4a8",
+          "label": "Worktop and scale plate (stainless)"
         },
         {
           "name": "glass",
           "type": "color",
-          "default": "#7fc5d0",
-          "label": "Glass color"
+          "default": "#3a8fa8",
+          "label": "Screen and scanner glass"
         },
         {
-          "name": "stainless",
+          "name": "accent",
           "type": "color",
-          "default": "#aeb7b8",
-          "label": "Stainless steel color"
+          "default": "#2f7fd0",
+          "label": "Status light and brand stripe"
         }
       ],
       "presets": {
         "cleanStore": {
-          "abs": "#e5e9e9",
-          "glass": "#9ccfd6",
-          "stainless": "#bfc8cb"
+          "cabinet": "#e6eaeb",
+          "worktop": "#9aa4a8",
+          "glass": "#3a8fa8",
+          "accent": "#2f7fd0"
         },
         "nightRestock": {
-          "abs": "#364a55",
-          "glass": "#3e6677",
-          "stainless": "#66747a"
+          "cabinet": "#2c3439",
+          "worktop": "#5f6a6f",
+          "glass": "#1f4f5f",
+          "accent": "#d8a12a"
+        },
+        "discounter": {
+          "cabinet": "#f2d23a",
+          "worktop": "#b7bfc2",
+          "glass": "#30707f",
+          "accent": "#c8302c"
         }
       },
       "stats": {
-        "triangles": 116,
+        "triangles": 900,
         "sizeM": [
-          0.605,
-          1.056404,
-          0.555
+          0.92,
+          1.7656,
+          0.6
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "abs",
-          "color": "#536a73",
+          "name": "worktop",
+          "color": "#9aa4a8",
           "parts": [
-            "foot",
-            "pedestal",
-            "scanner-deck",
-            "display"
+            "plinth",
+            "worktop",
+            "cash-panel",
+            "door-seam",
+            "scan-frame",
+            "bag-scale",
+            "carousel-post",
+            "carousel-arm-l",
+            "carousel-hook-l",
+            "carousel-arm-r",
+            "carousel-hook-r",
+            "carousel-bar",
+            "screen-bezel-lip",
+            "terminal-stalk",
+            "terminal-keys",
+            "light-mast"
           ],
-          "param": "abs"
+          "param": "worktop"
+        },
+        {
+          "name": "cabinet",
+          "color": "#e6eaeb",
+          "parts": [
+            "cabinet",
+            "coin-cup",
+            "bioptic-tower",
+            "bag",
+            "bag-handle-l",
+            "bag-handle-r",
+            "screen-column",
+            "screen-housing",
+            "terminal",
+            "beacon-cap",
+            "lane-disc"
+          ],
+          "param": "cabinet"
+        },
+        {
+          "name": "accent",
+          "color": "#2f7fd0",
+          "parts": [
+            "brand-stripe",
+            "beacon",
+            "lane-number"
+          ],
+          "param": "accent"
         },
         {
           "name": "glass",
-          "color": "#7fc5d0",
+          "color": "#3a8fa8",
           "parts": [
+            "note-slot",
+            "coin-slot",
+            "scan-plate",
+            "bioptic-window",
             "screen",
-            "scanner-window"
+            "terminal-screen",
+            "receipt-slot"
           ],
           "param": "glass"
-        },
-        {
-          "name": "stainless",
-          "color": "#aeb7b8",
-          "parts": [
-            "bag-hook"
-          ],
-          "param": "stainless"
         }
       ]
     },
@@ -240929,10 +241264,16 @@
       "id": "wire-grid-display",
       "kit": "retail-store",
       "title": "Wire grid display",
-      "description": "Freestanding wire-grid merchandise panel with side feet, cross rails and hanging peg bars. Knobs: overall scale and stainless steel, rubber, polypropylene color controls. Presets: cleanStore and nightRestock.",
+      "description": "Freestanding gridwall display at about real size: open welded wire grid in a tube border on two splayed T-feet with levelling pads, peg hooks with hanging blister packs, and a clipped header card. Material controls: wire, feet, header card, packs. chrome, matteBlack and seasonalRed presets; pack fill choice.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "gridwall",
+        "grid wall",
+        "wire grid",
+        "peg display",
+        "hook display",
+        "merchandiser",
         "retail",
         "grocery",
         "shop",
@@ -240949,8 +241290,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/wire-grid-display.kcad.ts",
       "preview": "/assets/retail-store-wire-grid-display.png",
-      "sourceSha256": "c86fee2c426e99f56abf0132869e00afb84f1008994cce12cd48f3ec6befc5da",
-      "triangleBudget": 1800,
+      "sourceSha256": "5271aaafb3681854050e496f3ec5d20f972b686e50c021581275edcea6380355",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -240962,84 +241303,233 @@
           "step": 0.05
         },
         {
-          "name": "stainless",
+          "name": "wire",
           "type": "color",
-          "default": "#657175",
-          "label": "Stainless steel color"
+          "default": "#b9c2c6",
+          "label": "Wire grid and hooks (chrome steel)"
         },
         {
-          "name": "rubber",
+          "name": "feet",
           "type": "color",
-          "default": "#353a3d",
-          "label": "Rubber color"
+          "default": "#2d3236",
+          "label": "Feet and levelling pads"
         },
         {
-          "name": "polypropylene",
+          "name": "header",
           "type": "color",
-          "default": "#d29c37",
-          "label": "Polypropylene color"
+          "default": "#d23a2c",
+          "label": "Header card"
+        },
+        {
+          "name": "packs",
+          "type": "color",
+          "default": "#f0c23a",
+          "label": "Blister packs"
+        },
+        {
+          "name": "fill",
+          "type": "choice",
+          "default": "stocked",
+          "label": "Hook fill",
+          "choices": [
+            "stocked",
+            "empty"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "stainless": "#bfc8cb",
-          "rubber": "#40474b",
-          "polypropylene": "#d6e0d5"
+        "chrome": {
+          "wire": "#b9c2c6",
+          "feet": "#2d3236",
+          "header": "#d23a2c",
+          "packs": "#f0c23a"
         },
-        "nightRestock": {
-          "stainless": "#66747a",
-          "rubber": "#262b2e",
-          "polypropylene": "#45614e"
+        "matteBlack": {
+          "wire": "#2a2d30",
+          "feet": "#1c1e20",
+          "header": "#f2f2ee",
+          "packs": "#3a8fd0"
+        },
+        "seasonalRed": {
+          "wire": "#e9ecec",
+          "feet": "#7a1f1a",
+          "header": "#2f7d3a",
+          "packs": "#d23a2c"
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 2856,
         "sizeM": [
-          1.2,
-          1.756,
-          0.5
+          1.252,
+          1.81,
+          0.52
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainless",
-          "color": "#657175",
+          "name": "wire",
+          "color": "#b9c2c6",
           "parts": [
-            "grid-frame",
-            "vertical-0",
-            "vertical-1",
-            "vertical-2",
-            "vertical-3",
-            "vertical-4",
-            "vertical-5",
-            "horizontal-0",
-            "horizontal-1",
-            "horizontal-2",
-            "horizontal-3",
-            "horizontal-4",
-            "horizontal-5",
-            "horizontal-6"
+            "post-l",
+            "post-cap-l",
+            "post-r",
+            "post-cap-r",
+            "rail-140",
+            "rail-1630",
+            "grid-v-1",
+            "grid-v-2",
+            "grid-v-3",
+            "grid-v-4",
+            "grid-v-5",
+            "grid-v-6",
+            "grid-v-7",
+            "grid-v-8",
+            "grid-v-9",
+            "grid-v-10",
+            "grid-v-11",
+            "grid-v-12",
+            "grid-v-13",
+            "grid-v-14",
+            "grid-v-15",
+            "grid-h-1",
+            "grid-h-2",
+            "grid-h-3",
+            "grid-h-4",
+            "grid-h-5",
+            "grid-h-6",
+            "grid-h-7",
+            "grid-h-8",
+            "grid-h-9",
+            "grid-h-10",
+            "grid-h-11",
+            "grid-h-12",
+            "grid-h-13",
+            "grid-h-14",
+            "grid-h-15",
+            "grid-h-16",
+            "grid-h-17",
+            "grid-h-18",
+            "hook-0-0",
+            "hook-back-0-0",
+            "hook-tip-0-0",
+            "hook-0-1",
+            "hook-back-0-1",
+            "hook-tip-0-1",
+            "hook-0-2",
+            "hook-back-0-2",
+            "hook-tip-0-2",
+            "hook-0-3",
+            "hook-back-0-3",
+            "hook-tip-0-3",
+            "hook-1-0",
+            "hook-back-1-0",
+            "hook-tip-1-0",
+            "hook-1-1",
+            "hook-back-1-1",
+            "hook-tip-1-1",
+            "hook-1-2",
+            "hook-back-1-2",
+            "hook-tip-1-2",
+            "hook-1-3",
+            "hook-back-1-3",
+            "hook-tip-1-3",
+            "hook-2-0",
+            "hook-back-2-0",
+            "hook-tip-2-0",
+            "hook-2-1",
+            "hook-back-2-1",
+            "hook-tip-2-1",
+            "hook-2-2",
+            "hook-back-2-2",
+            "hook-tip-2-2",
+            "hook-2-3",
+            "hook-back-2-3",
+            "hook-tip-2-3",
+            "header-clip-l",
+            "header-clip-r"
           ],
-          "param": "stainless"
+          "param": "wire"
         },
         {
-          "name": "rubber",
-          "color": "#353a3d",
+          "name": "feet",
+          "color": "#2d3236",
           "parts": [
-            "foot--430",
-            "foot-430"
+            "foot-l",
+            "foot-socket-l",
+            "leveller-l-f",
+            "leveller-l-b",
+            "foot-r",
+            "foot-socket-r",
+            "leveller-r-f",
+            "leveller-r-b"
           ],
-          "param": "rubber"
+          "param": "feet"
         },
         {
-          "name": "polypropylene",
-          "color": "#d29c37",
+          "name": "packs",
+          "color": "#f0c23a",
           "parts": [
-            "hook-mount"
+            "pack-0-0-0",
+            "pack-0-0-1",
+            "pack-0-1-0",
+            "pack-0-1-1",
+            "pack-0-2-0",
+            "pack-0-2-1",
+            "pack-0-3-0",
+            "pack-0-3-1",
+            "pack-1-0-0",
+            "pack-1-0-1",
+            "pack-1-1-0",
+            "pack-1-1-1",
+            "pack-1-2-0",
+            "pack-1-2-1",
+            "pack-1-3-0",
+            "pack-1-3-1",
+            "pack-2-0-0",
+            "pack-2-0-1",
+            "pack-2-1-0",
+            "pack-2-1-1",
+            "pack-2-2-0",
+            "pack-2-2-1",
+            "pack-2-3-0",
+            "pack-2-3-1",
+            "header-band"
           ],
-          "param": "polypropylene"
+          "param": "packs"
+        },
+        {
+          "name": "header",
+          "color": "#d23a2c",
+          "parts": [
+            "bubble-0-0-0",
+            "bubble-0-0-1",
+            "bubble-0-1-0",
+            "bubble-0-1-1",
+            "bubble-0-2-0",
+            "bubble-0-2-1",
+            "bubble-0-3-0",
+            "bubble-0-3-1",
+            "bubble-1-0-0",
+            "bubble-1-0-1",
+            "bubble-1-1-0",
+            "bubble-1-1-1",
+            "bubble-1-2-0",
+            "bubble-1-2-1",
+            "bubble-1-3-0",
+            "bubble-1-3-1",
+            "bubble-2-0-0",
+            "bubble-2-0-1",
+            "bubble-2-1-0",
+            "bubble-2-1-1",
+            "bubble-2-2-0",
+            "bubble-2-2-1",
+            "bubble-2-3-0",
+            "bubble-2-3-1",
+            "header-card"
+          ],
+          "param": "header"
         }
       ]
     },
