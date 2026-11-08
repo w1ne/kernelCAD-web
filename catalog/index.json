@@ -222317,11 +222317,16 @@
       "id": "enclosed-roll-off-container",
       "kit": "recycling-facility",
       "title": "Enclosed roll-off container",
-      "description": "Enclosed roll-off container: its pallet, corner post and rail. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Enclosed hook-lift roll-off container at about real size: raked-nose steel body with vertical stiffening ribs and top rails, long-member slide rails and rear rollers, hook-lift A-frame with bail, sliding roof hatches with handles, rear barn doors with cam lock bars and hinges, and hazard-striped rear corners. Material controls: body paint, underframe, roof hatches and hardware. hauler, weathered, municipal and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "roll-off container",
+        "hook-lift",
+        "enclosed container",
+        "waste hauling",
+        "skip",
         "materials recovery",
         "waste management",
         "containers",
@@ -222337,8 +222342,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/enclosed-roll-off-container.kcad.ts",
       "preview": "/assets/recycling-facility-enclosed-roll-off-container.png",
-      "sourceSha256": "35a06a36a55d8c13520ad5c8c8745381d267d29331aeb3983d61f8c7fc4242a0",
-      "triangleBudget": 1800,
+      "sourceSha256": "8949c9c144d6eafcce9f1057b9b808c3b71899daf77f1a3642bc7b28115380da",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -222350,66 +222355,204 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "body",
           "type": "color",
-          "default": "#60766f",
-          "label": "Painted steel"
+          "default": "#2f6b4f",
+          "label": "Body and ribs (paint)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "underframe",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#2b2f33",
+          "label": "Rails, rollers and A-frame"
+        },
+        {
+          "name": "hatch",
+          "type": "color",
+          "default": "#7a8a86",
+          "label": "Roof hatches (steel)"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c9ccce",
+          "label": "Lock bars, hinges and handles"
+        },
+        {
+          "name": "lids",
+          "type": "choice",
+          "default": "closed",
+          "label": "Roof hatches",
+          "choices": [
+            "closed",
+            "open"
+          ]
         }
       ],
       "presets": {
+        "hauler": {
+          "body": "#2f6b4f",
+          "underframe": "#2b2f33",
+          "hatch": "#7a8a86",
+          "hardware": "#c9ccce"
+        },
         "weathered": {
-          "paintedSteel": "#657268",
-          "stainlessSteel": "#9ea7a5"
+          "body": "#5d6a52",
+          "underframe": "#4a3f36",
+          "hatch": "#867a6a",
+          "hardware": "#9a8f80"
+        },
+        "municipal": {
+          "body": "#2a5598",
+          "underframe": "#2b2f33",
+          "hatch": "#9aa6b2",
+          "hardware": "#d4d8dc"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "body": "#e0821f",
+          "underframe": "#2b2f33",
+          "hatch": "#f0c419",
+          "hardware": "#e6e6e6"
         }
       },
       "stats": {
-        "triangles": 308,
+        "triangles": 1736,
         "sizeM": [
-          1.27,
-          1.035,
-          0.9
+          6.425,
+          2.468,
+          2.48
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#60766f",
+          "name": "underframe",
+          "color": "#2b2f33",
           "parts": [
-            "pallet-base"
+            "rail-f",
+            "roller-f",
+            "rail-b",
+            "roller-b",
+            "cross-member-400",
+            "cross-member-1500",
+            "cross-member-2600",
+            "cross-member-3700",
+            "cross-member-4800",
+            "cross-member-5900",
+            "bottom-rail-f",
+            "bottom-rail-b",
+            "a-frame-f",
+            "a-frame-b",
+            "a-frame-brace",
+            "bail-plate",
+            "roof-track-f",
+            "roof-track-b",
+            "id-plate-band"
           ],
-          "param": "paintedSteel"
+          "param": "underframe"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "hardware",
+          "color": "#c9ccce",
           "parts": [
-            "corner-post-left-front",
-            "corner-post-right-front",
-            "corner-post-left-back",
-            "corner-post-right-back",
-            "front-rail-1",
-            "rear-rail-1",
-            "front-rail-2",
-            "rear-rail-2",
-            "front-rail-3",
-            "rear-rail-3",
-            "side-rail-left",
-            "side-rail-right",
-            "corner-cap-a",
-            "corner-cap-b"
+            "roller-hub-f",
+            "roller-hub-b",
+            "hook-bail",
+            "hatch-0-handle",
+            "hatch-1-handle",
+            "hatch-2-handle",
+            "lock-bar-f-i",
+            "lock-cam-f-i",
+            "lock-handle-f-i",
+            "lock-bar-f-o",
+            "lock-cam-f-o",
+            "lock-handle-f-o",
+            "hinge-f-700",
+            "hinge-f-1300",
+            "hinge-f-1900",
+            "lock-bar-b-i",
+            "lock-cam-b-i",
+            "lock-handle-b-i",
+            "lock-bar-b-o",
+            "lock-cam-b-o",
+            "lock-handle-b-o",
+            "hinge-b-700",
+            "hinge-b-1300",
+            "hinge-b-1900"
           ],
-          "param": "stainlessSteel"
+          "param": "hardware"
+        },
+        {
+          "name": "body",
+          "color": "#2f6b4f",
+          "parts": [
+            "body",
+            "rib-600-f",
+            "rib-600-b",
+            "rib-1200-f",
+            "rib-1200-b",
+            "rib-1800-f",
+            "rib-1800-b",
+            "rib-2400-f",
+            "rib-2400-b",
+            "rib-3000-f",
+            "rib-3000-b",
+            "rib-3600-f",
+            "rib-3600-b",
+            "rib-4200-f",
+            "rib-4200-b",
+            "rib-4800-f",
+            "rib-4800-b",
+            "rib-5400-f",
+            "rib-5400-b",
+            "top-rail-f",
+            "top-rail-b",
+            "nose-plate",
+            "door-f",
+            "door-b"
+          ],
+          "param": "body"
+        },
+        {
+          "name": "hatch",
+          "color": "#7a8a86",
+          "parts": [
+            "hatch-0",
+            "hatch-0-rib-0",
+            "hatch-0-rib-1",
+            "hatch-0-rib-2",
+            "hatch-1",
+            "hatch-1-rib-0",
+            "hatch-1-rib-1",
+            "hatch-1-rib-2",
+            "hatch-2",
+            "hatch-2-rib-0",
+            "hatch-2-rib-1",
+            "hatch-2-rib-2"
+          ],
+          "param": "hatch"
+        },
+        {
+          "name": "hazard-f-0",
+          "color": "#f0c419",
+          "parts": [
+            "hazard-f-0",
+            "hazard-f-1",
+            "hazard-f-2",
+            "hazard-f-3",
+            "hazard-b-0",
+            "hazard-b-1",
+            "hazard-b-2",
+            "hazard-b-3"
+          ]
+        },
+        {
+          "name": "id-plate",
+          "color": "#e6e6e2",
+          "parts": [
+            "id-plate"
+          ]
         }
       ]
     },
@@ -229139,14 +229282,20 @@
       "id": "load-ticket-printer-pedestal",
       "kit": "recycling-facility",
       "title": "Load-ticket printer pedestal",
-      "description": "Load-ticket printer pedestal: a tall site pedestal with a hooded instrument head, antenna and service door. Low-poly visualization prop. Material controls: concrete, painted steel, safety amber, stainless steel.",
+      "description": "Weighbridge load-ticket kiosk at about real size: goose-neck column on a concrete plinth leaning an angled head toward the cab window, rain hood, screen, keypad, card reader, intercom grille, ticket slot with a printed ticket, camera and amber beacon, protected by a yellow crash bollard. Material controls: housing paint, column and bollard, plinth concrete and fascia. site, weathered, stainless and corporate presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "weighbridge",
+        "ticket printer",
+        "scale house",
+        "driver kiosk",
+        "load ticket",
+        "intercom",
         "materials recovery",
         "waste management",
-        "reception",
+        "site equipment",
         "low poly",
         "scene prop"
       ],
@@ -229159,8 +229308,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/load-ticket-printer-pedestal.kcad.ts",
       "preview": "/assets/recycling-facility-load-ticket-printer-pedestal.png",
-      "sourceSha256": "b9e2d1ab4578c423683661ba6337b1c0b7ec8085442c2d4a8c80e58936dde121",
-      "triangleBudget": 1800,
+      "sourceSha256": "195611e55ed12a93dbb639430cdd53e30dbfa7fc985cca285988e057faffecd6",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -229172,48 +229321,62 @@
           "step": 0.05
         },
         {
+          "name": "housing",
+          "type": "color",
+          "default": "#2f5d9a",
+          "label": "Head and hood (paint)"
+        },
+        {
+          "name": "column",
+          "type": "color",
+          "default": "#f0c419",
+          "label": "Column and crash bollard"
+        },
+        {
           "name": "concrete",
           "type": "color",
-          "default": "#898b83",
-          "label": "Concrete"
+          "default": "#8f918a",
+          "label": "Plinth (concrete)"
         },
         {
-          "name": "paintedSteel",
+          "name": "fascia",
           "type": "color",
-          "default": "#5d6985",
-          "label": "Painted steel"
-        },
-        {
-          "name": "safetyAmber",
-          "type": "color",
-          "default": "#f0ae32",
-          "label": "Safety amber"
-        },
-        {
-          "name": "stainlessSteel",
-          "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#2b2f33",
+          "label": "Fascia, keypad and screen frame"
         }
       ],
       "presets": {
-        "weathered": {
-          "concrete": "#84857b",
-          "paintedSteel": "#636a77",
-          "safetyAmber": "#d9a239",
-          "stainlessSteel": "#9ea7a5"
+        "site": {
+          "housing": "#2f5d9a",
+          "column": "#f0c419",
+          "concrete": "#8f918a",
+          "fascia": "#2b2f33"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632",
-          "safetyAmber": "#ffd044"
+        "weathered": {
+          "housing": "#4f6070",
+          "column": "#b89a3a",
+          "concrete": "#7d7a70",
+          "fascia": "#3a3a36"
+        },
+        "stainless": {
+          "housing": "#c4c9cb",
+          "column": "#9aa3a8",
+          "concrete": "#a3a59e",
+          "fascia": "#3a3f44"
+        },
+        "corporate": {
+          "housing": "#2f7a4a",
+          "column": "#e6e6e2",
+          "concrete": "#8f918a",
+          "fascia": "#1f2224"
         }
       },
       "stats": {
-        "triangles": 224,
+        "triangles": 1102,
         "sizeM": [
-          0.588,
-          1.5842,
-          0.535
+          0.9,
+          2.52,
+          1.175
         ],
         "minUpM": 0,
         "materials": 1
@@ -229221,39 +229384,128 @@
       "palette": [
         {
           "name": "concrete",
-          "color": "#898b83",
+          "color": "#8f918a",
           "parts": [
-            "mounting-plinth"
+            "plinth",
+            "plinth-chamfer"
           ],
           "param": "concrete"
         },
         {
-          "name": "paintedSteel",
-          "color": "#5d6985",
+          "name": "column",
+          "color": "#f0c419",
           "parts": [
-            "pedestal-column",
-            "equipment-head",
-            "sun-hood",
-            "service-door",
-            "antenna"
+            "column",
+            "column-neck",
+            "neck-elbow",
+            "bollard",
+            "bollard-cap"
           ],
-          "param": "paintedSteel"
+          "param": "column"
         },
         {
-          "name": "safetyAmber",
+          "name": "fascia",
+          "color": "#2b2f33",
+          "parts": [
+            "base-flange",
+            "bollard-band-600",
+            "bollard-band-950",
+            "fascia",
+            "camera-arm",
+            "beacon-base",
+            "conduit"
+          ],
+          "param": "fascia"
+        },
+        {
+          "name": "housing",
+          "color": "#2f5d9a",
+          "parts": [
+            "head",
+            "rain-hood"
+          ],
+          "param": "housing"
+        },
+        {
+          "name": "screen",
+          "color": "#3f8fc8",
+          "parts": [
+            "screen"
+          ]
+        },
+        {
+          "name": "key-0-0",
+          "color": "#d4d8dc",
+          "parts": [
+            "key-0-0",
+            "key-0-1",
+            "key-0-2",
+            "key-1-0",
+            "key-1-1",
+            "key-1-2",
+            "key-2-0",
+            "key-2-1",
+            "key-2-2",
+            "key-3-0",
+            "key-3-1",
+            "key-3-2"
+          ]
+        },
+        {
+          "name": "card-reader",
+          "color": "#e6e6e2",
+          "parts": [
+            "card-reader",
+            "camera"
+          ]
+        },
+        {
+          "name": "card-reader-led",
+          "color": "#3aa65a",
+          "parts": [
+            "card-reader-led",
+            "call-button"
+          ]
+        },
+        {
+          "name": "intercom-slot-0",
+          "color": "#5a5f63",
+          "parts": [
+            "intercom-slot-0",
+            "intercom-slot-1",
+            "intercom-slot-2",
+            "intercom-slot-3"
+          ]
+        },
+        {
+          "name": "ticket-slot",
+          "color": "#0d0f10",
+          "parts": [
+            "ticket-slot",
+            "camera-lens"
+          ]
+        },
+        {
+          "name": "ticket",
+          "color": "#f7f5ec",
+          "parts": [
+            "ticket"
+          ]
+        },
+        {
+          "name": "ticket-print",
+          "color": "#3a3a36",
+          "parts": [
+            "ticket-print"
+          ]
+        },
+        {
+          "name": "beacon",
           "color": "#f0ae32",
           "parts": [
-            "warning-beacon"
-          ],
-          "param": "safetyAmber"
-        },
-        {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
-          "parts": [
-            "cable-gland"
-          ],
-          "param": "stainlessSteel"
+            "beacon",
+            "beacon-cap"
+          ]
         }
       ]
     },
@@ -235090,11 +235342,16 @@
       "id": "reject-load-container",
       "kit": "recycling-facility",
       "title": "Reject-load container",
-      "description": "Reject-load container: a deep receiving hopper with fork pockets and exposed pivot points. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Front-load reject container at about real size: steel body with a raked front and high back, two hinged black plastic lids following the slope, side fork sleeves for a front-loader truck, floor skids, drain plug, red REJECT band with a hazard stripe and a placard. Material controls: body paint, lids, fork sleeves and skids, and reject marking. reject, weathered, hazardous and municipal presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "reject container",
+        "front-load bin",
+        "dumpster",
+        "contamination",
+        "tipping floor",
         "materials recovery",
         "waste management",
         "containers",
@@ -235110,8 +235367,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/reject-load-container.kcad.ts",
       "preview": "/assets/recycling-facility-reject-load-container.png",
-      "sourceSha256": "0a219447d9e2271fec0de01460da9e10faa85371ffa7261820f81d26b65b57f2",
-      "triangleBudget": 1800,
+      "sourceSha256": "32061ec40c4952af1b279658917ae46467bf157254ea3c4e9b238e66f4bd9169",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -235123,61 +235380,156 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "bodyPaint",
           "type": "color",
-          "default": "#707b86",
-          "label": "Painted steel"
+          "default": "#6c7a86",
+          "label": "Body (painted steel)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "lid",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#1f2224",
+          "label": "Lids (plastic)"
+        },
+        {
+          "name": "sleeves",
+          "type": "color",
+          "default": "#2f3438",
+          "label": "Fork sleeves and skids"
+        },
+        {
+          "name": "marking",
+          "type": "color",
+          "default": "#c8322a",
+          "label": "Reject band and placard"
+        },
+        {
+          "name": "lids",
+          "type": "choice",
+          "default": "closed",
+          "label": "Lids",
+          "choices": [
+            "closed",
+            "open"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "paintedSteel": "#707678",
-          "stainlessSteel": "#9ea7a5"
+        "reject": {
+          "bodyPaint": "#6c7a86",
+          "lid": "#1f2224",
+          "sleeves": "#2f3438",
+          "marking": "#c8322a"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "weathered": {
+          "bodyPaint": "#6e6458",
+          "lid": "#2e2c2a",
+          "sleeves": "#4a3f36",
+          "marking": "#9a3a2c"
+        },
+        "hazardous": {
+          "bodyPaint": "#e0c21f",
+          "lid": "#1f2224",
+          "sleeves": "#2f3438",
+          "marking": "#c8322a"
+        },
+        "municipal": {
+          "bodyPaint": "#2a5598",
+          "lid": "#3a6b3a",
+          "sleeves": "#2f3438",
+          "marking": "#d4552a"
         }
       },
       "stats": {
-        "triangles": 248,
+        "triangles": 592,
         "sizeM": [
-          1.573637,
-          1.135,
-          0.9575
+          2.18,
+          1.884923,
+          1.865
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#707b86",
+          "name": "bodyPaint",
+          "color": "#6c7a86",
           "parts": [
-            "tipping-base",
-            "hopper-front",
-            "hopper-back",
-            "hopper-left",
-            "hopper-right",
-            "front-lip"
+            "body",
+            "top-rim",
+            "front-rib--500",
+            "front-rib-0",
+            "front-rib-500"
           ],
-          "param": "paintedSteel"
+          "param": "bodyPaint"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "lid",
+          "color": "#1f2224",
           "parts": [
-            "pivot-left",
-            "pivot-right",
-            "fork-pocket-left",
-            "fork-pocket-right"
+            "lid-l",
+            "lid-l-rib-0",
+            "lid-l-rib-500",
+            "lid-r",
+            "lid-r-rib-0",
+            "lid-r-rib-500",
+            "hazard-1",
+            "hazard-3",
+            "hazard-5",
+            "hazard-7"
           ],
-          "param": "stainlessSteel"
+          "param": "lid"
+        },
+        {
+          "name": "sleeves",
+          "color": "#2f3438",
+          "parts": [
+            "lid-l-hinge",
+            "lid-r-hinge",
+            "fork-sleeve-l",
+            "sleeve-gusset-l-f",
+            "sleeve-gusset-l-b",
+            "skid-l",
+            "fork-sleeve-r",
+            "sleeve-gusset-r-f",
+            "sleeve-gusset-r-b",
+            "skid-r"
+          ],
+          "param": "sleeves"
+        },
+        {
+          "name": "drain-plug",
+          "color": "#b0b4b6",
+          "parts": [
+            "drain-plug"
+          ]
+        },
+        {
+          "name": "marking",
+          "color": "#c8322a",
+          "parts": [
+            "reject-band",
+            "placard-text"
+          ],
+          "param": "marking"
+        },
+        {
+          "name": "hazard-0",
+          "color": "#f0c419",
+          "parts": [
+            "hazard-0",
+            "hazard-2",
+            "hazard-4",
+            "hazard-6",
+            "hazard-8"
+          ]
+        },
+        {
+          "name": "placard",
+          "color": "#f2f2ee",
+          "parts": [
+            "placard"
+          ]
         }
       ]
     },
@@ -236748,11 +237100,16 @@
       "id": "tipping-floor-bin",
       "kit": "recycling-facility",
       "title": "Tipping-floor bin",
-      "description": "Tipping-floor bin: a deep receiving hopper with fork pockets and exposed pivot points. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Self-dumping forklift hopper at about real size: vertical back and long sloped dump face, curved rocker plates on a base with fork pockets and skids, rear latch with a release lever and pull cord, rubber bumper, optional load of mixed scrap. Material controls: hopper paint, base and rockers, latch hardware and load. plant, weathered, stainless and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "self-dumping hopper",
+        "tipping floor",
+        "forklift hopper",
+        "dump hopper",
+        "scrap",
         "materials recovery",
         "waste management",
         "containers",
@@ -236768,8 +237125,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/tipping-floor-bin.kcad.ts",
       "preview": "/assets/recycling-facility-tipping-floor-bin.png",
-      "sourceSha256": "a96100066c07102c05be1bd308ffcae53ec838fb55ba528ee83565db5da3aa9e",
-      "triangleBudget": 1800,
+      "sourceSha256": "9697a2d3be4916a38092e26fe3594824cfedfb5e468239e4a74053f15c2c0bde",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "scale",
@@ -236781,61 +237138,190 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "hopper",
           "type": "color",
-          "default": "#687b55",
-          "label": "Painted steel"
+          "default": "#2a5598",
+          "label": "Hopper (paint)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "base",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#2f3438",
+          "label": "Base, rockers and fork pockets"
+        },
+        {
+          "name": "latch",
+          "type": "color",
+          "default": "#f0c419",
+          "label": "Latch, lever and bumper"
+        },
+        {
+          "name": "scrap",
+          "type": "color",
+          "default": "#9aa3a8",
+          "label": "Load (mixed scrap)"
+        },
+        {
+          "name": "load",
+          "type": "choice",
+          "default": "loaded",
+          "label": "Load",
+          "choices": [
+            "loaded",
+            "empty"
+          ]
         }
       ],
       "presets": {
+        "plant": {
+          "hopper": "#2a5598",
+          "base": "#2f3438",
+          "latch": "#f0c419",
+          "scrap": "#9aa3a8"
+        },
         "weathered": {
-          "paintedSteel": "#6b7656",
-          "stainlessSteel": "#9ea7a5"
+          "hopper": "#5a6a72",
+          "base": "#4a3f36",
+          "latch": "#a88a3a",
+          "scrap": "#8a7a68"
+        },
+        "stainless": {
+          "hopper": "#c4c9cb",
+          "base": "#6b7378",
+          "latch": "#2f5d9a",
+          "scrap": "#d6dadb"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "hopper": "#e0821f",
+          "base": "#2f3438",
+          "latch": "#f0c419",
+          "scrap": "#9aa3a8"
         }
       },
       "stats": {
-        "triangles": 248,
+        "triangles": 942,
         "sizeM": [
-          1.393637,
-          1.275,
-          0.9575
+          1.66,
+          1.7,
+          1.729511
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#687b55",
+          "name": "base",
+          "color": "#2f3438",
           "parts": [
-            "tipping-base",
-            "hopper-front",
-            "hopper-back",
-            "hopper-left",
-            "hopper-right",
-            "front-lip"
+            "skid--700",
+            "skid-700",
+            "fork-pocket-f",
+            "fork-pocket-b",
+            "rocker--560",
+            "rocker-track--560",
+            "rocker-560",
+            "rocker-track-560"
           ],
-          "param": "paintedSteel"
+          "param": "base"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "latch",
+          "color": "#f0c419",
           "parts": [
-            "pivot-left",
-            "pivot-right",
-            "fork-pocket-left",
-            "fork-pocket-right"
+            "rocker-stop--560",
+            "rocker-stop-560",
+            "latch-plate",
+            "latch-hook",
+            "release-lever",
+            "lever-knob",
+            "cord-ring"
           ],
-          "param": "stainlessSteel"
+          "param": "latch"
+        },
+        {
+          "name": "hopper",
+          "color": "#2a5598",
+          "parts": [
+            "hopper",
+            "rim-front",
+            "rim-back",
+            "rim-side--1",
+            "rim-side-1",
+            "face-rib--400",
+            "face-rib-400"
+          ],
+          "param": "hopper"
+        },
+        {
+          "name": "bumper",
+          "color": "#1f2224",
+          "parts": [
+            "bumper"
+          ]
+        },
+        {
+          "name": "pull-cord",
+          "color": "#d9d9d4",
+          "parts": [
+            "pull-cord"
+          ]
+        },
+        {
+          "name": "capacity-plate",
+          "color": "#f2f2ee",
+          "parts": [
+            "capacity-plate"
+          ]
+        },
+        {
+          "name": "scrap",
+          "color": "#9aa3a8",
+          "parts": [
+            "scrap-heap"
+          ],
+          "param": "scrap"
+        },
+        {
+          "name": "scrap-sheet",
+          "color": "#7d8a92",
+          "parts": [
+            "scrap-sheet"
+          ]
+        },
+        {
+          "name": "scrap-pipe",
+          "color": "#b87333",
+          "parts": [
+            "scrap-pipe"
+          ]
+        },
+        {
+          "name": "scrap-drum",
+          "color": "#3a6b3a",
+          "parts": [
+            "scrap-drum"
+          ]
+        },
+        {
+          "name": "scrap-bundle",
+          "color": "#c9b48a",
+          "parts": [
+            "scrap-bundle"
+          ]
+        },
+        {
+          "name": "scrap-wheel",
+          "color": "#2b2f33",
+          "parts": [
+            "scrap-wheel"
+          ]
+        },
+        {
+          "name": "scrap-block",
+          "color": "#c4c9cb",
+          "parts": [
+            "scrap-block"
+          ]
         }
       ]
     },
@@ -238027,14 +238513,20 @@
       "id": "underbody-wash-arch",
       "kit": "recycling-facility",
       "title": "Underbody wash arch",
-      "description": "Underbody wash arch: an overhead wash arch with a cross-manifold and spaced spray nozzles. Low-poly visualization prop. Material controls: concrete, painted steel, stainless steel.",
+      "description": "Drive-through truck underbody and wheel wash at about real size: galvanised portal frame over the lane with spray risers on both legs and a header pipe, floor spray bar in a grated drain trench, water fans from the nozzles, wheel-guide kerbs, pump skid with a control box and a go/stop light. Material controls: concrete pad, frame steel, spray pipework and water. site, weathered, painted and winter presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "wheel wash",
+        "truck wash",
+        "underbody wash",
+        "spray arch",
+        "mud control",
+        "site exit",
         "materials recovery",
         "waste management",
-        "reception",
+        "site equipment",
         "low poly",
         "scene prop"
       ],
@@ -238047,8 +238539,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/underbody-wash-arch.kcad.ts",
       "preview": "/assets/recycling-facility-underbody-wash-arch.png",
-      "sourceSha256": "95e8122dfd3b0015d2a6529b701b0aadba6321dd3d12475934eee2238d688c27",
-      "triangleBudget": 1800,
+      "sourceSha256": "c848272c9dbc07baf4286162587958dd5793f80584f9ecda1bfad9f775b030f9",
+      "triangleBudget": 3400,
       "params": [
         {
           "name": "scale",
@@ -238062,38 +238554,70 @@
         {
           "name": "concrete",
           "type": "color",
-          "default": "#898b83",
-          "label": "Concrete"
+          "default": "#8f918a",
+          "label": "Pad, kerbs and trench (concrete)"
         },
         {
-          "name": "paintedSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#5d6985",
-          "label": "Painted steel"
+          "default": "#b9c0c2",
+          "label": "Portal frame (galvanised steel)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "pipework",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#2f5d9a",
+          "label": "Spray pipework and pump"
+        },
+        {
+          "name": "water",
+          "type": "color",
+          "default": "#9fcbe6",
+          "label": "Water spray"
+        },
+        {
+          "name": "spraying",
+          "type": "choice",
+          "default": "on",
+          "label": "Spray",
+          "choices": [
+            "on",
+            "off"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "concrete": "#84857b",
-          "paintedSteel": "#636a77",
-          "stainlessSteel": "#9ea7a5"
+        "site": {
+          "concrete": "#8f918a",
+          "frame": "#b9c0c2",
+          "pipework": "#2f5d9a",
+          "water": "#9fcbe6"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "weathered": {
+          "concrete": "#7a7466",
+          "frame": "#8c8a80",
+          "pipework": "#4d5f6c",
+          "water": "#9ab0a8"
+        },
+        "painted": {
+          "concrete": "#8f918a",
+          "frame": "#f0c419",
+          "pipework": "#2b2f33",
+          "water": "#9fcbe6"
+        },
+        "winter": {
+          "concrete": "#a7aaa5",
+          "frame": "#c4c9cb",
+          "pipework": "#c8322a",
+          "water": "#e6f1f6"
         }
       },
       "stats": {
-        "triangles": 288,
+        "triangles": 1612,
         "sizeM": [
-          2.652,
-          1.53,
-          0.775
+          7,
+          4.96,
+          6.3
         ],
         "minUpM": 0,
         "materials": 1
@@ -238101,32 +238625,148 @@
       "palette": [
         {
           "name": "concrete",
-          "color": "#898b83",
+          "color": "#8f918a",
           "parts": [
-            "wash-pad"
+            "pad",
+            "kerb-f",
+            "kerb-b"
           ],
           "param": "concrete"
         },
         {
-          "name": "paintedSteel",
-          "color": "#5d6985",
+          "name": "trench-edge",
+          "color": "#6b6e68",
           "parts": [
-            "arch-left-leg",
-            "arch-right-leg",
-            "arch-header"
-          ],
-          "param": "paintedSteel"
+            "trench-edge"
+          ]
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "grate-bar-0",
+          "color": "#3a3f44",
           "parts": [
-            "spray-manifold",
-            "spray-nozzle-a",
-            "spray-nozzle-b",
-            "spray-nozzle-c"
+            "grate-bar-0",
+            "grate-bar-1",
+            "grate-bar-2",
+            "grate-bar-3",
+            "grate-bar-4",
+            "grate-bar-5",
+            "grate-bar-6",
+            "grate-bar-7",
+            "grate-bar-8",
+            "grate-bar-9",
+            "grate-bar-10",
+            "pump-skid",
+            "control-door-handle",
+            "signal-post"
+          ]
+        },
+        {
+          "name": "pipework",
+          "color": "#2f5d9a",
+          "parts": [
+            "floor-spray-bar--350",
+            "floor-spray-bar-350",
+            "riser-f",
+            "nozzle-f-500",
+            "nozzle-f-1100",
+            "nozzle-f-1700",
+            "nozzle-f-2400",
+            "riser-b",
+            "nozzle-b-500",
+            "nozzle-b-1100",
+            "nozzle-b-1700",
+            "nozzle-b-2400",
+            "header-pipe",
+            "header-nozzle--1400",
+            "header-nozzle-0",
+            "header-nozzle-1400",
+            "pump-motor",
+            "pump-volute",
+            "pump-discharge",
+            "feed-pipe",
+            "feed-pipe-riser"
           ],
-          "param": "stainlessSteel"
+          "param": "pipework"
+        },
+        {
+          "name": "frame",
+          "color": "#b9c0c2",
+          "parts": [
+            "leg-f",
+            "base-plate-f",
+            "knee-brace-f",
+            "leg-b",
+            "base-plate-b",
+            "knee-brace-b",
+            "header-beam"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "header-sign",
+          "color": "#1f6b3a",
+          "parts": [
+            "header-sign"
+          ]
+        },
+        {
+          "name": "header-sign-text",
+          "color": "#f2f2ee",
+          "parts": [
+            "header-sign-text"
+          ]
+        },
+        {
+          "name": "water",
+          "color": "#9fcbe6",
+          "parts": [
+            "fan-f-500",
+            "fan-f-1100",
+            "fan-f-1700",
+            "fan-f-2400",
+            "fan-b-500",
+            "fan-b-1100",
+            "fan-b-1700",
+            "fan-b-2400",
+            "fan-top--1400",
+            "fan-top-0",
+            "fan-top-1400",
+            "fan-floor--350--1200",
+            "fan-floor--350-0",
+            "fan-floor--350-1200",
+            "fan-floor-350--1200",
+            "fan-floor-350-0",
+            "fan-floor-350-1200"
+          ],
+          "param": "water"
+        },
+        {
+          "name": "control-box",
+          "color": "#d9d9d4",
+          "parts": [
+            "control-box"
+          ]
+        },
+        {
+          "name": "signal-head",
+          "color": "#1f2224",
+          "parts": [
+            "signal-head"
+          ]
+        },
+        {
+          "name": "signal-green",
+          "color": "#3aa65a",
+          "parts": [
+            "signal-green"
+          ]
+        },
+        {
+          "name": "signal-red-lens",
+          "color": "#c8322a",
+          "parts": [
+            "signal-red-lens"
+          ]
         }
       ]
     },
