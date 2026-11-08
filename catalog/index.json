@@ -16874,10 +16874,16 @@
       "id": "first-aid-response-cart",
       "kit": "amusement-park",
       "title": "First aid response cart",
-      "description": "Compact wheeled response cart with divided supply drawers, grab handles, and a raised cross panel. Controls: overall scale, powderCoat, stainlessSteel, rubber; festival and twilight material presets.",
+      "description": "Park first-aid response cart at about real size: powder-coated cabinet of graded supply drawers with full-width pulls, a breakaway seal bar, a rubber bumper ring, a side panel with the first-aid cross, a lipped top tray carrying a trauma bag and defibrillator case, an oxygen cylinder in a side cradle, an IV pole with hooks, a push handle and four swivel casters. Material controls: powder-coated cabinet, ABS drawer fronts and panels, stainless steel, rubber. Classic red, paramedic green and twilight presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "first aid cart",
+        "crash cart",
+        "medical cart",
+        "emergency",
+        "defibrillator",
+        "oxygen cylinder",
         "amusement park",
         "theme park",
         "guest experience",
@@ -16894,8 +16900,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/first-aid-response-cart.kcad.ts",
       "preview": "/assets/amusement-park-first-aid-response-cart.png",
-      "sourceSha256": "6a1a0bef29c752d894f53afff9ab8e7c6d47212c4fcb444f41e7e9087cd3dc06",
-      "triangleBudget": 1800,
+      "sourceSha256": "646d3c577b00aad9487e829416b53682d9e29dd173ad4d0a2a58004352727aa7",
+      "triangleBudget": 6000,
       "params": [
         {
           "name": "scale",
@@ -16909,64 +16915,112 @@
         {
           "name": "powderCoat",
           "type": "color",
-          "default": "#477985",
-          "label": "Powder-coated steel"
+          "default": "#c3342d",
+          "label": "Powder-coated cabinet, cross and trauma bag"
+        },
+        {
+          "name": "abs",
+          "type": "color",
+          "default": "#eeefea",
+          "label": "ABS drawer fronts, tray and cross panel"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#b0b9b6",
-          "label": "Stainless steel"
+          "label": "Stainless pulls, frame and cylinder"
         },
         {
           "name": "rubber",
           "type": "color",
           "default": "#292f33",
-          "label": "Rubber"
+          "label": "Rubber bumper and caster wheels"
         }
       ],
       "presets": {
-        "festival": {
-          "powderCoat": "#d47452",
-          "stainlessSteel": "#d1d1c6",
-          "rubber": "#3c4245"
+        "classicRed": {
+          "powderCoat": "#c3342d",
+          "abs": "#eeefea",
+          "stainlessSteel": "#b0b9b6",
+          "rubber": "#292f33"
+        },
+        "paramedicGreen": {
+          "powderCoat": "#2f8a55",
+          "abs": "#f1f2ec",
+          "stainlessSteel": "#c1c8c4",
+          "rubber": "#2b3034"
         },
         "twilight": {
-          "powderCoat": "#35576f",
+          "powderCoat": "#8e2a2f",
+          "abs": "#c9cfd2",
           "stainlessSteel": "#788b91",
           "rubber": "#20262a"
         }
       },
       "stats": {
-        "triangles": 272,
+        "triangles": 4168,
         "sizeM": [
-          1.04,
-          1.255,
-          0.78
+          1.094,
+          1.91,
+          0.721734
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#477985",
-          "parts": [
-            "cart-body"
-          ],
-          "param": "powderCoat"
-        },
-        {
           "name": "stainlessSteel",
           "color": "#b0b9b6",
           "parts": [
-            "top-tray",
-            "drawer-0",
-            "drawer-1",
-            "drawer-2",
-            "cross-vertical",
-            "cross-horizontal",
-            "push-bar"
+            "caster-plate-lf",
+            "caster-swivel-lf",
+            "caster-fork-lf-i",
+            "caster-fork-lf-o",
+            "caster-plate-lb",
+            "caster-swivel-lb",
+            "caster-fork-lb-i",
+            "caster-fork-lb-o",
+            "caster-plate-rf",
+            "caster-swivel-rf",
+            "caster-fork-rf-i",
+            "caster-fork-rf-o",
+            "caster-plate-rb",
+            "caster-swivel-rb",
+            "caster-fork-rb-i",
+            "caster-fork-rb-o",
+            "drawer-pull-0",
+            "drawer-standoff-0-l",
+            "drawer-standoff-0-r",
+            "drawer-pull-1",
+            "drawer-standoff-1-l",
+            "drawer-standoff-1-r",
+            "drawer-pull-2",
+            "drawer-standoff-2-l",
+            "drawer-standoff-2-r",
+            "drawer-pull-3",
+            "drawer-standoff-3-l",
+            "drawer-standoff-3-r",
+            "seal-bar",
+            "seal-hasp",
+            "o2-cylinder",
+            "o2-valve",
+            "cradle-arm-0",
+            "cradle-arm-1",
+            "handle-post-f",
+            "handle-bracket-f",
+            "handle-post-b",
+            "handle-bracket-b",
+            "handle-bar",
+            "iv-clamp",
+            "iv-pole",
+            "iv-hook-0",
+            "iv-hook-tip-0",
+            "iv-hook-1",
+            "iv-hook-tip-1",
+            "iv-hook-2",
+            "iv-hook-tip-2",
+            "iv-hook-3",
+            "iv-hook-tip-3"
           ],
           "param": "stainlessSteel"
         },
@@ -16974,12 +17028,59 @@
           "name": "rubber",
           "color": "#292f33",
           "parts": [
-            "caster-0",
-            "caster-1",
-            "caster-2",
-            "caster-3"
+            "caster-wheel-lf",
+            "caster-wheel-lb",
+            "caster-wheel-rf",
+            "caster-wheel-rb",
+            "bumper",
+            "cradle-ring-0",
+            "cradle-ring-1",
+            "cradle-cup",
+            "bag-zip",
+            "bag-handle--260",
+            "bag-handle--80",
+            "aed-handle",
+            "handle-grip"
           ],
           "param": "rubber"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#c3342d",
+          "parts": [
+            "cabinet",
+            "drawer-label-0",
+            "drawer-label-1",
+            "drawer-label-2",
+            "drawer-label-3",
+            "seal-tag",
+            "cross-vertical",
+            "cross-horizontal",
+            "o2-gauge",
+            "trauma-bag",
+            "aed-band",
+            "aed-heart"
+          ],
+          "param": "powderCoat"
+        },
+        {
+          "name": "abs",
+          "color": "#eeefea",
+          "parts": [
+            "top-tray",
+            "drawer-0",
+            "drawer-1",
+            "drawer-2",
+            "drawer-3",
+            "cross-panel",
+            "o2-shoulder",
+            "o2-regulator",
+            "bag-cross-v",
+            "bag-cross-h",
+            "aed-case",
+            "iv-bag"
+          ],
+          "param": "abs"
         }
       ]
     },
@@ -20698,10 +20799,16 @@
       "id": "park-waste-sorting-station",
       "kit": "amusement-park",
       "title": "Park waste sorting station",
-      "description": "Three-stream visitor waste point with distinct lid openings, a shared roof, and a trolley-clear front. Controls: overall scale, powderCoat, stainlessSteel, enamel; festival and twilight material presets.",
+      "description": "Three-stream park waste sorting station at about real size: three timber-slatted bays with colour-coded sloped enamel lids and shaped apertures (round holes for bottles and cans, a square food-waste flap, a wide general-waste slot), coloured bands, a timber backboard with recycling, leaf and bin symbol roundels, and a mono-pitch roof with a timber fascia on steel posts. Material controls: timber cladding, steel frame and general-waste lid, recycling enamel, organics enamel. Parkland, festival and twilight presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "waste bin",
+        "recycling",
+        "litter bin",
+        "sorting station",
+        "compost",
+        "street furniture",
         "amusement park",
         "theme park",
         "guest experience",
@@ -20718,8 +20825,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/park-waste-sorting-station.kcad.ts",
       "preview": "/assets/amusement-park-park-waste-sorting-station.png",
-      "sourceSha256": "73ac6ee180f645faec963ef0d4437c9de3782d426118c59828b894ac1d7c1a81",
-      "triangleBudget": 1800,
+      "sourceSha256": "bb42c993f1b1ab82ffa8b773154c96058f3ec3aedf2326318411fbd3ec27cc47",
+      "triangleBudget": 4000,
       "params": [
         {
           "name": "scale",
@@ -20731,79 +20838,152 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "timber",
           "type": "color",
-          "default": "#477985",
-          "label": "Powder-coated steel"
+          "default": "#a06d3f",
+          "label": "Timber slats, backboard and fascia"
         },
         {
-          "name": "stainlessSteel",
+          "name": "steel",
           "type": "color",
-          "default": "#b0b9b6",
-          "label": "Stainless steel"
+          "default": "#3f484d",
+          "label": "Steel frame, roof and general-waste lid"
         },
         {
-          "name": "enamel",
+          "name": "recyclingEnamel",
           "type": "color",
-          "default": "#cc684e",
-          "label": "Baked enamel"
+          "default": "#2f74b5",
+          "label": "Recycling lid and roundel enamel"
+        },
+        {
+          "name": "organicsEnamel",
+          "type": "color",
+          "default": "#4f9a45",
+          "label": "Food-waste lid and roundel enamel"
         }
       ],
       "presets": {
+        "parkland": {
+          "timber": "#a06d3f",
+          "steel": "#3f484d",
+          "recyclingEnamel": "#2f74b5",
+          "organicsEnamel": "#4f9a45"
+        },
         "festival": {
-          "powderCoat": "#d47452",
-          "stainlessSteel": "#d1d1c6",
-          "enamel": "#edb34d"
+          "timber": "#c08a50",
+          "steel": "#4a4f57",
+          "recyclingEnamel": "#f0b53a",
+          "organicsEnamel": "#d4553f"
         },
         "twilight": {
-          "powderCoat": "#35576f",
-          "stainlessSteel": "#788b91",
-          "enamel": "#385b81"
+          "timber": "#6e4c33",
+          "steel": "#262c30",
+          "recyclingEnamel": "#3d5f9a",
+          "organicsEnamel": "#3c7046"
         }
       },
       "stats": {
-        "triangles": 240,
+        "triangles": 952,
         "sizeM": [
-          2.25,
-          1.67,
-          0.85
+          2.3,
+          2,
+          0.825
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "enamel",
-          "color": "#cc684e",
+          "name": "steel",
+          "color": "#3f484d",
           "parts": [
-            "bin-0",
-            "bin-1",
-            "bin-2",
-            "lid-0",
-            "lid-1",
-            "lid-2"
+            "plinth",
+            "body",
+            "bay-post--975",
+            "bay-post--325",
+            "bay-post-325",
+            "bay-post-975",
+            "lid-general",
+            "band-general",
+            "general-hood",
+            "roof-post-l",
+            "roof-post-r",
+            "roof",
+            "roundel-general"
           ],
-          "param": "enamel"
+          "param": "steel"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b0b9b6",
+          "name": "timber",
+          "color": "#a06d3f",
           "parts": [
-            "opening-rim-0",
-            "opening-rim-1",
-            "opening-rim-2",
-            "support-0",
-            "support-1"
+            "slat-recycling-0",
+            "slat-recycling-1",
+            "slat-recycling-2",
+            "slat-recycling-3",
+            "slat-recycling-4",
+            "slat-recycling-5",
+            "slat-recycling-6",
+            "slat-organics-0",
+            "slat-organics-1",
+            "slat-organics-2",
+            "slat-organics-3",
+            "slat-organics-4",
+            "slat-organics-5",
+            "slat-organics-6",
+            "slat-general-0",
+            "slat-general-1",
+            "slat-general-2",
+            "slat-general-3",
+            "slat-general-4",
+            "slat-general-5",
+            "slat-general-6",
+            "end-slat-0",
+            "end-slat-1",
+            "end-slat-2",
+            "end-slat-3",
+            "end-slat-4",
+            "end-slat-5",
+            "backboard",
+            "fascia"
           ],
-          "param": "stainlessSteel"
+          "param": "timber"
         },
         {
-          "name": "powderCoat",
-          "color": "#477985",
+          "name": "recyclingEnamel",
+          "color": "#2f74b5",
           "parts": [
-            "shared-canopy"
+            "lid-recycling",
+            "band-recycling",
+            "roundel-recycling"
           ],
-          "param": "powderCoat"
+          "param": "recyclingEnamel"
+        },
+        {
+          "name": "organicsEnamel",
+          "color": "#4f9a45",
+          "parts": [
+            "lid-organics",
+            "band-organics",
+            "organics-flap",
+            "roundel-organics",
+            "icon-leaf-vein"
+          ],
+          "param": "organicsEnamel"
+        },
+        {
+          "name": "icon-recycling",
+          "color": "#f3f2ea",
+          "parts": [
+            "icon-recycling",
+            "icon-arrow-0",
+            "icon-arrow-1",
+            "icon-arrow-2",
+            "icon-leaf",
+            "icon-bin",
+            "icon-bin-lid",
+            "icon-bin-handle"
+          ]
         }
       ]
     },
@@ -22598,10 +22778,16 @@
       "id": "ride-maintenance-tool-cart",
       "kit": "amusement-park",
       "title": "Ride maintenance tool cart",
-      "description": "Workshop cart with locking drawers, a parts tray, side handle, and four casters for attraction back-of-house scenes. Controls: overall scale, powderCoat, steel, rubber; festival and twilight material presets.",
+      "description": "Ride technician's roll cab at about real size: graded shallow drawers with full-width chrome pulls and a lock, a top chest with its lid propped open on gas struts over a socket tray, a pegboard end panel with hanging wrenches and a hammer, a cordless drill and grease gun on the worktop, corner bumpers, a tubular push handle and two swivel plus two fixed casters. Material controls: powder-coated cabinet, chrome, rubber, tool plastic. Workshop red, safety blue and twilight presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "tool cart",
+        "roll cab",
+        "tool chest",
+        "maintenance",
+        "workshop",
+        "drill",
         "amusement park",
         "theme park",
         "guest experience",
@@ -22618,8 +22804,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/ride-maintenance-tool-cart.kcad.ts",
       "preview": "/assets/amusement-park-ride-maintenance-tool-cart.png",
-      "sourceSha256": "f997308c003d67a11f2c5d2b443d1d9ec0782ce82010fc9f96d61548f21e694f",
-      "triangleBudget": 1800,
+      "sourceSha256": "600c18c08f4cd2851937c35ae16ac7db97229cb47829c52a7fddc7526145048f",
+      "triangleBudget": 6000,
       "params": [
         {
           "name": "scale",
@@ -22633,77 +22819,175 @@
         {
           "name": "powderCoat",
           "type": "color",
-          "default": "#477985",
-          "label": "Powder-coated steel"
+          "default": "#b8322c",
+          "label": "Powder-coated cabinet and chest"
         },
         {
-          "name": "steel",
+          "name": "chrome",
           "type": "color",
-          "default": "#738087",
-          "label": "Painted steel"
+          "default": "#c4cacc",
+          "label": "Chrome pulls, handle and tools"
         },
         {
           "name": "rubber",
           "type": "color",
-          "default": "#292f33",
-          "label": "Rubber"
+          "default": "#26292c",
+          "label": "Rubber bumpers, mat and casters"
+        },
+        {
+          "name": "toolPlastic",
+          "type": "color",
+          "default": "#e8b62e",
+          "label": "Power-tool plastic and pegboard"
         }
       ],
       "presets": {
-        "festival": {
-          "powderCoat": "#d47452",
-          "steel": "#9da3a0",
-          "rubber": "#3c4245"
+        "workshopRed": {
+          "powderCoat": "#b8322c",
+          "chrome": "#c4cacc",
+          "rubber": "#26292c",
+          "toolPlastic": "#e8b62e"
+        },
+        "safetyBlue": {
+          "powderCoat": "#2d5f9e",
+          "chrome": "#cfd4d6",
+          "rubber": "#24282b",
+          "toolPlastic": "#e46d2a"
         },
         "twilight": {
-          "powderCoat": "#35576f",
-          "steel": "#4f626c",
-          "rubber": "#20262a"
+          "powderCoat": "#3b3f47",
+          "chrome": "#8e989c",
+          "rubber": "#1c1f22",
+          "toolPlastic": "#3fa36b"
         }
       },
       "stats": {
-        "triangles": 272,
+        "triangles": 3148,
         "sizeM": [
-          1.295,
-          1.29,
-          0.85
+          1.227,
+          1.673619,
+          0.701476
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "steel",
-          "color": "#738087",
+          "name": "chrome",
+          "color": "#c4cacc",
+          "parts": [
+            "caster-plate-lf",
+            "caster-swivel-lf",
+            "caster-fork-lf-i",
+            "caster-fork-lf-o",
+            "caster-plate-lb",
+            "caster-swivel-lb",
+            "caster-fork-lb-i",
+            "caster-fork-lb-o",
+            "caster-plate-rf",
+            "caster-fork-rf-i",
+            "caster-fork-rf-o",
+            "caster-plate-rb",
+            "caster-fork-rb-i",
+            "caster-fork-rb-o",
+            "drawer-pull-0",
+            "drawer-pull-1",
+            "drawer-pull-2",
+            "drawer-pull-3",
+            "drawer-pull-4",
+            "drawer-pull-5",
+            "lock",
+            "chest-pull",
+            "socket-0",
+            "socket-1",
+            "socket-2",
+            "socket-3",
+            "socket-4",
+            "socket-5",
+            "socket-6",
+            "socket-7",
+            "socket-8",
+            "socket-9",
+            "ratchet",
+            "ratchet-head",
+            "gas-strut-l",
+            "gas-strut-r",
+            "wrench-shank-0",
+            "wrench-ring-0",
+            "wrench-jaw-0",
+            "wrench-shank-1",
+            "wrench-ring-1",
+            "wrench-jaw-1",
+            "wrench-shank-2",
+            "wrench-ring-2",
+            "wrench-jaw-2",
+            "wrench-shank-3",
+            "wrench-ring-3",
+            "wrench-jaw-3",
+            "hammer-head",
+            "drill-chuck",
+            "drill-bit",
+            "grease-head",
+            "grease-lever",
+            "handle-arm-f",
+            "handle-arm-b",
+            "handle-bar"
+          ],
+          "param": "chrome"
+        },
+        {
+          "name": "rubber",
+          "color": "#26292c",
+          "parts": [
+            "caster-wheel-lf",
+            "caster-wheel-lb",
+            "caster-wheel-rf",
+            "caster-wheel-rb",
+            "worktop-mat",
+            "corner-bumper-lf",
+            "corner-bumper-lb",
+            "corner-bumper-rf",
+            "corner-bumper-rb",
+            "socket-tray",
+            "peg-rail-0",
+            "peg-rail-1",
+            "peg-rail-2",
+            "peg-rail-3",
+            "hammer-handle",
+            "drill-battery",
+            "grease-hose",
+            "handle-grip"
+          ],
+          "param": "rubber"
+        },
+        {
+          "name": "powderCoat",
+          "color": "#b8322c",
           "parts": [
             "cabinet",
-            "top-tray",
             "drawer-0",
             "drawer-1",
             "drawer-2",
             "drawer-3",
-            "side-handle"
-          ],
-          "param": "steel"
-        },
-        {
-          "name": "powderCoat",
-          "color": "#477985",
-          "parts": [
-            "parts-bin"
+            "drawer-4",
+            "drawer-5",
+            "chest",
+            "chest-drawer",
+            "lid",
+            "grease-barrel"
           ],
           "param": "powderCoat"
         },
         {
-          "name": "rubber",
-          "color": "#292f33",
+          "name": "toolPlastic",
+          "color": "#e8b62e",
           "parts": [
-            "caster-0",
-            "caster-1",
-            "caster-2",
-            "caster-3"
+            "lid-badge",
+            "pegboard",
+            "drill-grip",
+            "drill-body"
           ],
-          "param": "rubber"
+          "param": "toolPlastic"
         }
       ]
     },
@@ -22711,10 +22995,16 @@
       "id": "ride-operator-console",
       "kit": "amusement-park",
       "title": "Ride operator console",
-      "description": "Freestanding dispatch console with a slanted control face, stop button, status lamps, and weather hood. Controls: overall scale, powderCoat, stainlessSteel, acrylic; festival and twilight material presets.",
+      "description": "Ride station dispatch console at about real size: sloped control desk on a cabinet pedestal with a red mushroom emergency stop in a yellow guard collar, two-hand green dispatch buttons, key switch, selector knob, pilot lamps and status screen, raised side cheeks, a red/amber/green stack light on a mast, PA gooseneck microphone, yellow kick plate and anti-fatigue mat. Material controls: powder-coated housing, anodised control panel, safety-yellow paint, signal red. Station blue, festival and twilight presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "ride console",
+        "operator panel",
+        "dispatch",
+        "emergency stop",
+        "stack light",
+        "control desk",
         "amusement park",
         "theme park",
         "guest experience",
@@ -22731,8 +23021,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/ride-operator-console.kcad.ts",
       "preview": "/assets/amusement-park-ride-operator-console.png",
-      "sourceSha256": "8b2b6e4cb20428b0c7ae7856b88707143ed33d505f35bf818b6193f650c05f6e",
-      "triangleBudget": 1800,
+      "sourceSha256": "e208bbdb96617bf998448e50042767969ef65be268d5f380171f0a3244fafb84",
+      "triangleBudget": 5000,
       "params": [
         {
           "name": "scale",
@@ -22746,75 +23036,158 @@
         {
           "name": "powderCoat",
           "type": "color",
-          "default": "#477985",
-          "label": "Powder-coated steel"
+          "default": "#2f5f7a",
+          "label": "Powder-coated housing and cheeks"
         },
         {
-          "name": "stainlessSteel",
+          "name": "anodised",
           "type": "color",
-          "default": "#b0b9b6",
-          "label": "Stainless steel"
+          "default": "#2b3035",
+          "label": "Anodised control panel, mat and mast"
         },
         {
-          "name": "acrylic",
+          "name": "safetyYellow",
           "type": "color",
-          "default": "#63aab8",
-          "label": "Tinted acrylic"
+          "default": "#f0c12c",
+          "label": "Safety-yellow collar and kick plate"
+        },
+        {
+          "name": "signalRed",
+          "type": "color",
+          "default": "#d3302a",
+          "label": "Emergency stop and red lamp"
         }
       ],
       "presets": {
+        "stationBlue": {
+          "powderCoat": "#2f5f7a",
+          "anodised": "#2b3035",
+          "safetyYellow": "#f0c12c",
+          "signalRed": "#d3302a"
+        },
         "festival": {
           "powderCoat": "#d47452",
-          "stainlessSteel": "#d1d1c6",
-          "acrylic": "#79c8d2"
+          "anodised": "#333438",
+          "safetyYellow": "#f4cf45",
+          "signalRed": "#d7322b"
         },
         "twilight": {
-          "powderCoat": "#35576f",
-          "stainlessSteel": "#788b91",
-          "acrylic": "#41768b"
+          "powderCoat": "#35405f",
+          "anodised": "#1d2226",
+          "safetyYellow": "#c9a634",
+          "signalRed": "#b3282a"
         }
       },
       "stats": {
-        "triangles": 248,
+        "triangles": 2070,
         "sizeM": [
-          1.08,
-          1.44,
-          0.59
+          0.9,
+          1.94025,
+          1.27
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#b0b9b6",
+          "name": "anodised",
+          "color": "#2b3035",
           "parts": [
-            "pedestal"
-          ],
-          "param": "stainlessSteel"
-        },
-        {
-          "name": "acrylic",
-          "color": "#63aab8",
-          "parts": [
+            "mat",
+            "plinth",
+            "door-handle",
+            "door-vent",
             "control-face",
-            "status-lamp-0",
-            "status-lamp-1",
-            "status-lamp-2",
-            "status-lamp-3",
-            "stop-button-guard"
+            "key",
+            "screen-bezel",
+            "mast",
+            "stack-ring-0",
+            "stack-ring-1",
+            "stack-ring-2",
+            "stack-cap",
+            "stack-base",
+            "mic-base",
+            "mic-neck-0",
+            "mic-joint-0",
+            "mic-neck-1",
+            "mic-joint-1",
+            "mic-neck-2",
+            "mic-joint-2",
+            "mic-head"
           ],
-          "param": "acrylic"
+          "param": "anodised"
         },
         {
           "name": "powderCoat",
-          "color": "#477985",
+          "color": "#2f5f7a",
           "parts": [
-            "hood",
-            "side-grab-left",
-            "side-grab-right"
+            "pedestal",
+            "service-door",
+            "selector-base",
+            "pilot-ring-0",
+            "pilot-ring-1",
+            "pilot-ring-2",
+            "pilot-ring-3",
+            "pilot-ring-4",
+            "pilot-ring-5",
+            "upstand",
+            "side-cheek-l",
+            "side-cheek-r"
           ],
           "param": "powderCoat"
+        },
+        {
+          "name": "safetyYellow",
+          "color": "#f0c12c",
+          "parts": [
+            "kick-plate",
+            "estop-collar",
+            "dispatch-bezel-l",
+            "dispatch-bezel-r",
+            "key-switch"
+          ],
+          "param": "safetyYellow"
+        },
+        {
+          "name": "signalRed",
+          "color": "#d3302a",
+          "parts": [
+            "estop-stem",
+            "estop-head",
+            "selector-knob",
+            "stack-lamp-2",
+            "mic-windscreen"
+          ],
+          "param": "signalRed"
+        },
+        {
+          "name": "dispatch-button-l",
+          "color": "#3fae4f",
+          "parts": [
+            "dispatch-button-l",
+            "dispatch-button-r",
+            "pilot-lamp-1",
+            "pilot-lamp-3",
+            "pilot-lamp-5",
+            "stack-lamp-0"
+          ]
+        },
+        {
+          "name": "pilot-lamp-0",
+          "color": "#f39c2a",
+          "parts": [
+            "pilot-lamp-0",
+            "pilot-lamp-2",
+            "pilot-lamp-4",
+            "stack-lamp-1"
+          ]
+        },
+        {
+          "name": "screen",
+          "color": "#6fc3d6",
+          "parts": [
+            "screen"
+          ]
         }
       ]
     },
@@ -22822,10 +23195,16 @@
       "id": "ride-photo-camera",
       "kit": "amusement-park",
       "title": "Ride photo camera",
-      "description": "Elevated attraction camera on a three-leg stand with a sun hood and a large front lens barrel. Controls: overall scale, powderCoat, stainlessSteel, glass; festival and twilight material presets.",
+      "description": "Trackside on-ride photo camera at about real size: weatherproof housing with an overhanging sun hood, a big glass lens in a bezel aimed down at the track, twin strobe flash heads on a crossbar, a pan-tilt yoke on a tapered galvanised pole with a cable conduit and junction box, a gusseted base plate, and a smile sign for riders. Material controls: enclosure paint, galvanised steel, lens glass, strobe diffuser. Park white, festival and twilight presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "ride photo",
+        "on-ride camera",
+        "camera",
+        "strobe",
+        "flash",
+        "pole mount",
         "amusement park",
         "theme park",
         "guest experience",
@@ -22842,8 +23221,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/ride-photo-camera.kcad.ts",
       "preview": "/assets/amusement-park-ride-photo-camera.png",
-      "sourceSha256": "f6851e064bde01637c43d0f486e23d8298dfdf50e17a3ca8c169c217deefbcf5",
-      "triangleBudget": 1800,
+      "sourceSha256": "6d5d06a0a81995fa0f4e8c0c7caeadc59866aaf695d5469fe18d7e6290c0b6bc",
+      "triangleBudget": 4000,
       "params": [
         {
           "name": "scale",
@@ -22855,78 +23234,135 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "enclosure",
           "type": "color",
-          "default": "#477985",
-          "label": "Powder-coated steel"
+          "default": "#e6e7e1",
+          "label": "Enclosure paint and sign"
         },
         {
-          "name": "stainlessSteel",
+          "name": "galvanised",
           "type": "color",
-          "default": "#b0b9b6",
-          "label": "Stainless steel"
+          "default": "#8a9499",
+          "label": "Galvanised pole, yoke and brackets"
         },
         {
           "name": "glass",
           "type": "color",
-          "default": "#75b9bf",
-          "label": "Tinted glass"
+          "default": "#1d3445",
+          "label": "Lens glass and smiley"
+        },
+        {
+          "name": "strobe",
+          "type": "color",
+          "default": "#ffe9a8",
+          "label": "Strobe diffusers and sign face"
         }
       ],
       "presets": {
+        "parkWhite": {
+          "enclosure": "#e6e7e1",
+          "galvanised": "#8a9499",
+          "glass": "#1d3445",
+          "strobe": "#ffe9a8"
+        },
         "festival": {
-          "powderCoat": "#d47452",
-          "stainlessSteel": "#d1d1c6",
-          "glass": "#efce70"
+          "enclosure": "#d47452",
+          "galvanised": "#a5adaf",
+          "glass": "#22303a",
+          "strobe": "#fff3c4"
         },
         "twilight": {
-          "powderCoat": "#35576f",
-          "stainlessSteel": "#788b91",
-          "glass": "#6387aa"
+          "enclosure": "#35576f",
+          "galvanised": "#5f6d73",
+          "glass": "#101b24",
+          "strobe": "#ffd36b"
         }
       },
       "stats": {
-        "triangles": 196,
+        "triangles": 1888,
         "sizeM": [
-          1.05,
-          2.264219,
-          1.073696
+          1.203968,
+          2.896342,
+          0.867376
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#477985",
+          "name": "galvanised",
+          "color": "#8a9499",
           "parts": [
-            "camera-body",
-            "sun-hood"
+            "base-plate",
+            "anchor-nut-0",
+            "gusset-0",
+            "anchor-nut-1",
+            "gusset-1",
+            "anchor-nut-2",
+            "gusset-2",
+            "anchor-nut-3",
+            "gusset-3",
+            "pole",
+            "conduit",
+            "junction-lid",
+            "sign-bracket",
+            "pan-head",
+            "yoke-arm-l",
+            "yoke-arm-r",
+            "yoke-base",
+            "tilt-axle",
+            "lens-bezel",
+            "lens-ring",
+            "rear-gland",
+            "strobe-bar",
+            "strobe-knuckle-l",
+            "strobe-knuckle-r"
           ],
-          "param": "powderCoat"
+          "param": "galvanised"
+        },
+        {
+          "name": "enclosure",
+          "color": "#e6e7e1",
+          "parts": [
+            "junction-box",
+            "sign-board",
+            "housing",
+            "sun-hood",
+            "hood-cheek-l",
+            "hood-cheek-r",
+            "lens-hood",
+            "strobe-head-l",
+            "strobe-head-r"
+          ],
+          "param": "enclosure"
+        },
+        {
+          "name": "strobe",
+          "color": "#ffe9a8",
+          "parts": [
+            "sign-face",
+            "sign-star-l",
+            "sign-star-r",
+            "status-led",
+            "strobe-diffuser-l",
+            "strobe-diffuser-r"
+          ],
+          "param": "strobe"
         },
         {
           "name": "glass",
-          "color": "#75b9bf",
+          "color": "#1d3445",
           "parts": [
-            "lens-barrel",
-            "lens"
+            "smiley-eye-l",
+            "smiley-eye-r",
+            "smiley-mouth-0",
+            "smiley-mouth-1",
+            "smiley-mouth-2",
+            "smiley-mouth-3",
+            "smiley-mouth-4",
+            "lens-glass"
           ],
           "param": "glass"
-        },
-        {
-          "name": "stainlessSteel",
-          "color": "#b0b9b6",
-          "parts": [
-            "mast",
-            "tripod-leg-0",
-            "tripod-leg-1",
-            "tripod-leg-2",
-            "tripod-foot-0",
-            "tripod-foot-1",
-            "tripod-foot-2"
-          ],
-          "param": "stainlessSteel"
         }
       ]
     },
