@@ -15731,16 +15731,21 @@
       "id": "family-locker-bank",
       "kit": "amusement-park",
       "title": "Family locker bank",
-      "description": "Six-door day-use locker unit with recessed-looking door panels, toe kick, and numbered header strip. Controls: overall scale, powderCoat, stainlessSteel, polymer; festival and twilight material presets.",
+      "description": "Day-rental locker wall at about real size: steel carcass on a recessed toe kick under a curved branded header, two banks of coloured doors in three heights with louvre vents, number tags and keypad locks, and a central pay station with a canted touchscreen, card reader and receipt slot. Material controls: powder-coated carcass, door polymer, stainless hardware, screen glass. Festival, twilight and resort presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "locker",
+        "lockers",
+        "rental locker",
+        "storage",
+        "bag storage",
         "amusement park",
         "theme park",
-        "guest experience",
+        "guest services",
         "low poly",
         "CC0",
-        "entry and guest services"
+        "park operations and guest comfort"
       ],
       "compat": [
         "amusement-park",
@@ -15751,8 +15756,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/family-locker-bank.kcad.ts",
       "preview": "/assets/amusement-park-family-locker-bank.png",
-      "sourceSha256": "a35944547aa6fcb7362d57d431cfe1e064732a2807c740b274f75285ea39a7ae",
-      "triangleBudget": 1800,
+      "sourceSha256": "4627064b0789a76de8159a5b68683489ed88de48c86c263a93c9ecdbcc043465",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -15766,80 +15771,224 @@
         {
           "name": "powderCoat",
           "type": "color",
-          "default": "#477985",
-          "label": "Powder-coated steel"
-        },
-        {
-          "name": "stainlessSteel",
-          "type": "color",
-          "default": "#b0b9b6",
-          "label": "Stainless steel"
+          "default": "#2f4f6b",
+          "label": "Powder-coated carcass and header"
         },
         {
           "name": "polymer",
           "type": "color",
-          "default": "#586f7a",
-          "label": "Molded polymer"
+          "default": "#3fa3a0",
+          "label": "Moulded polymer doors"
+        },
+        {
+          "name": "stainlessSteel",
+          "type": "color",
+          "default": "#c3cac8",
+          "label": "Stainless handles, keypads and trim"
+        },
+        {
+          "name": "glass",
+          "type": "color",
+          "default": "#16303f",
+          "label": "Pay-station screen glass"
         }
       ],
       "presets": {
         "festival": {
           "powderCoat": "#d47452",
+          "polymer": "#ffd447",
           "stainlessSteel": "#d1d1c6",
-          "polymer": "#7d9b93"
+          "glass": "#2c5d7a"
         },
         "twilight": {
           "powderCoat": "#35576f",
+          "polymer": "#7d6bb0",
           "stainlessSteel": "#788b91",
-          "polymer": "#455e83"
+          "glass": "#6387aa"
+        },
+        "resort": {
+          "powderCoat": "#e9e4d8",
+          "polymer": "#2e78b8",
+          "stainlessSteel": "#a9afad",
+          "glass": "#1d2a33"
         }
       },
       "stats": {
-        "triangles": 180,
+        "triangles": 2252,
         "sizeM": [
-          2.36,
-          2.03,
-          0.76
+          2.444,
+          2.15,
+          0.836397
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#b0b9b6",
-          "parts": [
-            "locker-case"
-          ],
-          "param": "stainlessSteel"
-        },
-        {
           "name": "powderCoat",
-          "color": "#477985",
+          "color": "#2f4f6b",
           "parts": [
-            "toe-kick",
-            "top-header"
+            "carcass",
+            "header",
+            "vent-l-0-0-0",
+            "vent-l-0-0-1",
+            "vent-l-0-0-2",
+            "vent-l-0-1-0",
+            "vent-l-0-1-1",
+            "vent-l-0-1-2",
+            "vent-l-0-2-0",
+            "vent-l-0-2-1",
+            "vent-l-0-2-2",
+            "vent-l-1-0-0",
+            "vent-l-1-0-1",
+            "vent-l-1-0-2",
+            "vent-l-1-1-0",
+            "vent-l-1-1-1",
+            "vent-l-1-1-2",
+            "vent-l-1-2-0",
+            "vent-l-1-2-1",
+            "vent-l-1-2-2",
+            "vent-l-2-0-0",
+            "vent-l-2-0-1",
+            "vent-l-2-0-2",
+            "vent-l-2-1-0",
+            "vent-l-2-1-1",
+            "vent-l-2-1-2",
+            "vent-l-2-2-0",
+            "vent-l-2-2-1",
+            "vent-l-2-2-2",
+            "vent-r-0-0-0",
+            "vent-r-0-0-1",
+            "vent-r-0-0-2",
+            "vent-r-0-1-0",
+            "vent-r-0-1-1",
+            "vent-r-0-1-2",
+            "vent-r-0-2-0",
+            "vent-r-0-2-1",
+            "vent-r-0-2-2",
+            "vent-r-1-0-0",
+            "vent-r-1-0-1",
+            "vent-r-1-0-2",
+            "vent-r-1-1-0",
+            "vent-r-1-1-1",
+            "vent-r-1-1-2",
+            "vent-r-1-2-0",
+            "vent-r-1-2-1",
+            "vent-r-1-2-2",
+            "vent-r-2-0-0",
+            "vent-r-2-0-1",
+            "vent-r-2-0-2",
+            "vent-r-2-1-0",
+            "vent-r-2-1-1",
+            "vent-r-2-1-2",
+            "vent-r-2-2-0",
+            "vent-r-2-2-1",
+            "vent-r-2-2-2",
+            "screen-hood",
+            "card-shelf"
           ],
           "param": "powderCoat"
         },
         {
-          "name": "polymer",
-          "color": "#586f7a",
+          "name": "glass",
+          "color": "#16303f",
           "parts": [
-            "locker-door-0",
-            "locker-door-1",
-            "locker-door-2",
-            "locker-door-3",
-            "locker-door-4",
-            "locker-door-5",
-            "locker-handle-0",
-            "locker-handle-1",
-            "locker-handle-2",
-            "locker-handle-3",
-            "locker-handle-4",
-            "locker-handle-5"
+            "toe-kick",
+            "screen",
+            "card-reader",
+            "receipt-slot"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "polymer",
+          "color": "#3fa3a0",
+          "parts": [
+            "header-stripe",
+            "door-l-0-0",
+            "door-l-0-1",
+            "door-l-0-2",
+            "door-l-1-0",
+            "door-l-1-1",
+            "door-l-1-2",
+            "door-l-2-0",
+            "door-l-2-1",
+            "door-l-2-2",
+            "door-r-0-0",
+            "door-r-0-1",
+            "door-r-0-2",
+            "door-r-1-0",
+            "door-r-1-1",
+            "door-r-1-2",
+            "door-r-2-0",
+            "door-r-2-1",
+            "door-r-2-2",
+            "pay-sign"
           ],
           "param": "polymer"
+        },
+        {
+          "name": "stainlessSteel",
+          "color": "#c3cac8",
+          "parts": [
+            "keypad-l-0-0",
+            "handle-l-0-0",
+            "number-l-0-0",
+            "keypad-l-0-1",
+            "handle-l-0-1",
+            "number-l-0-1",
+            "keypad-l-0-2",
+            "handle-l-0-2",
+            "number-l-0-2",
+            "keypad-l-1-0",
+            "handle-l-1-0",
+            "number-l-1-0",
+            "keypad-l-1-1",
+            "handle-l-1-1",
+            "number-l-1-1",
+            "keypad-l-1-2",
+            "handle-l-1-2",
+            "number-l-1-2",
+            "keypad-l-2-0",
+            "handle-l-2-0",
+            "number-l-2-0",
+            "keypad-l-2-1",
+            "handle-l-2-1",
+            "number-l-2-1",
+            "keypad-l-2-2",
+            "handle-l-2-2",
+            "number-l-2-2",
+            "keypad-r-0-0",
+            "handle-r-0-0",
+            "number-r-0-0",
+            "keypad-r-0-1",
+            "handle-r-0-1",
+            "number-r-0-1",
+            "keypad-r-0-2",
+            "handle-r-0-2",
+            "number-r-0-2",
+            "keypad-r-1-0",
+            "handle-r-1-0",
+            "number-r-1-0",
+            "keypad-r-1-1",
+            "handle-r-1-1",
+            "number-r-1-1",
+            "keypad-r-1-2",
+            "handle-r-1-2",
+            "number-r-1-2",
+            "keypad-r-2-0",
+            "handle-r-2-0",
+            "number-r-2-0",
+            "keypad-r-2-1",
+            "handle-r-2-1",
+            "number-r-2-1",
+            "keypad-r-2-2",
+            "handle-r-2-2",
+            "number-r-2-2",
+            "pay-fascia",
+            "pin-pad"
+          ],
+          "param": "stainlessSteel"
         }
       ]
     },
@@ -16459,16 +16608,21 @@
       "id": "guest-services-map-kiosk",
       "kit": "amusement-park",
       "title": "Guest services map kiosk",
-      "description": "Covered information stand with a large park map panel and a low shelf for printed guides. Controls: overall scale, paintedTimber, stainlessSteel, acrylic; festival and twilight material presets.",
+      "description": "Covered park-map stand at about real size: two timber posts on a brick-faced plinth under a gabled shingle roof with bargeboards, a framed illustrated park map with lake, lands, winding main path and a you-are-here pin, and a slanted brochure rack with pockets of folded guides. Material controls: painted timber, roofing, map print, stainless trim, lake water. Festival, twilight and rustic presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "map",
+        "park map",
+        "information kiosk",
+        "wayfinding",
+        "guest services",
         "amusement park",
         "theme park",
         "guest experience",
         "low poly",
         "CC0",
-        "entry and guest services"
+        "park operations and guest comfort"
       ],
       "compat": [
         "amusement-park",
@@ -16479,7 +16633,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/guest-services-map-kiosk.kcad.ts",
       "preview": "/assets/amusement-park-guest-services-map-kiosk.png",
-      "sourceSha256": "8afd2333f39fb3fa72ede7142cccf2383642e2f7e383c21bbb4f5de2f1f07901",
+      "sourceSha256": "1f9893458b6920cd58d6c4d2067ab3f8d22b59e97e7ce4ff0fde10e14f6db92b",
       "triangleBudget": 1800,
       "params": [
         {
@@ -16494,72 +16648,140 @@
         {
           "name": "paintedTimber",
           "type": "color",
-          "default": "#92704e",
-          "label": "Painted timber"
+          "default": "#2f5f4a",
+          "label": "Painted timber posts, frame and rack"
+        },
+        {
+          "name": "roofing",
+          "type": "color",
+          "default": "#7a3b30",
+          "label": "Shingle roofing"
+        },
+        {
+          "name": "mapPrint",
+          "type": "color",
+          "default": "#8fbf6a",
+          "label": "Map print (park lands)"
         },
         {
           "name": "stainlessSteel",
           "type": "color",
           "default": "#b0b9b6",
-          "label": "Stainless steel"
+          "label": "Stainless trim, plinth cap and paths"
         },
         {
-          "name": "acrylic",
+          "name": "water",
           "type": "color",
-          "default": "#63aab8",
-          "label": "Tinted acrylic"
+          "default": "#4f9bd0",
+          "label": "Map print (lake)"
         }
       ],
       "presets": {
         "festival": {
-          "paintedTimber": "#be8a4e",
-          "stainlessSteel": "#d1d1c6",
-          "acrylic": "#79c8d2"
+          "paintedTimber": "#be4a3a",
+          "roofing": "#2f5f8f",
+          "mapPrint": "#a7d07a",
+          "stainlessSteel": "#f1e6c8",
+          "water": "#3fb6e0"
         },
         "twilight": {
-          "paintedTimber": "#5e7181",
-          "stainlessSteel": "#788b91",
-          "acrylic": "#41768b"
+          "paintedTimber": "#35465f",
+          "roofing": "#2a2f3a",
+          "mapPrint": "#6f8f9f",
+          "stainlessSteel": "#c9b26a",
+          "water": "#3f5f8f"
+        },
+        "rustic": {
+          "paintedTimber": "#7a5534",
+          "roofing": "#4a4a44",
+          "mapPrint": "#c9b77d",
+          "stainlessSteel": "#8a8f8c",
+          "water": "#5f8f9a"
         }
       },
       "stats": {
-        "triangles": 84,
+        "triangles": 628,
         "sizeM": [
-          1.64,
-          2.6,
-          1.025
+          1.96,
+          2.775,
+          1.2
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedTimber",
-          "color": "#92704e",
+          "name": "roofing",
+          "color": "#7a3b30",
           "parts": [
-            "base",
-            "shelter-roof"
+            "plinth",
+            "roof",
+            "shingle-course-0-front",
+            "shingle-course-0-back",
+            "shingle-course-1-front",
+            "shingle-course-1-back",
+            "shingle-course-2-front",
+            "shingle-course-2-back",
+            "map-land-1",
+            "map-land-3",
+            "you-are-here-pin"
           ],
-          "param": "paintedTimber"
+          "param": "roofing"
         },
         {
           "name": "stainlessSteel",
           "color": "#b0b9b6",
           "parts": [
-            "support-post",
-            "map-frame-top",
-            "map-frame-bottom",
-            "guide-shelf"
+            "plinth-cap",
+            "header-plate",
+            "map-path",
+            "guide-0",
+            "guide-2"
           ],
           "param": "stainlessSteel"
         },
         {
-          "name": "acrylic",
-          "color": "#63aab8",
+          "name": "paintedTimber",
+          "color": "#2f5f4a",
           "parts": [
-            "map-panel"
+            "post-l",
+            "post-collar-l",
+            "brace-l",
+            "post-r",
+            "post-collar-r",
+            "brace-r",
+            "bargeboard-l",
+            "bargeboard-r",
+            "ridge-board",
+            "header-board",
+            "map-backing",
+            "map-frame",
+            "map-land-0",
+            "map-land-2",
+            "rack-tray",
+            "rack-lip",
+            "rack-bracket-l",
+            "rack-bracket-r"
           ],
-          "param": "acrylic"
+          "param": "paintedTimber"
+        },
+        {
+          "name": "mapPrint",
+          "color": "#8fbf6a",
+          "parts": [
+            "map-print",
+            "guide-1",
+            "guide-3"
+          ],
+          "param": "mapPrint"
+        },
+        {
+          "name": "water",
+          "color": "#4f9bd0",
+          "parts": [
+            "map-lake"
+          ],
+          "param": "water"
         }
       ]
     },
@@ -16567,10 +16789,15 @@
       "id": "height-check-marker",
       "kit": "amusement-park",
       "title": "Rider height check marker",
-      "description": "Queue entry height guide with two graduated side posts, an overhead bar, and a free-standing base. Controls: overall scale, powderCoat, steel, acrylic; festival and twilight material presets.",
+      "description": "Ride-queue minimum height gate at about real size: two round-topped printed ruler boards on weighted round bases with graduation bands every 100 mm, a cantilevered height arm with a star pointer set by a minHeight control, and an arched header sign with a star medallion. Material controls: powder-coated frame, ruler board, accent bands and star, steel bases. Festival, twilight and jungle presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "height check",
+        "height marker",
+        "ride height",
+        "queue",
+        "sign",
         "amusement park",
         "theme park",
         "guest experience",
@@ -16587,7 +16814,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/height-check-marker.kcad.ts",
       "preview": "/assets/amusement-park-height-check-marker.png",
-      "sourceSha256": "6726e4fd822a1edd0cddd680541b331e532627f9fb8a4d83ae7d2a154b5ed815",
+      "sourceSha256": "514a74dca5e3f9fff9061c0558d5a640af23237983310b72f3fd47f1bd1c3aa3",
       "triangleBudget": 1800,
       "params": [
         {
@@ -16600,41 +16827,64 @@
           "step": 0.05
         },
         {
+          "name": "minHeight",
+          "type": "number",
+          "default": 1220,
+          "label": "Minimum rider height (mm)",
+          "min": 900,
+          "max": 1400,
+          "step": 20
+        },
+        {
           "name": "powderCoat",
           "type": "color",
-          "default": "#477985",
-          "label": "Powder-coated steel"
+          "default": "#2f5f8f",
+          "label": "Powder-coated frame and header"
+        },
+        {
+          "name": "board",
+          "type": "color",
+          "default": "#f4efe2",
+          "label": "Printed ruler board"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e8a628",
+          "label": "Graduation bands, arm and star"
         },
         {
           "name": "steel",
           "type": "color",
-          "default": "#738087",
-          "label": "Painted steel"
-        },
-        {
-          "name": "acrylic",
-          "type": "color",
-          "default": "#63aab8",
-          "label": "Tinted acrylic"
+          "default": "#5c666b",
+          "label": "Weighted steel bases"
         }
       ],
       "presets": {
         "festival": {
-          "powderCoat": "#d47452",
-          "steel": "#9da3a0",
-          "acrylic": "#79c8d2"
+          "powderCoat": "#d0473a",
+          "board": "#fff8e0",
+          "accent": "#2f7fb8",
+          "steel": "#9da3a0"
         },
         "twilight": {
           "powderCoat": "#35576f",
-          "steel": "#4f626c",
-          "acrylic": "#41768b"
+          "board": "#d9d4e8",
+          "accent": "#c79bf2",
+          "steel": "#4f626c"
+        },
+        "jungle": {
+          "powderCoat": "#3f6b3a",
+          "board": "#efe3c2",
+          "accent": "#e57a2e",
+          "steel": "#5a4632"
         }
       },
       "stats": {
-        "triangles": 192,
+        "triangles": 1112,
         "sizeM": [
-          1.285,
-          2.2975,
+          1.5,
+          2.54,
           0.46
         ],
         "minUpM": 0,
@@ -16643,40 +16893,83 @@
       "palette": [
         {
           "name": "steel",
-          "color": "#738087",
+          "color": "#5c666b",
           "parts": [
-            "left-foot",
-            "right-foot",
-            "left-post",
-            "right-post",
-            "top-bar"
+            "base-l",
+            "base-r",
+            "arm-clamp"
           ],
           "param": "steel"
         },
         {
           "name": "powderCoat",
-          "color": "#477985",
+          "color": "#2f5f8f",
           "parts": [
-            "graduation-0",
-            "graduation-1",
-            "graduation-2",
-            "graduation-3",
-            "graduation-4",
-            "graduation-5",
-            "graduation-6",
-            "graduation-7",
-            "graduation-8",
-            "graduation-9"
+            "base-cap-l",
+            "frame-l",
+            "base-cap-r",
+            "frame-r",
+            "header",
+            "star-disc",
+            "arm-edge"
           ],
           "param": "powderCoat"
         },
         {
-          "name": "acrylic",
-          "color": "#63aab8",
+          "name": "board",
+          "color": "#f4efe2",
           "parts": [
-            "marker-cap"
+            "board-l",
+            "board-r",
+            "header-face"
           ],
-          "param": "acrylic"
+          "param": "board"
+        },
+        {
+          "name": "accent",
+          "color": "#e8a628",
+          "parts": [
+            "band-l-200",
+            "band-l-300",
+            "band-l-400",
+            "band-l-500",
+            "band-l-600",
+            "band-l-700",
+            "band-l-800",
+            "band-l-900",
+            "band-l-1000",
+            "band-l-1100",
+            "band-l-1200",
+            "band-l-1300",
+            "band-l-1400",
+            "band-l-1500",
+            "band-l-1600",
+            "band-l-1700",
+            "band-l-1800",
+            "band-l-1900",
+            "band-r-200",
+            "band-r-300",
+            "band-r-400",
+            "band-r-500",
+            "band-r-600",
+            "band-r-700",
+            "band-r-800",
+            "band-r-900",
+            "band-r-1000",
+            "band-r-1100",
+            "band-r-1200",
+            "band-r-1300",
+            "band-r-1400",
+            "band-r-1500",
+            "band-r-1600",
+            "band-r-1700",
+            "band-r-1800",
+            "band-r-1900",
+            "star",
+            "height-arm",
+            "arm-star"
+          ],
+          "param": "accent"
         }
       ]
     },
@@ -19458,13 +19751,18 @@
       "id": "playground-climber",
       "kit": "amusement-park",
       "title": "Playground climber",
-      "description": "Small family-zone climbing frame with a raised platform, ladder rungs, crawl-through opening, and slide. Controls: overall scale, powderCoat, steel, rubber; festival and twilight material presets.",
+      "description": "Family-zone play tower at about real size: four round posts with moulded base collars under a gabled moulded roof, rubber-gripped deck behind tube guard rails, raked front ladder with round rungs, a curved moulded slide with side walls and run-out, and a crawl-through tube under the deck. Material controls: powder-coated frame, moulded plastic, rubber deck. Festival, twilight and jungle presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "playground",
+        "play tower",
+        "climbing frame",
+        "slide",
+        "kids",
         "amusement park",
         "theme park",
-        "guest experience",
+        "family zone",
         "low poly",
         "CC0",
         "attractions and queues"
@@ -19478,8 +19776,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/playground-climber.kcad.ts",
       "preview": "/assets/amusement-park-playground-climber.png",
-      "sourceSha256": "273effba09e73df08886a379b144be19edf39e3200085a6d24f251869cac6199",
-      "triangleBudget": 1800,
+      "sourceSha256": "fbe2fe96ae151c1cae303a8ec35b797c9ed583f177f876bced6bd4461b6e755d",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "scale",
@@ -19493,40 +19791,45 @@
         {
           "name": "powderCoat",
           "type": "color",
-          "default": "#477985",
-          "label": "Powder-coated steel"
+          "default": "#2f7fb8",
+          "label": "Powder-coated posts, rails and ladder"
         },
         {
-          "name": "steel",
+          "name": "plastic",
           "type": "color",
-          "default": "#738087",
-          "label": "Painted steel"
+          "default": "#f2b632",
+          "label": "Moulded plastic roof, slide and tube"
         },
         {
           "name": "rubber",
           "type": "color",
-          "default": "#292f33",
-          "label": "Rubber"
+          "default": "#3d4a3f",
+          "label": "Rubber-gripped deck"
         }
       ],
       "presets": {
         "festival": {
-          "powderCoat": "#d47452",
-          "steel": "#9da3a0",
+          "powderCoat": "#d0473a",
+          "plastic": "#ffd447",
           "rubber": "#3c4245"
         },
         "twilight": {
           "powderCoat": "#35576f",
-          "steel": "#4f626c",
+          "plastic": "#a77bd6",
           "rubber": "#20262a"
+        },
+        "jungle": {
+          "powderCoat": "#3f6b3a",
+          "plastic": "#e57a2e",
+          "rubber": "#5a4632"
         }
       },
       "stats": {
-        "triangles": 156,
+        "triangles": 1964,
         "sizeM": [
-          0.88,
-          1.175,
-          2.131188
+          3.51,
+          2.5,
+          1.635
         ],
         "minUpM": 0,
         "materials": 1
@@ -19534,35 +19837,61 @@
       "palette": [
         {
           "name": "powderCoat",
-          "color": "#477985",
+          "color": "#2f7fb8",
           "parts": [
-            "platform",
-            "slide-bed"
-          ],
-          "param": "powderCoat"
-        },
-        {
-          "name": "steel",
-          "color": "#738087",
-          "parts": [
-            "platform-post-0",
-            "platform-post-1",
-            "platform-post-2",
-            "platform-post-3",
-            "ladder-rung-0",
+            "post-0",
+            "post-1",
+            "post-2",
+            "post-3",
+            "deck-band",
+            "rail-back-1520",
+            "rail-left-1520",
+            "rail-back-1320",
+            "rail-left-1320",
+            "baluster-back-1",
+            "baluster-left-1",
+            "baluster-back-2",
+            "baluster-left-2",
+            "baluster-back-3",
+            "baluster-left-3",
+            "baluster-back-4",
+            "baluster-left-4",
+            "slide-hoop",
+            "ladder-rail-l",
+            "ladder-rail-r",
             "ladder-rung-1",
             "ladder-rung-2",
             "ladder-rung-3",
             "ladder-rung-4",
-            "slide-rail-0"
+            "ladder-rung-5",
+            "slide-leg",
+            "crawl-tube-cradle",
+            "crawl-tube-cradle-2"
           ],
-          "param": "steel"
+          "param": "powderCoat"
+        },
+        {
+          "name": "plastic",
+          "color": "#f2b632",
+          "parts": [
+            "post-collar-0",
+            "post-collar-1",
+            "post-collar-2",
+            "post-collar-3",
+            "roof",
+            "slide-bed",
+            "slide-wall-front",
+            "slide-wall-back",
+            "crawl-tube"
+          ],
+          "param": "plastic"
         },
         {
           "name": "rubber",
-          "color": "#292f33",
+          "color": "#3d4a3f",
           "parts": [
-            "slide-rail-1"
+            "deck",
+            "ladder-foot"
           ],
           "param": "rubber"
         }
@@ -19940,10 +20269,15 @@
       "id": "queue-shade-canopy",
       "kit": "amusement-park",
       "title": "Queue shade canopy",
-      "description": "Open-sided queue shelter with four posts, a peaked roof silhouette, and hanging wayfinding tabs. Controls: overall scale, steel, canvas, enamel; festival and twilight material presets.",
+      "description": "Open-sided ride-queue shelter at about real size: four round steel posts on base plates, a ridge tube and raked rafters under a gabled canvas roof sewn in alternating stripes, scalloped valances on both eaves, two queue guide rails between the posts and enamel wayfinding arrows hanging from the front eave. Material controls: steel frame, canvas, stripe, enamel signs. Festival, twilight and seaside presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "canopy",
+        "shade structure",
+        "queue",
+        "ride queue",
+        "awning",
         "amusement park",
         "theme park",
         "guest experience",
@@ -19960,8 +20294,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/amusement-park/queue-shade-canopy.kcad.ts",
       "preview": "/assets/amusement-park-queue-shade-canopy.png",
-      "sourceSha256": "e844ea041be21b565addbe86d0f05a3ff679257fd335aac22e18c5c41ee6547c",
-      "triangleBudget": 1800,
+      "sourceSha256": "3d1c76c17adb189d80fc063805f20544b90ce814ced4f44631debcf2b5757f6d",
+      "triangleBudget": 2200,
       "params": [
         {
           "name": "scale",
@@ -19975,67 +20309,124 @@
         {
           "name": "steel",
           "type": "color",
-          "default": "#738087",
-          "label": "Painted steel"
+          "default": "#5f6b72",
+          "label": "Painted steel frame and rails"
         },
         {
           "name": "canvas",
           "type": "color",
-          "default": "#e0c98e",
-          "label": "Canvas"
+          "default": "#f1e6c8",
+          "label": "Canvas roof panels"
+        },
+        {
+          "name": "stripe",
+          "type": "color",
+          "default": "#c8423a",
+          "label": "Stripe panels and valance"
         },
         {
           "name": "enamel",
           "type": "color",
-          "default": "#cc684e",
-          "label": "Baked enamel"
+          "default": "#1f5f8b",
+          "label": "Enamel wayfinding signs"
         }
       ],
       "presets": {
         "festival": {
           "steel": "#9da3a0",
-          "canvas": "#eddaa9",
-          "enamel": "#edb34d"
+          "canvas": "#fff3cf",
+          "stripe": "#e8862e",
+          "enamel": "#2a7a3e"
         },
         "twilight": {
           "steel": "#4f626c",
-          "canvas": "#a85e4f",
-          "enamel": "#385b81"
+          "canvas": "#d9cbe8",
+          "stripe": "#385b81",
+          "enamel": "#e0b440"
+        },
+        "seaside": {
+          "steel": "#e9ecea",
+          "canvas": "#ffffff",
+          "stripe": "#2e78b8",
+          "enamel": "#d0473a"
         }
       },
       "stats": {
-        "triangles": 132,
+        "triangles": 1652,
         "sizeM": [
-          3.675281,
-          3.045,
-          1.505047
+          3.62,
+          3.075,
+          1.72
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "canvas",
-          "color": "#e0c98e",
+          "name": "steel",
+          "color": "#5f6b72",
           "parts": [
+            "base-plate-0",
             "post-0",
+            "base-plate-1",
             "post-1",
+            "base-plate-2",
             "post-2",
+            "base-plate-3",
             "post-3",
-            "ridge-beam"
+            "ridge-tube",
+            "eave-tube-front",
+            "eave-tube-back",
+            "rafter-l-front",
+            "rafter-l-back",
+            "rafter-r-front",
+            "rafter-r-back",
+            "queue-rail-front-950",
+            "queue-rail-front-500",
+            "queue-rail-back-950",
+            "queue-rail-back-500",
+            "rail-stanchion-l-front",
+            "rail-stanchion-l-back",
+            "rail-stanchion-r-front",
+            "rail-stanchion-r-back",
+            "sign-hanger-0-l",
+            "sign-hanger-0-r",
+            "sign-hanger-1-l",
+            "sign-hanger-1-r"
+          ],
+          "param": "steel"
+        },
+        {
+          "name": "canvas",
+          "color": "#f1e6c8",
+          "parts": [
+            "roof-panel-0",
+            "roof-panel-2",
+            "roof-panel-4",
+            "sign-panel-0",
+            "sign-panel-1"
           ],
           "param": "canvas"
         },
         {
-          "name": "enamel",
-          "color": "#cc684e",
+          "name": "stripe",
+          "color": "#c8423a",
           "parts": [
-            "left-roof-slope",
-            "right-roof-slope",
-            "queue-tab-0",
-            "queue-tab-1",
-            "queue-tab-2",
-            "queue-tab-3"
+            "roof-panel-1",
+            "roof-panel-3",
+            "roof-panel-5",
+            "ridge-cap",
+            "valance-front",
+            "valance-back"
+          ],
+          "param": "stripe"
+        },
+        {
+          "name": "enamel",
+          "color": "#1f5f8b",
+          "parts": [
+            "sign-arrow-0",
+            "sign-arrow-1"
           ],
           "param": "enamel"
         }
