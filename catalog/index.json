@@ -216149,11 +216149,18 @@
       "id": "biofilter-bed",
       "kit": "recycling-facility",
       "title": "Biofilter bed",
-      "description": "Biofilter bed: four upright filter canisters connected to a low ducted cabinet. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Open odour-control biofilter at about real size: concrete-walled bed of mounded wood-chip media, extraction fan feeding a round pre-humidifier tower and duct into the under-floor plenum, irrigation lines with sprinkler heads, front drain trough with sump outlet and an air-sampling hood on the media. One or two cells. Material controls: concrete walls, filter media, ductwork and fan paint. organics, weathered, fibreglass and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "biofilter",
+        "odour control",
+        "air treatment",
+        "composting",
+        "wood chip",
+        "fan",
+        "humidifier",
         "materials recovery",
         "waste management",
         "organics",
@@ -216169,8 +216176,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/biofilter-bed.kcad.ts",
       "preview": "/assets/recycling-facility-biofilter-bed.png",
-      "sourceSha256": "f7a0156221b8ab9394dd7558e7053576820af0087ffb50bb80c769ac2acbae99",
-      "triangleBudget": 1800,
+      "sourceSha256": "e012f55fbb862d29c459be989b88bb40eac3e483e67fab86c4764a75727eb369",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -216182,63 +216189,289 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "concrete",
           "type": "color",
-          "default": "#587a70",
-          "label": "Painted steel"
+          "default": "#a7a39a",
+          "label": "Bed walls (concrete)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "media",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#6b4a2e",
+          "label": "Filter media (wood chip)"
+        },
+        {
+          "name": "duct",
+          "type": "color",
+          "default": "#a9b2b4",
+          "label": "Ductwork and humidifier (galvanised / FRP)"
+        },
+        {
+          "name": "fan",
+          "type": "color",
+          "default": "#2f6b4f",
+          "label": "Fan and pumps (paint)"
+        },
+        {
+          "name": "cells",
+          "type": "choice",
+          "default": "two",
+          "label": "Media cells",
+          "choices": [
+            "one",
+            "two"
+          ]
         }
       ],
       "presets": {
+        "organics": {
+          "concrete": "#a7a39a",
+          "media": "#6b4a2e",
+          "duct": "#a9b2b4",
+          "fan": "#2f6b4f"
+        },
         "weathered": {
-          "paintedSteel": "#607569",
-          "stainlessSteel": "#9ea7a5"
+          "concrete": "#8c887e",
+          "media": "#4f3a28",
+          "duct": "#8e9592",
+          "fan": "#4d6655"
+        },
+        "fibreglass": {
+          "concrete": "#b3aea3",
+          "media": "#7a5634",
+          "duct": "#c9c2a2",
+          "fan": "#2f5d9a"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "concrete": "#c2beb3",
+          "media": "#8a5d34",
+          "duct": "#d0d6d8",
+          "fan": "#e07a2a"
         }
       },
       "stats": {
-        "triangles": 400,
+        "triangles": 2788,
         "sizeM": [
-          1.31,
-          1.448,
-          1.5106
+          11.33,
+          3.645,
+          4.35
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#587a70",
+          "name": "concrete",
+          "color": "#a7a39a",
           "parts": [
-            "service-base",
-            "filter-cabinet",
-            "access-door-right",
-            "inlet-duct",
-            "outlet-duct",
-            "support-leg-left",
-            "support-leg-right",
-            "filter-canister-1",
-            "filter-canister-2",
-            "filter-canister-3",
-            "filter-canister-4"
+            "bed",
+            "wall-coping",
+            "cell-divider",
+            "drain-trough",
+            "sump"
           ],
-          "param": "paintedSteel"
+          "param": "concrete"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "media",
+          "color": "#6b4a2e",
           "parts": [
-            "access-door-left"
+            "media-fill",
+            "media-mound-0",
+            "media-mound-1"
           ],
-          "param": "stainlessSteel"
+          "param": "media"
+        },
+        {
+          "name": "chip-0",
+          "color": "#8a6440",
+          "parts": [
+            "chip-0",
+            "chip-4",
+            "chip-8",
+            "chip-12",
+            "chip-16",
+            "chip-20",
+            "chip-24",
+            "chip-28",
+            "chip-32",
+            "chip-36"
+          ]
+        },
+        {
+          "name": "chip-1",
+          "color": "#4f3620",
+          "parts": [
+            "chip-1",
+            "chip-5",
+            "chip-9",
+            "chip-13",
+            "chip-17",
+            "chip-21",
+            "chip-25",
+            "chip-29",
+            "chip-33",
+            "chip-37"
+          ]
+        },
+        {
+          "name": "chip-2",
+          "color": "#a07a4c",
+          "parts": [
+            "chip-2",
+            "chip-6",
+            "chip-10",
+            "chip-14",
+            "chip-18",
+            "chip-22",
+            "chip-26",
+            "chip-30",
+            "chip-34",
+            "chip-38"
+          ]
+        },
+        {
+          "name": "chip-3",
+          "color": "#5d4228",
+          "parts": [
+            "chip-3",
+            "chip-7",
+            "chip-11",
+            "chip-15",
+            "chip-19",
+            "chip-23",
+            "chip-27",
+            "chip-31",
+            "chip-35",
+            "chip-39"
+          ]
+        },
+        {
+          "name": "irrigation-100",
+          "color": "#2a2c2e",
+          "parts": [
+            "irrigation-100",
+            "irrigation-1000",
+            "irrigation-1900",
+            "irrigation-header",
+            "weep-pipe-0",
+            "weep-pipe-1",
+            "weep-pipe-2",
+            "weep-pipe-3",
+            "weep-pipe-4",
+            "weep-pipe-5"
+          ]
+        },
+        {
+          "name": "stake-100-1000",
+          "color": "#5d6366",
+          "parts": [
+            "stake-100-1000",
+            "stake-100-2500",
+            "stake-100-4000",
+            "stake-100-5500",
+            "stake-100-7000",
+            "stake-1000-1000",
+            "stake-1000-2500",
+            "stake-1000-4000",
+            "stake-1000-5500",
+            "stake-1000-7000",
+            "stake-1900-1000",
+            "stake-1900-2500",
+            "stake-1900-4000",
+            "stake-1900-5500",
+            "stake-1900-7000",
+            "sump-lid",
+            "humidifier-hatch"
+          ]
+        },
+        {
+          "name": "sprinkler-100-1000",
+          "color": "#2f5d9a",
+          "parts": [
+            "sprinkler-100-1000",
+            "sprinkler-100-2500",
+            "sprinkler-100-4000",
+            "sprinkler-100-5500",
+            "sprinkler-100-7000",
+            "sprinkler-1000-1000",
+            "sprinkler-1000-2500",
+            "sprinkler-1000-4000",
+            "sprinkler-1000-5500",
+            "sprinkler-1000-7000",
+            "sprinkler-1900-1000",
+            "sprinkler-1900-2500",
+            "sprinkler-1900-4000",
+            "sprinkler-1900-5500",
+            "sprinkler-1900-7000"
+          ]
+        },
+        {
+          "name": "fan",
+          "color": "#2f6b4f",
+          "parts": [
+            "solenoid-valve",
+            "sump-pump-riser",
+            "humidifier-band-low",
+            "humidifier-band-high",
+            "fan-scroll",
+            "fan-outlet",
+            "fan-motor",
+            "sign-band"
+          ],
+          "param": "fan"
+        },
+        {
+          "name": "drain-water",
+          "color": "#4a5a4c",
+          "parts": [
+            "drain-water"
+          ]
+        },
+        {
+          "name": "duct",
+          "color": "#a9b2b4",
+          "parts": [
+            "humidifier-tower",
+            "humidifier-cap",
+            "plenum-duct",
+            "duct-flange",
+            "fan-to-tower",
+            "fan-elbow",
+            "fan-intake",
+            "intake-bend",
+            "intake-cowl"
+          ],
+          "param": "duct"
+        },
+        {
+          "name": "fan-skid",
+          "color": "#3a3f42",
+          "parts": [
+            "fan-skid"
+          ]
+        },
+        {
+          "name": "motor-fins",
+          "color": "#2b2f33",
+          "parts": [
+            "motor-fins"
+          ]
+        },
+        {
+          "name": "sampling-hood",
+          "color": "#d8dad6",
+          "parts": [
+            "sampling-hood",
+            "sampling-stack"
+          ]
+        },
+        {
+          "name": "sign",
+          "color": "#f2f2ee",
+          "parts": [
+            "sign"
+          ]
         }
       ]
     },
@@ -217614,11 +217847,18 @@
       "id": "compactor-bag-frame",
       "kit": "recycling-facility",
       "title": "Compactor bag frame",
-      "description": "Compactor bag frame: its pallet, corner post and rail. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Bulk-bag (FIBC) filling frame at about real size: forkliftable base skid with fork pockets and load cells, four braced corner posts, top frame with loop hooks, inlet collar with inflatable spout seal under a discharge chute, woven bag on a timber pallet (empty or full) and weigh indicator on a post. Material controls: frame paint, bag fabric, pallet timber and hardware. plant, weathered, stainless and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "bulk bag",
+        "fibc",
+        "big bag",
+        "filling station",
+        "compactor",
+        "load cell",
+        "pallet",
         "materials recovery",
         "waste management",
         "containers",
@@ -217634,8 +217874,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/compactor-bag-frame.kcad.ts",
       "preview": "/assets/recycling-facility-compactor-bag-frame.png",
-      "sourceSha256": "036015e9db60df0b2a540d862def60bdcaebd8053c0c0d5a7c2cfbcd5514e7d4",
-      "triangleBudget": 1800,
+      "sourceSha256": "251911bfc1dd2f96cde51f590a2d14e8ee16f9f098a5926dbab2ea8fe61da457",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -217647,66 +217887,212 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#687b55",
-          "label": "Painted steel"
+          "default": "#2f6fb5",
+          "label": "Frame (paint)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "fabric",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#e9e6dc",
+          "label": "Bulk bag (woven polypropylene)"
+        },
+        {
+          "name": "timber",
+          "type": "color",
+          "default": "#b08a5a",
+          "label": "Pallet (timber)"
+        },
+        {
+          "name": "hardware",
+          "type": "color",
+          "default": "#c8322a",
+          "label": "Hooks, seal and indicator (accent)"
+        },
+        {
+          "name": "fill",
+          "type": "choice",
+          "default": "full",
+          "label": "Bag fill",
+          "choices": [
+            "empty",
+            "full"
+          ]
         }
       ],
       "presets": {
+        "plant": {
+          "frame": "#2f6fb5",
+          "fabric": "#e9e6dc",
+          "timber": "#b08a5a",
+          "hardware": "#c8322a"
+        },
         "weathered": {
-          "paintedSteel": "#6b7656",
-          "stainlessSteel": "#9ea7a5"
+          "frame": "#4f6478",
+          "fabric": "#cfc8b4",
+          "timber": "#8a7458",
+          "hardware": "#9a4a3a"
+        },
+        "stainless": {
+          "frame": "#b8bec0",
+          "fabric": "#f2f2ee",
+          "timber": "#c09a68",
+          "hardware": "#2f5d9a"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "frame": "#f0c419",
+          "fabric": "#f2f2ee",
+          "timber": "#b08a5a",
+          "hardware": "#2b2f33"
         }
       },
       "stats": {
-        "triangles": 308,
+        "triangles": 2252,
         "sizeM": [
-          1.45,
-          1.245,
-          0.9
+          1.98,
+          3.2,
+          1.75
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#687b55",
+          "name": "frame",
+          "color": "#2f6fb5",
           "parts": [
-            "pallet-base"
+            "skid-rail-f",
+            "skid-rail-b",
+            "fork-pocket-l",
+            "fork-pocket-r",
+            "base-deck",
+            "post-l-f",
+            "post-l-b",
+            "post-r-f",
+            "post-r-b",
+            "brace-back",
+            "brace-l",
+            "brace-r",
+            "top-rail-f",
+            "top-rail-b",
+            "top-rail-l",
+            "top-rail-r",
+            "collar-beam",
+            "chute-transition",
+            "chute-flange",
+            "indicator-post",
+            "indicator-foot"
           ],
-          "param": "paintedSteel"
+          "param": "frame"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "load-cell-l-f",
+          "color": "#9aa1a4",
           "parts": [
-            "corner-post-left-front",
-            "corner-post-right-front",
-            "corner-post-left-back",
-            "corner-post-right-back",
-            "front-rail-1",
-            "rear-rail-1",
-            "front-rail-2",
-            "rear-rail-2",
-            "front-rail-3",
-            "rear-rail-3",
-            "side-rail-left",
-            "side-rail-right",
-            "corner-cap-a",
-            "corner-cap-b"
+            "load-cell-l-f",
+            "load-cell-l-b",
+            "load-cell-r-f",
+            "load-cell-r-b",
+            "chute-stub"
+          ]
+        },
+        {
+          "name": "inlet-collar",
+          "color": "#b8bec0",
+          "parts": [
+            "inlet-collar"
+          ]
+        },
+        {
+          "name": "hardware",
+          "color": "#c8322a",
+          "parts": [
+            "spout-seal",
+            "hook-l-f",
+            "hook-arm-l-f",
+            "hook-l-b",
+            "hook-arm-l-b",
+            "hook-r-f",
+            "hook-arm-r-f",
+            "hook-r-b",
+            "hook-arm-r-b",
+            "indicator-buttons"
           ],
-          "param": "stainlessSteel"
+          "param": "hardware"
+        },
+        {
+          "name": "timber",
+          "color": "#b08a5a",
+          "parts": [
+            "pallet-bearer-100",
+            "pallet-bearer-600",
+            "pallet-bearer-1100",
+            "pallet-board-0",
+            "pallet-board-1",
+            "pallet-board-2",
+            "pallet-board-3",
+            "pallet-board-4",
+            "pallet-board-5"
+          ],
+          "param": "timber"
+        },
+        {
+          "name": "fabric",
+          "color": "#e9e6dc",
+          "parts": [
+            "bulk-bag",
+            "bag-spout",
+            "lift-loop-l-f",
+            "lift-loop-l-b",
+            "lift-loop-r-f",
+            "lift-loop-r-b"
+          ],
+          "param": "fabric"
+        },
+        {
+          "name": "bag-label-f",
+          "color": "#f7f7f2",
+          "parts": [
+            "bag-label-f",
+            "bag-label-b"
+          ]
+        },
+        {
+          "name": "bag-label-print",
+          "color": "#2f5d9a",
+          "parts": [
+            "bag-label-print"
+          ]
+        },
+        {
+          "name": "seam-850",
+          "color": "#cfc8b4",
+          "parts": [
+            "seam-850",
+            "seam-1450"
+          ]
+        },
+        {
+          "name": "indicator-head",
+          "color": "#d8dad6",
+          "parts": [
+            "indicator-head"
+          ]
+        },
+        {
+          "name": "indicator-display",
+          "color": "#1f3a2a",
+          "parts": [
+            "indicator-display"
+          ]
+        },
+        {
+          "name": "load-cable",
+          "color": "#2a2c2e",
+          "parts": [
+            "load-cable"
+          ]
         }
       ]
     },
@@ -217714,11 +218100,19 @@
       "id": "compost-aeration-header",
       "kit": "recycling-facility",
       "title": "Compost aeration header",
-      "description": "Compost aeration header: its pallet, corner post and rail. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Aerated static pile manifold at about real size: centrifugal blower on a skid with intake silencer, HDPE header pipe on saddle supports, lateral branches with butterfly valves and handwheels running into the base of a compost pile, condensate drain leg, header pressure gauge, VFD panel on a post and temperature probes with a solar logger. Four or six laterals. Material controls: HDPE pipe, blower paint, compost and valve accent. organics, weathered, greyPipe and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "composting",
+        "aerated static pile",
+        "blower",
+        "manifold",
+        "header",
+        "pipework",
+        "valve",
+        "temperature probe",
         "materials recovery",
         "waste management",
         "organics",
@@ -217734,8 +218128,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/compost-aeration-header.kcad.ts",
       "preview": "/assets/recycling-facility-compost-aeration-header.png",
-      "sourceSha256": "93b0fd23ba1c090024aaaa9d4e26525ea0757ebd2cbf05ea6c5718c9504f1fac",
-      "triangleBudget": 1800,
+      "sourceSha256": "c9b99e77e39ae2919e8f3ff7991bbe6599da177f40a3d44c3ad5717f1202900b",
+      "triangleBudget": 4800,
       "params": [
         {
           "name": "scale",
@@ -217747,66 +218141,269 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "pipe",
           "type": "color",
-          "default": "#71804f",
-          "label": "Painted steel"
+          "default": "#2a2c2e",
+          "label": "Header and laterals (HDPE)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "blower",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#2f6fb5",
+          "label": "Blower and panel (paint)"
+        },
+        {
+          "name": "compost",
+          "type": "color",
+          "default": "#5a4330",
+          "label": "Compost pile"
+        },
+        {
+          "name": "valve",
+          "type": "color",
+          "default": "#d8b23a",
+          "label": "Valves and handwheels (accent)"
+        },
+        {
+          "name": "laterals",
+          "type": "choice",
+          "default": "six",
+          "label": "Lateral branches",
+          "choices": [
+            "four",
+            "six"
+          ]
         }
       ],
       "presets": {
+        "organics": {
+          "pipe": "#2a2c2e",
+          "blower": "#2f6fb5",
+          "compost": "#5a4330",
+          "valve": "#d8b23a"
+        },
         "weathered": {
-          "paintedSteel": "#717952",
-          "stainlessSteel": "#9ea7a5"
+          "pipe": "#3a3936",
+          "blower": "#4f6478",
+          "compost": "#4a3a2c",
+          "valve": "#a88f3c"
+        },
+        "greyPipe": {
+          "pipe": "#7b8085",
+          "blower": "#2f6b4f",
+          "compost": "#6b5038",
+          "valve": "#c8322a"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "pipe": "#2a2c2e",
+          "blower": "#e07a2a",
+          "compost": "#6e5236",
+          "valve": "#f5d000"
         }
       },
       "stats": {
-        "triangles": 308,
+        "triangles": 4512,
         "sizeM": [
-          1.45,
-          1.105,
-          0.9
+          8.570769,
+          2.401148,
+          6.63
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#71804f",
+          "name": "compost",
+          "color": "#5a4330",
           "parts": [
-            "pallet-base"
+            "compost-pile"
           ],
-          "param": "paintedSteel"
+          "param": "compost"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "crumb-0",
+          "color": "#3f2f22",
           "parts": [
-            "corner-post-left-front",
-            "corner-post-right-front",
-            "corner-post-left-back",
-            "corner-post-right-back",
-            "front-rail-1",
-            "rear-rail-1",
-            "front-rail-2",
-            "rear-rail-2",
-            "front-rail-3",
-            "rear-rail-3",
-            "side-rail-left",
-            "side-rail-right",
-            "corner-cap-a",
-            "corner-cap-b"
+            "crumb-0",
+            "crumb-2",
+            "crumb-4",
+            "crumb-6",
+            "crumb-8",
+            "crumb-10",
+            "crumb-12",
+            "crumb-14",
+            "crumb-16",
+            "crumb-18",
+            "crumb-20",
+            "crumb-22"
+          ]
+        },
+        {
+          "name": "crumb-1",
+          "color": "#8a6440",
+          "parts": [
+            "crumb-1",
+            "crumb-3",
+            "crumb-5",
+            "crumb-7",
+            "crumb-9",
+            "crumb-11",
+            "crumb-13",
+            "crumb-15",
+            "crumb-17",
+            "crumb-19",
+            "crumb-21",
+            "crumb-23"
+          ]
+        },
+        {
+          "name": "pipe",
+          "color": "#2a2c2e",
+          "parts": [
+            "header",
+            "header-end-cap",
+            "drain-leg",
+            "lateral-0",
+            "tee-0",
+            "lateral-flange-0",
+            "lateral-1",
+            "tee-1",
+            "lateral-flange-1",
+            "lateral-2",
+            "tee-2",
+            "lateral-flange-2",
+            "lateral-3",
+            "tee-3",
+            "lateral-flange-3",
+            "lateral-4",
+            "tee-4",
+            "lateral-flange-4",
+            "lateral-5",
+            "tee-5",
+            "lateral-flange-5",
+            "outlet-reducer",
+            "probe-cable-0",
+            "probe-cable-1",
+            "probe-cable-2"
           ],
-          "param": "stainlessSteel"
+          "param": "pipe"
+        },
+        {
+          "name": "saddle-500",
+          "color": "#9a958b",
+          "parts": [
+            "saddle-500",
+            "saddle-1700",
+            "saddle-3000",
+            "saddle-4300"
+          ]
+        },
+        {
+          "name": "pressure-gauge-stem",
+          "color": "#9aa1a4",
+          "parts": [
+            "pressure-gauge-stem",
+            "valve-stem-0",
+            "valve-stem-1",
+            "valve-stem-2",
+            "valve-stem-3",
+            "valve-stem-4",
+            "valve-stem-5",
+            "silencer",
+            "silencer-hood",
+            "silencer-duct"
+          ]
+        },
+        {
+          "name": "pressure-gauge",
+          "color": "#f2f2ee",
+          "parts": [
+            "pressure-gauge"
+          ]
+        },
+        {
+          "name": "valve",
+          "color": "#d8b23a",
+          "parts": [
+            "drain-valve",
+            "valve-body-0",
+            "handwheel-0",
+            "valve-body-1",
+            "handwheel-1",
+            "valve-body-2",
+            "handwheel-2",
+            "valve-body-3",
+            "handwheel-3",
+            "valve-body-4",
+            "handwheel-4",
+            "valve-body-5",
+            "handwheel-5",
+            "belt-guard",
+            "vfd-knob",
+            "probe-handle-0",
+            "probe-handle-1",
+            "probe-handle-2"
+          ],
+          "param": "valve"
+        },
+        {
+          "name": "blower-skid",
+          "color": "#2b2f33",
+          "parts": [
+            "blower-skid",
+            "flex-joint",
+            "motor-fins"
+          ]
+        },
+        {
+          "name": "blower",
+          "color": "#2f6fb5",
+          "parts": [
+            "blower-scroll",
+            "blower-outlet",
+            "blower-motor",
+            "vfd-stripe"
+          ],
+          "param": "blower"
+        },
+        {
+          "name": "vfd-post",
+          "color": "#5d6366",
+          "parts": [
+            "vfd-post",
+            "logger-stake"
+          ]
+        },
+        {
+          "name": "vfd-panel",
+          "color": "#d8dad6",
+          "parts": [
+            "vfd-panel",
+            "logger-box"
+          ]
+        },
+        {
+          "name": "vfd-display",
+          "color": "#1f3a2a",
+          "parts": [
+            "vfd-display"
+          ]
+        },
+        {
+          "name": "probe-0",
+          "color": "#c4c9cb",
+          "parts": [
+            "probe-0",
+            "probe-1",
+            "probe-2"
+          ]
+        },
+        {
+          "name": "solar-panel",
+          "color": "#1c2a4a",
+          "parts": [
+            "solar-panel"
+          ]
         }
       ]
     },
@@ -219855,11 +220452,19 @@
       "id": "driver-check-in-booth",
       "kit": "recycling-facility",
       "title": "Driver check-in booth",
-      "description": "Driver check-in booth: a small weighbridge kiosk with front counter, glazing and roof overhang. Low-poly visualization prop. Material controls: stainless steel, painted steel, glass, safety amber.",
+      "description": "Weighbridge driver check-in booth at about real size: cabin raised on a concrete plinth, sliding pass window with stainless deal tray and counter at truck cab height, wraparound glazing, flat roof with deep overhang and amber fascia, door with steps and handrail, wall AC unit, and on the lane side a gooseneck intercom pedestal, red/green traffic light and striped barrier arm (raised or lowered). Material controls: cladding, frame paint, glass and safety amber. site, weathered, corporate and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "weighbridge",
+        "gatehouse",
+        "kiosk",
+        "booth",
+        "check-in",
+        "barrier",
+        "traffic light",
+        "intercom",
         "materials recovery",
         "waste management",
         "reception",
@@ -219875,8 +220480,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/driver-check-in-booth.kcad.ts",
       "preview": "/assets/recycling-facility-driver-check-in-booth.png",
-      "sourceSha256": "4af13bc1433db951ce34e9e78dfd978009ab12207acaef48aec1aadf61bb8963",
-      "triangleBudget": 1800,
+      "sourceSha256": "a204b5e2582d28dea4ed737f18fc2d56bd8925747640a40fdc455e816037643c",
+      "triangleBudget": 2600,
       "params": [
         {
           "name": "scale",
@@ -219888,16 +220493,16 @@
           "step": 0.05
         },
         {
-          "name": "stainlessSteel",
+          "name": "cladding",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#e2e3df",
+          "label": "Wall cladding (composite panel)"
         },
         {
-          "name": "paintedSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#55766b",
-          "label": "Painted steel"
+          "default": "#2f5d7a",
+          "label": "Window frames and posts (paint)"
         },
         {
           "name": "glass",
@@ -219909,68 +220514,219 @@
           "name": "safetyAmber",
           "type": "color",
           "default": "#f0ae32",
-          "label": "Safety amber"
+          "label": "Safety amber (fascia, bollards)"
+        },
+        {
+          "name": "barrier",
+          "type": "choice",
+          "default": "lowered",
+          "label": "Barrier arm",
+          "choices": [
+            "lowered",
+            "raised"
+          ]
         }
       ],
       "presets": {
+        "site": {
+          "cladding": "#e2e3df",
+          "frame": "#2f5d7a",
+          "glass": "#4f9ca8",
+          "safetyAmber": "#f0ae32"
+        },
         "weathered": {
-          "stainlessSteel": "#9ea7a5",
-          "paintedSteel": "#5e7265",
+          "cladding": "#c4c1b6",
+          "frame": "#4a5a62",
           "glass": "#55939a",
-          "safetyAmber": "#d9a239"
+          "safetyAmber": "#c99a3c"
+        },
+        "corporate": {
+          "cladding": "#3d4f63",
+          "frame": "#2b2f33",
+          "glass": "#6fb0c0",
+          "safetyAmber": "#2f8f4e"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632",
+          "cladding": "#f2f2ee",
+          "frame": "#c8322a",
+          "glass": "#4f9ca8",
           "safetyAmber": "#ffd044"
         }
       },
       "stats": {
-        "triangles": 172,
+        "triangles": 1738,
         "sizeM": [
-          1.15,
-          1.43,
-          0.83
+          6.66,
+          3.65,
+          4.3
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "plinth",
+          "color": "#a7a39a",
           "parts": [
-            "floor-skid"
-          ],
-          "param": "stainlessSteel"
-        },
-        {
-          "name": "paintedSteel",
-          "color": "#55766b",
-          "parts": [
-            "rear-wall",
-            "left-wall",
-            "right-wall",
-            "front-counter",
-            "roof",
-            "service-panel"
-          ],
-          "param": "paintedSteel"
-        },
-        {
-          "name": "glass",
-          "color": "#4f9ca8",
-          "parts": [
-            "window-header"
-          ],
-          "param": "glass"
+            "plinth"
+          ]
         },
         {
           "name": "safetyAmber",
           "color": "#f0ae32",
           "parts": [
-            "corner-beacon"
+            "plinth-kerb",
+            "fascia-front",
+            "fascia-lane",
+            "fascia-back",
+            "bollard-f",
+            "bollard-b",
+            "barrier-cabinet",
+            "arm-rest"
           ],
           "param": "safetyAmber"
+        },
+        {
+          "name": "cladding",
+          "color": "#e2e3df",
+          "parts": [
+            "cabin-base",
+            "cabin-head",
+            "roof-slab"
+          ],
+          "param": "cladding"
+        },
+        {
+          "name": "glass",
+          "color": "#4f9ca8",
+          "parts": [
+            "glazing",
+            "door-glass"
+          ],
+          "param": "glass"
+        },
+        {
+          "name": "frame",
+          "color": "#2f5d7a",
+          "parts": [
+            "corner-post-l-f",
+            "corner-post-l-b",
+            "corner-post-r-f",
+            "corner-post-r-b",
+            "mullion-lane",
+            "mullion-front",
+            "sill-band",
+            "pass-window-frame",
+            "counter-bracket-100",
+            "counter-bracket-1000",
+            "booth-sign",
+            "door",
+            "handrail",
+            "handrail-post-low",
+            "handrail-post-high",
+            "intercom-post",
+            "gooseneck",
+            "light-pole"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "pass-window-slider",
+          "color": "#7fbcc6",
+          "parts": [
+            "pass-window-slider"
+          ]
+        },
+        {
+          "name": "counter-shelf",
+          "color": "#b8bec0",
+          "parts": [
+            "counter-shelf"
+          ]
+        },
+        {
+          "name": "deal-tray",
+          "color": "#c4c9cb",
+          "parts": [
+            "deal-tray",
+            "door-handle",
+            "intercom-head"
+          ]
+        },
+        {
+          "name": "ticket-printer-slot",
+          "color": "#2b2f33",
+          "parts": [
+            "ticket-printer-slot",
+            "bollard-band-f",
+            "bollard-band-b",
+            "intercom-speaker",
+            "card-reader",
+            "light-head",
+            "visor-2470",
+            "visor-2180",
+            "barrier-cap"
+          ]
+        },
+        {
+          "name": "booth-sign-text",
+          "color": "#f2f2ee",
+          "parts": [
+            "booth-sign-text",
+            "arm-1",
+            "arm-3",
+            "arm-5",
+            "arm-7"
+          ]
+        },
+        {
+          "name": "downlight",
+          "color": "#fff4c8",
+          "parts": [
+            "downlight"
+          ]
+        },
+        {
+          "name": "step-0",
+          "color": "#9a958b",
+          "parts": [
+            "step-0",
+            "step-1",
+            "step-2"
+          ]
+        },
+        {
+          "name": "ac-unit",
+          "color": "#d8dad6",
+          "parts": [
+            "ac-unit"
+          ]
+        },
+        {
+          "name": "ac-fan",
+          "color": "#5d6366",
+          "parts": [
+            "ac-fan",
+            "intercom-base"
+          ]
+        },
+        {
+          "name": "light-red",
+          "color": "#d62f2a",
+          "parts": [
+            "light-red",
+            "arm-0",
+            "arm-2",
+            "arm-4",
+            "arm-6"
+          ]
+        },
+        {
+          "name": "light-green",
+          "color": "#2f9a4f",
+          "parts": [
+            "light-green"
+          ]
         }
       ]
     },
@@ -219978,11 +220734,18 @@
       "id": "dust-collector-filter",
       "kit": "recycling-facility",
       "title": "Dust collector filter",
-      "description": "Dust collector filter: four upright filter canisters connected to a low ducted cabinet. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Pulse-jet cartridge dust collector at about real size: filter housing on braced legs over a pyramid hopper, rotary airlock with drop sleeve into a dust drum, round dirty-air inlet, clean-air plenum with compressed-air header and diaphragm valves, explosion-relief panel, access ladder and railed roof, exhaust fan with discharge stack. One or two filter modules. Material controls: housing, structure, ductwork and safety accent. plant, weathered, stainless and highVisibility presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "recycling",
+        "dust collector",
+        "baghouse",
+        "cartridge filter",
+        "pulse jet",
+        "extraction",
+        "air pollution control",
+        "fan",
         "materials recovery",
         "waste management",
         "baling",
@@ -219998,8 +220761,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/dust-collector-filter.kcad.ts",
       "preview": "/assets/recycling-facility-dust-collector-filter.png",
-      "sourceSha256": "12dee731b70d61131ad7396fece1baf256040a66024129ccdf9e4f50ae812c89",
-      "triangleBudget": 1800,
+      "sourceSha256": "b75ff815c3664d5fce052d1dafcc3e623713ad826d1013d2161e4a1dc05bae0d",
+      "triangleBudget": 5400,
       "params": [
         {
           "name": "scale",
@@ -220011,63 +220774,250 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "housing",
           "type": "color",
-          "default": "#6b7756",
-          "label": "Painted steel"
+          "default": "#d8d6cc",
+          "label": "Filter housing (powder coat)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "structure",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#3d4f63",
+          "label": "Legs, bracing and ladder (paint)"
+        },
+        {
+          "name": "ductwork",
+          "type": "color",
+          "default": "#a8b0b3",
+          "label": "Ductwork and stack (galvanised)"
+        },
+        {
+          "name": "accent",
+          "type": "color",
+          "default": "#e0a526",
+          "label": "Safety accent (vent panel, rails)"
+        },
+        {
+          "name": "modules",
+          "type": "choice",
+          "default": "one",
+          "label": "Filter modules",
+          "choices": [
+            "one",
+            "two"
+          ]
         }
       ],
       "presets": {
+        "plant": {
+          "housing": "#d8d6cc",
+          "structure": "#3d4f63",
+          "ductwork": "#a8b0b3",
+          "accent": "#e0a526"
+        },
         "weathered": {
-          "paintedSteel": "#6d7357",
-          "stainlessSteel": "#9ea7a5"
+          "housing": "#b4b0a2",
+          "structure": "#4d5652",
+          "ductwork": "#8e9592",
+          "accent": "#b8913c"
+        },
+        "stainless": {
+          "housing": "#c4c9cb",
+          "structure": "#5d6366",
+          "ductwork": "#b8bec0",
+          "accent": "#d9692c"
         },
         "highVisibility": {
-          "paintedSteel": "#d77632"
+          "housing": "#f2f2ee",
+          "structure": "#2f5d9a",
+          "ductwork": "#c9cfd1",
+          "accent": "#f5d000"
         }
       },
       "stats": {
-        "triangles": 400,
+        "triangles": 4060,
         "sizeM": [
-          1.18,
-          1.448,
-          1.5106
+          5.93,
+          7.45,
+          2.978
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#6b7756",
+          "name": "housing",
+          "color": "#d8d6cc",
           "parts": [
-            "service-base",
-            "filter-cabinet",
-            "access-door-right",
-            "inlet-duct",
-            "outlet-duct",
-            "support-leg-left",
-            "support-leg-right",
-            "filter-canister-1",
-            "filter-canister-2",
-            "filter-canister-3",
-            "filter-canister-4"
+            "hopper-0",
+            "housing-0",
+            "cartridge-door-0-0",
+            "cartridge-door-0-1",
+            "plenum-0"
           ],
-          "param": "paintedSteel"
+          "param": "housing"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "structure",
+          "color": "#3d4f63",
           "parts": [
-            "access-door-left"
+            "airlock-flange-0",
+            "airlock-0",
+            "leg-l-f",
+            "base-plate-l-f",
+            "leg-l-b",
+            "base-plate-l-b",
+            "leg-r-f",
+            "base-plate-r-f",
+            "leg-r-b",
+            "base-plate-r-b",
+            "brace-x-f-b",
+            "brace-x-f-a",
+            "brace-x-b-b",
+            "brace-x-b-a",
+            "brace-y-l-b",
+            "brace-y-l-a",
+            "brace-y-r-b",
+            "brace-y-r-a",
+            "ladder-rail-l",
+            "ladder-rail-r",
+            "rung-1",
+            "rung-2",
+            "rung-3",
+            "rung-4",
+            "rung-5",
+            "rung-6",
+            "rung-7",
+            "rung-8",
+            "rung-9",
+            "rung-10",
+            "rung-11",
+            "rung-12",
+            "rung-13",
+            "rung-14",
+            "rung-15",
+            "rung-16",
+            "rung-17",
+            "rung-18",
+            "rung-19",
+            "rung-20",
+            "rung-21",
+            "cage-hoop-0",
+            "cage-hoop-1",
+            "cage-hoop-2",
+            "cage-hoop-3",
+            "cage-hoop-4",
+            "cage-hoop-5",
+            "ladder-standoff",
+            "fan-scroll",
+            "fan-outlet"
           ],
-          "param": "stainlessSteel"
+          "param": "structure"
+        },
+        {
+          "name": "accent",
+          "color": "#e0a526",
+          "parts": [
+            "airlock-motor-0",
+            "vent-panel-0",
+            "blast-gate",
+            "roof-railing-front",
+            "roof-railing-back",
+            "roof-railing-side",
+            "roof-railing-mid",
+            "railing-post-3600-f",
+            "railing-post-3600-b",
+            "railing-post-4000-f",
+            "railing-post-4000-b",
+            "railing-post-4980-f",
+            "railing-post-4980-b",
+            "fan-motor"
+          ],
+          "param": "accent"
+        },
+        {
+          "name": "drop-sleeve-0",
+          "color": "#2a2c2e",
+          "parts": [
+            "drop-sleeve-0",
+            "drum-dolly-0"
+          ]
+        },
+        {
+          "name": "dust-drum-0",
+          "color": "#2f5d9a",
+          "parts": [
+            "dust-drum-0",
+            "pulse-header-0"
+          ]
+        },
+        {
+          "name": "door-handle-0-0",
+          "color": "#2b2f33",
+          "parts": [
+            "door-handle-0-0",
+            "door-handle-0-1",
+            "diaphragm-valve-0-0",
+            "diaphragm-valve-0-1",
+            "diaphragm-valve-0-2",
+            "diaphragm-valve-0-3",
+            "fan-skid",
+            "stack-sample-port"
+          ]
+        },
+        {
+          "name": "vent-panel-face-0",
+          "color": "#c8322a",
+          "parts": [
+            "vent-panel-face-0"
+          ]
+        },
+        {
+          "name": "blowpipe-0-0",
+          "color": "#9aa1a4",
+          "parts": [
+            "blowpipe-0-0",
+            "blowpipe-0-1",
+            "blowpipe-0-2",
+            "blowpipe-0-3"
+          ]
+        },
+        {
+          "name": "ductwork",
+          "color": "#a8b0b3",
+          "parts": [
+            "inlet-duct",
+            "inlet-flange",
+            "inlet-elbow",
+            "inlet-riser",
+            "outlet-duct",
+            "outlet-elbow",
+            "outlet-drop",
+            "stack",
+            "stack-cap"
+          ],
+          "param": "ductwork"
+        },
+        {
+          "name": "control-panel",
+          "color": "#d8dad6",
+          "parts": [
+            "control-panel"
+          ]
+        },
+        {
+          "name": "magnehelic-gauge",
+          "color": "#f2f2ee",
+          "parts": [
+            "magnehelic-gauge"
+          ]
+        },
+        {
+          "name": "panel-lamp",
+          "color": "#2f9a4f",
+          "parts": [
+            "panel-lamp"
+          ]
         }
       ]
     },
