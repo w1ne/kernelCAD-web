@@ -213521,14 +213521,21 @@
       "id": "aerosol-can-safety-drum",
       "kit": "recycling-facility",
       "title": "Aerosol-can safety drum",
-      "description": "Aerosol-can safety drum: a raised-rim containment pallet beneath a cylindrical drum with twin bung fittings. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Aerosol can puncturing drum at about real size: 205-litre steel drum with rolled chimes and rolling hoops, lid-mounted can puncturing unit with holder sleeve, lever and grounding wire, carbon filter cartridge in the small bung, flammable diamond and waste label, on a yellow polyethylene spill pallet with grated deck. Material controls: drum paint, spill pallet, puncturer and filter. Optional can loaded in the puncturer. safetyRed, steelGrey and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "aerosol",
+        "aerosol can",
+        "puncturing drum",
+        "drum",
+        "205 litre drum",
+        "spill pallet",
+        "hazardous waste",
+        "containers",
         "recycling",
         "materials recovery",
         "waste management",
-        "containers",
         "low poly",
         "scene prop"
       ],
@@ -213541,8 +213548,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/aerosol-can-safety-drum.kcad.ts",
       "preview": "/assets/recycling-facility-aerosol-can-safety-drum.png",
-      "sourceSha256": "e0ce7cc1117c08a0c0bb243bfc3b18862fbd5a669f5839063a27f3b5805babf0",
-      "triangleBudget": 1800,
+      "sourceSha256": "32b0a1249fe2fc9333d3b18ff9865daaa8cff7116bf33cf2910a7f3d11fb4a4c",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -213554,59 +213561,176 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "drumPaint",
           "type": "color",
-          "default": "#4f7080",
-          "label": "Painted steel"
+          "default": "#b8322a",
+          "label": "Drum (painted steel)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "spillPallet",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#e6b622",
+          "label": "Spill pallet (polyethylene)"
+        },
+        {
+          "name": "puncturer",
+          "type": "color",
+          "default": "#9aa3a6",
+          "label": "Puncturing unit (aluminium)"
+        },
+        {
+          "name": "filter",
+          "type": "color",
+          "default": "#2c3034",
+          "label": "Filter cartridge and seals"
+        },
+        {
+          "name": "canLoaded",
+          "type": "boolean",
+          "default": true,
+          "label": "Can loaded in puncturer"
         }
       ],
       "presets": {
-        "weathered": {
-          "paintedSteel": "#5a6e74",
-          "stainlessSteel": "#9ea7a5"
+        "safetyRed": {
+          "drumPaint": "#b8322a",
+          "spillPallet": "#e6b622",
+          "puncturer": "#9aa3a6",
+          "filter": "#2c3034"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "steelGrey": {
+          "drumPaint": "#5f6b72",
+          "spillPallet": "#2f6db0",
+          "puncturer": "#c3c8c9",
+          "filter": "#e2e0d8"
+        },
+        "weathered": {
+          "drumPaint": "#7c3a2c",
+          "spillPallet": "#b8953a",
+          "puncturer": "#7d8079",
+          "filter": "#3a3632"
         }
       },
       "stats": {
-        "triangles": 512,
+        "triangles": 2662,
         "sizeM": [
-          1.1025,
-          1.5,
-          0.9135
+          0.8,
+          1.564,
+          0.79
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#4f7080",
+          "name": "spillPallet",
+          "color": "#e6b622",
           "parts": [
-            "spill-pallet",
-            "bung-a",
-            "bung-b",
-            "label-band"
+            "sump",
+            "sump-lip",
+            "pallet-foot--260--260",
+            "pallet-foot-260--260",
+            "pallet-foot--260-260",
+            "pallet-foot-260-260",
+            "fork-channel",
+            "grate-x--4",
+            "grate-x--3",
+            "grate-x--2",
+            "grate-x--1",
+            "grate-x-0",
+            "grate-x-1",
+            "grate-x-2",
+            "grate-x-3",
+            "grate-x-4",
+            "grate-y--240",
+            "grate-y-0",
+            "grate-y-240",
+            "waste-label-band"
           ],
-          "param": "paintedSteel"
+          "param": "spillPallet"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "drumPaint",
+          "color": "#b8322a",
           "parts": [
             "drum-body",
-            "top-rim",
-            "pallet-foot-left",
-            "pallet-foot-right"
+            "chime-0",
+            "chime-858",
+            "rolling-hoop-290",
+            "rolling-hoop-581",
+            "lid-dome"
           ],
-          "param": "stainlessSteel"
+          "param": "drumPaint"
+        },
+        {
+          "name": "puncturer",
+          "color": "#9aa3a6",
+          "parts": [
+            "filter-bung",
+            "filter-rib-70",
+            "filter-rib-140",
+            "filter-rib-210",
+            "puncturer-base",
+            "puncturer-housing",
+            "can-sleeve",
+            "lever-arm",
+            "ground-clip"
+          ],
+          "param": "puncturer"
+        },
+        {
+          "name": "filter",
+          "color": "#2c3034",
+          "parts": [
+            "filter-cartridge",
+            "lever-pivot",
+            "lever-grip",
+            "seal-ring"
+          ],
+          "param": "filter"
+        },
+        {
+          "name": "filter-label",
+          "color": "#e9e6dc",
+          "parts": [
+            "filter-label"
+          ]
+        },
+        {
+          "name": "aerosol-can",
+          "color": "#d9d9d2",
+          "parts": [
+            "aerosol-can"
+          ]
+        },
+        {
+          "name": "can-band",
+          "color": "#3f7fb8",
+          "parts": [
+            "can-band"
+          ]
+        },
+        {
+          "name": "ground-strap",
+          "color": "#3a8a3a",
+          "parts": [
+            "ground-strap"
+          ]
+        },
+        {
+          "name": "flammable-diamond-border",
+          "color": "#f2f0ea",
+          "parts": [
+            "flammable-diamond-border",
+            "waste-label"
+          ]
+        },
+        {
+          "name": "flammable-diamond",
+          "color": "#d6372b",
+          "parts": [
+            "flammable-diamond"
+          ]
         }
       ]
     },
@@ -215079,14 +215203,22 @@
       "id": "battery-quarantine-drum",
       "kit": "recycling-facility",
       "title": "Battery quarantine drum",
-      "description": "Battery quarantine drum: a raised-rim containment pallet beneath a cylindrical drum with twin bung fittings. Low-poly visualization prop. Material controls: painted steel, stainless steel.",
+      "description": "Lithium battery quarantine drum at about real size: open-head UN steel drum with bolted closing ring and lever lug, lid pressure-relief vent and lifting handle, temperature probe wired to an alarm box on a post, Class 9 striped hazard label, vermiculite sack, on a galvanised grated sump tray. Material controls: drum, closing ring, sump tray and alarm/labels. Optional vermiculite sack. lithiumBlue, leadAcidBlack and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "battery",
+        "lithium battery",
+        "quarantine",
+        "battery fire",
+        "drum",
+        "open head drum",
+        "class 9",
+        "hazardous waste",
+        "containers",
         "recycling",
         "materials recovery",
         "waste management",
-        "containers",
         "low poly",
         "scene prop"
       ],
@@ -215099,8 +215231,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/battery-quarantine-drum.kcad.ts",
       "preview": "/assets/recycling-facility-battery-quarantine-drum.png",
-      "sourceSha256": "a67205611010d314d77b5192f267cbdc8d756c2ee0b684b2e9d20eab9e2b773b",
-      "triangleBudget": 1800,
+      "sourceSha256": "7fdbf12f4d85fb0e1446ab95f3173905c12c904f4f8602b192f1bd4c72c23523",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -215112,59 +215244,184 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "drum",
           "type": "color",
-          "default": "#687b55",
-          "label": "Painted steel"
+          "default": "#2f5f8f",
+          "label": "Drum (painted steel)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "ring",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#b9c0c2",
+          "label": "Closing ring and fittings (zinc)"
+        },
+        {
+          "name": "tray",
+          "type": "color",
+          "default": "#8e979a",
+          "label": "Sump tray (galvanised)"
+        },
+        {
+          "name": "alarm",
+          "type": "color",
+          "default": "#e2b41f",
+          "label": "Alarm box and sack"
+        },
+        {
+          "name": "withSack",
+          "type": "boolean",
+          "default": true,
+          "label": "Vermiculite sack"
         }
       ],
       "presets": {
-        "weathered": {
-          "paintedSteel": "#6b7656",
-          "stainlessSteel": "#9ea7a5"
+        "lithiumBlue": {
+          "drum": "#2f5f8f",
+          "ring": "#b9c0c2",
+          "tray": "#8e979a",
+          "alarm": "#e2b41f"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "leadAcidBlack": {
+          "drum": "#26292b",
+          "ring": "#c7cbcc",
+          "tray": "#6d7377",
+          "alarm": "#d4542b"
+        },
+        "weathered": {
+          "drum": "#4b5f6b",
+          "ring": "#8d8a80",
+          "tray": "#76726a",
+          "alarm": "#b09038"
         }
       },
       "stats": {
-        "triangles": 512,
+        "triangles": 1800,
         "sizeM": [
-          0.9975,
-          1.98,
-          0.798
+          1.549539,
+          1.3498,
+          1.119423
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#687b55",
+          "name": "tray",
+          "color": "#8e979a",
           "parts": [
-            "spill-pallet",
-            "bung-a",
-            "bung-b",
-            "label-band"
+            "tray",
+            "tray-runner--390",
+            "tray-runner-390",
+            "grate--5",
+            "grate--4",
+            "grate--3",
+            "grate--2",
+            "grate--1",
+            "grate-0",
+            "grate-1",
+            "grate-2",
+            "grate-3",
+            "grate-4",
+            "grate-5",
+            "grate-cross",
+            "alarm-foot",
+            "alarm-post"
           ],
-          "param": "paintedSteel"
+          "param": "tray"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "drum",
+          "color": "#2f5f8f",
           "parts": [
             "drum-body",
-            "top-rim",
-            "pallet-foot-left",
-            "pallet-foot-right"
+            "bead-30",
+            "bead-62",
+            "bottom-chime",
+            "lid",
+            "lid-dish"
           ],
-          "param": "stainlessSteel"
+          "param": "drum"
+        },
+        {
+          "name": "ring",
+          "color": "#b9c0c2",
+          "parts": [
+            "closing-ring",
+            "ring-lug",
+            "ring-lever",
+            "vent-boss",
+            "handle-post--90",
+            "handle-post-90",
+            "handle-bar",
+            "probe-gland"
+          ],
+          "param": "ring"
+        },
+        {
+          "name": "ring-bolt",
+          "color": "#3a3c3e",
+          "parts": [
+            "ring-bolt"
+          ]
+        },
+        {
+          "name": "vent-cap",
+          "color": "#d4542b",
+          "parts": [
+            "vent-cap",
+            "alarm-beacon"
+          ]
+        },
+        {
+          "name": "alarm",
+          "color": "#e2b41f",
+          "parts": [
+            "probe-head",
+            "alarm-box",
+            "sack",
+            "sack-top"
+          ],
+          "param": "alarm"
+        },
+        {
+          "name": "alarm-display",
+          "color": "#1d2a24",
+          "parts": [
+            "alarm-display"
+          ]
+        },
+        {
+          "name": "alarm-readout",
+          "color": "#7fe07a",
+          "parts": [
+            "alarm-readout"
+          ]
+        },
+        {
+          "name": "probe-cable",
+          "color": "#26292b",
+          "parts": [
+            "probe-cable"
+          ]
+        },
+        {
+          "name": "class9-diamond",
+          "color": "#f2f0ea",
+          "parts": [
+            "class9-diamond",
+            "un-plate",
+            "sack-label"
+          ]
+        },
+        {
+          "name": "class9-stripe-0",
+          "color": "#1b1c1d",
+          "parts": [
+            "class9-stripe-0",
+            "class9-stripe-1",
+            "class9-stripe-2",
+            "un-plate-text"
+          ]
         }
       ]
     },
@@ -221749,14 +222006,21 @@
       "id": "inbound-camera-mast",
       "kit": "recycling-facility",
       "title": "Inbound camera mast",
-      "description": "Inbound camera mast: a tall site pedestal with a hooded instrument head, antenna and service door. Low-poly visualization prop. Material controls: concrete, painted steel, safety amber, stainless steel.",
+      "description": "ANPR number-plate camera mast at about real size: tapered galvanised pole on bolted base plate and concrete pad, service door, outreach arm with two camera housings, sun shields and infrared illuminators, overview dome camera, junction box and CCTV warning sign. Material controls: pole, camera housings, concrete pad and sign. Arm style (single or twin camera). galvanised, blackPowderCoat and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "camera",
+        "cctv",
+        "anpr",
+        "number plate recognition",
+        "camera mast",
+        "surveillance",
+        "weighbridge",
+        "reception",
         "recycling",
         "materials recovery",
         "waste management",
-        "reception",
         "low poly",
         "scene prop"
       ],
@@ -221769,8 +222033,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/inbound-camera-mast.kcad.ts",
       "preview": "/assets/recycling-facility-inbound-camera-mast.png",
-      "sourceSha256": "650d5c91da003736fb723a83b42b12b973432a298eea58b20c1c1faf2d4edfda",
-      "triangleBudget": 1800,
+      "sourceSha256": "e122503869cfb7249c7b8cdfbb326a41bc550a325437f63cb212cbcdf502afaa",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -221782,48 +222046,66 @@
           "step": 0.05
         },
         {
+          "name": "pole",
+          "type": "color",
+          "default": "#a7aeb0",
+          "label": "Pole and arm (galvanised)"
+        },
+        {
+          "name": "housing",
+          "type": "color",
+          "default": "#ecebe6",
+          "label": "Camera housings"
+        },
+        {
           "name": "concrete",
           "type": "color",
-          "default": "#898b83",
-          "label": "Concrete"
+          "default": "#8f918b",
+          "label": "Concrete pad"
         },
         {
-          "name": "paintedSteel",
+          "name": "sign",
           "type": "color",
-          "default": "#6c7882",
-          "label": "Painted steel"
+          "default": "#f2d21c",
+          "label": "CCTV sign"
         },
         {
-          "name": "safetyAmber",
-          "type": "color",
-          "default": "#f0ae32",
-          "label": "Safety amber"
-        },
-        {
-          "name": "stainlessSteel",
-          "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "name": "cameras",
+          "type": "choice",
+          "default": "twin",
+          "label": "Camera count",
+          "choices": [
+            "single",
+            "twin"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "concrete": "#84857b",
-          "paintedSteel": "#6d7475",
-          "safetyAmber": "#d9a239",
-          "stainlessSteel": "#9ea7a5"
+        "galvanised": {
+          "pole": "#a7aeb0",
+          "housing": "#ecebe6",
+          "concrete": "#8f918b",
+          "sign": "#f2d21c"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632",
-          "safetyAmber": "#ffd044"
+        "blackPowderCoat": {
+          "pole": "#2b2e31",
+          "housing": "#3a3d40",
+          "concrete": "#8f918b",
+          "sign": "#f2d21c"
+        },
+        "weathered": {
+          "pole": "#8b8a82",
+          "housing": "#c9c5b8",
+          "concrete": "#77746a",
+          "sign": "#c9ac3a"
         }
       },
       "stats": {
-        "triangles": 224,
+        "triangles": 1438,
         "sizeM": [
-          0.6832,
-          1.3928,
-          0.535
+          0.7,
+          4.404,
+          2.08026
         ],
         "minUpM": 0,
         "materials": 1
@@ -221831,39 +222113,104 @@
       "palette": [
         {
           "name": "concrete",
-          "color": "#898b83",
+          "color": "#8f918b",
           "parts": [
-            "mounting-plinth"
+            "pad"
           ],
           "param": "concrete"
         },
         {
-          "name": "paintedSteel",
-          "color": "#6c7882",
+          "name": "pole",
+          "color": "#a7aeb0",
           "parts": [
-            "pedestal-column",
-            "equipment-head",
-            "sun-hood",
+            "base-plate",
+            "gusset-0",
+            "gusset-1",
+            "gusset-2",
+            "gusset-3",
+            "pole",
+            "pole-cap",
             "service-door",
-            "antenna"
+            "arm-clamp",
+            "arm",
+            "arm-brace",
+            "cam-left-bracket",
+            "cam-left-tilt",
+            "cam-right-bracket",
+            "cam-right-tilt",
+            "cam-crossbar",
+            "sign-clamp"
           ],
-          "param": "paintedSteel"
+          "param": "pole"
         },
         {
-          "name": "safetyAmber",
-          "color": "#f0ae32",
+          "name": "anchor-bolt--160--160",
+          "color": "#4a4c4e",
           "parts": [
-            "warning-beacon"
-          ],
-          "param": "safetyAmber"
+            "anchor-bolt--160--160",
+            "anchor-nut--160--160",
+            "anchor-bolt-160--160",
+            "anchor-nut-160--160",
+            "anchor-bolt--160-160",
+            "anchor-nut--160-160",
+            "anchor-bolt-160-160",
+            "anchor-nut-160-160",
+            "door-lock",
+            "arm-end-cap"
+          ]
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "housing",
+          "color": "#ecebe6",
           "parts": [
-            "cable-gland"
+            "cam-left-body",
+            "cam-left-shield",
+            "cam-right-body",
+            "cam-right-shield",
+            "dome-mount",
+            "junction-box"
           ],
-          "param": "stainlessSteel"
+          "param": "housing"
+        },
+        {
+          "name": "cam-left-glass",
+          "color": "#1d2a33",
+          "parts": [
+            "cam-left-glass",
+            "cam-right-glass",
+            "dome"
+          ]
+        },
+        {
+          "name": "cam-left-ir-lamp",
+          "color": "#7a1c1c",
+          "parts": [
+            "cam-left-ir-lamp",
+            "cam-right-ir-lamp"
+          ]
+        },
+        {
+          "name": "cam-left-cable",
+          "color": "#1b1c1d",
+          "parts": [
+            "cam-left-cable",
+            "cam-right-cable",
+            "junction-gland",
+            "sign-border",
+            "sign-camera-body",
+            "sign-camera-lens",
+            "sign-text-0",
+            "sign-text-1",
+            "sign-text-2"
+          ]
+        },
+        {
+          "name": "sign",
+          "color": "#f2d21c",
+          "parts": [
+            "sign-board"
+          ],
+          "param": "sign"
         }
       ]
     },
@@ -229023,14 +229370,20 @@
       "id": "truck-wheel-wash",
       "kit": "recycling-facility",
       "title": "Truck wheel-wash station",
-      "description": "Truck wheel-wash station: an overhead wash arch with a cross-manifold and spaced spray nozzles. Low-poly visualization prop. Material controls: concrete, painted steel, stainless steel.",
+      "description": "Drive-through truck wheel wash: galvanised platform with ramped ends and open grating deck, side walls with angled spray bars and nozzle rows, settlement tank with sludge hopper and drain valve, pump set and pipe loop, driver-height control panel on a post. Material controls: platform steel, settlement tank, pipework and control panel. Optional spray jets shown running. galvanised, contractorGreen and muddy presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "wheel wash",
+        "truck wash",
+        "wheel bath",
+        "spray bar",
+        "settlement tank",
+        "site exit",
+        "reception",
         "recycling",
         "materials recovery",
         "waste management",
-        "reception",
         "low poly",
         "scene prop"
       ],
@@ -229043,8 +229396,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/truck-wheel-wash.kcad.ts",
       "preview": "/assets/recycling-facility-truck-wheel-wash.png",
-      "sourceSha256": "8a9206e4a4ce4ad96d11d71db02d8302765b1c2e53501332368df6e09a569398",
-      "triangleBudget": 1800,
+      "sourceSha256": "e9ad7369284e4e62044457fbe7e2dc440b6be91c147a7df13fa534fd9608cf6a",
+      "triangleBudget": 4000,
       "params": [
         {
           "name": "scale",
@@ -229056,73 +229409,266 @@
           "step": 0.05
         },
         {
-          "name": "concrete",
+          "name": "platform",
           "type": "color",
-          "default": "#898b83",
-          "label": "Concrete"
+          "default": "#a3abad",
+          "label": "Platform and grating (galvanised)"
         },
         {
-          "name": "paintedSteel",
+          "name": "tank",
           "type": "color",
-          "default": "#55766b",
-          "label": "Painted steel"
+          "default": "#2f6a9a",
+          "label": "Settlement tank (painted steel)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "pipework",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#d5862b",
+          "label": "Pipework and pump"
+        },
+        {
+          "name": "panel",
+          "type": "color",
+          "default": "#e6e3da",
+          "label": "Control panel"
+        },
+        {
+          "name": "spraying",
+          "type": "boolean",
+          "default": true,
+          "label": "Spray jets running"
         }
       ],
       "presets": {
-        "weathered": {
-          "concrete": "#84857b",
-          "paintedSteel": "#5e7265",
-          "stainlessSteel": "#9ea7a5"
+        "galvanised": {
+          "platform": "#a3abad",
+          "tank": "#2f6a9a",
+          "pipework": "#d5862b",
+          "panel": "#e6e3da"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632"
+        "contractorGreen": {
+          "platform": "#a3abad",
+          "tank": "#3d6b3a",
+          "pipework": "#e2c22a",
+          "panel": "#d9d6cc"
+        },
+        "muddy": {
+          "platform": "#7d6a52",
+          "tank": "#4d5a52",
+          "pipework": "#9a6a3a",
+          "panel": "#b5ab96"
         }
       },
       "stats": {
-        "triangles": 288,
+        "triangles": 3776,
         "sizeM": [
-          2.363,
-          1.42,
-          1.05
+          5.8,
+          2.23,
+          4.94
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "concrete",
-          "color": "#898b83",
+          "name": "platform",
+          "color": "#a3abad",
           "parts": [
-            "wash-pad"
+            "deck-frame",
+            "ramp-in",
+            "ramp-out",
+            "grate-0",
+            "grate-1",
+            "grate-2",
+            "grate-3",
+            "grate-4",
+            "grate-5",
+            "grate-6",
+            "grate-7",
+            "grate-8",
+            "grate-9",
+            "grate-10",
+            "grate-11",
+            "grate-12",
+            "grate-13",
+            "grate-14",
+            "grate-15",
+            "grate-16",
+            "grate-17",
+            "grate-18",
+            "grate-19",
+            "grate-20",
+            "grate-21",
+            "grate-22",
+            "grate-23",
+            "grate-24",
+            "grate-25",
+            "side-wall--1",
+            "side-wall-1",
+            "tank-rim",
+            "panel-post",
+            "panel-hood"
           ],
-          "param": "concrete"
+          "param": "platform"
         },
         {
-          "name": "paintedSteel",
-          "color": "#55766b",
+          "name": "ramp-cleat-in-0",
+          "color": "#6f7578",
           "parts": [
-            "arch-left-leg",
-            "arch-right-leg",
-            "arch-header"
-          ],
-          "param": "paintedSteel"
+            "ramp-cleat-in-0",
+            "ramp-cleat-in-1",
+            "ramp-cleat-in-2",
+            "ramp-cleat-in-3",
+            "ramp-cleat-in-4",
+            "ramp-cleat-in-5",
+            "ramp-cleat-out-0",
+            "ramp-cleat-out-1",
+            "ramp-cleat-out-2",
+            "ramp-cleat-out-3",
+            "ramp-cleat-out-4",
+            "ramp-cleat-out-5",
+            "wall-cap--1",
+            "wall-cap-1",
+            "pump-skid",
+            "panel-foot"
+          ]
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "water-bath",
+          "color": "#5b6a62",
           "parts": [
-            "spray-manifold",
-            "spray-nozzle-a",
-            "spray-nozzle-b",
-            "spray-nozzle-c"
+            "water-bath",
+            "tank-water"
+          ]
+        },
+        {
+          "name": "pipework",
+          "color": "#d5862b",
+          "parts": [
+            "spray-bar--1-0",
+            "spray-bar--1-1",
+            "spray-bar-1-0",
+            "spray-bar-1-1",
+            "floor-spray-bar",
+            "drain-pipe",
+            "pump-volute",
+            "pump-riser",
+            "pump-header",
+            "suction-pipe"
           ],
-          "param": "stainlessSteel"
+          "param": "pipework"
+        },
+        {
+          "name": "nozzle--1-0-0",
+          "color": "#3a3c3e",
+          "parts": [
+            "nozzle--1-0-0",
+            "nozzle--1-0-1",
+            "nozzle--1-0-2",
+            "nozzle--1-0-3",
+            "nozzle--1-0-4",
+            "nozzle--1-0-5",
+            "nozzle--1-0-6",
+            "nozzle--1-0-7",
+            "nozzle--1-0-8",
+            "nozzle--1-1-0",
+            "nozzle--1-1-1",
+            "nozzle--1-1-2",
+            "nozzle--1-1-3",
+            "nozzle--1-1-4",
+            "nozzle--1-1-5",
+            "nozzle--1-1-6",
+            "nozzle--1-1-7",
+            "nozzle--1-1-8",
+            "nozzle-1-0-0",
+            "nozzle-1-0-1",
+            "nozzle-1-0-2",
+            "nozzle-1-0-3",
+            "nozzle-1-0-4",
+            "nozzle-1-0-5",
+            "nozzle-1-0-6",
+            "nozzle-1-0-7",
+            "nozzle-1-0-8",
+            "nozzle-1-1-0",
+            "nozzle-1-1-1",
+            "nozzle-1-1-2",
+            "nozzle-1-1-3",
+            "nozzle-1-1-4",
+            "nozzle-1-1-5",
+            "nozzle-1-1-6",
+            "nozzle-1-1-7",
+            "nozzle-1-1-8"
+          ]
+        },
+        {
+          "name": "jet--1-0",
+          "color": "#bfe3f2",
+          "parts": [
+            "jet--1-0",
+            "jet--1-2",
+            "jet--1-4",
+            "jet--1-6",
+            "jet--1-8",
+            "jet-1-0",
+            "jet-1-2",
+            "jet-1-4",
+            "jet-1-6",
+            "jet-1-8"
+          ]
+        },
+        {
+          "name": "tank",
+          "color": "#2f6a9a",
+          "parts": [
+            "tank-body",
+            "tank-hopper",
+            "tank-leg--1300-1550",
+            "tank-leg--1300-2850",
+            "tank-leg-1300-1550",
+            "tank-leg-1300-2850",
+            "tank-rib--750",
+            "tank-rib-0",
+            "tank-rib-750",
+            "pump-motor"
+          ],
+          "param": "tank"
+        },
+        {
+          "name": "drain-valve",
+          "color": "#2b2d2f",
+          "parts": [
+            "drain-valve"
+          ]
+        },
+        {
+          "name": "drain-wheel",
+          "color": "#c23b2c",
+          "parts": [
+            "drain-wheel",
+            "panel-stop"
+          ]
+        },
+        {
+          "name": "panel",
+          "color": "#e6e3da",
+          "parts": [
+            "panel-box"
+          ],
+          "param": "panel"
+        },
+        {
+          "name": "panel-start",
+          "color": "#3a9a3a",
+          "parts": [
+            "panel-start"
+          ]
+        },
+        {
+          "name": "panel-screen",
+          "color": "#1d2a24",
+          "parts": [
+            "panel-screen"
+          ]
         }
       ]
     },
@@ -229917,14 +230463,20 @@
       "id": "vehicle-barrier-gate",
       "kit": "recycling-facility",
       "title": "Vehicle barrier gate",
-      "description": "Vehicle barrier gate: a counterweighted barrier boom with a hinge drum and visible signal beacon. Low-poly visualization prop. Material controls: painted steel, safety amber, stainless steel.",
+      "description": "Automatic arm barrier at about real size: rounded drive cabinet with lockable door, vented top and access hatch, rotating hub, 4 m striped boom with rubber bottom edge, fork rest post, amber LED beacon and photo-eye pair. Boom angle from closed to fully up. Material controls: cabinet, boom, stripes and beacon. Optional rest post. siteOrange, councilBlue and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "barrier",
+        "boom barrier",
+        "arm barrier",
+        "boom gate",
+        "access control",
+        "weighbridge",
+        "reception",
         "recycling",
         "materials recovery",
         "waste management",
-        "reception",
         "low poly",
         "scene prop"
       ],
@@ -229937,8 +230489,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/recycling-facility/vehicle-barrier-gate.kcad.ts",
       "preview": "/assets/recycling-facility-vehicle-barrier-gate.png",
-      "sourceSha256": "5b1d5705bba416d6a50b854119eadd53cc8f9eb8296cf39fac294e54919c0ed9",
-      "triangleBudget": 1800,
+      "sourceSha256": "77290924b6b973c777dcbcd123b0f6aeabfc975215d7e5584859ebaebe53a6a3",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -229950,73 +230502,188 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "cabinet",
           "type": "color",
-          "default": "#5d6985",
-          "label": "Painted steel"
+          "default": "#e07b24",
+          "label": "Drive cabinet (powder coat)"
         },
         {
-          "name": "safetyAmber",
+          "name": "boom",
           "type": "color",
-          "default": "#f0ae32",
-          "label": "Safety amber"
+          "default": "#f2f0ea",
+          "label": "Boom (white aluminium)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "stripes",
           "type": "color",
-          "default": "#a8b4b6",
-          "label": "Stainless steel"
+          "default": "#c62d2a",
+          "label": "Boom stripes"
+        },
+        {
+          "name": "beacon",
+          "type": "color",
+          "default": "#f2a01c",
+          "label": "Beacon lens"
+        },
+        {
+          "name": "boomAngle",
+          "type": "choice",
+          "default": "closed",
+          "label": "Boom position",
+          "choices": [
+            "closed",
+            "half",
+            "open"
+          ]
+        },
+        {
+          "name": "restPost",
+          "type": "boolean",
+          "default": true,
+          "label": "Fork rest post"
         }
       ],
       "presets": {
-        "weathered": {
-          "paintedSteel": "#636a77",
-          "safetyAmber": "#d9a239",
-          "stainlessSteel": "#9ea7a5"
+        "siteOrange": {
+          "cabinet": "#e07b24",
+          "boom": "#f2f0ea",
+          "stripes": "#c62d2a",
+          "beacon": "#f2a01c"
         },
-        "highVisibility": {
-          "paintedSteel": "#d77632",
-          "safetyAmber": "#ffd044"
+        "councilBlue": {
+          "cabinet": "#2c4f7c",
+          "boom": "#f2f0ea",
+          "stripes": "#c62d2a",
+          "beacon": "#f2a01c"
+        },
+        "weathered": {
+          "cabinet": "#9a6a3e",
+          "boom": "#cfc9b8",
+          "stripes": "#8d3a2e",
+          "beacon": "#c99436"
         }
       },
       "stats": {
-        "triangles": 212,
+        "triangles": 1050,
         "sizeM": [
-          1.505,
-          1.1083,
-          0.7075
+          4.52,
+          1.266,
+          1.31
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#5d6985",
+          "name": "plinth",
+          "color": "#8a8d88",
           "parts": [
-            "control-pedestal",
-            "counterweight-box",
-            "boom-arm"
-          ],
-          "param": "paintedSteel"
+            "plinth",
+            "rest-foot"
+          ]
         },
         {
-          "name": "safetyAmber",
-          "color": "#f0ae32",
+          "name": "anchor--200--180",
+          "color": "#4a4c4e",
           "parts": [
-            "boom-tip",
-            "beacon"
-          ],
-          "param": "safetyAmber"
+            "anchor--200--180",
+            "anchor-200--180",
+            "anchor--200-180",
+            "anchor-200-180"
+          ]
         },
         {
-          "name": "stainlessSteel",
-          "color": "#a8b4b6",
+          "name": "cabinet",
+          "color": "#e07b24",
           "parts": [
-            "photo-eye-post",
-            "hinge-drum"
+            "cabinet-body",
+            "cabinet-cap",
+            "door",
+            "boom-clamp",
+            "rest-post",
+            "eye-post-0",
+            "eye-post-1"
           ],
-          "param": "stainlessSteel"
+          "param": "cabinet"
+        },
+        {
+          "name": "vent-0",
+          "color": "#2b2d2f",
+          "parts": [
+            "vent-0",
+            "vent-1",
+            "vent-2",
+            "vent-3",
+            "door-seam",
+            "door-handle",
+            "beacon-base",
+            "hub-cap",
+            "tail-weight",
+            "rest-fork-base",
+            "rest-fork--55",
+            "rest-fork-55",
+            "eye-head-0",
+            "eye-head-1"
+          ]
+        },
+        {
+          "name": "door-lock",
+          "color": "#b9c0c2",
+          "parts": [
+            "door-lock",
+            "hub-flange"
+          ]
+        },
+        {
+          "name": "warning-sticker",
+          "color": "#f2d21c",
+          "parts": [
+            "warning-sticker"
+          ]
+        },
+        {
+          "name": "warning-sticker-mark",
+          "color": "#1b1c1d",
+          "parts": [
+            "warning-sticker-mark",
+            "rubber-edge"
+          ]
+        },
+        {
+          "name": "beacon",
+          "color": "#f2a01c",
+          "parts": [
+            "beacon-lens"
+          ],
+          "param": "beacon"
+        },
+        {
+          "name": "boom",
+          "color": "#f2f0ea",
+          "parts": [
+            "boom-tube"
+          ],
+          "param": "boom"
+        },
+        {
+          "name": "stripes",
+          "color": "#c62d2a",
+          "parts": [
+            "stripe-0",
+            "stripe-2",
+            "stripe-4",
+            "stripe-6",
+            "boom-tip-cap"
+          ],
+          "param": "stripes"
+        },
+        {
+          "name": "eye-lens-0",
+          "color": "#d23a2a",
+          "parts": [
+            "eye-lens-0",
+            "eye-lens-1"
+          ]
         }
       ]
     },
