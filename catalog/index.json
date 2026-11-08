@@ -236372,10 +236372,14 @@
       "id": "price-check-scale",
       "kit": "retail-store",
       "title": "Price-check scale",
-      "description": "Countertop produce scale with broad platform, raised readout head and four-key control pad. Knobs: overall scale and abs plastic, stainless steel, glass, polycarbonate color controls. Presets: cleanStore and nightRestock.",
+      "description": "Countertop produce scale at about real size: raked keypad console, stainless weighing tray with a raised lip, rear pole carrying a tilted readout head with seven-segment weight and price digits, side label printer with tear-off slot, rubber feet. Material controls: housing, platter, display bezel and readout glow. deliWhite, charcoal and retroOrange presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "scale",
+        "weighing scale",
+        "produce scale",
+        "price check",
         "retail",
         "grocery",
         "shop",
@@ -236392,8 +236396,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/price-check-scale.kcad.ts",
       "preview": "/assets/retail-store-price-check-scale.png",
-      "sourceSha256": "132b240b8832f5ea8b54e743cc31d97411bf3baf3e0713dbdde37efff3afbc34",
-      "triangleBudget": 1800,
+      "sourceSha256": "4ab929075875e2c660523eb33223c9215caebcc1637bbb4c5a5914b665473b3d",
+      "triangleBudget": 3200,
       "params": [
         {
           "name": "scale",
@@ -236405,91 +236409,169 @@
           "step": 0.05
         },
         {
-          "name": "abs",
+          "name": "housing",
           "type": "color",
-          "default": "#5a6870",
-          "label": "ABS plastic color"
+          "default": "#e9ecec",
+          "label": "Housing plastic"
         },
         {
-          "name": "stainless",
+          "name": "platter",
           "type": "color",
-          "default": "#b8c1c2",
-          "label": "Stainless steel color"
+          "default": "#c3cacc",
+          "label": "Stainless platter"
         },
         {
-          "name": "glass",
+          "name": "bezel",
           "type": "color",
-          "default": "#75bdc9",
-          "label": "Glass color"
+          "default": "#25303a",
+          "label": "Display bezel"
         },
         {
-          "name": "polycarbonate",
+          "name": "readout",
           "type": "color",
-          "default": "#d59d32",
-          "label": "Polycarbonate color"
+          "default": "#86f060",
+          "label": "Readout glow"
         }
       ],
       "presets": {
-        "cleanStore": {
-          "abs": "#e5e9e9",
-          "stainless": "#bfc8cb",
-          "glass": "#9ccfd6",
-          "polycarbonate": "#a2d1d7"
+        "deliWhite": {
+          "housing": "#e9ecec",
+          "platter": "#c3cacc",
+          "bezel": "#25303a",
+          "readout": "#86f060"
         },
-        "nightRestock": {
-          "abs": "#364a55",
-          "stainless": "#66747a",
-          "glass": "#3e6677",
-          "polycarbonate": "#486b7b"
+        "charcoal": {
+          "housing": "#3a3f44",
+          "platter": "#aab3b6",
+          "bezel": "#15191c",
+          "readout": "#ff9a3a"
+        },
+        "retroOrange": {
+          "housing": "#e0782c",
+          "platter": "#d0d5d6",
+          "bezel": "#f3efe6",
+          "readout": "#d23a2a"
         }
       },
       "stats": {
-        "triangles": 236,
+        "triangles": 1404,
         "sizeM": [
-          0.38,
-          0.5225,
-          0.34
+          0.4455,
+          0.609598,
+          0.394938
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "abs",
-          "color": "#5a6870",
+          "name": "foot-lf",
+          "color": "#1c1f22",
           "parts": [
-            "base",
-            "post"
-          ],
-          "param": "abs"
+            "foot-lf",
+            "foot-rf",
+            "foot-lb",
+            "foot-rb",
+            "printer-slot"
+          ]
         },
         {
-          "name": "stainless",
-          "color": "#b8c1c2",
+          "name": "housing",
+          "color": "#e9ecec",
           "parts": [
-            "weigh-platform"
+            "housing",
+            "key-0-0",
+            "key-0-1",
+            "key-0-2",
+            "key-0-3",
+            "key-0-4",
+            "key-0-5",
+            "key-1-0",
+            "key-1-1",
+            "key-1-2",
+            "key-1-3",
+            "key-1-4",
+            "key-1-5",
+            "key-2-0",
+            "key-2-1",
+            "key-2-2",
+            "key-2-3",
+            "key-2-4",
+            "key-2-5",
+            "printer",
+            "pole-collar",
+            "head"
           ],
-          "param": "stainless"
+          "param": "housing"
         },
         {
-          "name": "polycarbonate",
-          "color": "#d59d32",
+          "name": "bezel",
+          "color": "#25303a",
           "parts": [
-            "display",
-            "key-0",
-            "key-1",
-            "key-2",
-            "key-3"
-          ],
-          "param": "polycarbonate"
-        },
-        {
-          "name": "glass",
-          "color": "#75bdc9",
-          "parts": [
+            "keypad-panel",
+            "tray-badge",
             "screen"
           ],
-          "param": "glass"
+          "param": "bezel"
+        },
+        {
+          "name": "readout",
+          "color": "#86f060",
+          "parts": [
+            "key-0-6",
+            "key-0-7",
+            "key-1-6",
+            "key-1-7",
+            "key-2-6",
+            "key-2-7",
+            "digit-0-0",
+            "digit-0-1",
+            "digit-0-2",
+            "digit-0-3",
+            "point-0",
+            "digit-1-0",
+            "digit-1-1",
+            "digit-1-2",
+            "point-1"
+          ],
+          "param": "readout"
+        },
+        {
+          "name": "tray-gap",
+          "color": "#2a2e31",
+          "parts": [
+            "tray-gap"
+          ]
+        },
+        {
+          "name": "platter",
+          "color": "#c3cacc",
+          "parts": [
+            "tray",
+            "pole"
+          ],
+          "param": "platter"
+        },
+        {
+          "name": "printer-label",
+          "color": "#f6f3ea",
+          "parts": [
+            "printer-label"
+          ]
+        },
+        {
+          "name": "unit-0",
+          "color": "#ffffff",
+          "parts": [
+            "unit-0"
+          ]
+        },
+        {
+          "name": "unit-1",
+          "color": "#f2c94c",
+          "parts": [
+            "unit-1"
+          ]
         }
       ]
     },
@@ -236497,10 +236579,14 @@
       "id": "produce-crate-stack",
       "kit": "retail-store",
       "title": "Produce crate stack",
-      "description": "Stable two-by-two stack of four ventilated produce crates with open rail sides and corner clips. Knobs: overall scale and polypropylene, stainless steel, paper color controls. Presets: cleanStore and nightRestock.",
+      "description": "Two-by-two stack of tapered 600 x 400 plastic produce crates at about real size: vent slot rows, thick top rims, end hand-holds, fruit heaped over the rim of the top crates and visible through the lower vents, crate stickers and a price ticket on a stake. Material controls: crate plastic, fruit, fruit blush and ticket card. redApples, navelOranges and limes presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "produce crate",
+        "fruit crate",
+        "vegetable crate",
+        "crate stack",
         "retail",
         "grocery",
         "shop",
@@ -236517,8 +236603,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/produce-crate-stack.kcad.ts",
       "preview": "/assets/retail-store-produce-crate-stack.png",
-      "sourceSha256": "d0a783ade417ad597c26c8f52d723be8fdbe6f87a470827cd519e8c13c09d49e",
-      "triangleBudget": 1800,
+      "sourceSha256": "9dfdd2861a7ced731fb2bad5696414372a67266ab0cc2e3fe125ca3b887c5590",
+      "triangleBudget": 7000,
       "params": [
         {
           "name": "scale",
@@ -236530,143 +236616,156 @@
           "step": 0.05
         },
         {
-          "name": "polypropylene",
+          "name": "crate",
           "type": "color",
-          "default": "#6d9453",
-          "label": "Polypropylene color"
+          "default": "#3e8a4a",
+          "label": "Crate plastic"
         },
         {
-          "name": "stainless",
+          "name": "fruit",
           "type": "color",
-          "default": "#919da0",
-          "label": "Stainless steel color"
+          "default": "#c5302b",
+          "label": "Fruit"
         },
         {
-          "name": "paper",
+          "name": "blush",
           "type": "color",
-          "default": "#eee3c7",
-          "label": "Paper color"
+          "default": "#e2a23a",
+          "label": "Fruit blush (second tone)"
+        },
+        {
+          "name": "ticket",
+          "type": "color",
+          "default": "#f6f1e2",
+          "label": "Ticket card"
         }
       ],
       "presets": {
-        "cleanStore": {
-          "polypropylene": "#d6e0d5",
-          "stainless": "#bfc8cb",
-          "paper": "#f0e5c9"
+        "redApples": {
+          "crate": "#3e8a4a",
+          "fruit": "#c5302b",
+          "blush": "#e2a23a",
+          "ticket": "#f6f1e2"
         },
-        "nightRestock": {
-          "polypropylene": "#45614e",
-          "stainless": "#66747a",
-          "paper": "#c9b27e"
+        "navelOranges": {
+          "crate": "#26292c",
+          "fruit": "#f08a1c",
+          "blush": "#f6ad3c",
+          "ticket": "#fff3c4"
+        },
+        "limes": {
+          "crate": "#2f6fb0",
+          "fruit": "#6fae34",
+          "blush": "#a8cc48",
+          "ticket": "#f6f1e2"
         }
       },
       "stats": {
-        "triangles": 1040,
+        "triangles": 6244,
         "sizeM": [
-          1.226,
-          0.692,
-          0.514
+          1.22,
+          0.68,
+          0.41
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polypropylene",
-          "color": "#6d9453",
+          "name": "crate",
+          "color": "#3e8a4a",
           "parts": [
-            "crate-lower-left-floor",
-            "crate-lower-left-corner--1--1",
-            "crate-lower-left-corner--1-1",
-            "crate-lower-left-corner-1--1",
-            "crate-lower-left-corner-1-1",
-            "crate-lower-left-front-rail-0",
-            "crate-lower-left-back-rail-0",
-            "crate-lower-left-left-rail-0",
-            "crate-lower-left-right-rail-0",
-            "crate-lower-left-front-rail-1",
-            "crate-lower-left-back-rail-1",
-            "crate-lower-left-left-rail-1",
-            "crate-lower-left-right-rail-1",
-            "crate-lower-left-front-rail-2",
-            "crate-lower-left-back-rail-2",
-            "crate-lower-left-left-rail-2",
-            "crate-lower-left-right-rail-2",
-            "crate-lower-right-floor",
-            "crate-lower-right-corner--1--1",
-            "crate-lower-right-corner--1-1",
-            "crate-lower-right-corner-1--1",
-            "crate-lower-right-corner-1-1",
-            "crate-lower-right-front-rail-0",
-            "crate-lower-right-back-rail-0",
-            "crate-lower-right-left-rail-0",
-            "crate-lower-right-right-rail-0",
-            "crate-lower-right-front-rail-1",
-            "crate-lower-right-back-rail-1",
-            "crate-lower-right-left-rail-1",
-            "crate-lower-right-right-rail-1",
-            "crate-lower-right-front-rail-2",
-            "crate-lower-right-back-rail-2",
-            "crate-lower-right-left-rail-2",
-            "crate-lower-right-right-rail-2",
-            "crate-upper-left-floor",
-            "crate-upper-left-corner--1--1",
-            "crate-upper-left-corner--1-1",
-            "crate-upper-left-corner-1--1",
-            "crate-upper-left-corner-1-1",
-            "crate-upper-left-front-rail-0",
-            "crate-upper-left-back-rail-0",
-            "crate-upper-left-left-rail-0",
-            "crate-upper-left-right-rail-0",
-            "crate-upper-left-front-rail-1",
-            "crate-upper-left-back-rail-1",
-            "crate-upper-left-left-rail-1",
-            "crate-upper-left-right-rail-1",
-            "crate-upper-left-front-rail-2",
-            "crate-upper-left-back-rail-2",
-            "crate-upper-left-left-rail-2",
-            "crate-upper-left-right-rail-2",
-            "crate-upper-right-floor",
-            "crate-upper-right-corner--1--1",
-            "crate-upper-right-corner--1-1",
-            "crate-upper-right-corner-1--1",
-            "crate-upper-right-corner-1-1",
-            "crate-upper-right-front-rail-0",
-            "crate-upper-right-back-rail-0",
-            "crate-upper-right-left-rail-0",
-            "crate-upper-right-right-rail-0",
-            "crate-upper-right-front-rail-1",
-            "crate-upper-right-back-rail-1",
-            "crate-upper-right-left-rail-1",
-            "crate-upper-right-right-rail-1",
-            "crate-upper-right-front-rail-2",
-            "crate-upper-right-back-rail-2",
-            "crate-upper-right-left-rail-2",
-            "crate-upper-right-right-rail-2"
+            "crate-l-lo",
+            "rim-l-lo",
+            "crate-l-up",
+            "rim-l-up",
+            "crate-r-lo",
+            "rim-r-lo",
+            "crate-r-up",
+            "rim-r-up"
           ],
-          "param": "polypropylene"
+          "param": "crate"
         },
         {
-          "name": "paper",
-          "color": "#eee3c7",
+          "name": "ticket",
+          "color": "#f6f1e2",
           "parts": [
-            "crate-lower-left-label",
-            "crate-lower-right-label",
-            "crate-upper-left-label",
-            "crate-upper-right-label"
+            "sticker-l-lo",
+            "sticker-l-up",
+            "sticker-r-lo",
+            "sticker-r-up",
+            "ticket-card"
           ],
-          "param": "paper"
+          "param": "ticket"
         },
         {
-          "name": "stainless",
-          "color": "#919da0",
+          "name": "fruit",
+          "color": "#c5302b",
           "parts": [
-            "stack-clip-left-front",
-            "stack-clip-left-back",
-            "stack-clip-right-front",
-            "stack-clip-right-back"
+            "fill-l-lo",
+            "fill-l-up",
+            "fruit-l-up-0-1",
+            "fruit-l-up-0-2",
+            "fruit-l-up-1-0",
+            "fruit-l-up-1-1",
+            "fruit-l-up-2-0",
+            "fruit-l-up-2-2",
+            "fruit-l-up-3-1",
+            "fruit-l-up-3-2",
+            "fruit-l-up-4-0",
+            "fruit-l-up-4-1",
+            "fill-r-lo",
+            "fill-r-up",
+            "fruit-r-up-0-0",
+            "fruit-r-up-0-1",
+            "fruit-r-up-1-0",
+            "fruit-r-up-1-2",
+            "fruit-r-up-2-1",
+            "fruit-r-up-2-2",
+            "fruit-r-up-3-0",
+            "fruit-r-up-3-1",
+            "fruit-r-up-4-0",
+            "fruit-r-up-4-2"
           ],
-          "param": "stainless"
+          "param": "fruit"
+        },
+        {
+          "name": "blush",
+          "color": "#e2a23a",
+          "parts": [
+            "fruit-l-up-0-0",
+            "fruit-l-up-1-2",
+            "fruit-l-up-2-1",
+            "fruit-l-up-3-0",
+            "fruit-l-up-4-2",
+            "fruit-r-up-0-2",
+            "fruit-r-up-1-1",
+            "fruit-r-up-2-0",
+            "fruit-r-up-3-2",
+            "fruit-r-up-4-1"
+          ],
+          "param": "blush"
+        },
+        {
+          "name": "ticket-stake",
+          "color": "#8a6440",
+          "parts": [
+            "ticket-stake"
+          ]
+        },
+        {
+          "name": "ticket-band",
+          "color": "#c8232c",
+          "parts": [
+            "ticket-band"
+          ]
+        },
+        {
+          "name": "ticket-price",
+          "color": "#26292c",
+          "parts": [
+            "ticket-price"
+          ]
         }
       ]
     },
@@ -236674,10 +236773,15 @@
       "id": "produce-display-table",
       "kit": "retail-store",
       "title": "Produce display table",
-      "description": "Tiered produce island with three broad sloped-look display decks and a stout lower frame. Knobs: overall scale and powder-coated steel, timber, stainless steel color controls. Presets: cleanStore and nightRestock.",
+      "description": "Tiered timber produce island at about real size: three forward-raked trays stepping up to the back, each split into three bins of heaped produce over a low front lip, chalkboard price cards, staircase side cheeks, slatted front fascia on a dark plinth and a header board on posts. Material controls: timber, frame steel, greens and fruit. farmMarket, modernWhite and autumnHarvest presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "produce table",
+        "produce display",
+        "fruit stand",
+        "vegetable display",
+        "market stall",
         "retail",
         "grocery",
         "shop",
@@ -236694,8 +236798,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/produce-display-table.kcad.ts",
       "preview": "/assets/retail-store-produce-display-table.png",
-      "sourceSha256": "3e80e94347c2ca94d9b6815d9c5e14acf18bedf4a501ca37e301bd781acca9a1",
-      "triangleBudget": 1800,
+      "sourceSha256": "8c7326f7a406acd003bee0f2abbad06e7216efb8ea78e4a04344bf141124d809",
+      "triangleBudget": 5600,
       "params": [
         {
           "name": "scale",
@@ -236707,76 +236811,232 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
-          "type": "color",
-          "default": "#57694d",
-          "label": "Powder-coated steel color"
-        },
-        {
           "name": "timber",
           "type": "color",
           "default": "#b08a58",
-          "label": "Timber color"
+          "label": "Timber"
         },
         {
-          "name": "stainless",
+          "name": "frame",
           "type": "color",
-          "default": "#aeb8b8",
-          "label": "Stainless steel color"
+          "default": "#2f3a33",
+          "label": "Frame steel and plinth"
+        },
+        {
+          "name": "greens",
+          "type": "color",
+          "default": "#4f9a3a",
+          "label": "Greens (leafy produce)"
+        },
+        {
+          "name": "fruit",
+          "type": "color",
+          "default": "#e0472f",
+          "label": "Fruit"
         }
       ],
       "presets": {
-        "cleanStore": {
-          "powderCoat": "#e5ebed",
-          "timber": "#b9915c",
-          "stainless": "#bfc8cb"
+        "farmMarket": {
+          "timber": "#b08a58",
+          "frame": "#2f3a33",
+          "greens": "#4f9a3a",
+          "fruit": "#e0472f"
         },
-        "nightRestock": {
-          "powderCoat": "#354750",
+        "modernWhite": {
+          "timber": "#ece8df",
+          "frame": "#9aa3a8",
+          "greens": "#6cb44a",
+          "fruit": "#f2a51a"
+        },
+        "autumnHarvest": {
           "timber": "#6e5133",
-          "stainless": "#66747a"
+          "frame": "#1f2224",
+          "greens": "#8a9a3a",
+          "fruit": "#d8662a"
         }
       },
       "stats": {
-        "triangles": 140,
+        "triangles": 4636,
         "sizeM": [
-          1.9,
-          1.41,
-          0.931
+          1.86,
+          1.74,
+          0.943876
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
+          "name": "frame",
+          "color": "#2f3a33",
+          "parts": [
+            "plinth",
+            "corner-post-l",
+            "corner-post-r",
+            "sign-post-l",
+            "sign-post-r"
+          ],
+          "param": "frame"
+        },
+        {
           "name": "timber",
           "color": "#b08a58",
           "parts": [
-            "lower-deck",
-            "middle-deck",
-            "upper-deck"
+            "fascia",
+            "cheek-l",
+            "cheek-r",
+            "tray-floor-0",
+            "tray-lip-0",
+            "tray-back-0",
+            "divider-0-l",
+            "divider-0-r",
+            "riser-1",
+            "tray-floor-1",
+            "tray-lip-1",
+            "tray-back-1",
+            "divider-1-l",
+            "divider-1-r",
+            "riser-2",
+            "tray-floor-2",
+            "tray-lip-2",
+            "tray-back-2",
+            "divider-2-l",
+            "divider-2-r",
+            "sign-board"
           ],
           "param": "timber"
         },
         {
-          "name": "powderCoat",
-          "color": "#57694d",
+          "name": "fascia-groove-1",
+          "color": "#4a3a28",
           "parts": [
-            "front-apron"
-          ],
-          "param": "powderCoat"
+            "fascia-groove-1",
+            "fascia-groove-2",
+            "fascia-groove-3"
+          ]
         },
         {
-          "name": "stainless",
-          "color": "#aeb8b8",
+          "name": "greens",
+          "color": "#4f9a3a",
           "parts": [
-            "leg--820--350",
-            "leg--820-350",
-            "leg-820--350",
-            "leg-820-350",
-            "corner-cap"
+            "heap-0-0",
+            "produce-0-0-0",
+            "produce-0-0-1",
+            "produce-0-0-2",
+            "produce-0-0-3",
+            "produce-0-0-4",
+            "heap-1-2",
+            "produce-1-2-0",
+            "produce-1-2-1",
+            "produce-1-2-2",
+            "produce-1-2-3",
+            "produce-1-2-4",
+            "heap-2-1",
+            "produce-2-1-0",
+            "produce-2-1-1",
+            "produce-2-1-2",
+            "produce-2-1-3",
+            "produce-2-1-4",
+            "sign-panel"
           ],
-          "param": "stainless"
+          "param": "greens"
+        },
+        {
+          "name": "card-0-0",
+          "color": "#24292b",
+          "parts": [
+            "card-0-0",
+            "card-0-1",
+            "card-0-2",
+            "card-1-0",
+            "card-1-1",
+            "card-1-2",
+            "card-2-0",
+            "card-2-1",
+            "card-2-2"
+          ]
+        },
+        {
+          "name": "card-chalk-0-0",
+          "color": "#f4f1ea",
+          "parts": [
+            "card-chalk-0-0",
+            "card-price-0-0",
+            "card-chalk-0-1",
+            "card-chalk-0-2",
+            "card-price-0-2",
+            "card-chalk-1-0",
+            "card-price-1-0",
+            "card-chalk-1-1",
+            "card-chalk-1-2",
+            "card-price-1-2",
+            "card-chalk-2-0",
+            "card-price-2-0",
+            "card-chalk-2-1",
+            "card-chalk-2-2",
+            "card-price-2-2",
+            "sign-text"
+          ]
+        },
+        {
+          "name": "fruit",
+          "color": "#e0472f",
+          "parts": [
+            "heap-0-1",
+            "produce-0-1-0",
+            "produce-0-1-1",
+            "produce-0-1-2",
+            "produce-0-1-3",
+            "produce-0-1-4",
+            "heap-1-0",
+            "produce-1-0-0",
+            "produce-1-0-1",
+            "produce-1-0-2",
+            "produce-1-0-3",
+            "produce-1-0-4",
+            "heap-2-2",
+            "produce-2-2-0",
+            "produce-2-2-1",
+            "produce-2-2-2",
+            "produce-2-2-3",
+            "produce-2-2-4",
+            "sign-sub",
+            "sign-dot"
+          ],
+          "param": "fruit"
+        },
+        {
+          "name": "card-price-0-1",
+          "color": "#f2c94c",
+          "parts": [
+            "card-price-0-1",
+            "card-price-1-1",
+            "card-price-2-1"
+          ]
+        },
+        {
+          "name": "heap-0-2",
+          "color": "#7b3d86",
+          "parts": [
+            "heap-0-2",
+            "produce-0-2-0",
+            "produce-0-2-1",
+            "produce-0-2-2",
+            "produce-0-2-3",
+            "produce-0-2-4",
+            "heap-1-1",
+            "produce-1-1-0",
+            "produce-1-1-1",
+            "produce-1-1-2",
+            "produce-1-1-3",
+            "produce-1-1-4",
+            "heap-2-0",
+            "produce-2-0-0",
+            "produce-2-0-1",
+            "produce-2-0-2",
+            "produce-2-0-3",
+            "produce-2-0-4"
+          ]
         }
       ]
     },
@@ -236784,10 +237044,14 @@
       "id": "queue-barrier",
       "kit": "retail-store",
       "title": "Queue barrier",
-      "description": "Short retractable queue barrier with square weighted feet, posts and a taut cross strap. Knobs: overall scale and stainless steel, fabric, rubber color controls. Presets: cleanStore and nightRestock.",
+      "description": "Pair of retractable-belt queue posts at about real size: domed cast bases on rubber rings, polished tube posts, cassette heads with domed caps, a flat printed belt pulled taut into a receiver clip. Options: single or double belt, and a sign frame on the left post. Material controls: post finish, base casting, belt fabric and belt print. chromeRed, blackBlue and brassBurgundy presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "queue barrier",
+        "retractable belt",
+        "stanchion",
+        "crowd control",
         "retail",
         "grocery",
         "shop",
@@ -236804,8 +237068,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/queue-barrier.kcad.ts",
       "preview": "/assets/retail-store-queue-barrier.png",
-      "sourceSha256": "a772e410e49760beedaabec505f1704ffb0068d31710bf2290b4821267bb0732",
-      "triangleBudget": 1800,
+      "sourceSha256": "4b164cc4fd93686583d86f76185d0cdf57985ddd6047c059b77660b8093f1ad0",
+      "triangleBudget": 1600,
       "params": [
         {
           "name": "scale",
@@ -236817,74 +237081,143 @@
           "step": 0.05
         },
         {
-          "name": "stainless",
+          "name": "post",
           "type": "color",
-          "default": "#78868a",
-          "label": "Stainless steel color"
+          "default": "#c4cbcf",
+          "label": "Post finish"
         },
         {
-          "name": "fabric",
+          "name": "base",
           "type": "color",
-          "default": "#bd4d43",
-          "label": "Fabric color"
+          "default": "#2a2e31",
+          "label": "Base casting"
         },
         {
-          "name": "rubber",
+          "name": "belt",
           "type": "color",
-          "default": "#33393c",
-          "label": "Rubber color"
+          "default": "#c0332f",
+          "label": "Belt fabric"
+        },
+        {
+          "name": "print",
+          "type": "color",
+          "default": "#f4f1ea",
+          "label": "Belt print"
+        },
+        {
+          "name": "belts",
+          "type": "choice",
+          "default": "single",
+          "label": "Belts",
+          "choices": [
+            "single",
+            "double"
+          ]
+        },
+        {
+          "name": "topper",
+          "type": "choice",
+          "default": "sign",
+          "label": "Sign frame",
+          "choices": [
+            "none",
+            "sign"
+          ]
         }
       ],
       "presets": {
-        "cleanStore": {
-          "stainless": "#bfc8cb",
-          "fabric": "#be5548",
-          "rubber": "#40474b"
+        "chromeRed": {
+          "post": "#c4cbcf",
+          "base": "#2a2e31",
+          "belt": "#c0332f",
+          "print": "#f4f1ea"
         },
-        "nightRestock": {
-          "stainless": "#66747a",
-          "fabric": "#d5a833",
-          "rubber": "#262b2e"
+        "blackBlue": {
+          "post": "#2b2f33",
+          "base": "#1c1f22",
+          "belt": "#2a5fae",
+          "print": "#f4f1ea"
+        },
+        "brassBurgundy": {
+          "post": "#c9a24a",
+          "base": "#3a2a20",
+          "belt": "#6e1f2e",
+          "print": "#e9d29a"
         }
       },
       "stats": {
-        "triangles": 212,
+        "triangles": 984,
         "sizeM": [
-          1.28,
-          1,
-          0.28
+          1.336,
+          1.198442,
+          0.336
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "rubber",
-          "color": "#33393c",
+          "name": "rubber-l",
+          "color": "#151719",
           "parts": [
-            "foot-left",
-            "foot-right"
-          ],
-          "param": "rubber"
+            "rubber-l",
+            "slot-l",
+            "rubber-r",
+            "slot-r"
+          ]
         },
         {
-          "name": "stainless",
-          "color": "#78868a",
+          "name": "base",
+          "color": "#2a2e31",
           "parts": [
-            "post-left",
-            "post-right",
-            "cap-left",
-            "cap-right"
+            "base-l",
+            "base-r",
+            "clip-tab-top",
+            "sign-text"
           ],
-          "param": "stainless"
+          "param": "base"
         },
         {
-          "name": "fabric",
-          "color": "#bd4d43",
+          "name": "post",
+          "color": "#c4cbcf",
           "parts": [
-            "strap"
+            "post-l",
+            "head-l",
+            "cap-l",
+            "post-r",
+            "head-r",
+            "cap-r",
+            "clip-top",
+            "sign-stem",
+            "sign-frame"
           ],
-          "param": "fabric"
+          "param": "post"
+        },
+        {
+          "name": "belt",
+          "color": "#c0332f",
+          "parts": [
+            "head-band-l",
+            "head-band-r",
+            "belt-top",
+            "sign-band",
+            "sign-arrow"
+          ],
+          "param": "belt"
+        },
+        {
+          "name": "print",
+          "color": "#f4f1ea",
+          "parts": [
+            "print-top-0",
+            "print-top-1",
+            "print-top-2",
+            "print-top-3",
+            "print-top-4",
+            "print-top-5",
+            "sign-card"
+          ],
+          "param": "print"
         }
       ]
     },
@@ -237266,10 +237599,14 @@
       "id": "recycling-station",
       "kit": "retail-store",
       "title": "Retail recycling station",
-      "description": "Three-stream recycling station with separate openings, top dividers and a shared removable base. Knobs: overall scale and polypropylene, stainless steel, polycarbonate color controls. Presets: cleanStore and nightRestock.",
+      "description": "Three-stream recycling station at about real size: colour-coded raked lids with a round bottle-and-can hole, a paper letterbox slot and a square general-waste opening, matching pictograms on each front door, recessed pulls, a dark kick plinth and a back upstand with colour header tiles. Material controls: cabinet, plastics stream, paper stream and general stream. councilClassic, stainlessLobby and ecoTimber presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "recycling station",
+        "recycling bin",
+        "waste sorting",
+        "litter bin",
         "retail",
         "grocery",
         "shop",
@@ -237286,8 +237623,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/retail-store/recycling-station.kcad.ts",
       "preview": "/assets/retail-store-recycling-station.png",
-      "sourceSha256": "08fd8825c651d055e7b44d2dada2dcb850f21c6c40a91052460b22bd529d2091",
-      "triangleBudget": 1800,
+      "sourceSha256": "2f03c4d1edebd4fb2f51c3d12008339b8ba5d86816e5db7ddcd055997057e6a3",
+      "triangleBudget": 1200,
       "params": [
         {
           "name": "scale",
@@ -237299,78 +237636,143 @@
           "step": 0.05
         },
         {
-          "name": "polypropylene",
+          "name": "cabinet",
           "type": "color",
-          "default": "#507b62",
-          "label": "Polypropylene color"
+          "default": "#e4e8e8",
+          "label": "Cabinet"
         },
         {
-          "name": "stainless",
+          "name": "plastics",
           "type": "color",
-          "default": "#9ca7a8",
-          "label": "Stainless steel color"
+          "default": "#f2b51a",
+          "label": "Plastics and cans stream"
         },
         {
-          "name": "polycarbonate",
+          "name": "paper",
           "type": "color",
-          "default": "#273b3d",
-          "label": "Polycarbonate color"
+          "default": "#2f6fc1",
+          "label": "Paper stream"
+        },
+        {
+          "name": "general",
+          "type": "color",
+          "default": "#3a3f44",
+          "label": "General waste stream"
         }
       ],
       "presets": {
-        "cleanStore": {
-          "polypropylene": "#d6e0d5",
-          "stainless": "#bfc8cb",
-          "polycarbonate": "#a2d1d7"
+        "councilClassic": {
+          "cabinet": "#e4e8e8",
+          "plastics": "#f2b51a",
+          "paper": "#2f6fc1",
+          "general": "#3a3f44"
         },
-        "nightRestock": {
-          "polypropylene": "#45614e",
-          "stainless": "#66747a",
-          "polycarbonate": "#486b7b"
+        "stainlessLobby": {
+          "cabinet": "#b9c1c4",
+          "plastics": "#e0782c",
+          "paper": "#3a8f5a",
+          "general": "#5a2a2a"
+        },
+        "ecoTimber": {
+          "cabinet": "#a07a4c",
+          "plastics": "#d8b13a",
+          "paper": "#4a7fb0",
+          "general": "#2b2f33"
         }
       },
       "stats": {
-        "triangles": 228,
+        "triangles": 700,
         "sizeM": [
-          1.21,
-          0.895,
-          0.5
+          1.206,
+          1.27,
+          0.461
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polypropylene",
-          "color": "#507b62",
+          "name": "plinth",
+          "color": "#141618",
           "parts": [
-            "bin-0",
-            "bin-1",
-            "bin-2",
-            "corner-foot-0",
-            "corner-foot-1",
-            "corner-foot-2"
-          ],
-          "param": "polypropylene"
+            "plinth",
+            "aperture-0",
+            "door-pull-0",
+            "aperture-1",
+            "door-pull-1",
+            "aperture-2",
+            "door-pull-2"
+          ]
         },
         {
-          "name": "polycarbonate",
-          "color": "#273b3d",
+          "name": "cabinet",
+          "color": "#e4e8e8",
           "parts": [
-            "opening-0",
-            "opening-1",
-            "opening-2"
+            "cabinet",
+            "upstand",
+            "door-0",
+            "door-1",
+            "door-2"
           ],
-          "param": "polycarbonate"
+          "param": "cabinet"
         },
         {
-          "name": "stainless",
-          "color": "#9ca7a8",
+          "name": "side-sticker",
+          "color": "#f6f3ea",
           "parts": [
-            "shared-top",
-            "base-plinth"
+            "side-sticker",
+            "icon-plate-0",
+            "tile-text-0",
+            "tile-icon-0",
+            "icon-plate-1",
+            "tile-text-1",
+            "tile-icon-1",
+            "icon-plate-2",
+            "tile-text-2",
+            "tile-icon-2"
+          ]
+        },
+        {
+          "name": "paper",
+          "color": "#2f6fc1",
+          "parts": [
+            "side-sticker-band",
+            "lid-1",
+            "door-band-1",
+            "icon-1-0",
+            "tile-1"
           ],
-          "param": "stainless"
+          "param": "paper"
+        },
+        {
+          "name": "plastics",
+          "color": "#f2b51a",
+          "parts": [
+            "lid-0",
+            "door-band-0",
+            "icon-0-0",
+            "icon-0-1",
+            "tile-0"
+          ],
+          "param": "plastics"
+        },
+        {
+          "name": "general",
+          "color": "#3a3f44",
+          "parts": [
+            "lid-2",
+            "door-band-2",
+            "icon-2-0",
+            "tile-2"
+          ],
+          "param": "general"
+        },
+        {
+          "name": "push-flap",
+          "color": "#26292c",
+          "parts": [
+            "push-flap"
+          ]
         }
       ]
     },
