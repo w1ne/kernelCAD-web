@@ -281278,10 +281278,15 @@
       "id": "prop-table",
       "kit": "theatre-production",
       "title": "Prop table",
-      "description": "Backstage props table with a broad worktop, lower shelf, four legs and end-stop rail. Knobs: overall scale; stage timber, painted steel, steel hardware, rubber and isolation pads; houseShow and touring appearance presets.",
+      "description": "Backstage prop table at about real size: black-painted frame with lower shelf and storage tote, paper-covered top with a back and end lip, spike-tape outlines with name cards for each prop (goblet, book, lantern, dagger, letter) and a blue-gelled gooseneck clip light. Material controls: painted frame, paper-covered top, spike tape and cards, running light. houseShow, touring and rehearsalRoom presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "prop table",
+        "props",
+        "backstage",
+        "spike tape",
+        "running light",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -281298,8 +281303,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/prop-table.kcad.ts",
       "preview": "/assets/theatre-production-prop-table.png",
-      "sourceSha256": "e3dc3a83c4e790f2b84953c9586863919787886ef05608365451a39b1b5bc5af",
-      "triangleBudget": 1800,
+      "sourceSha256": "4405f870d21af8a4c19675b1ae39b459c48d02807db6f6d11d79cae2f10ee0a8",
+      "triangleBudget": 3500,
       "params": [
         {
           "name": "scale",
@@ -281311,93 +281316,212 @@
           "step": 0.05
         },
         {
-          "name": "timber",
+          "name": "frame",
           "type": "color",
-          "default": "#946b43",
-          "label": "Stage timber"
+          "default": "#232629",
+          "label": "Painted frame and shelf"
         },
         {
-          "name": "steel",
+          "name": "worktop",
           "type": "color",
-          "default": "#46515a",
-          "label": "Painted steel"
+          "default": "#e6dfcf",
+          "label": "Paper-covered top"
         },
         {
-          "name": "hardware",
+          "name": "tape",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#f0f0ea",
+          "label": "Spike tape and name cards"
         },
         {
-          "name": "rubber",
+          "name": "runningLight",
           "type": "color",
-          "default": "#272a2d",
-          "label": "Rubber and isolation pads"
+          "default": "#2f62d8",
+          "label": "Running light gel"
         }
       ],
       "presets": {
         "houseShow": {
-          "timber": "#725137",
-          "steel": "#343b41",
-          "hardware": "#c5a052",
-          "rubber": "#222629"
+          "frame": "#232629",
+          "worktop": "#e6dfcf",
+          "tape": "#f0f0ea",
+          "runningLight": "#2f62d8"
         },
         "touring": {
-          "timber": "#cd914b",
-          "steel": "#315968",
-          "hardware": "#e2b347",
-          "rubber": "#25292c"
+          "frame": "#1d2023",
+          "worktop": "#3a3f44",
+          "tape": "#e8d43a",
+          "runningLight": "#3d6de0"
+        },
+        "rehearsalRoom": {
+          "frame": "#7a5a3a",
+          "worktop": "#d8c6a2",
+          "tape": "#e2413a",
+          "runningLight": "#e8e2c8"
         }
       },
       "stats": {
-        "triangles": 196,
+        "triangles": 2278,
         "sizeM": [
-          1.5,
-          0.94,
-          0.7
+          1.8,
+          1.225,
+          0.765
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "timber",
-          "color": "#946b43",
+          "name": "frame",
+          "color": "#232629",
           "parts": [
-            "worktop",
-            "lower-shelf"
+            "leg-lf",
+            "leg-lb",
+            "leg-rf",
+            "leg-rb",
+            "apron-front",
+            "apron-back",
+            "shelf",
+            "lip-back",
+            "lip-left",
+            "lip-right",
+            "lamp-clamp",
+            "lamp-stalk",
+            "lamp-arm",
+            "lamp-head"
           ],
-          "param": "timber"
+          "param": "frame"
         },
         {
-          "name": "steel",
-          "color": "#46515a",
+          "name": "foot-lf",
+          "color": "#1a1c1e",
           "parts": [
-            "left-front-leg",
-            "right-front-leg",
-            "left-back-leg",
-            "right-back-leg",
-            "back-rail",
-            "drawer-front"
-          ],
-          "param": "steel"
+            "foot-lf",
+            "foot-lb",
+            "foot-rf",
+            "foot-rb"
+          ]
         },
         {
-          "name": "hardware",
-          "color": "#c28f3e",
+          "name": "tote",
+          "color": "#3d78b8",
           "parts": [
-            "handle"
-          ],
-          "param": "hardware"
+            "tote",
+            "tote-lid"
+          ]
         },
         {
-          "name": "rubber",
-          "color": "#272a2d",
+          "name": "worktop",
+          "color": "#e6dfcf",
           "parts": [
-            "level-foot-a",
-            "level-foot-b"
+            "top"
           ],
-          "param": "rubber"
+          "param": "worktop"
+        },
+        {
+          "name": "tape",
+          "color": "#f0f0ea",
+          "parts": [
+            "tape-goblet-f",
+            "tape-goblet-b",
+            "tape-goblet-l",
+            "tape-goblet-r",
+            "card-goblet",
+            "tape-book-f",
+            "tape-book-b",
+            "tape-book-l",
+            "tape-book-r",
+            "card-book",
+            "tape-lantern-f",
+            "tape-lantern-b",
+            "tape-lantern-l",
+            "tape-lantern-r",
+            "card-lantern",
+            "tape-dagger-f",
+            "tape-dagger-b",
+            "tape-dagger-l",
+            "tape-dagger-r",
+            "card-dagger",
+            "tape-letter-f",
+            "tape-letter-b",
+            "tape-letter-l",
+            "tape-letter-r",
+            "card-letter"
+          ],
+          "param": "tape"
+        },
+        {
+          "name": "card-goblet-ink",
+          "color": "#2a2c2e",
+          "parts": [
+            "card-goblet-ink",
+            "card-book-ink",
+            "card-lantern-ink",
+            "card-dagger-ink",
+            "card-letter-ink"
+          ]
+        },
+        {
+          "name": "goblet",
+          "color": "#c9a03a",
+          "parts": [
+            "goblet",
+            "dagger-guard",
+            "dagger-pommel"
+          ]
+        },
+        {
+          "name": "book-cover",
+          "color": "#7a2430",
+          "parts": [
+            "book-cover",
+            "dagger-grip",
+            "letter-seal"
+          ]
+        },
+        {
+          "name": "book-pages",
+          "color": "#efe6cc",
+          "parts": [
+            "book-pages",
+            "letter"
+          ]
+        },
+        {
+          "name": "lantern-base",
+          "color": "#9b7c3a",
+          "parts": [
+            "lantern-base",
+            "lantern-post-0",
+            "lantern-post-90",
+            "lantern-post-180",
+            "lantern-post-270",
+            "lantern-cap",
+            "lantern-handle"
+          ]
+        },
+        {
+          "name": "lantern-glass",
+          "color": "#f3b23a",
+          "parts": [
+            "lantern-glass"
+          ]
+        },
+        {
+          "name": "dagger-blade",
+          "color": "#b9c1c4",
+          "parts": [
+            "dagger-blade"
+          ]
+        },
+        {
+          "name": "runningLight",
+          "color": "#2f62d8",
+          "parts": [
+            "lamp-gel",
+            "lamp-gel-frame"
+          ],
+          "param": "runningLight"
         }
       ]
     },
@@ -281405,10 +281529,15 @@
       "id": "pulley-block",
       "kit": "theatre-production",
       "title": "Pulley block",
-      "description": "Single-sheave block with side cheeks, top attachment eye and lower rope slot. Knobs: overall scale; painted steel, galvanized steel, steel hardware; houseShow and touring appearance presets.",
+      "description": "Single-sheave rigging block at about real size: teardrop steel side cheeks, grooved sheave showing below the cheeks, hex-nutted axle bolt, head spacer bolt, swivel eye, and a hemp purchase line seated over the sheave with whipped tails. Material controls: cheek plates, sheave, bolts and swivel, rope. houseShow, touring and blackWrap presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "pulley block",
+        "rigging block",
+        "sheave",
+        "loft block",
+        "hemp rigging",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -281425,8 +281554,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/pulley-block.kcad.ts",
       "preview": "/assets/theatre-production-pulley-block.png",
-      "sourceSha256": "02018152d3af0626e4c7356b81ce81583a1f8f99c3f46dd8cdcef6a080a90920",
-      "triangleBudget": 1800,
+      "sourceSha256": "4100365e1072a8c73f05574b40de05845519a3348e7a7efa1706b529dc7bf7f9",
+      "triangleBudget": 4000,
       "params": [
         {
           "name": "scale",
@@ -281438,76 +281567,111 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
+          "name": "cheek",
           "type": "color",
-          "default": "#454d54",
-          "label": "Painted steel"
+          "default": "#2f6fb0",
+          "label": "Cheek plates"
         },
         {
-          "name": "galvanizedSteel",
+          "name": "sheave",
           "type": "color",
-          "default": "#aab5b9",
-          "label": "Galvanized steel"
+          "default": "#c3c9cb",
+          "label": "Sheave"
         },
         {
           "name": "hardware",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#8d969b",
+          "label": "Bolts, nuts and swivel"
+        },
+        {
+          "name": "rope",
+          "type": "color",
+          "default": "#c9a466",
+          "label": "Purchase line"
         }
       ],
       "presets": {
         "houseShow": {
-          "paintedSteel": "#313940",
-          "galvanizedSteel": "#c0c8ca",
-          "hardware": "#c5a052"
+          "cheek": "#2f6fb0",
+          "sheave": "#c3c9cb",
+          "hardware": "#8d969b",
+          "rope": "#c9a466"
         },
         "touring": {
-          "paintedSteel": "#dda21f",
-          "galvanizedSteel": "#dce2e2",
-          "hardware": "#e2b347"
+          "cheek": "#e2a21c",
+          "sheave": "#2c3033",
+          "hardware": "#b9c0c3",
+          "rope": "#e8e2d2"
+        },
+        "blackWrap": {
+          "cheek": "#24282b",
+          "sheave": "#9aa3a7",
+          "hardware": "#5d656a",
+          "rope": "#3b3f42"
         }
       },
       "stats": {
-        "triangles": 204,
+        "triangles": 1652,
         "sizeM": [
-          0.235,
-          0.4,
-          0.19
+          0.303,
+          1.063,
+          0.124
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#454d54",
+          "name": "cheek",
+          "color": "#2f6fb0",
           "parts": [
-            "cheek-left",
-            "cheek-right"
+            "cheek-front",
+            "cheek-back"
           ],
-          "param": "paintedSteel"
+          "param": "cheek"
         },
         {
-          "name": "galvanizedSteel",
-          "color": "#aab5b9",
+          "name": "sheave",
+          "color": "#c3c9cb",
           "parts": [
-            "top-crossbar",
-            "bottom-crossbar",
-            "rope-slot-left",
-            "rope-slot-right",
             "sheave"
           ],
-          "param": "galvanizedSteel"
+          "param": "sheave"
         },
         {
           "name": "hardware",
-          "color": "#c28f3e",
+          "color": "#8d969b",
           "parts": [
             "axle",
-            "attachment-eye"
+            "axle-nut-front",
+            "axle-nut-back",
+            "head-bolt",
+            "head-nut",
+            "head-spacer",
+            "swivel-collar",
+            "swivel-stem",
+            "swivel-eye"
           ],
           "param": "hardware"
+        },
+        {
+          "name": "rope",
+          "color": "#c9a466",
+          "parts": [
+            "rope-over",
+            "rope-onstage",
+            "rope-offstage"
+          ],
+          "param": "rope"
+        },
+        {
+          "name": "whipping-onstage",
+          "color": "#2a2a28",
+          "parts": [
+            "whipping-onstage",
+            "whipping-offstage"
+          ]
         }
       ]
     },
@@ -281886,10 +282050,16 @@
       "id": "rope-lock",
       "kit": "theatre-production",
       "title": "Rope lock",
-      "description": "Compact rope-line clamp with a backplate, guide jaw, locking handle and mounting pins. Knobs: overall scale; painted steel, rubber and isolation pads, steel hardware; houseShow and touring appearance presets.",
+      "description": "Counterweight fly-rail rope lock at about real size: cast housing bolted on a steel angle locking rail carried by two floor stanchions, purchase line strands running up through it with coloured trim tape, long lever on a front pivot with a coloured grip, safety ring and a white set-name card on the rail face. Material controls: locking rail, lock casting, lever grip, purchase line; lever locked or released. houseShow, touring and heritageRail presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "rope lock",
+        "rope brake",
+        "locking rail",
+        "counterweight system",
+        "fly rail",
+        "rigging",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -281906,8 +282076,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/rope-lock.kcad.ts",
       "preview": "/assets/theatre-production-rope-lock.png",
-      "sourceSha256": "f98d82b8feb1f1410826fc452b17b3b0ab011744bca6c1834ec9385002803d4b",
-      "triangleBudget": 1800,
+      "sourceSha256": "b9621dae8ff5c0884abf179b2658c8a070de739bfeb92cd49e87970e8583e5ec",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -281919,76 +282089,153 @@
           "step": 0.05
         },
         {
-          "name": "paintedSteel",
-          "type": "color",
-          "default": "#454d54",
-          "label": "Painted steel"
+          "name": "lever",
+          "type": "choice",
+          "default": "locked",
+          "label": "Lever position",
+          "choices": [
+            "locked",
+            "released"
+          ]
         },
         {
-          "name": "rubber",
+          "name": "rail",
           "type": "color",
-          "default": "#272a2d",
-          "label": "Rubber and isolation pads"
+          "default": "#2b2f33",
+          "label": "Locking rail and stanchions"
         },
         {
-          "name": "hardware",
+          "name": "casting",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#5d6a72",
+          "label": "Lock casting and lever"
+        },
+        {
+          "name": "grip",
+          "type": "color",
+          "default": "#d0302a",
+          "label": "Lever grip"
+        },
+        {
+          "name": "rope",
+          "type": "color",
+          "default": "#d8cfb4",
+          "label": "Purchase line"
         }
       ],
       "presets": {
         "houseShow": {
-          "paintedSteel": "#313940",
-          "rubber": "#222629",
-          "hardware": "#c5a052"
+          "rail": "#2b2f33",
+          "casting": "#5d6a72",
+          "grip": "#d0302a",
+          "rope": "#d8cfb4"
         },
         "touring": {
-          "paintedSteel": "#dda21f",
-          "rubber": "#25292c",
-          "hardware": "#e2b347"
+          "rail": "#3a4046",
+          "casting": "#c9a227",
+          "grip": "#1f2326",
+          "rope": "#2a2d30"
+        },
+        "heritageRail": {
+          "rail": "#4a3a2c",
+          "casting": "#2c3034",
+          "grip": "#b8b2a2",
+          "rope": "#c49b5a"
         }
       },
       "stats": {
-        "triangles": 204,
+        "triangles": 1226,
         "sizeM": [
-          0.32,
-          0.67,
-          0.275
+          0.83,
+          1.8,
+          0.226
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "paintedSteel",
-          "color": "#454d54",
+          "name": "rail",
+          "color": "#2b2f33",
           "parts": [
-            "baseplate",
-            "left-cheek",
-            "right-cheek",
-            "jaw",
-            "handle"
+            "stanchion-left",
+            "base-plate-left",
+            "stanchion-right",
+            "base-plate-right",
+            "rail-top",
+            "rail-face"
           ],
-          "param": "paintedSteel"
+          "param": "rail"
         },
         {
-          "name": "rubber",
-          "color": "#272a2d",
+          "name": "set-card",
+          "color": "#f2f0e8",
           "parts": [
-            "grip"
-          ],
-          "param": "rubber"
+            "set-card"
+          ]
         },
         {
-          "name": "hardware",
-          "color": "#c28f3e",
+          "name": "set-card-text-0",
+          "color": "#2a2c2e",
           "parts": [
-            "pivot",
-            "mount-pin-left",
-            "mount-pin-right"
+            "set-card-text-0",
+            "set-card-text-1"
+          ]
+        },
+        {
+          "name": "casting",
+          "color": "#5d6a72",
+          "parts": [
+            "housing",
+            "housing-cap",
+            "pivot-lug-left",
+            "pivot-lug-right",
+            "lever-arm"
           ],
-          "param": "hardware"
+          "param": "casting"
+        },
+        {
+          "name": "hold-down-l",
+          "color": "#a6aeb2",
+          "parts": [
+            "hold-down-l",
+            "hold-down-r",
+            "pivot-pin",
+            "safety-ring",
+            "ring-chain"
+          ]
+        },
+        {
+          "name": "grip",
+          "color": "#d0302a",
+          "parts": [
+            "lever-grip",
+            "lever-knob"
+          ],
+          "param": "grip"
+        },
+        {
+          "name": "rope",
+          "color": "#d8cfb4",
+          "parts": [
+            "rope-on",
+            "rope-off"
+          ],
+          "param": "rope"
+        },
+        {
+          "name": "trim-tape-red",
+          "color": "#e2362b",
+          "parts": [
+            "trim-tape-red"
+          ]
+        },
+        {
+          "name": "trim-tape-blue",
+          "color": "#2f7fd0",
+          "parts": [
+            "trim-tape-blue"
+          ]
         }
       ]
     },
@@ -281996,10 +282243,15 @@
       "id": "sandbag-counterweight",
       "kit": "theatre-production",
       "title": "Sandbag counterweight",
-      "description": "Soft-looking rigging sandbag with central body, folded end caps and hanging loop. Knobs: overall scale; stage fabric, painted steel, steel hardware; houseShow and touring appearance presets.",
+      "description": "Theatre rigging sandbag at about real size: plump pear-shaped canvas body with a stitched reinforcing band, gathered and tied neck, webbing carry loop with a steel D-ring, short trim chain, and a white stencilled weight label on the front. Material controls: canvas, webbing and ties, weight label, D-ring and chain; standard or heavy bag. houseShow, touring and blackCanvas presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "sandbag",
+        "shot bag",
+        "counterweight",
+        "rigging weight",
+        "stand weight",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -282016,8 +282268,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/sandbag-counterweight.kcad.ts",
       "preview": "/assets/theatre-production-sandbag-counterweight.png",
-      "sourceSha256": "38efa715e471ea99c1dfa1d823081395863d92b06487be1d1ac82c95924cd344",
-      "triangleBudget": 1800,
+      "sourceSha256": "315585a984d98cd6e637a9b6cff5f9fc56384f378a478d2d3b73b4910948885a",
+      "triangleBudget": 4500,
       "params": [
         {
           "name": "scale",
@@ -282029,75 +282281,120 @@
           "step": 0.05
         },
         {
-          "name": "fabric",
-          "type": "color",
-          "default": "#463849",
-          "label": "Stage fabric"
+          "name": "size",
+          "type": "choice",
+          "default": "standard",
+          "label": "Bag size",
+          "choices": [
+            "standard",
+            "heavy"
+          ]
         },
         {
-          "name": "steel",
+          "name": "canvas",
           "type": "color",
-          "default": "#46515a",
-          "label": "Painted steel"
+          "default": "#c8b27e",
+          "label": "Canvas"
+        },
+        {
+          "name": "webbing",
+          "type": "color",
+          "default": "#2d3136",
+          "label": "Webbing and ties"
+        },
+        {
+          "name": "label",
+          "type": "color",
+          "default": "#f1efe6",
+          "label": "Weight label"
         },
         {
           "name": "hardware",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#a9b1b5",
+          "label": "D-ring and chain"
         }
       ],
       "presets": {
         "houseShow": {
-          "fabric": "#28262d",
-          "steel": "#343b41",
-          "hardware": "#c5a052"
+          "canvas": "#c8b27e",
+          "webbing": "#2d3136",
+          "label": "#f1efe6",
+          "hardware": "#a9b1b5"
         },
         "touring": {
-          "fabric": "#a14469",
-          "steel": "#315968",
-          "hardware": "#e2b347"
+          "canvas": "#2b2e31",
+          "webbing": "#d63a2a",
+          "label": "#f2d23c",
+          "hardware": "#c3c9cc"
+        },
+        "blackCanvas": {
+          "canvas": "#1f2224",
+          "webbing": "#4b5156",
+          "label": "#e9e7de",
+          "hardware": "#7c858a"
         }
       },
       "stats": {
-        "triangles": 128,
+        "triangles": 3932,
         "sizeM": [
-          0.575,
-          0.445,
-          0.285
+          0.435818,
+          0.705991,
+          0.312327
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "fabric",
-          "color": "#463849",
+          "name": "canvas",
+          "color": "#c8b27e",
           "parts": [
             "bag-body",
-            "top-seam",
-            "hanger-strap-left",
-            "hanger-strap-right"
+            "neck-ruffle"
           ],
-          "param": "fabric"
+          "param": "canvas"
         },
         {
-          "name": "steel",
-          "color": "#46515a",
+          "name": "webbing",
+          "color": "#2d3136",
           "parts": [
-            "end-left",
-            "end-right",
-            "label-patch"
+            "reinforcing-band",
+            "base-seam",
+            "neck-tie",
+            "webbing-loop",
+            "loop-tail-left",
+            "loop-tail-right"
           ],
-          "param": "steel"
+          "param": "webbing"
         },
         {
           "name": "hardware",
-          "color": "#c28f3e",
+          "color": "#a9b1b5",
           "parts": [
-            "suspension-eye"
+            "d-ring",
+            "chain-link-0",
+            "chain-link-1",
+            "chain-link-2"
           ],
           "param": "hardware"
+        },
+        {
+          "name": "label",
+          "color": "#f1efe6",
+          "parts": [
+            "weight-label"
+          ],
+          "param": "label"
+        },
+        {
+          "name": "stencil-weight",
+          "color": "#202224",
+          "parts": [
+            "stencil-weight",
+            "stencil-unit",
+            "stencil-mark"
+          ]
         }
       ]
     },
@@ -283341,11 +283638,17 @@
     {
       "id": "stage-power-distro",
       "kit": "theatre-production",
-      "title": "Stage power distribution box",
-      "description": "Portable stage power enclosure with locking lid, connector rows, carry handles and skid feet. Knobs: overall scale; powder-coated steel, steel hardware, polymer controls and cable jacket; houseShow and touring appearance presets.",
+      "title": "Stage power distro",
+      "description": "Rolling stage power distribution rack at about real size: road case with aluminium edge extrusions, ball corners, recessed side handles and casters; open front panel with five colour-coded single-pole feeder connectors, main breaker, three phase meters with pilot lamps, twelve branch breakers, two multi-pin outlets and four duplex outlets. Material controls: road case shell, edge trim and corners, front panel, breaker toggles. houseShow, touring and greyRack presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "power distro",
+        "power distribution",
+        "company switch",
+        "breaker panel",
+        "road case",
+        "feeder",
         "theatre production",
         "stagecraft",
         "performing arts",
@@ -283362,8 +283665,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/theatre-production/stage-power-distro.kcad.ts",
       "preview": "/assets/theatre-production-stage-power-distro.png",
-      "sourceSha256": "15a7d500a54ccfdd47d5d94ac2dba45bf49a616908a47729ea58fab0c064551b",
-      "triangleBudget": 1800,
+      "sourceSha256": "2f40d51b5ac1676a403239d446209f0240e9456ea709f54b815d9898de40313a",
+      "triangleBudget": 4500,
       "params": [
         {
           "name": "scale",
@@ -283375,79 +283678,255 @@
           "step": 0.05
         },
         {
-          "name": "powderCoat",
+          "name": "shell",
           "type": "color",
-          "default": "#353b41",
-          "label": "Powder-coated steel"
+          "default": "#1e2124",
+          "label": "Road case shell"
         },
         {
-          "name": "hardware",
+          "name": "trim",
           "type": "color",
-          "default": "#c28f3e",
-          "label": "Steel hardware"
+          "default": "#b8c0c4",
+          "label": "Edge trim and ball corners"
         },
         {
-          "name": "polymer",
+          "name": "panel",
           "type": "color",
-          "default": "#426878",
-          "label": "Polymer controls and cable jacket"
+          "default": "#6f7a82",
+          "label": "Front panel"
+        },
+        {
+          "name": "breakers",
+          "type": "color",
+          "default": "#f0efe8",
+          "label": "Breaker toggles"
         }
       ],
       "presets": {
         "houseShow": {
-          "powderCoat": "#272d33",
-          "hardware": "#c5a052",
-          "polymer": "#344e5b"
+          "shell": "#1e2124",
+          "trim": "#b8c0c4",
+          "panel": "#6f7a82",
+          "breakers": "#f0efe8"
         },
         "touring": {
-          "powderCoat": "#315465",
-          "hardware": "#e2b347",
-          "polymer": "#e3a928"
+          "shell": "#2a3f6a",
+          "trim": "#d4d8da",
+          "panel": "#24282b",
+          "breakers": "#f2c230"
+        },
+        "greyRack": {
+          "shell": "#8c949a",
+          "trim": "#5c656b",
+          "panel": "#e3e1da",
+          "breakers": "#d6372d"
         }
       },
       "stats": {
-        "triangles": 240,
+        "triangles": 2804,
         "sizeM": [
-          1.02,
-          0.98,
-          0.73
+          0.851,
+          1.076,
+          0.710352
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoat",
-          "color": "#353b41",
+          "name": "shell",
+          "color": "#1e2124",
           "parts": [
-            "case",
-            "lid",
-            "front-panel",
-            "panel-left",
-            "panel-right",
-            "skid-left",
-            "skid-right"
+            "case"
           ],
-          "param": "powderCoat"
+          "param": "shell"
         },
         {
-          "name": "hardware",
-          "color": "#c28f3e",
+          "name": "trim",
+          "color": "#b8c0c4",
           "parts": [
-            "handle-left",
-            "handle-right"
+            "edge-v-lf",
+            "corner-lf-low",
+            "corner-lf-high",
+            "edge-v-lb",
+            "corner-lb-low",
+            "corner-lb-high",
+            "edge-v-rf",
+            "corner-rf-low",
+            "corner-rf-high",
+            "edge-v-rb",
+            "corner-rb-low",
+            "corner-rb-high",
+            "edge-x-low-f",
+            "edge-x-low-b",
+            "edge-y-low-l",
+            "edge-y-low-r",
+            "edge-x-high-f",
+            "edge-x-high-b",
+            "edge-y-high-l",
+            "edge-y-high-r",
+            "handle-dish-left",
+            "handle-dish-right",
+            "caster-plate-lf",
+            "caster-fork-lf",
+            "caster-plate-lb",
+            "caster-fork-lb",
+            "caster-plate-rf",
+            "caster-fork-rf",
+            "caster-plate-rb",
+            "caster-fork-rb",
+            "multipin-1-face",
+            "multipin-2-face"
           ],
-          "param": "hardware"
+          "param": "trim"
         },
         {
-          "name": "polymer",
-          "color": "#426878",
+          "name": "handle-bar-left",
+          "color": "#18191b",
           "parts": [
-            "connector-a",
-            "connector-b",
-            "connector-c"
+            "handle-bar-left",
+            "handle-bar-right",
+            "caster-wheel-lf",
+            "caster-wheel-lb",
+            "caster-wheel-rf",
+            "caster-wheel-rb",
+            "feeder-earth-collar",
+            "feeder-neutral-collar",
+            "feeder-phase-a-collar",
+            "feeder-phase-b-collar",
+            "feeder-phase-c-collar",
+            "main-breaker",
+            "meter-0",
+            "meter-1",
+            "meter-2",
+            "breaker-rail",
+            "breaker-1",
+            "breaker-2",
+            "breaker-3",
+            "breaker-4",
+            "breaker-5",
+            "breaker-6",
+            "breaker-7",
+            "breaker-8",
+            "breaker-9",
+            "breaker-10",
+            "breaker-11",
+            "breaker-12",
+            "multipin-1-shell",
+            "multipin-1-cap",
+            "multipin-2-shell",
+            "multipin-2-cap",
+            "duplex-1",
+            "duplex-2",
+            "duplex-3",
+            "duplex-4"
+          ]
+        },
+        {
+          "name": "panel",
+          "color": "#6f7a82",
+          "parts": [
+            "front-panel"
           ],
-          "param": "polymer"
+          "param": "panel"
+        },
+        {
+          "name": "feeder-earth",
+          "color": "#2f9a4a",
+          "parts": [
+            "feeder-earth"
+          ]
+        },
+        {
+          "name": "feeder-neutral",
+          "color": "#efefea",
+          "parts": [
+            "feeder-neutral"
+          ]
+        },
+        {
+          "name": "feeder-phase-a",
+          "color": "#1f2124",
+          "parts": [
+            "feeder-phase-a"
+          ]
+        },
+        {
+          "name": "feeder-phase-b",
+          "color": "#d1322a",
+          "parts": [
+            "feeder-phase-b"
+          ]
+        },
+        {
+          "name": "feeder-phase-c",
+          "color": "#2f62c8",
+          "parts": [
+            "feeder-phase-c"
+          ]
+        },
+        {
+          "name": "feeder-label",
+          "color": "#e8e6de",
+          "parts": [
+            "feeder-label",
+            "breaker-label"
+          ]
+        },
+        {
+          "name": "breakers",
+          "color": "#f0efe8",
+          "parts": [
+            "main-breaker-handle",
+            "breaker-1-toggle",
+            "breaker-2-toggle",
+            "breaker-3-toggle",
+            "breaker-4-toggle",
+            "breaker-5-toggle",
+            "breaker-6-toggle",
+            "breaker-7-toggle",
+            "breaker-8-toggle",
+            "breaker-9-toggle",
+            "breaker-10-toggle",
+            "breaker-11-toggle",
+            "breaker-12-toggle",
+            "duplex-1-socket-0",
+            "duplex-1-socket-1",
+            "duplex-2-socket-0",
+            "duplex-2-socket-1",
+            "duplex-3-socket-0",
+            "duplex-3-socket-1",
+            "duplex-4-socket-0",
+            "duplex-4-socket-1"
+          ],
+          "param": "breakers"
+        },
+        {
+          "name": "meter-0-face",
+          "color": "#f4f2ea",
+          "parts": [
+            "meter-0-face",
+            "meter-1-face",
+            "meter-2-face"
+          ]
+        },
+        {
+          "name": "meter-0-needle",
+          "color": "#d63228",
+          "parts": [
+            "meter-0-needle",
+            "meter-1-needle",
+            "meter-2-needle"
+          ]
+        },
+        {
+          "name": "lamp-0",
+          "color": "#5fd068",
+          "parts": [
+            "lamp-0",
+            "lamp-1",
+            "lamp-2"
+          ]
         }
       ]
     },
