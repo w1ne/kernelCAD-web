@@ -125525,10 +125525,17 @@
       "id": "deep-water-culture-bed",
       "kit": "hydroponics",
       "title": "Deep-water culture bed",
-      "description": "Rectangular raft culture trough with a raised rim, flotation deck panels and a drain outlet. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
+      "description": "Deep-water culture raft bed at about real size: timber-framed trough on trestles with a black pond liner lapped over the rail, three drilled polystyrene raft boards with net pots and lettuce heads (some holes harvested and empty), front air manifold with airstone drops, nutrient inlet and drain standpipe. Material controls: trough frame, liner, raft boards and crop foliage, plus a crop stage choice. greenLettuce, redOakLeaf, basil and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "deep water culture",
+        "dwc",
+        "raft bed",
+        "raft system",
+        "floating raft",
+        "lettuce",
+        "leafy greens",
         "hydroponics",
         "greenhouse",
         "controlled environment agriculture",
@@ -125544,8 +125551,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/deep-water-culture-bed.kcad.ts",
       "preview": "/assets/hydroponics-deep-water-culture-bed.png",
-      "sourceSha256": "34da43aac3dbed346da9216c600abf7f7f9f73661a8d8f85d721a26d4defe7d1",
-      "triangleBudget": 1800,
+      "sourceSha256": "384956756c7c7cd2cbbe0b58e87dd35cab9ce2ab1aaef410c145412d1b903e69",
+      "triangleBudget": 6000,
       "params": [
         {
           "name": "scale",
@@ -125557,77 +125564,308 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#a87a4c",
+          "label": "Trough frame and trestles (timber)"
         },
         {
-          "name": "pvc",
+          "name": "liner",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#26292b",
+          "label": "Pond liner (EPDM)"
         },
         {
-          "name": "polymer",
+          "name": "raft",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#ecebe4",
+          "label": "Raft boards (polystyrene)"
+        },
+        {
+          "name": "foliage",
+          "type": "color",
+          "default": "#7fb24a",
+          "label": "Crop foliage"
+        },
+        {
+          "name": "stage",
+          "type": "choice",
+          "default": "mature",
+          "label": "Crop stage",
+          "choices": [
+            "mature",
+            "seedling"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa"
+        "greenLettuce": {
+          "frame": "#a87a4c",
+          "liner": "#26292b",
+          "raft": "#ecebe4",
+          "foliage": "#7fb24a"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b"
+        "redOakLeaf": {
+          "frame": "#a87a4c",
+          "liner": "#26292b",
+          "raft": "#ecebe4",
+          "foliage": "#8a3b46"
+        },
+        "basil": {
+          "frame": "#6f7478",
+          "liner": "#1f3a5a",
+          "raft": "#f2f2ec",
+          "foliage": "#3f8a34"
+        },
+        "weathered": {
+          "frame": "#7d6a55",
+          "liner": "#3a3d3e",
+          "raft": "#cfccbf",
+          "foliage": "#93a65a"
         }
       },
       "stats": {
-        "triangles": 184,
+        "triangles": 5514,
         "sizeM": [
-          1.85,
-          0.665,
-          1.388
+          3.29,
+          0.867686,
+          1.45
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "frame",
+          "color": "#a87a4c",
           "parts": [
-            "trough-base"
+            "trestle-leg--1000-f",
+            "trestle-leg--1000-b",
+            "trestle-beam--1000",
+            "trestle-brace--1000",
+            "trestle-leg-0-f",
+            "trestle-leg-0-b",
+            "trestle-beam-0",
+            "trestle-brace-0",
+            "trestle-leg-1000-f",
+            "trestle-leg-1000-b",
+            "trestle-beam-1000",
+            "trestle-brace-1000",
+            "trough-floor",
+            "trough-walls",
+            "wall-cleat--1280",
+            "wall-cleat--650",
+            "wall-cleat-0",
+            "wall-cleat-650",
+            "wall-cleat-1280",
+            "top-rail"
           ],
-          "param": "powderCoatedSteel"
+          "param": "frame"
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "liner",
+          "color": "#26292b",
           "parts": [
-            "front-wall",
-            "back-wall",
-            "left-wall",
-            "right-wall",
-            "raft-panel-a",
-            "raft-panel-b",
-            "rim-front",
-            "rim-back"
+            "liner",
+            "liner-lap"
           ],
-          "param": "polymer"
+          "param": "liner"
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "water",
+          "color": "#2f5b52",
           "parts": [
-            "drain-outlet"
+            "water"
+          ]
+        },
+        {
+          "name": "raft",
+          "color": "#ecebe4",
+          "parts": [
+            "raft-0",
+            "raft-1",
+            "raft-2"
           ],
-          "param": "pvc"
+          "param": "raft"
+        },
+        {
+          "name": "pot-0-0",
+          "color": "#1d2023",
+          "parts": [
+            "pot-0-0",
+            "pot-0-1",
+            "pot-0-2",
+            "pot-0-3",
+            "pot-0-4",
+            "pot-0-5",
+            "pot-0-6",
+            "pot-0-8",
+            "pot-0-9",
+            "pot-0-10",
+            "pot-0-11",
+            "pot-0-12",
+            "pot-0-13",
+            "pot-0-14",
+            "pot-0-15",
+            "pot-1-0",
+            "pot-1-1",
+            "pot-1-2",
+            "pot-1-3",
+            "pot-1-4",
+            "pot-1-5",
+            "pot-1-6",
+            "pot-1-7",
+            "pot-1-9",
+            "pot-1-10",
+            "pot-1-11",
+            "pot-1-12",
+            "pot-1-13",
+            "pot-1-14",
+            "pot-1-15",
+            "pot-2-0",
+            "pot-2-1",
+            "pot-2-3",
+            "pot-2-4",
+            "pot-2-5",
+            "pot-2-6",
+            "pot-2-7",
+            "pot-2-8",
+            "pot-2-9",
+            "pot-2-10",
+            "pot-2-11",
+            "pot-2-12",
+            "pot-2-13",
+            "pot-2-14",
+            "pot-2-15"
+          ]
+        },
+        {
+          "name": "foliage",
+          "color": "#7fb24a",
+          "parts": [
+            "head-0-0",
+            "head-0-1",
+            "head-0-2",
+            "head-0-3",
+            "head-0-4",
+            "head-0-5",
+            "head-0-6",
+            "head-0-8",
+            "head-0-9",
+            "head-0-10",
+            "head-0-11",
+            "head-0-12",
+            "head-0-13",
+            "head-0-14",
+            "head-0-15",
+            "head-1-0",
+            "head-1-1",
+            "head-1-2",
+            "head-1-3",
+            "head-1-4",
+            "head-1-5",
+            "head-1-6",
+            "head-1-7",
+            "head-1-9",
+            "head-1-10",
+            "head-1-11",
+            "head-1-12",
+            "head-1-13",
+            "head-1-14",
+            "head-1-15",
+            "head-2-0",
+            "head-2-1",
+            "head-2-3",
+            "head-2-4",
+            "head-2-5",
+            "head-2-6",
+            "head-2-7",
+            "head-2-8",
+            "head-2-9",
+            "head-2-10",
+            "head-2-11",
+            "head-2-12",
+            "head-2-13",
+            "head-2-14",
+            "head-2-15"
+          ],
+          "param": "foliage"
+        },
+        {
+          "name": "heart-0-0",
+          "color": "#b6d36a",
+          "parts": [
+            "heart-0-0",
+            "heart-0-3",
+            "heart-0-6",
+            "heart-0-9",
+            "heart-0-12",
+            "heart-0-15",
+            "heart-1-0",
+            "heart-1-3",
+            "heart-1-6",
+            "heart-1-9",
+            "heart-1-12",
+            "heart-1-15",
+            "heart-2-0",
+            "heart-2-3",
+            "heart-2-6",
+            "heart-2-9",
+            "heart-2-12",
+            "heart-2-15"
+          ]
+        },
+        {
+          "name": "air-manifold",
+          "color": "#e0e2dc",
+          "parts": [
+            "air-manifold",
+            "air-inlet",
+            "air-drop-0",
+            "air-drop-1",
+            "air-drop-2",
+            "air-drop-3",
+            "air-drop-4",
+            "air-drop-5",
+            "standpipe-cap"
+          ]
+        },
+        {
+          "name": "air-inlet-cap",
+          "color": "#2f6fa8",
+          "parts": [
+            "air-inlet-cap",
+            "air-valve-0",
+            "air-valve-1",
+            "air-valve-2",
+            "air-valve-3",
+            "air-valve-4",
+            "air-valve-5"
+          ]
+        },
+        {
+          "name": "inlet-pipe",
+          "color": "#5f6a72",
+          "parts": [
+            "inlet-pipe",
+            "inlet-riser",
+            "drain-pipe",
+            "drain-elbow"
+          ]
+        },
+        {
+          "name": "inlet-valve",
+          "color": "#c0392b",
+          "parts": [
+            "inlet-valve"
+          ]
+        },
+        {
+          "name": "drain-sump",
+          "color": "#4a4f53",
+          "parts": [
+            "drain-sump"
+          ]
         }
       ]
     },
@@ -125747,10 +125985,18 @@
       "id": "dutch-bucket-row",
       "kit": "hydroponics",
       "title": "Dutch bucket row",
-      "description": "Four media buckets on a shared stand with paired feed header and drain return rail. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
+      "description": "Dutch (Bato) bucket row at about real size: six tapered perlite-filled buckets on a shared 50 mm drain pipe with siphon elbows, drip line with a dripper stake per bucket, and a vine per bucket climbing a support string to an overhead trellis wire on two end posts, with fruit trusses. Material controls: buckets, plumbing, trellis frame and foliage, plus a crop choice (tomato, pepper, cucumber). tomato, sweetPepper, cucumber and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "dutch bucket",
+        "bato bucket",
+        "vine crop",
+        "tomato",
+        "pepper",
+        "cucumber",
+        "perlite",
+        "trellis",
         "hydroponics",
         "greenhouse",
         "controlled environment agriculture",
@@ -125766,8 +126012,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/dutch-bucket-row.kcad.ts",
       "preview": "/assets/hydroponics-dutch-bucket-row.png",
-      "sourceSha256": "5ee06edea293fee6ec9d9ba00511a15aa2d2bff6fac45e58f0cfb65e5d619b61",
-      "triangleBudget": 1800,
+      "sourceSha256": "e9aeb5bebeaa297e765fb47e2c431036635062cb45fc15af3187552380d86871",
+      "triangleBudget": 5600,
       "params": [
         {
           "name": "scale",
@@ -125779,79 +126025,305 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "bucket",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#2a2c2e",
+          "label": "Buckets (polypropylene)"
         },
         {
-          "name": "pvc",
+          "name": "plumbing",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#e6e7e1",
+          "label": "Drain and drip plumbing (PVC)"
         },
         {
-          "name": "polymer",
+          "name": "trellis",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#8f989c",
+          "label": "Trellis posts and wire (galvanised steel)"
+        },
+        {
+          "name": "foliage",
+          "type": "color",
+          "default": "#3f8436",
+          "label": "Vine foliage"
+        },
+        {
+          "name": "crop",
+          "type": "choice",
+          "default": "tomato",
+          "label": "Crop",
+          "choices": [
+            "tomato",
+            "pepper",
+            "cucumber"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa"
+        "tomato": {
+          "bucket": "#2a2c2e",
+          "plumbing": "#e6e7e1",
+          "trellis": "#8f989c",
+          "foliage": "#3f8436"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b"
+        "sweetPepper": {
+          "bucket": "#d9cfb4",
+          "plumbing": "#e6e7e1",
+          "trellis": "#8f989c",
+          "foliage": "#2f7a30"
+        },
+        "cucumber": {
+          "bucket": "#2a2c2e",
+          "plumbing": "#4a5a66",
+          "trellis": "#c9a640",
+          "foliage": "#56993d"
+        },
+        "weathered": {
+          "bucket": "#4a4a46",
+          "plumbing": "#c8c6b8",
+          "trellis": "#7d7b72",
+          "foliage": "#6d8a46"
         }
       },
       "stats": {
-        "triangles": 272,
+        "triangles": 4712,
         "sizeM": [
-          1.689455,
-          0.7,
-          0.96
+          3,
+          2.15,
+          0.414
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "plumbing",
+          "color": "#e6e7e1",
           "parts": [
-            "support-frame-left",
-            "support-frame-right",
-            "longitudinal-rail-front",
-            "longitudinal-rail-back"
+            "drain-pipe",
+            "drain-cap",
+            "drain-elbow",
+            "siphon-0",
+            "siphon-1",
+            "siphon-2",
+            "siphon-3",
+            "siphon-4",
+            "siphon-5"
           ],
-          "param": "powderCoatedSteel"
+          "param": "plumbing"
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "pipe-saddle-0",
+          "color": "#5d6366",
           "parts": [
+            "pipe-saddle-0",
+            "pipe-saddle-1",
+            "pipe-saddle-2",
+            "pipe-saddle-3",
+            "pipe-saddle-4",
+            "pipe-saddle-5",
+            "pipe-saddle-6"
+          ]
+        },
+        {
+          "name": "drip-line",
+          "color": "#1d2023",
+          "parts": [
+            "drip-line",
+            "drip-riser",
+            "dripper-0",
+            "dripper-1",
+            "dripper-2",
+            "dripper-3",
+            "dripper-4",
+            "dripper-5"
+          ]
+        },
+        {
+          "name": "drip-filter",
+          "color": "#2f6fa8",
+          "parts": [
+            "drip-filter"
+          ]
+        },
+        {
+          "name": "trellis",
+          "color": "#8f989c",
+          "parts": [
+            "post-l",
+            "post-foot-l",
+            "post-arm-l",
+            "post-r",
+            "post-foot-r",
+            "post-arm-r",
+            "trellis-wire"
+          ],
+          "param": "trellis"
+        },
+        {
+          "name": "bucket",
+          "color": "#2a2c2e",
+          "parts": [
+            "bucket-0",
+            "bucket-rim-0",
             "bucket-1",
+            "bucket-rim-1",
             "bucket-2",
+            "bucket-rim-2",
             "bucket-3",
-            "bucket-4"
+            "bucket-rim-3",
+            "bucket-4",
+            "bucket-rim-4",
+            "bucket-5",
+            "bucket-rim-5"
           ],
-          "param": "polymer"
+          "param": "bucket"
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "perlite-0",
+          "color": "#e3e1d8",
           "parts": [
-            "feed-header",
-            "return-header",
-            "feed-riser",
-            "return-drop"
+            "perlite-0",
+            "perlite-1",
+            "perlite-2",
+            "perlite-3",
+            "perlite-4",
+            "perlite-5"
+          ]
+        },
+        {
+          "name": "dripper-head-0",
+          "color": "#c0392b",
+          "parts": [
+            "dripper-head-0",
+            "dripper-head-1",
+            "dripper-head-2",
+            "dripper-head-3",
+            "dripper-head-4",
+            "dripper-head-5"
+          ]
+        },
+        {
+          "name": "string-0",
+          "color": "#e8dcb8",
+          "parts": [
+            "string-0",
+            "string-1",
+            "string-2",
+            "string-3",
+            "string-4",
+            "string-5"
+          ]
+        },
+        {
+          "name": "stem-0",
+          "color": "#5c7a2e",
+          "parts": [
+            "stem-0",
+            "stem-1",
+            "stem-2",
+            "stem-3",
+            "stem-4",
+            "stem-5"
+          ]
+        },
+        {
+          "name": "foliage",
+          "color": "#3f8436",
+          "parts": [
+            "leaf-0-0",
+            "leaf-0-1",
+            "leaf-0-2",
+            "leaf-0-3",
+            "leaf-0-4",
+            "leaf-0-5",
+            "crown-0",
+            "leaf-1-0",
+            "leaf-1-1",
+            "leaf-1-2",
+            "leaf-1-3",
+            "leaf-1-4",
+            "leaf-1-5",
+            "crown-1",
+            "leaf-2-0",
+            "leaf-2-1",
+            "leaf-2-2",
+            "leaf-2-3",
+            "leaf-2-4",
+            "leaf-2-5",
+            "crown-2",
+            "leaf-3-0",
+            "leaf-3-1",
+            "leaf-3-2",
+            "leaf-3-3",
+            "leaf-3-4",
+            "leaf-3-5",
+            "crown-3",
+            "leaf-4-0",
+            "leaf-4-1",
+            "leaf-4-2",
+            "leaf-4-3",
+            "leaf-4-4",
+            "leaf-4-5",
+            "crown-4",
+            "leaf-5-0",
+            "leaf-5-1",
+            "leaf-5-2",
+            "leaf-5-3",
+            "leaf-5-4",
+            "leaf-5-5",
+            "crown-5"
           ],
-          "param": "pvc"
+          "param": "foliage"
+        },
+        {
+          "name": "fruit-0-0-0",
+          "color": "#c9302c",
+          "parts": [
+            "fruit-0-0-0",
+            "fruit-0-0-1",
+            "fruit-0-1-0",
+            "fruit-0-1-1",
+            "fruit-1-0-0",
+            "fruit-1-0-1",
+            "fruit-1-1-0",
+            "fruit-1-1-1",
+            "fruit-2-0-0",
+            "fruit-2-0-1",
+            "fruit-2-1-0",
+            "fruit-2-1-1",
+            "fruit-3-0-0",
+            "fruit-3-0-1",
+            "fruit-3-1-0",
+            "fruit-3-1-1",
+            "fruit-4-0-0",
+            "fruit-4-0-1",
+            "fruit-4-1-0",
+            "fruit-4-1-1",
+            "fruit-5-0-0",
+            "fruit-5-0-1",
+            "fruit-5-1-0",
+            "fruit-5-1-1"
+          ]
+        },
+        {
+          "name": "fruit-0-0-2",
+          "color": "#e8862a",
+          "parts": [
+            "fruit-0-0-2",
+            "fruit-0-1-2",
+            "fruit-1-0-2",
+            "fruit-1-1-2",
+            "fruit-2-0-2",
+            "fruit-2-1-2",
+            "fruit-3-0-2",
+            "fruit-3-1-2",
+            "fruit-4-0-2",
+            "fruit-4-1-2",
+            "fruit-5-0-2",
+            "fruit-5-1-2"
+          ]
         }
       ]
     },
@@ -127866,10 +128338,17 @@
       "id": "nft-channel-rack",
       "kit": "hydroponics",
       "title": "NFT channel rack",
-      "description": "A-frame-like nutrient film channel stand with paired trough levels, end stops and a vertical feed riser. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
+      "description": "Nutrient film technique A-frame at about real size: two tubular A-frame ends, three tiers of white square grow channels per face with herbs or lettuce in net pots, feed header with spaghetti lines into every channel, return gutter and a lidded reservoir with a pump riser. Material controls: frame, channels, reservoir and crop foliage. lettuce, basil, strawberry and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "nft",
+        "nutrient film technique",
+        "a-frame",
+        "grow channel",
+        "gully",
+        "herbs",
+        "lettuce",
         "hydroponics",
         "greenhouse",
         "controlled environment agriculture",
@@ -127885,8 +128364,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/nft-channel-rack.kcad.ts",
       "preview": "/assets/hydroponics-nft-channel-rack.png",
-      "sourceSha256": "ca295ac362e9c33ee198bbe61ca573c5ca287dc475864745f3d824380cfcd5f4",
-      "triangleBudget": 1800,
+      "sourceSha256": "344e3774aadd5282fa7b9514cc03933fc2f2f389b33199d17df3fd8107c8d19f",
+      "triangleBudget": 4200,
       "params": [
         {
           "name": "scale",
@@ -127898,78 +128377,237 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#a9b1b5",
+          "label": "A-frame (galvanised tube)"
         },
         {
-          "name": "pvc",
+          "name": "channel",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#f1f1ec",
+          "label": "Grow channels (white PVC)"
         },
         {
-          "name": "polymer",
+          "name": "tank",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#2b4f72",
+          "label": "Reservoir and plumbing (polyethylene)"
+        },
+        {
+          "name": "foliage",
+          "type": "color",
+          "default": "#78b347",
+          "label": "Crop foliage"
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa"
+        "lettuce": {
+          "frame": "#a9b1b5",
+          "channel": "#f1f1ec",
+          "tank": "#2b4f72",
+          "foliage": "#78b347"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b"
+        "basil": {
+          "frame": "#3a3f43",
+          "channel": "#f1f1ec",
+          "tank": "#1e2224",
+          "foliage": "#3b8a33"
+        },
+        "strawberry": {
+          "frame": "#a9b1b5",
+          "channel": "#e8e4d8",
+          "tank": "#2f6b3a",
+          "foliage": "#c0392b"
+        },
+        "weathered": {
+          "frame": "#8c8a80",
+          "channel": "#d2cfc1",
+          "tank": "#475a66",
+          "foliage": "#8fa35a"
         }
       },
       "stats": {
-        "triangles": 196,
+        "triangles": 3548,
         "sizeM": [
-          1.4,
-          1.445,
-          1.479
+          2.815,
+          1.69,
+          1.24
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "frame",
+          "color": "#a9b1b5",
           "parts": [
-            "left-foot",
-            "right-foot",
-            "top-crossbar"
+            "foot-l-f",
+            "leg-l-f",
+            "foot-l-b",
+            "leg-l-b",
+            "apex-l",
+            "apex-bar-l",
+            "base-bar-l",
+            "foot-r-f",
+            "leg-r-f",
+            "foot-r-b",
+            "leg-r-b",
+            "apex-r",
+            "apex-bar-r",
+            "base-bar-r",
+            "apex-ridge",
+            "arm-0-f-l",
+            "arm-0-f-r",
+            "arm-0-b-l",
+            "arm-0-b-r",
+            "arm-1-f-l",
+            "arm-1-f-r",
+            "arm-1-b-l",
+            "arm-1-b-r",
+            "arm-2-f-l",
+            "arm-2-f-r",
+            "arm-2-b-l",
+            "arm-2-b-r"
           ],
-          "param": "powderCoatedSteel"
+          "param": "frame"
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "channel",
+          "color": "#f1f1ec",
           "parts": [
-            "left-upright",
-            "right-upright",
-            "lower-channel-left",
-            "lower-channel-right",
-            "upper-channel-left",
-            "upper-channel-right"
+            "channel-0-f",
+            "channel-lid-0-f",
+            "channel-0-b",
+            "channel-lid-0-b",
+            "channel-1-f",
+            "channel-lid-1-f",
+            "channel-1-b",
+            "channel-lid-1-b",
+            "channel-2-f",
+            "channel-lid-2-f",
+            "channel-2-b",
+            "channel-lid-2-b"
           ],
-          "param": "polymer"
+          "param": "channel"
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "channel-cap-0-f",
+          "color": "#c9cbc4",
           "parts": [
-            "feed-header",
-            "feed-riser"
+            "channel-cap-0-f",
+            "channel-cap-0-b",
+            "channel-cap-1-f",
+            "channel-cap-1-b",
+            "channel-cap-2-f",
+            "channel-cap-2-b"
+          ]
+        },
+        {
+          "name": "foliage",
+          "color": "#78b347",
+          "parts": [
+            "plant-0-f-0",
+            "plant-0-f-1",
+            "plant-0-f-2",
+            "plant-0-f-3",
+            "plant-0-f-4",
+            "plant-0-f-5",
+            "plant-0-f-6",
+            "plant-0-f-7",
+            "plant-0-f-8",
+            "plant-0-f-9",
+            "plant-0-b-0",
+            "plant-0-b-1",
+            "plant-0-b-2",
+            "plant-0-b-3",
+            "plant-0-b-4",
+            "plant-0-b-5",
+            "plant-0-b-6",
+            "plant-0-b-7",
+            "plant-0-b-8",
+            "plant-0-b-9",
+            "plant-1-f-0",
+            "plant-1-f-1",
+            "plant-1-f-2",
+            "plant-1-f-3",
+            "plant-1-f-4",
+            "plant-1-f-5",
+            "plant-1-f-6",
+            "plant-1-f-7",
+            "plant-1-f-8",
+            "plant-1-f-9",
+            "plant-1-b-0",
+            "plant-1-b-1",
+            "plant-1-b-2",
+            "plant-1-b-3",
+            "plant-1-b-4",
+            "plant-1-b-5",
+            "plant-1-b-6",
+            "plant-1-b-7",
+            "plant-1-b-8",
+            "plant-1-b-9",
+            "plant-2-f-0",
+            "plant-2-f-1",
+            "plant-2-f-2",
+            "plant-2-f-3",
+            "plant-2-f-4",
+            "plant-2-f-5",
+            "plant-2-f-6",
+            "plant-2-f-7",
+            "plant-2-f-8",
+            "plant-2-f-9",
+            "plant-2-b-0",
+            "plant-2-b-1",
+            "plant-2-b-2",
+            "plant-2-b-3",
+            "plant-2-b-4",
+            "plant-2-b-5",
+            "plant-2-b-6",
+            "plant-2-b-7",
+            "plant-2-b-8",
+            "plant-2-b-9"
           ],
-          "param": "pvc"
+          "param": "foliage"
+        },
+        {
+          "name": "tank",
+          "color": "#2b4f72",
+          "parts": [
+            "feed-riser",
+            "feed-tee-420",
+            "feed-tee-860",
+            "feed-tee-1300",
+            "return-gutter-f",
+            "return-gutter-b",
+            "return-header",
+            "return-drop",
+            "reservoir",
+            "reservoir-lid",
+            "pump-riser"
+          ],
+          "param": "tank"
+        },
+        {
+          "name": "feed-line-420-f",
+          "color": "#1d2023",
+          "parts": [
+            "feed-line-420-f",
+            "feed-line-420-b",
+            "feed-line-860-f",
+            "feed-line-860-b",
+            "feed-line-1300-f",
+            "feed-line-1300-b",
+            "reservoir-hatch",
+            "pump-head"
+          ]
+        },
+        {
+          "name": "reservoir-sight",
+          "color": "#cfe6ee",
+          "parts": [
+            "reservoir-sight"
+          ]
         }
       ]
     },
@@ -128186,10 +128824,16 @@
       "id": "nutrient-reservoir-tank",
       "kit": "hydroponics",
       "title": "Nutrient reservoir tank",
-      "description": "Lidded solution reservoir with access hatch, level sight column and low drain fitting. Parameters: overall scale, pvc, polymer; weathered and highVisibility presets.",
+      "description": "Recirculating nutrient reservoir at about real size: ribbed rotomoulded poly tank with rounded corners on a timber pallet, screw-top manway and dosing hatch, graduated level sight tube, ball-valve drain, submersible pump outlet with check valve to a supply header, return pipe, float switch and EC/pH probe leads. Material controls: tank shell, lids, plumbing and pallet. lightproofBlack, greenhouseBlue, foodGradeWhite and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "nutrient reservoir",
+        "nutrient tank",
+        "solution tank",
+        "recirculating",
+        "poly tank",
+        "sight tube",
         "hydroponics",
         "greenhouse",
         "controlled environment agriculture",
@@ -128205,8 +128849,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/nutrient-reservoir-tank.kcad.ts",
       "preview": "/assets/hydroponics-nutrient-reservoir-tank.png",
-      "sourceSha256": "856f778a19110e38146c2534060cfad10467b241ecd40dfc662f7cd4330e9e0f",
-      "triangleBudget": 1800,
+      "sourceSha256": "b5f68a741a5c4d485ed743628f0a8752963e270dec50bff1e4f24fc2927ca8eb",
+      "triangleBudget": 2000,
       "params": [
         {
           "name": "scale",
@@ -128218,61 +128862,211 @@
           "step": 0.05
         },
         {
-          "name": "pvc",
+          "name": "shell",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#26292b",
+          "label": "Tank shell (rotomoulded polyethylene)"
         },
         {
-          "name": "polymer",
+          "name": "lid",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#2f6fa8",
+          "label": "Manway and hatch lids"
+        },
+        {
+          "name": "plumbing",
+          "type": "color",
+          "default": "#8a9399",
+          "label": "Pump and return plumbing (PVC)"
+        },
+        {
+          "name": "pallet",
+          "type": "color",
+          "default": "#b48a58",
+          "label": "Pallet (timber)"
         }
       ],
       "presets": {
-        "weathered": {
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa"
+        "lightproofBlack": {
+          "shell": "#26292b",
+          "lid": "#2f6fa8",
+          "plumbing": "#8a9399",
+          "pallet": "#b48a58"
         },
-        "highVisibility": {
-          "pvc": "#ead789",
-          "polymer": "#f2c84b"
+        "greenhouseBlue": {
+          "shell": "#2b5f8f",
+          "lid": "#1d2023",
+          "plumbing": "#e6e7e1",
+          "pallet": "#b48a58"
+        },
+        "foodGradeWhite": {
+          "shell": "#e9e8e1",
+          "lid": "#3b8a3b",
+          "plumbing": "#5d6366",
+          "pallet": "#c9a978"
+        },
+        "weathered": {
+          "shell": "#45494a",
+          "lid": "#4f6a80",
+          "plumbing": "#a29f93",
+          "pallet": "#857a66"
         }
       },
       "stats": {
-        "triangles": 300,
+        "triangles": 1508,
         "sizeM": [
-          1.305,
-          1.12,
-          1.048
+          1.625,
+          1.75,
+          1.215
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "pallet",
+          "color": "#b48a58",
           "parts": [
-            "tank-shell",
-            "lid",
-            "hatch-ring",
-            "hatch-cover",
-            "left-band",
-            "right-band",
-            "sight-column",
-            "vent-cap"
+            "stringer--380",
+            "stringer-0",
+            "stringer-380",
+            "deck-board-0",
+            "deck-board-1",
+            "deck-board-2",
+            "deck-board-3",
+            "deck-board-4",
+            "deck-board-5",
+            "deck-board-6"
           ],
-          "param": "polymer"
+          "param": "pallet"
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "pallet-gap-shadow",
+          "color": "#3a3226",
           "parts": [
-            "drain-fitting"
+            "pallet-gap-shadow"
+          ]
+        },
+        {
+          "name": "shell",
+          "color": "#26292b",
+          "parts": [
+            "tank-body",
+            "tank-shoulder",
+            "rib-400",
+            "rib-700",
+            "rib-1000",
+            "rib-vertical--300",
+            "rib-vertical-300",
+            "manway-neck"
           ],
-          "param": "pvc"
+          "param": "shell"
+        },
+        {
+          "name": "lid",
+          "color": "#2f6fa8",
+          "parts": [
+            "manway-lid",
+            "lid-grip-0",
+            "lid-grip-1",
+            "lid-grip-2",
+            "lid-grip-3",
+            "lid-grip-4",
+            "lid-grip-5",
+            "lid-grip-6",
+            "lid-grip-7",
+            "lid-grip-8",
+            "lid-grip-9",
+            "lid-grip-10",
+            "lid-grip-11",
+            "dosing-hatch"
+          ],
+          "param": "lid"
+        },
+        {
+          "name": "dosing-hatch-hinge",
+          "color": "#5d6366",
+          "parts": [
+            "dosing-hatch-hinge",
+            "cable-gland-plate",
+            "junction-post"
+          ]
+        },
+        {
+          "name": "sight-tube",
+          "color": "#cfe6ee",
+          "parts": [
+            "sight-tube"
+          ]
+        },
+        {
+          "name": "sight-level",
+          "color": "#5fa86a",
+          "parts": [
+            "sight-level",
+            "junction-lamp"
+          ]
+        },
+        {
+          "name": "plumbing",
+          "color": "#8a9399",
+          "parts": [
+            "sight-bracket-200",
+            "sight-bracket-1090",
+            "drain-spigot",
+            "drain-valve",
+            "pump-outlet",
+            "supply-elbow",
+            "return-pipe",
+            "return-bend"
+          ],
+          "param": "plumbing"
+        },
+        {
+          "name": "graduation-0",
+          "color": "#f2f2ec",
+          "parts": [
+            "graduation-0",
+            "graduation-1",
+            "graduation-2",
+            "graduation-3",
+            "graduation-4",
+            "graduation-5",
+            "graduation-6",
+            "graduation-7",
+            "graduation-8"
+          ]
+        },
+        {
+          "name": "drain-handle",
+          "color": "#c0392b",
+          "parts": [
+            "drain-handle",
+            "probe-cable",
+            "junction-lamp-2"
+          ]
+        },
+        {
+          "name": "check-valve",
+          "color": "#1d2023",
+          "parts": [
+            "check-valve",
+            "float-cable"
+          ]
+        },
+        {
+          "name": "supply-union",
+          "color": "#c9a640",
+          "parts": [
+            "supply-union"
+          ]
+        },
+        {
+          "name": "junction-box",
+          "color": "#e6e7e1",
+          "parts": [
+            "junction-box"
+          ]
         }
       ]
     },
@@ -130161,10 +130955,18 @@
       "id": "vertical-grow-tower",
       "kit": "hydroponics",
       "title": "Vertical grow tower",
-      "description": "Stacked hydroponic planting collars around a central feed column on a weighted circular base. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
+      "description": "Aeroponic vertical grow tower at about real size: round reservoir base on castors with fill door and level window, stacked white column sections with four angled planting ports each (staggered so plants spiral up), a plant in every port, domed feed cap and pump lead with timer. Material controls: base reservoir, tower column, port collars and foliage, plus a short or tall stack choice. herbs, lettuce, strawberry and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "vertical tower",
+        "aeroponic tower",
+        "tower garden",
+        "grow tower",
+        "vertical farming",
+        "herbs",
+        "lettuce",
+        "strawberry",
         "hydroponics",
         "greenhouse",
         "controlled environment agriculture",
@@ -130180,8 +130982,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/vertical-grow-tower.kcad.ts",
       "preview": "/assets/hydroponics-vertical-grow-tower.png",
-      "sourceSha256": "b9542ecd2b720289ed665c21ed685cc39b56f33f9a2a242fafe57e0681a1c337",
-      "triangleBudget": 1800,
+      "sourceSha256": "2907193c8af9466fc83d0a94a5a756814fdfaab2d68f75a876ac53ff769aa85d",
+      "triangleBudget": 4800,
       "params": [
         {
           "name": "scale",
@@ -130193,79 +130995,230 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "base",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#3b4246",
+          "label": "Reservoir base (polyethylene)"
         },
         {
-          "name": "pvc",
+          "name": "column",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#efefea",
+          "label": "Tower column (food-grade ABS)"
         },
         {
-          "name": "polymer",
+          "name": "collar",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#8fbf3f",
+          "label": "Port collars and cap (accent plastic)"
+        },
+        {
+          "name": "foliage",
+          "type": "color",
+          "default": "#4f9a3a",
+          "label": "Crop foliage"
+        },
+        {
+          "name": "height",
+          "type": "choice",
+          "default": "tall",
+          "label": "Stack height",
+          "choices": [
+            "short",
+            "tall"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa"
+        "herbs": {
+          "base": "#3b4246",
+          "column": "#efefea",
+          "collar": "#8fbf3f",
+          "foliage": "#4f9a3a"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b"
+        "lettuce": {
+          "base": "#efefea",
+          "column": "#efefea",
+          "collar": "#3b4246",
+          "foliage": "#86bb4c"
+        },
+        "strawberry": {
+          "base": "#2a2c2e",
+          "column": "#f1ece0",
+          "collar": "#c0392b",
+          "foliage": "#3e8a35"
+        },
+        "weathered": {
+          "base": "#565b5d",
+          "column": "#d6d3c6",
+          "collar": "#8a9a5a",
+          "foliage": "#7b9450"
         }
       },
       "stats": {
-        "triangles": 528,
+        "triangles": 4318,
         "sizeM": [
-          0.606574,
-          1.71,
-          0.57
+          0.75,
+          1.91,
+          0.772015
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "base",
+          "color": "#3b4246",
           "parts": [
-            "base-plinth",
-            "foot-a",
-            "foot-b",
-            "foot-c"
+            "reservoir",
+            "fill-door-grip"
           ],
-          "param": "powderCoatedSteel"
+          "param": "base"
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "collar",
+          "color": "#8fbf3f",
           "parts": [
-            "lower-collar",
-            "tier-one",
-            "tier-two",
-            "tier-three",
-            "top-lid",
-            "side-port-left",
-            "side-port-right"
+            "reservoir-rim",
+            "fill-door",
+            "timer-dial",
+            "collar-0-0",
+            "collar-0-1",
+            "collar-0-2",
+            "collar-0-3",
+            "collar-1-0",
+            "collar-1-1",
+            "collar-1-2",
+            "collar-1-3",
+            "collar-2-0",
+            "collar-2-1",
+            "collar-2-2",
+            "collar-2-3",
+            "collar-3-0",
+            "collar-3-1",
+            "collar-3-2",
+            "collar-3-3",
+            "collar-4-0",
+            "collar-4-1",
+            "collar-4-2",
+            "collar-4-3",
+            "collar-5-0",
+            "collar-5-1",
+            "collar-5-2",
+            "collar-5-3",
+            "cap"
           ],
-          "param": "polymer"
+          "param": "collar"
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "level-window",
+          "color": "#2f5b52",
           "parts": [
-            "central-feed-column"
+            "level-window"
+          ]
+        },
+        {
+          "name": "castor-fork-0",
+          "color": "#5d6366",
+          "parts": [
+            "castor-fork-0",
+            "castor-fork-1",
+            "castor-fork-2",
+            "castor-fork-3"
+          ]
+        },
+        {
+          "name": "castor-wheel-0",
+          "color": "#1d2023",
+          "parts": [
+            "castor-wheel-0",
+            "castor-wheel-1",
+            "castor-wheel-2",
+            "castor-wheel-3",
+            "pump-lead"
+          ]
+        },
+        {
+          "name": "timer",
+          "color": "#e6e7e1",
+          "parts": [
+            "timer"
+          ]
+        },
+        {
+          "name": "column",
+          "color": "#efefea",
+          "parts": [
+            "section-0",
+            "joint-0",
+            "port-0-0",
+            "port-0-1",
+            "port-0-2",
+            "port-0-3",
+            "section-1",
+            "joint-1",
+            "port-1-0",
+            "port-1-1",
+            "port-1-2",
+            "port-1-3",
+            "section-2",
+            "joint-2",
+            "port-2-0",
+            "port-2-1",
+            "port-2-2",
+            "port-2-3",
+            "section-3",
+            "joint-3",
+            "port-3-0",
+            "port-3-1",
+            "port-3-2",
+            "port-3-3",
+            "section-4",
+            "joint-4",
+            "port-4-0",
+            "port-4-1",
+            "port-4-2",
+            "port-4-3",
+            "section-5",
+            "joint-5",
+            "port-5-0",
+            "port-5-1",
+            "port-5-2",
+            "port-5-3",
+            "cap-knob"
           ],
-          "param": "pvc"
+          "param": "column"
+        },
+        {
+          "name": "foliage",
+          "color": "#4f9a3a",
+          "parts": [
+            "plant-0-0",
+            "plant-0-1",
+            "plant-0-2",
+            "plant-0-3",
+            "plant-1-0",
+            "plant-1-1",
+            "plant-1-2",
+            "plant-1-3",
+            "plant-2-0",
+            "plant-2-1",
+            "plant-2-2",
+            "plant-2-3",
+            "plant-3-0",
+            "plant-3-1",
+            "plant-3-2",
+            "plant-3-3",
+            "plant-4-0",
+            "plant-4-1",
+            "plant-4-2",
+            "plant-4-3",
+            "plant-5-0",
+            "plant-5-1",
+            "plant-5-2",
+            "plant-5-3"
+          ],
+          "param": "foliage"
         }
       ]
     },
