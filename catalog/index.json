@@ -176803,16 +176803,17 @@
       "id": "core-tray-rack",
       "kit": "mining",
       "title": "Exploration core tray rack",
-      "description": "Stackable core sample rack with three levels, long trays, end uprights, and top bracing. Controls: overall scale, coated equipment steel, structural steel; weathered and highVisibility presets.",
+      "description": "Core shed storage rack at about real size: bolted steel uprights with side and back bracing, orange load beams on four levels and six five-channel core trays per level, each tray filled with pieces of 48 mm round drill core with oxidised intervals, end-of-run depth blocks and a hole-and-depth tag on the tray end. Tray choice (pulled, stowed) pulls one tray half out for logging. Material controls: rack steel, load beam paint, core tray plastic and core rock. weathered, galvanised and darkVolcanic presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
-        "mineral processing",
-        "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "exploration",
+        "drill core",
+        "core tray",
+        "core shed",
+        "geology",
+        "storage rack"
       ],
       "compat": [
         "mining",
@@ -176823,8 +176824,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/core-tray-rack.kcad.ts",
       "preview": "/assets/mining-core-tray-rack.png",
-      "sourceSha256": "3251d609bb5971c68b55174dcbad8329b5fce23fbb52647d7d97e2ab151755d8",
-      "triangleBudget": 1800,
+      "sourceSha256": "a10f5450a21c623535749cf1b4a302f36f22e822aeabbdd92e813eb1fc920ee6",
+      "triangleBudget": 7000,
       "params": [
         {
           "name": "scale",
@@ -176836,78 +176837,416 @@
           "step": 0.05
         },
         {
-          "name": "coatedSteel",
-          "type": "color",
-          "default": "#a88248",
-          "label": "Coated equipment steel"
+          "name": "tray",
+          "type": "choice",
+          "default": "pulled",
+          "label": "Front tray",
+          "choices": [
+            "pulled",
+            "stowed"
+          ]
         },
         {
-          "name": "structuralSteel",
+          "name": "rackSteel",
           "type": "color",
-          "default": "#566168",
-          "label": "Structural steel"
+          "default": "#2f5d8a",
+          "label": "Rack upright steel"
+        },
+        {
+          "name": "beamPaint",
+          "type": "color",
+          "default": "#e36d1e",
+          "label": "Load beam paint"
+        },
+        {
+          "name": "trayPlastic",
+          "type": "color",
+          "default": "#2b2d2f",
+          "label": "Core tray plastic"
+        },
+        {
+          "name": "coreRock",
+          "type": "color",
+          "default": "#8d9294",
+          "label": "Core rock"
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
-          "structuralSteel": "#666a66"
+          "rackSteel": "#56636c",
+          "beamPaint": "#a8664a",
+          "trayPlastic": "#3c3d3c",
+          "coreRock": "#8a867e"
         },
-        "highVisibility": {
-          "coatedSteel": "#e48a1e",
-          "structuralSteel": "#465159"
+        "galvanised": {
+          "rackSteel": "#a9b0b2",
+          "beamPaint": "#9aa2a6",
+          "trayPlastic": "#c9ccc8",
+          "coreRock": "#7c8286"
+        },
+        "darkVolcanic": {
+          "rackSteel": "#3c4a3e",
+          "beamPaint": "#d9a82a",
+          "trayPlastic": "#8a8d88",
+          "coreRock": "#3b3d40"
         }
       },
       "stats": {
-        "triangles": 408,
+        "triangles": 6432,
         "sizeM": [
-          0.93,
-          0.96,
-          0.42
+          2.34,
+          1.62,
+          1.65
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "structuralSteel",
-          "color": "#566168",
+          "name": "rackSteel",
+          "color": "#2f5d8a",
           "parts": [
-            "base-left",
-            "base-right",
-            "base-crossbar",
-            "upright-left",
-            "upright-right",
-            "top-crossbar"
+            "upright-0-0",
+            "foot-plate-0-0",
+            "upright-0-1",
+            "foot-plate-0-1",
+            "side-brace-0-0",
+            "side-brace-0-1",
+            "side-brace-0-2",
+            "side-brace-0-3",
+            "side-tie-0",
+            "upright-1-0",
+            "foot-plate-1-0",
+            "upright-1-1",
+            "foot-plate-1-1",
+            "side-brace-1-0",
+            "side-brace-1-1",
+            "side-brace-1-2",
+            "side-brace-1-3",
+            "side-tie-1",
+            "back-brace-0",
+            "back-brace-1"
           ],
-          "param": "structuralSteel"
+          "param": "rackSteel"
         },
         {
-          "name": "coatedSteel",
-          "color": "#a88248",
+          "name": "beamPaint",
+          "color": "#e36d1e",
           "parts": [
-            "core-tray-0",
-            "core-tray-1",
-            "core-tray-2",
-            "core-channel-0-0",
-            "core-channel-0-1",
-            "core-channel-0-2",
-            "core-channel-0-3",
-            "core-channel-0-4",
-            "core-channel-1-0",
-            "core-channel-1-1",
-            "core-channel-1-2",
-            "core-channel-1-3",
-            "core-channel-1-4",
-            "core-channel-2-0",
-            "core-channel-2-1",
-            "core-channel-2-2",
-            "core-channel-2-3",
-            "core-channel-2-4",
-            "lifting-eye-left",
-            "lifting-eye-right"
+            "beam-0-0",
+            "beam-0-1",
+            "beam-1-0",
+            "beam-1-1",
+            "beam-2-0",
+            "beam-2-1",
+            "beam-3-0",
+            "beam-3-1"
           ],
-          "param": "coatedSteel"
+          "param": "beamPaint"
+        },
+        {
+          "name": "trayPlastic",
+          "color": "#2b2d2f",
+          "parts": [
+            "tray-0-0-body",
+            "tray-0-1-body",
+            "tray-0-2-body",
+            "tray-0-3-body",
+            "tray-0-4-body",
+            "tray-0-5-body",
+            "tray-1-0-body",
+            "tray-1-1-body",
+            "tray-1-2-body",
+            "tray-1-3-body",
+            "tray-1-4-body",
+            "tray-1-5-body",
+            "tray-2-0-body",
+            "tray-2-1-body",
+            "tray-2-2-body",
+            "tray-2-3-body",
+            "tray-2-4-body",
+            "tray-2-5-body",
+            "tray-3-0-body",
+            "tray-3-1-body",
+            "tray-3-2-body",
+            "tray-3-3-body",
+            "tray-3-4-body",
+            "tray-3-5-body"
+          ],
+          "param": "trayPlastic"
+        },
+        {
+          "name": "tray-0-0-tag",
+          "color": "#eeeee6",
+          "parts": [
+            "tray-0-0-tag",
+            "tray-0-1-tag",
+            "tray-0-2-tag",
+            "tray-0-3-tag",
+            "tray-0-4-tag",
+            "tray-0-5-tag",
+            "tray-1-0-tag",
+            "tray-1-1-tag",
+            "tray-1-2-tag",
+            "tray-1-3-tag",
+            "tray-1-4-tag",
+            "tray-1-5-tag",
+            "tray-2-0-tag",
+            "tray-2-1-tag",
+            "tray-2-2-tag",
+            "tray-2-3-tag",
+            "tray-2-4-tag",
+            "tray-2-5-tag",
+            "tray-3-0-tag",
+            "tray-3-1-tag",
+            "tray-3-2-tag",
+            "tray-3-3-tag",
+            "tray-3-4-tag",
+            "tray-3-5-tag"
+          ]
+        },
+        {
+          "name": "coreRock",
+          "color": "#8d9294",
+          "parts": [
+            "tray-0-0-core-0",
+            "tray-0-1-core-0",
+            "tray-0-1-core-1",
+            "tray-0-1-core-2",
+            "tray-0-1-core-4",
+            "tray-0-2-core-1",
+            "tray-0-2-core-2",
+            "tray-0-2-core-4",
+            "tray-0-3-core-0",
+            "tray-0-3-core-1",
+            "tray-0-3-core-2",
+            "tray-0-3-core-4",
+            "tray-0-4-core-0",
+            "tray-0-4-core-1",
+            "tray-0-4-core-2",
+            "tray-0-4-core-3",
+            "tray-0-4-core-4",
+            "tray-0-5-core-0",
+            "tray-0-5-core-1",
+            "tray-0-5-core-2",
+            "tray-0-5-core-3",
+            "tray-0-5-core-4",
+            "tray-1-0-core-0",
+            "tray-1-0-core-1",
+            "tray-1-0-core-2",
+            "tray-1-0-core-3",
+            "tray-1-1-core-0",
+            "tray-1-1-core-1",
+            "tray-1-1-core-2",
+            "tray-1-1-core-4",
+            "tray-1-2-core-0-piece-1",
+            "tray-1-2-core-1-piece-0",
+            "tray-1-2-core-1-piece-2",
+            "tray-1-2-core-2-piece-1",
+            "tray-1-2-core-3-piece-0",
+            "tray-1-2-core-4-piece-0",
+            "tray-1-2-core-4-piece-1",
+            "tray-1-2-core-4-piece-2",
+            "tray-1-3-core-1",
+            "tray-1-3-core-3",
+            "tray-1-3-core-4",
+            "tray-1-4-core-0",
+            "tray-1-4-core-1",
+            "tray-1-4-core-2",
+            "tray-1-5-core-0",
+            "tray-1-5-core-4",
+            "tray-2-0-core-0",
+            "tray-2-0-core-1",
+            "tray-2-0-core-2",
+            "tray-2-0-core-4",
+            "tray-2-1-core-0",
+            "tray-2-1-core-1",
+            "tray-2-1-core-2",
+            "tray-2-1-core-4",
+            "tray-2-2-core-0",
+            "tray-2-2-core-1",
+            "tray-2-2-core-2",
+            "tray-2-2-core-3",
+            "tray-2-2-core-4",
+            "tray-2-3-core-1",
+            "tray-2-3-core-3",
+            "tray-2-3-core-4",
+            "tray-2-4-core-0",
+            "tray-2-4-core-1",
+            "tray-2-4-core-4",
+            "tray-2-5-core-2",
+            "tray-2-5-core-3",
+            "tray-3-0-core-0-piece-2",
+            "tray-3-0-core-1-piece-0",
+            "tray-3-0-core-1-piece-1",
+            "tray-3-0-core-1-piece-2",
+            "tray-3-0-core-2-piece-0",
+            "tray-3-0-core-2-piece-1",
+            "tray-3-0-core-2-piece-2",
+            "tray-3-0-core-3-piece-1",
+            "tray-3-0-core-4-piece-0",
+            "tray-3-1-core-0-piece-1",
+            "tray-3-1-core-0-piece-2",
+            "tray-3-1-core-1-piece-0",
+            "tray-3-1-core-1-piece-1",
+            "tray-3-1-core-1-piece-2",
+            "tray-3-1-core-2-piece-0",
+            "tray-3-1-core-2-piece-1",
+            "tray-3-1-core-2-piece-2",
+            "tray-3-1-core-3-piece-0",
+            "tray-3-1-core-3-piece-2",
+            "tray-3-1-core-4-piece-1",
+            "tray-3-2-core-0-piece-0",
+            "tray-3-2-core-0-piece-2",
+            "tray-3-2-core-1-piece-1",
+            "tray-3-2-core-1-piece-2",
+            "tray-3-2-core-2-piece-0",
+            "tray-3-2-core-2-piece-1",
+            "tray-3-2-core-3-piece-1",
+            "tray-3-2-core-3-piece-3",
+            "tray-3-2-core-4-piece-0",
+            "tray-3-2-core-4-piece-1",
+            "tray-3-2-core-4-piece-2",
+            "tray-3-3-core-0-piece-0",
+            "tray-3-3-core-0-piece-1",
+            "tray-3-3-core-0-piece-2",
+            "tray-3-3-core-1-piece-0",
+            "tray-3-3-core-1-piece-1",
+            "tray-3-3-core-1-piece-2",
+            "tray-3-3-core-2-piece-1",
+            "tray-3-3-core-2-piece-2",
+            "tray-3-3-core-3-piece-1",
+            "tray-3-3-core-3-piece-2",
+            "tray-3-3-core-4-piece-1",
+            "tray-3-4-core-0-piece-0",
+            "tray-3-4-core-0-piece-1",
+            "tray-3-4-core-0-piece-2",
+            "tray-3-4-core-1-piece-0",
+            "tray-3-4-core-1-piece-2",
+            "tray-3-4-core-2-piece-0",
+            "tray-3-4-core-2-piece-1",
+            "tray-3-4-core-3-piece-0",
+            "tray-3-4-core-3-piece-1",
+            "tray-3-4-core-3-piece-2",
+            "tray-3-5-core-0-piece-0",
+            "tray-3-5-core-0-piece-1",
+            "tray-3-5-core-0-piece-2",
+            "tray-3-5-core-1-piece-1",
+            "tray-3-5-core-1-piece-2",
+            "tray-3-5-core-2-piece-1",
+            "tray-3-5-core-2-piece-2",
+            "tray-3-5-core-3-piece-1",
+            "tray-3-5-core-3-piece-2",
+            "tray-3-5-core-4-piece-0",
+            "tray-3-5-core-4-piece-1",
+            "tray-3-5-core-4-piece-2"
+          ],
+          "param": "coreRock"
+        },
+        {
+          "name": "tray-0-0-core-1",
+          "color": "#9a5a36",
+          "parts": [
+            "tray-0-0-core-1",
+            "tray-0-0-core-2",
+            "tray-0-0-core-3",
+            "tray-0-0-core-4",
+            "tray-0-1-core-3",
+            "tray-0-2-core-0",
+            "tray-0-2-core-3",
+            "tray-0-3-core-3",
+            "tray-1-0-core-4",
+            "tray-1-1-core-3",
+            "tray-1-2-core-0-piece-0",
+            "tray-1-2-core-0-piece-2",
+            "tray-1-2-core-1-piece-1",
+            "tray-1-2-core-2-piece-0",
+            "tray-1-2-core-3-piece-1",
+            "tray-1-3-core-0",
+            "tray-1-3-core-2",
+            "tray-1-4-core-3",
+            "tray-1-4-core-4",
+            "tray-1-5-core-1",
+            "tray-1-5-core-2",
+            "tray-1-5-core-3",
+            "tray-2-0-core-3",
+            "tray-2-1-core-3",
+            "tray-2-3-core-0",
+            "tray-2-3-core-2",
+            "tray-2-4-core-2",
+            "tray-2-4-core-3",
+            "tray-2-5-core-0",
+            "tray-2-5-core-1",
+            "tray-2-5-core-4",
+            "tray-3-0-core-0-piece-0",
+            "tray-3-0-core-0-piece-1",
+            "tray-3-0-core-3-piece-0",
+            "tray-3-0-core-4-piece-1",
+            "tray-3-1-core-0-piece-0",
+            "tray-3-1-core-3-piece-1",
+            "tray-3-1-core-3-piece-3",
+            "tray-3-1-core-4-piece-0",
+            "tray-3-1-core-4-piece-2",
+            "tray-3-2-core-0-piece-1",
+            "tray-3-2-core-1-piece-0",
+            "tray-3-2-core-2-piece-2",
+            "tray-3-2-core-3-piece-0",
+            "tray-3-2-core-3-piece-2",
+            "tray-3-2-core-4-piece-3",
+            "tray-3-3-core-2-piece-0",
+            "tray-3-3-core-3-piece-0",
+            "tray-3-3-core-4-piece-0",
+            "tray-3-3-core-4-piece-2",
+            "tray-3-4-core-1-piece-1",
+            "tray-3-4-core-2-piece-2",
+            "tray-3-4-core-4-piece-0",
+            "tray-3-4-core-4-piece-1",
+            "tray-3-5-core-1-piece-0",
+            "tray-3-5-core-1-piece-3",
+            "tray-3-5-core-2-piece-0",
+            "tray-3-5-core-3-piece-0"
+          ]
+        },
+        {
+          "name": "tray-1-2-depth-block-0",
+          "color": "#e8c21e",
+          "parts": [
+            "tray-1-2-depth-block-0",
+            "tray-1-2-depth-block-1",
+            "tray-1-2-depth-block-2",
+            "tray-1-2-depth-block-3",
+            "tray-1-2-depth-block-4",
+            "tray-3-0-depth-block-0",
+            "tray-3-0-depth-block-1",
+            "tray-3-0-depth-block-2",
+            "tray-3-0-depth-block-3",
+            "tray-3-0-depth-block-4",
+            "tray-3-1-depth-block-0",
+            "tray-3-1-depth-block-1",
+            "tray-3-1-depth-block-2",
+            "tray-3-1-depth-block-3",
+            "tray-3-1-depth-block-4",
+            "tray-3-2-depth-block-0",
+            "tray-3-2-depth-block-1",
+            "tray-3-2-depth-block-2",
+            "tray-3-2-depth-block-3",
+            "tray-3-2-depth-block-4",
+            "tray-3-3-depth-block-0",
+            "tray-3-3-depth-block-1",
+            "tray-3-3-depth-block-2",
+            "tray-3-3-depth-block-3",
+            "tray-3-3-depth-block-4",
+            "tray-3-4-depth-block-0",
+            "tray-3-4-depth-block-1",
+            "tray-3-4-depth-block-2",
+            "tray-3-4-depth-block-3",
+            "tray-3-4-depth-block-4",
+            "tray-3-5-depth-block-0",
+            "tray-3-5-depth-block-1",
+            "tray-3-5-depth-block-2",
+            "tray-3-5-depth-block-3",
+            "tray-3-5-depth-block-4"
+          ]
         }
       ]
     },
@@ -182869,17 +183208,18 @@
     {
       "id": "ore-pass-grizzly",
       "kit": "mining",
-      "title": "Ore-pass grizzly gate",
-      "description": "Heavy inclined-look grizzly panel in a service frame with parallel bars and side drive housings. Controls: overall scale, coated equipment steel, structural steel, stainless steel; weathered and highVisibility presets.",
+      "title": "Ore-pass grizzly",
+      "description": "Underground ore-pass tipping point at about real size: 5.4 m concrete collar around a 3 m square pass opening, two cross bearers carrying seven rail-section grizzly bars at a 400 mm aperture, striped steel bump rail on the tipping side, pedestal rock breaker with slew ring, boom, stick and hydraulic hammer folded over the bars, guard posts with chain along both sides and an amber beacon post. Rock choice (oversize, clear) puts broken oversize on the bars. Material controls: collar concrete, grizzly steel, hazard paint and rock. weathered, freshShotcrete and darkOre presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
-        "mineral processing",
-        "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "underground",
+        "ore pass",
+        "grizzly",
+        "rock breaker",
+        "tipping point",
+        "ore handling"
       ],
       "compat": [
         "mining",
@@ -182890,8 +183230,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/ore-pass-grizzly.kcad.ts",
       "preview": "/assets/mining-ore-pass-grizzly.png",
-      "sourceSha256": "c92815301ce8e52eb0010ef889b11eb66fb1b764510469ecbfff05e49bd60439",
-      "triangleBudget": 1800,
+      "sourceSha256": "becadcc3ed57cbf003a3ce52bdafdf26cfcb709e8039582857c45a04bcc019a5",
+      "triangleBudget": 2500,
       "params": [
         {
           "name": "scale",
@@ -182903,71 +183243,94 @@
           "step": 0.05
         },
         {
-          "name": "coatedSteel",
-          "type": "color",
-          "default": "#80a865",
-          "label": "Coated equipment steel"
+          "name": "rocks",
+          "type": "choice",
+          "default": "oversize",
+          "label": "Rock on the bars",
+          "choices": [
+            "oversize",
+            "clear"
+          ]
         },
         {
-          "name": "structuralSteel",
+          "name": "concrete",
           "type": "color",
-          "default": "#566168",
-          "label": "Structural steel"
+          "default": "#9a978f",
+          "label": "Collar concrete"
         },
         {
-          "name": "stainlessSteel",
+          "name": "grizzlySteel",
           "type": "color",
-          "default": "#b5c0c0",
-          "label": "Stainless steel"
+          "default": "#5b6268",
+          "label": "Grizzly bar steel"
+        },
+        {
+          "name": "hazardPaint",
+          "type": "color",
+          "default": "#e8b21e",
+          "label": "Hazard and breaker paint"
+        },
+        {
+          "name": "rock",
+          "type": "color",
+          "default": "#7a6e62",
+          "label": "Broken rock"
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
-          "structuralSteel": "#666a66",
-          "stainlessSteel": "#969f9e"
+          "concrete": "#7f7a70",
+          "grizzlySteel": "#5e5248",
+          "hazardPaint": "#b48c3a",
+          "rock": "#6b6157"
         },
-        "highVisibility": {
-          "coatedSteel": "#e48a1e",
-          "structuralSteel": "#465159",
-          "stainlessSteel": "#c5ccca"
+        "freshShotcrete": {
+          "concrete": "#bdb9ae",
+          "grizzlySteel": "#6c747a",
+          "hazardPaint": "#f0c020",
+          "rock": "#8a8174"
+        },
+        "darkOre": {
+          "concrete": "#8a877f",
+          "grizzlySteel": "#4a5056",
+          "hazardPaint": "#e07a1e",
+          "rock": "#3a3836"
         }
       },
       "stats": {
-        "triangles": 276,
+        "triangles": 1610,
         "sizeM": [
-          1.18,
-          0.575,
-          0.7
+          5.4,
+          3.692429,
+          5.4
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "structuralSteel",
-          "color": "#566168",
+          "name": "concrete",
+          "color": "#9a978f",
           "parts": [
-            "lower-frame",
-            "upper-crossbar"
+            "collar"
           ],
-          "param": "structuralSteel"
+          "param": "concrete"
         },
         {
-          "name": "coatedSteel",
-          "color": "#80a865",
+          "name": "pass-void",
+          "color": "#121314",
           "parts": [
-            "side-left",
-            "side-right",
-            "drive-left",
-            "drive-right"
-          ],
-          "param": "coatedSteel"
+            "pass-void"
+          ]
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b5c0c0",
+          "name": "grizzlySteel",
+          "color": "#5b6268",
           "parts": [
+            "collar-edge-angle-0",
+            "collar-edge-angle-1",
+            "bearer-0",
+            "bearer-1",
             "grizzly-bar-0",
             "grizzly-bar-1",
             "grizzly-bar-2",
@@ -182975,10 +183338,106 @@
             "grizzly-bar-4",
             "grizzly-bar-5",
             "grizzly-bar-6",
-            "grizzly-bar-7",
-            "grizzly-bar-8"
+            "bar-retainer-0",
+            "bar-retainer-1",
+            "bump-rail-base",
+            "bump-rail-gusset-0",
+            "bump-rail-gusset-1",
+            "bump-rail-gusset-2",
+            "breaker-boom-ram",
+            "breaker-stick-ram",
+            "hammer-tool",
+            "hammer-tool-tip",
+            "beacon-post"
           ],
-          "param": "stainlessSteel"
+          "param": "grizzlySteel"
+        },
+        {
+          "name": "hazardPaint",
+          "color": "#e8b21e",
+          "parts": [
+            "bump-rail-stripe-0",
+            "bump-rail-stripe-2",
+            "bump-rail-stripe-4",
+            "bump-rail-stripe-6",
+            "bump-rail-stripe-8",
+            "bump-rail-stripe-10",
+            "bump-rail-stripe-12",
+            "breaker-pedestal",
+            "breaker-king-post",
+            "breaker-boom",
+            "breaker-stick",
+            "guard-post-0-0",
+            "guard-post-0-1",
+            "guard-post-0-2",
+            "guard-chain-0-0-a",
+            "guard-chain-0-0-b",
+            "guard-chain-0-1-a",
+            "guard-chain-0-1-b",
+            "guard-post-1-0",
+            "guard-post-1-1",
+            "guard-post-1-2",
+            "guard-chain-1-0-a",
+            "guard-chain-1-0-b",
+            "guard-chain-1-1-a",
+            "guard-chain-1-1-b"
+          ],
+          "param": "hazardPaint"
+        },
+        {
+          "name": "bump-rail-stripe-1",
+          "color": "#1d1f21",
+          "parts": [
+            "bump-rail-stripe-1",
+            "bump-rail-stripe-3",
+            "bump-rail-stripe-5",
+            "bump-rail-stripe-7",
+            "bump-rail-stripe-9",
+            "bump-rail-stripe-11",
+            "bump-rail-stripe-13",
+            "breaker-slew-ring",
+            "guard-post-cap-0-0",
+            "guard-post-cap-0-1",
+            "guard-post-cap-0-2",
+            "guard-post-cap-1-0",
+            "guard-post-cap-1-1",
+            "guard-post-cap-1-2"
+          ]
+        },
+        {
+          "name": "breaker-hose",
+          "color": "#2a2c2e",
+          "parts": [
+            "breaker-hose"
+          ]
+        },
+        {
+          "name": "hammer-housing",
+          "color": "#3e4448",
+          "parts": [
+            "hammer-housing"
+          ]
+        },
+        {
+          "name": "beacon",
+          "color": "#f08a1c",
+          "parts": [
+            "beacon"
+          ]
+        },
+        {
+          "name": "rock",
+          "color": "#7a6e62",
+          "parts": [
+            "oversize-rock-0",
+            "oversize-rock-1",
+            "oversize-rock-2",
+            "oversize-rock-3",
+            "oversize-rock-4",
+            "oversize-rock-5",
+            "spill-fines"
+          ],
+          "param": "rock"
         }
       ]
     },
@@ -183320,16 +183779,17 @@
       "id": "overland-conveyor-bridge",
       "kit": "mining",
       "title": "Overland conveyor bridge",
-      "description": "Elevated conveyor gallery with long belt trough, portal supports, and crossed structural braces. Controls: overall scale, coated equipment steel, structural steel, rubber; weathered and highVisibility presets.",
+      "description": "Overland conveyor road crossing at about real size: 26 m box truss gallery with top and bottom chords, verticals, diagonals, floor beams and top lateral ties, carried 6 m above a haul road on two braced four-legged towers with concrete footings, a 1200 mm troughed belt on three-roll idler sets with return belt and arched belt hoods, a grated walkway along one side and a clearance sign over the road. Cover choice (hooded, open) and load choice (loaded, empty). Material controls: truss steel, belt hood sheeting, belt rubber and ore. weathered, coalHandling and desertRed presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
-        "mineral processing",
-        "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "conveyor",
+        "overland conveyor",
+        "truss",
+        "gallery",
+        "bridge",
+        "materials handling"
       ],
       "compat": [
         "mining",
@@ -183340,8 +183800,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/overland-conveyor-bridge.kcad.ts",
       "preview": "/assets/mining-overland-conveyor-bridge.png",
-      "sourceSha256": "9b039b23511c44cb0d9a4b3fcad9b2b348a8717efa74b351f092e38805a01d82",
-      "triangleBudget": 1800,
+      "sourceSha256": "2009ac73b49cebe3267bd0e1ce038ef1209f4bb7a6c3df5defb6aa16810d2c50",
+      "triangleBudget": 6500,
       "params": [
         {
           "name": "scale",
@@ -183353,80 +183813,387 @@
           "step": 0.05
         },
         {
-          "name": "coatedSteel",
-          "type": "color",
-          "default": "#77a865",
-          "label": "Coated equipment steel"
+          "name": "cover",
+          "type": "choice",
+          "default": "hooded",
+          "label": "Belt hoods",
+          "choices": [
+            "hooded",
+            "open"
+          ]
         },
         {
-          "name": "structuralSteel",
-          "type": "color",
-          "default": "#566168",
-          "label": "Structural steel"
+          "name": "load",
+          "type": "choice",
+          "default": "loaded",
+          "label": "Belt load",
+          "choices": [
+            "loaded",
+            "empty"
+          ]
         },
         {
-          "name": "rubber",
+          "name": "trussSteel",
           "type": "color",
-          "default": "#292d2f",
-          "label": "Rubber"
+          "default": "#5f7f5a",
+          "label": "Truss steel"
+        },
+        {
+          "name": "hoodSheet",
+          "type": "color",
+          "default": "#c9ccc6",
+          "label": "Belt hood sheeting"
+        },
+        {
+          "name": "beltRubber",
+          "type": "color",
+          "default": "#25282a",
+          "label": "Belt rubber"
+        },
+        {
+          "name": "ore",
+          "type": "color",
+          "default": "#7a6552",
+          "label": "Ore"
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
-          "structuralSteel": "#666a66",
-          "rubber": "#393a38"
+          "trussSteel": "#6a6a60",
+          "hoodSheet": "#9a9890",
+          "beltRubber": "#34322f",
+          "ore": "#8a7462"
         },
-        "highVisibility": {
-          "coatedSteel": "#e48a1e",
-          "structuralSteel": "#465159",
-          "rubber": "#24282a"
+        "coalHandling": {
+          "trussSteel": "#3f4a52",
+          "hoodSheet": "#d39a22",
+          "beltRubber": "#1f2123",
+          "ore": "#1c1c1e"
+        },
+        "desertRed": {
+          "trussSteel": "#9a9e9a",
+          "hoodSheet": "#b8462e",
+          "beltRubber": "#26292b",
+          "ore": "#a0603c"
         }
       },
       "stats": {
-        "triangles": 284,
+        "triangles": 4760,
         "sizeM": [
-          1.8,
-          0.56,
-          0.45
+          26.4,
+          8.5,
+          12
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "rubber",
-          "color": "#292d2f",
+          "name": "haul-road",
+          "color": "#3a3c3e",
           "parts": [
-            "belt"
-          ],
-          "param": "rubber"
+            "haul-road"
+          ]
         },
         {
-          "name": "structuralSteel",
-          "color": "#566168",
+          "name": "road-dash-0",
+          "color": "#e8e4d8",
           "parts": [
-            "left-stringer",
-            "right-stringer",
-            "portal-leg--610--190",
-            "portal-leg--610-190",
-            "portal-leg-610--190",
-            "portal-leg-610-190",
-            "portal-top-left",
-            "portal-top-right",
-            "cross-brace-front",
-            "cross-brace-back"
-          ],
-          "param": "structuralSteel"
+            "road-dash-0",
+            "road-dash-1",
+            "road-dash-2",
+            "road-dash-3",
+            "road-dash-4",
+            "road-dash-5",
+            "road-dash-6"
+          ]
         },
         {
-          "name": "coatedSteel",
-          "color": "#77a865",
+          "name": "tower-0-footing-0",
+          "color": "#a19d94",
           "parts": [
-            "idler-left",
-            "idler-right"
+            "tower-0-footing-0",
+            "tower-0-footing-1",
+            "tower-0-footing-2",
+            "tower-0-footing-3",
+            "tower-1-footing-0",
+            "tower-1-footing-1",
+            "tower-1-footing-2",
+            "tower-1-footing-3"
+          ]
+        },
+        {
+          "name": "trussSteel",
+          "color": "#5f7f5a",
+          "parts": [
+            "tower-0-leg-0",
+            "tower-0-leg-1",
+            "tower-0-leg-2",
+            "tower-0-leg-3",
+            "tower-0-brace-0-0",
+            "tower-0-tie-0-0",
+            "tower-0-brace-0-1",
+            "tower-0-tie-0-1",
+            "tower-0-brace-1-0",
+            "tower-0-tie-1-0",
+            "tower-0-brace-1-1",
+            "tower-0-tie-1-1",
+            "tower-0-brace-2-0",
+            "tower-0-tie-2-0",
+            "tower-0-brace-2-1",
+            "tower-0-tie-2-1",
+            "tower-0-brace-3-0",
+            "tower-0-tie-3-0",
+            "tower-0-brace-3-1",
+            "tower-0-tie-3-1",
+            "tower-1-leg-0",
+            "tower-1-leg-1",
+            "tower-1-leg-2",
+            "tower-1-leg-3",
+            "tower-1-brace-0-0",
+            "tower-1-tie-0-0",
+            "tower-1-brace-0-1",
+            "tower-1-tie-0-1",
+            "tower-1-brace-1-0",
+            "tower-1-tie-1-0",
+            "tower-1-brace-1-1",
+            "tower-1-tie-1-1",
+            "tower-1-brace-2-0",
+            "tower-1-tie-2-0",
+            "tower-1-brace-2-1",
+            "tower-1-tie-2-1",
+            "tower-1-brace-3-0",
+            "tower-1-tie-3-0",
+            "tower-1-brace-3-1",
+            "tower-1-tie-3-1",
+            "bottom-chord-0",
+            "top-chord-0",
+            "vertical-0-0",
+            "diagonal-0-0",
+            "vertical-0-1",
+            "diagonal-0-1",
+            "vertical-0-2",
+            "diagonal-0-2",
+            "vertical-0-3",
+            "diagonal-0-3",
+            "vertical-0-4",
+            "diagonal-0-4",
+            "vertical-0-5",
+            "diagonal-0-5",
+            "vertical-0-6",
+            "diagonal-0-6",
+            "vertical-0-7",
+            "diagonal-0-7",
+            "vertical-0-8",
+            "diagonal-0-8",
+            "vertical-0-9",
+            "diagonal-0-9",
+            "vertical-0-10",
+            "diagonal-0-10",
+            "vertical-0-11",
+            "diagonal-0-11",
+            "vertical-0-12",
+            "diagonal-0-12",
+            "vertical-0-13",
+            "bottom-chord-1",
+            "top-chord-1",
+            "vertical-1-0",
+            "diagonal-1-0",
+            "vertical-1-1",
+            "diagonal-1-1",
+            "vertical-1-2",
+            "diagonal-1-2",
+            "vertical-1-3",
+            "diagonal-1-3",
+            "vertical-1-4",
+            "diagonal-1-4",
+            "vertical-1-5",
+            "diagonal-1-5",
+            "vertical-1-6",
+            "diagonal-1-6",
+            "vertical-1-7",
+            "diagonal-1-7",
+            "vertical-1-8",
+            "diagonal-1-8",
+            "vertical-1-9",
+            "diagonal-1-9",
+            "vertical-1-10",
+            "diagonal-1-10",
+            "vertical-1-11",
+            "diagonal-1-11",
+            "vertical-1-12",
+            "diagonal-1-12",
+            "vertical-1-13",
+            "floor-beam-0",
+            "top-tie-0",
+            "floor-beam-1",
+            "top-tie-1",
+            "floor-beam-2",
+            "top-tie-2",
+            "floor-beam-3",
+            "top-tie-3",
+            "floor-beam-4",
+            "top-tie-4",
+            "floor-beam-5",
+            "top-tie-5",
+            "floor-beam-6",
+            "top-tie-6",
+            "floor-beam-7",
+            "top-tie-7",
+            "floor-beam-8",
+            "top-tie-8",
+            "floor-beam-9",
+            "top-tie-9",
+            "floor-beam-10",
+            "top-tie-10",
+            "floor-beam-11",
+            "top-tie-11",
+            "floor-beam-12",
+            "top-tie-12",
+            "floor-beam-13",
+            "top-tie-13",
+            "top-lateral-0",
+            "top-lateral-1",
+            "top-lateral-2",
+            "top-lateral-3",
+            "top-lateral-4",
+            "top-lateral-5",
+            "walkway-kick-plate",
+            "belt-stringer-0",
+            "belt-stringer-1",
+            "idler-0-frame",
+            "idler-1-frame",
+            "idler-2-frame",
+            "idler-3-frame",
+            "idler-4-frame",
+            "idler-5-frame",
+            "idler-6-frame",
+            "idler-7-frame",
+            "idler-8-frame",
+            "idler-9-frame",
+            "idler-10-frame",
+            "idler-11-frame",
+            "idler-12-frame",
+            "idler-13-frame",
+            "idler-14-frame",
+            "idler-15-frame",
+            "idler-16-frame",
+            "clearance-sign-hanger-0",
+            "clearance-sign-hanger-1"
           ],
-          "param": "coatedSteel"
+          "param": "trussSteel"
+        },
+        {
+          "name": "walkway-grating",
+          "color": "#7d8488",
+          "parts": [
+            "walkway-grating"
+          ]
+        },
+        {
+          "name": "beltRubber",
+          "color": "#25282a",
+          "parts": [
+            "belt-carry",
+            "belt-return"
+          ],
+          "param": "beltRubber"
+        },
+        {
+          "name": "ore",
+          "color": "#7a6552",
+          "parts": [
+            "ore-load"
+          ],
+          "param": "ore"
+        },
+        {
+          "name": "idler-0-centre",
+          "color": "#2f6f4a",
+          "parts": [
+            "idler-0-centre",
+            "idler-0-wing-0",
+            "idler-0-wing-1",
+            "idler-1-centre",
+            "idler-1-wing-0",
+            "idler-1-wing-1",
+            "idler-2-centre",
+            "idler-2-wing-0",
+            "idler-2-wing-1",
+            "idler-3-centre",
+            "idler-3-wing-0",
+            "idler-3-wing-1",
+            "idler-4-centre",
+            "idler-4-wing-0",
+            "idler-4-wing-1",
+            "idler-5-centre",
+            "idler-5-wing-0",
+            "idler-5-wing-1",
+            "idler-6-centre",
+            "idler-6-wing-0",
+            "idler-6-wing-1",
+            "idler-7-centre",
+            "idler-7-wing-0",
+            "idler-7-wing-1",
+            "idler-8-centre",
+            "idler-8-wing-0",
+            "idler-8-wing-1",
+            "idler-9-centre",
+            "idler-9-wing-0",
+            "idler-9-wing-1",
+            "idler-10-centre",
+            "idler-10-wing-0",
+            "idler-10-wing-1",
+            "idler-11-centre",
+            "idler-11-wing-0",
+            "idler-11-wing-1",
+            "idler-12-centre",
+            "idler-12-wing-0",
+            "idler-12-wing-1",
+            "idler-13-centre",
+            "idler-13-wing-0",
+            "idler-13-wing-1",
+            "idler-14-centre",
+            "idler-14-wing-0",
+            "idler-14-wing-1",
+            "idler-15-centre",
+            "idler-15-wing-0",
+            "idler-15-wing-1",
+            "idler-16-centre",
+            "idler-16-wing-0",
+            "idler-16-wing-1"
+          ]
+        },
+        {
+          "name": "hoodSheet",
+          "color": "#c9ccc6",
+          "parts": [
+            "belt-hood-0",
+            "belt-hood-1",
+            "belt-hood-3",
+            "belt-hood-4",
+            "belt-hood-5",
+            "belt-hood-7",
+            "belt-hood-8",
+            "belt-hood-9",
+            "belt-hood-11",
+            "belt-hood-12"
+          ],
+          "param": "hoodSheet"
+        },
+        {
+          "name": "clearance-sign",
+          "color": "#f0c020",
+          "parts": [
+            "clearance-sign"
+          ]
+        },
+        {
+          "name": "clearance-sign-band",
+          "color": "#1d1f21",
+          "parts": [
+            "clearance-sign-band"
+          ]
         }
       ]
     },
@@ -186816,16 +187583,17 @@
       "id": "tailings-stack-conveyor",
       "kit": "mining",
       "title": "Tailings stack conveyor",
-      "description": "Long tailings conveyor with trussed support, raised discharge end, belt, and transfer hood. Controls: overall scale, structural steel, stainless steel, rubber; weathered and highVisibility presets.",
+      "description": "Crawler-mounted dry-stack tailings stacker at about real size: 22 m tubular lattice boom with chords, verticals and diagonals rising at 16 degrees from a pinned tail skid, troughed belt carrying filter cake on three-roll idlers, square feed hopper over the tail pulley, head pulley under a discharge hood with gearbox and motor, side walkway with handrails, A-frame struts and a luffing ram down to a crawler carrier with two tracked undercarriages, grousers, sprockets and a diesel power pack with exhaust, and a terraced dry stack of tailings benched in lifts under the head. Stack choice (terraced, none) and load choice (loaded, empty). Material controls: boom paint, crawler steel, belt rubber and tailings. weathered, ironTailings and coalReject presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
-        "mineral processing",
-        "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "tailings",
+        "dry stack",
+        "stacker",
+        "conveyor",
+        "crawler",
+        "mineral processing"
       ],
       "compat": [
         "mining",
@@ -186836,8 +187604,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/tailings-stack-conveyor.kcad.ts",
       "preview": "/assets/mining-tailings-stack-conveyor.png",
-      "sourceSha256": "c4138d0646e09ab14bb891a44be49d81fe8f381569b9524280c52f535c6c7edb",
-      "triangleBudget": 1800,
+      "sourceSha256": "f69ef7d71f976babdfaa9397672ebcbc817eca1fd0b5b31e8463ce321ba266d1",
+      "triangleBudget": 5000,
       "params": [
         {
           "name": "scale",
@@ -186849,77 +187617,324 @@
           "step": 0.05
         },
         {
-          "name": "structuralSteel",
-          "type": "color",
-          "default": "#566168",
-          "label": "Structural steel"
+          "name": "stack",
+          "type": "choice",
+          "default": "terraced",
+          "label": "Tailings stack",
+          "choices": [
+            "terraced",
+            "none"
+          ]
         },
         {
-          "name": "stainlessSteel",
-          "type": "color",
-          "default": "#b5c0c0",
-          "label": "Stainless steel"
+          "name": "load",
+          "type": "choice",
+          "default": "loaded",
+          "label": "Belt load",
+          "choices": [
+            "loaded",
+            "empty"
+          ]
         },
         {
-          "name": "rubber",
+          "name": "boomPaint",
           "type": "color",
-          "default": "#292d2f",
-          "label": "Rubber"
+          "default": "#e2b12a",
+          "label": "Boom and frame paint"
+        },
+        {
+          "name": "crawlerSteel",
+          "type": "color",
+          "default": "#3a3f44",
+          "label": "Crawler steel"
+        },
+        {
+          "name": "beltRubber",
+          "type": "color",
+          "default": "#25282a",
+          "label": "Belt rubber"
+        },
+        {
+          "name": "tailings",
+          "type": "color",
+          "default": "#b9ab92",
+          "label": "Filtered tailings"
         }
       ],
       "presets": {
         "weathered": {
-          "structuralSteel": "#666a66",
-          "stainlessSteel": "#969f9e",
-          "rubber": "#393a38"
+          "boomPaint": "#a88a4a",
+          "crawlerSteel": "#4a4a46",
+          "beltRubber": "#34322f",
+          "tailings": "#a39a88"
         },
-        "highVisibility": {
-          "structuralSteel": "#465159",
-          "stainlessSteel": "#c5ccca",
-          "rubber": "#24282a"
+        "ironTailings": {
+          "boomPaint": "#e2b12a",
+          "crawlerSteel": "#3a3f44",
+          "beltRubber": "#26292b",
+          "tailings": "#9a5a3e"
+        },
+        "coalReject": {
+          "boomPaint": "#d9d9d2",
+          "crawlerSteel": "#2e3236",
+          "beltRubber": "#1f2123",
+          "tailings": "#3a3a3a"
         }
       },
       "stats": {
-        "triangles": 184,
+        "triangles": 3792,
         "sizeM": [
-          1.74,
-          0.66,
-          0.42
+          31.303732,
+          8.344869,
+          16.150847
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "rubber",
-          "color": "#292d2f",
+          "name": "boomPaint",
+          "color": "#e2b12a",
           "parts": [
-            "belt"
-          ],
-          "param": "rubber"
-        },
-        {
-          "name": "structuralSteel",
-          "color": "#566168",
-          "parts": [
-            "left-stringer",
-            "right-stringer",
-            "support-left",
-            "support-right",
-            "head-support-left",
-            "head-support-right",
-            "truss-web"
-          ],
-          "param": "structuralSteel"
-        },
-        {
-          "name": "stainlessSteel",
-          "color": "#b5c0c0",
-          "parts": [
+            "top-chord-0",
+            "bottom-chord-0",
+            "vertical-0-0",
+            "diagonal-0-0",
+            "vertical-0-1",
+            "diagonal-0-1",
+            "vertical-0-2",
+            "diagonal-0-2",
+            "vertical-0-3",
+            "diagonal-0-3",
+            "vertical-0-4",
+            "diagonal-0-4",
+            "vertical-0-5",
+            "diagonal-0-5",
+            "vertical-0-6",
+            "diagonal-0-6",
+            "vertical-0-7",
+            "diagonal-0-7",
+            "vertical-0-8",
+            "diagonal-0-8",
+            "vertical-0-9",
+            "diagonal-0-9",
+            "vertical-0-10",
+            "top-chord-1",
+            "bottom-chord-1",
+            "vertical-1-0",
+            "diagonal-1-0",
+            "vertical-1-1",
+            "diagonal-1-1",
+            "vertical-1-2",
+            "diagonal-1-2",
+            "vertical-1-3",
+            "diagonal-1-3",
+            "vertical-1-4",
+            "diagonal-1-4",
+            "vertical-1-5",
+            "diagonal-1-5",
+            "vertical-1-6",
+            "diagonal-1-6",
+            "vertical-1-7",
+            "diagonal-1-7",
+            "vertical-1-8",
+            "diagonal-1-8",
+            "vertical-1-9",
+            "diagonal-1-9",
+            "vertical-1-10",
+            "bottom-tie-0",
+            "bottom-tie-1",
+            "bottom-tie-2",
+            "bottom-tie-3",
+            "bottom-tie-4",
+            "bottom-tie-5",
+            "bottom-tie-6",
+            "bottom-tie-7",
+            "bottom-tie-8",
+            "bottom-tie-9",
+            "bottom-tie-10",
+            "idler-0-frame",
+            "idler-1-frame",
+            "idler-2-frame",
+            "idler-3-frame",
+            "idler-4-frame",
+            "idler-5-frame",
+            "idler-6-frame",
+            "idler-7-frame",
+            "idler-8-frame",
+            "idler-9-frame",
+            "idler-10-frame",
+            "idler-11-frame",
+            "idler-12-frame",
+            "idler-13-frame",
+            "feed-hopper",
             "discharge-hood",
-            "head-drum"
+            "hood-skirt",
+            "walkway-bracket-0",
+            "walkway-bracket-1",
+            "walkway-bracket-2",
+            "walkway-bracket-3",
+            "walkway-bracket-4",
+            "walkway-bracket-5",
+            "walkway-bracket-6",
+            "tail-pedestal",
+            "carrier-deck",
+            "power-pack",
+            "a-frame-front-0",
+            "a-frame-rear-0",
+            "a-frame-front-1",
+            "a-frame-rear-1"
           ],
-          "param": "stainlessSteel"
+          "param": "boomPaint"
+        },
+        {
+          "name": "beltRubber",
+          "color": "#25282a",
+          "parts": [
+            "belt-carry",
+            "head-pulley",
+            "track-0",
+            "grouser-0-0",
+            "grouser-0-1",
+            "grouser-0-2",
+            "grouser-0-3",
+            "grouser-0-4",
+            "grouser-0-5",
+            "grouser-0-6",
+            "grouser-0-7",
+            "grouser-0-8",
+            "track-1",
+            "grouser-1-0",
+            "grouser-1-1",
+            "grouser-1-2",
+            "grouser-1-3",
+            "grouser-1-4",
+            "grouser-1-5",
+            "grouser-1-6",
+            "grouser-1-7",
+            "grouser-1-8"
+          ],
+          "param": "beltRubber"
+        },
+        {
+          "name": "tailings",
+          "color": "#b9ab92",
+          "parts": [
+            "cake-load",
+            "feed-hopper-cake",
+            "dry-stack",
+            "cake-stream"
+          ],
+          "param": "tailings"
+        },
+        {
+          "name": "crawlerSteel",
+          "color": "#3a3f44",
+          "parts": [
+            "tail-pulley",
+            "feed-hopper-rim",
+            "gearbox",
+            "walkway",
+            "tail-skid",
+            "track-frame-0",
+            "sprocket-0",
+            "track-frame-1",
+            "sprocket-1",
+            "power-pack-grille",
+            "exhaust-stack",
+            "luffing-ram-barrel"
+          ],
+          "param": "crawlerSteel"
+        },
+        {
+          "name": "head-shaft",
+          "color": "#9aa2a6",
+          "parts": [
+            "head-shaft",
+            "tail-pivot-pin",
+            "luffing-ram-rod"
+          ]
+        },
+        {
+          "name": "idler-0-centre",
+          "color": "#6a7176",
+          "parts": [
+            "idler-0-centre",
+            "idler-0-wing-0",
+            "idler-0-wing-1",
+            "idler-1-centre",
+            "idler-1-wing-0",
+            "idler-1-wing-1",
+            "idler-2-centre",
+            "idler-2-wing-0",
+            "idler-2-wing-1",
+            "idler-3-centre",
+            "idler-3-wing-0",
+            "idler-3-wing-1",
+            "idler-4-centre",
+            "idler-4-wing-0",
+            "idler-4-wing-1",
+            "idler-5-centre",
+            "idler-5-wing-0",
+            "idler-5-wing-1",
+            "idler-6-centre",
+            "idler-6-wing-0",
+            "idler-6-wing-1",
+            "idler-7-centre",
+            "idler-7-wing-0",
+            "idler-7-wing-1",
+            "idler-8-centre",
+            "idler-8-wing-0",
+            "idler-8-wing-1",
+            "idler-9-centre",
+            "idler-9-wing-0",
+            "idler-9-wing-1",
+            "idler-10-centre",
+            "idler-10-wing-0",
+            "idler-10-wing-1",
+            "idler-11-centre",
+            "idler-11-wing-0",
+            "idler-11-wing-1",
+            "idler-12-centre",
+            "idler-12-wing-0",
+            "idler-12-wing-1",
+            "idler-13-centre",
+            "idler-13-wing-0",
+            "idler-13-wing-1"
+          ]
+        },
+        {
+          "name": "motor",
+          "color": "#3d6f9a",
+          "parts": [
+            "motor"
+          ]
+        },
+        {
+          "name": "handrail-0",
+          "color": "#e8c21e",
+          "parts": [
+            "handrail-0",
+            "handrail-1",
+            "handrail-post-0",
+            "handrail-post-1",
+            "handrail-post-2",
+            "handrail-post-3",
+            "handrail-post-4",
+            "handrail-post-5",
+            "handrail-post-6",
+            "handrail-post-7",
+            "handrail-post-8",
+            "handrail-post-9",
+            "handrail-post-10"
+          ]
+        },
+        {
+          "name": "stack-toe",
+          "color": "#8c8270",
+          "parts": [
+            "stack-toe"
+          ]
         }
       ]
     },
@@ -187715,16 +188730,17 @@
       "id": "vacuum-disc-filter",
       "kit": "mining",
       "title": "Vacuum disc filter",
-      "description": "Dewatering unit with trough, central shaft, filter-disc panels, support bearings, and vacuum header. Controls: overall scale, coated equipment steel, stainless steel; weathered and highVisibility presets.",
+      "description": "Vacuum disc filter for concentrate dewatering at about real size: 2.7 m cloth-covered discs built from sectors on one horizontal hollow shaft, dipping into a U-shaped slurry trough with a compartment per disc, filter cake on the rising side, cake discharge chutes between the discs and a cake belt conveyor along the front, filter valve with vacuum lines to a vertical vacuum receiver and filtrate pump, shaft-mounted gearbox and motor, bearing pedestals, trough support frame and a rear service platform with handrails. Disc choice (6, 8) and cake choice (loaded, clean). Material controls: tank steel, filter cloth, filter cake and drive paint. weathered, copperConcentrate and ironOre presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
         "mining",
         "mineral processing",
-        "ore handling",
-        "infrastructure",
-        "low poly",
-        "scene prop"
+        "dewatering",
+        "filter",
+        "vacuum filter",
+        "disc filter",
+        "concentrate"
       ],
       "compat": [
         "mining",
@@ -187735,8 +188751,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/mining/vacuum-disc-filter.kcad.ts",
       "preview": "/assets/mining-vacuum-disc-filter.png",
-      "sourceSha256": "3a57379d5b54947d8ccb4cb80fe49a70257b478994d70195520c21a4d0f70b5d",
-      "triangleBudget": 1800,
+      "sourceSha256": "973c7daf3680918723bd88971584cd100ceec9b46a658abd643772509d088980",
+      "triangleBudget": 7000,
       "params": [
         {
           "name": "scale",
@@ -187748,64 +188764,308 @@
           "step": 0.05
         },
         {
-          "name": "coatedSteel",
-          "type": "color",
-          "default": "#65a884",
-          "label": "Coated equipment steel"
+          "name": "discs",
+          "type": "choice",
+          "default": "6",
+          "label": "Number of discs",
+          "choices": [
+            "6",
+            "8"
+          ]
         },
         {
-          "name": "stainlessSteel",
+          "name": "cake",
+          "type": "choice",
+          "default": "loaded",
+          "label": "Filter cake",
+          "choices": [
+            "loaded",
+            "clean"
+          ]
+        },
+        {
+          "name": "tankSteel",
           "type": "color",
-          "default": "#b5c0c0",
-          "label": "Stainless steel"
+          "default": "#3e6f8e",
+          "label": "Trough and frame steel"
+        },
+        {
+          "name": "filterCloth",
+          "type": "color",
+          "default": "#d6d9d2",
+          "label": "Filter cloth"
+        },
+        {
+          "name": "filterCake",
+          "type": "color",
+          "default": "#7a6550",
+          "label": "Filter cake"
+        },
+        {
+          "name": "drivePaint",
+          "type": "color",
+          "default": "#e0a526",
+          "label": "Drive and valve paint"
         }
       ],
       "presets": {
         "weathered": {
-          "coatedSteel": "#6c716d",
-          "stainlessSteel": "#969f9e"
+          "tankSteel": "#5d666a",
+          "filterCloth": "#a9aaa2",
+          "filterCake": "#6e6257",
+          "drivePaint": "#9c8350"
         },
-        "highVisibility": {
-          "coatedSteel": "#e48a1e",
-          "stainlessSteel": "#c5ccca"
+        "copperConcentrate": {
+          "tankSteel": "#2f5a4a",
+          "filterCloth": "#c9cfc8",
+          "filterCake": "#4a4a3c",
+          "drivePaint": "#d8d2c2"
+        },
+        "ironOre": {
+          "tankSteel": "#4a5560",
+          "filterCloth": "#bfc3bd",
+          "filterCake": "#7a3f2a",
+          "drivePaint": "#c8402c"
         }
       },
       "stats": {
-        "triangles": 272,
+        "triangles": 5180,
         "sizeM": [
-          1.3,
-          0.82,
-          0.9025
+          9.62,
+          4.02,
+          5.8
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "coatedSteel",
-          "color": "#65a884",
+          "name": "tankSteel",
+          "color": "#3e6f8e",
           "parts": [
-            "trough",
-            "vacuum-header",
-            "drive-motor",
-            "vacuum-receiver"
+            "trough-shell",
+            "trough-end-left",
+            "trough-end-right",
+            "trough-rim-0",
+            "trough-rim-1",
+            "divider-1",
+            "divider-2",
+            "divider-3",
+            "divider-4",
+            "divider-5",
+            "disc-hub-0",
+            "disc-0-rib-0",
+            "disc-0-rib-1",
+            "disc-0-rib-2",
+            "disc-0-rib-3",
+            "disc-0-rib-4",
+            "disc-0-rib-5",
+            "disc-0-rib-6",
+            "disc-0-rib-7",
+            "disc-0-rib-8",
+            "disc-0-rib-9",
+            "disc-0-rib-10",
+            "disc-0-rib-11",
+            "disc-0-rim",
+            "disc-hub-1",
+            "disc-1-rib-0",
+            "disc-1-rib-1",
+            "disc-1-rib-2",
+            "disc-1-rib-3",
+            "disc-1-rib-4",
+            "disc-1-rib-5",
+            "disc-1-rib-6",
+            "disc-1-rib-7",
+            "disc-1-rib-8",
+            "disc-1-rib-9",
+            "disc-1-rib-10",
+            "disc-1-rib-11",
+            "disc-1-rim",
+            "disc-hub-2",
+            "disc-2-rib-0",
+            "disc-2-rib-1",
+            "disc-2-rib-2",
+            "disc-2-rib-3",
+            "disc-2-rib-4",
+            "disc-2-rib-5",
+            "disc-2-rib-6",
+            "disc-2-rib-7",
+            "disc-2-rib-8",
+            "disc-2-rib-9",
+            "disc-2-rib-10",
+            "disc-2-rib-11",
+            "disc-2-rim",
+            "disc-hub-3",
+            "disc-3-rib-0",
+            "disc-3-rib-1",
+            "disc-3-rib-2",
+            "disc-3-rib-3",
+            "disc-3-rib-4",
+            "disc-3-rib-5",
+            "disc-3-rib-6",
+            "disc-3-rib-7",
+            "disc-3-rib-8",
+            "disc-3-rib-9",
+            "disc-3-rib-10",
+            "disc-3-rib-11",
+            "disc-3-rim",
+            "disc-hub-4",
+            "disc-4-rib-0",
+            "disc-4-rib-1",
+            "disc-4-rib-2",
+            "disc-4-rib-3",
+            "disc-4-rib-4",
+            "disc-4-rib-5",
+            "disc-4-rib-6",
+            "disc-4-rib-7",
+            "disc-4-rib-8",
+            "disc-4-rib-9",
+            "disc-4-rib-10",
+            "disc-4-rib-11",
+            "disc-4-rim",
+            "disc-hub-5",
+            "disc-5-rib-0",
+            "disc-5-rib-1",
+            "disc-5-rib-2",
+            "disc-5-rib-3",
+            "disc-5-rib-4",
+            "disc-5-rib-5",
+            "disc-5-rib-6",
+            "disc-5-rib-7",
+            "disc-5-rib-8",
+            "disc-5-rib-9",
+            "disc-5-rib-10",
+            "disc-5-rib-11",
+            "disc-5-rim",
+            "cake-conveyor-stringer-0",
+            "cake-conveyor-stringer-1",
+            "cake-conveyor-leg-0-0",
+            "cake-conveyor-leg-0-1",
+            "cake-conveyor-leg-1-0",
+            "cake-conveyor-leg-1-1",
+            "cake-conveyor-leg-2-0",
+            "cake-conveyor-leg-2-1",
+            "cake-conveyor-leg-3-0",
+            "cake-conveyor-leg-3-1",
+            "saddle-0",
+            "saddle-1",
+            "saddle-2",
+            "base-beam-0",
+            "base-beam-1",
+            "bearing-pedestal-0",
+            "bearing-pedestal-1",
+            "torque-arm",
+            "receiver-shell",
+            "receiver-cone",
+            "receiver-leg-0",
+            "receiver-leg-1",
+            "receiver-leg-2",
+            "receiver-leg-3",
+            "filtrate-pump",
+            "platform-deck",
+            "platform-leg-0",
+            "platform-leg-1",
+            "platform-leg-2"
           ],
-          "param": "coatedSteel"
+          "param": "tankSteel"
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b5c0c0",
+          "name": "slurry",
+          "color": "#5a5148",
           "parts": [
-            "left-bearing",
-            "right-bearing",
-            "filter-shaft",
-            "filter-disc-0",
-            "filter-disc-1",
-            "filter-disc-2",
-            "filter-disc-3",
-            "filter-disc-4"
+            "slurry"
+          ]
+        },
+        {
+          "name": "shaft",
+          "color": "#9aa2a6",
+          "parts": [
+            "shaft",
+            "valve-spring-0",
+            "valve-spring-1"
+          ]
+        },
+        {
+          "name": "filterCloth",
+          "color": "#d6d9d2",
+          "parts": [
+            "disc-0",
+            "disc-1",
+            "disc-2",
+            "disc-3",
+            "disc-4",
+            "disc-5"
           ],
-          "param": "stainlessSteel"
+          "param": "filterCloth"
+        },
+        {
+          "name": "filterCake",
+          "color": "#7a6550",
+          "parts": [
+            "disc-cake-0",
+            "disc-cake-1",
+            "disc-cake-2",
+            "disc-cake-3",
+            "disc-cake-4",
+            "disc-cake-5",
+            "cake-on-belt"
+          ],
+          "param": "filterCake"
+        },
+        {
+          "name": "drivePaint",
+          "color": "#e0a526",
+          "parts": [
+            "cake-chute-0",
+            "cake-chute-1",
+            "cake-chute-2",
+            "cake-chute-3",
+            "cake-chute-4",
+            "cake-chute-5",
+            "cake-chute-6",
+            "cake-tail-pulley",
+            "bearing-housing-0",
+            "bearing-housing-1",
+            "gearbox",
+            "filter-valve",
+            "valve-cover",
+            "vacuum-line-0",
+            "vacuum-line-1",
+            "vacuum-line-riser",
+            "vacuum-line-to-pump",
+            "filtrate-pump-casing",
+            "filtrate-line"
+          ],
+          "param": "drivePaint"
+        },
+        {
+          "name": "cake-belt",
+          "color": "#25282a",
+          "parts": [
+            "cake-belt"
+          ]
+        },
+        {
+          "name": "drive-motor",
+          "color": "#3d6f9a",
+          "parts": [
+            "drive-motor",
+            "motor-fan-cowl",
+            "filtrate-pump-motor"
+          ]
+        },
+        {
+          "name": "platform-handrail-0",
+          "color": "#e8c21e",
+          "parts": [
+            "platform-handrail-0",
+            "platform-handrail-1",
+            "handrail-post-0",
+            "handrail-post-1",
+            "handrail-post-2",
+            "handrail-post-3",
+            "handrail-post-4"
+          ]
         }
       ]
     },
