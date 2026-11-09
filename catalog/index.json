@@ -126605,13 +126605,20 @@
       "id": "dosing-pump-skid",
       "kit": "hydroponics",
       "title": "Dosing pump skid",
-      "description": "Portable dosing frame with two metering heads, chemical pickup tubes and a small service panel. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
+      "description": "Chemical dosing skid at about real size: two or three diaphragm metering pumps with motor, stroke knob, display and dosing head on a steel backboard frame, each fed from a labelled day tank with cap and level strip standing in a bunded spill tray, calibration columns, discharge lines into a header with pressure relief valve and pulsation damper, and a local control panel. Material controls: frame, day tanks, pump housing, spill bund, plus a two or three pump choice. industrial, nutrientGreen, stainless and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "dosing",
+        "dosing pump",
+        "metering pump",
+        "diaphragm pump",
+        "chemical dosing",
+        "pH dosing",
+        "skid",
+        "day tank",
         "hydroponics",
         "greenhouse",
-        "controlled environment agriculture",
         "low poly",
         "scene prop"
       ],
@@ -126624,8 +126631,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/dosing-pump-skid.kcad.ts",
       "preview": "/assets/hydroponics-dosing-pump-skid.png",
-      "sourceSha256": "b503399a521d6b0504f5328158eb96678bbcee40ed5b907284fb4dd22bccddc4",
-      "triangleBudget": 1800,
+      "sourceSha256": "bf20e9cc6a5c79f259f55ed22e3b34c2510023e2a776c9cc3a86764924b5abf1",
+      "triangleBudget": 5200,
       "params": [
         {
           "name": "scale",
@@ -126637,79 +126644,278 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "frame",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#5c7d73",
+          "label": "Frame and backboard (powder-coated steel)"
         },
         {
-          "name": "pvc",
+          "name": "tank",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#e8e4d6",
+          "label": "Day tanks (natural polyethylene)"
         },
         {
-          "name": "polymer",
+          "name": "pumpHousing",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#d8dcdf",
+          "label": "Pump housing (glass-filled polymer)"
+        },
+        {
+          "name": "bund",
+          "type": "color",
+          "default": "#e3b52c",
+          "label": "Spill bund (yellow polyethylene)"
+        },
+        {
+          "name": "pumps",
+          "type": "choice",
+          "default": "two",
+          "label": "Metering pumps",
+          "choices": [
+            "two",
+            "three"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa"
+        "industrial": {
+          "frame": "#5c7d73",
+          "tank": "#e8e4d6",
+          "pumpHousing": "#d8dcdf",
+          "bund": "#e3b52c"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b"
+        "nutrientGreen": {
+          "frame": "#2f5d3a",
+          "tank": "#f0eee4",
+          "pumpHousing": "#3f7d4c",
+          "bund": "#3b3f42"
+        },
+        "stainless": {
+          "frame": "#b9c0c4",
+          "tank": "#dfe3e2",
+          "pumpHousing": "#eef0f0",
+          "bund": "#8c969b"
+        },
+        "weathered": {
+          "frame": "#6d746d",
+          "tank": "#d2c9a8",
+          "pumpHousing": "#b8b6a8",
+          "bund": "#b8963a"
         }
       },
       "stats": {
-        "triangles": 400,
+        "triangles": 2634,
         "sizeM": [
-          0.96,
-          0.93,
-          0.48
+          1.515,
+          1.72,
+          0.838
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "bund",
+          "color": "#e3b52c",
           "parts": [
-            "base-skid",
-            "left-meter-head",
-            "right-meter-head"
+            "bund-tray",
+            "bund-lip",
+            "panel-isolator"
           ],
-          "param": "powderCoatedSteel"
+          "param": "bund"
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "bund-label",
+          "color": "#22262a",
           "parts": [
-            "back-panel",
-            "pump-shelf",
-            "control-box",
-            "left-pump-body",
-            "right-pump-body"
-          ],
-          "param": "polymer"
+            "bund-label",
+            "p1-motor-cap",
+            "p1-stroke-knob",
+            "p2-motor-cap",
+            "p2-stroke-knob",
+            "outlet-gauge"
+          ]
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "frame",
+          "color": "#5c7d73",
           "parts": [
-            "left-tube-rail",
-            "right-tube-rail",
-            "pickup-left",
-            "pickup-right"
+            "post-l",
+            "foot-l",
+            "post-r",
+            "foot-r",
+            "backboard",
+            "top-rail",
+            "p1-shelf",
+            "p1-gusset",
+            "p2-shelf",
+            "p2-gusset",
+            "header-clamp--380",
+            "header-clamp-460"
           ],
-          "param": "pvc"
+          "param": "frame"
+        },
+        {
+          "name": "tank",
+          "color": "#e8e4d6",
+          "parts": [
+            "p1-tank",
+            "p2-tank"
+          ],
+          "param": "tank"
+        },
+        {
+          "name": "p1-cap",
+          "color": "#c0392b",
+          "parts": [
+            "p1-cap",
+            "p1-hazard",
+            "p1-keys",
+            "p1-cal-lever",
+            "p1-tag",
+            "p2-cal-lever",
+            "relief-cap",
+            "outlet-lever",
+            "panel-isolator-handle",
+            "panel-lamp-fault"
+          ]
+        },
+        {
+          "name": "p1-suction-gland",
+          "color": "#3b3f42",
+          "parts": [
+            "p1-suction-gland",
+            "p1-motor",
+            "p1-cal-mark-0",
+            "p1-cal-mark-1",
+            "p1-cal-mark-2",
+            "p1-cal-mark-3",
+            "p2-suction-gland",
+            "p2-motor",
+            "p2-cal-mark-0",
+            "p2-cal-mark-1",
+            "p2-cal-mark-2",
+            "p2-cal-mark-3",
+            "panel-gland"
+          ]
+        },
+        {
+          "name": "p1-level-strip",
+          "color": "#9ca39c",
+          "parts": [
+            "p1-level-strip",
+            "p2-level-strip"
+          ]
+        },
+        {
+          "name": "p1-hazard-core",
+          "color": "#f2f2ec",
+          "parts": [
+            "p1-hazard-core",
+            "p1-stroke-mark",
+            "p2-hazard-core",
+            "p2-stroke-mark",
+            "outlet-gauge-face"
+          ]
+        },
+        {
+          "name": "pumpHousing",
+          "color": "#d8dcdf",
+          "parts": [
+            "p1-body",
+            "p2-body"
+          ],
+          "param": "pumpHousing"
+        },
+        {
+          "name": "p1-display",
+          "color": "#3d5b4a",
+          "parts": [
+            "p1-display",
+            "p2-display"
+          ]
+        },
+        {
+          "name": "p1-head",
+          "color": "#e9ece8",
+          "parts": [
+            "p1-head",
+            "p2-head",
+            "panel"
+          ]
+        },
+        {
+          "name": "p1-head-bolts",
+          "color": "#8f989e",
+          "parts": [
+            "p1-head-bolts",
+            "p2-head-bolts",
+            "header"
+          ]
+        },
+        {
+          "name": "p1-suction-valve",
+          "color": "#5a6066",
+          "parts": [
+            "p1-suction-valve",
+            "p1-discharge-valve",
+            "p1-cal-valve",
+            "p2-suction-valve",
+            "p2-discharge-valve",
+            "p2-cal-valve",
+            "header-cap",
+            "outlet-valve"
+          ]
+        },
+        {
+          "name": "p1-suction-line",
+          "color": "#eef0ea",
+          "parts": [
+            "p1-suction-line",
+            "p1-discharge-line",
+            "p2-suction-line",
+            "p2-discharge-line"
+          ]
+        },
+        {
+          "name": "p1-cal-column",
+          "color": "#d9e4e6",
+          "parts": [
+            "p1-cal-column",
+            "p2-cal-column"
+          ]
+        },
+        {
+          "name": "p2-cap",
+          "color": "#2f6fa8",
+          "parts": [
+            "p2-cap",
+            "p2-hazard",
+            "p2-keys",
+            "p2-tag"
+          ]
+        },
+        {
+          "name": "damper",
+          "color": "#c9ced1",
+          "parts": [
+            "damper"
+          ]
+        },
+        {
+          "name": "relief-valve",
+          "color": "#c9a43a",
+          "parts": [
+            "relief-valve"
+          ]
+        },
+        {
+          "name": "panel-lamp-run",
+          "color": "#4f9a3a",
+          "parts": [
+            "panel-lamp-run"
+          ]
         }
       ]
     },
@@ -128539,13 +128745,19 @@
       "id": "greenhouse-grow-light-bar",
       "kit": "hydroponics",
       "title": "Greenhouse grow light bar",
-      "description": "Single suspended lighting bar with end caps, support straps and a cable junction box. Parameters: overall scale, powder-coated steel, polymer, polycarbonate; weathered and highVisibility presets.",
+      "description": "Greenhouse LED top-light bar at about real size: extruded aluminium heat sink with cooling fins, frosted lens strip underneath, end caps, driver box with glands on the fins, V-wire hangers with gripper adjusters up to a galvanised truss chord with clamps, mains lead looping up to a cable tie and a daisy-chain lead with plug. Material controls: heat sink, lens, driver and end caps, truss chord, plus a 1.2, 1.6 or 2.0 m length. anodised, blackHousing, lit and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "grow light",
+        "led",
+        "top light",
+        "lighting",
+        "heat sink",
+        "greenhouse lighting",
+        "supplemental lighting",
         "hydroponics",
         "greenhouse",
-        "controlled environment agriculture",
         "low poly",
         "scene prop"
       ],
@@ -128558,7 +128770,7 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/greenhouse-grow-light-bar.kcad.ts",
       "preview": "/assets/hydroponics-greenhouse-grow-light-bar.png",
-      "sourceSha256": "f55267fec6cacc8c8924bef113b5053d7c1091fb6f0ae578e9c495fd20b8f514",
+      "sourceSha256": "9ec6d517a787d6b5a56858d2dc105c3585ad88a3ca0d81c7a6189883e8a92bb3",
       "triangleBudget": 1800,
       "params": [
         {
@@ -128571,75 +128783,188 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "heatSink",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#b9bfc3",
+          "label": "Heat sink (anodised aluminium)"
         },
         {
-          "name": "polymer",
+          "name": "lens",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#f1eee4",
+          "label": "Lens (frosted polycarbonate)"
         },
         {
-          "name": "polycarbonate",
+          "name": "driver",
           "type": "color",
-          "default": "#8ccbd1",
-          "label": "Polycarbonate"
+          "default": "#2b2f33",
+          "label": "Driver and end caps (polymer)"
+        },
+        {
+          "name": "truss",
+          "type": "color",
+          "default": "#a9b0b3",
+          "label": "Truss chord (galvanised steel)"
+        },
+        {
+          "name": "length",
+          "type": "choice",
+          "default": "1.6 m",
+          "label": "Bar length",
+          "choices": [
+            "1.2 m",
+            "1.6 m",
+            "2.0 m"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "polymer": "#b4b5aa",
-          "polycarbonate": "#83aeb1"
+        "anodised": {
+          "heatSink": "#b9bfc3",
+          "lens": "#f1eee4",
+          "driver": "#2b2f33",
+          "truss": "#a9b0b3"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "polymer": "#f2c84b",
-          "polycarbonate": "#b6edf0"
+        "blackHousing": {
+          "heatSink": "#2f3336",
+          "lens": "#e8e6dc",
+          "driver": "#1d2023",
+          "truss": "#8c969b"
+        },
+        "lit": {
+          "heatSink": "#c9ced1",
+          "lens": "#e070c8",
+          "driver": "#3b3f42",
+          "truss": "#a9b0b3"
+        },
+        "weathered": {
+          "heatSink": "#9a9e98",
+          "lens": "#d8d0b4",
+          "driver": "#4a4d48",
+          "truss": "#8b8a80"
         }
       },
       "stats": {
-        "triangles": 160,
+        "triangles": 1540,
         "sizeM": [
-          1.66,
-          0.405,
-          0.2375
+          2.1,
+          1.128408,
+          0.142
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polycarbonate",
-          "color": "#8ccbd1",
+          "name": "heatSink",
+          "color": "#b9bfc3",
           "parts": [
-            "light-diffuser"
+            "heat-sink"
           ],
-          "param": "polycarbonate"
+          "param": "heatSink"
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "lens",
+          "color": "#f1eee4",
           "parts": [
-            "upper-housing",
-            "end-cap-left",
-            "end-cap-right",
-            "junction-box",
-            "cable-entry"
+            "lens"
           ],
-          "param": "polymer"
+          "param": "lens"
         },
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "driver",
+          "color": "#2b2f33",
           "parts": [
-            "suspension-left",
-            "suspension-right"
+            "end-cap-l",
+            "end-cap-r",
+            "driver"
           ],
-          "param": "powderCoatedSteel"
+          "param": "driver"
+        },
+        {
+          "name": "end-screw-l",
+          "color": "#8f989e",
+          "parts": [
+            "end-screw-l",
+            "end-screw-r",
+            "clip-l",
+            "hook-l",
+            "clip-r",
+            "hook-r",
+            "web-clamp-l",
+            "web-clamp-r"
+          ]
+        },
+        {
+          "name": "driver-label",
+          "color": "#e6e8e8",
+          "parts": [
+            "driver-label"
+          ]
+        },
+        {
+          "name": "gland-mains",
+          "color": "#5a6066",
+          "parts": [
+            "gland-mains",
+            "gland-out"
+          ]
+        },
+        {
+          "name": "wire-l-f",
+          "color": "#c9ced1",
+          "parts": [
+            "wire-l-f",
+            "wire-l-b",
+            "wire-l-top",
+            "wire-r-f",
+            "wire-r-b",
+            "wire-r-top"
+          ]
+        },
+        {
+          "name": "gripper-l",
+          "color": "#c9a43a",
+          "parts": [
+            "gripper-l",
+            "gripper-r"
+          ]
+        },
+        {
+          "name": "truss",
+          "color": "#a9b0b3",
+          "parts": [
+            "chord",
+            "web-l",
+            "web-r"
+          ],
+          "param": "truss"
+        },
+        {
+          "name": "mains-a",
+          "color": "#22262a",
+          "parts": [
+            "mains-a",
+            "mains-b",
+            "mains-c",
+            "cable-tie",
+            "chain-a",
+            "chain-b"
+          ]
+        },
+        {
+          "name": "chain-plug",
+          "color": "#3b3f42",
+          "parts": [
+            "chain-plug"
+          ]
+        },
+        {
+          "name": "chain-plug-cap",
+          "color": "#e8862b",
+          "parts": [
+            "chain-plug-cap"
+          ]
         }
       ]
     },
@@ -129181,13 +129506,19 @@
       "id": "hydroponic-controller-console",
       "kit": "hydroponics",
       "title": "Hydroponic controller console",
-      "description": "Floor console with raised display hood, selector knobs, lower service door and base plinth. Parameters: overall scale, powder-coated steel, polymer, instrument glass, safety amber; weathered and highVisibility presets.",
+      "description": "Floor-standing fertigation controller console at about real size: sloped-desk cabinet with touchscreen HMI, selector switches, push buttons and emergency stop on the desk, an upright panel with pH, EC and temperature readouts and alarm lamps, roof stack light, and a two-door lower cabinet with vent louvres and handles on a plinth. Material controls: cabinet, desk fascia, screens, plinth and trim, plus a stack light on or off. controlGrey, growGreen, darkRoom and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "controller",
+        "control console",
+        "fertigation controller",
+        "hmi",
+        "touchscreen",
+        "irrigation control",
+        "climate control",
         "hydroponics",
         "greenhouse",
-        "controlled environment agriculture",
         "low poly",
         "scene prop"
       ],
@@ -129200,8 +129531,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/hydroponic-controller-console.kcad.ts",
       "preview": "/assets/hydroponics-hydroponic-controller-console.png",
-      "sourceSha256": "0a79c4a755f08dba398fe3df22ad916f89d62b9b890a8674aabee3f8e3e5a593",
-      "triangleBudget": 1800,
+      "sourceSha256": "4cb302eb9105d4d6cea8cc24a76c00e8d71e96d376b602e2fc8bb9df894cd438",
+      "triangleBudget": 2800,
       "params": [
         {
           "name": "scale",
@@ -129213,92 +129544,250 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "cabinet",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#d9dcd6",
+          "label": "Cabinet (powder-coated steel)"
         },
         {
-          "name": "polymer",
+          "name": "fascia",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#3b4a52",
+          "label": "Desk fascia (anodised panel)"
         },
         {
-          "name": "glass",
+          "name": "screens",
           "type": "color",
-          "default": "#51afc1",
-          "label": "Instrument glass"
+          "default": "#1f3a4a",
+          "label": "Screens (instrument glass)"
         },
         {
-          "name": "safetyAmber",
+          "name": "plinth",
           "type": "color",
-          "default": "#e4a52e",
-          "label": "Safety amber"
+          "default": "#2f5d3a",
+          "label": "Plinth and trim"
+        },
+        {
+          "name": "stackLight",
+          "type": "choice",
+          "default": "on",
+          "label": "Stack light",
+          "choices": [
+            "on",
+            "off"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "polymer": "#b4b5aa",
-          "glass": "#548e98",
-          "safetyAmber": "#b9842f"
+        "controlGrey": {
+          "cabinet": "#d9dcd6",
+          "fascia": "#3b4a52",
+          "screens": "#1f3a4a",
+          "plinth": "#2f5d3a"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "polymer": "#f2c84b",
-          "glass": "#38c5dc",
-          "safetyAmber": "#ffd139"
+        "growGreen": {
+          "cabinet": "#e9ece4",
+          "fascia": "#2f5d3a",
+          "screens": "#163028",
+          "plinth": "#3b3f42"
+        },
+        "darkRoom": {
+          "cabinet": "#3b3f42",
+          "fascia": "#22262a",
+          "screens": "#2a4a5c",
+          "plinth": "#c0392b"
+        },
+        "weathered": {
+          "cabinet": "#c4c0b2",
+          "fascia": "#55605f",
+          "screens": "#3a4a4a",
+          "plinth": "#5f6b4a"
         }
       },
       "stats": {
-        "triangles": 312,
+        "triangles": 1520,
         "sizeM": [
-          0.76,
-          1.51,
-          0.608
+          0.94,
+          1.872,
+          0.609
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "plinth",
+          "color": "#2f5d3a",
           "parts": [
-            "plinth"
+            "plinth",
+            "roof-trim",
+            "desk-edge",
+            "brand-plate"
           ],
-          "param": "powderCoatedSteel"
+          "param": "plinth"
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "cabinet",
+          "color": "#d9dcd6",
           "parts": [
             "cabinet",
-            "lower-door"
+            "door-l",
+            "door-r"
           ],
-          "param": "polymer"
+          "param": "cabinet"
         },
         {
-          "name": "glass",
-          "color": "#51afc1",
+          "name": "fascia",
+          "color": "#3b4a52",
           "parts": [
-            "display-hood",
-            "screen"
+            "desk-fascia"
           ],
-          "param": "glass"
+          "param": "fascia"
         },
         {
-          "name": "safetyAmber",
-          "color": "#e4a52e",
+          "name": "hmi-bezel",
+          "color": "#22262a",
           "parts": [
-            "left-button",
-            "right-button",
-            "selector-left",
-            "selector-right",
-            "signal-stack"
+            "hmi-bezel",
+            "selector-0",
+            "selector-1",
+            "selector-2",
+            "ph-bezel",
+            "ec-bezel",
+            "temp-bezel",
+            "cable"
+          ]
+        },
+        {
+          "name": "screens",
+          "color": "#1f3a4a",
+          "parts": [
+            "hmi-screen",
+            "ph-display",
+            "ec-display",
+            "temp-display"
           ],
-          "param": "safetyAmber"
+          "param": "screens"
+        },
+        {
+          "name": "hmi-trend",
+          "color": "#7fd07a",
+          "parts": [
+            "hmi-trend",
+            "ec-digits"
+          ]
+        },
+        {
+          "name": "hmi-trend-b",
+          "color": "#e8b923",
+          "parts": [
+            "hmi-trend-b",
+            "alarm-lamp-1",
+            "stack-tier-1"
+          ]
+        },
+        {
+          "name": "hmi-tile-a",
+          "color": "#2f6fa8",
+          "parts": [
+            "hmi-tile-a"
+          ]
+        },
+        {
+          "name": "selector-0-handle",
+          "color": "#e6e8e8",
+          "parts": [
+            "selector-0-handle",
+            "selector-1-handle",
+            "selector-2-handle"
+          ]
+        },
+        {
+          "name": "selector-0-tag",
+          "color": "#f2f2ec",
+          "parts": [
+            "selector-0-tag",
+            "selector-1-tag",
+            "selector-2-tag",
+            "ph-label",
+            "ec-label",
+            "temp-label"
+          ]
+        },
+        {
+          "name": "button-start",
+          "color": "#4f9a3a",
+          "parts": [
+            "button-start",
+            "alarm-lamp-2",
+            "stack-tier-0"
+          ]
+        },
+        {
+          "name": "button-stop",
+          "color": "#c0392b",
+          "parts": [
+            "button-stop",
+            "estop",
+            "alarm-lamp-0",
+            "stack-tier-2"
+          ]
+        },
+        {
+          "name": "estop-ring",
+          "color": "#e3b52c",
+          "parts": [
+            "estop-ring",
+            "door-label"
+          ]
+        },
+        {
+          "name": "key-switch",
+          "color": "#c9ced1",
+          "parts": [
+            "key-switch",
+            "panel-lock",
+            "stack-mast"
+          ]
+        },
+        {
+          "name": "ph-digits",
+          "color": "#e8862b",
+          "parts": [
+            "ph-digits"
+          ]
+        },
+        {
+          "name": "temp-digits",
+          "color": "#5fb6e0",
+          "parts": [
+            "temp-digits"
+          ]
+        },
+        {
+          "name": "handle-l",
+          "color": "#3b3f42",
+          "parts": [
+            "handle-l",
+            "louvre-l-0",
+            "louvre-l-1",
+            "louvre-l-2",
+            "louvre-l-3",
+            "louvre-l-4",
+            "hinge-l-220",
+            "hinge-l-760",
+            "handle-r",
+            "louvre-r-0",
+            "louvre-r-1",
+            "louvre-r-2",
+            "louvre-r-3",
+            "louvre-r-4",
+            "hinge-r-220",
+            "hinge-r-760",
+            "cable-gland",
+            "stack-base",
+            "stack-cap"
+          ]
         }
       ]
     },
@@ -129766,13 +130255,18 @@
       "id": "inline-water-heater",
       "kit": "hydroponics",
       "title": "Inline water heater",
-      "description": "Vertical inline heater housing with insulated jacket, access panel and inlet/outlet unions. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
+      "description": "Electric inline nutrient-solution heater at about real size: vertical stainless vessel with domed bottom and drain valve, insulated jacket with banding straps and rating plate, terminal head with thermostat dial, pilot lamps and cable, low inlet with ball valve and union, high outlet with flow switch, thermometer and pressure relief valve, on a four-leg floor stand. Material controls: jacket, vessel, pipework, terminal head, plus a 3, 6 or 12 kW rating that sets the vessel height. greyJacket, whiteService, stainless and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "heater",
+        "water heater",
+        "inline heater",
+        "immersion heater",
+        "nutrient heating",
+        "root zone temperature",
         "hydroponics",
         "greenhouse",
-        "controlled environment agriculture",
         "low poly",
         "scene prop"
       ],
@@ -129785,8 +130279,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/inline-water-heater.kcad.ts",
       "preview": "/assets/hydroponics-inline-water-heater.png",
-      "sourceSha256": "29ab73711cf03f40f798f053000c2a0c191dd9f203ae9c422e45334401357050",
-      "triangleBudget": 1800,
+      "sourceSha256": "980d5b63ff592b0ce6272632932b86950961d8ee619aa29f006347cdbc4532d4",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -129798,76 +130292,221 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "jacket",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#6f7c82",
+          "label": "Insulated jacket (painted cladding)"
         },
         {
-          "name": "pvc",
+          "name": "vessel",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#c9ced1",
+          "label": "Vessel and stand (stainless steel)"
         },
         {
-          "name": "polymer",
+          "name": "pipework",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#9aa3a8",
+          "label": "Pipework (PVC-U)"
+        },
+        {
+          "name": "terminalHead",
+          "type": "color",
+          "default": "#e7e3d6",
+          "label": "Terminal head (polymer)"
+        },
+        {
+          "name": "rating",
+          "type": "choice",
+          "default": "6 kW",
+          "label": "Heater rating",
+          "choices": [
+            "3 kW",
+            "6 kW",
+            "12 kW"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa"
+        "greyJacket": {
+          "jacket": "#6f7c82",
+          "vessel": "#c9ced1",
+          "pipework": "#9aa3a8",
+          "terminalHead": "#e7e3d6"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b"
+        "whiteService": {
+          "jacket": "#eceae2",
+          "vessel": "#b7bdc0",
+          "pipework": "#5a6066",
+          "terminalHead": "#c0392b"
+        },
+        "stainless": {
+          "jacket": "#d7dbdd",
+          "vessel": "#e6e8e8",
+          "pipework": "#c9ced1",
+          "terminalHead": "#3b3f42"
+        },
+        "weathered": {
+          "jacket": "#7d7a6e",
+          "vessel": "#a4a49a",
+          "pipework": "#a6a28e",
+          "terminalHead": "#c8bfa4"
         }
       },
       "stats": {
-        "triangles": 364,
+        "triangles": 2056,
         "sizeM": [
-          0.58,
-          1.05,
-          0.54
+          0.954,
+          1.351836,
+          0.48
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "vessel",
+          "color": "#c9ced1",
           "parts": [
-            "support-base",
-            "status-post"
+            "base-plate",
+            "leg--1-1",
+            "leg-1-1",
+            "leg-11",
+            "leg--11",
+            "cradle-ring",
+            "vessel",
+            "strap-430",
+            "strap-810",
+            "inlet-boss",
+            "outlet-boss"
           ],
-          "param": "powderCoatedSteel"
+          "param": "vessel"
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "leg-foot--1-1",
+          "color": "#5a6066",
           "parts": [
-            "front-panel",
-            "insulation-band",
-            "junction-box",
-            "top-cap",
-            "heater-body"
-          ],
-          "param": "polymer"
+            "leg-foot--1-1",
+            "leg-foot-1-1",
+            "leg-foot-11",
+            "leg-foot--11",
+            "lid-screw"
+          ]
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "drain-valve",
+          "color": "#c9a43a",
           "parts": [
+            "drain-valve",
+            "thermo-stem",
+            "relief-valve",
+            "relief-outlet"
+          ]
+        },
+        {
+          "name": "drain-handle",
+          "color": "#c0392b",
+          "parts": [
+            "drain-handle",
+            "dial-pointer",
+            "thermo-needle",
+            "relief-lever"
+          ]
+        },
+        {
+          "name": "jacket",
+          "color": "#6f7c82",
+          "parts": [
+            "jacket"
+          ],
+          "param": "jacket"
+        },
+        {
+          "name": "rating-plate",
+          "color": "#e6e8e8",
+          "parts": [
+            "rating-plate"
+          ]
+        },
+        {
+          "name": "warning-label",
+          "color": "#e3b52c",
+          "parts": [
+            "warning-label"
+          ]
+        },
+        {
+          "name": "terminalHead",
+          "color": "#e7e3d6",
+          "parts": [
+            "head",
+            "head-lid"
+          ],
+          "param": "terminalHead"
+        },
+        {
+          "name": "dial-bezel",
+          "color": "#3b3f42",
+          "parts": [
+            "dial-bezel",
+            "cable-gland",
+            "inlet-valve",
+            "thermo-case",
+            "flow-switch-gland"
+          ]
+        },
+        {
+          "name": "dial",
+          "color": "#f2f2ec",
+          "parts": [
+            "dial",
+            "thermo-face",
+            "flow-arrow"
+          ]
+        },
+        {
+          "name": "lamp-power",
+          "color": "#4f9a3a",
+          "parts": [
+            "lamp-power"
+          ]
+        },
+        {
+          "name": "lamp-heat",
+          "color": "#e8862b",
+          "parts": [
+            "lamp-heat"
+          ]
+        },
+        {
+          "name": "cable-a",
+          "color": "#22262a",
+          "parts": [
+            "cable-a",
+            "cable-b"
+          ]
+        },
+        {
+          "name": "pipework",
+          "color": "#9aa3a8",
+          "parts": [
+            "inlet-pipe",
+            "inlet-flange",
             "inlet-union",
-            "outlet-union"
+            "outlet-pipe",
+            "outlet-union",
+            "outlet-flange",
+            "relief-tee"
           ],
-          "param": "pvc"
+          "param": "pipework"
+        },
+        {
+          "name": "inlet-valve-lever",
+          "color": "#2f6fa8",
+          "parts": [
+            "inlet-valve-lever",
+            "flow-switch"
+          ]
         }
       ]
     },
@@ -134184,13 +134823,19 @@
       "id": "sump-return-tank",
       "kit": "hydroponics",
       "title": "Sump return tank",
-      "description": "Low collection tank with screened top grate, paired inlet stubs and a pump access corner. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
+      "description": "Recirculating hydroponic return sump at about real size: ribbed rotomoulded tank on runners, galvanised bar screen over the top, two return drops from behind ending in strainer baskets, a pump bay with hinged lid, submersible pump and float switch in the solution, riser with check valve and ball valve to the outlet line, sight-tube level gauge and drain valve. Material controls: tank, screen and runners, pipework, solution, plus an open or closed pump-bay lid. blackPoly, nutrientGreen, whiteTank and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "sump",
+        "return tank",
+        "collection tank",
+        "recirculating",
+        "submersible pump",
+        "float switch",
+        "drain water",
         "hydroponics",
         "greenhouse",
-        "controlled environment agriculture",
         "low poly",
         "scene prop"
       ],
@@ -134203,8 +134848,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/sump-return-tank.kcad.ts",
       "preview": "/assets/hydroponics-sump-return-tank.png",
-      "sourceSha256": "687ca087c23e9f8ed3eb3e549467486e62a798b295c4212fa054c611fea73c62",
-      "triangleBudget": 1800,
+      "sourceSha256": "96ee533dba93db3371f9a75f8e5d6654fea76ed07913fa3f7db929ef89f8a79e",
+      "triangleBudget": 3400,
       "params": [
         {
           "name": "scale",
@@ -134216,78 +134861,227 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "tank",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#2f3336",
+          "label": "Tank (rotomoulded polyethylene)"
         },
         {
-          "name": "pvc",
+          "name": "screen",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#a9b0b3",
+          "label": "Bar screen and runners (galvanised steel)"
         },
         {
-          "name": "polymer",
+          "name": "pipework",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#8f989e",
+          "label": "Pipework (PVC-U)"
+        },
+        {
+          "name": "solution",
+          "type": "color",
+          "default": "#5f9a8c",
+          "label": "Nutrient solution"
+        },
+        {
+          "name": "pumpBayLid",
+          "type": "choice",
+          "default": "open",
+          "label": "Pump bay lid",
+          "choices": [
+            "open",
+            "closed"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa"
+        "blackPoly": {
+          "tank": "#2f3336",
+          "screen": "#a9b0b3",
+          "pipework": "#8f989e",
+          "solution": "#5f9a8c"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b"
+        "nutrientGreen": {
+          "tank": "#3f6b48",
+          "screen": "#c9ced1",
+          "pipework": "#e6e8e4",
+          "solution": "#7fae6a"
+        },
+        "whiteTank": {
+          "tank": "#e8e6dc",
+          "screen": "#8c969b",
+          "pipework": "#3b3f42",
+          "solution": "#4f8fa8"
+        },
+        "weathered": {
+          "tank": "#4a4d48",
+          "screen": "#8b8a80",
+          "pipework": "#a6a28e",
+          "solution": "#6f7f5a"
         }
       },
       "stats": {
-        "triangles": 324,
+        "triangles": 2042,
         "sizeM": [
-          1.55,
-          0.815,
-          1.12
+          1.56,
+          1.236788,
+          1.32
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "screen",
+          "color": "#a9b0b3",
           "parts": [
-            "tank-base"
+            "runner-f",
+            "runner-b",
+            "screen-rail-f",
+            "screen-rail-b",
+            "screen-rail-l",
+            "screen-rail-r",
+            "screen-bar-0",
+            "screen-bar-1",
+            "screen-bar-2",
+            "screen-bar-3",
+            "screen-bar-4",
+            "screen-bar-5",
+            "screen-bar-6",
+            "screen-bar-7",
+            "screen-bar-8",
+            "screen-bar-9",
+            "screen-bar-10",
+            "screen-bar-11",
+            "screen-bar-12",
+            "screen-bar-13",
+            "screen-bar-14",
+            "screen-tie",
+            "return--480-basket",
+            "return--480-post",
+            "return--480-saddle",
+            "return--80-basket",
+            "return--80-post",
+            "return--80-saddle",
+            "outlet-post",
+            "lid-hinge--140",
+            "lid-hinge-140"
           ],
-          "param": "powderCoatedSteel"
+          "param": "screen"
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "tank",
+          "color": "#2f3336",
           "parts": [
-            "front-wall",
-            "back-wall",
-            "left-wall",
-            "right-wall",
-            "screen-panel-a",
-            "screen-panel-b",
-            "access-lid",
-            "pump-socket"
+            "tank",
+            "rim-lip",
+            "rib-front--420",
+            "rib-front--140",
+            "rib-front-140",
+            "rib-front-420",
+            "rib-side--250",
+            "rib-side-250",
+            "bay-cover-back",
+            "bay-kerb",
+            "lid"
           ],
-          "param": "polymer"
+          "param": "tank"
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "solution",
+          "color": "#5f9a8c",
           "parts": [
-            "inlet-left",
-            "inlet-right"
+            "solution",
+            "gauge-level"
           ],
-          "param": "pvc"
+          "param": "solution"
+        },
+        {
+          "name": "tank-label",
+          "color": "#e3b52c",
+          "parts": [
+            "tank-label",
+            "lid-label"
+          ]
+        },
+        {
+          "name": "pipework",
+          "color": "#8f989e",
+          "parts": [
+            "return--480-run",
+            "return--480-elbow",
+            "return--480-drop",
+            "return--480-flange",
+            "return--80-run",
+            "return--80-elbow",
+            "return--80-drop",
+            "return--80-flange",
+            "riser",
+            "riser-union",
+            "riser-elbow",
+            "outlet-line",
+            "outlet-flange",
+            "gauge-port-low",
+            "gauge-port-high",
+            "drain-stub"
+          ],
+          "param": "pipework"
+        },
+        {
+          "name": "pump-body",
+          "color": "#2f6fa8",
+          "parts": [
+            "pump-body"
+          ]
+        },
+        {
+          "name": "pump-motor-cap",
+          "color": "#22262a",
+          "parts": [
+            "pump-motor-cap",
+            "pump-handle",
+            "pump-cable",
+            "float-cable"
+          ]
+        },
+        {
+          "name": "float",
+          "color": "#e8862b",
+          "parts": [
+            "float"
+          ]
+        },
+        {
+          "name": "check-valve",
+          "color": "#3b3f42",
+          "parts": [
+            "check-valve",
+            "outlet-valve",
+            "drain-valve"
+          ]
+        },
+        {
+          "name": "check-arrow",
+          "color": "#f2f2ec",
+          "parts": [
+            "check-arrow"
+          ]
+        },
+        {
+          "name": "outlet-lever",
+          "color": "#c0392b",
+          "parts": [
+            "outlet-lever",
+            "drain-lever"
+          ]
+        },
+        {
+          "name": "gauge-tube",
+          "color": "#cfe3e8",
+          "parts": [
+            "gauge-tube"
+          ]
         }
       ]
     },
