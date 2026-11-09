@@ -124782,13 +124782,20 @@
       "id": "aeration-manifold",
       "kit": "hydroponics",
       "title": "Aeration manifold",
-      "description": "Air distribution rail with four outlet risers, end fittings and mounting brackets. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
+      "description": "Deep-water-culture aeration manifold at about real size: PVC air header on a steel frame, fed from a blower hose through a ball valve and check valve, with a pressure gauge and a row of lever gang valves whose airlines drop into an open nutrient tank, each ending in a bubbling air-stone patch on the solution surface. Material controls: header, gang valves, airlines, tank, plus a 6/8/12 outlet choice. greyPvc, whitePvc, blackOut and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "aeration",
+        "air manifold",
+        "air header",
+        "gang valve",
+        "air stone",
+        "airline",
+        "deep water culture",
+        "dissolved oxygen",
         "hydroponics",
         "greenhouse",
-        "controlled environment agriculture",
         "low poly",
         "scene prop"
       ],
@@ -124801,8 +124808,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/aeration-manifold.kcad.ts",
       "preview": "/assets/hydroponics-aeration-manifold.png",
-      "sourceSha256": "6a74035fc8976980b13a0346c76ccee7a8454183d88d2974f0716888026890b7",
-      "triangleBudget": 1800,
+      "sourceSha256": "cc13a7d807f4b832e369559dfc3a138555fe068145670d476a8987b67427ec16",
+      "triangleBudget": 5000,
       "params": [
         {
           "name": "scale",
@@ -124814,78 +124821,271 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "header",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#9aa3a8",
+          "label": "Header (PVC-U)"
         },
         {
-          "name": "pvc",
+          "name": "valves",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#2a8a4a",
+          "label": "Gang valves (polymer)"
         },
         {
-          "name": "polymer",
+          "name": "airline",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#cfe0d8",
+          "label": "Airlines (clear vinyl)"
+        },
+        {
+          "name": "tank",
+          "type": "color",
+          "default": "#2b2e30",
+          "label": "Tank (polyethylene)"
+        },
+        {
+          "name": "outlets",
+          "type": "choice",
+          "default": "8",
+          "label": "Outlets",
+          "choices": [
+            "6",
+            "8",
+            "12"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa"
+        "greyPvc": {
+          "header": "#9aa3a8",
+          "valves": "#2a8a4a",
+          "airline": "#cfe0d8",
+          "tank": "#2b2e30"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b"
+        "whitePvc": {
+          "header": "#eceeea",
+          "valves": "#2f6fa8",
+          "airline": "#d7e2dc",
+          "tank": "#3a6fa0"
+        },
+        "blackOut": {
+          "header": "#3c4246",
+          "valves": "#c0392b",
+          "airline": "#1f2224",
+          "tank": "#1b1d1f"
+        },
+        "weathered": {
+          "header": "#b8b49e",
+          "valves": "#5f7d5a",
+          "airline": "#c9c4a6",
+          "tank": "#45484a"
         }
       },
       "stats": {
-        "triangles": 516,
+        "triangles": 3380,
         "sizeM": [
-          1.754616,
-          0.435,
-          0.18
+          1.56,
+          1.295,
+          1.239637
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "tank",
+          "color": "#2b2e30",
           "parts": [
-            "mounting-rail",
-            "support-left",
-            "support-right"
+            "tank-shell",
+            "tank-rim"
           ],
-          "param": "powderCoatedSteel"
+          "param": "tank"
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "solution",
+          "color": "#3f8f8a",
           "parts": [
-            "header",
-            "branch-rail",
-            "riser-left",
-            "riser-mid-left",
-            "riser-mid-right",
-            "riser-right"
-          ],
-          "param": "pvc"
+            "solution"
+          ]
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "tank-label",
+          "color": "#e0a21c",
           "parts": [
-            "end-cap-left",
-            "end-cap-right"
+            "tank-label"
+          ]
+        },
+        {
+          "name": "upright-l",
+          "color": "#8a9399",
+          "parts": [
+            "upright-l",
+            "foot-l",
+            "upright-r",
+            "foot-r",
+            "crossbar",
+            "frame-top"
+          ]
+        },
+        {
+          "name": "header",
+          "color": "#9aa3a8",
+          "parts": [
+            "header-pipe",
+            "header-cap",
+            "inlet-elbow",
+            "inlet-drop",
+            "check-valve",
+            "ball-valve",
+            "valve-boss-0",
+            "valve-boss-1",
+            "valve-boss-2",
+            "valve-boss-3",
+            "valve-boss-4",
+            "valve-boss-5",
+            "valve-boss-6",
+            "valve-boss-7"
           ],
-          "param": "polymer"
+          "param": "header"
+        },
+        {
+          "name": "clamp--480",
+          "color": "#5a6066",
+          "parts": [
+            "clamp--480",
+            "clamp-0",
+            "clamp-480"
+          ]
+        },
+        {
+          "name": "check-arrow",
+          "color": "#2a2d30",
+          "parts": [
+            "check-arrow",
+            "supply-hose-0",
+            "supply-hose-1",
+            "supply-hose-2",
+            "gauge-case"
+          ]
+        },
+        {
+          "name": "ball-valve-lever",
+          "color": "#c0392b",
+          "parts": [
+            "ball-valve-lever",
+            "gauge-needle"
+          ]
+        },
+        {
+          "name": "gauge-tee",
+          "color": "#c9a43a",
+          "parts": [
+            "gauge-tee"
+          ]
+        },
+        {
+          "name": "gauge-face",
+          "color": "#f2f2ec",
+          "parts": [
+            "gauge-face",
+            "valve-lever-0",
+            "valve-lever-1",
+            "valve-lever-2",
+            "valve-lever-3",
+            "valve-lever-4",
+            "valve-lever-5",
+            "valve-lever-6",
+            "valve-lever-7"
+          ]
+        },
+        {
+          "name": "valves",
+          "color": "#2a8a4a",
+          "parts": [
+            "valve-0",
+            "valve-1",
+            "valve-2",
+            "valve-3",
+            "valve-4",
+            "valve-5",
+            "valve-6",
+            "valve-7"
+          ],
+          "param": "valves"
+        },
+        {
+          "name": "valve-barb-0",
+          "color": "#c9ccce",
+          "parts": [
+            "valve-barb-0",
+            "valve-barb-1",
+            "valve-barb-2",
+            "valve-barb-3",
+            "valve-barb-4",
+            "valve-barb-5",
+            "valve-barb-6",
+            "valve-barb-7"
+          ]
+        },
+        {
+          "name": "airline",
+          "color": "#cfe0d8",
+          "parts": [
+            "airline-0-0",
+            "airline-0-1",
+            "airline-0-2",
+            "airline-1-0",
+            "airline-1-1",
+            "airline-1-2",
+            "airline-2-0",
+            "airline-2-1",
+            "airline-2-2",
+            "airline-3-0",
+            "airline-3-1",
+            "airline-3-2",
+            "airline-4-0",
+            "airline-4-1",
+            "airline-4-2",
+            "airline-5-0",
+            "airline-5-1",
+            "airline-5-2",
+            "airline-6-0",
+            "airline-6-1",
+            "airline-6-2",
+            "airline-7-0",
+            "airline-7-1",
+            "airline-7-2"
+          ],
+          "param": "airline"
+        },
+        {
+          "name": "bubbles-0",
+          "color": "#cfeae8",
+          "parts": [
+            "bubbles-0",
+            "bubbles-1",
+            "bubbles-2",
+            "bubbles-3",
+            "bubbles-4",
+            "bubbles-5",
+            "bubbles-6",
+            "bubbles-7"
+          ]
+        },
+        {
+          "name": "bubbles-core-0",
+          "color": "#f4fbfb",
+          "parts": [
+            "bubbles-core-0",
+            "bubbles-core-1",
+            "bubbles-core-2",
+            "bubbles-core-3",
+            "bubbles-core-4",
+            "bubbles-core-5",
+            "bubbles-core-6",
+            "bubbles-core-7"
+          ]
         }
       ]
     },
@@ -124893,13 +125093,19 @@
       "id": "air-pump-cabinet",
       "kit": "hydroponics",
       "title": "Air pump cabinet",
-      "description": "Ventilated air pump enclosure with raised intake louvres, lift feet and a service panel. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
+      "description": "Hydroponic air pump cabinet at about real size: steel cabinet on a plinth with its louvred door swung open, one or two rounded linear diaphragm air pumps with intake grilles and outlet hoses, a shelf with a timer controller and airflow meter, a roof exhaust hood and a gang-valve air manifold with pressure gauge and airlines. Material controls: cabinet, pump housings, airlines, gang valves, plus a one/two pump choice. greenhouseGreen, labWhite, safetyOrange and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "air pump",
+        "linear air pump",
+        "diaphragm pump",
+        "aeration",
+        "cabinet",
+        "gang valve",
+        "deep water culture",
         "hydroponics",
         "greenhouse",
-        "controlled environment agriculture",
         "low poly",
         "scene prop"
       ],
@@ -124912,8 +125118,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/air-pump-cabinet.kcad.ts",
       "preview": "/assets/hydroponics-air-pump-cabinet.png",
-      "sourceSha256": "56d43b67c9b0ae2a2d1196181514ab8ead57d6d6f233411670a34522139ca9d1",
-      "triangleBudget": 1800,
+      "sourceSha256": "de1cc31a04e6e9eaa22a9417614ebbaaca5672bf32101249435c6eba7c76d980",
+      "triangleBudget": 4200,
       "params": [
         {
           "name": "scale",
@@ -124925,78 +125131,324 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "cabinet",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#3f7a64",
+          "label": "Cabinet (powder-coated steel)"
         },
         {
-          "name": "pvc",
+          "name": "housing",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#d9d4c4",
+          "label": "Pump housings (polymer)"
         },
         {
-          "name": "polymer",
+          "name": "airline",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#cfe0d8",
+          "label": "Airlines (clear vinyl)"
+        },
+        {
+          "name": "valves",
+          "type": "color",
+          "default": "#2f6fa8",
+          "label": "Gang valves (polymer)"
+        },
+        {
+          "name": "pumps",
+          "type": "choice",
+          "default": "two pumps",
+          "label": "Pumps",
+          "choices": [
+            "one pump",
+            "two pumps"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa"
+        "greenhouseGreen": {
+          "cabinet": "#3f7a64",
+          "housing": "#d9d4c4",
+          "airline": "#cfe0d8",
+          "valves": "#2f6fa8"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b"
+        "labWhite": {
+          "cabinet": "#e6e8e4",
+          "housing": "#3c4246",
+          "airline": "#d7e2dc",
+          "valves": "#2a8a4a"
+        },
+        "safetyOrange": {
+          "cabinet": "#d8742e",
+          "housing": "#e9e6dc",
+          "airline": "#cfd8d2",
+          "valves": "#26292c"
+        },
+        "weathered": {
+          "cabinet": "#5d7368",
+          "housing": "#bdb59e",
+          "airline": "#c9c4a6",
+          "valves": "#4f6a80"
         }
       },
       "stats": {
-        "triangles": 260,
+        "triangles": 4036,
         "sizeM": [
-          0.82,
-          1.13,
-          0.757
+          1.333805,
+          1.245,
+          1.112924
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "plinth",
+          "color": "#2a2d30",
           "parts": [
-            "cabinet",
-            "roof-cap",
-            "front-door",
+            "plinth",
             "door-handle",
-            "louvre-a",
-            "louvre-b",
-            "louvre-c",
-            "air-intake"
-          ],
-          "param": "polymer"
+            "power-strip",
+            "flowmeter-tick-0",
+            "flowmeter-tick-1",
+            "flowmeter-tick-2",
+            "flowmeter-tick-3",
+            "flowmeter-tick-4",
+            "gauge-case"
+          ]
         },
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "cabinet",
+          "color": "#3f7a64",
           "parts": [
-            "left-foot",
-            "right-foot"
+            "shell",
+            "shelf",
+            "door",
+            "exhaust-hood"
           ],
-          "param": "powderCoatedSteel"
+          "param": "cabinet"
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "interior-back",
+          "color": "#c9ccc6",
           "parts": [
-            "outlet-stub"
+            "interior-back"
+          ]
+        },
+        {
+          "name": "door-wiring-card",
+          "color": "#f2f0e6",
+          "parts": [
+            "door-wiring-card"
+          ]
+        },
+        {
+          "name": "hinge-0",
+          "color": "#5a6066",
+          "parts": [
+            "hinge-0",
+            "hinge-1",
+            "controller-key-1",
+            "controller-key-2",
+            "manifold-bracket-l",
+            "manifold-bracket-r"
+          ]
+        },
+        {
+          "name": "pump-a-feet",
+          "color": "#1b1b1b",
+          "parts": [
+            "pump-a-feet",
+            "pump-a-cord-0",
+            "pump-a-cord-1",
+            "pump-b-feet",
+            "pump-b-cord-0",
+            "pump-b-cord-1",
+            "mains-0",
+            "mains-1"
+          ]
+        },
+        {
+          "name": "housing",
+          "color": "#d9d4c4",
+          "parts": [
+            "pump-a-body",
+            "pump-a-crown",
+            "pump-a-grille-slat-0",
+            "pump-a-grille-slat-1",
+            "pump-a-grille-slat-2",
+            "pump-a-grille-slat-3",
+            "pump-a-grille-slat-4",
+            "pump-b-body",
+            "pump-b-crown",
+            "pump-b-grille-slat-0",
+            "pump-b-grille-slat-1",
+            "pump-b-grille-slat-2",
+            "pump-b-grille-slat-3",
+            "pump-b-grille-slat-4"
           ],
-          "param": "pvc"
+          "param": "housing"
+        },
+        {
+          "name": "pump-a-grille",
+          "color": "#3a3f44",
+          "parts": [
+            "pump-a-grille",
+            "pump-b-grille"
+          ]
+        },
+        {
+          "name": "valves",
+          "color": "#2f6fa8",
+          "parts": [
+            "pump-a-stripe",
+            "pump-b-stripe",
+            "valve-0",
+            "valve-1",
+            "valve-2",
+            "valve-3",
+            "valve-4",
+            "valve-5",
+            "valve-6",
+            "valve-7"
+          ],
+          "param": "valves"
+        },
+        {
+          "name": "pump-a-switch",
+          "color": "#c0392b",
+          "parts": [
+            "pump-a-switch",
+            "pump-b-switch",
+            "flowmeter-float",
+            "gauge-needle"
+          ]
+        },
+        {
+          "name": "pump-a-nozzle",
+          "color": "#c9ccce",
+          "parts": [
+            "pump-a-nozzle",
+            "pump-b-nozzle",
+            "valve-barb-0",
+            "valve-barb-1",
+            "valve-barb-2",
+            "valve-barb-3",
+            "valve-barb-4",
+            "valve-barb-5",
+            "valve-barb-6",
+            "valve-barb-7",
+            "gauge-stem"
+          ]
+        },
+        {
+          "name": "airline",
+          "color": "#cfe0d8",
+          "parts": [
+            "pump-a-hose-0",
+            "pump-a-hose-1",
+            "pump-a-hose-2",
+            "pump-b-hose-0",
+            "pump-b-hose-1",
+            "pump-b-hose-2",
+            "flowmeter-tube",
+            "airline-0-0",
+            "airline-0-1",
+            "airline-0-2",
+            "airline-0-3",
+            "airline-1-0",
+            "airline-1-1",
+            "airline-1-2",
+            "airline-1-3",
+            "airline-2-0",
+            "airline-2-1",
+            "airline-2-2",
+            "airline-2-3",
+            "airline-3-0",
+            "airline-3-1",
+            "airline-3-2",
+            "airline-3-3",
+            "airline-4-0",
+            "airline-4-1",
+            "airline-4-2",
+            "airline-4-3",
+            "airline-5-0",
+            "airline-5-1",
+            "airline-5-2",
+            "airline-5-3",
+            "airline-6-0",
+            "airline-6-1",
+            "airline-6-2",
+            "airline-6-3",
+            "airline-7-0",
+            "airline-7-1",
+            "airline-7-2",
+            "airline-7-3"
+          ],
+          "param": "airline"
+        },
+        {
+          "name": "controller",
+          "color": "#e9ebe7",
+          "parts": [
+            "controller",
+            "flowmeter-back"
+          ]
+        },
+        {
+          "name": "controller-display",
+          "color": "#14281d",
+          "parts": [
+            "controller-display"
+          ]
+        },
+        {
+          "name": "controller-digit-0",
+          "color": "#6fe08a",
+          "parts": [
+            "controller-digit-0",
+            "controller-digit-1",
+            "controller-digit-2"
+          ]
+        },
+        {
+          "name": "controller-key-0",
+          "color": "#2a8a4a",
+          "parts": [
+            "controller-key-0"
+          ]
+        },
+        {
+          "name": "exhaust-slot",
+          "color": "#1b1d1f",
+          "parts": [
+            "exhaust-slot"
+          ]
+        },
+        {
+          "name": "manifold-pipe",
+          "color": "#d8dcd8",
+          "parts": [
+            "manifold-pipe",
+            "manifold-cap-l",
+            "manifold-cap-r",
+            "manifold-feed"
+          ]
+        },
+        {
+          "name": "valve-lever-0",
+          "color": "#f2f2ec",
+          "parts": [
+            "valve-lever-0",
+            "valve-lever-1",
+            "valve-lever-2",
+            "valve-lever-3",
+            "valve-lever-4",
+            "valve-lever-5",
+            "valve-lever-6",
+            "valve-lever-7",
+            "gauge-face"
+          ]
         }
       ]
     },
@@ -125346,13 +125798,19 @@
       "id": "circulation-pump-skid",
       "kit": "hydroponics",
       "title": "Circulation pump skid",
-      "description": "Recirculation pump skid with a cylindrical motor and volute, axial coupling guard, inlet flange and discharge riser. Parameters: overall scale, powder-coated steel, pvc, polymer; weathered and highVisibility presets.",
+      "description": "Nutrient recirculation pump skid at about real size: end-suction centrifugal pump with finned TEFC motor, fan cowl and terminal box, coupling guard, bearing frame and volute with axial suction and top discharge, isolation valve and flanges on the suction, check valve, gate valve with handwheel and pressure gauge on the discharge riser into a header, on a galvanised channel frame with drip tray. Material controls: motor, pump casing, pipework, base frame, plus a single or duty/standby pump choice. industrialBlue, redCasing, stainless and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "pump",
+        "centrifugal pump",
+        "end suction pump",
+        "pump skid",
+        "circulation",
+        "recirculation",
+        "nutrient solution",
         "hydroponics",
         "greenhouse",
-        "controlled environment agriculture",
         "low poly",
         "scene prop"
       ],
@@ -125365,8 +125823,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/circulation-pump-skid.kcad.ts",
       "preview": "/assets/hydroponics-circulation-pump-skid.png",
-      "sourceSha256": "2be97b1fd21c0dacd66f83a5135d7a572fd1290fec0d303b2f237e86b10678dc",
-      "triangleBudget": 1800,
+      "sourceSha256": "6ed553a5ca0a9b2827cd40734924516304623652f83ace28ce38cea2e0104c4a",
+      "triangleBudget": 3600,
       "params": [
         {
           "name": "scale",
@@ -125378,78 +125836,213 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "motor",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#3a78a8",
+          "label": "Motor (painted steel)"
         },
         {
-          "name": "pvc",
+          "name": "casing",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#b23a32",
+          "label": "Pump casing (cast iron)"
         },
         {
-          "name": "polymer",
+          "name": "pipework",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#8f989e",
+          "label": "Pipework (PVC-U)"
+        },
+        {
+          "name": "frame",
+          "type": "color",
+          "default": "#a9b0b3",
+          "label": "Base frame (galvanised steel)"
+        },
+        {
+          "name": "pumps",
+          "type": "choice",
+          "default": "single",
+          "label": "Pumps",
+          "choices": [
+            "single",
+            "duty + standby"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa"
+        "industrialBlue": {
+          "motor": "#3a78a8",
+          "casing": "#b23a32",
+          "pipework": "#8f989e",
+          "frame": "#a9b0b3"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b"
+        "redCasing": {
+          "motor": "#b23a32",
+          "casing": "#b23a32",
+          "pipework": "#5a6066",
+          "frame": "#7d868b"
+        },
+        "stainless": {
+          "motor": "#c9ced1",
+          "casing": "#d7dbdd",
+          "pipework": "#e6e8e4",
+          "frame": "#9ba3a7"
+        },
+        "weathered": {
+          "motor": "#4f6a80",
+          "casing": "#7d4a3e",
+          "pipework": "#a6a28e",
+          "frame": "#8b8a80"
         }
       },
       "stats": {
-        "triangles": 516,
+        "triangles": 1732,
         "sizeM": [
-          1.05,
-          0.67,
-          0.47
+          1.865,
+          1.47,
+          0.63
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "frame",
+          "color": "#a9b0b3",
           "parts": [
-            "base-plate",
-            "motor-block",
-            "coupling-guard",
+            "channel-f",
+            "channel-b",
+            "cross--900",
+            "cross--330",
+            "cross-250",
+            "cross-800",
+            "drip-tray",
+            "header-support",
+            "header-saddle",
+            "isolator-post"
+          ],
+          "param": "frame"
+        },
+        {
+          "name": "drain-plug",
+          "color": "#5a6066",
+          "parts": [
+            "drain-plug",
+            "pump-cowl-grille",
+            "pump-check-cover"
+          ]
+        },
+        {
+          "name": "motor",
+          "color": "#3a78a8",
+          "parts": [
+            "pump-motor-feet",
+            "pump-motor-body",
+            "pump-fin-0",
+            "pump-fin-1",
+            "pump-fin-2",
+            "pump-fin-3",
+            "pump-fin-4",
+            "pump-fin-5",
+            "pump-fin-6",
+            "pump-flange-end",
+            "pump-terminal-box"
+          ],
+          "param": "motor"
+        },
+        {
+          "name": "pump-fan-cowl",
+          "color": "#2a2d30",
+          "parts": [
+            "pump-fan-cowl",
+            "pump-gland",
+            "pump-butterfly",
+            "pump-check-valve",
+            "pump-gate-body",
+            "pump-gate-bonnet",
+            "pump-gauge-case"
+          ]
+        },
+        {
+          "name": "pump-rating-plate",
+          "color": "#d9dcde",
+          "parts": [
+            "pump-rating-plate"
+          ]
+        },
+        {
+          "name": "pump-guard",
+          "color": "#e8b923",
+          "parts": [
+            "pump-guard",
+            "pump-guard-base",
+            "isolator-box"
+          ]
+        },
+        {
+          "name": "casing",
+          "color": "#b23a32",
+          "parts": [
+            "pump-bearing-frame",
+            "pump-bearing-foot",
             "pump-volute",
-            "motor-endcap",
-            "pump-support-near",
-            "pump-support-far"
+            "pump-volute-scroll",
+            "pump-volute-foot",
+            "pump-suction-neck",
+            "pump-suction-flange",
+            "pump-discharge-neck",
+            "pump-discharge-flange"
           ],
-          "param": "powderCoatedSteel"
+          "param": "casing"
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "pipework",
+          "color": "#8f989e",
           "parts": [
-            "front-nameplate"
+            "pump-suction-pipe",
+            "pump-inlet-flange",
+            "pump-riser",
+            "header-elbow-0",
+            "header",
+            "header-flange"
           ],
-          "param": "polymer"
+          "param": "pipework"
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "pump-butterfly-lever",
+          "color": "#c0392b",
           "parts": [
-            "inlet-pipe",
-            "discharge-pipe",
-            "inlet-flange"
-          ],
-          "param": "pvc"
+            "pump-butterfly-lever",
+            "pump-handwheel",
+            "pump-handwheel-spoke-0",
+            "pump-handwheel-spoke-1",
+            "pump-handwheel-spoke-2",
+            "pump-gauge-needle",
+            "isolator-switch"
+          ]
+        },
+        {
+          "name": "pump-gate-stem",
+          "color": "#c9ccce",
+          "parts": [
+            "pump-gate-stem"
+          ]
+        },
+        {
+          "name": "pump-gauge-tee",
+          "color": "#c9a43a",
+          "parts": [
+            "pump-gauge-tee"
+          ]
+        },
+        {
+          "name": "pump-gauge-face",
+          "color": "#f2f2ec",
+          "parts": [
+            "pump-gauge-face",
+            "flow-arrow"
+          ]
         }
       ]
     },
@@ -127204,13 +127797,19 @@
       "id": "greenhouse-circulation-fan",
       "kit": "hydroponics",
       "title": "Greenhouse circulation fan",
-      "description": "Floor-stand circulation fan with an upright circular guard, swept rotor blades, vertical mast and broad base. Parameters: overall scale, powder-coated steel, polymer; weathered and highVisibility presets.",
+      "description": "Floor-stand greenhouse circulation (HAF) fan at about real size: galvanised drum shroud with concentric-ring wire guards front and back, five pitched blades on a hub, rear motor can, yoke with tilt knobs, telescopic mast with clamp and speed controller, and a four-leg base on rubber feet. Material controls: shroud, guard, blades, stand, plus blade diameter (500/630/750 mm) and tilt choices. galvanised, blackGuard, whiteHousing and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "fan",
+        "circulation fan",
+        "haf fan",
+        "air circulation",
+        "pedestal fan",
+        "ventilation",
+        "climate",
         "hydroponics",
         "greenhouse",
-        "controlled environment agriculture",
         "low poly",
         "scene prop"
       ],
@@ -127223,8 +127822,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/greenhouse-circulation-fan.kcad.ts",
       "preview": "/assets/hydroponics-greenhouse-circulation-fan.png",
-      "sourceSha256": "6c9edf27c3ca4c8cce2a6d07f4f545c4650269183416e342b87d01ed1debc0b5",
-      "triangleBudget": 1800,
+      "sourceSha256": "f343d78a445ca6277c8bb0fae3686bc6bd9935718ad35c3bbd420de824ca048b",
+      "triangleBudget": 3000,
       "params": [
         {
           "name": "scale",
@@ -127236,63 +127835,228 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "shroud",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#b9c0c2",
+          "label": "Shroud (galvanised steel)"
         },
         {
-          "name": "polymer",
+          "name": "guard",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#3a3f44",
+          "label": "Guard (powder-coated wire)"
+        },
+        {
+          "name": "blades",
+          "type": "color",
+          "default": "#2f6fa8",
+          "label": "Blades (polypropylene)"
+        },
+        {
+          "name": "stand",
+          "type": "color",
+          "default": "#5d6b75",
+          "label": "Stand (powder-coated steel)"
+        },
+        {
+          "name": "diameter",
+          "type": "choice",
+          "default": "630",
+          "label": "Blade diameter (mm)",
+          "choices": [
+            "500",
+            "630",
+            "750"
+          ]
+        },
+        {
+          "name": "tilt",
+          "type": "choice",
+          "default": "up 15°",
+          "label": "Head tilt",
+          "choices": [
+            "level",
+            "up 15°"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "polymer": "#b4b5aa"
+        "galvanised": {
+          "shroud": "#b9c0c2",
+          "guard": "#3a3f44",
+          "blades": "#2f6fa8",
+          "stand": "#5d6b75"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "polymer": "#f2c84b"
+        "blackGuard": {
+          "shroud": "#2a2d30",
+          "guard": "#14161a",
+          "blades": "#c9ced1",
+          "stand": "#3c4246"
+        },
+        "whiteHousing": {
+          "shroud": "#eceeea",
+          "guard": "#9aa0a4",
+          "blades": "#e0a21c",
+          "stand": "#d9dcde"
+        },
+        "weathered": {
+          "shroud": "#9c9f96",
+          "guard": "#4e4a42",
+          "blades": "#5f7f96",
+          "stand": "#6d6a5e"
         }
       },
       "stats": {
-        "triangles": 348,
+        "triangles": 2352,
         "sizeM": [
-          0.722803,
-          1.94,
-          0.42
+          0.951178,
+          1.565231,
+          0.951178
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "shroud",
+          "color": "#b9c0c2",
           "parts": [
-            "base-foot",
-            "mast",
-            "motor-housing",
-            "guard-crossbar-a",
-            "guard-crossbar-b",
-            "fan-guard",
-            "stand-collar"
+            "shroud-drum",
+            "shroud-lip-front",
+            "shroud-lip-rear",
+            "guard-badge"
           ],
-          "param": "powderCoatedSteel"
+          "param": "shroud"
         },
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "guard",
+          "color": "#3a3f44",
           "parts": [
-            "hub",
-            "blade-north",
-            "blade-southwest",
-            "blade-southeast"
+            "guard-ring-0",
+            "guard-ring-1",
+            "guard-ring-2",
+            "guard-ring-3",
+            "guard-spoke-0",
+            "guard-spoke-1",
+            "guard-spoke-2",
+            "guard-spoke-3",
+            "guard-spoke-4",
+            "guard-spoke-5",
+            "guard-spoke-6",
+            "guard-spoke-7",
+            "guard-spoke-8",
+            "guard-spoke-9",
+            "guard-spoke-10",
+            "guard-spoke-11",
+            "rear-ring-0",
+            "rear-ring-1",
+            "rear-spoke-0",
+            "rear-spoke-1",
+            "rear-spoke-2",
+            "rear-spoke-3",
+            "rear-spoke-4",
+            "rear-spoke-5",
+            "motor-rib-0",
+            "motor-rib-1",
+            "motor-rib-2",
+            "motor-rib-3",
+            "motor-rib-4",
+            "motor-rib-5"
           ],
-          "param": "polymer"
+          "param": "guard"
+        },
+        {
+          "name": "blades",
+          "color": "#2f6fa8",
+          "parts": [
+            "guard-badge-mark",
+            "blade-0",
+            "blade-1",
+            "blade-2",
+            "blade-3",
+            "blade-4",
+            "hub"
+          ],
+          "param": "blades"
+        },
+        {
+          "name": "hub-cap",
+          "color": "#8c9296",
+          "parts": [
+            "hub-cap",
+            "pivot-stud-l",
+            "pivot-stud-r"
+          ]
+        },
+        {
+          "name": "motor",
+          "color": "#2a2d30",
+          "parts": [
+            "motor",
+            "motor-terminal",
+            "controller-scale"
+          ]
+        },
+        {
+          "name": "motor-cap",
+          "color": "#5a6066",
+          "parts": [
+            "motor-cap"
+          ]
+        },
+        {
+          "name": "stand",
+          "color": "#5d6b75",
+          "parts": [
+            "yoke-arm-l",
+            "yoke-arm-r",
+            "yoke-bar",
+            "mast-sleeve",
+            "mast-clamp",
+            "base-hub",
+            "leg-0",
+            "leg-1",
+            "leg-2",
+            "leg-3"
+          ],
+          "param": "stand"
+        },
+        {
+          "name": "tilt-knob-l",
+          "color": "#1b1b1b",
+          "parts": [
+            "tilt-knob-l",
+            "tilt-knob-r",
+            "clamp-knob",
+            "cable-0",
+            "cable-1",
+            "cable-2",
+            "foot-0",
+            "foot-1",
+            "foot-2",
+            "foot-3"
+          ]
+        },
+        {
+          "name": "mast-inner",
+          "color": "#c9ced1",
+          "parts": [
+            "mast-inner"
+          ]
+        },
+        {
+          "name": "controller",
+          "color": "#e9ebe7",
+          "parts": [
+            "controller"
+          ]
+        },
+        {
+          "name": "controller-dial",
+          "color": "#c0392b",
+          "parts": [
+            "controller-dial"
+          ]
         }
       ]
     },
@@ -132733,13 +133497,19 @@
       "id": "solution-mixing-tank",
       "kit": "hydroponics",
       "title": "Solution mixing tank",
-      "description": "Vertical mixing vessel with top motor bridge, short agitator shaft and side sampling ports. Parameters: overall scale, powder-coated steel, stainless steel, pvc, polymer; weathered and highVisibility presets.",
+      "description": "Cone-bottom nutrient mixing tank at about real size: ribbed rotomoulded vessel on a braced four-leg stand with a support ring, gearmotor agitator on a bridge over the dome, hinged manway lid open over the solution, water fill line, front level sight tube with graduations, bottom outlet ball valve with camlock hose, and a fertiliser sack by the leg. Material controls: tank, stand, agitator motor, fittings, plus a 500 L / 1000 L choice. naturalPoly, blackUv, bluePoly and weathered presets.",
       "category": "prop",
       "origin": "base",
       "tags": [
+        "mixing tank",
+        "batch tank",
+        "cone bottom tank",
+        "agitator",
+        "mixer",
+        "fertiliser",
+        "nutrient solution",
         "hydroponics",
         "greenhouse",
-        "controlled environment agriculture",
         "low poly",
         "scene prop"
       ],
@@ -132752,8 +133522,8 @@
       "license": "CC0-1.0",
       "source": "catalog/kits/hydroponics/solution-mixing-tank.kcad.ts",
       "preview": "/assets/hydroponics-solution-mixing-tank.png",
-      "sourceSha256": "f6d1e2a026ea45aabd1efac8215b9727ef47091d2b1012d77c62c2c6f575058f",
-      "triangleBudget": 1800,
+      "sourceSha256": "79ae8b3e2c77f885ef3e76bb74808f4555c8617fc03effbeb9febd1861c617f6",
+      "triangleBudget": 2400,
       "params": [
         {
           "name": "scale",
@@ -132765,92 +133535,252 @@
           "step": 0.05
         },
         {
-          "name": "powderCoatedSteel",
+          "name": "tank",
           "type": "color",
-          "default": "#557b70",
-          "label": "Powder-coated steel"
+          "default": "#e3dcc2",
+          "label": "Tank (polyethylene)"
         },
         {
-          "name": "stainlessSteel",
+          "name": "stand",
           "type": "color",
-          "default": "#b2c0bf",
-          "label": "Stainless steel"
+          "default": "#a9b0b3",
+          "label": "Stand (galvanised steel)"
         },
         {
-          "name": "pvc",
+          "name": "motor",
           "type": "color",
-          "default": "#c7d4ca",
-          "label": "PVC"
+          "default": "#3a78a8",
+          "label": "Agitator motor (painted steel)"
         },
         {
-          "name": "polymer",
+          "name": "fittings",
           "type": "color",
-          "default": "#ddd8c7",
-          "label": "Polymer"
+          "default": "#8f989e",
+          "label": "Fittings (PVC-U)"
+        },
+        {
+          "name": "volume",
+          "type": "choice",
+          "default": "1000 L",
+          "label": "Volume",
+          "choices": [
+            "500 L",
+            "1000 L"
+          ]
         }
       ],
       "presets": {
-        "weathered": {
-          "powderCoatedSteel": "#69766e",
-          "stainlessSteel": "#929e9c",
-          "pvc": "#b2bcae",
-          "polymer": "#b4b5aa"
+        "naturalPoly": {
+          "tank": "#e3dcc2",
+          "stand": "#a9b0b3",
+          "motor": "#3a78a8",
+          "fittings": "#8f989e"
         },
-        "highVisibility": {
-          "powderCoatedSteel": "#e87832",
-          "stainlessSteel": "#d6dfdc",
-          "pvc": "#ead789",
-          "polymer": "#f2c84b"
+        "blackUv": {
+          "tank": "#2b2e30",
+          "stand": "#8f989e",
+          "motor": "#c0392b",
+          "fittings": "#5a6066"
+        },
+        "bluePoly": {
+          "tank": "#3a6fa0",
+          "stand": "#d9dcde",
+          "motor": "#2a2d30",
+          "fittings": "#eceeea"
+        },
+        "weathered": {
+          "tank": "#c8bd98",
+          "stand": "#8b8a80",
+          "motor": "#4f6a80",
+          "fittings": "#a6a28e"
         }
       },
       "stats": {
-        "triangles": 376,
+        "triangles": 1670,
         "sizeM": [
-          1.04,
-          1.675,
-          1.092
+          1.643677,
+          2.57,
+          1.298814
         ],
         "minUpM": 0,
         "materials": 1
       },
       "palette": [
         {
-          "name": "polymer",
-          "color": "#ddd8c7",
+          "name": "tank",
+          "color": "#e3dcc2",
           "parts": [
-            "tank-body",
-            "top-rim",
-            "service-panel",
-            "agitator-blade",
-            "sampling-port"
+            "vessel",
+            "rib-0",
+            "rib-1",
+            "lid",
+            "sack-fold"
           ],
-          "param": "polymer"
+          "param": "tank"
         },
         {
-          "name": "powderCoatedSteel",
-          "color": "#557b70",
+          "name": "solution",
+          "color": "#3f8f8a",
           "parts": [
-            "motor-bridge",
-            "motor-cover",
-            "leg-front"
-          ],
-          "param": "powderCoatedSteel"
+            "solution",
+            "sight-level"
+          ]
         },
         {
-          "name": "stainlessSteel",
-          "color": "#b2c0bf",
+          "name": "swirl",
+          "color": "#7fc4be",
           "parts": [
-            "agitator-shaft"
-          ],
-          "param": "stainlessSteel"
+            "swirl"
+          ]
         },
         {
-          "name": "pvc",
-          "color": "#c7d4ca",
+          "name": "fittings",
+          "color": "#8f989e",
           "parts": [
-            "drain-outlet"
+            "lid-handle",
+            "fill-riser",
+            "fill-elbow",
+            "fill-drop",
+            "fill-valve",
+            "sight-bracket-0",
+            "sight-bracket-1",
+            "outlet-neck",
+            "outlet-valve",
+            "outlet-elbow"
           ],
-          "param": "pvc"
+          "param": "fittings"
+        },
+        {
+          "name": "lid-hinge",
+          "color": "#5a6066",
+          "parts": [
+            "lid-hinge"
+          ]
+        },
+        {
+          "name": "stand",
+          "color": "#a9b0b3",
+          "parts": [
+            "leg-0",
+            "foot-0",
+            "brace-0",
+            "leg-1",
+            "foot-1",
+            "brace-1",
+            "leg-2",
+            "foot-2",
+            "brace-2",
+            "leg-3",
+            "foot-3",
+            "brace-3",
+            "support-ring",
+            "ring-gusset-l",
+            "bridge",
+            "bridge-post-l",
+            "bridge-post-r",
+            "fill-clip-1030",
+            "fill-clip-1680"
+          ],
+          "param": "stand"
+        },
+        {
+          "name": "motor",
+          "color": "#3a78a8",
+          "parts": [
+            "gearbox",
+            "motor-body",
+            "motor-fin-0",
+            "motor-fin-1",
+            "motor-fin-2",
+            "motor-fin-3",
+            "motor-fin-4",
+            "motor-fin-5",
+            "motor-fin-6",
+            "motor-fin-7",
+            "motor-terminal"
+          ],
+          "param": "motor"
+        },
+        {
+          "name": "fan-cowl",
+          "color": "#2a2d30",
+          "parts": [
+            "fan-cowl",
+            "grad-0",
+            "grad-1",
+            "grad-2",
+            "grad-3",
+            "grad-4",
+            "grad-5",
+            "hose-0",
+            "hose-1",
+            "hose-2"
+          ]
+        },
+        {
+          "name": "rating-plate",
+          "color": "#d9dcde",
+          "parts": [
+            "rating-plate"
+          ]
+        },
+        {
+          "name": "fill-lever",
+          "color": "#2f6fa8",
+          "parts": [
+            "fill-lever"
+          ]
+        },
+        {
+          "name": "sight-tube",
+          "color": "#cfd8d2",
+          "parts": [
+            "sight-tube"
+          ]
+        },
+        {
+          "name": "label",
+          "color": "#2a8a4a",
+          "parts": [
+            "label",
+            "sack-print"
+          ]
+        },
+        {
+          "name": "label-band",
+          "color": "#f2f2ec",
+          "parts": [
+            "label-band",
+            "label-band-2"
+          ]
+        },
+        {
+          "name": "outlet-lever",
+          "color": "#c0392b",
+          "parts": [
+            "outlet-lever"
+          ]
+        },
+        {
+          "name": "camlock",
+          "color": "#c9a43a",
+          "parts": [
+            "camlock"
+          ]
+        },
+        {
+          "name": "sack",
+          "color": "#f2f0e6",
+          "parts": [
+            "sack"
+          ]
+        },
+        {
+          "name": "sack-pallet",
+          "color": "#b08a5a",
+          "parts": [
+            "sack-pallet"
+          ]
         }
       ]
     },
