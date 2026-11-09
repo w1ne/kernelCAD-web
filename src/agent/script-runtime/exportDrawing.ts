@@ -20,6 +20,14 @@ import { svgSheetsToPdf } from '../../kernel/export/pdf/svgSheetToPdf';
 import { KERNELCAD_NAME, attributionGenerator } from '../../shared/links/attribution';
 
 import type { ExportInput, ExportResult, PdfDrawingOptions } from './export';
+import { readPdfPageVectors } from '../drawing/pdfVectors';
+import {
+  attachDrawingPdfReadback,
+  readDrawingSvgPageSize,
+  runDrawingVisualQa,
+  validateDrawingVisualQaOptions,
+} from '../../kernel/backends/occt/drawingVisualQa';
+import type { DrawingSheetSize } from '../../kernel/backends/occt/drawingLayout';
 
 type ScriptRun = Awaited<ReturnType<typeof runScript>>;
 
@@ -78,7 +86,39 @@ export async function exportPdfDrawing(
     creator: `${KERNELCAD_NAME} pdf-drawing export`,
     producer: attributionGenerator(),
   });
-  return { ...sheet, bytes };
+  if (!svgOpts.visualQa || !sheet.drawingReport?.visualQa) return { ...sheet, bytes };
+  try {
+    const page = await readPdfPageVectors(bytes);
+    const expectedSize = readDrawingSvgPageSize(svg);
+    if (!expectedSize) throw new Error('The analyzed SVG sheet has no readable page extent.');
+    const visualQa = attachDrawingPdfReadback(sheet.drawingReport.visualQa, {
+      pageCount: page.pageCount,
+      widthMm: page.widthMm,
+      heightMm: page.heightMm,
+      expectedWidthMm: expectedSize.width,
+      expectedHeightMm: expectedSize.height,
+      vectorPathCount: page.paths.length,
+      imageCount: page.imageCount,
+      text: page.texts.map(row => row.text),
+      requestedViews: svgOpts.views,
+    });
+    return { ...sheet, bytes, drawingReport: { ...sheet.drawingReport, visualQa } };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const previous = sheet.drawingReport.visualQa;
+    const visualQa = {
+      ...previous,
+      status: 'incomplete' as const,
+      issues: [...previous.issues, {
+        code: 'pdf-readback-failed' as const,
+        severity: 'error' as const,
+        message: `The exported PDF could not be read back: ${message}`,
+        action: 'Re-export and inspect the PDF bytes and the corresponding SVG sheet.',
+      }],
+      pdf: { status: 'incomplete' as const, pageCount: 0, widthMm: 0, heightMm: 0, vectorPathCount: 0, imageCount: 0, missingText: [] },
+    };
+    return { ...sheet, bytes, drawingReport: { ...sheet.drawingReport, visualQa } };
+  }
 }
 
 /** Drop the keys whose value is undefined (exact optional properties). */
@@ -106,6 +146,7 @@ function pdfSheetOptions(pdf: PdfDrawingOptions, material: string | undefined): 
       reviewPlans: pdf.reviewPlans,
       decisionResolutions: pdf.decisionResolutions,
       requireCompleteReview: pdf.requireCompleteReview,
+      visualQa: pdf.visualQa,
       annotations: pdf.annotations,
       placedAnnotations: pdf.placedAnnotations,
       sections: pdf.sections,
@@ -135,6 +176,64 @@ function sharedAssemblyMaterial(arm: Assembly | undefined): string | undefined {
 }
 
 async function renderDrawingSheet(
+  opts: SvgDrawingOptions,
+  fileName: string,
+  lowered: ShapeBackend,
+  targetId: string,
+  run: ScriptRun,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+): Promise<ExportResult> {
+  const visualQaOptions = validateDrawingVisualQaOptions(opts.visualQa);
+  const initial = await renderDrawingSheetOnce(opts, fileName, lowered, targetId, run, diagnostics, featureCount);
+  if (!visualQaOptions || initial.bytes.length === 0) return initial;
+  if (opts.style === 'architectural') {
+    const report = {
+      status: 'incomplete' as const,
+      source: 'exported-svg' as const,
+      checks: [{ id: 'drawing-style', status: 'unsupported' as const, message: 'Visual QA currently covers mechanical orthographic sheets.' }],
+      issues: [{
+        code: 'unsupported-drawing-style' as const,
+        severity: 'error' as const,
+        message: 'Visual QA does not yet analyze architectural floor-plan sheets.',
+        action: 'Run visual QA on a mechanical drawing sheet.',
+      }],
+      attempts: [], attemptCount: 0, repaired: false,
+      limitations: ['Architectural floor-plan geometry and room annotations are outside this QA pass.'],
+    };
+    return { ...initial, drawingReport: { ...(initial.drawingReport ?? emptyDrawingReport()), visualQa: report } };
+  }
+  const defaultSheet: DrawingSheetSize = opts.sheet && opts.sheet !== 'auto' && opts.sheet !== 'auto-ansi'
+    ? opts.sheet
+    : opts.sheet === 'auto-ansi' ? 'ansi-a' : opts.titleBlock ? 'a3' : 'a4';
+  const result = await runDrawingVisualQa({
+    initial,
+    options: visualQaOptions,
+    requestedViews: opts.views,
+    defaultSheet,
+    readSvg: artifact => new TextDecoder().decode(artifact.bytes),
+    readReport: artifact => artifact.drawingReport,
+    render: sheet => renderDrawingSheetOnce({ ...opts, sheet }, fileName, lowered, targetId, run, diagnostics, featureCount),
+    renderWithAnnotationOffsets: (sheet, increments) => {
+      const annotationOverrides = { ...opts.annotationOverrides };
+      for (const [id, delta] of Object.entries(increments)) {
+        annotationOverrides[id] = {
+          ...opts.annotationOverrides?.[id],
+          offset: (opts.annotationOverrides?.[id]?.offset ?? 0) + delta,
+        };
+      }
+      return renderDrawingSheetOnce({ ...opts, sheet, annotationOverrides }, fileName, lowered, targetId, run, diagnostics, featureCount);
+    },
+  });
+  const report = result.artifact.drawingReport ?? emptyDrawingReport();
+  return { ...result.artifact, drawingReport: { ...report, visualQa: result.report } };
+}
+
+function emptyDrawingReport(): NonNullable<ExportResult['drawingReport']> {
+  return { placed: 0, overlapped: 0, byKind: {}, datums: [], annotations: [] };
+}
+
+async function renderDrawingSheetOnce(
   opts: SvgDrawingOptions,
   fileName: string,
   lowered: ShapeBackend,

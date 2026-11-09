@@ -12,6 +12,7 @@ import type { Box } from '../drawingObstacles';
 import type { V3 } from '../drawingFeatures';
 import type { AutoAnnotateOptions } from './options';
 import type { DrawingAnnotationOverride } from '../../../../shared/intent/drafting';
+import type { DrawingVisualQaReport } from '../drawingVisualQa';
 
 export interface DrawingReportAnnotation {
   id: string;
@@ -28,6 +29,9 @@ export interface DrawingReportAnnotation {
 }
 
 export interface DrawingReport {
+  /** Deterministic readback of the serialized SVG sheet and, for PDF exports,
+   *  the vector PDF generated from that same SVG. */
+  visualQa?: DrawingVisualQaReport;
   review?: DrawingReview;
   /** Annotations rendered clear of geometry, other labels and the frame. */
   placed: number;
