@@ -28,4 +28,3 @@ export function finalizeDrawingReview(report: DrawingReport | undefined, options
     hint: 'Review the current report and remove or replace stale annotation IDs after geometry or dimension strategy changes.',
     nextAction: NEXT_ACTIONS['drawing.annotation.override-missing'] });
 }
-

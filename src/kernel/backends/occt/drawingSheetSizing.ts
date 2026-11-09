@@ -91,4 +91,3 @@ export function gridShift(sheet: SheetSpec, layout: SheetLayout, labels: readonl
 
 /** Depth under the isometric view that holds its caption. */
 const ISO_CAPTION_BAND = 8;
-

@@ -88,9 +88,14 @@ function textContextFor(node: XmlNode, parent: TextContext): TextContext {
   if (node.attrs.id === 'title-block') role = 'title';
   else if (node.attrs.id === 'general-tolerance') role = 'tolerance';
   else if (node.attrs.id === 'dimensions' && role === 'other') role = 'dimension';
-  if (node.attrs['data-kc-annotation-id'] || node.attrs['data-kc-auto']) {
+  if (node.attrs['data-kc-annotation-id']) {
     role = 'annotation';
-    owner = node.attrs['data-kc-annotation-id'] ?? 'auto:' + node.attrs['data-kc-auto'];
+    owner = node.attrs['data-kc-annotation-id'];
+  } else if (node.attrs['data-kc-auto']) {
+    role = 'annotation';
+    // Nested auto-annotation groups must retain their parent's unique ID,
+    // otherwise unrelated hole/datum callouts appear to share one owner.
+    if (!owner) owner = 'auto:' + node.attrs['data-kc-auto'];
   }
   if (node.attrs.class?.split(/\s+/).includes('view-label')) role = 'caption';
   return {

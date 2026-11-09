@@ -52,6 +52,16 @@ describe('review rendered SVG/PDF text boxes', () => {
     expect(reviewDrawingTextSvg(svg, page)).toEqual({ status: 'clear', checkedText: 0, issues: [] });
   });
 
+  it('detects collisions between distinct nested auto callouts of the same kind', () => {
+    const svg = wrap('<g id="dimensions">' +
+      '<g data-kc-annotation-id="auto:hole:A"><g data-kc-auto="hole">' +
+      '<text x="50" y="50" font-size="3">HOLE A</text></g></g>' +
+      '<g data-kc-annotation-id="auto:hole:B"><g data-kc-auto="hole">' +
+      '<text x="50" y="50" font-size="3">HOLE B</text></g></g></g>');
+    expect(reviewDrawingTextSvg(svg, page).issues)
+      .toContainEqual({ kind: 'annotation-text-overlap', texts: ['HOLE A', 'HOLE B'] });
+  });
+
   it('flags text that extends beyond the physical page', () => {
     const svg = wrap('<text x="296" y="30" font-size="4">WIDE</text>');
     expect(reviewDrawingTextSvg(svg, page).issues)

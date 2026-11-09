@@ -43,4 +43,3 @@ export function resolveDrawingBodies(
         : makeCompound(explodedParts.map(p => p.shape.getReplicadShape()));
   return { explodedParts, assembledCentroids, explodedCentroids, shape, explodedShape };
 }
-
