@@ -73,10 +73,11 @@ describe('diagnostic catalogue invariants', () => {
     //   tool.send-to-printer.upload-failed = 264.
     // + 4 trace-guided repair: tool.repair.exhausted, tool.repair.no-candidate,
     //   tool.repair.out-of-region, tool.repair.source-drift = 268.
-    // + 4 mechanism checks: assembly.joint.static-hold.exceeded,
+    // + 5 mechanism checks: assembly.joint.static-hold.exceeded,
     //   assembly.joint.static-hold.margin-low,
+    //   assembly.joint.static-hold.no-actuator,
     //   kinematic.static-hold.no-actuator-declared,
-    //   kinematic.sweep-tolerance.combo-cap-exceeded = 272.
+    //   kinematic.sweep-tolerance.combo-cap-exceeded = 273.
     // + 4 USD physics export and geometry diff: export.usd.joint-unsupported,
     //   export.usd.pose-unsolved, export.usd.mass-missing, diff.body.unmatched =
     //   276.
@@ -148,6 +149,7 @@ describe('diagnostic catalogue invariants', () => {
     expect(DIAGNOSTIC_CODES).toContain('assembly.mounting-hole.unverified');
     expect(DIAGNOSTIC_CODES).toContain('assembly.mounting-hole.misaligned');
     expect(DIAGNOSTIC_CODES).toContain('assembly.connectivity.assumed-root');
+    expect(DIAGNOSTIC_CODES).toContain('assembly.joint.static-hold.no-actuator');
     expect(DIAGNOSTIC_CODES).toContain('script.no-return');
     expect(DIAGNOSTIC_CODES).toContain('recompute.kernel.guard-fallback');
     expect(DIAGNOSTIC_CODES).toContain('selector.binding-moved');

@@ -1,0 +1,9 @@
+Moving mates found in the assembly
+
+base-yaw
+shoulder-pitch
+elbow-pitch
+wrist-pitch
+
+Mate-only mechanicalJoint chains
+are not evaluated by static-hold
