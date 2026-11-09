@@ -1,6 +1,6 @@
 # Mesh tolerance export demo
 
-This small local replay runs the public `export_model` tool on a native kernelCAD
+This small local replay runs the public `export({ target: 'model' })` tool on a native kernelCAD
 plate, writes an STL with a requested 0.01 mm tolerance, reads the exported
 triangle count and header back, and records the tool's sampled deviation report.
 The video's plate image is drawn from the Float32 triangle coordinates in that
@@ -26,7 +26,7 @@ with two 6 mm through-holes.
 
 - `part.kcad.ts`: native CAD source passed to the public export tool.
 - `demo.ts`: invocation, assertions, and evidence generation.
-- `tolerance-plate.stl`: actual STL output from `exportModelTool`.
+- `tolerance-plate.stl`: actual STL output from the public `export` tool.
 - `verification.json`: invocation settings, report, source/export/output hashes,
   triangle count, and explicit non-acceptance fields.
 - `transcript.txt`: output from the actual local export call.
@@ -46,4 +46,4 @@ The 8-second frame was inspected: it shows the two through-holes in the top view
 rendered from the exported STL facets, with the triangle count and requested
 tolerance visible. The final report panel keeps requested tolerance, sampled
 measurements, and the certification limit visible without clipping. FFprobe
-confirms 18 seconds, 1280 x 720, H.264 at 12 fps; the MP4 is 96,359 bytes.
+confirms 18 seconds, 1280 x 720, H.264 at 12 fps; the MP4 is 98,882 bytes.

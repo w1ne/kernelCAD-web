@@ -39,7 +39,7 @@ export type {
   DrawingReport,
   Iso2768Class,
 } from '../../kernel/backends/occt/exportSvgDrawing';
-import { releaseWorldFrameParts, sceneToWorldFrameParts } from '../../kernel/backends/occt/sceneToWorldFrame';
+import { releaseWorldFrameParts, sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
@@ -741,37 +741,41 @@ export async function runAndExportParts(input: ExportPartsInput): Promise<Export
     const diagnostics = [...resolved.diagnostics, ...gate.diagnostics];
     const geometryQuality = gate.summary === undefined ? {} : { geometryQuality: gate.summary };
     if (gate.blocked) return { parts: [], featureCount, diagnostics, ...geometryQuality };
-    const parts: PartStlExport[] = [];
-    for (const p of selected) {
-      const requested = input.options?.tolerance;
-      const initialDeflection = requested === undefined
-        ? exportMeshDeflection(input.options)
-        : exportMeshDeflection({ angularToleranceDeg: input.options?.angularToleranceDeg });
-      let mesh = meshShapeForExport(p.shape.getReplicadShape(), initialDeflection);
-      let bytes = partStlBytes(p.shape, mesh);
-      let mesh_deviation = requested === undefined
-        ? undefined
-        : measureBrepSurfaceDeviation([p.shape.getReplicadShape()], [decodeBinaryStlMesh(bytes)], requested);
-      if (mesh_deviation !== undefined && mesh_deviation.measured_max_mm > requested! * 1.05) {
-        mesh = meshShapeForExport(p.shape.getReplicadShape(), exportMeshDeflection(input.options));
-        bytes = partStlBytes(p.shape, mesh);
-        mesh_deviation = measureBrepSurfaceDeviation([p.shape.getReplicadShape()], [decodeBinaryStlMesh(bytes)], requested!);
-      }
-      if (requested !== undefined) bytes = stampStlMeshTolerance(bytes, requested);
-      const report = verifyWatertight(mesh);
-      parts.push({
-        name: p.name,
-        fileSafeName: fileSafePartName(p.name),
-        bytes,
-        report,
-        triangleCount: mesh.triangles.length / 3,
-        ...(mesh_deviation === undefined ? {} : { mesh_deviation }),
-      });
-    }
+    const parts = selected.map(part => meshPartWithTolerance(part, input.options));
     return { parts, featureCount, diagnostics, ...geometryQuality };
   } finally {
     releaseWorldFrameParts(worldParts);
   }
 
   });
+}
+
+function meshPartWithTolerance(
+  part: WorldFramePart,
+  options?: ExportMeshToleranceOptions,
+): PartStlExport {
+  const requested = options?.tolerance;
+  const initialDeflection = requested === undefined
+    ? exportMeshDeflection(options)
+    : exportMeshDeflection({ angularToleranceDeg: options?.angularToleranceDeg });
+  let mesh = meshShapeForExport(part.shape.getReplicadShape(), initialDeflection);
+  let bytes = partStlBytes(part.shape, mesh);
+  let mesh_deviation = requested === undefined
+    ? undefined
+    : measureBrepSurfaceDeviation([part.shape.getReplicadShape()], [decodeBinaryStlMesh(bytes)], requested);
+  if (mesh_deviation !== undefined && mesh_deviation.measured_max_mm > requested! * 1.05) {
+    mesh = meshShapeForExport(part.shape.getReplicadShape(), exportMeshDeflection(options));
+    bytes = partStlBytes(part.shape, mesh);
+    mesh_deviation = measureBrepSurfaceDeviation([part.shape.getReplicadShape()], [decodeBinaryStlMesh(bytes)], requested!);
+  }
+  if (requested !== undefined) bytes = stampStlMeshTolerance(bytes, requested);
+  const report = verifyWatertight(mesh);
+  return {
+    name: part.name,
+    fileSafeName: fileSafePartName(part.name),
+    bytes,
+    report,
+    triangleCount: mesh.triangles.length / 3,
+    ...(mesh_deviation === undefined ? {} : { mesh_deviation }),
+  };
 }

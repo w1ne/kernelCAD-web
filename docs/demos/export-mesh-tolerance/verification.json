@@ -1,15 +1,16 @@
 {
-  "scope": "Local export_model replay; no deployment, slicer or hardware acceptance",
+  "scope": "Local export({ target: 'model' }) replay; no deployment, slicer or hardware acceptance",
   "invocation": "node --import tsx docs/demos/export-mesh-tolerance/demo.ts",
   "settings": {
     "format": "stl",
     "requestedToleranceMm": 0.01
   },
-  "generatedAt": "2026-11-09T20:10:24.171Z",
+  "generatedAt": "2026-11-09T21:57:08.305Z",
   "nodeVersion": "v26.12.1",
   "sourceFile": "part.kcad.ts",
   "sourceSha256": "69d07ccd7128a00619bca41adf40ce9a978a17f4df9fa11a6bf864ad213c7351",
-  "exporterSha256": "c31dbba3854749771ec6281b456d75f4c155a89c51d949818c25ee7e5a74067f",
+  "publicExportToolSha256": "6b7bc8904b352f7926ee3171add6217f64bee0fcac1bad0a9b73175880ef309d",
+  "modelExporterSha256": "c31dbba3854749771ec6281b456d75f4c155a89c51d949818c25ee7e5a74067f",
   "outputFile": "tolerance-plate.stl",
   "outputSha256": "eeede00044dfad530177a5a6ab6c866592ce36289bb090c93b9d836662522bad",
   "outputBytes": 101884,
@@ -24,7 +25,7 @@
     "global_max_certified": false
   },
   "checks": {
-    "exportModelSucceeded": true,
+    "publicExportToolSucceeded": true,
     "requestedToleranceReturned": true,
     "fileTriangleCountMatchesReport": true,
     "requestedToleranceStampedInStlHeader": true,

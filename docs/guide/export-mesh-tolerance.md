@@ -12,7 +12,7 @@ export({
 });
 ```
 
-The minimum accepted value is `0.001` mm. `angularToleranceDeg` optionally sets a finer normal-angle limit; values must be finite, above zero and at most 180 degrees. The same mesh controls apply to `3mf` and `obj`, and `target: 'part'` applies them to each STL in a solved assembly. With no tolerance option, the existing mesh and file bytes stay unchanged.
+The minimum accepted value is `0.001` mm. `angularToleranceDeg` optionally sets a finer normal-angle limit; values must be finite, above zero and at most 180 degrees, and their radian conversion must remain finite and positive. The same mesh controls apply to `3mf` and `obj`, including single-solid exports, and `target: 'part'` applies them to each STL in a solved assembly. With no tolerance option, the existing mesh and file bytes stay unchanged.
 
 The export first checks whether its current mesh meets the requested sampled deviation. It keeps that mesh when it does. Otherwise, it re-meshes the export in absolute mode and checks the resulting triangles. A request cannot make the current mesh coarser. If the measured maximum is above `1.05 × tolerance`, the export returns `export.mesh.tolerance-not-met` and retains the file for inspection. Invalid tolerance values fail before a file is written with `export.mesh.tolerance-invalid`.
 
@@ -34,7 +34,7 @@ The export result includes:
 }
 ```
 
-The measurement projects triangle centroids and edge midpoints from the export-grade triangulations onto their owning exact B-rep faces. It then measures the one-sided distance from up to 4,000 deterministically selected surface samples to the triangles in the output mesh. STL distances use the Float32 coordinates read back from the encoded file. `measured_max_mm` and `measured_p95_mm` describe those samples only; they are not a certified global maximum, a symmetric Hausdorff distance, a dimensional inspection, or evidence that the part will fit after printing. Mesh-solid inputs have no exact B-rep to compare against, so a tolerance request fails with `export.mesh.tolerance-unavailable`.
+The measurement projects triangle centroids and edge midpoints from the export-grade triangulations onto their owning exact B-rep faces. It then measures the one-sided distance from up to 4,000 deterministically selected surface samples to the triangles in the output mesh. Output triangles are indexed in bounded chunks of 8,192, with every chunk searched for each sample; this keeps extra index memory bounded without treating a partial scan as complete. STL distances use the Float32 coordinates read back from the encoded file. `measured_max_mm` and `measured_p95_mm` describe those samples only; they are not a certified global maximum, a symmetric Hausdorff distance, a dimensional inspection, or evidence that the part will fit after printing. Mesh-solid inputs have no exact B-rep to compare against, so a tolerance request fails with `export.mesh.tolerance-unavailable`.
 
 For `target: 'part'`, each `written[]` entry carries its own `mesh_deviation` report beside the watertight result. Triangle counts in the report are the counts for that exported file.
 

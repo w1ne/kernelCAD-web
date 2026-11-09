@@ -40,22 +40,30 @@ export interface MeshDeviationReport {
 export function validateExportMeshToleranceOptions(options: unknown): string | undefined {
   if (options === undefined || options === null || typeof options !== 'object') return undefined;
   const value = options as { tolerance?: unknown; angularToleranceDeg?: unknown };
-  if (value.tolerance !== undefined &&
-      (typeof value.tolerance !== 'number' || !Number.isFinite(value.tolerance) || value.tolerance < 0.001)) {
+  if (value.tolerance !== undefined && !isValidLinearTolerance(value.tolerance)) {
     return 'options.tolerance must be a finite number greater than or equal to 0.001 mm.';
   }
-  if (value.angularToleranceDeg !== undefined &&
-      (typeof value.angularToleranceDeg !== 'number' || !Number.isFinite(value.angularToleranceDeg) ||
-       value.angularToleranceDeg <= 0 || value.angularToleranceDeg > 180)) {
+  if (value.angularToleranceDeg !== undefined && !isValidAngularToleranceDegrees(value.angularToleranceDeg)) {
     return 'options.angularToleranceDeg must be a finite number greater than 0 and at most 180 degrees.';
   }
-  if (value.angularToleranceDeg !== undefined) {
-    const radians = value.angularToleranceDeg * Math.PI / 180;
-    if (!Number.isFinite(radians) || radians <= 0) {
-      return 'options.angularToleranceDeg must convert to a finite, positive radian value.';
-    }
+  if (value.angularToleranceDeg !== undefined && !convertsToPositiveRadians(value.angularToleranceDeg)) {
+    return 'options.angularToleranceDeg must convert to a finite, positive radian value.';
   }
   return undefined;
+}
+
+function isValidLinearTolerance(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0.001;
+}
+
+function isValidAngularToleranceDegrees(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 && value <= 180;
+}
+
+function convertsToPositiveRadians(degrees: unknown): boolean {
+  if (typeof degrees !== 'number') return false;
+  const radians = degrees * Math.PI / 180;
+  return Number.isFinite(radians) && radians > 0;
 }
 
 const DEFAULT_LINEAR_DEFLECTION = 0.01;

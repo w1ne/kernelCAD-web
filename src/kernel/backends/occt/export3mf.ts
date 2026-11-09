@@ -330,51 +330,8 @@ export async function export3mfWithReportAsync(
   const toleranceError = validateExportMeshToleranceOptions(options);
   if (toleranceError !== undefined) throw new Error(toleranceError);
 
-  const angularOnlyDeflection = exportMeshDeflection({ angularToleranceDeg: options.angularToleranceDeg });
-  const requestedDeflection = exportMeshDeflection(options);
-  const meshInputParts = (refine: boolean): MeshedPart[] => parts.map((p) => {
-    const inputHasMesh = hasMesh(p);
-    const shouldRemeshForAngle = options.angularToleranceDeg !== undefined;
-    const canReuseInputMesh = options.tolerance === undefined || measureDeviation !== undefined;
-    if (!refine && inputHasMesh && !shouldRemeshForAngle && canReuseInputMesh) return p;
-    return {
-      ...p,
-      mesh: meshShapeForExport(
-        p.shape.getReplicadShape(),
-        refine || measureDeviation === undefined || options.tolerance === undefined
-          ? requestedDeflection
-          : angularOnlyDeflection,
-      ),
-    };
-  });
-
-  let healed = healPartMeshes(meshInputParts(false));
-  let mesh_deviation: MeshDeviationReport | undefined;
-  if (options.tolerance !== undefined && measureDeviation !== undefined) {
-    mesh_deviation = measureDeviation(healed.parts, options.tolerance);
-    if (mesh_deviation.measured_max_mm > options.tolerance * 1.05) {
-      // The legacy relative mesh can already meet the requested absolute
-      // ceiling. Keep it when it does; otherwise remesh this export in
-      // absolute mode and measure the triangles that will be serialized.
-      healed = healPartMeshes(meshInputParts(true));
-      mesh_deviation = measureDeviation(healed.parts, options.tolerance);
-    }
-  }
-  const { parts: meshed, meshWarnings } = healed;
-
-  const printUnit: ThreeMfUnit = options.printUnit ?? 'mm';
-  const arrange: ThreeMfArrange = options.arrange ?? 'none';
-  const slicer = resolveSlicer(options);
-  if (!ARRANGE_VALUES.includes(arrange)) {
-    throw new Error(`export3mfAsync: options.arrange must be one of ${ARRANGE_VALUES.join(', ')}; got '${String(arrange)}'.`);
-  }
-  if (!SLICER_VALUES.includes(slicer)) {
-    throw new Error(`export3mfAsync: options.slicer must be one of ${SLICER_VALUES.join(', ')}; got '${String(slicer)}'.`);
-  }
-  if (!Object.hasOwn(MM_PER_UNIT, printUnit)) {
-    throw new Error(`export3mfAsync: options.printUnit must be one of ${Object.keys(MM_PER_UNIT).join(', ')}; got '${String(printUnit)}'.`);
-  }
-  const mmPerUnit = MM_PER_UNIT[printUnit];
+  const { parts: meshed, meshWarnings, mesh_deviation } = prepareExportMeshes(parts, options, measureDeviation);
+  const { printUnit, arrange, slicer, mmPerUnit } = resolveExportSettings(options);
   const isoDate = new Date().toISOString().slice(0, 10);
 
   const { bases, partPindex, partSlot } = resolvePartMaterials(meshed);
@@ -465,6 +422,73 @@ ${embedSource ? '  <Default Extension="ts" ContentType="text/plain" />\n' : ''}$
     meshWarnings,
     ...(mesh_deviation === undefined ? {} : { mesh_deviation }),
   };
+}
+
+function prepareExportMeshes(
+  parts: ReadonlyArray<WorldFramePart | MeshedPart>,
+  options: Export3mfOptions,
+  measureDeviation?: MeshDeviationMeasurer,
+): ReturnType<typeof healPartMeshes> & { mesh_deviation?: MeshDeviationReport } {
+  const angularOnlyDeflection = exportMeshDeflection({ angularToleranceDeg: options.angularToleranceDeg });
+  const requestedDeflection = exportMeshDeflection(options);
+  const meshInputParts = (refine: boolean): MeshedPart[] => parts.map(part => meshExportPart(
+    part,
+    options,
+    measureDeviation,
+    refine,
+    requestedDeflection,
+    angularOnlyDeflection,
+  ));
+  let healed = healPartMeshes(meshInputParts(false));
+  let mesh_deviation: MeshDeviationReport | undefined;
+  if (options.tolerance !== undefined && measureDeviation !== undefined) {
+    mesh_deviation = measureDeviation(healed.parts, options.tolerance);
+    if (mesh_deviation.measured_max_mm > options.tolerance * 1.05) {
+      // Keep the legacy relative mesh when it meets the absolute ceiling;
+      // otherwise refine and measure the triangles that will be serialized.
+      healed = healPartMeshes(meshInputParts(true));
+      mesh_deviation = measureDeviation(healed.parts, options.tolerance);
+    }
+  }
+  return { ...healed, ...(mesh_deviation === undefined ? {} : { mesh_deviation }) };
+}
+
+function resolveExportSettings(options: Export3mfOptions): {
+  printUnit: ThreeMfUnit;
+  arrange: ThreeMfArrange;
+  slicer: SlicerFlavor;
+  mmPerUnit: number;
+} {
+  const printUnit: ThreeMfUnit = options.printUnit ?? 'mm';
+  const arrange: ThreeMfArrange = options.arrange ?? 'none';
+  const slicer = resolveSlicer(options);
+  if (!ARRANGE_VALUES.includes(arrange)) {
+    throw new Error(`export3mfAsync: options.arrange must be one of ${ARRANGE_VALUES.join(', ')}; got '${String(arrange)}'.`);
+  }
+  if (!SLICER_VALUES.includes(slicer)) {
+    throw new Error(`export3mfAsync: options.slicer must be one of ${SLICER_VALUES.join(', ')}; got '${String(slicer)}'.`);
+  }
+  if (!Object.hasOwn(MM_PER_UNIT, printUnit)) {
+    throw new Error(`export3mfAsync: options.printUnit must be one of ${Object.keys(MM_PER_UNIT).join(', ')}; got '${String(printUnit)}'.`);
+  }
+  return { printUnit, arrange, slicer, mmPerUnit: MM_PER_UNIT[printUnit] };
+}
+
+function meshExportPart(
+  part: WorldFramePart | MeshedPart,
+  options: Export3mfOptions,
+  measureDeviation: MeshDeviationMeasurer | undefined,
+  refine: boolean,
+  requestedDeflection: ReturnType<typeof exportMeshDeflection>,
+  angularOnlyDeflection: ReturnType<typeof exportMeshDeflection>,
+): MeshedPart {
+  const reusable = !refine && hasMesh(part) && options.angularToleranceDeg === undefined &&
+    (options.tolerance === undefined || measureDeviation !== undefined);
+  if (reusable) return part;
+  const deflection = refine || measureDeviation === undefined || options.tolerance === undefined
+    ? requestedDeflection
+    : angularOnlyDeflection;
+  return { ...part, mesh: meshShapeForExport(part.shape.getReplicadShape(), deflection) };
 }
 
 /**

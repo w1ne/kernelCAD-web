@@ -76,7 +76,7 @@ for heading, panel, seconds in panels:
                 color = '#f5ce87'
             draw.text((60, 164 + i * 34), line, font=font, fill=color)
         draw.text((48, 624), evidence['scope'], font=small, fill='#f5ce87')
-    draw.text((48, 665), 'Local replay | actual export_model output retained | no deployment or print acceptance', font=small, fill='#a6b5cd')
+    draw.text((48, 665), 'Local replay | public export output retained | no deployment or print acceptance', font=small, fill='#a6b5cd')
     frames.append((image, seconds))
 
 command = ['ffmpeg', '-y', '-loglevel', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgb24',

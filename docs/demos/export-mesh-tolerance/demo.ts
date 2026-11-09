@@ -1,28 +1,30 @@
 // SPDX-License-Identifier: MIT
-// Run the actual public export_model implementation on a small native part.
+// Run the actual public export tool on a small native part.
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { exportModelTool } from '../../../src/agent/mcp/tools/exportModel';
+import { exportTool } from '../../../src/agent/mcp/tools/export';
+import type { ExportModelOutput } from '../../../src/agent/mcp/tools/exportModel';
 
 const outDir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(outDir, '../../..');
 const invocation = 'node --import tsx docs/demos/export-mesh-tolerance/demo.ts';
-const scope = 'Local export_model replay; no deployment, slicer or hardware acceptance';
+const scope = "Local export({ target: 'model' }) replay; no deployment, slicer or hardware acceptance";
 const toleranceMm = 0.01;
 const sourcePath = resolve(outDir, 'part.kcad.ts');
 const source = readFileSync(sourcePath, 'utf8');
 const outputPath = resolve(outDir, 'tolerance-plate.stl');
-const result = await exportModelTool({
+const result = await exportTool({
+  target: 'model',
   code: source,
   output_path: outputPath,
   format: 'stl',
   options: { format: 'stl', tolerance: toleranceMm },
-});
+}) as ExportModelOutput;
 assert.equal(result.ok, true, result.error ?? JSON.stringify(result.diagnostics));
-assert(result.mesh_deviation, 'export_model should return measured mesh deviation');
+assert(result.mesh_deviation, 'the public export tool should return the sampled deviation report');
 assert.equal(result.mesh_deviation.requested_mm, toleranceMm);
 assert.equal(result.mesh_deviation.global_max_certified, false);
 
@@ -43,14 +45,15 @@ const evidence = {
   nodeVersion: process.version,
   sourceFile: 'part.kcad.ts',
   sourceSha256: sha256(source),
-  exporterSha256: sha256(readFileSync(resolve(root, 'src/agent/mcp/tools/exportModel.ts'))),
+  publicExportToolSha256: sha256(readFileSync(resolve(root, 'src/agent/mcp/tools/export.ts'))),
+  modelExporterSha256: sha256(readFileSync(resolve(root, 'src/agent/mcp/tools/exportModel.ts'))),
   outputFile: 'tolerance-plate.stl',
   outputSha256: sha256(stl),
   outputBytes: stl.length,
   triangleCount,
   meshDeviation: result.mesh_deviation,
   checks: {
-    exportModelSucceeded: true,
+    publicExportToolSucceeded: true,
     requestedToleranceReturned: result.mesh_deviation.requested_mm === toleranceMm,
     fileTriangleCountMatchesReport: triangleCount === result.mesh_deviation.triangles,
     requestedToleranceStampedInStlHeader: header.includes('requested-mesh-tolerance=0.01mm'),
@@ -64,7 +67,7 @@ const transcript = [
   `$ ${invocation}`,
   scope,
   'PART   native kernelCAD plate, 30 x 20 x 4 mm, two 6 mm through-holes',
-  'CALL   export_model(format=stl, options.tolerance=0.01 mm)',
+  "CALL   export(target=model, format=stl, options.tolerance=0.01 mm)",
   `WRITE  tolerance-plate.stl (${stl.length} bytes; ${triangleCount} triangles)`,
   'CHECK  STL header contains requested-mesh-tolerance=0.01mm',
   `REPORT requested=${result.mesh_deviation.requested_mm.toFixed(3)} mm`,

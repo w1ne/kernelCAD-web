@@ -1,38 +1,35 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { runScript } from '../../composition/runScript';
-import { exportSceneToSTEPAsync, meshShapeForExport, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { exportSceneToSTEPAsync, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { exportDxf, type DxfWriterOptions } from '../../kernel/backends/occt/exportDxf';
-import { exportSceneDxf, exportShapeDxfProfile } from './exportDxfProfiles';
+import { exportSceneDxf } from './exportDxfProfiles';
 import { export3mfWithReportAsync, type Export3mfOptions } from '../../kernel/backends/occt/export3mf';
 import { exportGlbAsync, type ExportGlbOptions } from '../../kernel/backends/occt/exportGlb';
 import { exportSceneAssetPack, exportSingleAssetPack } from './exportAssetPack';
-import { exportMeshObjZip, exportMeshUsd, type NamedMesh } from '../../kernel/export/meshFormats';
 import { exportScenePly, exportSinglePly, plyOptionsDiagnostic } from './exportPly';
 import { buildRigMetadata } from '../../kernel/export/rigHierarchy';
 import type { Assembly } from '../../modeling/capture/assembly';
 import { lookupColorFromLineage, lookupMaterialFromLineage } from '../../kernel/backends/occt/lookupSourceColor';
 import { releaseWorldFrameParts, sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
-import { flattenPatternWithHoles } from '../../modeling/sheetMetalFlatPattern';
-import { findRootSheetMetalRecord } from '../../modeling/sheetMetal';
-import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import { stampStepOriginatingSystem } from '../../kernel/export/stepHeader';
 import { attributionGenerator } from '../../shared/links/attribution';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
-import { NEXT_ACTIONS, HINT_TEMPLATES } from '../../shared/diagnostics/registry';
-import { verifyWatertight, type WatertightReport } from '../../kernel/backends/occt/meshHeal';
-import { encodeBinaryStl, stampStlMeshTolerance } from '../../kernel/backends/occt/exportStlBinary';
-import { exportMeshDeflection, validateExportMeshToleranceOptions, type ExportMeshToleranceOptions, type MeshDeviationReport } from '../../kernel/backends/occt/backendMesh';
-import { decodeBinaryStlMesh, measureBrepSurfaceDeviation } from './meshDeviation';
-import { crackSeams, describeCrackSeams } from './sceneStlSeams';
+import { NEXT_ACTIONS } from '../../shared/diagnostics/registry';
+import { verifyWatertight } from '../../kernel/backends/occt/meshHeal';
+import { validateExportMeshToleranceOptions } from '../../kernel/backends/occt/backendMesh';
 import { Shape } from '../../modeling/capture/proxy';
 import { Scene } from '../../modeling/validation/scene';
 import { isRegion } from '../../shared/intent/region';
 import { resolveParams } from '../../shared/runtime/resolveParams';
 import { sceneToConnectorManifest } from './connectorManifestExport';
 import { findDfmSpec } from '../../modeling/runtime/dfm/runDfmChecks';
-import { exportSceneStlAsShells, freeformFuseOverBudget, meshPartsAsShells } from './sceneStlFuse';
+import { exportFusedSeamFallback, exportSceneStlAsShells, freeformFuseOverBudget } from './sceneStlFuse';
+import { exportSceneTextMesh, exportSingleTextMesh } from './exportMeshText';
+import { exportStlWithOptions, measureWorldFramePartsDeviation, meshToleranceFailure } from './exportMeshTolerance';
+import { exportSingleStl } from './exportSingleStl';
+import { exportShapeDxf } from './exportSheetMetalDxf';
 import {
   dracoConflictDiagnostic,
   glbLowPolyDiagnostic,
@@ -40,9 +37,7 @@ import {
   sliceShapeToGcode,
   threeMfBedDiagnostics,
   threeMfMeshDiagnostics,
-  stlNotWatertightDiagnostic,
   meshToleranceInvalidDiagnostic,
-  meshToleranceNotMetDiagnostic,
   brepInvalidDiagnostic,
   type GcodeOptions,
 } from './exportDiagnostics';
@@ -456,49 +451,14 @@ export async function exportSceneBackend(
   if (format === 'obj' || format === 'usd') {
     const worldParts = sceneToWorldFrameParts(scene);
     try {
-      const meshOptions = format === 'obj'
-        ? input.options as Extract<ExportOptions, { format: 'obj' }> | undefined
-        : undefined;
-      const requested = meshOptions?.tolerance;
-      const initialDeflection = requested === undefined
-        ? exportMeshDeflection(meshOptions)
-        : exportMeshDeflection({ angularToleranceDeg: meshOptions?.angularToleranceDeg });
-      const buildParts = (deflection: ReturnType<typeof exportMeshDeflection>) => worldParts.map(part => ({
-        name: part.name,
-        mesh: meshShapeForExport(part.shape.getReplicadShape(), deflection),
-        ...(part.material !== undefined ? { material: part.material } : {}),
-        ...(part.color !== undefined ? { color: part.color } : {}),
-        ...(part.colorParamName !== undefined ? { colorParamName: part.colorParamName } : {}),
-      }));
-      let parts = buildParts(initialDeflection);
-      let mesh_deviation = requested === undefined
-        ? undefined
-        : measureBrepSurfaceDeviation(
-            worldParts.map(part => part.shape.getReplicadShape()),
-            parts.map(part => part.mesh),
-            requested,
-          );
-      if (mesh_deviation !== undefined && mesh_deviation.measured_max_mm > requested! * 1.05) {
-        parts = buildParts(exportMeshDeflection(meshOptions));
-        mesh_deviation = measureBrepSurfaceDeviation(
-          worldParts.map(part => part.shape.getReplicadShape()),
-          parts.map(part => part.mesh),
-          requested!,
-        );
-      }
-      const bytes = format === 'obj'
-        ? exportMeshObjZip(parts, requested === undefined ? undefined : { toleranceMm: requested })
-        : exportMeshUsd(parts);
-      const toleranceFailure = mesh_deviation !== undefined &&
-          mesh_deviation.measured_max_mm > mesh_deviation.requested_mm * 1.05
-        ? meshToleranceNotMetDiagnostic(mesh_deviation, targetId)
-        : undefined;
-      return {
-        bytes,
+      return exportSceneTextMesh(
+        format,
+        worldParts,
+        targetId,
+        diagnostics,
         featureCount,
-        diagnostics: [...diagnostics, ...(toleranceFailure ? [toleranceFailure] : [])],
-        ...(mesh_deviation === undefined ? {} : { mesh_deviation }),
-      };
+        format === 'obj' ? input.options as Extract<ExportOptions, { format: 'obj' }> | undefined : undefined,
+      );
     } finally {
       releaseWorldFrameParts(worldParts);
     }
@@ -639,228 +599,98 @@ export async function exportSceneFusedMesh(
     const stlOptions = format === 'stl'
       ? input.options as Extract<ExportOptions, { format: 'stl' }> | undefined
       : undefined;
-    const fuseOverBudget = format === 'stl' ? freeformFuseOverBudget(worldParts) : undefined;
-    if (fuseOverBudget !== undefined) {
-      const verifyShells = stlOptions?.verify !== false;
-      return exportSceneStlAsShells(worldParts, fuseOverBudget, targetId, diagnostics, featureCount, verifyShells, stlOptions);
-    }
-    let fused: OcctBackend = worldParts[0]!.shape;
-    for (let i = 1; i < worldParts.length; i++) {
-      const next = fused.union(worldParts[i]!.shape);
-      if (fused !== worldParts[0]!.shape) temps.push(fused);
-      fused = next;
-    }
-    if (fused !== worldParts[0]!.shape) temps.push(fused);
+    const shellExport = exportOverBudgetSceneAsShells(
+      format, worldParts, targetId, diagnostics, featureCount, stlOptions,
+    );
+    if (shellExport !== undefined) return shellExport;
+    const fused = fuseWorldFrameParts(worldParts, temps);
     if (format === 'gcode') {
-      return await sliceShapeToGcode(
-        fused, input.options as GcodeOptions | undefined, diagnostics, featureCount, targetId,
-        findDfmSpec(run.records)?.fdm?.buildDirection,
-      );
+      return exportFusedSceneGcode(input, fused, targetId, run, diagnostics, featureCount);
     }
-    const verify = stlOptions?.verify !== false;
-    const { bytes, report, mesh_deviation } = await exportStlWithOptions(fused, stlOptions);
-    if (verify && !report.ok) {
-      return fusedSeamFallback(worldParts, bytes, report, targetId, diagnostics, featureCount, stlOptions, mesh_deviation);
-    }
-    const toleranceFailure = mesh_deviation !== undefined &&
-        mesh_deviation.measured_max_mm > mesh_deviation.requested_mm * 1.05
-      ? meshToleranceNotMetDiagnostic(mesh_deviation, targetId)
-      : undefined;
-    return {
-      bytes,
-      featureCount,
-      diagnostics: [...diagnostics, ...(toleranceFailure ? [toleranceFailure] : [])],
-      ...(mesh_deviation === undefined ? {} : { mesh_deviation }),
-    };
+    return await exportFusedSceneStl(
+      worldParts, fused, targetId, diagnostics, featureCount, stlOptions,
+    );
   } finally {
-    for (const temp of temps) {
-      try { temp.dispose(); } catch { /* intermediate already freed */ }
-    }
+    disposeIntermediateShapes(temps);
     releaseWorldFrameParts(worldParts);
   }
 }
 
-/**
- * The fused mesh of a multi-part Scene cracked (typically along union seams
- * of parts that touch or overlap by a few hundredths of a mm: the B-rep is
- * valid, its tessellation is not closed). Mesh each part on its own; when
- * every part is watertight, ship them as separate closed shells — a valid
- * STL that slices as their union — with a warning naming the seams.
- * Otherwise keep the fused bytes and fail, naming the seams.
- */
-function fusedSeamFallback(
+function exportOverBudgetSceneAsShells(
+  format: 'stl' | 'gcode',
   worldParts: WorldFramePart[],
-  fusedBytes: Uint8Array,
-  fusedReport: WatertightReport,
   targetId: string,
   diagnostics: CompilerDiagnostic[],
   featureCount: number,
   options?: Extract<ExportOptions, { format: 'stl' }>,
-  fusedDeviation?: MeshDeviationReport,
-): ExportResult {
-  const seamParts = worldParts.map((p) => ({ name: p.name, bbox: p.shape.boundingBox() }));
-  const seams = describeCrackSeams(crackSeams(fusedReport, seamParts));
-  // Same per-part shell writer as the fuse-skip path above: separate closed
-  // shells are watertight together exactly when each part is.
-  const tolerance = options?.tolerance;
-  const initialDeflection = tolerance === undefined
-    ? exportMeshDeflection(options)
-    : exportMeshDeflection({ angularToleranceDeg: options?.angularToleranceDeg });
-  let shells = worldParts.length > 1 ? meshPartsAsShells(worldParts, initialDeflection) : undefined;
-  if (shells !== undefined && verifyWatertight(shells).ok) {
-    let bytes: Uint8Array<ArrayBufferLike> = Uint8Array.from(encodeBinaryStl(shells));
-    let mesh_deviation: MeshDeviationReport | undefined;
-    if (tolerance !== undefined) {
-      mesh_deviation = measureBrepSurfaceDeviation(
-        worldParts.map(part => part.shape.getReplicadShape()),
-        [decodeBinaryStlMesh(bytes)],
-        tolerance,
-      );
-      if (mesh_deviation.measured_max_mm > tolerance * 1.05) {
-        shells = meshPartsAsShells(worldParts, exportMeshDeflection(options));
-        bytes = Uint8Array.from(encodeBinaryStl(shells));
-        mesh_deviation = measureBrepSurfaceDeviation(
-          worldParts.map(part => part.shape.getReplicadShape()),
-          [decodeBinaryStlMesh(bytes)],
-          tolerance,
-        );
-      }
-      bytes = stampStlMeshTolerance(bytes, tolerance);
-    }
-    const toleranceFailure = mesh_deviation !== undefined &&
-        mesh_deviation.measured_max_mm > mesh_deviation.requested_mm * 1.05
-      ? meshToleranceNotMetDiagnostic(mesh_deviation, targetId)
-      : undefined;
-    return {
-      bytes,
-      featureCount,
-      diagnostics: [
-        ...diagnostics,
-        {
-          target: 'export-occt',
-          code: 'export.mesh.fused-seam-fallback',
-          featureId: targetId,
-          severity: 'warn',
-          message: `The fused union of the ${worldParts.length} parts meshed with ${fusedReport.openEdgeCount} open edge(s) (${seams}). Shipped each part as its own closed shell instead: the STL is watertight and slices as the union.`,
-          hint: HINT_TEMPLATES['export.mesh.fused-seam-fallback'].template,
-          nextAction: NEXT_ACTIONS['export.mesh.fused-seam-fallback'],
-        },
-        ...(toleranceFailure ? [toleranceFailure] : []),
-      ],
-      ...(mesh_deviation === undefined ? {} : { mesh_deviation }),
-    };
+): ExportResult | undefined {
+  if (format !== 'stl') return undefined;
+  const cost = freeformFuseOverBudget(worldParts);
+  return cost === undefined
+    ? undefined
+    : exportSceneStlAsShells(worldParts, cost, targetId, diagnostics, featureCount, options?.verify !== false, options);
+}
+
+function fuseWorldFrameParts(parts: readonly WorldFramePart[], temps: OcctBackend[]): OcctBackend {
+  const first = parts[0]!.shape;
+  let fused = first;
+  for (let i = 1; i < parts.length; i++) {
+    const next = fused.union(parts[i]!.shape);
+    if (fused !== first) temps.push(fused);
+    fused = next;
   }
-  const base = stlNotWatertightDiagnostic(fusedReport, targetId);
-  const toleranceFailure = fusedDeviation !== undefined &&
-      fusedDeviation.measured_max_mm > fusedDeviation.requested_mm * 1.05
-    ? meshToleranceNotMetDiagnostic(fusedDeviation, targetId)
-    : undefined;
-  return {
-    bytes: fusedBytes,
-    featureCount,
-    diagnostics: [
-      ...diagnostics,
-      { ...base, message: `${base.message} Seams: ${seams}.` },
-      ...(toleranceFailure ? [toleranceFailure] : []),
-    ],
-    ...(fusedDeviation === undefined ? {} : { mesh_deviation: fusedDeviation }),
-  };
+  if (fused !== first) temps.push(fused);
+  return fused;
 }
 
-/** Thickness of the sheet a bent part is made from, read off its root
- *  `sheetMetal` record. */
-function sheetThickness(records: readonly FeatureRecord[], targetId: string): number | undefined {
-  const target = records.find((rec) => rec.id === targetId);
-  const root = target ? findRootSheetMetalRecord(target, records) : undefined;
-  const value = (root?.params.thickness as { evaluated?: unknown } | undefined)?.evaluated;
-  return typeof value === 'number' && value > 0 ? value : undefined;
-}
-
-/** Single-shape DXF path: sheet-metal lineage flattens to a Region; a flat
- *  part exports its outline, `options.section` its cross-section; anything
- *  else emits the non-planar diagnostic. */
-export async function exportShapeDxf(
-  shape: OcctBackend,
+function exportFusedSceneGcode(
+  input: ExportInput,
+  fused: OcctBackend,
   targetId: string,
-  exportOptions: ExportInput['options'],
   run: Awaited<ReturnType<typeof runScript>>,
   diagnostics: CompilerDiagnostic[],
   featureCount: number,
 ): Promise<ExportResult> {
-  const opts =
-    (exportOptions as DxfWriterOptions | undefined) ?? { format: 'dxf' };
-  // Sheet-metal Shape entry path: if the target Shape's lineage chain
-  // roots at a `sheetMetal` record, recover the flat-pattern Region by
-  // walking `flattenPatternWithHoles(records, targetId)` (outline, bend
-  // lines, and the blank's holes / cutouts) and ship it through the
-  // polyline writer. This is the same Region that
-  // `Shape.flattenPattern()` would produce — recomputed inside the
-  // runtime so the user script can return the bent body directly
-  // without needing `require` inside the vm sandbox.
-  const tracesToSheetMetal = (() => {
-    const byId = new Map(run.records.map(rec => [rec.id, rec]));
-    let cur = byId.get(targetId);
-    // Bound the walk by the record count — a healthy graph terminates
-    // quickly; an inputs.base cycle would otherwise spin forever.
-    for (let i = 0; cur && i <= run.records.length; i++) {
-      if (cur.kind === 'sheetMetal') return true;
-      // holes / cutouts made on the blank chain via inputs.target.
-      const baseRef = cur.inputs.base ?? cur.inputs.target;
-      if (!baseRef || baseRef.kind !== 'feature') return false;
-      cur = byId.get(baseRef.id);
-    }
-    return false;
-  })();
-  // An explicit `options.section` asks for a cross-section, not the blank.
-  const wantsSection = (opts as { section?: unknown }).section !== undefined;
-  if (tracesToSheetMetal && !wantsSection) {
-    try {
-      const region = await flattenPatternWithHoles(run.records, targetId, undefined, run.paramTable);
-      const bytes = exportDxf({ kind: 'region', region }, opts);
-      const thicknessMm = sheetThickness(run.records, targetId);
-      const sheet = thicknessMm ? { thicknessMm, bendCount: region.bendLines.length } : undefined;
-      return { bytes, featureCount, diagnostics, ...(sheet ? { sheet } : {}) };
-    } catch (e) {
-      const errCode = (e as { code?: string }).code;
-      const msg = e instanceof Error ? e.message : String(e);
-      const hint = (e as { hint?: string }).hint;
-      // Pass through structured diagnostics like
-      // `feature.flattenPattern.multi-bend-unsupported`; downgrade
-      // anything else to `export.dxf.non-planar` so callers see a
-      // catalog-known code.
-      if (errCode === 'feature.flattenPattern.multi-bend-unsupported') {
-        return {
-          bytes: new Uint8Array(),
-          featureCount,
-          diagnostics: [...diagnostics, {
-            target: 'export-occt',
-            code: 'feature.flattenPattern.multi-bend-unsupported',
-            featureId: targetId,
-            severity: 'error',
-            message: msg,
-            hint: hint ?? 'Flatten an upstream Shape with at most two bends, or wait for the multi-bend slice.',
-            nextAction: NEXT_ACTIONS['feature.flattenPattern.multi-bend-unsupported'],
-          }],
-        };
-      }
-      return {
-        bytes: new Uint8Array(),
-        featureCount,
-        diagnostics: [...diagnostics, {
-          target: 'export-occt',
-          code: 'export.dxf.non-planar',
-          featureId: targetId,
-          severity: 'error',
-          message: `DXF export could not flatten the sheet-metal chain: ${msg}`,
-          hint: hint ?? 'Inspect the sheetMetal root and bends, then retry. Return a Region directly to bypass.',
-          nextAction: NEXT_ACTIONS['export.dxf.non-planar'],
-        }],
-      };
-    }
+  return sliceShapeToGcode(
+    fused, input.options as GcodeOptions | undefined, diagnostics, featureCount, targetId,
+    findDfmSpec(run.records)?.fdm?.buildDirection,
+  );
+}
+
+async function exportFusedSceneStl(
+  worldParts: WorldFramePart[],
+  fused: OcctBackend,
+  targetId: string,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+  options?: Extract<ExportOptions, { format: 'stl' }>,
+): Promise<ExportResult> {
+  const exported = await exportStlWithOptions(fused, options);
+  if (options?.verify !== false && !exported.report.ok) {
+    return exportFusedSeamFallback(
+      worldParts,
+      exported.bytes,
+      exported.report,
+      targetId,
+      diagnostics,
+      featureCount,
+      options,
+      exported.mesh_deviation,
+    );
   }
-  // Flat part (plate, panel, extruded profile) or `options.section`: the
-  // cut profile with exact arcs; anything else is refused with a hint.
-  return exportShapeDxfProfile(shape, targetId, exportOptions, diagnostics, featureCount);
+  const toleranceFailure = meshToleranceFailure(exported.mesh_deviation, targetId);
+  return {
+    bytes: exported.bytes,
+    featureCount,
+    diagnostics: [...diagnostics, ...(toleranceFailure === undefined ? [] : [toleranceFailure])],
+    ...(exported.mesh_deviation === undefined ? {} : { mesh_deviation: exported.mesh_deviation }),
+  };
+}
+
+function disposeIntermediateShapes(temps: readonly OcctBackend[]): void {
+  for (const temp of temps) {
+    try { temp.dispose(); } catch { /* intermediate already freed */ }
+  }
 }
 
 /** Mesh the per-link shapes referenced by a robot-description export into
@@ -922,7 +752,7 @@ export async function exportSingleShape(
     case 'asset-pack':
       return exportSingleAssetPack(input, shape, targetId, scriptDir, run, diagnostics, featureCount);
     case 'obj':
-      return exportSingleMeshText(
+      return exportSingleTextMesh(
         shape,
         'obj',
         targetId,
@@ -932,129 +762,13 @@ export async function exportSingleShape(
         input.options as Extract<ExportOptions, { format: 'obj' }> | undefined,
       );
     case 'usd':
-      return exportSingleMeshText(shape, 'usd', targetId, run.records, diagnostics, featureCount);
+      return exportSingleTextMesh(shape, 'usd', targetId, run.records, diagnostics, featureCount);
     case 'ply':
       return exportSinglePly(input, shape, targetId, run.records, diagnostics, featureCount);
   }
   // URDF / SRDF / SDF-Gazebo are dispatched in the early Assembly-aware
   // branch above, before targetId resolution. Unreachable here.
   return { bytes: new Uint8Array(), featureCount, diagnostics };
-}
-
-function exportSingleMeshText(
-  shape: OcctBackend,
-  format: 'obj' | 'usd',
-  targetId: string,
-  records: readonly FeatureRecord[],
-  diagnostics: CompilerDiagnostic[],
-  featureCount: number,
-  options?: Extract<ExportOptions, { format: 'obj' }>,
-): ExportResult {
-  const tail = records.find((rec) => rec.id === targetId);
-  const color = tail ? lookupColorFromLineage(tail, records) : undefined;
-  const material = tail ? lookupMaterialFromLineage(tail, records) : undefined;
-  const initialDeflection = options?.tolerance === undefined
-    ? exportMeshDeflection(options)
-    : exportMeshDeflection({ angularToleranceDeg: options.angularToleranceDeg });
-  let mesh = meshShapeForExport(shape.getReplicadShape(), initialDeflection);
-  let mesh_deviation = options?.tolerance === undefined
-    ? undefined
-    : measureBrepSurfaceDeviation([shape.getReplicadShape()], [mesh], options.tolerance);
-  if (mesh_deviation !== undefined && mesh_deviation.measured_max_mm > options!.tolerance! * 1.05) {
-    mesh = meshShapeForExport(shape.getReplicadShape(), exportMeshDeflection(options));
-    mesh_deviation = measureBrepSurfaceDeviation([shape.getReplicadShape()], [mesh], options!.tolerance!);
-  }
-  const parts: NamedMesh[] = [{
-    name: 'part',
-    mesh,
-    ...(color !== undefined ? { color } : {}),
-    ...(material !== undefined ? { material } : {}),
-  }];
-  const bytes = format === 'obj'
-    ? exportMeshObjZip(parts, options?.tolerance === undefined ? undefined : { toleranceMm: options.tolerance })
-    : exportMeshUsd(parts);
-  const toleranceFailure = mesh_deviation !== undefined &&
-      mesh_deviation.measured_max_mm > mesh_deviation.requested_mm * 1.05
-    ? meshToleranceNotMetDiagnostic(mesh_deviation, targetId)
-    : undefined;
-  return {
-    bytes,
-    featureCount,
-    diagnostics: [...diagnostics, ...(toleranceFailure ? [toleranceFailure] : [])],
-    ...(mesh_deviation === undefined ? {} : { mesh_deviation }),
-  };
-}
-
-async function exportSingleStl(
-  input: ExportInput,
-  shape: OcctBackend,
-  targetId: string,
-  diagnostics: CompilerDiagnostic[],
-  featureCount: number,
-): Promise<ExportResult> {
-  const verify = (input.options as { verify?: boolean } | undefined)?.verify !== false;
-  const { bytes, report, mesh_deviation } = await exportStlWithOptions(
-    shape,
-    input.options as Extract<ExportOptions, { format: 'stl' }> | undefined,
-  );
-  const toleranceFailure = mesh_deviation !== undefined &&
-      mesh_deviation.measured_max_mm > mesh_deviation.requested_mm * 1.05
-    ? meshToleranceNotMetDiagnostic(mesh_deviation, targetId)
-    : undefined;
-  if (verify && !report.ok) {
-    // Write-then-fail contract: keep the real mesh bytes next to the
-    // error diagnostic so consumers can write the broken mesh to disk
-    // for inspection before failing (same as per-part export).
-    return {
-      bytes,
-      featureCount,
-      diagnostics: [
-        ...diagnostics,
-        ...(toleranceFailure ? [toleranceFailure] : []),
-        stlNotWatertightDiagnostic(report, targetId),
-      ],
-      ...(mesh_deviation === undefined ? {} : { mesh_deviation }),
-    };
-  }
-  return {
-    bytes,
-    featureCount,
-    diagnostics: [...diagnostics, ...(toleranceFailure ? [toleranceFailure] : [])],
-    ...(mesh_deviation === undefined ? {} : { mesh_deviation }),
-  };
-}
-
-async function exportStlWithOptions(
-  shape: OcctBackend,
-  options?: Extract<ExportOptions, { format: 'stl' }>,
-): Promise<{ bytes: Uint8Array; report: WatertightReport; mesh_deviation?: MeshDeviationReport }> {
-  const controls: ExportMeshToleranceOptions = {
-    ...(options?.tolerance === undefined ? {} : { tolerance: options.tolerance }),
-    ...(options?.angularToleranceDeg === undefined ? {} : { angularToleranceDeg: options.angularToleranceDeg }),
-  };
-  const toleranceRequested = options?.tolerance !== undefined;
-  const initialDeflection = toleranceRequested
-    ? exportMeshDeflection({ angularToleranceDeg: options?.angularToleranceDeg })
-    : exportMeshDeflection(controls);
-  let exported = await shape.exportSTLWithReportAsync(initialDeflection);
-  let mesh_deviation: MeshDeviationReport | undefined;
-  if (toleranceRequested) {
-    mesh_deviation = measureBrepSurfaceDeviation(
-      [shape.getReplicadShape()],
-      [decodeBinaryStlMesh(exported.bytes)],
-      options!.tolerance!,
-    );
-    if (mesh_deviation.measured_max_mm > mesh_deviation.requested_mm * 1.05) {
-      exported = await shape.exportSTLWithReportAsync(exportMeshDeflection(controls));
-      mesh_deviation = measureBrepSurfaceDeviation(
-        [shape.getReplicadShape()],
-        [decodeBinaryStlMesh(exported.bytes)],
-        options!.tolerance!,
-      );
-    }
-    exported = { ...exported, bytes: stampStlMeshTolerance(exported.bytes, options!.tolerance!) };
-  }
-  return { ...exported, ...(mesh_deviation === undefined ? {} : { mesh_deviation }) };
 }
 
 async function exportSingleGcode(
@@ -1118,25 +832,6 @@ async function exportSingle3mf(
     if (notWatertight) return notWatertight;
     throw e;
   }
-}
-
-function measureWorldFramePartsDeviation(
-  parts: readonly WorldFramePart[],
-  requestedMm: number,
-): MeshDeviationReport {
-  return measureBrepSurfaceDeviation(
-    parts.map(part => part.shape.getReplicadShape()),
-    parts.map(part => part.mesh),
-    requestedMm,
-  );
-}
-
-function meshToleranceFailure(
-  report: MeshDeviationReport | undefined,
-  targetId: string,
-): CompilerDiagnostic | undefined {
-  if (report === undefined || report.measured_max_mm <= report.requested_mm * 1.05) return undefined;
-  return meshToleranceNotMetDiagnostic(report, targetId);
 }
 
 async function exportSingleGlb(

@@ -21,19 +21,6 @@ const SAMPLE_IDS = [
   'planetary-stage-internal-ring',
 ] as const;
 
-interface PartResult {
-  name: string;
-  default_triangles: number;
-  tolerance_triangles: number;
-  triangle_increase: number;
-  measured_max_mm: number;
-  measured_p95_mm: number;
-  samples: number;
-  measurement: 'sampled_brep_surface_to_export_triangles';
-  global_max_certified: false;
-  watertight: boolean;
-}
-
 interface ModePart {
   name: string;
   triangle_count: number;
